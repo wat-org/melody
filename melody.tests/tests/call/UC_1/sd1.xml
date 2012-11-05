@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence>
+
+	<order name="order1">
+		<echo message="sd1.xml, echo in order1" couille="" />
+	</order>
+
+</sequence>

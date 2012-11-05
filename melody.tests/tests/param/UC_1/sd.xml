@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<property name="RXA_pkgName" value="sequence"/>
+
+	<order name="do">
+		<echo message="§[param1]§"/>
+		<echo message="§[param2]§"/>
+	</order>
+
+</sequence>

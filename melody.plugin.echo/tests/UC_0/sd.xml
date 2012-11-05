@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+	<order name="do">
+		<echo message="message 0"/>
+		<echo message="message 1" severity="FATAL"/>
+		<echo message="message 2" severity="ERROR"/>
+		<echo message="message 3" severity="WARNING"/>
+		<echo message="message 4" severity="INFO"/>
+		<echo message="message 5" severity="DEBUG"/>
+		<echo message="message 6" severity="TRACE"/>
+		<echo message="message 7" severity="WARNING" file="out.log" append="true"/>
+		<echo severity="WARNING" file="out.log" append="true"/>
+		<echo severity="WARNING"/>
+		<echo />
+		<echo message="message 8" severity="WARNING" file="will_be_created/out.log" createparentdir="yes" append="true"/>
+	</order>
+</sequence>

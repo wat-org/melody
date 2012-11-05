@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence>
+
+	<order name="order1">
+		<echo message="sd3.xml, echo in order1"/>
+		<call sequenceDescriptor="sd.xml" />
+	</order>
+
+</sequence>

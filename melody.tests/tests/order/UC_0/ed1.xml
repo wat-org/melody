@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><environment>
+
+	<instance IP_priv="124.124.124.126" name="machine1">
+		<region>eu-west-1</region>
+		<imageId>ami-59d0e22d</imageId>
+		<instanceType>t1.micro</instanceType>
+		<keyName>sshkey-gct2</keyName>
+	</instance>
+	
+</environment>

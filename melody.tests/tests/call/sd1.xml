@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="startauth">
+
+	<property name="RXA_pkgName" value="sequence1"/>
+
+
+	<order name="whole">
+		<call orders="startauth"/>
+		<call orders="startjboss"/>
+		<call orders="starthttp"/>
+	</order>
+	
+	<order name="startauth">
+		<property name="otest" value="order"/>
+		<property name="otes2t" value="redro §[test]§"/>
+
+		<echo message="§[param1]§"/>
+		<echo message="§[param2]§"/>
+
+		<call orders="startLDAP"/>
+		<call orders="startRSA"/>
+		<call orders="startFIM">
+			<param	name="test" value="salut"/>
+			<param	name="tes2t" value="§[test]§ yo"/>
+		</call>
+		<call orders="startFIM">
+			<param	name="test" value="coucou"/>
+			<param	name="tes2t" value="yo §[test]§"/>
+		</call>
+	</order>
+
+	<property name="test" value="prout"/>
+	<property name="tes2t" value="yo §[test]§"/>
+	<order name="startFIM">
+		<echo message="toto / §[test]§ / §[tes2t]§"/>
+	</order>
+
+	<order name="startjboss">
+		<call orders="startJbossMasFarm1, startJbossMasFarm2" />
+		<call orders="startJbossMapiFarm1, startJbossMapiFarm2, startJbossApp" />
+	</order>
+
+	<order name="starthttp" description="Will start all Apache Httpd Server">
+		<echo message="starthttp 1"/>
+		<sleep millis="2000"/>
+		<echo message="starthttp 2"/>
+		<sleep millis="2000"/>
+		<echo message="starthttp 3"/>
+		<sleep millis="2000"/>
+		<echo message="starthttp 4"/>
+	</order>
+
+	<order name="startLDAP">
+		<echo message="startLDAP 1"/>
+	</order>
+
+	<order name="startRSA">
+		<echo message="startRSA 1"/>
+	</order>
+
+	<order name="startJbossMasFarm1">
+		<echo message="startJbossMasFarm1 1"/>
+		<foreach	items="//server"
+				itemName="item"
+				maxpar="2">
+			<echo message="startJbossMasFarm1 1 / §[§[item]§/@hostname]§"/>
+			<sleep millis="1000"/>
+			<foreach	items="§[item]§/module"
+					itemName="item2"
+					maxpar="0">
+				<ssh
+					login="ec2-user"
+					host="§[§[item]§/@ip]§"
+					keypairname="sshkey-DEV" 
+					
+					command="§[
+			string-join(
+				for $n in //module[@type='weblogic_app' and @app='c3s_fo' and @active='true']
+				return replace(concat($n/parent::*/@hostname,'_',$n/@req_name,$n/@listen_port),'-','_')
+			,	','
+			)
+		]§"
+				/>
+				<sleep millis="5000"/>
+				<echo message="startJbossMasFarm1 1 / §[§[item]§/@hostname]§ / §[§[item2]§/@req_name]§"/>
+			</foreach>
+			<sleep millis="5000"/>
+			<echo message="startJbossMasFarm1 1 / §[§[item]§/@hostname]§"/>
+		</foreach>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm1 2"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm1 3"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm1 4"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm1 5"/>
+	</order>
+
+	<order name="startJbossMasFarm2">
+		<echo message="startJbossMasFarm2 1"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm2 2"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm2 3"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm2 4"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMasFarm2 5"/>
+	</order>
+
+	<order name="startJbossMapiFarm1">
+		<echo message="startJbossMapiFarm1 1"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm1 2"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm1 3"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm1 4"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm1 5"/>
+	</order>
+
+	<order name="startJbossMapiFarm2">
+		<echo message="startJbossMapiFarm2 1"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm2 2" file="test.out"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm2 3"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm2 4"/>
+		<sleep millis="1000"/>
+		<echo message="startJbossMapiFarm2 5"/>
+	</order>
+
+	<order name="startJbossApp">
+		<echo message="startJbossApp 1"/>
+		<sleep millis="3000"/>
+		<echo message="startJbossApp 2"/>
+	</order>
+
+</sequence>

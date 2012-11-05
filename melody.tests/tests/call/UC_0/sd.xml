@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<order name="display_instance_datas">
+		<foreach	items="§[srv]§/*"
+					itemName="mod">
+			<echo message="§[node-name(§[mod]§)]§ : §[§[mod]§/text()]§"/>
+		</foreach>
+	</order>
+
+	<order name="display_instance_fwrule_in">
+		<foreach	items="§[srv]§/fwrules/in/fwrule"
+					itemName="mod">
+			<echo message="IN = from: §[§[mod]§/@from]§, ports: §[§[mod]§/@ports]§, protocols: §[§[mod]§/@protocols]§"/>
+		</foreach>
+	</order>
+
+	<order name="display_instance_fwrule_out">
+		<foreach	items="§[srv]§/fwrules/out/fwrule"
+					itemName="mod">
+			<echo message="OUT = to: §[§[mod]§/@to]§, ports: §[§[mod]§/@ports]§, protocols: §[§[mod]§/@protocols]§"/>
+		</foreach>
+	</order>
+
+	<order name="do">
+
+		<foreach	items="//instance"
+					itemName="srv"
+					maxpar="1">
+		
+			<property name="myip" value="§[§[srv]§/@IP_priv]§"/>
+
+			<echo message="instance '§[§[srv]§/@name]§' as IP '§[myip]§'"/>
+
+			<call orders="display_instance_datas, display_instance_fwrule_in, display_instance_fwrule_out" />
+						
+			<echo message="-------------------"/>
+
+		</foreach>
+
+	</order>
+
+</sequence>

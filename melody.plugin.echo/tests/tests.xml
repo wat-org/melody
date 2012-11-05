@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project name="melody_test_plugin_echo" basedir="../.." default="all">
+
+	<path id="classpathElements">
+		<fileset dir="./melody.tests/common/lib/">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="Echo_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.echo/tests/UC_0/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Echo_UC1">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.echo/tests/UC_1/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="all" depends="Echo_UC0,Echo_UC1" />
+
+</project>

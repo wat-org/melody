@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="main" basedir=".">
+
+	<order name="main">
+
+		<foreach	items="//instance[exists(@IP_pub)]"
+					itemName="svr">
+					
+			<property name="application" value="myApp"/>
+			<property name="module" value="myMod"/>
+			<property name="instance" value="myInst"/>
+			
+			<echo message="Transfering files to 'IP:§[§[svr]§/@IP_pub]§' ..."/>
+
+			<upload host="§[§[svr]§/@IP_pub]§" login="ec2-user" keyPairName="§[melody:getHeritedAttribute(§[svr]§, 'keyPairName')]§" maxpar="10" >
+			<!--
+			'resources' XML Nested Element allow to select files.
+			Select files will be transfered on the remote computer.
+			-->
+				<resources
+					match="**"
+					dirModifiers="770"/>
+				<resources
+					match="**"
+					remoteBaseDir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dirModifiers="770"/>
+				<resources
+					match="**"
+					remoteBaseDir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dirModifiers="774"/>
+				<resources
+					match="**"
+					remoteBaseDir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dirModifiers="774"/>
+				<resources
+					localBaseDir="."
+					match="nothing"
+					remoteBaseDir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					fileModifiers="640"/>
+				<resources
+					remoteBaseDir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					fileModifiers="644">
+				<!--
+				Each 'include' must have a 'localBaseDir', 'modifiers', 'group', 'remoteBaseDir' and 'match' XML Attributes.
+				* match : search files whose name match the given pattern
+				* localBaseDir : the base directory for the search. (Relative to the 'sequence's basedir')
+				* remoteBaseDir : the remoteBaseDir of each files on the remote computer
+				* fileAtt : the modifiers to set to the file(s), once they have been transfered on the remote computer
+				* dirAtt :  the modifiers to set to the directories(s), once they have been transfered on the remote computer
+				* group : the group to set to the file(s) and directories, once they have been transfered on the remote computer
+				
+				Note  :
+				Each 'localBaseDir', 'modifiers', 'group' and 'remoteBaseDir' XML Attributes can be defined in the parent 'resources' XML Element.
+				-->
+					<include match="./static_§[application]§_§[module]§/**" fileModifiers="754" />
+					<include localBaseDir="." match="./resources/marker/**" fileModifiers="754" />
+					<include localBaseDir="." match="./resources/file with space.txt" fileModifiers="754" />
+					<include match="./resources/file with space.txt" fileModifiers="777" />
+					<include match="./resources/emptyfolder" fileModifiers="754" />
+					<include match="nothing" fileModifiers="754" />
+					
+				<!-- TEMPLATING SAMPLE
+				If the 'template' XML Attribute is set to 'true', then each matching file(s) will be specially instanciated for each remote computer.
+					<include match="templates/httpd_app/wls_plugin_for_apache.conf" remoteBaseDir="/appli/apache/https-§[§[svr]§/@IP_priv]§/wls_§[application]§-§[module]§.conf" template="true"/>
+					<include match="templates/httpd_app/jk_plugin_for_apache.conf" remoteBaseDir="/appli/apache/https-§[§[svr]§/@IP_priv]§/jk_§[application]§-§[module]§.conf" template="true" />
+				-->					
+				
+					<exclude localBaseDir="./resources/marker/" match="exclude.me" />
+					<exclude match="./static_§[application]§_§[module]§/content3.txt" />
+				</resources>
+				<!--
+				<resources
+					localBaseDir="../.."
+					match="/echo/**"
+					dirModifiers="440"/>
+				-->					
+			</upload>
+
+			<echo message="Files successfully transfered to 'IP:§[§[svr]§/@IP_pub]§'."/>
+
+		</foreach>	
+
+	</order>
+
+</sequence>

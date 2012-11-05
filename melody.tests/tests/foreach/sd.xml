@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<order name="do">
+
+		<foreach	items="//instance"
+					itemName="srv"
+					maxpar="1">
+		
+			<property name="name" value="§[§[srv]§/@name]§"/>
+			<property name="ip" value="§[§[srv]§/@IP_priv]§"/>
+
+			<echo message="instance '§[name]§' as IP '§[ip]§'"/>
+
+			<foreach	items="§[srv]§/*"
+						itemName="mod">
+				<echo message="§[node-name(§[mod]§)]§ : §[§[mod]§/text()]§"/>
+			</foreach>
+			
+			<echo message="-------------------"/>
+
+		</foreach>
+
+	</order>
+
+</sequence>

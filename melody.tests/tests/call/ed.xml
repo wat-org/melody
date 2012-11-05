@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
+	<server hostname="DEV-APP2" ip="192.168.0.12">
+		<module req_name="jvmsun_bin" type="jvmsun" version="1.5.0_14"/>
+		<module req_name="httpd_bin" type="httpd_bin" version="2.2.6"/>
+		<module app="c3s_fo" listen_ip="10.248.33.97" req_name="c3s_fo" type="httpd_app" version="2009.2.0.0"/>
+		<module app="c3s_ri" listen_ip="10.248.33.97" req_name="c3s_ri" type="httpd_app" version="13.2.1"/>
+		<module app="c3s_bo" listen_ip="10.248.33.98" req_name="c3s_bo" type="httpd_app" version="2009.2.0.0"/>
+	</server>
+	<server hostname="DEV-APP3" ip="192.168.0.13">
+		<module req_name="jvmsun_bin" type="jvmsun" version="1.5.0_14"/>
+		<module req_name="httpd_bin" type="httpd_bin" version="2.2.6"/>
+		<module app="c3s_fo" listen_ip="10.248.34.97" req_name="c3s_fo" type="httpd_app" version="2009.2.0.0"/>
+		<module app="c3s_ri" listen_ip="10.248.34.97" req_name="c3s_ri" type="httpd_app" version="13.2.1"/>
+		<module app="c3s_bo" listen_ip="10.248.34.98" req_name="c3s_bo" type="httpd_app" version="2009.2.0.0"/>
+		<module req_name="bin" type="weblogic" version="10.0.3.0"/>
+		<module app="c3s_adm" instance_name="DEV-APP2-DVC3S-ADM" listen_port="7300" req_name="c3s_adm" type="weblogic_app" version="10.0.3.0"/>
+		<module app="dcr_adm" instance_name="DEV-APP2-DVDCR-ADM" listen_port="7400" req_name="dcr_adm" type="weblogic_app" version="10.0.3.0"/>
+	</server>
+	<server hostname="DEV-APP4" ip="192.168.0.14">
+		<module req_name="jvmsun_bin" type="jvmbea" version="1.5.0_14"/>
+		<module req_name="httpd_bin" type="weblogic" version="10.0.3.0"/>
+		<module active="true" app="c3s_fo" instance_name="DEV-APP3-DVC3S-FO1" listen_port="7311" req_name="c3s_fo1" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="c3s_ri" instance_name="DEV-APP3-DVC3S-FO1" listen_port="7311" req_name="c3s_ri1" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="c3s_bo" instance_name="DEV-APP3-DVC3S-BO1" listen_port="7321" req_name="c3s_bo1" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="false" app="c3s_bo" instance_name="DEV-APP4-DVC3S-BO2" listen_port="7322" req_name="c3s_bo2" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="false" app="c3s_bo" instance_name="DEV-APP4-DVC3S-BO3" listen_port="7323" req_name="c3s_bo3" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="dcr_fo" instance_name="DEV-APP3-DVDCR-FO1" listen_port="7411" req_name="dcr_fo1" type="weblogic_app" version="2010.2.0.0"/>
+		<module active="true" app="dcr_ri" instance_name="DEV-APP3-DVDCR-FO1" listen_port="7411" req_name="dcr_ri1" type="weblogic_app" version="2010.2.0.0"/>
+		<module active="true" app="dcr_bo" instance_name="DEV-APP3-DVDCR-BO1" listen_port="7421" req_name="dcr_bo1" type="weblogic_app" version="2010.2.0.0"/>
+	</server>
+	<server hostname="DEV-APP5" ip="192.168.0.15">
+		<module req_name="jvmsun_bin" type="jvmbea" version="1.5.0_14"/>
+		<module req_name="httpd_bin" type="weblogic" version="10.0.3.0"/>
+		<module active="true" app="c3s_fo" instance_name="DEV-APP4-DVC3S-FO1" listen_port="7311" req_name="c3s_fo1" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="c3s_fo" instance_name="DEV-APP4-DVC3S-FO2" listen_port="7312" req_name="c3s_fo2" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="false" app="c3s_fo" instance_name="DEV-APP4-DVC3S-FO3" listen_port="7313" req_name="c3s_fo3" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="c3s_ri" instance_name="DEV-APP4-DVC3S-FO1" listen_port="7311" req_name="c3s_ri1" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="c3s_ri" instance_name="DEV-APP4-DVC3S-FO2" listen_port="7312" req_name="c3s_ri2" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="false" app="c3s_ri" instance_name="DEV-APP4-DVC3S-FO3" listen_port="7313" req_name="c3s_ri3" type="weblogic_app" version="2009.2.0.0"/>
+		<module active="true" app="dcr_fo" instance_name="DEV-APP4-DVDCR-FO1" listen_port="7411" req_name="dcr_fo1" type="weblogic_app" version="2010.2.0.0"/>
+		<module active="true" app="dcr_ri" instance_name="DEV-APP4-DVDCR-FO1" listen_port="7411" req_name="dcr_ri1" type="weblogic_app" version="2010.2.0.0"/>
+		<module active="true" app="dcr_bo" instance_name="DEV-APP4-DVDCR-BO1" listen_port="7421" req_name="dcr_bo1" type="weblogic_app" version="2010.2.0.0"/>
+	</server>
+</environment>

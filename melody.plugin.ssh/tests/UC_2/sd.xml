@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence basedir="." default="main">
+
+	<order name="main">
+
+		<property name="IP" value="127.0.0.1"/>
+		<property name="property1" value="salut c est cool"/>
+		<property name="case1" value="valeur1"/>
+		<property name="case2" value="valeur2"/>
+		<property name="case3" value="valeur3"/>
+		
+		<echo message="Executing command on 'IP:§[IP]§' ..." />
+
+		<ssh description="[test_script:§[IP]§]" host="§[IP]§" keyPairName="id_rsa_aws" login="jboss" trust="y">
+			<declare name="var1" value="&#34;§[property1]§&#34;"/>
+			<exec file="./scripts/include1.sh"/>
+			<exec file="./scripts/include2.sh" template="y"/>
+			<declare name="var8" value="&#34;§[substring('§[substring('§[property1]§',3)]§',3)]§&#34;"/>
+			<export name="var9" value="&#34;§[substring('§[substring('§[property1]§',3)]§',3)]§&#34;"/>
+			<declare name="var10" value="( §[concat('§[case1]§',' ','§[case2]§',' ','§[case3]§')]§ )"/>
+			<export name="var11" value="( §[case1]§ §[case2]§ §[case3]§ )"/>
+			<exec command="ls -l"/>
+			<exec command="echo ---------------------------"/>
+			<exec command="echo ---------------------------"/>
+			<exec command="ls -l"/>
+			<exec command="sleep 2"/>
+			<exec command="echo ---------------------------"/>
+			<exec command="echo ---------------------------"/>
+			<exec file="./scripts/test1.sh"/>
+		</ssh>
+
+		<echo message="Command successfully executed on 'IP:§[IP]§'."/>
+
+	</order>
+
+</sequence>

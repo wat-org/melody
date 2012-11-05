@@ -1,0 +1,246 @@
+.TH pimpmyapp 1  "May 13, 2011" "version 0.6.0" "USER COMMANDS"
+.SH NAME
+pimpmyapp \- execute specified commands on multiple Remote Hosts and send specified files to multiple 
+Remote Hosts.
+Remote Hosts are listed in an \fIenvironnement-descriptor\fP.
+.SH SYNOPSIS
+.B pimpmyapp.sh
+[ \-BCGpv[v[v]]q ] [ \-F RemoteHostsFilter ] [ \-Z TargetsFilter ] [ \-c configuration-file ] [ \-E environnement-descriptor ] \-X command
+.PP
+.B pimpmyapp.sh
+[ \-BCGpv[v[v]]q ] [ \-F RemoteHostsFilter ] [ \-Z TargetsFilter ] [ \-c configuration-file ] [ \-E environnement-descriptor ] [ \-S specific-configuration ] \-( P | T ) localSource [ localSource ... ] remoteDestination
+.PP
+.B pimpmyapp.sh
+[ \-BCGpv[v[v]]q ] [ \-F RemoteHostsFilter ] [ \-Z TargetsFilter ] [ \-c configuration-file ] [ \-E environnement-descriptor ] [ \-S specific-configuration ] [ \-o order ] [ \-s step ] package
+.PP
+.B pimpmyapp.sh
+[ \-Bpv[v[v]]q ] [ \-F RemoteHostsFilter ] [ \-Z TargetsFilter ] [ \-c configuration-file ] [ \-E environnement-descriptor ] [ \-o order ] [ \-s step ] [ \-l (oOsS) [gud] ] package
+.PP
+.B pimpmyapp.sh
+[ -hV ]
+.SH DESCRIPTION
+This tools can schedule script execution on Remote Host using ssh and file transfer using scp.
+Command's output are stored in logfiles.
+
+\fBssh\fP and \fBssh\fP connections will be established using a \fBDedicated Identity File\fP.
+The full path of this \fBDedicated Identity File\fP is defined in the \fBPimpMyApp Configuration File\fP, by the key 'SshIdentityFile'.
+The \fBDedicated Identity File\fP will be automaticaly generated if it doesn\'t exists.
+
+The \fBDedicated Identity Public Half\fP will be automaticaly deployed on all \fBRemote Hosts\fP if needed.
+
+.SH OPTIONS
+.PD
+.TP 10
+.BI \-X "\| command\^"
+must be a \fBBash compliant instruction's suite\fP. \fIcommand\fP must be one word long. 
+The given \fIcommand\fP will be executed (using \fBSsh\fP) on selected \fBRemote Targets\fP.
+
+All \fBRemote Targets\fP are listed in the \fIenvironnement-descriptor\fP and can be selected using option \fB\-Z\fP.
+
+\fBBash Expansion Laws\fP applies. That means that to prevent \fIcommand\fP from \fBBash Word Splitting\fP, \fIcommand\fP must be delimited by double quotes ( " ).
+That also means that to prevent \fIcommand\fP from direct \fBBash Expansion\fP, \fIcommand\fP's content should be escaped, depending of your needs.
+.PD
+.TP 10
+.B \-P \fIlocalSource\fP [\fIlocalSource\fP ...] \fIremoteDestination\fP
+will transfer (using \fBScp\fP + \fBMd5sum\fP verification) all \fIlocalSource\fP to the \fIremoteDestination\fP on all \fBRemote Targets\fP.
+\fIlocalSource\fP can be a file or a directory. \fIremoteDestination\fP can be a file or a directory.
+Directory must be ended by a \fB/\fP character.
+
+\fIlocalSource\fP and \fIremoteDestination\fP can contains \fBX\²Path Expressions\fP (see \fBTEMPLATING\fP below).
+
+If \fIlocalSource\fP is a directory, then \fIremoteDestination\fP must be a directory too.
+If \fIlocalSource\fP is a directory, then all its inner files and directories will be transfered.
+If \fIremoteDestination\fP is a file, then multiple \fIlocalSource\fP can be defined but it as certainly no sens.
+If \fIremoteDestination\fP doesn't exists on a \fBRemote Hosts\fP and if option \fB-B\fP is set, then \fIremoteDestination\fP will be automaticaly created.
+If \fIremoteDestination\fP doesn\'t exists on a \fBRemote Hosts\fP and if option \fB-B\fP is not set, then you will be ask to confirm the \fIremoteDestination\fP creation.
+Ohter \fBScp Laws\fP applied.
+
+\fBBash Expansion Laws\fP applies. That means that \fBBash Brace Expansion\fP and \fBBash Pathname Expansion\fPcan be used to define multiples \fIlocalSource\fP.
+.PD
+.TP 10
+.B \-T \fIlocalSource\fP [\fIlocalSource\fP ...] \fIremoteDestination\fP will act like the option \fB-T\fP excepts that \fIlocalSource\fP must be a file (cannot be a directory) and its content can contains \fBX²Path Expressions\fP.
+If \fIlocalSource\fP's content contains \fBX²Path Expressions\fP, then all \fBX²Path Expressions\fP will be resolved before transfer (see \fBTEMPLATING\fP below).
+.PD
+.TP 10
+.BI \-E "\| environnement-descriptor\^"
+is the path of an xml file.
+This file lists all \fBRemote Hosts\fP and all \fBModules\fP deployed on those Remote Hosts (see \fBENVIRONNEMENT-DESCRIPTOR SPECIFICATIONS\fP bellow).
+If not provide, default environnement-descriptor will be used.
+Default environnement-descriptor's path is defined in the \fIconfiguration-file\fP, by the key 'defaultPlateformDescriptor'.
+.PD
+.TP 10
+.BI \-F "\| RemoteHostsFilter\^"
+must be an \fBXPath 2.0 compliant expression\fP.
+If provided, only the matching part of the \fIenvironnement-descriptor\fP will be used for \fBX²Path Expressions\fP Resolution.
+If not provide, the whole \fPenvironnement-descriptor\fP will be used for \fBX²Path Expressions\fP Resolution.
+.PD
+.TP 10
+.BI \-Z "\| TargetsFilter\^"
+must be an \fBXPath 2.0 compliant expression\fP.
+If provided, only the matching part of the \fIenvironnement-descriptor\fP will be used for \fBRemote Targets\fP Resolution.
+If not provide, the whole \fPenvironnement-descriptor\fP will be used for \fBRemote Targets\fP Resolution.
+.PD
+.TP 10
+.BI \| package\^
+is the path of a tar.gz file.
+The given \fIpackage\fP will be shooted on \fBRemote Targets\fP.
+
+The given \fIpackage\fP must be conform to the \fBpackage specifications\fP (see \fBPACKAGE SPECIFICATIONS\fP bellow).
+.PD
+.TP 10
+.BI \-S "\| specific-configuration\^"
+is the path of an xml file.
+This file lists all \fBspecific configuration directives\fP required by the given \fIpackage\fP.
+This file is mandatory or not, regarding the given \fIpackage\fP's content.
+.PD
+.TP 10
+.BI \-o "\| order\^"
+must match an \fBOrder\fP declared in the given \fIpackage\fP. 
+If provided, the given \fIorder\fP (and its inner-orders) will be fired on selected \fBRemote Targets\fP.
+If not provide, the default order will be fired on selected \fBRemote Targets\fP.
+The default order can be found using the option \fB\-l O\fP.
+
+All \fBRemote Targets\fP are listed in the \fIenvironnement-descriptor\fP and can be selected using option \fB\-Z\fP.
+.PD
+.TP 10
+.BI \-s "\| step\^"
+must match a \fBStep\fP declared in the given \fIpackage\fP.
+If provided, only the given \fIstep\fP will be fired on selected \fBRemote Targets\fP.
+If not provide, all the inner steps of the given \fIorder\fP will be fired on selected \fBRemote Targets\fP.
+
+All \fBRemote Targets\fP are listed in the \fIenvironnement-descriptor\fP and can be selected using option \fB\-Z\fP.
+.PD
+.TP 10
+.B \-l (oOsS)[gud]
+will print to standard output details about \fBOrders\fP and \fBSteps\fP declared in the given \fIpackage\fP.
+.RS
+.RS
+.PD 0
+.TP
+.B o
+will list only \fBOrders\fP
+.TP
+.B O
+will list \fBOrders\fP and \fBInner-orders\fP
+.TP
+.B s
+will list \fBOrders\fP, \fBInner-orders\fP and \fBSteps\fP
+.TP
+.B S
+will list \fBOrders\fP, \fBInner-orders\fP, \fBSteps\fP and \fBTargets\fP
+.TP
+.B g
+will add the \fBOrders' Description\fP to the listing
+.TP
+.B p
+will add the \fBOrders' Post Treatements\fP to the listing
+.TP
+.B u
+will add the \fBSteps' User\fP to the listing
+.TP
+.B d
+will add the \fBSteps' Dependencies\fP to the listing
+.RE
+
+Within option \fB\-o\fP, output will be restricted to the given \fIorder\fP.
+Within option \fB\-s\fP, output will be restricted to the given \fIstep\fP.
+Within option \fB\-Z\fP, output will be restricted to selected \fBRemote Targets\fP.
+.RE
+.P
+.PD
+.TP 10
+.BI \-q
+no output
+.PD
+.TP 10
+.BI \-v
+verbose output
+.PD
+.TP 10
+.BI \-vv
+very verbose output
+.PD
+.TP 10
+.BI \-vvv
+very very verbose output
+.PD
+.TP 10
+.BI \-p
+preserve temporary generated files from deletion.
+.PD
+.TP 10
+.BI \-C
+will only run the Check Phase.
+.PD
+.TP 10
+.BI \-G
+will only run the Generation Phase.
+.PD
+.TP 10
+.BI \-B
+run batch mode (prevents displaying questions).
+.PD
+.TP 10
+.BI \-c "\| configuration-file\^"
+is the path of the \fBPimpMyApp Configuration File\fP.
+If not provide, default configuration-file will be used.
+Default configuration-file is './config/PimpMyApp.properties'.
+.PD
+.TP 10
+.BI \-V
+display version info.
+.PD
+.TP 10
+.BI \-h
+print this man page.
+.PD
+.SH EXIT STATUS
+Returns 0 if succeed. >0 and a precise error message if failed.
+
+Logfiles are generated.
+.SH ENVIRONNEMENT-DESCRIPTOR SPECIFICATIONS
+TODO
+.SH PACKAGE SPECIFICATIONS
+TODO
+.SH TEMPLATING
+TODO
+.SH EXAMPLES
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-v \-u root \-X "df -hP" \fP
+will execute the command `df -hP` as root on all \fBRemote Targets\fP listed in the default \fBenvironnement-decriptor\fP.
+Generated logfiles will contains the output of the \`df -hP\` command execution on each \fBRemote Targets\fP.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-v \-u root \-t "//server[1]" -X "df -hP" \fP
+will execute the command `df -hP` as root on the first \fBRemote Targets\fP listed in the default \fBenvironnement-decriptor\fP.
+Generated logfiles will contains the output of the \`df -hP\` command execution on the given \fBRemote Target\fP.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-v \-u root \-P /etc/logrotate.conf /etc/ntp.conf /etc/\fP
+will transfer \'/etc/logrotate.conf\' and \'/etc/ntp.conf\' as root to the directory \'/etc/\' of all \fBRemote Targets\fP listed in the default \fBenvironnement-decriptor\fP.
+Generated logfiles will contains transfer detailled informations.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-v \-u root \-t "//server[1]" \-P /etc/logrotate.conf /etc/ntp.conf /etc/\fP
+will transfer \'/etc/logrotate.conf\' and \'/etc/ntp.conf\' as root to the directory \'/etc/\' of the first \fBRemote Targets\fP listed in the default \fBenvironnement-decriptor\fP.
+Generated logfiles will contains transfer detailled informations.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-l O /input/packages/UTS.tar.gz\fP
+will list \fBOrders\fP and \fPInner-orders\fP defined in the package \'/input/packages/UTS.tar.gz\'.
+No logfiles will be generated.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-l S /input/packages/UTS.tar.gz\fP
+will list \fBOrders\fP, \fPInner-orders\fP, \fBSteps\fP defined in the package \'/input/packages/UTS.tar.gz\' and, for each \fBStep\fP, will list all \fBRemote Targets\fP.
+No logfiles will be generated.
+.PD
+.TP 10
+.B \fB./pimpmyapp.sh \-o dothefirsttest /input/packages/UTS.tar.gz\fP
+will run the \fBOrder\fP \'dothefirsttest\' defined in the package \'/input/packages/UTS.tar.gz\' on the \fBRemote Targets\fP specified in the given \fBOrder\fP declaration.
+.SH AUTHOR
+TODO
+.SH SEE ALSO
+TODO
+

@@ -1,0 +1,45 @@
+#####################
+### Mandatory Melody plugin configuration directives
+#####################
+
+### the name of this plugin
+plugin.configuration.name=AWS.EC2
+
+### the class which will load this configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.ec2.common.Configuration
+
+
+#####################
+### AWS EC2 credentials
+#####################
+
+### the AWS EC2 access key
+# replace it with your AWS Acces Key
+accessKey=AZERTYUIOP1234567890
+
+### the AWS EC2 access key
+# replace it with your AWS Secret Key
+secretKey=+AZERTYUIOPMLKJHGFDSQWXCVBNA+1234567890+
+
+
+#####################
+### AWS EC2 Client Configuration
+#####################
+
+### Socket settings
+#aws.conn.socket.connect.timeout=
+#aws.conn.socket.read.timeout=
+#aws.conn.socket.max.error.retry=
+#aws.conn.socket.buffer.size.send=
+#aws.conn.socket.buffer.size.receive=
+#aws.conn.max.pool.size=
+
+### L7 setting
+#aws.conn.http.protocol=
+aws.conn.http.useragent=Melody_GPL_AutomationTool_madeBy_GuillaumeCornet
+
+### Proxy settings
+#aws.conn.proxy.host=
+#aws.conn.proxy.port=
+#aws.conn.proxy.username=
+#aws.conn.proxy.password=

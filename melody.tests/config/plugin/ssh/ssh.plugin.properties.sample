@@ -1,0 +1,57 @@
+#####################
+### Mandatory Melody plugin configuration directives
+#####################
+
+### the name of this plugin
+plugin.configuration.name=SSH
+
+### the class which will load this configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.Configuration
+
+
+#####################
+### GENERAL
+#####################
+
+### location of the knownHosts file (relative path are resolved from the current file location)
+### default value is '.ssh/known_hosts'
+#ssh.knownhosts=.ssh/known_hosts
+
+### location of the keyPair repository directory (relative path are resolved from the current file location)
+### default value is '.ssh'
+#ssh.keypair.repository=.ssh/
+
+
+#####################
+### COMPRESSION
+#####################
+
+### accepted values are 'zlib' or ',none'. 'none' means no compression and 'zlib' means that zlib will be used to compress.
+#ssh.compression.type=zlib
+### 0 means 'no compression', 1 means 'best speed' and 6 means 'best compression'.
+#ssh.compression.level=6
+
+
+#####################
+### SOCKET CONFIGURATION
+#####################
+
+#ssh.conn.socket.connect.timeout=
+#ssh.conn.socket.read.timeout=
+
+### the number of server-alive messages which will be sent without any reply from the server before disconnecting. The default value is 1. 
+#ssh.conn.serveralive.countmax=
+
+### the timeout interval in milliseconds before sending a server alive message, if no message is received from the server
+#ssh.conn.serveralive.interval=
+
+
+#####################
+### PROXY CONFIGURATION
+#####################
+
+### accepted values are : ProxyHTTP, ProxySOCKS4, ProxySOCKS5
+#ssh.conn.proxy.type=
+#ssh.conn.proxy.host=
+#ssh.conn.proxy.port=
+

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<property name="RXA_pkgName" value="sequence"/>
+	<property name="test" value="hello"/>
+	<property name="tes2t" value="yo §[test]§"/>
+
+	<order name="do">
+		<property name="otest" value="order"/>
+		<property name="otes2t" value="redro §[test]§"/>
+
+		<echo message="§[param1]§"/>
+		<echo message="§[param2]§"/>
+
+		<call orders="order">
+			<param	name="test"		value="salut"/>
+			<param	name="tes2t"	value="§[test]§ ya"/>
+		</call>
+		<call orders="order">
+			<param	name="test"		value="coucou"/>
+			<param	name="tes2t"	value="ya §[test]§"/>
+			<param	name="otes2t"	value="redro §[test}§"/>
+		</call>
+		<call orders="order"/>
+	</order>
+
+	<order name="order">
+		<echo message="toto / §[test]§ / §[tes2t]§"/>
+		<echo message="§[param1]§"/>
+		<echo message="§[otest]§ / §[otes2t]§ / §[undef]§"/>
+	</order>
+
+</sequence>

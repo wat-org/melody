@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<order name="do">
+		<echo message="msg1"/>
+		<echo message="msg2"/>
+
+		<property name="test" value="my value" />
+		<call>
+			<ref orders="order" />
+			<ref orders="order">
+				<param	name="test" value="salut" />
+				<param	name="tes2t" value="${test} ya" />
+			</ref>
+			<ref orders="order">
+				<param	name="test" value="coucou" />
+				<param	name="tes2t" value="ya ${test}" />
+			</ref>
+		</call>
+	</order>
+
+	<order name="order">
+		<echo message="${test} / ${tes2t} / ${undef}" />
+	</order>
+
+</sequence>

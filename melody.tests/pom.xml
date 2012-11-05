@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.wat.melody</groupId>
+		<artifactId>melody-project</artifactId>
+		<version>0.0.1</version>
+	</parent>
+
+	<artifactId>melody.tests</artifactId>
+	<packaging>jar</packaging>
+
+	<name>melody.tests</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.core</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.cli</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.echo</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.sleep</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.ssh</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.aws</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><environment>
+
+	<serverAWS>
+	
+		<FRONTS>
+		
+			<instance IP_priv="123.123.123.123" name="web1">
+				<region>eu-west-1</region>
+				<imageId>ami-59d0e22d</imageId>
+				<instanceType>t1.micro</instanceType>
+				<keyName>sshkey-gct2</keyName>
+				<fwrules>
+					<in>
+						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
+						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
+					</in>
+					<out>
+						<fwrule access="allow" ports="1521-1531" protocols="tcp,udp" to="§[string-join(./environment//DBS/instance/@IP_priv,',')]§"/>
+					</out>
+				</fwrules>
+			</instance>
+			
+			<instance IP_priv="123.123.123.124" name="web2">
+				<region>eu-west-1</region>
+				<imageId>ami-59d0e22d</imageId>
+				<instanceType>t1.micro</instanceType>
+				<keyName>sshkey-gct2</keyName>
+				<fwrules>
+					<in>
+						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
+						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
+					</in>
+				</fwrules>
+			</instance>
+			
+		</FRONTS>
+		
+		
+		<DBS>
+		
+			<instance IP_priv="123.123.123.125" name="db1">
+				<region>eu-west-1</region>
+				<imageId>ami-59d0e22d</imageId>
+				<instanceType>t1.micro</instanceType>
+				<keyName>sshkey-gct2</keyName>
+				<fwrules>
+					<in>
+						<fwrule access="allow" from="§[string-join(./environment//FRONTS/instance/@IP_priv,',')]§" ports="1521-1531" protocols="tcp,udp"/>
+						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
+					</in>
+				</fwrules>
+			</instance>
+			
+		</DBS>
+		
+	</serverAWS>
+	
+	<global_fwrules>
+		<!-- pour les machines de types linux -->
+		<in name="SSH" ports="22" protocols="tcp"/>
+		<!-- pour les machines de types windows -->
+		<in name="RDP" ports="3389" protocols="tcp"/>
+	</global_fwrules>
+	
+	
+</environment>

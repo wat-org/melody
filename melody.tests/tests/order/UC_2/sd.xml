@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="duplicate">
+
+	<order name="do">
+
+		<property name="svr" value="/environment/serverAWS/FRONTS/instance[1]"/>
+
+		<setEDAttrValue items="§[svr]§/@IP_priv" newValue=""/>
+		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
+
+		<setEDAttrValue items="§[svr]§/@IP_priv" newValue="123.123.123.123"/>
+		<echo message="instance §[§[svr]§/@name]§} / IP:§[§[svr]§/@IP_priv]§"/>
+
+	</order>
+
+	<order name="duplicate">
+		<echo/>	
+	</order>
+
+	<order name="duplicate">
+		<echo/>	
+	</order>
+
+</sequence>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
+
+	<serverAWS>
+	
+		<FRONTS>
+		
+			<model imageId="ami-59d0e22d" instanceType="t1.micro" keyPairName="id_rsa_aws_webs" region="eu-west-1">
+				<tags>
+					<tag name="MGNT" value="ssh"/>
+					<tag name="SSH.PORT" value="22"/>
+				</tags>
+				<fwrules>
+					<in>
+						<fwrule access="allow" from="all" ports="80-443" protocols="tcp"/>
+						<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
+					</in>
+					<out>
+						<fwrule access="allow" ports="1421" protocols="tcp" to="§[string-join(//DBS/instance/@IP_priv,',')]§"/>
+					</out>
+				</fwrules>
+				<devices>
+					<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
+					<disk deleteOnTermination="true" device="/dev/sdb" size="1 G"/>
+					<disk deleteOnTermination="true" device="/dev/sdc" size="2 G"/>
+				</devices>
+			</model>
+
+			<instance availabilityZone="a" herit="./environment/serverAWS/FRONTS/model" name="web-a01">
+				<fwrules>
+					<in>
+						<fwrule access="allow" from="all" ports="8080,8443" protocols="tcp"/>
+					</in>
+				</fwrules>
+				<devices>
+					<disk deleteOnTermination="true" device="/dev/sde" size="1 G"/>
+				</devices>
+			</instance>	
+			<instance availabilityZone="a" herit="./environment/serverAWS/FRONTS/model" name="web-a02"/>
+
+		</FRONTS>
+	
+		<DBS>
+		
+			<model imageId="ami-59d0e22d" instanceType="t1.micro" keyPairName="id_rsa_aws_dbs" region="eu-west-1">
+				<tags>
+					<tag name="MGNT" value="ssh"/>
+					<tag name="SSH.PORT" value="22"/>
+				</tags>
+				<fwrules>
+					<in>
+						<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
+						<fwrule access="allow" from="§[string-join(//FRONTS/instance/@IP_priv,',')]§" ports="1421" protocols="tcp"/>
+					</in>
+				</fwrules>
+				<devices>
+					<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
+					<disk deleteOnTermination="true" device="/dev/sdb" size="10 G"/>
+					<disk deleteOnTermination="true" device="/dev/sdc" size="20 G"/>
+				</devices>
+			</model>
+			
+			<instance herit="./environment/serverAWS/DBS/model" instanceType="m1.small" name="db-01"/>
+
+		</DBS>
+
+	</serverAWS>
+	
+	<global_fwrules>
+		<in access="allow" from="all" name="SSH" ports="22" protocols="tcp"/>
+		<in access="allow" from="all" name="RDP" ports="3389" protocols="tcp"/>
+	</global_fwrules>
+	
+</environment>

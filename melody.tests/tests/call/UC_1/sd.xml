@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="test">
+
+	<order name="test">
+		<call orders="order1, order2">
+			<ref	orders="order1"
+				sequenceDescriptor="sd1.xml" />
+			<ref	orders="order1"
+				sequenceDescriptor="sd2.xml" />
+			<ref	orders="order1"
+				sequenceDescriptor="sd3.xml" />
+			<ref	orders="order1"
+				sequenceDescriptor="sd4.xml" />
+		</call>
+	</order>
+
+	<order name="order1">
+		<echo message="sd.xml, echo in order1"/>
+	</order>
+	<order name="order2">
+		<echo message="sd.xml, echo in order2"/>
+	</order>
+
+</sequence>

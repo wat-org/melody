@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project name="melody_build" basedir="." default="30_packageProject" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+	<property name="organization.name" value="wat-org" />
+	<property name="project.name" value="melody" />
+	<property name="project.license" value="GLP 2" />
+	<property name="project.name.display" value="Melody" />
+	<property name="project.version" value="0.0.1" />
+	<property name="project.archive.name" value="${project.name}_${project.version}.tar.gz" />
+
+	<property name="deploy.user.login" value="pmanager" />
+
+	<tstamp>
+		<format property="datetime.now" pattern="yyyy/MM/dd HH:mm:ss" />
+	</tstamp>
+
+	<target name="30_packageProject">
+
+		<echo>Writing '.version_info' file for project ${project.name}_${project.version}</echo>
+		<echo file=".version_info" append="false" message="Built-By: ${user.name}${line.separator}" />
+		<echo file=".version_info" append="true" message="Built-Date: ${datetime.now}${line.separator}" />
+		<echo file=".version_info" append="true" message="Implementation-Vendor: ${organization.name}${line.separator}" />
+		<echo file=".version_info" append="true" message="Implementation-Title: ${project.name.display}${line.separator}" />
+		<echo file=".version_info" append="true" message="Implementation-Version: ${project.version}${line.separator}" />
+		<echo file=".version_info" append="true" message="Supported OS: fedora-centos-redhat${line.separator}" />
+		<echo file=".version_info" append="true" message="License: ${project.license}${line.separator}" />
+
+		<echo>Building man page for project ${project.name}_${project.version}</echo>
+		<gzip src="./man/src/${project.name}.1" destfile="./man/${project.name}.1.gz" />
+
+		<echo>Keeping the previous version of project ${project.name}_${project.version}</echo>
+		<move todir="./archives">
+			<fileset dir="." includes="*.tar.gz" />
+		</move>
+
+		<echo>Copying dependencies for project ${project.name}_${project.version}</echo>
+		<artifact:pom id="mypom" file="pom.xml" />
+		<artifact:dependencies filesetId="mydeps" pomRefId="mypom" />
+		<!-- download sources and javadoc
+		<artifact:dependencies filesetId="mydeps" pomRefId="mypom" sourcesFilesetId="mydeps.sources" javadocFilesetId="mydeps.javadoc" />
+		-->
+		<mkdir dir="./common/lib/" />
+		<delete dir="./common/lib/" includes="**" />
+		<copy todir="./common/lib/">
+			<fileset refid="mydeps" />
+		</copy>
+
+		<echo>Building package for project ${project.name}_${project.version}</echo>
+		<tar destfile="${project.archive.name}" compression="gzip">
+			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+				<exclude name=".*" />
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+				<exclude name="**/*.prefs" />
+				<exclude name="**/*.sh" />
+				<exclude name="*.tar.gz" />
+				<exclude name="archives/**" />
+				<exclude name="logs/**" />
+				<exclude name="target/**" />
+				<exclude name="tmp/**" />
+				<exclude name="build.xml" />
+				<exclude name="pom.xml" />
+				<exclude name="build*.bat" />
+			</tarfileset>
+			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name=".version_info" />
+			</tarfileset>
+			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}" mode="740">
+				<include name="**/*.sh" />
+			</tarfileset>
+		</tar>
+
+	</target>
+
+</project>

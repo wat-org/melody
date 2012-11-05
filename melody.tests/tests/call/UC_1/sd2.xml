@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence>
+
+	<order name="order1">
+		<echo message="sd2.xml, echo in order1"/>
+		<call orders="will_fail" sequenceDescriptor="file.not_exists" />
+	</order>
+
+</sequence>

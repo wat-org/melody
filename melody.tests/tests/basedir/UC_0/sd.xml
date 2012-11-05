@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do" basedir=".">
+
+	<order name="do">
+		<echo message="hello world" file="out.log" append="true"/>
+		<echo file="out.log" append="true"/>
+	</order>
+
+</sequence>

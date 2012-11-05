@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do2">
+
+	<property name="ip" value="123.1232.123.123"/>
+
+	<order name="do">
+
+		<setEDAttrValue items="§[svr]§/@IP_priv" newValue=""/>
+		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
+
+		<setEDAttrValue items="§[svr]§/@IP_priv" newValue="§[ip]§"/>
+		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
+
+	</order>
+
+	<order name="do2">
+		<call>
+			<ref orders="do">
+				<param name="svr" value="./environment[1]//instance[1]" />
+			</ref>
+			<ref orders="do">
+				<param name="svr" value="./environment[2]//instance[1]" />
+			</ref>
+		</call>
+	</order>
+
+</sequence>
