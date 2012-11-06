@@ -18,7 +18,6 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.wat.melody.api.annotation.Attribute;
@@ -38,6 +37,7 @@ import com.wat.melody.plugin.aws.ec2.StopMachine;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalManagementMethodException;
 import com.wat.melody.plugin.ssh.Upload;
+import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
@@ -206,8 +206,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 		Instance i = getInstance();
 		ManagementMethod mm = findManagementMethodTag();
-		log.debug("Enabling " + mm + " management for instance '"
-				+ getAwsInstanceID() + "'.");
+		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
+				mm, getAwsInstanceID()));
 		switch (mm) {
 		case SSH:
 			enableSshManagement(i);
@@ -216,12 +216,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			enableWinRmManagement(i);
 		default:
 			throw new RuntimeException("Unexpected error while branching "
-					+ "based on the unknown management method " + mm + ". "
+					+ "based on the unknown management method '" + mm + "'. "
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.");
 		}
-		log.info(mm + " management successfully enabled for instance '"
-				+ getAwsInstanceID() + "'.");
+		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
+				mm, getAwsInstanceID()));
 	}
 
 	protected void disableManagement() throws AwsException,
@@ -234,8 +234,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			return;
 		}
 		ManagementMethod mm = findManagementMethodTag();
-		log.debug("Disabling " + mm + " management for instance '"
-				+ getAwsInstanceID() + "'.");
+		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
+				mm, getAwsInstanceID()));
 		switch (mm) {
 		case SSH:
 			disableSshManagement(i);
@@ -244,12 +244,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			disableWinRmManagement(i);
 		default:
 			throw new RuntimeException("Unexpected error while branching "
-					+ "based on the unknown management method " + mm + ". "
+					+ "based on the unknown management method '" + mm + "'. "
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.");
 		}
-		log.info(mm + " management successfully disabled for instance '"
-				+ getAwsInstanceID() + "'.");
+		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_SUCCESS,
+				mm, getAwsInstanceID()));
 	}
 
 	public static final String TAG_MGNT = "MGNT";
@@ -273,23 +273,33 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			throw new AwsException(Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_TOO_MANY_TAG_MGNT, TAG_MGNT));
+			throw new AwsException(
+					Messages.bind(
+							Messages.MachineEx_TOO_MANY_TAG_MGNT,
+							new Object[] {
+									TAG_MGNT,
+									ENABLEMGNT_ATTR,
+									Arrays.asList(ManagementMethod.values()),
+									getED().getLocation(getTargetNode())
+											.toFullString() }));
 		} else if (nl.getLength() == 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_NO_TAG_MGNT,
-					new Object[] { TAG_MGNT, ENABLEMGNT_ATTR,
-							Arrays.asList(ManagementMethod.values()) }));
+			throw new AwsException(
+					Messages.bind(
+							Messages.MachineEx_NO_TAG_MGNT,
+							new Object[] {
+									TAG_MGNT,
+									ENABLEMGNT_ATTR,
+									Arrays.asList(ManagementMethod.values()),
+									getED().getLocation(getTargetNode())
+											.toFullString() }));
 		}
 		String val = nl.item(0).getNodeValue();
 		try {
 			return ManagementMethod.parseString(val);
 		} catch (IllegalManagementMethodException Ex) {
-			/*
-			 * TODO : localize error message. getED().getLocation(nl.item(0));
-			 */getED().getLocation(nl.item(0));
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT, val), Ex);
+					Messages.MachineEx_INVALID_TAG_MGNT, TAG_MGNT, getED()
+							.getLocation(nl.item(0)).toFullString()), Ex);
 		}
 	}
 
@@ -325,22 +335,33 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			throw new AwsException(Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT, portTag));
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT,
+							new Object[] {
+									portTag,
+									ENABLEMGNT_ATTR,
+									TAG_MGNT,
+									mm,
+									getED().getLocation(getTargetNode())
+											.toFullString() }));
 		} else if (nl.getLength() == 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_NO_TAG_MGNT, new Object[] { portTag,
-							ENABLEMGNT_ATTR, TAG_MGNT, mm }));
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_NO_TAG_MGNT_PORT,
+							new Object[] {
+									portTag,
+									ENABLEMGNT_ATTR,
+									TAG_MGNT,
+									mm,
+									getED().getLocation(getTargetNode())
+											.toFullString() }));
 		}
 		String val = nl.item(0).getNodeValue();
 		try {
 			return Port.parseString(val);
 		} catch (IllegalPortException Ex) {
-			/*
-			 * TODO : localize error message. getED().getLocation(nl.item(0));
-			 */
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT_PORT, val), Ex);
+					Messages.MachineEx_INVALID_TAG_MGNT_PORT, portTag, getED()
+							.getLocation(nl.item(0)).toFullString()), Ex);
 		}
 	}
 
@@ -354,25 +375,22 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			InterruptedException {
 		disableSshManagement(i);
 
-		if (!addMachineToKnowsHosts(i)) {
+		if (!addMachineToKnownHosts(i)) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_ENABLE_SSH_MGNT_TIMEOUT,
 					i.getInstanceId(), getRegion()));
 		}
 
-		HostKey hk = getSshPluginConf().getKnownHostsHostKey(
-				i.getPublicIpAddress());
+		String k = getSshPluginConf().getKnownHostsHostKey(
+				i.getPublicIpAddress()).getKey();
 		try {
-			getSshPluginConf().addKnownHostsHostKey(i.getPrivateIpAddress(),
-					hk.getKey());
-			getSshPluginConf().addKnownHostsHostKey(i.getPublicDnsName(),
-					hk.getKey());
-			getSshPluginConf().addKnownHostsHostKey(i.getPrivateDnsName(),
-					hk.getKey());
+			getSshPluginConf().addKnownHostsHostKey(i.getPrivateIpAddress(), k);
+			getSshPluginConf().addKnownHostsHostKey(i.getPublicDnsName(), k);
+			getSshPluginConf().addKnownHostsHostKey(i.getPrivateDnsName(), k);
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Unexpected error while adding an "
-					+ "host with the HostKey '" + hk.getKey() + "' into the "
-					+ "KnownHosts file. "
+					+ "host with the HostKey '" + k + "' into the KnownHosts "
+					+ "file. "
 					+ "Because this HostKey have been retrieve from the "
 					+ "KnownHosts file, this key should be valid. "
 					+ "Source code has certainly been modified and a bug "
@@ -380,7 +398,32 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 	}
 
-	private boolean addMachineToKnowsHosts(Instance i) throws AwsException,
+	/**
+	 * <p>
+	 * Add the public IP of the given {@link Instance} to the KnownHosts file
+	 * (which is defined in the configuration Ssh Plug-In).
+	 * </p>
+	 * 
+	 * <p>
+	 * <i> * After the operation complete, retrieve the HostKey of the AWS
+	 * {@link Instance} by calling {@link Configuration#getKnownHostsHostKey} ;
+	 * <BR/>
+	 * </i>
+	 * </p>
+	 * 
+	 * @param i
+	 *            is the AWS {@link Instance} to add to the known hosts file.
+	 * 
+	 * @return <tt>true</tt> if the operation complete before the timeout
+	 *         elapsed, <tt>false</tt> if the operation isn't complete before
+	 *         the timeout elapsed.
+	 * 
+	 * @throws AwsException
+	 *             if
+	 * @throws InterruptedException
+	 *             if
+	 */
+	private boolean addMachineToKnownHosts(Instance i) throws AwsException,
 			InterruptedException {
 		String sgname = i.getSecurityGroups().get(0).getGroupName();
 		Port p = findManagementPortTag(ManagementMethod.SSH);
@@ -407,7 +450,11 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		try {
 			upload.setLogin("melody");
 		} catch (SshException Ex) {
-			throw new RuntimeException(Ex);
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "login of the Ssh connection to 'melody'. "
+					+ "Because this login is harcoded, it must be valid. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
 		}
 
 		IpPermission toAdd = new IpPermission();
@@ -448,7 +495,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 						throw new AwsException(Ex);
 					} else if (Ex.getCause().getMessage()
 							.indexOf("Incorrect credentials") != -1) {
-						// success
+						// connection succeed
 						break;
 					} else if (Ex.getCause().getMessage()
 							.indexOf("Connection refused") == -1

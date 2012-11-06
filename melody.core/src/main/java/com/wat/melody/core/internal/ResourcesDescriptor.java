@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -147,12 +148,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			throw new IllegalArgumentException("Given Node is not owned by "
 					+ "this object.");
 		}
-		// Find the DUNIDDoc which holds the given Node
-		DUNID dunid = getMelodyID(n);
-		DUNIDDoc doc = getOwnerDUNIDDoc(dunid);
-		// Find the original Node in the DUNIDDoc
-		Node originalNode = doc.getNode(dunid);
-		return Doc.getNodeLocation(originalNode);
+		if (n instanceof Attr) {
+			// Find the DUNIDDoc which holds the given Node
+			DUNID dunid = getMelodyID(((Attr) n).getOwnerElement());
+			DUNIDDoc doc = getOwnerDUNIDDoc(dunid);
+			// Find the original Node in the DUNIDDoc
+			Node originalNode = doc.getNode(dunid);
+			Node originalAttr = originalNode.getAttributes().getNamedItem(
+					n.getNodeName());
+			return Doc.getNodeLocation(originalAttr);
+		} else {
+			// Find the DUNIDDoc which holds the given Node
+			DUNID dunid = getMelodyID(n);
+			DUNIDDoc doc = getOwnerDUNIDDoc(dunid);
+			// Find the original Node in the DUNIDDoc
+			Node originalNode = doc.getNode(dunid);
+			return Doc.getNodeLocation(originalNode);
+		}
 	}
 
 	@Override

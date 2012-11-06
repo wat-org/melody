@@ -106,6 +106,21 @@ public abstract class AbstractSshTask implements ITask {
 		return moContext;
 	}
 
+	/**
+	 * <p>
+	 * Set the {@link ITaskContext} of this object with the given
+	 * {@link ITaskContext} and retrieve the Ssh Plug-In {@link Configuration}.
+	 * </p>
+	 * 
+	 * @param p
+	 *            is the {@link ITaskContext} to set.
+	 * 
+	 * @throws SshException
+	 *             if an error occurred while retrieving the Ssh Plug-In
+	 *             {@link Configuration}.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link ITaskContext} is <tt>null</tt>.
+	 */
 	@Override
 	public void setContext(ITaskContext p) throws SshException {
 		if (p == null) {

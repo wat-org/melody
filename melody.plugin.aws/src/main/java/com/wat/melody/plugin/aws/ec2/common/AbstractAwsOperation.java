@@ -251,6 +251,25 @@ abstract public class AbstractAwsOperation implements ITask {
 		return moContext;
 	}
 
+	/**
+	 * <p>
+	 * Set the {@link ITaskContext} of this object with the given
+	 * {@link ITaskContext}. Retrieve the Aws Plug-In {@link Configuration} and
+	 * the Ssh Plug-In {@link com.wat.melody.plugin.ssh.common.Configuration}.
+	 * </p>
+	 * 
+	 * @param p
+	 *            is the {@link ITaskContext} to set.
+	 * 
+	 * @throws AwsException
+	 *             if an error occurred while retrieving the Aws Plug-In
+	 *             {@link Configuration}.
+	 * @throws SshException
+	 *             if an error occurred while retrieving the Ssh Plug-In
+	 *             {@link com.wat.melody.plugin.ssh.common.Configuration}.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link ITaskContext} is <tt>null</tt>.
+	 */
 	@Override
 	public void setContext(ITaskContext p) throws AwsException, SshException {
 		if (p == null) {

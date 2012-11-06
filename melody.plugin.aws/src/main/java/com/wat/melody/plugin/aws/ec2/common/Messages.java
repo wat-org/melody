@@ -81,6 +81,10 @@ public class Messages extends NLS {
 	public static String MachineEx_ENABLE_SSH_MGNT_TIMEOUT;
 	public static String MachineEx_TIMEOUT;
 	public static String MachineMsg_WAIT_FOR_MANAGEMENT;
+	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
+	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
+	public static String MachineMsg_MANAGEMENT_DISABLE_BEGIN;
+	public static String MachineMsg_MANAGEMENT_DISABLE_SUCCESS;
 
 	public static String NewEx_MISSING_IMAGEID_ATTR;
 	public static String NewEx_INVALID_IMAGEID_ATTR;
