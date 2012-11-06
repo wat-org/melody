@@ -273,25 +273,17 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			throw new AwsException(Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new AwsException(
-					Messages.bind(
-							Messages.MachineEx_TOO_MANY_TAG_MGNT,
-							new Object[] {
-									TAG_MGNT,
-									ENABLEMGNT_ATTR,
-									Arrays.asList(ManagementMethod.values()),
-									getED().getLocation(getTargetNode())
-											.toFullString() }));
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_TOO_MANY_TAG_MGNT,
+					new Object[] { TAG_MGNT, ENABLEMGNT_ATTR,
+							Arrays.asList(ManagementMethod.values()),
+							getTargetNodeLocation() }));
 		} else if (nl.getLength() == 0) {
-			throw new AwsException(
-					Messages.bind(
-							Messages.MachineEx_NO_TAG_MGNT,
-							new Object[] {
-									TAG_MGNT,
-									ENABLEMGNT_ATTR,
-									Arrays.asList(ManagementMethod.values()),
-									getED().getLocation(getTargetNode())
-											.toFullString() }));
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_NO_TAG_MGNT,
+					new Object[] { TAG_MGNT, ENABLEMGNT_ATTR,
+							Arrays.asList(ManagementMethod.values()),
+							getTargetNodeLocation() }));
 		}
 		String val = nl.item(0).getNodeValue();
 		try {
@@ -335,25 +327,15 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			throw new AwsException(Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new AwsException(
-					Messages.bind(Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT,
-							new Object[] {
-									portTag,
-									ENABLEMGNT_ATTR,
-									TAG_MGNT,
-									mm,
-									getED().getLocation(getTargetNode())
-											.toFullString() }));
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT, new Object[] {
+							portTag, ENABLEMGNT_ATTR, TAG_MGNT, mm,
+							getTargetNodeLocation() }));
 		} else if (nl.getLength() == 0) {
-			throw new AwsException(
-					Messages.bind(Messages.MachineEx_NO_TAG_MGNT_PORT,
-							new Object[] {
-									portTag,
-									ENABLEMGNT_ATTR,
-									TAG_MGNT,
-									mm,
-									getED().getLocation(getTargetNode())
-											.toFullString() }));
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_NO_TAG_MGNT_PORT, new Object[] {
+							portTag, ENABLEMGNT_ATTR, TAG_MGNT, mm,
+							getTargetNodeLocation() }));
 		}
 		String val = nl.item(0).getNodeValue();
 		try {

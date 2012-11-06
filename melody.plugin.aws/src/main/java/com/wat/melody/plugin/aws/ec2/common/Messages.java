@@ -65,6 +65,7 @@ public class Messages extends NLS {
 	public static String CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_SUCCEED;
 
 	public static String MachineEx_MISSING_REGION_ATTR;
+	public static String MachineEx_REGION_ERROR;
 	public static String MachineEx_INVALID_REGION_ATTR;
 	public static String MachineEx_INVALID_TIMEOUT_ATTR;
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_XPATH;

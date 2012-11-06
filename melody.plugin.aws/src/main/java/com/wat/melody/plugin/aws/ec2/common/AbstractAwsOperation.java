@@ -96,15 +96,21 @@ abstract public class AbstractAwsOperation implements ITask {
 	@Override
 	public void validate() throws AwsException {
 		// Initialize task parameters with their default value
+		String v = null;
 		try {
-			String v = null;
 			v = GetHeritedAttribute.getHeritedAttribute(getTargetNode(),
 					Common.REGION_ATTR);
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
+		}
+		try {
 			if (v != null) {
 				setRegion(v);
 			}
-		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+		} catch (AwsException Ex) {
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_REGION_ERROR, Common.REGION_ATTR,
+					getTargetNodeLocation()), Ex);
 		}
 
 		// Is everything correctly loaded ?
@@ -113,7 +119,7 @@ abstract public class AbstractAwsOperation implements ITask {
 					Messages.MachineEx_MISSING_REGION_ATTR, new Object[] {
 							REGION_ATTR,
 							getClass().getSimpleName().toLowerCase(),
-							Common.REGION_ATTR }));
+							Common.REGION_ATTR, getTargetNodeLocation() }));
 		}
 
 		// Initialize AmazonEC2 for the current region
@@ -122,6 +128,10 @@ abstract public class AbstractAwsOperation implements ITask {
 
 	public IResourcesDescriptor getED() {
 		return getContext().getProcessorManager().getResourcesDescriptor();
+	}
+
+	public String getTargetNodeLocation() {
+		return getED().getLocation(getTargetNode()).toFullString();
 	}
 
 	public boolean instanceExists() {
