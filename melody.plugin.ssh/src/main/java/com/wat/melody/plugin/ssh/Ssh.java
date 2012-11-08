@@ -36,17 +36,17 @@ public class Ssh extends AbstractSshOperation {
 	public static final String SSH = "ssh";
 
 	/**
-	 * The 'declare' XML element used in the Sequence Descriptor
+	 * The 'declare' XML Nested Element
 	 */
 	public static final String DECLARE_NE = "declare";
 
 	/**
-	 * The 'export' XML element used in the Sequence Descriptor
+	 * The 'export' XML Nested Element
 	 */
 	public static final String EXPORT_NE = "export";
 
 	/**
-	 * The 'description' XML element used in the Sequence Descriptor
+	 * The 'description' XML attribute
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 

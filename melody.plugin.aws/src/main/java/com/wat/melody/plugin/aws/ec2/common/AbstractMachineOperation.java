@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.Image;
@@ -31,6 +32,7 @@ import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
+import com.wat.melody.plugin.aws.ec2.IngressMachine;
 import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
@@ -47,7 +49,7 @@ import com.wat.melody.xpathextensions.GetHeritedContent;
 /**
  * <p>
  * Based on the underlying operating system of the Aws Instance, the AWS EC2
- * Plug-In will perform different actions to facilitates the management of the
+ * Plug-In can perform different actions to facilitates the management of the
  * Aws Instance :
  * <ul>
  * <li>If the operating system is Unix/Linux, it will add/remove the instance's
@@ -59,16 +61,18 @@ import com.wat.melody.xpathextensions.GetHeritedContent;
  * </ul>
  * </p>
  * <p>
- * This class provides the Task's attribute {@link #ENABLEMGNT_ATTR} which allow
- * such management enablement operations to be done and the Task's attribute
- * {@link #ENABLEMGNT_TIMEOUT_ATTR} which represent the timeout of this
+ * This class provides the Task's attribute {@link #ENABLEMGNT_ATTR} which
+ * enable/disable such management enablement and the Task's attribute
+ * {@link #ENABLEMGNT_TIMEOUT_ATTR} which represent the timeout of these
  * management enablement operations.
  * </p>
  * <p>
  * In order to perform these actions, each AWS Instance Node must have :
  * <ul>
- * <li>a "tags/tag[@name='mgnt']/@value" ;</li>
- * <li>a "tags/tag[@name='ssh.port']/@value" ;</li>
+ * <li>a "tags/tag[@name='mgnt']/@value" equal to one of
+ * {@link ManagementMethod} ;</li>
+ * <li>for unix/lunix, a "tags/tag[@name='ssh.port']/@value" ;</li>
+ * <li>for windows, a "tags/tag[@name='winrm.port']/@value" ;</li>
  * </ul>
  * </p>
  * 
@@ -80,13 +84,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private static Log log = LogFactory.getLog(AbstractMachineOperation.class);
 
 	/**
-	 * The 'enableManagement' XML attribute of the 'NewMachine' XML element
+	 * The 'enableManagement' XML attribute
 	 */
 	public static final String ENABLEMGNT_ATTR = "enableManagement";
 
 	/**
-	 * The 'enableManagementTimeout' XML attribute of the 'NewMachine' XML
-	 * element
+	 * The 'enableManagementTimeout' XML attribute
 	 */
 	public static final String ENABLEMGNT_TIMEOUT_ATTR = "enableManagementTimeout";
 
@@ -107,6 +110,50 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		mbEnableManagement = true;
 	}
 
+	/**
+	 * <p>
+	 * Create a new Aws Instance based on the given values, and wait for the
+	 * newly created Aws Instance to reach the {@link InstanceState#RUNNING}
+	 * state.
+	 * </p>
+	 * 
+	 * <p>
+	 * <i> * Create and associate an Aws Security Group to the Aws Instance.
+	 * This Security Group is call the Melody Security Group and is used by
+	 * {@link IngressMachine} to manage Network access to the created Aws
+	 * Instance ; <BR/>
+	 * * Once created, set the Aws Instance ID of this object to the ID of the
+	 * created Aws Instance, so you can use {@link #getAwsInstanceID} to
+	 * retrieve it ; <BR/>
+	 * * Once created, store the Aws Instance ID into the
+	 * {@link Common#AWS_INSTANCE_ID_ATTR} XML Attribute of the Aws Instance
+	 * Node ; <BR/>
+	 * </i>
+	 * </p>
+	 * 
+	 * @param type
+	 *            is the Aws Instance Type of the Aws Instance to create.
+	 * @param sImageId
+	 *            is the Aws Ami Id of the Aws Instance to create.
+	 * @param sSGName
+	 *            if the name of the Security Group to create and associate to
+	 *            the Aws Instance to create.
+	 * @param sSGDesc
+	 *            is the description of the Security Group.
+	 * @param sAZ
+	 *            is the Aws Availability Zone of the Aws Instance to create.
+	 * @param sKeyName
+	 *            is the Aws KeyPair Name of the Aws Instance to create.
+	 * 
+	 * @throws AwsException
+	 *             if the Aws Instance was not created.
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws InterruptedException
+	 *             if the wait is interrupted.
+	 */
 	protected void newInstance(InstanceType type, String sImageId,
 			String sSGName, String sSGDesc, String sAZ, String sKeyName)
 			throws AwsException, InterruptedException {
@@ -115,33 +162,95 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 				sAZ, sKeyName);
 		if (i == null) {
 			throw new AwsException(Messages.bind(Messages.NewEx_FAILED,
-					new Object[] { getRegion(), sImageId, type, sKeyName }));
+					new Object[] { getRegion(), sImageId, type, sKeyName,
+							getTargetNodeLocation() }));
 		}
 		// Immediately store the instanceID to the ED
 		setAwsInstanceID(i.getInstanceId());
 		setInstanceRelatedInfosToED(i);
 		if (!Common.waitUntilInstanceStatusBecomes(getEc2(), i.getInstanceId(),
 				InstanceState.RUNNING, getTimeout(), 10000)) {
-			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					NewMachine.NEW_MACHINE, getTimeout()));
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_TIMEOUT,
+							new Object[] { getAwsInstanceID(),
+									NewMachine.NEW_MACHINE, getTimeout(),
+									TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 	}
 
+	/**
+	 * <p>
+	 * Start the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
+	 * for the Aws Instance to reach the {@link InstanceState#RUNNING} state.
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 *             if the Aws Instance was not started within the timeout
+	 *             defined by {@link #getTimeout()}.
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws InterruptedException
+	 *             if the wait is interrupted.
+	 */
 	protected void startInstance() throws AwsException, InterruptedException {
 		if (!Common
 				.startAwsInstance(getEc2(), getAwsInstanceID(), getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					StartMachine.START_MACHINE, getTimeout()));
+					new Object[] { getAwsInstanceID(),
+							StartMachine.START_MACHINE, getTimeout(),
+							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 	}
 
+	/**
+	 * <p>
+	 * Stop the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
+	 * for the Aws Instance to reach the {@link InstanceState#STOPPED} state.
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 *             if the Aws Instance was not stopped within the timeout
+	 *             defined by {@link #getTimeout()}.
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws InterruptedException
+	 *             if the wait is interrupted.
+	 */
 	protected void stopInstance() throws AwsException, InterruptedException {
 		if (!Common.stopAwsInstance(getEc2(), getAwsInstanceID(), getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					StopMachine.STOP_MACHINE, getTimeout()));
+					new Object[] { getAwsInstanceID(),
+							StopMachine.STOP_MACHINE, getTimeout(),
+							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 	}
 
+	/**
+	 * <p>
+	 * Delete the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
+	 * for the Aws Instance to reach the {@link InstanceState#TERMINATED} state.
+	 * </p>
+	 * 
+	 * <p>
+	 * <i> * Delete the Melody Security Group of the Aws Instance ; <BR/>
+	 * * Set the Aws Instance ID of this object to <code>null</code> ; <BR/>
+	 * </i>
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 *             if the Aws Instance was not deleted within the timeout
+	 *             defined by {@link #getTimeout()}.
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws InterruptedException
+	 *             if the wait is interrupted.
+	 */
 	protected void deleteInstance() throws AwsException, InterruptedException {
 		Instance i = getInstance();
 		String sgname = i.getSecurityGroups().get(0).getGroupName();
@@ -149,7 +258,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (!Common.deleteAwsInstance(getEc2(), getAwsInstanceID(),
 				getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					DeleteMachine.DELETE_MACHINE, getTimeout()));
+					new Object[] { getAwsInstanceID(),
+							DeleteMachine.DELETE_MACHINE, getTimeout(),
+							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 		setAwsInstanceID(null);
 		if (sgname == null || sgname.length() == 0) {
@@ -158,6 +269,48 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		Common.deleteSecurityGroup(getEc2(), sgname);
 	}
 
+	/**
+	 * <p>
+	 * Enable the given KeyPair in Aws. More formally, this will :
+	 * <ul>
+	 * <li>Create a new {@link KeyPair} and store it in the given local
+	 * {@link KeyPairRepository} in openSSH RSA format if the {@link KeyPair}
+	 * can not be found the given local {@link KeyPairRepository} ;</li>
+	 * <li>Import the public part of the given {@link KeyPair} in the Aws Region
+	 * defined by {@link #getRegion()} if the {@link KeyPair} exists in the
+	 * given local {@link KeyPairRepository} and doesn't exists in the given Aws
+	 * Region ;</li>
+	 * <li>Compare the public part of the given {@link KeyPair} with the public
+	 * part of the Aws {@link com.amazonaws.services.ec2.model.KeyPair} if the
+	 * {@link KeyPair} exists in the given local {@link KeyPairRepository} and
+	 * also exists in the given Aws Region, and will throw an
+	 * {@link AwsException} if they doesn't match ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param keyPairRepoFile
+	 *            is the path of the local {@link KeyPairRepository}.
+	 * @param sKeyPairName
+	 *            is the name of the {@link KeyPair} to enable.
+	 * @param iKeySize
+	 *            is the size of the {@link KeyPair} to create (only apply if
+	 *            the local {@link KeyPairRepository} doesn't contains the key
+	 *            pair).
+	 * @param sPassphrase
+	 *            is the passphrase to associate to the {@link KeyPair} to
+	 *            create (only apply if the local {@link KeyPairRepository}
+	 *            doesn't contains the key pair).
+	 * 
+	 * @throws AwsException
+	 *             if the {@link KeyPair} found in the local
+	 *             {@link KeyPairRepository} is corrupted (ex : not a valid
+	 *             OpenSSH RSA KeyPair) or if the {@link KeyPair} found in the
+	 *             local {@link KeyPairRepository} is not equal to the Aws
+	 *             {@link com.amazonaws.services.ec2.model.KeyPair}.
+	 * @throws IOException
+	 *             if an I/O error occurred while storing the {@link KeyPair} in
+	 *             the local {@link KeyPairRepository}.
+	 */
 	protected synchronized void enableKeyPair(File keyPairRepoFile,
 			String sKeyPairName, int iKeySize, String sPassphrase)
 			throws AwsException, IOException {
@@ -190,6 +343,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			String fingerprint = KeyPairHelper
 					.generateOpenSslPEMFingerprint(kp);
 			if (Common.keyPairCompare(getEc2(), sKeyPairName, fingerprint) == false) {
+				/*
+				 * TODO : externalize error message
+				 */
 				throw new AwsException("Aws KeyPair and Local KeyPair doesn't "
 						+ "match.");
 			}
@@ -200,6 +356,22 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Based on the underlying operating system of the Aws Instance defined by
+	 * {@link #getAwsInstanceID()}, will perform different actions to
+	 * facilitates the management of the Aws Instance :
+	 * <ul>
+	 * <li>If the operating system is Unix/Linux : will add the instance's
+	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
+	 * <li>If the operating system is Windows : will add the instance's
+	 * certificate in the local WinRM Plug-In repo ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 * @throws InterruptedException
+	 */
 	protected void enableManagement() throws AwsException, InterruptedException {
 		if (getEnableManagement() == false) {
 			return;
@@ -224,6 +396,22 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 				mm, getAwsInstanceID()));
 	}
 
+	/**
+	 * <p>
+	 * Based on the underlying operating system of the Aws Instance defined by
+	 * {@link #getAwsInstanceID()}, will perform different actions to
+	 * facilitates the management of the Aws Instance :
+	 * <ul>
+	 * <li>If the operating system is Unix/Linux : will remove the instance's
+	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
+	 * <li>If the operating system is Windows : will remove the instance's
+	 * certificate in the local WinRM Plug-In repo ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 * @throws InterruptedException
+	 */
 	protected void disableManagement() throws AwsException,
 			InterruptedException {
 		if (getEnableManagement() == false) {
@@ -256,6 +444,20 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	public static final String TAG_SSH_PORT = "SSH.PORT";
 	public static final String TAG_WINRM_PORT = "WINRM.PORT";
 
+	/**
+	 * <p>
+	 * Retrieve the {@link ManagementMethod} of the Aws Instance defined by
+	 * {@link #getAwsInstanceID()} from the Aws Instance Node's management tag
+	 * {@link #TAG_MGNT}.
+	 * </p>
+	 * 
+	 * @return the {@link ManagementMethod} of the Aws Instance defined by
+	 *         {@link #getAwsInstanceID()}.
+	 * 
+	 * @throws AwsException
+	 *             if the structure of the tag {@link #TAG_MGNT} is not valid
+	 *             (ex : no tag, too many tags or invalid tag content).
+	 */
 	private ManagementMethod findManagementMethodTag() throws AwsException {
 		NodeList nl = null;
 		try {
@@ -295,6 +497,21 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Retrieve the Management {@link Port} of the Aws Instance defined by
+	 * {@link #getAwsInstanceID()} from the Aws Instance Node's management tag
+	 * {@link #TAG_SSH_PORT} or {@link #TAG_WINRM_PORT}.
+	 * </p>
+	 * 
+	 * @return the Management {@link Port} of the Aws Instance defined by
+	 *         {@link #getAwsInstanceID()}.
+	 * 
+	 * @throws AwsException
+	 *             if the structure of the tag {@link #TAG_SSH_PORT} or
+	 *             {@link #TAG_WINRM_PORT} is not valid (ex : no tag, too many
+	 *             tags or invalid tag content).
+	 */
 	private Port findManagementPortTag(ManagementMethod mm) throws AwsException {
 		String portTag = null;
 		switch (mm) {
@@ -350,7 +567,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private void enableWinRmManagement(Instance i) throws AwsException {
 		throw new AwsException(Messages.bind(
 				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				ManagementMethod.WINRM));
+				new Object[] { TAG_MGNT, ManagementMethod.WINRM,
+						getTargetNodeLocation() }));
 	}
 
 	private void enableSshManagement(Instance i) throws AwsException,
@@ -359,8 +577,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 
 		if (!addMachineToKnownHosts(i)) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_ENABLE_SSH_MGNT_TIMEOUT,
-					i.getInstanceId(), getRegion()));
+					Messages.MachineEx_ENABLE_SSH_MGNT_TIMEOUT, new Object[] {
+							i.getInstanceId(), ENABLEMGNT_TIMEOUT_ATTR,
+							getTargetNodeLocation() }));
 		}
 
 		String k = getSshPluginConf().getKnownHostsHostKey(
@@ -401,9 +620,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *         the timeout elapsed.
 	 * 
 	 * @throws AwsException
-	 *             if
+	 *             if ...
 	 * @throws InterruptedException
-	 *             if
+	 *             if this operation is interrupted.
 	 */
 	private boolean addMachineToKnownHosts(Instance i) throws AwsException,
 			InterruptedException {
@@ -565,9 +784,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	public long setEnableManagementTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, ENABLEMGNT_TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getEnableManagementTimeout();
 		mlEnableManagementTimeout = timeout;

@@ -25,17 +25,17 @@ import com.wat.melody.xpathextensions.GetHeritedAttribute;
 abstract public class AbstractAwsOperation implements ITask {
 
 	/**
-	 * The 'region' XML attribute of the abstract 'AbstractBase' XML element
+	 * The 'region' XML attribute
 	 */
 	public static final String REGION_ATTR = "region";
 
 	/**
-	 * The 'target' XML attribute of the abstract 'AbstractMachine' XML element
+	 * The 'target' XML attribute
 	 */
 	public static final String TARGET_ATTR = "target";
 
 	/**
-	 * The 'timeout' XML attribute of the abstract 'AbstractMachine' XML element
+	 * The 'timeout' XML attribute
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 

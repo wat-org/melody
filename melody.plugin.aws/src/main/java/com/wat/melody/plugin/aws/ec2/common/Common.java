@@ -770,8 +770,8 @@ public class Common {
 	 * @param sKeyName
 	 *            is the AWS Key Name.
 	 * 
-	 * @return an @ Instance} which represents the newly created Aws Instance if
-	 *         the operation succeed, <code>null</code> otherwise.
+	 * @return an {@link Instance} which represents the newly created Aws
+	 *         Instance if the operation succeed, <code>null</code> otherwise.
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.
