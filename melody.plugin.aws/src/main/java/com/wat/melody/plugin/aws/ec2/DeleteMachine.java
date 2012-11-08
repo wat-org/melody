@@ -18,7 +18,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 	private static Log log = LogFactory.getLog(DeleteMachine.class);
 
 	/**
-	 * The 'DeleteMachine' XML element used in the Sequence Descriptor
+	 * The 'DeleteMachine' XML element
 	 */
 	public static final String DELETE_MACHINE = "DeleteMachine";
 
@@ -43,12 +43,13 @@ public class DeleteMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		if (getInstance() == null) {
-			log.warn(Messages.DeleteMsg_NO_INSTANCE);
+			log.warn(Messages.bind(Messages.DeleteMsg_NO_INSTANCE,
+					getTargetNodeLocation()));
 			disableManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
-			log.warn(Messages.bind(Messages.DeleteMsg_TERMINATED,
-					getAwsInstanceID(), "DEAD"));
+			log.warn(Messages.bind(Messages.DeleteMsg_TERMINATED, new Object[] {
+					getAwsInstanceID(), "DEAD", getTargetNodeLocation() }));
 			disableManagement();
 			removeInstanceRelatedInfosToED(true);
 			Common.deleteSecurityGroup(getEc2(), getInstance()

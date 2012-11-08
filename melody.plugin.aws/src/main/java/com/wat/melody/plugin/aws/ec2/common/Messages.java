@@ -88,11 +88,15 @@ public class Messages extends NLS {
 	public static String MachineMsg_MANAGEMENT_DISABLE_SUCCESS;
 
 	public static String NewEx_MISSING_IMAGEID_ATTR;
+	public static String NewEx_IMAGEID_ERROR;
 	public static String NewEx_INVALID_IMAGEID_ATTR;
 	public static String NewEx_MISSING_INSTANCETYPE_ATTR;
+	public static String NewEx_INSTANCETYPE_ERROR;
 	public static String NewEx_INVALID_INSTANCETYPE_ATTR;
+	public static String NewEx_AVAILABILITYZONE_ERROR;
 	public static String NewEx_INVALID_AVAILABILITYZONE_ATTR;
 	public static String NewEx_MISSING_KEYPAIR_NAME_ATTR;
+	public static String NewEx_KEYPAIR_NAME_ERROR;
 	public static String NewEx_EMPTY_KEYPAIR_NAME_ATTR;
 	public static String NewEx_INVALID_KEYPAIR_NAME_ATTR;
 	public static String NewEx_INVALID_KEYPAIR_REPO_ATTR;

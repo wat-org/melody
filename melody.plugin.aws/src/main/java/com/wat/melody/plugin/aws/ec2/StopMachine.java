@@ -18,7 +18,7 @@ public class StopMachine extends AbstractMachineOperation {
 	private static Log log = LogFactory.getLog(StopMachine.class);
 
 	/**
-	 * The 'StopMachine' XML element used in the Sequence Descriptor
+	 * The 'StopMachine' XML element
 	 */
 	public static final String STOP_MACHINE = "StopMachine";
 
@@ -37,10 +37,12 @@ public class StopMachine extends AbstractMachineOperation {
 					Messages.StopEx_NO_INSTANCE,
 					new Object[] { StopMachine.STOP_MACHINE,
 							NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage() }));
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else if (!instanceRuns()) {
 			log.warn(Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
-					getAwsInstanceID(), InstanceState.STOPPED));
+					new Object[] { getAwsInstanceID(), InstanceState.STOPPED,
+							getTargetNodeLocation() }));
 			disableManagement();
 			removeInstanceRelatedInfosToED(false);
 		} else {

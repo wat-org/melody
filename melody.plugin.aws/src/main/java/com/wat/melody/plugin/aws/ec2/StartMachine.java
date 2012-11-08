@@ -18,7 +18,7 @@ public class StartMachine extends AbstractMachineOperation {
 	private static Log log = LogFactory.getLog(StartMachine.class);
 
 	/**
-	 * The 'StartMachine' XML element used in the Sequence Descriptor
+	 * The 'StartMachine' XML element
 	 */
 	public static final String START_MACHINE = "StartMachine";
 
@@ -37,23 +37,25 @@ public class StartMachine extends AbstractMachineOperation {
 					Messages.StartEx_NO_INSTANCE,
 					new Object[] { StartMachine.START_MACHINE,
 							NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage() }));
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else if (is == InstanceState.PENDING) {
 			log.warn(Messages.bind(Messages.StartMsg_PENDING, new Object[] {
 					getAwsInstanceID(), InstanceState.PENDING,
-					InstanceState.RUNNING }));
+					InstanceState.RUNNING, getTargetNodeLocation() }));
 			waitUntilInstanceStatusBecomes(InstanceState.RUNNING, getTimeout());
 			setInstanceRelatedInfosToED(getInstance());
 			enableManagement();
 		} else if (is == InstanceState.RUNNING) {
-			log.warn(Messages.bind(Messages.StartMsg_RUNNING,
-					getAwsInstanceID(), InstanceState.RUNNING));
+			log.warn(Messages.bind(Messages.StartMsg_RUNNING, new Object[] {
+					getAwsInstanceID(), InstanceState.RUNNING,
+					getTargetNodeLocation() }));
 			setInstanceRelatedInfosToED(getInstance());
 			enableManagement();
 		} else if (is == InstanceState.STOPPING) {
 			log.warn(Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
 					getAwsInstanceID(), InstanceState.STOPPING,
-					InstanceState.STOPPED }));
+					InstanceState.STOPPED, getTargetNodeLocation() }));
 			disableManagement();
 			waitUntilInstanceStatusBecomes(InstanceState.STOPPED, getTimeout());
 			startInstance();
@@ -66,7 +68,8 @@ public class StartMachine extends AbstractMachineOperation {
 					Messages.StartEx_SHUTTING_DOWN, new Object[] {
 							getAwsInstanceID(), InstanceState.SHUTTING_DOWN,
 							StartMachine.START_MACHINE, NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage() }));
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else if (is == InstanceState.TERMINATED) {
 			disableManagement();
 			removeInstanceRelatedInfosToED(true);
@@ -74,7 +77,8 @@ public class StartMachine extends AbstractMachineOperation {
 					new Object[] { getAwsInstanceID(),
 							InstanceState.TERMINATED,
 							StartMachine.START_MACHINE, NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage() }));
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else {
 			startInstance();
 			setInstanceRelatedInfosToED(getInstance());

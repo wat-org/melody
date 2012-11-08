@@ -30,27 +30,27 @@ public class NewMachine extends AbstractMachineOperation {
 	private static Log log = LogFactory.getLog(NewMachine.class);
 
 	/**
-	 * The 'NewMachine' XML element used in the Sequence Descriptor
+	 * The 'NewMachine' XML element
 	 */
 	public static final String NEW_MACHINE = "NewMachine";
 
 	/**
-	 * The 'instanceType' XML attribute of the 'NewMachine' XML element
+	 * The 'instanceType' XML attribute
 	 */
 	public static final String INSTANCETYPE_ATTR = "instanceType";
 
 	/**
-	 * The 'imageId' XML attribute of the 'NewMachine' XML element
+	 * The 'imageId' XML attribute
 	 */
 	public static final String IMAGEID_ATTR = "imageId";
 
 	/**
-	 * The 'availabilityZone' XML attribute of the 'NewMachine' XML element
+	 * The 'availabilityZone' XML attribute
 	 */
 	public static final String AVAILABILITYZONE_ATTR = "availabilityZone";
 
 	/**
-	 * The 'keyPairName' XML attribute of the 'NewMachine' XML element
+	 * The 'keyPairName' XML attribute
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
 
@@ -60,7 +60,7 @@ public class NewMachine extends AbstractMachineOperation {
 	public static final String PASSPHRASE_ATTR = "passphrase";
 
 	/**
-	 * The 'keyRepository' XML attribute of the 'NewMachine' XML element
+	 * The 'keyRepository' XML attribute
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keyPairRepository";
 
@@ -124,32 +124,58 @@ public class NewMachine extends AbstractMachineOperation {
 		try {
 			Node n = getTargetNode();
 			String v = null;
+
 			v = GetHeritedAttribute.getHeritedAttribute(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
-				if (v != null) {
-					setInstanceType(InstanceType.parseString(v));
+				try {
+					if (v != null) {
+						setInstanceType(InstanceType.parseString(v));
+					}
+				} catch (IllegalInstanceTypeException Ex) {
+					throw new AwsException(Messages.bind(
+							Messages.NewEx_INVALID_INSTANCETYPE_ATTR, v));
 				}
-			} catch (IllegalInstanceTypeException Ex) {
+			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
-						Messages.NewEx_INVALID_INSTANCETYPE_ATTR, v));
+						Messages.NewEx_INSTANCETYPE_ERROR,
+						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 
 			v = GetHeritedAttribute.getHeritedAttribute(n, Common.IMAGEID_ATTR);
-			if (v != null) {
-				setImageId(v);
+			try {
+				if (v != null) {
+					setImageId(v);
+				}
+			} catch (AwsException Ex) {
+				throw new AwsException(Messages.bind(
+						Messages.NewEx_IMAGEID_ERROR, Common.IMAGEID_ATTR,
+						getTargetNodeLocation()), Ex);
 			}
 
 			v = GetHeritedAttribute.getHeritedAttribute(n,
 					Common.AVAILABILITYZONE_ATTR);
-			if (v != null) {
-				setAvailabilityZone(v);
+			try {
+				if (v != null) {
+					setAvailabilityZone(v);
+				}
+			} catch (AwsException Ex) {
+				throw new AwsException(Messages.bind(
+						Messages.NewEx_AVAILABILITYZONE_ERROR,
+						Common.AVAILABILITYZONE_ATTR, getTargetNodeLocation()),
+						Ex);
 			}
 
 			v = GetHeritedAttribute.getHeritedAttribute(n,
 					Common.KEYPAIR_NAME_ATTR);
-			if (v != null) {
-				setKeyPairName(v);
+			try {
+				if (v != null) {
+					setKeyPairName(v);
+				}
+			} catch (AwsException Ex) {
+				throw new AwsException(Messages.bind(
+						Messages.NewEx_KEYPAIR_NAME_ERROR,
+						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
 			}
 
 			v = GetHeritedAttribute.getHeritedAttribute(n,
@@ -170,21 +196,23 @@ public class NewMachine extends AbstractMachineOperation {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_INSTANCETYPE_ATTR, new Object[] {
 							NewMachine.INSTANCETYPE_ATTR,
-							NewMachine.NEW_MACHINE, Common.INSTANCETYPE_ATTR }));
+							NewMachine.NEW_MACHINE, Common.INSTANCETYPE_ATTR,
+							getTargetNodeLocation() }));
 		}
 
 		if (getImageId() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_IMAGEID_ATTR, new Object[] {
 							NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-							Common.IMAGEID_ATTR }));
+							Common.IMAGEID_ATTR, getTargetNodeLocation() }));
 		}
 
 		if (getKeyPairName() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR, new Object[] {
 							NewMachine.KEYPAIR_NAME_ATTR,
-							NewMachine.NEW_MACHINE, Common.KEYPAIR_NAME_ATTR }));
+							NewMachine.NEW_MACHINE, Common.KEYPAIR_NAME_ATTR,
+							getTargetNodeLocation() }));
 		}
 
 		// Validate task's attributes
@@ -218,8 +246,8 @@ public class NewMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		if (instanceLives()) {
-			log.warn(Messages.bind(Messages.NewMsg_LIVES, getAwsInstanceID(),
-					"LIVE"));
+			log.warn(Messages.bind(Messages.NewMsg_LIVES, new Object[] {
+					getAwsInstanceID(), "LIVE", getTargetNodeLocation() }));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
 				enableManagement();
@@ -238,8 +266,7 @@ public class NewMachine extends AbstractMachineOperation {
 	}
 
 	@Attribute(name = INSTANCETYPE_ATTR)
-	public InstanceType setInstanceType(InstanceType instanceType)
-			throws AwsException {
+	public InstanceType setInstanceType(InstanceType instanceType) {
 		if (instanceType == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid InstanceType (Accepted values are "
