@@ -122,6 +122,7 @@ public class Messages extends NLS {
 	public static String IngressMsg_FWRULES_RESUME;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
+	public static String ResizeEx_INSTANCETYPE_ERROR;
 	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
 	public static String ResizeEx_NO_INSTANCE;
 	public static String ResizeEx_NOT_STOPPED;

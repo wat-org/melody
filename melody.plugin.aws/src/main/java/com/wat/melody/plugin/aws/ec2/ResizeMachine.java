@@ -27,12 +27,12 @@ public class ResizeMachine extends AbstractAwsOperation {
 	private static Log log = LogFactory.getLog(ResizeMachine.class);
 
 	/**
-	 * The 'ResizeMachine' XML element used in the Sequence Descriptor
+	 * The 'ResizeMachine' XML element
 	 */
 	public static final String RESIZE_MACHINE = "ResizeMachine";
 
 	/**
-	 * The 'instanceType' XML attribute of the 'ResizeMachine' XML element
+	 * The 'instanceType' XML attribute
 	 */
 	public static final String INSTANCETYPE_ATTR = "instanceType";
 
@@ -56,12 +56,18 @@ public class ResizeMachine extends AbstractAwsOperation {
 			v = GetHeritedAttribute.getHeritedAttribute(getTargetNode(),
 					Common.INSTANCETYPE_ATTR);
 			try {
-				if (v != null) {
-					setInstanceType(InstanceType.parseString(v));
+				try {
+					if (v != null) {
+						setInstanceType(InstanceType.parseString(v));
+					}
+				} catch (IllegalInstanceTypeException Ex) {
+					throw new AwsException(Messages.bind(
+							Messages.ResizeEx_INVALID_INSTANCETYPE_ATTR, v));
 				}
-			} catch (IllegalInstanceTypeException Ex) {
+			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
-						Messages.ResizeEx_INVALID_INSTANCETYPE_ATTR, v));
+						Messages.ResizeEx_INSTANCETYPE_ERROR,
+						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
@@ -69,11 +75,12 @@ public class ResizeMachine extends AbstractAwsOperation {
 
 		// Initialize optional task's attributes with their default value
 		if (getInstanceType() == null) {
-			throw new AwsException(Messages.bind(
-					Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR, new Object[] {
-							ResizeMachine.INSTANCETYPE_ATTR,
-							ResizeMachine.RESIZE_MACHINE,
-							Common.INSTANCETYPE_ATTR }));
+			throw new AwsException(
+					Messages.bind(Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
+							new Object[] { ResizeMachine.INSTANCETYPE_ATTR,
+									ResizeMachine.RESIZE_MACHINE,
+									Common.INSTANCETYPE_ATTR,
+									getTargetNodeLocation() }));
 		}
 	}
 
@@ -88,7 +95,8 @@ public class ResizeMachine extends AbstractAwsOperation {
 					Messages.ResizeEx_NO_INSTANCE,
 					new Object[] { ResizeMachine.RESIZE_MACHINE,
 							NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage() }));
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else if (Common.getInstanceState(getEc2(), getAwsInstanceID()) != InstanceState.STOPPED) {
 			setInstanceRelatedInfosToED(i);
 			throw new AwsException(Messages.bind(
@@ -96,7 +104,8 @@ public class ResizeMachine extends AbstractAwsOperation {
 					new Object[] { getAwsInstanceID(), InstanceState.STOPPED,
 							ResizeMachine.RESIZE_MACHINE,
 							StopMachine.STOP_MACHINE,
-							StopMachine.class.getPackage() }));
+							StopMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 		} else {
 			InstanceType currentType = null;
 			try {
@@ -111,14 +120,16 @@ public class ResizeMachine extends AbstractAwsOperation {
 			}
 			if (currentType != getInstanceType()) {
 				if (!resizeInstance(getInstanceType())) {
-					throw new AwsException(Messages.bind(
-							Messages.ResizeEx_FAILED, new Object[] {
-									getAwsInstanceID(), currentType,
-									getInstanceType() }));
+					throw new AwsException(
+							Messages.bind(Messages.ResizeEx_FAILED,
+									new Object[] { getAwsInstanceID(),
+											currentType, getInstanceType(),
+											getTargetNodeLocation() }));
 				}
 			} else {
 				log.warn(Messages.bind(Messages.ResizeMsg_NO_NEED,
-						getAwsInstanceID(), getInstanceType()));
+						new Object[] { getAwsInstanceID(), getInstanceType(),
+								getTargetNodeLocation() }));
 			}
 			setInstanceRelatedInfosToED(i);
 		}
