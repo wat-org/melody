@@ -17,8 +17,11 @@ public class Location {
 	/**
 	 * 
 	 * <p>
-	 * <i> * The given {@link Node} must be originated from a {@link Doc}. <BR/>
-	 * * Can be a {@link Node} or an {@link Attr}. <BR/>
+	 * <i>
+	 * <ul>
+	 * <li>The given {@link Node} must be originated from a {@link Doc} ;</li>
+	 * <li>Can be a {@link Node} or an {@link Attr} ;</li>
+	 * </ul>
 	 * </i>
 	 * </p>
 	 * 

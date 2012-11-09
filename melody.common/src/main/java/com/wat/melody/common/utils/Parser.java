@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.DefaultHandler2;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -39,6 +40,18 @@ public abstract class Parser {
 	 * Parse a file and return a {@link Document}. Line number and column number
 	 * are added to each XML elements as user datas. The path of the source file
 	 * is also added to the returned {@link Document} as user data.
+	 * 
+	 * <ul>
+	 * <li>To get the line number of a {@link Node}, call the
+	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
+	 * {@link #LINE_NUMBER} ;</li>
+	 * <li>To get the column number of a {@link Node}, call the
+	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
+	 * {@link #COLUMN_NUMBER} ;</li>
+	 * <li>To get the file which was used to load the {@link Document}, call the
+	 * {@link Node#getUserData(String)} on the {@link Document} object and query
+	 * for {@link #FILE} ;</li>
+	 * </ul>
 	 * </p>
 	 */
 	public static Document parse(final File sPath) throws IOException,
@@ -56,7 +69,7 @@ public abstract class Parser {
 
 		final Stack<Element> elementStack = new Stack<Element>();
 		final StringBuilder textBuffer = new StringBuilder();
-		DefaultHandler handler = new DefaultHandler() {
+		DefaultHandler handler = new DefaultHandler2() {
 			private Locator locator;
 
 			@Override
@@ -109,7 +122,19 @@ public abstract class Parser {
 					textBuffer.delete(0, textBuffer.length());
 				}
 			}
+
+			@Override
+			public void comment(char ch[], int start, int length) {
+				addTextIfNeeded();
+				Element el = elementStack.peek();
+				Node textNode = doc.createComment(new String(ch, start, length));
+				el.appendChild(textNode);
+			}
 		};
+
+		parser.setProperty("http://xml.org/sax/properties/lexical-handler",
+				handler);
+
 		InputStream is = null;
 		try {
 			is = new FileInputStream(sPath);
