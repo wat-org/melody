@@ -98,7 +98,7 @@ abstract public class AbstractAwsOperation implements ITask {
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = GetHeritedAttribute.getHeritedAttribute(getTargetNode(),
+			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);

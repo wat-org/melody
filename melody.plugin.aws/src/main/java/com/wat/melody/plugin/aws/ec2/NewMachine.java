@@ -125,7 +125,7 @@ public class NewMachine extends AbstractMachineOperation {
 			Node n = getTargetNode();
 			String v = null;
 
-			v = GetHeritedAttribute.getHeritedAttribute(n,
+			v = GetHeritedAttribute.getHeritedAttributeValue(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
 				try {
@@ -142,7 +142,8 @@ public class NewMachine extends AbstractMachineOperation {
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = GetHeritedAttribute.getHeritedAttribute(n, Common.IMAGEID_ATTR);
+			v = GetHeritedAttribute.getHeritedAttributeValue(n,
+					Common.IMAGEID_ATTR);
 			try {
 				if (v != null) {
 					setImageId(v);
@@ -153,7 +154,7 @@ public class NewMachine extends AbstractMachineOperation {
 						getTargetNodeLocation()), Ex);
 			}
 
-			v = GetHeritedAttribute.getHeritedAttribute(n,
+			v = GetHeritedAttribute.getHeritedAttributeValue(n,
 					Common.AVAILABILITYZONE_ATTR);
 			try {
 				if (v != null) {
@@ -166,7 +167,7 @@ public class NewMachine extends AbstractMachineOperation {
 						Ex);
 			}
 
-			v = GetHeritedAttribute.getHeritedAttribute(n,
+			v = GetHeritedAttribute.getHeritedAttributeValue(n,
 					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
@@ -178,7 +179,7 @@ public class NewMachine extends AbstractMachineOperation {
 						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = GetHeritedAttribute.getHeritedAttribute(n,
+			v = GetHeritedAttribute.getHeritedAttributeValue(n,
 					Common.PASSPHRASE_ATTR);
 			if (v != null) {
 				setPassphrase(v);

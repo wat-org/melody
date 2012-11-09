@@ -3,20 +3,31 @@ package com.wat.melody.plugin.aws.ec2.common;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.plugin.aws.ec2.common.exception.DisksLoaderException;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskListException;
 
 public class DisksLoader {
 
+	/**
+	 * The 'size' XML attribute of a Disk Node
+	 */
 	public static final String SIZE_ATTR = "size";
 
+	/**
+	 * The 'device' XML attribute of a Disk Node
+	 */
 	public static final String DEVICE_ATTR = "device";
 
+	/**
+	 * The 'deleteOnTermination' XML attribute of a Disk Node
+	 */
 	public static final String DELETEONTERMINATION_ATTR = "deleteOnTermination";
 
+	/**
+	 * The 'rootDevice' XML attribute of a Disk Node
+	 */
 	public static final String ROOTDEVICE_ATTR = "rootDevice";
 
 	private ITaskContext moTC;
@@ -33,14 +44,12 @@ public class DisksLoader {
 		return moTC;
 	}
 
-	protected IResourcesDescriptor getED() {
-		return getTC().getProcessorManager().getResourcesDescriptor();
-	}
-
-	private void loadDevice(Node n, Disk disk) throws DisksLoaderException {
+	private void loadDevice(Node n, Disk disk)
+			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
 		if (attr == null) {
-			return;
+			throw new ResourcesDescriptorException(n, Messages.bind(
+					Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
 		}
 		String v = attr.getNodeValue();
 		if (v.length() == 0) {
@@ -49,12 +58,12 @@ public class DisksLoader {
 		try {
 			disk.setDevice(v);
 		} catch (IllegalDiskException Ex) {
-			throw new DisksLoaderException(Messages.bind(
-					Messages.DiskLoadEx_INVALID_ATTR, v, DEVICE_ATTR), Ex);
+			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
-	private void loadGiga(Node n, Disk disk) throws DisksLoaderException {
+	private void loadGiga(Node n, Disk disk)
+			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(SIZE_ATTR);
 		if (attr == null) {
 			return;
@@ -66,8 +75,7 @@ public class DisksLoader {
 		try {
 			disk.setSize(v);
 		} catch (IllegalDiskException Ex) {
-			throw new DisksLoaderException(Messages.bind(
-					Messages.DiskLoadEx_INVALID_ATTR, v, SIZE_ATTR), Ex);
+			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
@@ -95,53 +103,47 @@ public class DisksLoader {
 		disk.setRootDevice(Boolean.parseBoolean(v));
 	}
 
-	private void loadDisk(Node n, Disk disk) throws DisksLoaderException {
-		loadDevice(n, disk);
-		loadGiga(n, disk);
-		loadDeleteOnTermination(n, disk);
-		loadRootDevice(n, disk);
-
-		if (disk.getDevice() == null) {
-			throw new DisksLoaderException(Messages.bind(
-					Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
-		}
-	}
-
 	/**
 	 * <p>
-	 * Converts selected Disk <code>Node</code>s into a {@link DiskList}. The
-	 * given XPath Expression selects Disk <code>Node</code>s.
+	 * Converts the given Disk <code>Node</code>s into a {@link DiskList}.
 	 * </p>
 	 * 
 	 * <p>
 	 * <i>A Disk <code>Node</code> must have the attributes : <BR/>
 	 * * size : which should contains a SIZE ; <BR/>
 	 * * device : which should contains a LINUX DEVICE NAME ; <BR/>
+	 * * deleteOnTermination : which should contains true/false ; <BR/>
+	 * * rootDevice : which should contains true/false ; <BR/>
 	 * </i>
 	 * </p>
 	 * 
-	 * @param sDisksXpr
-	 *            a String containing the XPath Expression which will be used to
-	 *            found <code>Node</code>s.
+	 * @param nl
+	 *            a list of Disk <code>Node</code>s.
 	 * 
 	 * @return a {@link DiskList} object, which is a collection of {@link Disk}
 	 *         .
 	 * 
-	 * @throws DisksLoaderException
-	 *             if the conversion failed (ex : the XPath Expression is not
-	 *             well-formed, or the content of an attribute is not valid)
+	 * @throws ResourcesDescriptorException
+	 *             if the conversion failed (ex : the content of a Disk Node'n
+	 *             attribute is not valid)
 	 */
-	public DiskList load(NodeList nl) throws DisksLoaderException {
+	public DiskList load(NodeList nl) throws ResourcesDescriptorException {
 		DiskList dl = new DiskList();
 		for (int i = 0; i < nl.getLength(); i++) {
+			Node n = nl.item(i);
+			Disk disk = new Disk();
+			loadDevice(n, disk);
+			loadGiga(n, disk);
+			loadDeleteOnTermination(n, disk);
+			loadRootDevice(n, disk);
+
 			try {
-				Disk disk = new Disk();
-				loadDisk(nl.item(i), disk);
 				dl.addDisk(disk);
-			} catch (DisksLoaderException | IllegalDiskListException Ex) {
-				throw new DisksLoaderException(Messages.DiskLoadEx_MANAGED, Ex);
+			} catch (IllegalDiskListException Ex) {
+				throw new ResourcesDescriptorException(n, Ex);
 			}
 		}
 		return dl;
 	}
+
 }

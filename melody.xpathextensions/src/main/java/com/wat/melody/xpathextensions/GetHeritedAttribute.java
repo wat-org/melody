@@ -7,7 +7,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -24,7 +23,7 @@ import com.wat.melody.xpathextensions.common.Messages;
  */
 public final class GetHeritedAttribute implements XPathFunction {
 
-	public static final String NAME = "getHeritedAttribute";
+	public static final String NAME = "getHeritedAttributeValue";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -48,7 +47,7 @@ public final class GetHeritedAttribute implements XPathFunction {
 					+ "() expects a non-null String " + "argument.");
 		}
 		try {
-			return getHeritedAttribute((Node) arg0, (String) arg1);
+			return getHeritedAttributeValue((Node) arg0, (String) arg1);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
@@ -58,21 +57,26 @@ public final class GetHeritedAttribute implements XPathFunction {
 	 * TODO : expand the resulting value, regarding the value of the third
 	 * boolean arg
 	 */
-	public static String getHeritedAttribute(Node n, String sAttrName)
+	public static String getHeritedAttributeValue(Node n, String sAttrName)
+			throws ResourcesDescriptorException {
+		Node attr = getHeritedAttribute(n, sAttrName);
+		return attr == null ? null : attr.getNodeValue();
+	}
+
+	public static Node getHeritedAttribute(Node n, String sAttrName)
 			throws ResourcesDescriptorException {
 		List<Node> circle = new ArrayList<Node>();
 		circle.add(n);
 		return getHeritedAttribute(n, sAttrName, circle);
 	}
 
-	private static String getHeritedAttribute(Node n, String sAttrName,
+	private static Node getHeritedAttribute(Node n, String sAttrName,
 			List<Node> circle) throws ResourcesDescriptorException {
-		Attr a = (Attr) n.getAttributes().getNamedItem(sAttrName);
+		Node a = n.getAttributes().getNamedItem(sAttrName);
 		if (a != null) {
-			return a.getNodeValue();
+			return a;
 		}
-		a = (Attr) n.getAttributes().getNamedItem(
-				CustomXPathFunctions.HERIT_ATTR);
+		a = n.getAttributes().getNamedItem(CustomXPathFunctions.HERIT_ATTR);
 		if (a == null) {
 			return null;
 		}
@@ -85,18 +89,18 @@ public final class GetHeritedAttribute implements XPathFunction {
 			nl = Doc.evaluateAsNodeList(sXPathXpr, n.getOwnerDocument()
 					.getFirstChild());
 		} catch (XPathExpressionException Ex) {
-			throw new ResourcesDescriptorException(Messages.bind(
+			throw new ResourcesDescriptorException(a, Messages.bind(
 					Messages.RDEx_INVALID_HERIT_ATTR_XPATH, sXPathXpr), Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new ResourcesDescriptorException(Messages.bind(
+			throw new ResourcesDescriptorException(a, Messages.bind(
 					Messages.RDEx_INVALID_HERIT_ATTR_MANYNODEMATCH, sXPathXpr));
 		} else if (nl.getLength() == 0) {
-			throw new ResourcesDescriptorException(Messages.bind(
+			throw new ResourcesDescriptorException(a, Messages.bind(
 					Messages.RDEx_INVALID_HERIT_ATTR_NONODEMATCH, sXPathXpr));
 		}
 		if (circle.contains(nl.item(0))) {
-			throw new ResourcesDescriptorException(Messages.bind(
+			throw new ResourcesDescriptorException(a, Messages.bind(
 					Messages.RDEx_INVALID_HERIT_ATTR_CIRCULARREF, sXPathXpr));
 		}
 		circle.add(nl.item(0));

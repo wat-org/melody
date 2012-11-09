@@ -53,7 +53,7 @@ public class ResizeMachine extends AbstractAwsOperation {
 
 		try {
 			String v = null;
-			v = GetHeritedAttribute.getHeritedAttribute(getTargetNode(),
+			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
 					Common.INSTANCETYPE_ATTR);
 			try {
 				try {

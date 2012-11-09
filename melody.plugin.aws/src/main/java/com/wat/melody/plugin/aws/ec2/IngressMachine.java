@@ -36,12 +36,12 @@ public class IngressMachine extends AbstractAwsOperation {
 	private static Log log = LogFactory.getLog(IngressMachine.class);
 
 	/**
-	 * The 'IngressMachine' XML element used in the Sequence Descriptor
+	 * The 'IngressMachine' XML element
 	 */
 	public static final String INGRESS_MACHINE = "IngressMachine";
 
 	/**
-	 * The 'FwRulesXprSuffix' XML attribute of the 'IngressMachine' XML element
+	 * The 'FwRulesXprSuffix' XML attribute
 	 */
 	public static final String FWRULES_XPR_SUFFIX_ATTR = "FwRulesXprSuffix";
 
@@ -77,7 +77,9 @@ public class IngressMachine extends AbstractAwsOperation {
 					Messages.IngressEx_INVALID_FWRULE_XPATH,
 					getFWRulesXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsException(Messages.bind(
+					Messages.IngressEx_FWRULE_ERROR,
+					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 	}
 
@@ -86,8 +88,11 @@ public class IngressMachine extends AbstractAwsOperation {
 
 		Instance i = getInstance();
 		if (i == null) {
-			log.warn(Messages.bind(Messages.IngressMsg_NO_INSTANCE,
-					NewMachine.NEW_MACHINE, NewMachine.class.getPackage()));
+			log.warn(Messages.bind(
+					Messages.IngressMsg_NO_INSTANCE,
+					new Object[] { NewMachine.NEW_MACHINE,
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {
@@ -98,8 +103,6 @@ public class IngressMachine extends AbstractAwsOperation {
 		List<IpPermission> ap = Common.describeSecurityGroupRules(getEc2(),
 				sgname);
 		List<IpPermission> toAuth = computeAuthorizeRemoveRules(ap);
-		log.info(Messages.bind(Messages.IngressMsg_FWRULES_RESUME,
-				new Object[] { getAwsInstanceID(), getFwRules(), toAuth, ap }));
 		authorizeRules(sgname, toAuth);
 		revokeRules(sgname, ap);
 	}
@@ -119,11 +122,14 @@ public class IngressMachine extends AbstractAwsOperation {
 			if (fwr.getAccess() == Access.DENY) {
 				log.info(Messages.bind(Messages.IngressMsg_DENY_NA,
 						new Object[] { fwr.toString(), INGRESS_MACHINE,
-								Access.DENY }));
+								Access.DENY, getTargetNodeLocation() }));
 			} else if (!containsFwRule(ap, fwr)) {
 				toAdd.add(createIpPermission(fwr));
 			}
 		}
+		log.info(Messages.bind(Messages.IngressMsg_FWRULES_DIGEST,
+				new Object[] { getAwsInstanceID(), getFwRules(), toAdd, ap,
+						getTargetNodeLocation() }));
 		return toAdd;
 	}
 
@@ -183,7 +189,8 @@ public class IngressMachine extends AbstractAwsOperation {
 	private IpPermission createIpPermission(FwRuleDecomposed fwr) {
 		if (fwr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid FwRuleDecomposed.");
+					+ "Must be a valid "
+					+ FwRuleDecomposed.class.getCanonicalName() + ".");
 		}
 		IpPermission sgr = new IpPermission();
 		sgr.withIpProtocol(fwr.getProtocol().getValue().toLowerCase());
@@ -194,6 +201,16 @@ public class IngressMachine extends AbstractAwsOperation {
 	}
 
 	private void authorizeRules(String sgname, List<IpPermission> toAuth) {
+		if (sgname == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		if (toAuth == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ IpPermission.class.getCanonicalName() + ">" + ".");
+		}
 		if (toAuth.size() > 0) {
 			AuthorizeSecurityGroupIngressRequest authreq = null;
 			authreq = new AuthorizeSecurityGroupIngressRequest();
@@ -203,6 +220,16 @@ public class IngressMachine extends AbstractAwsOperation {
 	}
 
 	private void revokeRules(String sgname, List<IpPermission> toRev) {
+		if (sgname == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		if (toRev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ IpPermission.class.getCanonicalName() + ">" + ".");
+		}
 		if (toRev.size() > 0) {
 			RevokeSecurityGroupIngressRequest revreq = null;
 			revreq = new RevokeSecurityGroupIngressRequest();

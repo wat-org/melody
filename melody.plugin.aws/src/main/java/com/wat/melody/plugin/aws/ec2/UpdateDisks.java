@@ -33,27 +33,27 @@ public class UpdateDisks extends AbstractAwsOperation {
 	private static Log log = LogFactory.getLog(UpdateDisks.class);
 
 	/**
-	 * The 'UpdateDisks' XML element used in the Sequence Descriptor
+	 * The 'UpdateDisks' XML element
 	 */
 	public static final String UPDATE_DISKS = "UpdateDisks";
 
 	/**
-	 * The 'DisksXprSuffix' XML attribute of the 'UpdateDisks' XML element
+	 * The 'DisksXprSuffix' XML attribute
 	 */
 	public static final String DISKS_XPR_SUFFIX_ATTR = "DisksXprSuffix";
 
 	/**
-	 * The 'detachTimeout' XML attribute of the 'UpdateDisks' XML element
+	 * The 'detachTimeout' XML attribute
 	 */
 	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
 
 	/**
-	 * The 'createTimeout' XML attribute of the 'UpdateDisks' XML element
+	 * The 'createTimeout' XML attribute
 	 */
 	public static final String CREATE_TIMEOUT_ATTR = "createTimeout";
 
 	/**
-	 * The 'attachTimeout' XML attribute of the 'UpdateDisks' XML element
+	 * The 'attachTimeout' XML attribute
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
@@ -107,7 +107,9 @@ public class UpdateDisks extends AbstractAwsOperation {
 					Messages.UpdateDiskEx_INVALID_DISK_XPATH,
 					getDisksXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsException(Messages.bind(
+					Messages.UpdateDiskEx_DISK_ERROR,
+					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 	}
 
@@ -117,8 +119,11 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 		Instance i = getInstance();
 		if (i == null) {
-			log.warn(Messages.bind(Messages.UpdateDiskMsg_NO_INSTANCE,
-					NewMachine.NEW_MACHINE, NewMachine.class.getPackage()));
+			log.warn(Messages.bind(
+					Messages.UpdateDiskMsg_NO_INSTANCE,
+					new Object[] { NewMachine.NEW_MACHINE,
+							NewMachine.class.getPackage(),
+							getTargetNodeLocation() }));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {
@@ -127,9 +132,6 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 		List<Volume> aVol = Common.getInstanceVolumes(getEc2(), i);
 		DiskList diskToAddList = computeAddRemoveDisks(i, aVol);
-		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
-				new Object[] { getAwsInstanceID(), getDiskList(),
-						diskToAddList, aVol }));
 		detachAndDeleteVolumes(aVol);
 		createAndAttachVolumes(i, diskToAddList);
 		updateDeleteOnTerminationFlag(getDiskList());
@@ -156,6 +158,9 @@ public class UpdateDisks extends AbstractAwsOperation {
 				diskToAddList.add(d);
 			}
 		}
+		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
+				new Object[] { getAwsInstanceID(), getDiskList(),
+						diskToAddList, aVol, getTargetNodeLocation() }));
 		return diskToAddList;
 	}
 
@@ -164,13 +169,16 @@ public class UpdateDisks extends AbstractAwsOperation {
 		Disk rootDevice = getDiskList().getRootDevice();
 		if (rootDevice == null) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_UNDEF_ROOT_DEVICE,
-					i.getRootDeviceName()));
+					Messages.UpdateDiskEx_UNDEF_ROOT_DEVICE, new Object[] {
+							DisksLoader.ROOTDEVICE_ATTR, i.getRootDeviceName(),
+							getTargetNodeLocation() }));
 		}
 		if (!i.getRootDeviceName().equals(rootDevice.getDevice())) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_INCORRECT_ROOT_DEVICE,
-					i.getRootDeviceName()));
+					Messages.UpdateDiskEx_INCORRECT_ROOT_DEVICE, new Object[] {
+							DisksLoader.ROOTDEVICE_ATTR,
+							rootDevice.getDevice(), i.getRootDeviceName(),
+							getTargetNodeLocation() }));
 		}
 		// Remove the root device from the list
 		// so that it will not be detached and delete

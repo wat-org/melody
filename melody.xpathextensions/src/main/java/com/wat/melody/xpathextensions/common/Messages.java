@@ -4,7 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-	private static final String BUNDLE_NAME = "com.wat.melody.xpathextensions.common";
+	private static final String BUNDLE_NAME = "com.wat.melody.xpathextensions.common.messages";
 
 	public static String RDEx_INVALID_HERIT_ATTR_XPATH;
 	public static String RDEx_INVALID_HERIT_ATTR_MANYNODEMATCH;

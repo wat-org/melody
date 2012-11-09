@@ -7,7 +7,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -61,7 +60,7 @@ public final class GetHeritedContent implements XPathFunction {
 		List<Node> circle = new ArrayList<Node>();
 		circle.add(n);
 		while (true) {
-			Attr a = (Attr) n.getAttributes().getNamedItem(
+			Node a = n.getAttributes().getNamedItem(
 					CustomXPathFunctions.HERIT_ATTR);
 			if (a == null) {
 				break;
@@ -76,19 +75,19 @@ public final class GetHeritedContent implements XPathFunction {
 				nl = Doc.evaluateAsNodeList(ref, n.getOwnerDocument()
 						.getFirstChild());
 			} catch (XPathExpressionException Ex) {
-				throw new ResourcesDescriptorException(Messages.bind(
+				throw new ResourcesDescriptorException(a, Messages.bind(
 						Messages.RDEx_INVALID_HERIT_ATTR_XPATH, ref), Ex);
 			}
 			if (nl.getLength() > 1) {
-				throw new ResourcesDescriptorException(Messages.bind(
+				throw new ResourcesDescriptorException(a, Messages.bind(
 						Messages.RDEx_INVALID_HERIT_ATTR_MANYNODEMATCH, ref));
 			} else if (nl.getLength() == 0) {
-				throw new ResourcesDescriptorException(Messages.bind(
+				throw new ResourcesDescriptorException(a, Messages.bind(
 						Messages.RDEx_INVALID_HERIT_ATTR_NONODEMATCH, ref));
 			}
 			n = nl.item(0);
 			if (circle.contains(n)) {
-				throw new ResourcesDescriptorException(Messages.bind(
+				throw new ResourcesDescriptorException(a, Messages.bind(
 						Messages.RDEx_INVALID_HERIT_ATTR_CIRCULARREF, ref));
 			}
 			circle.add(n);
