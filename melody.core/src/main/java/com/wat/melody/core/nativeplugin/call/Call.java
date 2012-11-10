@@ -328,12 +328,14 @@ public class Call extends Ref implements ITask {
 	 * object processing.
 	 * </p>
 	 * 
-	 * @return an an exception which message represents all errors raised during
+	 * @return an exception which message represents all errors raised during
 	 *         this object processing.
 	 */
 	private CallException buildCallExceptionTrace() {
 		if (getExceptionsList().size() == 0) {
 			return null;
+		} else if (getExceptionsList().size() == 1) {
+			return new CallException(getExceptionsList().get(0));
 		}
 		String err = "";
 		for (int i = 0; i < getExceptionsList().size(); i++) {
@@ -387,6 +389,15 @@ public class Call extends Ref implements ITask {
 		return moThreadGroup;
 	}
 
+	/**
+	 * <p>
+	 * Get the list of exceptions that append during the processing of this
+	 * object.
+	 * </p>
+	 * 
+	 * @return the list of exceptions that append during the processing of this
+	 *         object.
+	 */
 	private List<Throwable> getExceptionsList() {
 		return maExceptionsList;
 	}
