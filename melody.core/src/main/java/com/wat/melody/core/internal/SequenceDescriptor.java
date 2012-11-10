@@ -70,25 +70,6 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 		moProperties = new PropertiesSet();
 	}
 
-	/**
-	 * <p>
-	 * Initialize this object based on the given file content. Perform Orders
-	 * validation, regarding the content of the given file.
-	 * </p>
-	 * 
-	 * @param sPath
-	 *            is the path of the file to load.
-	 * 
-	 * @throws IllegalFileException
-	 *             if the given path doesn't points to a valid file.
-	 * @throws IllegalOrderException
-	 *             if some Orders are not valid.
-	 * @throws IllegalDocException
-	 *             if the content of the file pointed by the given path is not
-	 *             valid.
-	 * @throws IOException
-	 *             if an IO error occurred while reading the given file.
-	 */
 	@Override
 	public void load(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalOrderException, IOException {
@@ -118,18 +99,6 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 		validateOrders(getOrders());
 	}
 
-	/**
-	 * <p>
-	 * Initialize this object based on the given {@link ISequenceDescriptor}
-	 * content. Perform Orders validation. Note that orders are not loaded from
-	 * the given {@link ISequenceDescriptor}.
-	 * </p>
-	 * 
-	 * @param sd
-	 *            is the {@link ISequenceDescriptor} to copy.
-	 * @throws IllegalOrderException
-	 * 
-	 */
 	@Override
 	public void load(ISequenceDescriptor sd) throws IllegalOrderException {
 		try {
@@ -155,7 +124,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		setDocument(sd.getDocument());
+		setDocument(sd.getRoot().getOwnerDocument());
 		validateOrders(getOrders());
 	}
 
@@ -265,7 +234,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	public File setBaseDir(File v) throws IllegalDirectoryException {
 		if (v == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Mus ba a valid String (a Directory Path).");
+					+ "Must be a valid File (a Directory Path).");
 		}
 		Tools.validateDirExists(v.getAbsolutePath());
 		File previous = getBaseDir();

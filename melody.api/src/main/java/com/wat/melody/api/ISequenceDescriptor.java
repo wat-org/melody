@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -20,6 +19,11 @@ import com.wat.melody.common.utils.exception.IllegalFileException;
 
 /**
  * <p>
+ * A Sequence Descriptor contains the processing instructions the
+ * {@link IProcessorManager} will proceed; Only registered {@link OrderName}
+ * will be proceed; All relative path defined in the processing instructions are
+ * resolved against the baseDir; Registered {@link Property} will be used for
+ * the processing instructions expansion.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -27,12 +31,43 @@ import com.wat.melody.common.utils.exception.IllegalFileException;
  */
 public interface ISequenceDescriptor {
 
+	/**
+	 * <p>
+	 * Load the Sequence Descriptor defined in the given file.
+	 * </p>
+	 * 
+	 * @param sPath
+	 *            is the path of the file to load.
+	 * 
+	 * @throws IllegalFileException
+	 *             if the given path doesn't points to a valid file.
+	 * @throws IllegalOrderException
+	 *             if, at least, one {@link OrderName} previously registered is
+	 *             not valid.
+	 * @throws IllegalDocException
+	 *             if the content of the file pointed by the given path is not
+	 *             valid.
+	 * @throws IOException
+	 *             if an IO error occurred while reading the file pointed by the
+	 *             given path.
+	 */
 	public void load(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalOrderException, IOException;
 
+	/**
+	 * <p>
+	 * Load the Sequence Descriptor from the content of the given
+	 * {@link ISequenceDescriptor}.
+	 * </p>
+	 * 
+	 * @param sd
+	 *            is the {@link ISequenceDescriptor} to copy.
+	 * 
+	 * @throws IllegalOrderException
+	 *             if, at least, one {@link OrderName} previously registered is
+	 *             not valid.
+	 */
 	public void load(ISequenceDescriptor sd) throws IllegalOrderException;
-
-	public Document getDocument();
 
 	public String getFileFullPath();
 
