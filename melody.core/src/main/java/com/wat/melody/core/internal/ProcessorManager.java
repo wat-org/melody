@@ -35,6 +35,7 @@ import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
+import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
 
 /**
  * <p>
@@ -824,7 +825,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 									Doc.getNodeLocation(task.getContext()
 											.getNode()) }), Ex);
 			fireTaskFinishedEvent(task, State.FAILED, e);
-			throw e;
+			if (Ex instanceof SequenceException) {
+				throw Ex;
+			} else {
+				throw e;
+			}
 		} catch (Throwable Ex) {
 			TaskException e = new TaskException(
 					Messages.bind(
