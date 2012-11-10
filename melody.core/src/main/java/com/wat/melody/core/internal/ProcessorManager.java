@@ -83,7 +83,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private Thread moThread;
 	private Throwable moFinalError;
 	private List<IProcessorListener> maListeners;
-	private boolean mbSubPM;
+	private IProcessorManager moParentProcessorManager;
 
 	public ProcessorManager() {
 		// Mandatory Configuration Directives
@@ -115,7 +115,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		setFinalError(null);
 		setListeners(new ArrayList<IProcessorListener>());
 		setTaskFactory(new TaskFactory(this));
-		setSubPM(false);
+		setParentProcessorManager(null);
 	}
 
 	private void initWorkingFolderPath() {
@@ -134,6 +134,15 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		TaskFactory previous = getTaskFactory();
 		moTaskFactory = tf;
 		return previous;
+	}
+
+	private IProcessorManager getParentProcessorManager() {
+		return moParentProcessorManager;
+	}
+
+	private void setParentProcessorManager(IProcessorManager ppm) {
+		// can be null, if it is the master ProcessorManager
+		moParentProcessorManager = ppm;
 	}
 
 	@Override
@@ -317,6 +326,17 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		return previous;
 	}
 
+	private boolean isSubPM() {
+		return getParentProcessorManager() != null;
+	}
+
+	private boolean isSameSequenceDescriptorAsParent() {
+		return isSubPM()
+				&& getSequenceDescriptor().getFileFullPath().equals(
+						getParentProcessorManager().getSequenceDescriptor()
+								.getFileFullPath());
+	}
+
 	/**
 	 * <p>
 	 * Duplicate the given {@link IProcessorManager} into a new
@@ -332,7 +352,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	@Override
 	public IProcessorManager createSubProcessorManager(PropertiesSet ps) {
 		ProcessorManager dest = new ProcessorManager();
-		dest.setSubPM(true);
+		dest.setParentProcessorManager(this);
 		dest.setRegisteredTasks(getRegisteredTasks());
 
 		try {
@@ -612,16 +632,6 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		return previous;
 	}
 
-	private boolean setSubPM(boolean v) {
-		boolean previous = isSubPM();
-		mbSubPM = v;
-		return previous;
-	}
-
-	private boolean isSubPM() {
-		return mbSubPM;
-	}
-
 	private void fireRequestProcessorToStartEvent() {
 		RequestProcessingToStartEvent evt = null;
 		evt = new RequestProcessingToStartEvent(this);
@@ -729,7 +739,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					Messages.ProcMgrEx_PROCESS_FINAL_STATE, State.FAILED,
 					getSequenceDescriptor().getFileFullPath()), Ex);
 			fireProcessorFinishedEvent(State.FAILED, e);
-			setFinalError(e);
+			if (isSameSequenceDescriptorAsParent()) {
+				setFinalError(Ex);
+			} else {
+				setFinalError(e);
+			}
 		} catch (Throwable Ex) {
 			ProcessorException e = new ProcessorException(Messages.bind(
 					Messages.ProcMgrEx_PROCESS_FINAL_STATE, State.CRITICAL,
