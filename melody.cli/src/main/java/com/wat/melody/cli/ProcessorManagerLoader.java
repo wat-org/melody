@@ -138,50 +138,43 @@ public class ProcessorManagerLoader {
 	 * <p>
 	 * Command Line's available Options are :
 	 * <ul>
-	 * <li><code>-C < Global Configuration File Path></code></BR> Load the
+	 * <li><code>-C < Global Configuration File Path  ></code></li> Load the
 	 * specified Global Configuration File (see
 	 * {@link #loadGlobalConfigurationFile(String)} ;</BR>
-	 * <li><code>-q</code></BR> Decrease the log threshold (see
+	 * <li><code>-q</code></li> Decrease the log threshold (see
 	 * {@link IProcessorManager#decreaseLogThreshold()} ;</BR>
-	 * <li><code>-v</code></BR> Increase the log threshold (see
+	 * <li><code>-v</code></li> Increase the log threshold (see
 	 * {@link IProcessorManager#increaseLogThreshold()} ;</BR>
-	 * <li><code>-E < Resources Descriptor File Path ></code></BR> Set the path
+	 * <li><code>-E < Resources Descriptor File Path ></code></li> Set the path
 	 * of the Resources Descriptor with the given value (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#load(String)}) ;</BR>
-	 * <li><code>-f < Sequence Descriptor File Path ></code></BR> Set the path
+	 * <li><code>-f < Sequence Descriptor File Path ></code></li> Set the path
 	 * of the Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
-	 * <li><code>-F < Filter ></code></BR> Add the given Filter to the Resources
+	 * <li><code>-F < Filter ></code></li> Add the given Filter to the Resources
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#addFilter(String)}) ;</BR>
-	 * <li><code>-T < Filter ></code></BR> Add the given Filter to the Target
+	 * <li><code>-T < Filter ></code></li> Add the given Filter to the Target
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#addTargetsFilter(String)}) ;</BR>
-	 * <li><code>-o < Order ></code></BR> Add the given Order to the Sequence
+	 * <li><code>-o < Order ></code></li> Add the given Order to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addOrder(String)}) ;</BR>
-	 * <li><code>-S < Specific Configuration File Path ></code></BR> Set the
-	 * path of the Specific Configuration with the given value (see
-	 * {@link IProcessorManager#getSpecificConfiguration()},
-	 * {@link ISpecificConfiguration#load(String)}) ;</BR>
-	 * <li><code>-l < Listing Options ></code></BR> Set the listing options with
-	 * the given value (see {@link IProcessorManager#setListingOption(String)})
-	 * ;</BR>
-	 * <li><code>-B</code></BR> Enable 'Batch Mode' (see
+	 * <li><code>-B</code></li> Enable 'Batch Mode' (see
 	 * {@link IProcessorManager#enableBatchMode()}) ;</BR>
-	 * <li><code>-b</code></BR> Disable 'Batch Mode' (see
+	 * <li><code>-b</code></li> Disable 'Batch Mode' (see
 	 * {@link IProcessorManager#disableBatchMode()}) ;</BR>
-	 * <li><code>-P</code></BR> Enable 'Preserve Temporary Files Mode' (see
+	 * <li><code>-P</code></li> Enable 'Preserve Temporary Files Mode' (see
 	 * {@link IProcessorManager#enablePreserveTemporaryFilesMode()}) ;</BR>
-	 * <li><code>-p</code></BR> Disable 'Preserve Temporary Files Mode' (see
+	 * <li><code>-p</code></li> Disable 'Preserve Temporary Files Mode' (see
 	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
-	 * <li><code>-D</code></BR> Enable 'Run Dry Mode' (see
+	 * <li><code>-D</code></li> Enable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#enableRunDryMode()}) ;</BR>
-	 * <li><code>-d</code></BR> Disable 'Run Dry Mode' (see
+	 * <li><code>-d</code></li> Disable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#disableRunDryMode()}) ;</BR>
-	 * <li><code>-V < Property ></code></BR> Add the given Property to the
+	 * <li><code>-V < Property ></code></li> Add the given Property to the
 	 * Sequence Descriptor (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</BR>
@@ -300,10 +293,10 @@ public class ProcessorManagerLoader {
 	 * @param cmdLine
 	 *            is the Command Line.
 	 * 
-	 * @return a String which is the Global Configuration File Path (if provided
-	 *         through the Command Line using the option <code>-C</code>), or
-	 *         <code>null</code> (if option <code>-C</code> was not provided in
-	 *         the Command Line).
+	 * @return a <code>String</code> which is the Global Configuration File Path
+	 *         (if provided through the Command Line using the option
+	 *         <code>-C</code>), or <code>null</code> (if option <code>-C</code>
+	 *         was not provided in the Command Line).
 	 * 
 	 * @throws CommandLineParsingException
 	 *             if Option </code>-C</code> appears multiple times in the
@@ -582,7 +575,7 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Initialize the inner <code>ProcessorManager</code> instance's members
+	 * Initialize the inner <code>IProcessorManager</code> instance's members
 	 * with the Configuration Directives found in the Global Configuration File.
 	 * </p>
 	 * <p>
@@ -592,60 +585,53 @@ public class ProcessorManagerLoader {
 	 * <p>
 	 * Global Configuration File's available Configuration Directives are :
 	 * <ul>
-	 * <li><code>archivedLogsFolderPath</code></BR> Set the
+	 * <li><code>archivedLogsFolderPath</code></li> Set the
 	 * archivedLogsFolderPath with the given value (see
 	 * {@link #setArchivedLogsFolderPath(String)}) ;</BR>
-	 * <li><code>logsFolderPath</code></BR> Set the logsFolderPath with the
+	 * <li><code>logsFolderPath</code></li> Set the logsFolderPath with the
 	 * given value (see {@link #setLogsFolderPath(String)}) ;</BR>
 	 * <li><code>workingFolderPath</code><BR>
 	 * Set the Working Folder Path to the given value (see
 	 * {@link IProcessorManager#setWorkingFolderPath(String)}) ;</BR>
-	 * <li><code>pluginConfigurationFolderPath</code></BR> Set the PlugIn
+	 * <li><code>pluginConfigurationFolderPath</code></li> Set the PlugIn
 	 * Configuration Folder Path to the given value (see
 	 * {@link IProcessorManager#setPluginConfigurationFolderPath(String)})
 	 * ;</BR>
-	 * <li><code>maxSimultaneousStep</code></BR> Set the maximum number of
+	 * <li><code>maxSimultaneousStep</code></li> Set the maximum number of
 	 * parallel worker (see
 	 * {@link IProcessorManager#setMaxSimultaneousStep(int)}) ;</BR>
-	 * <li><code>hardKillTimeout</code></BR> Set the maximum amount of seconds a
+	 * <li><code>hardKillTimeout</code></li> Set the maximum amount of seconds a
 	 * worker will be waited before killed (see
 	 * {@link IProcessorManager#setHardKillTimeout(int)}) ;</BR>
-	 * <li><code>logThreshold</code></BR> Set the log threshold to the given
+	 * <li><code>logThreshold</code></li> Set the log threshold to the given
 	 * value (see {@link IProcessorManager#setLogThreshold(LogThreshold)})
 	 * ;</BR>
-	 * <li><code>resourcesDescriptorFilePath</code></BR> Set the path of the
+	 * <li><code>resourcesDescriptorFilePath</code></li> Set the path of the
 	 * Resources Descriptor with the given value (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#load(String)}) ;</BR>
-	 * <li><code>batchMode</code></BR> Enable/disable 'Batch Mode' (see
+	 * <li><code>batchMode</code></li> Enable/disable 'Batch Mode' (see
 	 * {@link IProcessorManager#disableBatchMode()} ;</BR>
-	 * <li><code>preserveTemporaryFilesMode</code></BR> Enable/disable 'Preserve
+	 * <li><code>preserveTemporaryFilesMode</code></li> Enable/disable 'Preserve
 	 * Temporary Files Mode' (see
 	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
-	 * <li><code>runDryMode</code></BR> Enable/disable 'Run Dry Mode' (see
+	 * <li><code>runDryMode</code></li> Enable/disable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#disableRunDryMode()} ;</BR>
-	 * <li><code>sequenceDescriptorFilePath</code></BR> Set the path of the
+	 * <li><code>sequenceDescriptorFilePath</code></li> Set the path of the
 	 * Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
-	 * <li><code>specificConfigurationFilePath</code></BR> Set the path of the
-	 * Specific Configuration with the given value (see
-	 * {@link IProcessorManager#getSpecificConfiguration()},
-	 * {@link ISpecificConfiguration#load(String)}) ;</BR>
-	 * <li><code>listingOptions</code></BR> Set the listing options with the
-	 * given value (see {@link IProcessorManager#setListingOption(String)})
-	 * ;</BR>
-	 * <li><code>order</code></BR> Add the given order to the Sequence
+	 * <li><code>order</code></li> Add the given order to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addOrder(String)}) ;</BR>
-	 * <li><code>properties</code></BR> Add the given properties to the Sequence
+	 * <li><code>properties</code></li> Add the given properties to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</BR>
-	 * <li><code>resourcesFilters</code></BR> Add the given filters to the
+	 * <li><code>resourcesFilters</code></li> Add the given filters to the
 	 * Resources Descriptor (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#setFilter(String)}) ;</BR>
-	 * <li><code>targetFilters</code></BR> Add the given filters to the Target
+	 * <li><code>targetFilters</code></li> Add the given filters to the Target
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#setTargetFilter(String)}) ;</BR>
 	 * </ul>
