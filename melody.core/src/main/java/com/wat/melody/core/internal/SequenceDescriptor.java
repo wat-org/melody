@@ -118,6 +118,47 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 		validateOrders(getOrders());
 	}
 
+	/**
+	 * <p>
+	 * Initialize this object based on the given {@link ISequenceDescriptor}
+	 * content. Perform Orders validation. Note that orders are not loaded from
+	 * the given {@link ISequenceDescriptor}.
+	 * </p>
+	 * 
+	 * @param sd
+	 *            is the {@link ISequenceDescriptor} to copy.
+	 * @throws IllegalOrderException
+	 * 
+	 */
+	@Override
+	public void load(ISequenceDescriptor sd) throws IllegalOrderException {
+		try {
+			setFileFullPath(sd.getFileFullPath());
+		} catch (IllegalFileException Ex) {
+			throw new RuntimeException("Unexpected error occurred while "
+					+ "setting the Doc File Path to " + "'"
+					+ sd.getFileFullPath() + "'. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced. "
+					+ "Or an external event made the file no more "
+					+ "accessible (deleted, moved, read permission "
+					+ "removed, ...).", Ex);
+		}
+		try {
+			setBaseDir(sd.getBaseDir());
+		} catch (IllegalDirectoryException Ex) {
+			throw new RuntimeException("Unexecpted error while setting the "
+					+ "default baseDir of the Sequence Descriptor. "
+					+ "Because the baseDir is taken from another Sequence "
+					+ "Descriptor which was previously validated, such error "
+					+ "cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+		setDocument(sd.getDocument());
+		validateOrders(getOrders());
+	}
+
 	@Override
 	public Property addProperty(Property p) {
 		if (p == null) {

@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -28,6 +29,10 @@ public interface ISequenceDescriptor {
 
 	public void load(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalOrderException, IOException;
+
+	public void load(ISequenceDescriptor sd) throws IllegalOrderException;
+
+	public Document getDocument();
 
 	public String getFileFullPath();
 

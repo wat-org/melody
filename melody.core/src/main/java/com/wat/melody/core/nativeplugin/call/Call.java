@@ -119,21 +119,9 @@ public class Call extends Ref implements ITask {
 			try {
 				pm.getSequenceDescriptor().load(
 						getContext().getProcessorManager()
-								.getSequenceDescriptor().getFileFullPath());
+								.getSequenceDescriptor());
 			} catch (IllegalOrderException Ex) {
 				throw new CallException(Ex);
-			} catch (MelodyException Ex) {
-				throw new RuntimeException("Unexpected error while loading "
-						+ "an sub-ProcessorManager's Sequence Descriptor "
-						+ "file. "
-						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced. "
-						+ " Or an external event made the file no more "
-						+ "accessible (deleted, moved, read permission "
-						+ "removed, ...).", Ex);
-			} catch (IOException Ex) {
-				throw new RuntimeException(Messages.bind(
-						Messages.CallEx_IO_ERROR, CALL), Ex);
 			}
 		}
 	}
