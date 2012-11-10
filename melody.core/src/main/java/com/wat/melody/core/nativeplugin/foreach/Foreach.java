@@ -205,7 +205,7 @@ public class Foreach implements ITask, ITaskContainer {
 		for (Node target : targets) {
 			PropertiesSet ps = getContext().getProperties().copy();
 			// Add the property '<ItemName>=<XPath position of currentItem>', so
-			// that '${<ItemName>}' will be expanded with the item's XPath
+			// that '§[<ItemName>]§' will be expanded with the item's XPath
 			// position
 			Property p = new Property(getItemName(),
 					Doc.getXPathPosition(target), null);
@@ -320,6 +320,8 @@ public class Foreach implements ITask, ITaskContainer {
 	private ForeachException buildForeachTrace() {
 		if (getExceptionsList().size() == 0) {
 			return null;
+		} else if (getExceptionsList().size() == 1) {
+			return new ForeachException(getExceptionsList().get(0));
 		}
 		String err = "";
 		for (int i = 0; i < getExceptionsList().size(); i++) {
