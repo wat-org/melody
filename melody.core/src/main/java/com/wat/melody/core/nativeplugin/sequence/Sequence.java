@@ -185,8 +185,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 			if (n.getNodeName().equalsIgnoreCase(Order.class.getSimpleName())
 					&& n.getAttributes().getNamedItem(Order.NAME_ATTR)
 							.getNodeValue().equals(order.getValue())) {
-				ITask t = getContext().newTask(n, getContext().getProperties());
-				getContext().processTask(t);
+				getContext().processTask(n);
 				return;
 			}
 		}

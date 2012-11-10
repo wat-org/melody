@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.IProcessorManager;
-import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
@@ -96,14 +95,19 @@ public class TaskContext implements ITaskContext {
 	}
 
 	@Override
-	public ITask newTask(Node n, PropertiesSet ps) throws TaskException {
-		return moProcessorManager.newTask(n, ps);
+	public void processTask(Node n) throws TaskException, InterruptedException {
+		processTask(n, getProperties());
 	}
 
 	@Override
-	public void processTask(ITask task) throws TaskException,
+	public void processTask(Node n, PropertiesSet ps) throws TaskException,
 			InterruptedException {
-		moProcessorManager.processTask(task);
+		moProcessorManager.processTask(moProcessorManager.newTask(n, ps));
+	}
+
+	@Override
+	public IProcessorManager createSubProcessorManager() {
+		return moProcessorManager.createSubProcessorManager(getProperties());
 	}
 
 }

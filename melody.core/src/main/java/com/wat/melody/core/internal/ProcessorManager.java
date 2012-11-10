@@ -337,19 +337,6 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 								.getFileFullPath());
 	}
 
-	/**
-	 * <p>
-	 * Duplicate the given {@link IProcessorManager} into a new
-	 * sub-ProcessorManager, which have the capacity to store its own sequence
-	 * descriptor, with its own orders and its own properties.
-	 * </p>
-	 * 
-	 * @param src
-	 *            is the {@link IProcessorManager} to duplicate.
-	 * 
-	 * @return the duplicated {@link IProcessorManager}.
-	 */
-	@Override
 	public IProcessorManager createSubProcessorManager(PropertiesSet ps) {
 		ProcessorManager dest = new ProcessorManager();
 		dest.setParentProcessorManager(this);

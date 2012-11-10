@@ -11,6 +11,7 @@ import com.wat.melody.api.event.TaskFinishedEvent;
 import com.wat.melody.api.event.TaskStartedEvent;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.common.utils.OrderNameSet;
 import com.wat.melody.common.utils.PropertiesSet;
 
 /**
@@ -113,53 +114,79 @@ public interface ITaskContext {
 
 	/**
 	 * <p>
-	 * Create an {@link ITask} object based on the given node.
+	 * Create an {@link ITask} object based on the given node. Process the given
+	 * {@link ITask}. The {@link PropertiesSet} associated to this object will
+	 * be used during variable's expansion.
+	 * </p>
 	 * </p>
 	 * <p>
 	 * <i> * Generate an event {@link TaskCreatedEvent} as soon as the task is
 	 * created ; <BR/>
-	 * </i>
-	 * </p>
-	 * 
-	 * @param n
-	 *            is the Task (in its native Node format) to create.
-	 * @param ps
-	 *            is the set of variables which will be used during variable's
-	 *            expansion.
-	 * 
-	 * @return an {@link ITask}.
-	 * 
-	 * @throws TaskException
-	 *             if an error occurred while creating the {@link ITask} (e.g.
-	 *             expansion failure, mandatory attribute not provided,
-	 *             attribute value rejected, ..).
-	 */
-	public ITask newTask(Node n, PropertiesSet ps) throws TaskException;
-
-	/**
-	 * <p>
-	 * Process the given {@link ITask}.
-	 * </p>
-	 * </p>
-	 * <p>
-	 * <i> * Generate a {@link TaskStartedEvent} just before the task's
-	 * processing starts ; <BR/>
+	 * * Generate a {@link TaskStartedEvent} just before the task's processing
+	 * starts ; <BR/>
 	 * * Generate a {@link TaskFinishedEvent} just after the task's processing
 	 * ends ; <BR/>
 	 * </i>
 	 * </p>
 	 * 
-	 * @param task
-	 *            is the {@link ITask} to process.
+	 * @param n
+	 *            is the Task (in its native Node format) to create and process.
 	 * 
 	 * @throws TaskException
-	 *             if an error occurred while processing the {@link ITask}.
+	 *             if an error occurred while creating the {@link ITask} (e.g.
+	 *             expansion failure, mandatory attribute not provided,
+	 *             attribute value rejected, ..) while processing the
+	 *             {@link ITask}.
 	 * @throws InterruptedException
-	 *             if the {@link ITask}'s processing was interrupted. Means that
-	 *             current {@link ITask} must cleanly stop processing as soon as
-	 *             possible..
+	 *             if the {@link ITask}'s processing was interrupted. Means the
+	 *             caller must cleanly stop processing as soon as possible.
 	 */
-	public void processTask(ITask task) throws TaskException,
+	public void processTask(Node n) throws TaskException, InterruptedException;
+
+	/**
+	 * <p>
+	 * Create an {@link ITask} object based on the given node. Process the given
+	 * {@link ITask}.
+	 * </p>
+	 * </p>
+	 * <p>
+	 * <i> * Generate an event {@link TaskCreatedEvent} as soon as the task is
+	 * created ; <BR/>
+	 * * Generate a {@link TaskStartedEvent} just before the task's processing
+	 * starts ; <BR/>
+	 * * Generate a {@link TaskFinishedEvent} just after the task's processing
+	 * ends ; <BR/>
+	 * </i>
+	 * </p>
+	 * 
+	 * @param n
+	 *            is the Task (in its native Node format) to create and process.
+	 * @param ps
+	 *            is a specific set of variables which will be used during
+	 *            variable's expansion.
+	 * 
+	 * @throws TaskException
+	 *             if an error occurred while creating the {@link ITask} (e.g.
+	 *             expansion failure, mandatory attribute not provided,
+	 *             attribute value rejected, ..) while processing the
+	 *             {@link ITask}.
+	 * @throws InterruptedException
+	 *             if the {@link ITask}'s processing was interrupted. Means the
+	 *             caller must cleanly stop processing as soon as possible.
+	 */
+	public void processTask(Node n, PropertiesSet ps) throws TaskException,
 			InterruptedException;
+
+	/**
+	 * <p>
+	 * Duplicate the {@link IProcessorManager} associate to this object into a
+	 * new sub-{@link IProcessorManager}, which have the capacity to process its
+	 * own {@link ISequenceDescriptor}, with its own {@link OrderNameSet} and
+	 * its own {@link PropertiesSet}.
+	 * </p>
+	 * 
+	 * @return the duplicated {@link IProcessorManager}.
+	 */
+	public IProcessorManager createSubProcessorManager();
 
 }

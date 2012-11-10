@@ -72,16 +72,15 @@
 				<ssh
 					login="ec2-user"
 					host="§[§[item]§/@ip]§"
-					keypairname="sshkey-DEV" 
-					
-					command="§[
+					keypairname="sshkey-DEV">
+					<exec command="§[
 			string-join(
 				for $n in //module[@type='weblogic_app' and @app='c3s_fo' and @active='true']
 				return replace(concat($n/parent::*/@hostname,'_',$n/@req_name,$n/@listen_port),'-','_')
 			,	','
 			)
-		]§"
-				/>
+								]§" />
+				</ssh>
 				<sleep millis="5000"/>
 				<echo message="startJbossMasFarm1 1 / §[§[item]§/@hostname]§ / §[§[item2]§/@req_name]§"/>
 			</foreach>

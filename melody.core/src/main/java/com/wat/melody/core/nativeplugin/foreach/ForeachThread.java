@@ -4,7 +4,6 @@ import java.lang.Thread.State;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.ITask;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.exception.MelodyException;
@@ -251,9 +250,7 @@ public class ForeachThread implements Runnable {
 	public void run() {
 		try {
 			for (Node n : getForeach().getNodes()) {
-				ITask t = getForeach().getContext().newTask(n,
-						getPropertiesSet());
-				getForeach().getContext().processTask(t);
+				getForeach().getContext().processTask(n, getPropertiesSet());
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);

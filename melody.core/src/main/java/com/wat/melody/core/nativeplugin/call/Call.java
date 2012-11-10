@@ -24,9 +24,14 @@ import com.wat.melody.core.nativeplugin.call.exception.CallException;
 public class Call extends Ref implements ITask {
 
 	/**
-	 * The 'call' XML element used in the Sequence Descriptor
+	 * The 'call' XML Element
 	 */
 	public static final String CALL = "call";
+
+	/**
+	 * The 'ref' XML Nested Element
+	 */
+	public static final String REF = "ref";
 
 	private static final short SUCCEED = 0;
 	private static final short FAILED = 1;
@@ -68,7 +73,7 @@ public class Call extends Ref implements ITask {
 	 * 
 	 * @return a new {@link Ref} object.
 	 */
-	@NestedElement(name = Ref.REF, type = NestedElement.Type.CREATE)
+	@NestedElement(name = REF, type = NestedElement.Type.CREATE)
 	public Ref createRef() {
 		Ref cr = new Ref(this);
 		getCallRefs().add(cr);

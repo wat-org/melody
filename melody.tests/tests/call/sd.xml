@@ -16,6 +16,7 @@
 			<ref	orders="startauth"
 				sequenceDescriptor="sd2.xml">
 				<param	name="param1" value="aaaaaaaaa"/>
+				<param	name="test" value="bidon"/>
 			</ref>
 		</call>
 		

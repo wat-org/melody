@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
-import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 
 /**
@@ -64,8 +63,6 @@ public interface IProcessorManager {
 	public boolean disableRunDryMode();
 
 	public boolean isRunDryModeEnable();
-
-	public IProcessorManager createSubProcessorManager(PropertiesSet ps);
 
 	public ISequenceDescriptor getSequenceDescriptor();
 

@@ -11,7 +11,6 @@ import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.common.utils.OrderName;
 import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
 import com.wat.melody.common.utils.exception.IllegalDocException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
@@ -29,22 +28,17 @@ import com.wat.melody.core.nativeplugin.call.exception.CallException;
 public class Ref {
 
 	/**
-	 * The 'ref' nested element of the 'call' XML element
-	 */
-	public static final String REF = "ref";
-
-	/**
-	 * The 'orders' XML attribute of the 'ref' or 'call' XML element
+	 * The 'orders' XML attribute
 	 */
 	public static final String ORDERS_ATTR = "orders";
 
 	/**
-	 * The 'sequenceDescriptor' XML attribute of the 'ref' or 'call' XML element
+	 * The 'sequenceDescriptor' XML attribute
 	 */
 	public static final String SD_ATTR = "sequenceDescriptor";
 
 	/**
-	 * The 'param' nested elment of the 'ref' or 'call' XML element
+	 * The 'param' XML Nested Elment
 	 */
 	public static final String PARAM = "param";
 
@@ -131,7 +125,8 @@ public class Ref {
 	public void addParam(Property p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Property.");
+					+ "Must be a valid " + Property.class.getCanonicalName()
+					+ ".");
 		}
 		for (IProcessorManager pm : getIProcessorManagers()) {
 			pm.getSequenceDescriptor().addProperty(p);
@@ -151,16 +146,20 @@ public class Ref {
 	 *             syntax, doesn't match any order defined in the Sequence
 	 *             Descriptor file, ...).
 	 * @throws IOException
+	 *             if an I/O error occurred while loading the {@link 
 	 */
 	@Attribute(name = ORDERS_ATTR)
 	public void setOrders(OrderNameSet orders) throws CallException,
 			IOException {
-		IProcessorManager pm = null;
-		pm = getRelatedCall().getContext().getProcessorManager();
-		PropertiesSet ps = getRelatedCall().getContext().getProperties();
+		if (orders == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ OrderNameSet.class.getCanonicalName() + ".");
+		}
 		try {
 			for (OrderName order : orders) {
-				IProcessorManager spm = pm.createSubProcessorManager(ps);
+				IProcessorManager spm = null;
+				spm = getRelatedCall().getContext().createSubProcessorManager();
 				addIProcessorManager(spm);
 				if (getSDPath() != null) {
 					spm.getSequenceDescriptor().load(getSDPath());
@@ -189,6 +188,11 @@ public class Ref {
 	}
 
 	private void setIProcessorManagers(List<IProcessorManager> o) {
+		if (o == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ IProcessorManager.class.getCanonicalName() + ">.");
+		}
 		maIProcessorManagers = o;
 	}
 
@@ -199,7 +203,7 @@ public class Ref {
 	private String setSDPath(String sPath) {
 		if (sPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (the Sequence Descriptor file "
+					+ "Must be a valid String (the Sequence Descriptor file "
 					+ "path).");
 		}
 		String previous = getSDPath();

@@ -210,8 +210,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	public void doProcessing() throws OrderException, InterruptedException {
 		try {
 			for (Node n : getNodes()) {
-				ITask t = getContext().newTask(n, getContext().getProperties());
-				getContext().processTask(t);
+				getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
 			throw new InterruptedException(Messages.bind(
