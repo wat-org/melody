@@ -1,4 +1,4 @@
-package com.wat.melody.core.internal;
+package com.wat.melody.xpathextensions;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,13 +7,13 @@ import java.nio.file.Path;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import com.wat.melody.api.IProcessorManager;
-import com.wat.melody.api.IResourcesDescriptor;
+import org.w3c.dom.Node;
+
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.exception.XPathExpressionSyntaxException;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.PropertyName;
-import com.wat.melody.xpathextensions.CustomXPathFunctions;
 
 public abstract class XPathExpander {
 
@@ -33,8 +33,7 @@ public abstract class XPathExpander {
 	 * <p>
 	 * <i> * Melody X2Path Expressions are delimited by '§[' and ']§' ; <BR/>
 	 * * When a Melody X2Path Expression is equal to an XPath 2.0 Expression, it
-	 * is replaced by the XPath 2.0 Expression's resolution in the
-	 * {@link IResourcesDescriptor} ; <BR/>
+	 * is replaced by its value (found in the given {@link Node} context) ; <BR/>
 	 * * When a Melody X2Path Expression is equal to a Property's Name (declared
 	 * in the given {@link PropertiesSet}), it is replaced by its value (found
 	 * in the given {@link PropertiesSet}) ; <BR/>
@@ -44,7 +43,7 @@ public abstract class XPathExpander {
 	 * @param fileToExpand
 	 *            is the {@link File} which is pointed by the given input
 	 *            {@link Path}.
-	 * @param pm
+	 * @param context
 	 *            necessary to expand XPath 2.0 Expression.
 	 * @param vars
 	 *            necessary to expand Property's Name.
@@ -58,12 +57,12 @@ public abstract class XPathExpander {
 	 *             if an IO error occurred while reading the {@link File} which
 	 *             is pointed by the given input {@link Path}.
 	 */
-	public static String expand(Path fileToExpand, IProcessorManager pm,
+	public static String expand(Path fileToExpand, Node context,
 			PropertiesSet vars) throws XPathExpressionSyntaxException,
 			IOException {
 		String fileContent = new String(Files.readAllBytes(fileToExpand));
 		try {
-			return expand(fileContent, pm, vars);
+			return expand(fileContent, context, vars);
 		} catch (XPathExpressionSyntaxException Ex) {
 			throw new XPathExpressionSyntaxException(Messages.bind(
 					Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE,
@@ -80,8 +79,7 @@ public abstract class XPathExpander {
 	 * <p>
 	 * <i> * Melody X2Path Expressions are delimited by '§[' and ']§' ; <BR/>
 	 * * When a Melody X2Path Expression is equal to an XPath 2.0 Expression, it
-	 * is replaced by the XPath 2.0 Expression's resolution in the
-	 * {@link IResourcesDescriptor} ; <BR/>
+	 * is replaced by its value (found in the given {@link Node} context) ; <BR/>
 	 * * When a Melody X2Path Expression is equal to a Property's Name (declared
 	 * in the given {@link PropertiesSet}), it is replaced by its value (found
 	 * in the given {@link PropertiesSet}) ; <BR/>
@@ -90,7 +88,7 @@ public abstract class XPathExpander {
 	 * 
 	 * @param sBase
 	 *            is the <code>String</code> to expand.
-	 * @param pm
+	 * @param context
 	 *            necessary to expand XPath 2.0 Expression.
 	 * @param vars
 	 *            necessary to expand Property's Name.
@@ -101,8 +99,8 @@ public abstract class XPathExpander {
 	 *             if a Melody Expression cannot be expanded because it is not a
 	 *             valid X2Path Expression.
 	 */
-	public static String expand(String sBase, IProcessorManager pm,
-			PropertiesSet vars) throws XPathExpressionSyntaxException {
+	public static String expand(String sBase, Node context, PropertiesSet vars)
+			throws XPathExpressionSyntaxException {
 		int start = sBase.indexOf(DELIM_START);
 		if (start == -1) {
 			// Start Delimiter not found
@@ -146,16 +144,17 @@ public abstract class XPathExpander {
 		}
 		return sBase.substring(0, start)
 				+ resolvedXPathExpression(
-						sBase.substring(start + DELIM_START.length(), end), pm,
-						vars)
-				+ expand(sBase.substring(end + DELIM_STOP.length()), pm, vars);
+						sBase.substring(start + DELIM_START.length(), end),
+						context, vars)
+				+ expand(sBase.substring(end + DELIM_STOP.length()), context,
+						vars);
 	}
 
 	private static String resolvedXPathExpression(String sXPathExpr,
-			IProcessorManager pm, PropertiesSet vars)
+			Node context, PropertiesSet vars)
 			throws XPathExpressionSyntaxException {
 		// Expand Nested Expression
-		sXPathExpr = expand(sXPathExpr, pm, vars);
+		sXPathExpr = expand(sXPathExpr, context, vars);
 		sXPathExpr = sXPathExpr.trim();
 		// Here, all Nested Expression have been expanded
 		if (sXPathExpr.matches("^" + PropertyName.PATTERN + "$")) {
@@ -170,7 +169,7 @@ public abstract class XPathExpander {
 			}
 		} else {
 			try {
-				return pm.getResourcesDescriptor().evaluateAsString(sXPathExpr);
+				return Doc.evaluateAsString(sXPathExpr, context);
 			} catch (XPathExpressionException Ex) {
 				throw new XPathExpressionSyntaxException(Messages.bind(
 						Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR,

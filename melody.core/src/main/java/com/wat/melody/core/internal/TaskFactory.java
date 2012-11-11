@@ -27,6 +27,7 @@ import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.core.nativeplugin.property.Property;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * <p>
@@ -515,7 +516,8 @@ public class TaskFactory {
 			String sAttrVal = null;
 			try {
 				sAttrVal = XPathExpander.expand(attr.getNodeValue(),
-						getProcessorManager(), ps);
+						getProcessorManager().getResourcesDescriptor()
+								.getDocument().getFirstChild(), ps);
 			} catch (ExpressionSyntaxException Ex) {
 				throw new TaskFactoryException(Messages.bind(
 						Messages.TaskFactoryEx_EXPAND_ATTR,

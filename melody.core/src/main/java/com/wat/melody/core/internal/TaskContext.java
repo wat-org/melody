@@ -10,6 +10,7 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.utils.PropertiesSet;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * <p>
@@ -83,14 +84,16 @@ public class TaskContext implements ITaskContext {
 
 	@Override
 	public String expand(String sToExpand) throws ExpressionSyntaxException {
-		return XPathExpander.expand(sToExpand, getProcessorManager(),
+		return XPathExpander.expand(sToExpand, moProcessorManager
+				.getResourcesDescriptor().getDocument().getFirstChild(),
 				getProperties());
 	}
 
 	@Override
 	public String expand(Path fileToExpand) throws ExpressionSyntaxException,
 			IOException {
-		return XPathExpander.expand(fileToExpand, getProcessorManager(),
+		return XPathExpander.expand(fileToExpand, moProcessorManager
+				.getResourcesDescriptor().getDocument().getFirstChild(),
 				getProperties());
 	}
 

@@ -80,30 +80,6 @@ public class Doc {
 		return getDocumentBuilder().newDocument();
 	}
 
-	// evaluate XPath expression as a String, inside a whole Document (XPath 2.0
-	// supported)
-	public synchronized static String evaluateAsString(String sXPathExpr,
-			Document oDoc) throws XPathExpressionException {
-		return (String) getXPath().evaluate(sXPathExpr, oDoc,
-				XPathConstants.STRING);
-	}
-
-	// evaluate XPath expression as a NodeList, inside a whole Document (XPath
-	// 2.0 supported)
-	public synchronized static NodeList evaluateAsNodeList(String sXPathExpr,
-			Document oDoc) throws XPathExpressionException {
-		return (NodeList) getXPath().evaluate(sXPathExpr, oDoc,
-				XPathConstants.NODESET);
-	}
-
-	// evaluate XPath expression as a Node, inside a whole Document (XPath 2.0
-	// supported)
-	public synchronized static Node evaluateAsNode(String sXPathExpr,
-			Document oDoc) throws XPathExpressionException {
-		return (Node) getXPath()
-				.evaluate(sXPathExpr, oDoc, XPathConstants.NODE);
-	}
-
 	// evaluate XPath expression as a String, inside a Node (XPath 2.0
 	// supported)
 	public synchronized static String evaluateAsString(String sXPathExpr,

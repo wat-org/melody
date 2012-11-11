@@ -13,8 +13,6 @@ import com.wat.melody.api.IPluginConfiguration;
 import com.wat.melody.api.IProcessorListener;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
-import com.wat.melody.api.IResourcesDescriptor;
-import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.event.ProcessingFinishedEvent;
@@ -72,8 +70,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private boolean mbBatchMode;
 	private boolean mbPreserveTemporayFilesMode;
 	private boolean mbRunDryMode;
-	private ISequenceDescriptor moSequenceDescriptor;
-	private IResourcesDescriptor moResourcesDescriptor;
+	private SequenceDescriptor moSequenceDescriptor;
+	private ResourcesDescriptor moResourcesDescriptor;
 
 	private Map<String, IPluginConfiguration> moPluginConfigurations;
 
@@ -272,31 +270,31 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	@Override
-	public ISequenceDescriptor getSequenceDescriptor() {
+	public SequenceDescriptor getSequenceDescriptor() {
 		return moSequenceDescriptor;
 	}
 
-	public ISequenceDescriptor setSequenceDescriptor(ISequenceDescriptor sd) {
+	public SequenceDescriptor setSequenceDescriptor(SequenceDescriptor sd) {
 		if (sd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ISequenceDescriptor.");
 		}
-		ISequenceDescriptor previous = moSequenceDescriptor;
+		SequenceDescriptor previous = moSequenceDescriptor;
 		moSequenceDescriptor = sd;
 		return previous;
 	}
 
 	@Override
-	public IResourcesDescriptor getResourcesDescriptor() {
+	public ResourcesDescriptor getResourcesDescriptor() {
 		return moResourcesDescriptor;
 	}
 
-	public IResourcesDescriptor setResourcesDescriptor(IResourcesDescriptor rds) {
+	public ResourcesDescriptor setResourcesDescriptor(ResourcesDescriptor rds) {
 		if (rds == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid IResourcesDescriptor.");
 		}
-		IResourcesDescriptor previous = getResourcesDescriptor();
+		ResourcesDescriptor previous = getResourcesDescriptor();
 		moResourcesDescriptor = rds;
 		return previous;
 	}
