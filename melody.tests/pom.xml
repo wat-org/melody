@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>com.wat.melody</groupId>
-		<artifactId>melody-project</artifactId>
+		<artifactId>melody.project</artifactId>
 		<version>0.0.1</version>
 	</parent>
 
@@ -46,6 +46,11 @@
 		<dependency>
 			<groupId>com.wat.melody</groupId>
 			<artifactId>melody.plugin.aws</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.libvirt</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>

@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>com.wat.melody</groupId>
-		<artifactId>melody-project</artifactId>
+		<artifactId>melody.project</artifactId>
 		<version>0.0.1</version>
 	</parent>
 
