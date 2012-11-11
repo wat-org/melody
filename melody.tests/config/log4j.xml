@@ -26,7 +26,16 @@
 	
 	<appender name="file" class="org.apache.log4j.RollingFileAppender" >
 		<param name="file" value="${log4j.logFilePath}" />
-		<param name="MaxFileSize" value="1MB" />
+		<param name="MaxFileSize" value="5MB" />
+		<param name="MaxBackupIndex" value="3" />
+    		<layout class="org.apache.log4j.PatternLayout" > 
+			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
+		</layout>
+	</appender>
+	
+	<appender name="awsfile" class="org.apache.log4j.RollingFileAppender" >
+		<param name="file" value="${log4j.aws.logFilePath}" />
+		<param name="MaxFileSize" value="50MB" />
 		<param name="MaxBackupIndex" value="3" />
     		<layout class="org.apache.log4j.PatternLayout" > 
 			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
@@ -34,12 +43,16 @@
 	</appender>
 
 	<!--
-		log ALL messages from package 'com.amazonaws' into the log file
+		log ALL messages from package 'com.amazonaws' and 'org.apache.http' into the a specific log file
+	-->
 	<logger name="com.amazonaws" additivity="false" >
 		<level value="ALL" />
-		<appender-ref ref="file" />
+		<appender-ref ref="awsfile" />
 	</logger>
-	-->
+	<logger name="org.apache.http" additivity="false" >
+		<level value="ALL" />
+		<appender-ref ref="awsfile" />
+	</logger>
 	
 	<!--
 		log ALL messages from package 'com.wat.melody' into the log file and into the console
