@@ -4,9 +4,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskListException;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class DisksLoader {
 

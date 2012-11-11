@@ -11,7 +11,6 @@ import org.w3c.dom.NodeList;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Volume;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Disk;
@@ -22,6 +21,7 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 
@@ -108,8 +108,8 @@ public class UpdateDisks extends AbstractAwsOperation {
 					getDisksXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_DISK_ERROR,
-					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, UPDATE_DISKS, getED()
+							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 	}
 

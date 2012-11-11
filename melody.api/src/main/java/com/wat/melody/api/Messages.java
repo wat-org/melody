@@ -6,13 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.api.messages";
 
-	public static String XPathExprSyntaxEx_PREVIOUS_ERROR;
-	public static String XPathExprSyntaxEx_UNDEF_PROPERTY;
-	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR;
-	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE;
-	public static String XPathExprSyntaxEx_START_DELIM_MISSING;
-	public static String XPathExprSyntaxEx_STOP_DELIM_MISSING;
-
 	public static String TaskFactoryEx_INVALID_ATTR;
 	public static String TaskFactoryEx_MANDATORY_ATTR_NOT_FOUND;
 	public static String TaskFactoryEx_ATTR_SPEC_CONFLICT;

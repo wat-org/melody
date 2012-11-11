@@ -9,11 +9,13 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.Messages;
-import com.wat.melody.api.exception.XPathExpressionSyntaxException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.PropertyName;
+import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.xpathextensions.common.Messages;
+import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
 
 public abstract class XPathExpander {
 
@@ -53,13 +55,23 @@ public abstract class XPathExpander {
 	 * @throws XPathExpressionSyntaxException
 	 *             if a Melody Expression cannot be expanded because it is not a
 	 *             valid X2Path Expression.
+	 * @throws IllegalFileException
+	 *             if the given {@link Path} doesn't point to a valid
+	 *             {@link File}.
 	 * @throws IOException
 	 *             if an IO error occurred while reading the {@link File} which
 	 *             is pointed by the given input {@link Path}.
+	 * @throws IllegalArgumentException
+	 *             if fileToExpand is <code>null</code>.
 	 */
 	public static String expand(Path fileToExpand, Node context,
 			PropertiesSet vars) throws XPathExpressionSyntaxException,
-			IOException {
+			IOException, IllegalFileException {
+		if (fileToExpand == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Path (a File Path).");
+		}
+		Tools.validateFileExists(fileToExpand.toString());
 		String fileContent = new String(Files.readAllBytes(fileToExpand));
 		try {
 			return expand(fileContent, context, vars);
@@ -160,6 +172,11 @@ public abstract class XPathExpander {
 		if (sXPathExpr.matches("^" + PropertyName.PATTERN + "$")) {
 			// If it matches the PropertyName Pattern, the Expression is
 			// remplaced by the Property's value
+			if (vars == null) {
+				throw new RuntimeException("Cannot expand the property '"
+						+ sXPathExpr
+						+ "'because no PropertiesSet have been provided.");
+			}
 			if (vars.containsKey(sXPathExpr)) {
 				return vars.get(sXPathExpr);
 			} else {
@@ -168,6 +185,11 @@ public abstract class XPathExpander {
 						extractPart(sXPathExpr, 0)));
 			}
 		} else {
+			if (context == null) {
+				throw new RuntimeException("Cannot expand the expression '"
+						+ sXPathExpr
+						+ "'because no Context have been provided.");
+			}
 			try {
 				return Doc.evaluateAsString(sXPathExpr, context);
 			} catch (XPathExpressionException Ex) {

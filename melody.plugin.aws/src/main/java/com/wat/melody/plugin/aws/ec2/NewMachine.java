@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
@@ -19,6 +18,7 @@ import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalInstanceTypeException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 
@@ -185,7 +185,9 @@ public class NewMachine extends AbstractMachineOperation {
 				setPassphrase(v);
 			}
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, NEW_MACHINE, getED()
+							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 
 		// Get the default KeyPair Repository, if not provided.

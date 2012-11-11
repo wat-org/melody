@@ -1,4 +1,4 @@
-package com.wat.melody.api.exception;
+package com.wat.melody.xpathextensions.common.exception;
 
 import org.w3c.dom.Node;
 

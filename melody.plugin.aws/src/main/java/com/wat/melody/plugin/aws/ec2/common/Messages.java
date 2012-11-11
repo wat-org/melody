@@ -75,6 +75,7 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_TAG_MGNT_PORT;
 	public static String MachineEx_ENABLE_SSH_MGNT_TIMEOUT;
 	public static String MachineEx_TIMEOUT;
+	public static String MachineEx_HERIT_ERROR;
 	public static String MachineMsg_WAIT_FOR_MANAGEMENT;
 	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
 	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
@@ -111,7 +112,6 @@ public class Messages extends NLS {
 	public static String DeleteMsg_TERMINATED;
 
 	public static String IngressEx_INVALID_FWRULE_XPATH;
-	public static String IngressEx_FWRULE_ERROR;
 	public static String IngressMsg_NO_INSTANCE;
 	public static String IngressMsg_DENY_NA;
 	public static String IngressMsg_FWRULES_DIGEST;
@@ -127,7 +127,6 @@ public class Messages extends NLS {
 	public static String UpdateDiskEx_UNDEF_ROOT_DEVICE;
 	public static String UpdateDiskEx_INCORRECT_ROOT_DEVICE;
 	public static String UpdateDiskEx_INVALID_DISK_XPATH;
-	public static String UpdateDiskEx_DISK_ERROR;
 	public static String UpdateDiskEx_DETACH;
 	public static String UpdateDiskEx_CREATE;
 	public static String UpdateDiskEx_ATTACH;

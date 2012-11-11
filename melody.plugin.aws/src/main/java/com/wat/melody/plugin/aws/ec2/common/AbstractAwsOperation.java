@@ -11,7 +11,6 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.utils.DUNID;
@@ -21,6 +20,7 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 abstract public class AbstractAwsOperation implements ITask {
 
@@ -101,7 +101,9 @@ abstract public class AbstractAwsOperation implements ITask {
 			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, "",
+					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 		try {
 			if (v != null) {

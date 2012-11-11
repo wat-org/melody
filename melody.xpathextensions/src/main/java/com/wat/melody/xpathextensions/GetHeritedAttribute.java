@@ -10,9 +10,9 @@ import javax.xml.xpath.XPathFunctionException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.common.Messages;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * <p>
@@ -49,6 +49,9 @@ public final class GetHeritedAttribute implements XPathFunction {
 		try {
 			return getHeritedAttributeValue((Node) arg0, (String) arg1);
 		} catch (ResourcesDescriptorException Ex) {
+			/*
+			 * TODO : add the location of the Node in the error message
+			 */
 			throw new XPathFunctionException(Ex);
 		}
 	}

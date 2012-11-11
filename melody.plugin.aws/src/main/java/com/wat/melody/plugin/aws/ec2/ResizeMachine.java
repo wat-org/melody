@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.InstanceState;
@@ -16,6 +15,7 @@ import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalInstanceTypeException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 
@@ -70,7 +70,9 @@ public class ResizeMachine extends AbstractAwsOperation {
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, RESIZE_MACHINE, getED()
+							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 
 		// Initialize optional task's attributes with their default value

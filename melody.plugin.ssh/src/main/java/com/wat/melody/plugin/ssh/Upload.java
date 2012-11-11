@@ -24,6 +24,7 @@ import com.wat.melody.common.typedef.Resources;
 import com.wat.melody.common.typedef.SimpleResource;
 import com.wat.melody.common.typedef.exception.ResourceException;
 import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.plugin.ssh.common.AbstractSshOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -495,6 +496,11 @@ public class Upload extends AbstractSshOperation {
 			String fileContent = null;
 			try {
 				fileContent = getContext().expand(r.getPath());
+			} catch (IllegalFileException Ex) {
+				throw new RuntimeException("Unexpected error while "
+						+ "templating the file " + r.getPath() + "."
+						+ "Source code has certainly been modified "
+						+ "and a bug have been introduced.", Ex);
 			} catch (IOException Ex) {
 				throw new SshException(Messages.bind(
 						Messages.SshEx_READ_IO_ERROR, r.getPath()), Ex);

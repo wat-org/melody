@@ -6,6 +6,12 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.xpathextensions.common.messages";
 
+	public static String XPathExprSyntaxEx_UNDEF_PROPERTY;
+	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR;
+	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE;
+	public static String XPathExprSyntaxEx_START_DELIM_MISSING;
+	public static String XPathExprSyntaxEx_STOP_DELIM_MISSING;
+
 	public static String RDEx_INVALID_HERIT_ATTR_XPATH;
 	public static String RDEx_INVALID_HERIT_ATTR_MANYNODEMATCH;
 	public static String RDEx_INVALID_HERIT_ATTR_NONODEMATCH;

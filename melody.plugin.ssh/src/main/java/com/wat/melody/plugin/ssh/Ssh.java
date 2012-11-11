@@ -14,6 +14,7 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.common.utils.Property;
 import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.plugin.ssh.common.AbstractSshOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -136,6 +137,11 @@ public class Ssh extends AbstractSshOperation {
 					try {
 						fileContent = getContext().expand(
 								Paths.get(is.getFile().toString()));
+					} catch (IllegalFileException Ex) {
+						throw new RuntimeException("Unexpected error while "
+								+ "templating the file " + is.getFile() + "."
+								+ "Source code has certainly been modified "
+								+ "and a bug have been introduced.", Ex);
 					} catch (ExpressionSyntaxException Ex) {
 						throw new SshException(Ex);
 					}

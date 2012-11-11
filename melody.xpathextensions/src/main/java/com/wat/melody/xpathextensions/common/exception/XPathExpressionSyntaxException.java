@@ -1,4 +1,6 @@
-package com.wat.melody.api.exception;
+package com.wat.melody.xpathextensions.common.exception;
+
+import com.wat.melody.api.exception.ExpressionSyntaxException;
 
 public class XPathExpressionSyntaxException extends ExpressionSyntaxException {
 

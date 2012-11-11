@@ -22,7 +22,6 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
@@ -45,6 +44,7 @@ import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * <p>
@@ -472,7 +472,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new RuntimeException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, "",
+					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
@@ -541,7 +543,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
+			throw new RuntimeException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, "",
+					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(

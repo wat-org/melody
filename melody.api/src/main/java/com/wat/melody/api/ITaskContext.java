@@ -13,6 +13,7 @@ import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.utils.OrderNameSet;
 import com.wat.melody.common.utils.PropertiesSet;
+import com.wat.melody.common.utils.exception.IllegalFileException;
 
 /**
  * <p>
@@ -108,9 +109,17 @@ public interface ITaskContext {
 	 * @throws ExpressionSyntaxException
 	 *             if an expression cannot be expanded because it is not a valid
 	 *             expression (ex: circular ref, invalid character, ...).
+	 * @throws IllegalFileException
+	 *             if the given {@link Path} doesn't point to a valid
+	 *             {@link File}.
+	 * @throws IOException
+	 *             if an IO error occurred while reading the {@link File} which
+	 *             is pointed by the given input {@link Path}.
+	 * @throws IllegalArgumentException
+	 *             if fileToExpand is <code>null</code>.
 	 */
 	public String expand(Path fileToExpand) throws ExpressionSyntaxException,
-			IOException;
+			IllegalFileException, IOException;
 
 	/**
 	 * <p>
