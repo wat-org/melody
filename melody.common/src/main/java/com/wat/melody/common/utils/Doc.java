@@ -60,9 +60,14 @@ public class Doc {
 		return moBuilder;
 	}
 
-	protected synchronized static Document parse(File sPath)
+	protected static Document parse(File sPath)
 			throws SAXException, IOException {
 		return Parser.parse(sPath);
+	}
+
+	protected static Document parse(String content)
+			throws SAXException, IOException {
+		return Parser.parse(content);
 	}
 
 	public static XPath getXPath() {
@@ -313,7 +318,39 @@ public class Doc {
 					Messages.DocEx_INVALID_XML_SYNTAX, sPath), Ex);
 		} catch (CharConversionException Ex) {
 			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_FILE, sPath), Ex);
+					Messages.DocEx_INVALID_XML_DATA, sPath), Ex);
+		}
+		validateContent();
+	}
+
+	/**
+	 * <p>
+	 * Load the given XML content into this object.
+	 * </p>
+	 * 
+	 * @param content
+	 *            is an XML String.
+	 * @throws IllegalDocException
+	 *             if the content of the file pointed by the given path is not
+	 *             valid.
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 */
+	public void loadFromXML(String content) throws MelodyException,
+			IllegalDocException, IOException {
+		try {
+			setDocument(parse(content));
+		} catch (SAXParseException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX_AT,
+					new Object[] { "inline content", Ex.getLineNumber(),
+							Ex.getColumnNumber() }), Ex);
+		} catch (SAXException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX, "inline content"), Ex);
+		} catch (CharConversionException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_DATA, "inline content"), Ex);
 		}
 		validateContent();
 	}

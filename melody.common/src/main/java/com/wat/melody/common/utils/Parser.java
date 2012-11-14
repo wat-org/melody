@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -56,7 +58,6 @@ public abstract class Parser {
 	 */
 	public static Document parse(final File sPath) throws IOException,
 			SAXException {
-		final Document doc = Doc.newDocument();
 		SAXParser parser;
 		try {
 			parser = SAXParserFactory.newInstance().newSAXParser();
@@ -67,70 +68,8 @@ public abstract class Parser {
 					+ "a bug have been introduced.", Ex);
 		}
 
-		final Stack<Element> elementStack = new Stack<Element>();
-		final StringBuilder textBuffer = new StringBuilder();
-		DefaultHandler handler = new DefaultHandler2() {
-			private Locator locator;
-
-			@Override
-			public void setDocumentLocator(Locator locator) {
-				this.locator = locator; // Save the locator, so that it can be
-										// used later for line tracking when
-										// traversing nodes.
-			}
-
-			@Override
-			public void startElement(String uri, String localName,
-					String qName, Attributes attributes) throws SAXException {
-				addTextIfNeeded();
-				Element el = doc.createElement(qName);
-				for (int i = 0; i < attributes.getLength(); i++) {
-					el.setAttribute(attributes.getQName(i),
-							attributes.getValue(i));
-				}
-				// track the line number
-				el.setUserData(LINE_NUMBER, locator.getLineNumber(), null);
-				// track the column number
-				el.setUserData(COLUMN_NUMBER, locator.getColumnNumber(), null);
-				elementStack.push(el);
-			}
-
-			@Override
-			public void endElement(String uri, String localName, String qName) {
-				addTextIfNeeded();
-				Element closedEl = elementStack.pop();
-				if (elementStack.isEmpty()) { // Is this the root element?
-					doc.appendChild(closedEl);
-				} else {
-					Element parentEl = elementStack.peek();
-					parentEl.appendChild(closedEl);
-				}
-			}
-
-			@Override
-			public void characters(char ch[], int start, int length)
-					throws SAXException {
-				textBuffer.append(ch, start, length);
-			}
-
-			// Outputs text accumulated under the current node
-			private void addTextIfNeeded() {
-				if (textBuffer.length() > 0) {
-					Element el = elementStack.peek();
-					Node textNode = doc.createTextNode(textBuffer.toString());
-					el.appendChild(textNode);
-					textBuffer.delete(0, textBuffer.length());
-				}
-			}
-
-			@Override
-			public void comment(char ch[], int start, int length) {
-				addTextIfNeeded();
-				Element el = elementStack.peek();
-				Node textNode = doc.createComment(new String(ch, start, length));
-				el.appendChild(textNode);
-			}
-		};
+		Document doc = Doc.newDocument();
+		DefaultHandler handler = new MySAXHandler(doc);
 
 		parser.setProperty("http://xml.org/sax/properties/lexical-handler",
 				handler);
@@ -150,4 +89,113 @@ public abstract class Parser {
 		return doc;
 	}
 
+	/**
+	 * <p>
+	 * Parse an XML content and return a {@link Document}. Line number and
+	 * column number are added to each XML elements as user datas.
+	 * 
+	 * <ul>
+	 * <li>To get the line number of a {@link Node}, call the
+	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
+	 * {@link #LINE_NUMBER} ;</li>
+	 * <li>To get the column number of a {@link Node}, call the
+	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
+	 * {@link #COLUMN_NUMBER} ;</li>
+	 * </ul>
+	 * </p>
+	 */
+	public static Document parse(final String content) throws IOException,
+			SAXException {
+		SAXParser parser;
+		try {
+			parser = SAXParserFactory.newInstance().newSAXParser();
+		} catch (ParserConfigurationException Ex) {
+			throw new RuntimeException("Unexecpted error while creating "
+					+ "a new Document Builder. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+
+		Document doc = Doc.newDocument();
+		DefaultHandler handler = new MySAXHandler(doc);
+
+		parser.setProperty("http://xml.org/sax/properties/lexical-handler",
+				handler);
+
+		parser.parse(new InputSource(new StringReader(content)), handler);
+		// track the origin which was parsed
+		doc.setUserData(FILE, "inline content", null);
+
+		return doc;
+	}
+
+}
+
+class MySAXHandler extends DefaultHandler2 {
+	Document doc;
+	Stack<Element> elementStack = new Stack<Element>();
+	StringBuilder textBuffer = new StringBuilder();
+	private Locator locator;
+
+	public MySAXHandler(Document d) {
+		doc = d;
+	}
+
+	@Override
+	public void setDocumentLocator(Locator locator) {
+		this.locator = locator; // Save the locator, so that it can be
+								// used later for line tracking when
+								// traversing nodes.
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName,
+			Attributes attributes) throws SAXException {
+		addTextIfNeeded();
+		Element el = doc.createElement(qName);
+		for (int i = 0; i < attributes.getLength(); i++) {
+			el.setAttribute(attributes.getQName(i), attributes.getValue(i));
+		}
+		// track the line number
+		el.setUserData(Parser.LINE_NUMBER, locator.getLineNumber(), null);
+		// track the column number
+		el.setUserData(Parser.COLUMN_NUMBER, locator.getColumnNumber(), null);
+		elementStack.push(el);
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) {
+		addTextIfNeeded();
+		Element closedEl = elementStack.pop();
+		if (elementStack.isEmpty()) { // Is this the root element?
+			doc.appendChild(closedEl);
+		} else {
+			Element parentEl = elementStack.peek();
+			parentEl.appendChild(closedEl);
+		}
+	}
+
+	@Override
+	public void characters(char ch[], int start, int length)
+			throws SAXException {
+		textBuffer.append(ch, start, length);
+	}
+
+	// Outputs text accumulated under the current node
+	private void addTextIfNeeded() {
+		if (textBuffer.length() > 0) {
+			Element el = elementStack.peek();
+			Node textNode = doc.createTextNode(textBuffer.toString());
+			el.appendChild(textNode);
+			textBuffer.delete(0, textBuffer.length());
+		}
+	}
+
+	@Override
+	public void comment(char ch[], int start, int length) {
+		addTextIfNeeded();
+		Element el = elementStack.peek();
+		Node textNode = doc.createComment(new String(ch, start, length));
+		el.appendChild(textNode);
+	}
 }

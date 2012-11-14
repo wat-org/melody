@@ -72,7 +72,7 @@ public class Messages extends NLS {
 
 	public static String DocEx_INVALID_XML_SYNTAX_AT;
 	public static String DocEx_INVALID_XML_SYNTAX;
-	public static String DocEx_INVALID_XML_FILE;
+	public static String DocEx_INVALID_XML_DATA;
 
 	static {
 		// initialize resource bundle
