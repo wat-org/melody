@@ -27,14 +27,14 @@ public class DeleteMachine extends AbstractMachineOperation {
 		try {
 			// delete operation can be long. double default timeout
 			setTimeout(getTimeout() * 2);
-		} catch (AwsException e) {
+		} catch (AwsException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "the " + DELETE_MACHINE + " timeout to "
 					+ (getTimeout() * 2) + ". "
 					+ "Because this value is hardocded, suche error cannot "
 					+ "happened. "
 					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.");
+					+ "have been introduced.", Ex);
 		}
 	}
 
