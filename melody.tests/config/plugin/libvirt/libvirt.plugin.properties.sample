@@ -1,0 +1,11 @@
+#####################
+### Mandatory Melody plugin configuration directives
+#####################
+
+### the name of this plugin
+plugin.configuration.name=LIBVIRT
+
+### the class which will load this configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.libvirt.common.Configuration
+
+
