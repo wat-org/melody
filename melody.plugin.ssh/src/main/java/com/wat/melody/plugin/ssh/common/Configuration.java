@@ -367,9 +367,9 @@ public class Configuration implements IPluginConfiguration {
 						.indexOf("Incorrect credentials") != -1) {
 					// connection succeed
 					break;
-				} else if (Ex.getCause().getMessage()
-						.indexOf("Connection refused") == -1
-						&& Ex.getCause().getMessage().indexOf("timeout") == -1) {
+				} else if (Ex.getCause().getMessage().indexOf("refused") == -1
+						&& Ex.getCause().getMessage().indexOf("timeout") == -1
+						&& Ex.getCause().getMessage().indexOf("No route") == -1) {
 					throw new SshException(Ex);
 				}
 			}
