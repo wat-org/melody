@@ -4,7 +4,10 @@ import java.io.File;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
@@ -13,6 +16,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import com.wat.melody.api.IPluginConfiguration;
 import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.PluginConfigurationException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -22,6 +26,7 @@ import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.plugin.ssh.Upload;
 import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionLevelException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionTypeException;
@@ -29,6 +34,8 @@ import com.wat.melody.plugin.ssh.common.exception.IllegalProxyTypeException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
 public class Configuration implements IPluginConfiguration {
+
+	private static Log log = LogFactory.getLog(Configuration.class);
 
 	public static final String NAME = "SSH";
 
@@ -319,6 +326,67 @@ public class Configuration implements IPluginConfiguration {
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
 			return null;
 		}
+	}
+
+	public boolean addKnownHostsHost(ITaskContext context, Host host, Port p,
+			long timeout) throws SshException, InterruptedException {
+		Upload upload = new Upload();
+
+		upload.setContext(context);
+		upload.setTrust(true);
+		upload.setHost(host);
+		upload.setPort(p);
+
+		try {
+			upload.setLogin("melody");
+		} catch (SshException Ex) {
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "login of the Ssh connection to 'melody'. "
+					+ "Because this login is harcoded, it must be valid. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
+		}
+
+		final long WAIT_STEP = 5000;
+		final long start = System.currentTimeMillis();
+		long left;
+		boolean enablementDone = true;
+
+		while (true) {
+			// Don't upload anything, just connect.
+			try {
+				Session session = upload.openSession();
+				ChannelSftp channel = upload.openSftpChannel(session);
+				channel.disconnect();
+				session.disconnect();
+				break;
+			} catch (Throwable Ex) {
+				if (Ex.getCause() == null || Ex.getCause().getMessage() == null) {
+					throw new SshException(Ex);
+				} else if (Ex.getCause().getMessage()
+						.indexOf("Incorrect credentials") != -1) {
+					// connection succeed
+					break;
+				} else if (Ex.getCause().getMessage()
+						.indexOf("Connection refused") == -1
+						&& Ex.getCause().getMessage().indexOf("timeout") == -1) {
+					throw new SshException(Ex);
+				}
+			}
+			log.debug(Messages.bind(Messages.SshMsg_WAIT_FOR_MANAGEMENT, host
+					.getValue().getHostAddress(), p.getValue()));
+			if (timeout == 0) {
+				Thread.sleep(WAIT_STEP);
+				continue;
+			}
+			left = timeout - (System.currentTimeMillis() - start);
+			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
+			if (left < 0) {
+				enablementDone = false;
+				break;
+			}
+		}
+		return enablementDone;
 	}
 
 	/**

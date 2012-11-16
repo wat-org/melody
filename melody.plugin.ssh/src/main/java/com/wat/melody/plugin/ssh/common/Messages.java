@@ -51,6 +51,7 @@ public class Messages extends NLS {
 	public static String SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR;
 	public static String SshEx_READ_IO_ERROR;
 	public static String SshEx_WRITE_IO_ERROR;
+	public static String SshMsg_WAIT_FOR_MANAGEMENT;
 
 	public static String UploadEx_INVALID_NE;
 	public static String UploadEx_INVALID_MAXPAR_ATTR;

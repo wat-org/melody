@@ -14,13 +14,10 @@ import org.w3c.dom.NodeList;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
-import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.IpRange;
@@ -37,7 +34,6 @@ import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalManagementMethodException;
-import com.wat.melody.plugin.ssh.Upload;
 import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
@@ -640,28 +636,6 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			throw new RuntimeException(Ex);
 		}
 
-		Upload upload = new Upload();
-
-		try {
-			upload.setContext(getContext());
-		} catch (SshException Ex) {
-			throw new AwsException(Ex);
-		}
-
-		upload.setTrust(true);
-		upload.setHost(host);
-		upload.setPort(p);
-
-		try {
-			upload.setLogin("melody");
-		} catch (SshException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "login of the Ssh connection to 'melody'. "
-					+ "Because this login is harcoded, it must be valid. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-
 		IpPermission toAdd = new IpPermission();
 		toAdd.withFromPort(p.getValue());
 		toAdd.withToPort(p.getValue());
@@ -680,50 +654,11 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			}
 		}
 
-		final long WAIT_STEP = 5000;
-		final long start = System.currentTimeMillis();
-		long left;
-		boolean enablementDone = true;
-
 		try {
-			while (true) {
-				// Don't upload anything, just connect.
-				try {
-					Session session = upload.openSession();
-					ChannelSftp channel = upload.openSftpChannel(session);
-					channel.disconnect();
-					session.disconnect();
-					break;
-				} catch (Throwable Ex) {
-					if (Ex.getCause() == null
-							|| Ex.getCause().getMessage() == null) {
-						throw new AwsException(Ex);
-					} else if (Ex.getCause().getMessage()
-							.indexOf("Incorrect credentials") != -1) {
-						// connection succeed
-						break;
-					} else if (Ex.getCause().getMessage()
-							.indexOf("Connection refused") == -1
-							&& Ex.getCause().getMessage().indexOf("timeout") == -1) {
-						throw new AwsException(Ex);
-					}
-				}
-				log.debug(Messages.bind(
-						Messages.MachineMsg_WAIT_FOR_MANAGEMENT,
-						getAwsInstanceID()));
-				if (getEnableManagementTimeout() == 0) {
-					Thread.sleep(WAIT_STEP);
-					continue;
-				}
-				left = getEnableManagementTimeout()
-						- (System.currentTimeMillis() - start);
-				Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
-				if (left < 0) {
-					enablementDone = false;
-					break;
-				}
-			}
-			return enablementDone;
+			return getSshPluginConf().addKnownHostsHost(getContext(), host, p,
+					getEnableManagementTimeout());
+		} catch (SshException Ex) {
+			throw new AwsException(Ex);
 		} finally {
 			if (!doNotRevoke) {
 				RevokeSecurityGroupIngressRequest revreq = null;
@@ -735,11 +670,10 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	}
 
 	private void disableWinRmManagement(Instance i) throws AwsException {
-		Image ami = Common.getImageId(getEc2(), i.getImageId());
 		throw new AwsException(Messages.bind(
 				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				new Object[] { ManagementMethod.WINRM, TAG_MGNT,
-						ami.getImageId(), getRegion() }));
+				new Object[] { TAG_MGNT, ManagementMethod.WINRM,
+						getTargetNodeLocation() }));
 	}
 
 	private void disableSshManagement(Instance i) {
