@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo;
+import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
@@ -285,12 +286,15 @@ public abstract class LibVirtCloud {
 		}
 		String sFirstFreeMacAddr = nlFreeMacAddrPool.item(0).getAttributes()
 				.getNamedItem("mac").getNodeValue();
+		log.trace("Allocating Mac Address '" + sFirstFreeMacAddr + "'.");
 		Doc.createAttribute("allocated", "true", nlFreeMacAddrPool.item(0));
 		netconf.store();
+		log.debug("Mac Address '" + sFirstFreeMacAddr + "' allocated.");
 		return sFirstFreeMacAddr;
 	}
 
 	private static synchronized void unregisterMacAddress(String sMacAddr) {
+		log.trace("Releasing Mac Address '" + sMacAddr + "'.");
 		Node nMacAddr = null;
 		try {
 			nMacAddr = netconf.evaluateAsNode("/network/ip/dhcp" + "/host"
@@ -303,6 +307,7 @@ public abstract class LibVirtCloud {
 		}
 		nMacAddr.getAttributes().removeNamedItem("allocated");
 		netconf.store();
+		log.debug("Mac Address '" + sMacAddr + "' released.");
 	}
 
 	private static Doc getDomainXMLDesc(Domain domain) {
@@ -527,12 +532,15 @@ public abstract class LibVirtCloud {
 		try {
 			// get Domain
 			Domain domain = getDomain(cnx, sInstanceId);
+			DomainState state = domain.getInfo().state;
 			Doc doc = getDomainXMLDesc(domain);
 			// destroy domain
-			/*
-			 * TODO plante si le domain n'est pas running
-			 */
-			domain.destroy();
+			if (state == DomainState.VIR_DOMAIN_RUNNING
+					|| state == DomainState.VIR_DOMAIN_PAUSED) {
+				log.trace("Destroying domain '" + sInstanceId + "'.");
+				domain.destroy();
+				log.debug("Domain '" + sInstanceId + "' destroyed.");
+			}
 			// destroy disks
 			NodeList nl = null;
 			try {
@@ -544,7 +552,11 @@ public abstract class LibVirtCloud {
 			for (int i = 0; i < nl.getLength(); i++) {
 				StorageVol sv = cnx.storageVolLookupByPath(nl.item(i)
 						.getNodeValue());
+				log.trace("Deleting domain '" + sInstanceId + "' volume "
+						+ (i + 1) + ". Volume path iss '" + sv.getPath() + "'.");
 				sv.delete(0);
+				log.debug("Domain '" + sInstanceId + "' volume " + (i + 1)
+						+ " deleted.");
 			}
 			// undefine domain
 			domain.undefine();
