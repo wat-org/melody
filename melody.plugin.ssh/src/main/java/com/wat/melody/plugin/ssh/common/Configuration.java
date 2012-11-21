@@ -841,6 +841,16 @@ public class Configuration implements IPluginConfiguration {
 		session.setConfig("compression.s2c", getCompressionType().getValue());
 		session.setConfig("compression.c2s", getCompressionType().getValue());
 		session.setConfig("compression_level", getCompressionLevel().getValue());
+		/*
+		 * TODO : when the target sshd is Kerberized, and when the client has no
+		 * Kerberos ticket yet, the auth method 'gssapi-with-mic' will wait for
+		 * the user to prompt a password.
+		 * 
+		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
+		 * as the bug is not solved, we must exclude kerberos/GSS auth method.
+		 */
+		session.setConfig("PreferredAuthentications",
+				"publickey,keyboard-interactive,password");
 
 		if (getProxyType() != null) {
 			/*
