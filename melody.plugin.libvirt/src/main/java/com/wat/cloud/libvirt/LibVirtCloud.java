@@ -3,6 +3,7 @@ package com.wat.cloud.libvirt;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +14,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
-import org.libvirt.DomainInfo;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
@@ -362,6 +362,10 @@ public abstract class LibVirtCloud {
 	}
 
 	public static Domain getDomain(Connect cnx, String sInstanceId) {
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
 		if (sInstanceId == null) {
 			return null;
 		}
@@ -377,7 +381,12 @@ public abstract class LibVirtCloud {
 
 	public static boolean instanceExists(Connect cnx, String sInstanceId)
 			throws LibvirtException {
-		return getDomain(cnx, sInstanceId) != null;
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
+		String[] names = cnx.listDefinedDomains();
+		return Arrays.asList(names).contains(sInstanceId);
 	}
 
 	public static Instance getInstance(Connect cnx, String sInstanceId) {
@@ -390,7 +399,7 @@ public abstract class LibVirtCloud {
 		if (i == null) {
 			return null;
 		}
-		DomainInfo.DomainState state = null;
+		DomainState state = null;
 		try {
 			state = i.getInfo().state;
 		} catch (LibvirtException Ex) {
@@ -421,6 +430,10 @@ public abstract class LibVirtCloud {
 
 	public static Instance newInstance(Connect cnx, InstanceType type,
 			String sImageId, String sKeyName) {
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
 		/*
 		 * TODO : should be asynchronous.
 		 * 
@@ -523,6 +536,10 @@ public abstract class LibVirtCloud {
 	}
 
 	public static void deleteInstance(Connect cnx, String sInstanceId) {
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
 		/*
 		 * TODO : should be asynchronous.
 		 * 

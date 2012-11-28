@@ -1,72 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
+<?xml version="1.0" encoding="UTF-8"?><environment>
 
-	<serverAWS>
-	
-		<FRONTS>
-		
-			<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa_aws_webs" region="qemu:///system">
-				<tags>
-					<tag name="MGNT" value="ssh"/>
-					<tag name="SSH.PORT" value="22"/>
-				</tags>
-				<fwrules>
-					<in>
-						<fwrule access="allow" from="all" ports="80-443" protocols="tcp"/>
-						<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-					<out>
-						<fwrule access="allow" ports="1421" protocols="tcp" to="§[string-join(//DBS/instance/@IP_priv,',')]§"/>
-					</out>
-				</fwrules>
-				<devices>
-					<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
-					<disk deleteOnTermination="true" device="/dev/sdb" size="1 G"/>
-					<disk deleteOnTermination="true" device="/dev/sdc" size="2 G"/>
-				</devices>
-			</model>
-
-			<instance availabilityZone="a" herit="./environment/serverAWS/FRONTS/model" name="web-a01">
-				<fwrules>
-					<in>
-						<fwrule access="allow" from="all" ports="8080,8443" protocols="tcp"/>
-					</in>
-				</fwrules>
-				<devices>
-					<disk deleteOnTermination="true" device="/dev/sde" size="1 G"/>
-				</devices>
-			</instance>	
-			<instance availabilityZone="a" herit="./environment/serverAWS/FRONTS/model" name="web-a02"/>
-
-		</FRONTS>
-	
-		<DBS>
-		
-			<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa_aws_dbs" region="qemu:///system">
-				<tags>
-					<tag name="MGNT" value="ssh"/>
-					<tag name="SSH.PORT" value="22"/>
-				</tags>
-				<fwrules>
-					<in>
-						<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
-						<fwrule access="allow" from="§[string-join(//FRONTS/instance/@IP_priv,',')]§" ports="1421" protocols="tcp"/>
-					</in>
-				</fwrules>
-				<devices>
-					<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
-					<disk deleteOnTermination="true" device="/dev/sdb" size="10 G"/>
-					<disk deleteOnTermination="true" device="/dev/sdc" size="20 G"/>
-				</devices>
-			</model>
-			
-			<instance herit="./environment/serverAWS/DBS/model" instanceId="i-5b5e0499" name="db-01"/>
-		</DBS>
-
-	</serverAWS>
-	
-	<global_fwrules>
+	<fwrules>
 		<in access="allow" from="all" name="SSH" ports="22" protocols="tcp"/>
-		<in access="allow" from="all" name="RDP" ports="3389" protocols="tcp"/>
-	</global_fwrules>
+	</fwrules>
+	
+	<models>
+		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+			<tags>
+				<tag name="MGNT" value="ssh"/>
+				<tag name="SSH.PORT" value="22"/>
+			</tags>
+			<fwrules>
+				<in>
+					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
+					<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
+				</in>
+			</fwrules>
+			<devices>
+				<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
+			</devices>
+		</model>
+	</models>
+	
+	<instances>
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01"/>
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02"/>
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03"/>
+	</instances>
 	
 </environment>
