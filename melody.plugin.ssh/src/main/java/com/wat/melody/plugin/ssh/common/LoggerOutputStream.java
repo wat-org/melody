@@ -76,10 +76,33 @@ public class LoggerOutputStream extends OutputStream {
 		return previous;
 	}
 
+	private char getLastChar() {
+		try {
+			return getBuffer().charAt(getBuffer().length() - 1);
+		} catch (IndexOutOfBoundsException Ex) {
+			return (char) 0;
+		}
+	}
+
+	private void deleteLastChar() {
+		try {
+			getBuffer().deleteCharAt(getBuffer().length() - 1);
+		} catch (IndexOutOfBoundsException Ex) {
+		}
+	}
+
 	@Override
 	public void write(int b) throws IOException {
-		if (b == 10) {
-			writeLine();
+		if (getLastChar() == (char) 13) {
+			// when \r\n, just print \n
+			deleteLastChar();
+			write();
+			setBuffer(new StringBuffer());
+			if (b != 10) {
+				getBuffer().append((char) b);
+			}
+		} else if (b == 10) {
+			write();
 			setBuffer(new StringBuffer());
 		} else {
 			getBuffer().append((char) b);
@@ -87,25 +110,30 @@ public class LoggerOutputStream extends OutputStream {
 
 	}
 
-	public void writeLine() {
+	public void write() {
+		String msg = getBuffer().toString();
+		// Removing all colorized stuff
+		msg = msg.replaceAll("\\033\\[[0-9]+G", "");
+		msg = msg.replaceAll("\\033\\[0;[0-9]+m", "");
+		msg = getPrefix() + " " + msg;
 		switch (getLevel()) {
 		case TRACE:
-			log.trace(getPrefix() + " " + getBuffer());
+			log.trace(msg);
 			break;
 		case DEBUG:
-			log.debug(getPrefix() + " " + getBuffer());
+			log.debug(msg);
 			break;
 		case INFO:
-			log.info(getPrefix() + " " + getBuffer());
+			log.info(msg);
 			break;
 		case WARNING:
-			log.warn(getPrefix() + " " + getBuffer());
+			log.warn(msg);
 			break;
 		case ERROR:
-			log.error(getPrefix() + " " + getBuffer());
+			log.error(msg);
 			break;
 		case FATAL:
-			log.fatal(getPrefix() + " " + getBuffer());
+			log.fatal(msg);
 			break;
 		}
 	}

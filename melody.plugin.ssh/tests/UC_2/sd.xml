@@ -21,10 +21,12 @@
 			<export name="var11" value="( §[case1]§ §[case2]§ §[case3]§ )"/>
 			<exec command="ls -l"/>
 			<exec command="echo ---------------------------"/>
+			<exec command="echo -e &quot;\r1\r2\r3&quot;"/>
 			<exec command="echo ---------------------------"/>
 			<exec command="ls -l"/>
 			<exec command="sleep 2"/>
 			<exec command="echo ---------------------------"/>
+			<exec command="echo -e &quot;\033[80G[\033[0;32m  NOT GREEN  \033[0;39m]&quot;"/>
 			<exec command="echo ---------------------------"/>
 			<exec file="./scripts/test1.sh"/>
 		</ssh>
