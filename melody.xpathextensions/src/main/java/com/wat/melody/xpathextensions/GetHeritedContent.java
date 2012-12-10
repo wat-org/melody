@@ -39,7 +39,7 @@ public final class GetHeritedContent implements XPathFunction {
 					+ CustomXPathFunctions.NAMESPACE
 					+ ":"
 					+ NAME
-					+ "() expects a NodeList " + "argument.");
+					+ "() expects a Node " + "argument.");
 		}
 		if (arg1 == null || !(arg1 instanceof String)) {
 			throw new IllegalArgumentException("null: Not accepted. "
