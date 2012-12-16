@@ -13,8 +13,7 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.network.Host;
-import com.wat.melody.common.network.exception.IllegalHostException;
+import com.wat.melody.cloud.management.ManagementInfos;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -104,8 +103,9 @@ public abstract class AbstractLibVirtOperation implements ITask {
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, "",
-					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 		try {
 			if (v != null) {
@@ -177,61 +177,73 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		setInstanceID(null);
 	}
 
-	protected void setInstanceRelatedInfosToED(Instance i) {
+	protected void setInstanceRelatedInfosToED(Instance i)
+			throws LibVirtException {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Instance.");
 		}
+		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
+		DUNID dunid = getManagementNetworkDeviceDUNID();
+		setDataToED(dunid, Common.IP_ATTR, i.getPrivateIpAddress());
+		setDataToED(dunid, Common.FQDN_ATTR, i.getPrivateDnsName());
+	}
+
+	private void setDataToED(DUNID dunid, String sAttr, String sValue) {
+		if (dunid == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid DUNID.");
+		}
+		if (sAttr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (an XML Attribute Name).");
+		}
+		if (sValue == null || sValue.length() == 0) {
+			return;
+		}
 		try {
-			getED().setAttributeValue(getMelodyID(), Common.INSTANCE_ID_ATTR,
-					i.getInstanceId());
-			setInstancePrivIpToED(i.getPrivateIpAddress());
-			setInstancePrivFQDNToED(i.getPrivateDnsName());
+			getED().setAttributeValue(dunid, sAttr, sValue);
 		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while retrieving a "
-					+ "node via its DUNID. " + "No node DUNID match "
-					+ getMelodyID() + ". "
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "node's attribute '" + sAttr + "' via its DUNID. "
+					+ "No node DUNID match " + dunid + ". "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		}
 	}
 
-	private void setInstancePrivIpToED(String sIpAddr)
-			throws NoSuchDUNIDException {
-		if (sIpAddr == null || sIpAddr.length() == 0) {
-			return;
+	protected void removeInstanceRelatedInfosToED(boolean deleted)
+			throws LibVirtException {
+		if (deleted == true) {
+			removeDataFromED(getMelodyID(), Common.INSTANCE_ID_ATTR);
 		}
-		try {
-			Host.parseString(sIpAddr);
-		} catch (IllegalHostException Ex) {
-			throw new RuntimeException(Messages.bind("''{0}'': Not Accepted. "
-					+ "Failed to parse ''{1}'', which was given by "
-					+ "LibVirt.", sIpAddr, Common.IP_PRIV_ATTR), Ex);
-		}
-		getED().setAttributeValue(getMelodyID(), Common.IP_PRIV_ATTR, sIpAddr);
+		DUNID dunid = getManagementNetworkDeviceDUNID();
+		removeDataFromED(dunid, Common.IP_ATTR);
+		removeDataFromED(dunid, Common.FQDN_ATTR);
 	}
 
-	private void setInstancePrivFQDNToED(String sFQDN)
-			throws NoSuchDUNIDException {
-		if (sFQDN == null || sFQDN.length() == 0) {
-			return;
-		}
-		getED().setAttributeValue(getMelodyID(), Common.FQDN_PRIV_ATTR, sFQDN);
-	}
-
-	protected void removeInstanceRelatedInfosToED(boolean deleted) {
+	private void removeDataFromED(DUNID dunid, String sAttr) {
 		try {
-			if (deleted == true) {
-				getED().removeAttribute(getMelodyID(), Common.INSTANCE_ID_ATTR);
-			}
-			getED().removeAttribute(getMelodyID(), Common.IP_PRIV_ATTR);
-			getED().removeAttribute(getMelodyID(), Common.FQDN_PRIV_ATTR);
+			getED().removeAttribute(dunid, sAttr);
 		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while removing a "
-					+ "node's attribute via the node DUNID. "
-					+ "No node DUNID match " + getMelodyID() + ". "
+			throw new RuntimeException("Unexpected error while removing the "
+					+ "node's attribute '" + sAttr + "' via the node DUNID. "
+					+ "No node DUNID match " + dunid + ". "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
+		}
+	}
+
+	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
+		try {
+			return getED().getMelodyID(
+					ManagementInfos
+							.getManagementNetworkDeviceNode(getTargetNode()));
+		} catch (ResourcesDescriptorException Ex) {
+			throw new LibVirtException(Messages.bind(
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 	}
 

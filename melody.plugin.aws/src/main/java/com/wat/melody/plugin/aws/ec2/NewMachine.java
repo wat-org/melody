@@ -186,8 +186,9 @@ public class NewMachine extends AbstractMachineOperation {
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, NEW_MACHINE, getED()
-							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 
 		// Get the default KeyPair Repository, if not provided.

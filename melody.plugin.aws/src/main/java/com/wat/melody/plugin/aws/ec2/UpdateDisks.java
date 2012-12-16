@@ -108,8 +108,9 @@ public class UpdateDisks extends AbstractAwsOperation {
 					getDisksXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, UPDATE_DISKS, getED()
-							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 	}
 

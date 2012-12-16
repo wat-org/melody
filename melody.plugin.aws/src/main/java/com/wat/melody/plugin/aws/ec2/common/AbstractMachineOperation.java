@@ -19,6 +19,8 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.jcraft.jsch.JSchException;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.cloud.management.ManagementMethod;
+import com.wat.melody.cloud.management.exception.IllegalManagementMethodException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
@@ -33,7 +35,6 @@ import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalManagementMethodException;
 import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
@@ -82,28 +83,29 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	/**
 	 * The 'enableManagement' XML attribute
 	 */
-	public static final String ENABLEMGNT_ATTR = "enableManagement";
+	public static final String ENABLEMGNT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_ATTR;
 
 	/**
 	 * The 'enableManagementTimeout' XML attribute
 	 */
-	public static final String ENABLEMGNT_TIMEOUT_ATTR = "enableManagementTimeout";
+	public static final String ENABLEMGNT_TIMEOUT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_TIMEOUT_ATTR;
 
 	private boolean mbEnableManagement;
 	private long mlEnableManagementTimeout;
 
 	public AbstractMachineOperation() {
 		super();
-		initEnableManagementTimeout();
-		initEnableManagement();
-	}
-
-	private void initEnableManagementTimeout() {
-		mlEnableManagementTimeout = 300000;
-	}
-
-	private void initEnableManagement() {
-		mbEnableManagement = true;
+		try {
+			setEnableManagementTimeout(300000);
+		} catch (AwsException Ex) {
+			throw new RuntimeException("Unexpected error while setting "
+					+ "the management timeout to '300000'. "
+					+ "Because this value is hard coded, such error "
+					+ "cannot happened. "
+					+ "Source code has certainly been modified and a bug have "
+					+ "been introduced.", Ex);
+		}
+		setEnableManagement(true);
 	}
 
 	/**
@@ -469,8 +471,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new RuntimeException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, "",
-					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
@@ -540,8 +543,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new RuntimeException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, "",
-					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
@@ -707,8 +711,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	}
 
 	@Attribute(name = ENABLEMGNT_ATTR)
-	public boolean setEnableManagement(boolean enableManagement)
-			throws AwsException {
+	public boolean setEnableManagement(boolean enableManagement) {
 		boolean previous = getEnableManagement();
 		mbEnableManagement = enableManagement;
 		return previous;

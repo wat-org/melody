@@ -20,7 +20,9 @@
 		<module>melody.plugin.echo</module>
 		<module>melody.plugin.sleep</module>
 		<module>melody.plugin.ssh</module>
+		<module>melody.cloud</module>
 		<module>melody.plugin.aws</module>
+		<module>melody.plugin.libvirt</module>
 	</modules>
 	
 </project>

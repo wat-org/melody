@@ -8,31 +8,16 @@
 		<version>0.0.1</version>
 	</parent>
 
-	<artifactId>melody.plugin.libvirt</artifactId>
+	<artifactId>melody.cloud</artifactId>
 	<packaging>jar</packaging>
 
-	<name>melody.plugin.libvirt</name>
+	<name>melody.cloud</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.libvirt</groupId>
-			<artifactId>libvirt</artifactId>
-			<version>0.4.7</version>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-			<version>3.0.9</version>
-		</dependency>
-		<dependency>
-			<groupId>com.wat.melody</groupId>
-			<artifactId>melody.common</artifactId>
-			<version>0.0.1</version>
-		</dependency>
 		<dependency>
 			<groupId>com.wat.melody</groupId>
 			<artifactId>melody.api</artifactId>
@@ -46,11 +31,6 @@
 		<dependency>
 			<groupId>com.wat.melody</groupId>
 			<artifactId>melody.plugin.ssh</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.wat.melody</groupId>
-			<artifactId>melody.cloud</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>

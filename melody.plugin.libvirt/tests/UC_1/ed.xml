@@ -6,10 +6,7 @@
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
-			<tags>
-				<tag name="MGNT" value="ssh"/>
-				<tag name="SSH.PORT" value="22"/>
-			</tags>
+			<melody-management method="ssh" port="22"/>
 			<fwrules>
 				<in>
 					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
@@ -23,9 +20,26 @@
 	</models>
 	
 	<instances>
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01"/>
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02"/>
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03"/>
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
+			<network>
+				<interface device="eth0"/>
+				<interface device="eth1"/>
+			</network>
+		</instance>
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">
+			<network>
+				<interface device="eth0"/>
+				<interface device="eth1"/>
+			</network>
+		</instance>		
+<!--
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
+			<network>
+				<interface device="eth0" ip="" fqdn="" />
+				<interface device="eth1" ip="" fqdn="" />
+			</network>
+		</instance>		
+-->
 	</instances>
 	
 </environment>

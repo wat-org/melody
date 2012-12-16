@@ -1,8 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.management;
 
 import java.util.Arrays;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalManagementMethodException;
+import com.wat.melody.cloud.management.exception.IllegalManagementMethodException;
 
 public enum ManagementMethod {
 

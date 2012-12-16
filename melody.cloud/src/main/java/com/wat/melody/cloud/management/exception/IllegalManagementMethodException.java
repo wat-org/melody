@@ -1,6 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common.exception;
+package com.wat.melody.cloud.management.exception;
 
-public class IllegalManagementMethodException extends AwsException {
+import com.wat.melody.common.utils.exception.MelodyException;
+
+public class IllegalManagementMethodException extends MelodyException {
 
 	private static final long serialVersionUID = -412345389964589949L;
 

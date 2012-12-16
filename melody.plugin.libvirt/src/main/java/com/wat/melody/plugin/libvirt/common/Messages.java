@@ -12,9 +12,6 @@ public class Messages extends NLS {
 	public static String InstanceStateEx_EMPTY;
 	public static String InstanceStateEx_INVALID;
 
-	public static String ManagementMethodEx_EMPTY;
-	public static String ManagementMethodEx_INVALID;
-
 	public static String ConfEx_CONF_NOT_REGISTERED;
 	public static String ConfEx_CONF_REGISTRATION_ERROR;
 
@@ -27,14 +24,6 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH;
 	public static String MachineEx_HERIT_ERROR;
 
-	public static String MachineEx_TOO_MANY_TAG_MGNT;
-	public static String MachineEx_NO_TAG_MGNT;
-	public static String MachineEx_INVALID_TAG_MGNT;
-	public static String MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT;
-	public static String MachineEx_TOO_MANY_TAG_MGNT_PORT;
-	public static String MachineEx_NO_TAG_MGNT_PORT;
-	public static String MachineEx_INVALID_TAG_MGNT_PORT;
-	public static String MachineEx_ENABLE_SSH_MGNT_TIMEOUT;
 	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
 	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
 	public static String MachineMsg_MANAGEMENT_DISABLE_BEGIN;

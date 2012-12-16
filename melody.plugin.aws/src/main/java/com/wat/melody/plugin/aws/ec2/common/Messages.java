@@ -18,9 +18,6 @@ public class Messages extends NLS {
 	public static String VolumeAttachmentStateEx_EMPTY;
 	public static String VolumeAttachmentStateEx_INVALID;
 
-	public static String ManagementMethodEx_EMPTY;
-	public static String ManagementMethodEx_INVALID;
-
 	public static String DiskEx_EMPTY_SIZE_ATTR;
 	public static String DiskEx_INVALID_SIZE_ATTR;
 	public static String DiskEx_EMPTY_DEVICE_ATTR;

@@ -7,7 +7,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
@@ -352,13 +351,11 @@ public class Configuration implements IPluginConfiguration {
 		long left;
 		boolean enablementDone = true;
 
+		Session session = null;
 		while (true) {
 			// Don't upload anything, just connect.
 			try {
-				Session session = upload.openSession();
-				ChannelSftp channel = upload.openSftpChannel(session);
-				channel.disconnect();
-				session.disconnect();
+				session = upload.openSession();
 				break;
 			} catch (Throwable Ex) {
 				if (Ex.getCause() == null || Ex.getCause().getMessage() == null) {
@@ -371,6 +368,10 @@ public class Configuration implements IPluginConfiguration {
 						&& Ex.getCause().getMessage().indexOf("timeout") == -1
 						&& Ex.getCause().getMessage().indexOf("No route") == -1) {
 					throw new SshException(Ex);
+				}
+			} finally {
+				if (session != null) {
+					session.disconnect();
 				}
 			}
 			log.debug(Messages.bind(Messages.SshMsg_WAIT_FOR_MANAGEMENT, host
@@ -386,7 +387,27 @@ public class Configuration implements IPluginConfiguration {
 				break;
 			}
 		}
+
+		String k = getKnownHostsHostKey(host.getValue().getHostAddress())
+				.getKey();
+		try {
+			addKnownHostsHostKey(host.getValue().getHostName(), k);
+		} catch (JSchException Ex) {
+			throw new RuntimeException("Unexpected error while adding an "
+					+ "host with the HostKey '" + k + "' into the KnownHosts "
+					+ "file. "
+					+ "Because this HostKey have been retrieve from the "
+					+ "KnownHosts file, this key should be valid. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
+		}
+
 		return enablementDone;
+	}
+
+	public void removeKnownHostsHost(Host host) {
+		removeKnownHostsHostKey(host.getValue().getHostAddress());
+		removeKnownHostsHostKey(host.getValue().getHostName());
 	}
 
 	/**

@@ -71,8 +71,9 @@ public class ResizeMachine extends AbstractAwsOperation {
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, RESIZE_MACHINE, getED()
-							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 
 		// Initialize optional task's attributes with their default value

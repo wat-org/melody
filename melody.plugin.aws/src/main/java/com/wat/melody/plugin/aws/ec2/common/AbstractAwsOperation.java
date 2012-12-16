@@ -102,8 +102,9 @@ abstract public class AbstractAwsOperation implements ITask {
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, "",
-					getED().getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 		try {
 			if (v != null) {

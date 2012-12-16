@@ -78,8 +78,9 @@ public class IngressMachine extends AbstractAwsOperation {
 					getFWRulesXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, INGRESS_MACHINE, getED()
-							.getLocation(Ex.getErrorNode()).toFullString()), Ex);
+					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+							.getLocation(Ex.getErrorNode()).toFullString()),
+					Ex.getCause());
 		}
 	}
 
