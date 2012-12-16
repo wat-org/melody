@@ -17,6 +17,12 @@ public class Messages extends NLS {
 	public static String RDEx_INVALID_HERIT_ATTR_NONODEMATCH;
 	public static String RDEx_INVALID_HERIT_ATTR_CIRCULARREF;
 
+	public static String MgmtEx_TOO_MANY_MGMT_NODE;
+	public static String MgmtEx_NO_MGMT_NODE;
+	public static String MgmtEx_TOO_MANY_MGMT_NETWORK_INTERFACE;
+	public static String MgmtEx_NO_MGMT_NETWORK_INTERFACE;
+	public static String MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_SELECTOR;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -13,7 +13,6 @@ public class Instance {
 
 	public Instance(Domain d) {
 		setDomain(d);
-		// TODO : find the data into the Domain XML dump
 		setInstanceType(LibVirtCloud.getDomainType(d));
 		setMacAddress(LibVirtCloud.getDomainMacAddress(d));
 	}

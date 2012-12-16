@@ -8,7 +8,7 @@ import com.wat.melody.common.network.exception.IllegalHostException;
 /**
  * 
  * @author Guillaume Cornet
- *
+ * 
  */
 public class Host {
 
@@ -20,6 +20,11 @@ public class Host {
 
 	public Host(String sHost) throws IllegalHostException {
 		setValue(sHost);
+	}
+
+	@Override
+	public String toString() {
+		return getValue().getHostAddress();
 	}
 
 	public InetAddress getValue() {

@@ -39,14 +39,12 @@ public class WinRmManagementHelper implements ManagementHelper {
 	@Override
 	public void enableManagement(long timeout) throws ManagementException,
 			InterruptedException {
-		// TODO : externalize error message
-		throw new ManagementException("WINRM not implemented.");
+		throw new ManagementException(Messages.MgmtEx_WINRM_MGMT_NOT_SUPPORTED);
 	}
 
 	@Override
 	public void disableManagement() throws ManagementException {
-		// TODO : externalize error message
-		throw new ManagementException("WINRM not implemented.");
+		throw new ManagementException(Messages.MgmtEx_WINRM_MGMT_NOT_SUPPORTED);
 	}
 
 }

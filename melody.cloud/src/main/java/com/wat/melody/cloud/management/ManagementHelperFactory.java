@@ -3,14 +3,12 @@ package com.wat.melody.cloud.management;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.cloud.management.exception.ManagementException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class ManagementHelperFactory {
 
 	public static ManagementHelper getManagementHelper(ITaskContext context,
-			Node instanceNode) throws ManagementException,
-			ResourcesDescriptorException {
+			Node instanceNode) throws ResourcesDescriptorException {
 		if (context == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

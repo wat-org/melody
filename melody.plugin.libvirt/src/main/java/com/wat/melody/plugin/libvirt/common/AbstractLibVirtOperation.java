@@ -13,7 +13,6 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.management.ManagementInfos;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -21,6 +20,7 @@ import com.wat.melody.plugin.libvirt.common.exception.ConfigurationException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpathextensions.GetManagementInterface;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractLibVirtOperation implements ITask {
@@ -103,7 +103,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
 							.getLocation(Ex.getErrorNode()).toFullString()),
 					Ex.getCause());
 		}
@@ -160,11 +160,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,
 				sKeyName);
 		if (i == null) {
-			// TODO externalize error message
-			throw new LibVirtException(Messages.bind(
-					"[{4}] Failed to create a new LibVirt Instance "
-							+ "with the following characteristics region:"
-							+ "{0}, image-id:{1}, type:{2}, keypair:{3}.",
+			throw new LibVirtException(Messages.bind(Messages.NewEx_FAILED,
 					new Object[] { getRegion(), sImageId, type, sKeyName,
 							getTargetNodeLocation() }));
 		}
@@ -236,12 +232,12 @@ public abstract class AbstractLibVirtOperation implements ITask {
 
 	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
 		try {
-			return getED().getMelodyID(
-					ManagementInfos
-							.getManagementNetworkDeviceNode(getTargetNode()));
+			Node mgmtNode = GetManagementInterface
+					.getManagementNetworkInterfaceNode(getTargetNode());
+			return getED().getMelodyID(mgmtNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
 							.getLocation(Ex.getErrorNode()).toFullString()),
 					Ex.getCause());
 		}

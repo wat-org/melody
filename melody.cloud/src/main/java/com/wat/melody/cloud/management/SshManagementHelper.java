@@ -59,10 +59,9 @@ public class SshManagementHelper implements ManagementHelper {
 			throw new ManagementException(Ex);
 		}
 		if (result == false) {
-			// TODO : externalize error message
-			throw new ManagementException(
-					"Enable Management timeout. You should increase the '"
-							+ Common.ENABLEMGNT_TIMEOUT_ATTR + "'.");
+			throw new ManagementException(Messages.bind(
+					Messages.MgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
+					Common.ENABLEMGNT_TIMEOUT_ATTR));
 		}
 	}
 

@@ -150,7 +150,7 @@ public class NewMachine extends AbstractMachineOperation {
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
 							.getLocation(Ex.getErrorNode()).toFullString()),
 					Ex.getCause());
 		}

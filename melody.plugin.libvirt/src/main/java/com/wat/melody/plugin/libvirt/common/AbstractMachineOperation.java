@@ -46,14 +46,9 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			return ManagementHelperFactory.getManagementHelper(getContext(),
 					getTargetNode());
-		} catch (ManagementException Ex) {
-			// TODO : externalize error message
-			throw new LibVirtException("[" + getTargetNodeLocation()
-					+ "] Instance '" + getInstanceID()
-					+ "' contains invalid management datas.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
+					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
 							.getLocation(Ex.getErrorNode()).toFullString()),
 					Ex.getCause());
 		}
@@ -82,18 +77,17 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		}
 		ManagementHelper mh = buildManagementHelper();
 
-		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN, mh
-				.getManagementInfos().getManagementMethod(), getInstanceID()));
+		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
+				getInstanceID()));
 		try {
 			mh.enableManagement(getEnableManagementTimeout());
 		} catch (ManagementException Ex) {
-			// TODO : externalize error message
-			throw new LibVirtException("[" + getTargetNodeLocation()
-					+ "] Failed to enable management for Instance '"
-					+ getInstanceID() + "'.", Ex);
+			throw new LibVirtException(Messages.bind(
+					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
+					getInstanceID(), getTargetNodeLocation()), Ex);
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
-				mh.getManagementInfos().getManagementMethod(), getInstanceID()));
+				getInstanceID()));
 	}
 
 	/**
@@ -120,17 +114,16 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		ManagementHelper mh = buildManagementHelper();
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
-				mh.getManagementInfos().getManagementMethod(), getInstanceID()));
+				getInstanceID()));
 		try {
 			mh.disableManagement();
 		} catch (ManagementException Ex) {
-			// TODO : externalize error message
-			throw new LibVirtException("[" + getTargetNodeLocation()
-					+ "] Failed to disable management for Instance '"
-					+ getInstanceID() + "'.", Ex);
+			throw new LibVirtException(Messages.bind(
+					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
+					getInstanceID(), getTargetNodeLocation()), Ex);
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_SUCCESS,
-				mh.getManagementInfos().getManagementMethod(), getInstanceID()));
+				getInstanceID()));
 	}
 
 	public boolean getEnableManagement() {
