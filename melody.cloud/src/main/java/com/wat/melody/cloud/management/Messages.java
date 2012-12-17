@@ -9,7 +9,6 @@ public class Messages extends NLS {
 	public static String ManagementMethodEx_EMPTY;
 	public static String ManagementMethodEx_INVALID;
 
-	public static String MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE;
 	public static String MgmtMsg_INTRO;
 	public static String MgmtMsg_RESUME;
 

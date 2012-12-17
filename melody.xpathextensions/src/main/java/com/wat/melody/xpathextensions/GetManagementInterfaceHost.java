@@ -10,9 +10,9 @@ import org.w3c.dom.Node;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public final class GetManagementInterface implements XPathFunction {
+public class GetManagementInterfaceHost implements XPathFunction {
 
-	public static final String NAME = "getManagementInterface";
+	public static final String NAME = "getManagementInterfaceHost";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -31,7 +31,7 @@ public final class GetManagementInterface implements XPathFunction {
 		}
 		try {
 			return ManagementInterfaceHelper
-					.getManagementNetworkInterfaceNode((Node) arg0);
+					.getManagementNetworkInterfaceHostNode((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			/*
 			 * TODO : add the location of the Node in the error message

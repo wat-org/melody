@@ -22,6 +22,7 @@ public class Messages extends NLS {
 	public static String MgmtEx_TOO_MANY_MGMT_NETWORK_INTERFACE;
 	public static String MgmtEx_NO_MGMT_NETWORK_INTERFACE;
 	public static String MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_SELECTOR;
+	public static String MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE;
 
 	static {
 		// initialize resource bundle

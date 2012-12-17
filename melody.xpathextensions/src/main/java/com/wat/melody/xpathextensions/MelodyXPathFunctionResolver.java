@@ -15,6 +15,9 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 	static final QName f_getManagementInterface = new QName(
 			CustomXPathFunctions.NAMESPACE_URI, GetManagementInterface.NAME);
 
+	static final QName f_getManagementInterfaceHost = new QName(
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementInterfaceHost.NAME);
+
 	/*
 	 * TODO : find a way to add custom XPath Function via configuration file
 	 */
@@ -26,6 +29,8 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 			return new GetHeritedContent();
 		} else if (qName.equals(f_getManagementInterface) && arity == 1) {
 			return new GetManagementInterface();
+		} else if (qName.equals(f_getManagementInterfaceHost) && arity == 1) {
+			return new GetManagementInterfaceHost();
 		}
 		return null;
 	}

@@ -10,7 +10,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
-import com.wat.melody.xpathextensions.GetManagementInterface;
+import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class ManagementInfos {
@@ -61,7 +61,7 @@ public class ManagementInfos {
 		log.debug(Messages.bind(Messages.MgmtMsg_INTRO,
 				context.getProcessorManager().getResourcesDescriptor()
 						.getLocation(instanceNode).toFullString()));
-		Node mgmtNode = GetManagementInterface.findMgmtNode(instanceNode);
+		Node mgmtNode = ManagementInterfaceHelper.findMgmtNode(instanceNode);
 		loadMethod(mgmtNode);
 		loadHost(mgmtNode, instanceNode);
 		loadPort(mgmtNode);
@@ -88,21 +88,15 @@ public class ManagementInfos {
 
 	private void loadHost(Node mgmtNode, Node instanceNode)
 			throws ResourcesDescriptorException {
-		Node netNode = GetManagementInterface
-				.getManagementNetworkInterfaceNode(instanceNode);
-		String attr = GetManagementInterface
-				.findMgmtInterfaceAttribute(mgmtNode);
-		String sHost = null;
-		try {
-			sHost = netNode.getAttributes().getNamedItem(attr).getNodeValue();
-		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
-					attr));
-		}
+		String sHost = ManagementInterfaceHelper
+				.getManagementNetworkInterfaceHost(mgmtNode, instanceNode);
 		try {
 			setHost(sHost);
 		} catch (IllegalHostException Ex) {
+			String attr = ManagementInterfaceHelper
+					.findMgmtInterfaceAttribute(mgmtNode);
+			Node netNode = ManagementInterfaceHelper
+					.getManagementNetworkInterfaceNode(mgmtNode, instanceNode);
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.MgmtEx_INVALID_ATTR, attr), Ex);
 		}
