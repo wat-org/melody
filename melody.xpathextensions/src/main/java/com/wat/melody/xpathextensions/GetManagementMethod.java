@@ -2,7 +2,6 @@ package com.wat.melody.xpathextensions;
 
 import java.util.List;
 
-import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Node;
@@ -10,9 +9,9 @@ import org.w3c.dom.Node;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public class GetManagementInterfaceHost implements XPathFunction {
+public class GetManagementMethod {
 
-	public static final String NAME = "getManagementInterfaceHost";
+	public static final String NAME = "getManagementMethod";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -30,8 +29,7 @@ public class GetManagementInterfaceHost implements XPathFunction {
 					+ "() expects a Node " + "argument.");
 		}
 		try {
-			return ManagementInterfaceHelper
-					.getManagementNetworkInterfaceHostNode((Node) arg0);
+			return ManagementInterfaceHelper.getManagementMethod((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			/*
 			 * TODO : add the location of the Node in the error message

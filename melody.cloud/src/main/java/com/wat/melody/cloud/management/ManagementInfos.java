@@ -5,12 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.cloud.management.exception.IllegalManagementMethodException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.common.network.exception.IllegalHostException;
-import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.ManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class ManagementInfos {
@@ -35,12 +33,12 @@ public class ManagementInfos {
 	 * * The {@link Common#MGMT_PORT_ATTR} XML attribute must contains a
 	 * {@link Port} ; <BR/>
 	 * The given node should contains a
-	 * {@link Common#MGMT_NETWORK_INTERFACE_SELECTOR} and a
-	 * {@link Common#MGMT_NETWORK_INTERFACE_ATTR} XML Attributes ; <BR/>
-	 * * The {@link Common#MGMT_NETWORK_INTERFACE_SELECTOR} XML attribute must
+	 * {@link Common#MGMT_NETWORK_INTERFACE_NODE_SELECTOR} and a
+	 * {@link Common#MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML Attributes ; <BR/>
+	 * * The {@link Common#MGMT_NETWORK_INTERFACE_NODE_SELECTOR} XML attribute must
 	 * contains an XPath expression which select the Management Network
 	 * Interface Node ; <BR/>
-	 * * The {@link Common#MGMT_NETWORK_INTERFACE_ATTR} XML attribute must
+	 * * The {@link Common#MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML attribute must
 	 * contains the name of the attribute of the Management Network Interface
 	 * Node which contains the {@link Host} ; <BR/>
 	 * </i>
@@ -62,61 +60,13 @@ public class ManagementInfos {
 				context.getProcessorManager().getResourcesDescriptor()
 						.getLocation(instanceNode).toFullString()));
 		Node mgmtNode = ManagementInterfaceHelper.findMgmtNode(instanceNode);
-		loadMethod(mgmtNode);
-		loadHost(mgmtNode, instanceNode);
-		loadPort(mgmtNode);
+		setManagementMethod(ManagementInterfaceHelper
+				.getManagementMethod(mgmtNode));
+		setHost(ManagementInterfaceHelper.getManagementNetworkInterfaceHost(
+				mgmtNode, instanceNode));
+		setPort(ManagementInterfaceHelper.getManagementPort(mgmtNode));
 		log.info(Messages.bind(Messages.MgmtMsg_RESUME, new Object[] {
 				getManagementMethod(), getHost(), getPort() }));
-	}
-
-	private void loadMethod(Node mgmtNode) throws ResourcesDescriptorException {
-		String sMethod = null;
-		try {
-			sMethod = mgmtNode.getAttributes()
-					.getNamedItem(Common.MGMT_METHOD_ATTR).getNodeValue();
-		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_MISSING_ATTR, Common.MGMT_METHOD_ATTR));
-		}
-		try {
-			setManagementMethod(sMethod);
-		} catch (IllegalManagementMethodException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_INVALID_ATTR, Common.MGMT_METHOD_ATTR), Ex);
-		}
-	}
-
-	private void loadHost(Node mgmtNode, Node instanceNode)
-			throws ResourcesDescriptorException {
-		String sHost = ManagementInterfaceHelper
-				.getManagementNetworkInterfaceHost(mgmtNode, instanceNode);
-		try {
-			setHost(sHost);
-		} catch (IllegalHostException Ex) {
-			String attr = ManagementInterfaceHelper
-					.findMgmtInterfaceAttribute(mgmtNode);
-			Node netNode = ManagementInterfaceHelper
-					.getManagementNetworkInterfaceNode(mgmtNode, instanceNode);
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.MgmtEx_INVALID_ATTR, attr), Ex);
-		}
-	}
-
-	private void loadPort(Node mgmtNode) throws ResourcesDescriptorException {
-		String sPort = null;
-		try {
-			sPort = mgmtNode.getAttributes()
-					.getNamedItem(Common.MGMT_PORT_ATTR).getNodeValue();
-		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_MISSING_ATTR, Common.MGMT_PORT_ATTR));
-		}
-		try {
-			setPort(sPort);
-		} catch (IllegalPortException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_INVALID_ATTR, Common.MGMT_PORT_ATTR), Ex);
-		}
 	}
 
 	public ManagementMethod getManagementMethod() {
@@ -134,16 +84,6 @@ public class ManagementInfos {
 		return previous;
 	}
 
-	private ManagementMethod setManagementMethod(String sMm)
-			throws IllegalManagementMethodException {
-		if (sMm == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		return setManagementMethod(ManagementMethod.parseString(sMm));
-	}
-
 	public Host getHost() {
 		return moHost;
 	}
@@ -158,15 +98,6 @@ public class ManagementInfos {
 		return previous;
 	}
 
-	private Host setHost(String sHost) throws IllegalHostException {
-		if (sHost == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		return setHost(Host.parseString(sHost));
-	}
-
 	public Port getPort() {
 		return moPort;
 	}
@@ -179,15 +110,6 @@ public class ManagementInfos {
 		Port previous = getPort();
 		moPort = p;
 		return previous;
-	}
-
-	private Port setPort(String sPort) throws IllegalPortException {
-		if (sPort == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		return setPort(Port.parseString(sPort));
 	}
 
 }

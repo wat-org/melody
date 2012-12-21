@@ -3,6 +3,7 @@ package com.wat.melody.cloud.management;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
+import com.wat.melody.xpathextensions.common.ManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class ManagementHelperFactory {

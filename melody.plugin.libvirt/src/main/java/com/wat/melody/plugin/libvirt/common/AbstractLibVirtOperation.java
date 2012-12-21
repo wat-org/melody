@@ -233,7 +233,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
 		try {
 			Node mgmtNode = ManagementInterfaceHelper
-					.getManagementNetworkInterfaceNode(getTargetNode());
+					.getManagementNetworkInterface(getTargetNode());
 			return getED().getMelodyID(mgmtNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Messages.bind(

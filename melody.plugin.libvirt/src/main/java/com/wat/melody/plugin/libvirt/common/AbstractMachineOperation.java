@@ -8,6 +8,7 @@ import com.wat.melody.cloud.management.ManagementHelper;
 import com.wat.melody.cloud.management.ManagementHelperFactory;
 import com.wat.melody.cloud.management.exception.ManagementException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
+import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractMachineOperation extends AbstractLibVirtOperation {
@@ -17,12 +18,12 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 	/**
 	 * The 'enableManagement' XML attribute
 	 */
-	public static final String ENABLEMGNT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_ATTR;
+	public static final String ENABLEMGNT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_ATTR;
 
 	/**
 	 * The 'enableManagementTimeout' XML attribute
 	 */
-	public static final String ENABLEMGNT_TIMEOUT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_TIMEOUT_ATTR;
+	public static final String ENABLEMGNT_TIMEOUT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR;
 
 	private boolean mbEnableManagement;
 	private long mlEnableManagementTimeout;

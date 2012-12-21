@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.management.exception;
+package com.wat.melody.xpathextensions.common.exception;
 
 import com.wat.melody.common.utils.exception.MelodyException;
 

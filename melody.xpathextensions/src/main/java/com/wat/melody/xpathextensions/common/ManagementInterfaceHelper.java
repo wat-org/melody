@@ -5,22 +5,26 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.common.network.Host;
+import com.wat.melody.common.network.Port;
+import com.wat.melody.common.network.exception.IllegalHostException;
+import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class ManagementInterfaceHelper {
 
-	/*
-	 * TODO : il y en a un peu dans com.wat.melody.cloud.management, un peu ici
-	 * ... c'est degeulasse
-	 * 
-	 * => refactor de com.wat.melody.cloud.management, pour qu'il s'appuye
-	 * entierement sur cette classe ?
+	/**
+	 * The 'enableManagement' XML attribute to use in the sequence descriptor
 	 */
+	public static final String ENABLEMGNT_ATTR = "enableManagement";
 
-	public static final String DEFAULT_MGMT_NETOWRK_INTERFACE_SELECTOR = "//network//interface[@device='eth0']";
-	public static final String DEFAULT_MGMT_NETWORK_INTERFACE_ATTRIBUTE = "ip";
-	public static final String SECONDARY_SEARCH = "//network//interface";
+	/**
+	 * The 'enableManagementTimeout' XML attribute to use in the sequence
+	 * descriptor
+	 */
+	public static final String ENABLEMGNT_TIMEOUT_ATTR = "enableManagementTimeout";
 
 	/**
 	 * The 'melody-management' XML Node in the RD
@@ -28,16 +32,64 @@ public abstract class ManagementInterfaceHelper {
 	public static final String MGMT_NODE = "melody-management";
 
 	/**
+	 * The 'method' XML attribute of the 'melody-management' XML Node
+	 */
+	public static final String MGMT_METHOD_ATTR = "method";
+
+	/**
 	 * The 'interfaceSelector' XML attribute of the 'melody-management' XML Node
 	 */
-	public static final String MGMT_NETWORK_INTERFACE_SELECTOR = "interfaceSelector";
+	public static final String MGMT_NETWORK_INTERFACE_NODE_SELECTOR = "interfaceSelector";
 
 	/**
 	 * The 'interfaceAttribute' XML attribute of the 'melody-management' XML
 	 * Node
 	 */
-	public static final String MGMT_NETWORK_INTERFACE_ATTR = "interfaceAttribute";
+	public static final String MGMT_NETWORK_INTERFACE_ATTR_SELECTOR = "interfaceAttribute";
 
+	/**
+	 * The 'port' XML attribute of the 'melody-management' XML Node
+	 */
+	public static final String MGMT_PORT_ATTR = "port";
+
+	/**
+	 * XPath Expression which selects Management Network Interface Node in
+	 * Primary search
+	 */
+	public static final String DEFAULT_MGMT_NETOWRK_INTERFACE_NODE_SELECTOR = "//network//interface[@device='eth0']";
+
+	/**
+	 * XPath Expression which selects Management Network Interface Node in
+	 * Secondary search
+	 */
+	public static final String SECONDARY_SEARCH = "//network//interface";
+
+	/**
+	 * the XML attribute of the Management Network Interface Node which select
+	 * the Host
+	 */
+	public static final String DEFAULT_MGMT_NETWORK_INTERFACE_ATTR_SELECTOR = "ip";
+
+	/**
+	 * <p>
+	 * Return the Melody-Management {@link Node} related to the given Instance
+	 * {@link Node}.
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is a {@link Node} which describes an Instance.
+	 * 
+	 * @return the Melody-Management {@link Node} related to the given Instance
+	 *         {@link Node}.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Melody-Management {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if multiple Melody-Management {@link Node} can be found.
+	 */
 	public static Node findMgmtNode(Node instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
@@ -62,26 +114,83 @@ public abstract class ManagementInterfaceHelper {
 		return nl.item(0);
 	}
 
+	/**
+	 * <p>
+	 * Return the Melody-Management Network Interface Node Selector of the given
+	 * Melody-Management {@link Node}.
+	 * </p>
+	 * 
+	 * @param mgmtNode
+	 *            is a Melody-Management {@link Node}.
+	 * 
+	 * @return the content of the {@link #MGMT_NETWORK_INTERFACE_NODE_SELECTOR}
+	 *         XML Attribute of the given Melody-Management {@link Node} or
+	 *         {@link #DEFAULT_MGMT_NETOWRK_INTERFACE_NODE_SELECTOR} if no
+	 *         {@link #MGMT_NETWORK_INTERFACE_NODE_SELECTOR} XML Attribute can
+	 *         be found.
+	 */
 	public static String findMgmtInterfaceSelector(Node mgmtNode) {
 		try {
 			return mgmtNode.getAttributes()
-					.getNamedItem(MGMT_NETWORK_INTERFACE_SELECTOR)
+					.getNamedItem(MGMT_NETWORK_INTERFACE_NODE_SELECTOR)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_MGMT_NETOWRK_INTERFACE_SELECTOR;
+			return DEFAULT_MGMT_NETOWRK_INTERFACE_NODE_SELECTOR;
 		}
 	}
 
+	/**
+	 * <p>
+	 * Return the Melody-Management Network Interface Attribute Selector of the
+	 * given Melody-Management {@link Node}.
+	 * </p>
+	 * 
+	 * @param mgmtNode
+	 *            is a Melody-Management {@link Node}.
+	 * 
+	 * @return the content of the {@link #MGMT_NETWORK_INTERFACE_ATTR_SELECTOR}
+	 *         XML Attribute of the given Melody-Management {@link Node} or
+	 *         {@link #DEFAULT_MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} if no
+	 *         {@link #MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML Attribute can
+	 *         be found.
+	 */
 	public static String findMgmtInterfaceAttribute(Node mgmtNode) {
 		try {
 			return mgmtNode.getAttributes()
-					.getNamedItem(MGMT_NETWORK_INTERFACE_ATTR).getNodeValue();
+					.getNamedItem(MGMT_NETWORK_INTERFACE_ATTR_SELECTOR)
+					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_MGMT_NETWORK_INTERFACE_ATTRIBUTE;
+			return DEFAULT_MGMT_NETWORK_INTERFACE_ATTR_SELECTOR;
 		}
 	}
 
-	public static Node getManagementNetworkInterfaceNode(Node instanceNode)
+	/**
+	 * <p>
+	 * Return the Melody-Management Network Interface {@link Node} related to
+	 * the given Instance {@link Node}.
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is a {@link Node} which describes an Instance.
+	 * 
+	 * @return the Melody-Management Network Interface {@link Node} related to
+	 *         the given Instance {@link Node}.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Melody-Management {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if multiple Melody-Management {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if no Melody-Management Network Interface{@link Node} can be
+	 *             found.
+	 * @throws ResourcesDescriptorException
+	 *             if multiple Melody-Management Network Interface{@link Node}
+	 *             can be found.
+	 */
+	public static Node getManagementNetworkInterface(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
@@ -90,19 +199,37 @@ public abstract class ManagementInterfaceHelper {
 			// raised when melody-management datas are invalid.
 			// in this situation, we consider eth0 is the management interface
 		}
-		return ManagementInterfaceHelper.getManagementNetworkInterfaceNode(
+		return ManagementInterfaceHelper.getManagementNetworkInterface(
 				mgmtNode, instanceNode);
 	}
 
 	/**
-	 * /!\ Will not fail if mgmtNode is null
+	 * <p>
+	 * Return the Melody-Management Network Interface {@link Node} related to
+	 * the given Instance {@link Node}.
+	 * </p>
 	 * 
 	 * @param mgmtNode
+	 *            is the Melody-Management {@link Node} related to the given
+	 *            Instance {@link Node} (can be null, if the given Instance
+	 *            {@link Node} has no Melody-Management {@link Node}).
 	 * @param instanceNode
-	 * @return
+	 *            is a {@link Node} which describes an Instance.
+	 * 
+	 * @return the Melody-Management Network Interface {@link Node} related to
+	 *         the given Instance {@link Node}.
+	 * 
 	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Melody-Management Network Interface{@link Node} can be
+	 *             found.
+	 * @throws ResourcesDescriptorException
+	 *             if multiple Melody-Management Network Interface{@link Node}
+	 *             can be found.
 	 */
-	public static Node getManagementNetworkInterfaceNode(Node mgmtNode,
+	public static Node getManagementNetworkInterface(Node mgmtNode,
 			Node instanceNode) throws ResourcesDescriptorException {
 		String sMgmtInterfaceSelector = findMgmtInterfaceSelector(mgmtNode);
 		NodeList nl = null;
@@ -128,7 +255,7 @@ public abstract class ManagementInterfaceHelper {
 		return nl.item(0);
 	}
 
-	public static String getManagementNetworkInterfaceHost(Node instanceNode)
+	public static Host getManagementNetworkInterfaceHost(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
@@ -149,50 +276,59 @@ public abstract class ManagementInterfaceHelper {
 	 * @return
 	 * @throws ResourcesDescriptorException
 	 */
-	public static String getManagementNetworkInterfaceHost(Node mgmtNode,
+	public static Host getManagementNetworkInterfaceHost(Node mgmtNode,
 			Node instanceNode) throws ResourcesDescriptorException {
-		Node netNode = getManagementNetworkInterfaceNode(mgmtNode, instanceNode);
+		Node netNode = getManagementNetworkInterface(mgmtNode, instanceNode);
 		String attr = findMgmtInterfaceAttribute(mgmtNode);
+		String sHost = null;
 		try {
-			return netNode.getAttributes().getNamedItem(attr).getNodeValue();
+			sHost = netNode.getAttributes().getNamedItem(attr).getNodeValue();
 		} catch (NullPointerException Ex) {
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
 					attr));
 		}
+		try {
+			return Host.parseString(sHost);
+		} catch (IllegalHostException Ex) {
+			throw new ResourcesDescriptorException(netNode, Messages.bind(
+					Messages.MgmtEx_INVALID_ATTR, attr), Ex);
+		}
 	}
 
-	public static Node getManagementNetworkInterfaceHostNode(Node instanceNode)
+	public static Port getManagementPort(Node mgmtNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		String sPort = null;
 		try {
-			mgmtNode = ManagementInterfaceHelper.findMgmtNode(instanceNode);
-		} catch (ResourcesDescriptorException Ex) {
-			// raised when melody-management datas are invalid.
-			// in this situation, we consider eth0 is the management interface
+			sPort = mgmtNode.getAttributes().getNamedItem(MGMT_PORT_ATTR)
+					.getNodeValue();
+		} catch (NullPointerException Ex) {
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.MgmtEx_MISSING_ATTR, MGMT_PORT_ATTR));
 		}
-		return ManagementInterfaceHelper.getManagementNetworkInterfaceHostNode(
-				mgmtNode, instanceNode);
+		try {
+			return Port.parseString(sPort);
+		} catch (IllegalPortException Ex) {
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.MgmtEx_INVALID_ATTR, MGMT_PORT_ATTR), Ex);
+		}
 	}
 
-	/**
-	 * /!\ Will not fail if mgmtNode is null
-	 * 
-	 * @param mgmtNode
-	 * @param instanceNode
-	 * @return
-	 * @throws ResourcesDescriptorException
-	 */
-	public static Node getManagementNetworkInterfaceHostNode(Node mgmtNode,
-			Node instanceNode) throws ResourcesDescriptorException {
-		Node netNode = getManagementNetworkInterfaceNode(mgmtNode, instanceNode);
-		String attr = findMgmtInterfaceAttribute(mgmtNode);
+	public static ManagementMethod getManagementMethod(Node mgmtNode)
+			throws ResourcesDescriptorException {
+		String sMethod = null;
 		try {
-			return netNode.getAttributes().getNamedItem(attr);
+			sMethod = mgmtNode.getAttributes().getNamedItem(MGMT_METHOD_ATTR)
+					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
-					attr));
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.MgmtEx_MISSING_ATTR, MGMT_METHOD_ATTR));
+		}
+		try {
+			return ManagementMethod.parseString(sMethod);
+		} catch (IllegalManagementMethodException Ex) {
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.MgmtEx_INVALID_ATTR, MGMT_METHOD_ATTR), Ex);
 		}
 	}
 

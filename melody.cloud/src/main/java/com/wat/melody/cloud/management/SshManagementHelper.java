@@ -5,6 +5,7 @@ import com.wat.melody.cloud.management.exception.ManagementException;
 import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
+import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 
 public class SshManagementHelper implements ManagementHelper {
 
@@ -61,7 +62,7 @@ public class SshManagementHelper implements ManagementHelper {
 		if (result == false) {
 			throw new ManagementException(Messages.bind(
 					Messages.MgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
-					Common.ENABLEMGNT_TIMEOUT_ATTR));
+					ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR));
 		}
 	}
 

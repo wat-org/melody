@@ -1,8 +1,8 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.xpathextensions.common;
 
 import java.util.Arrays;
 
-import com.wat.melody.cloud.management.exception.IllegalManagementMethodException;
+import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 
 public enum ManagementMethod {
 

@@ -19,8 +19,6 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.jcraft.jsch.JSchException;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.management.ManagementMethod;
-import com.wat.melody.cloud.management.exception.IllegalManagementMethodException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
@@ -41,6 +39,9 @@ import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.ManagementMethod;
+import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
@@ -83,12 +84,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	/**
 	 * The 'enableManagement' XML attribute
 	 */
-	public static final String ENABLEMGNT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_ATTR;
+	public static final String ENABLEMGNT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_ATTR;
 
 	/**
 	 * The 'enableManagementTimeout' XML attribute
 	 */
-	public static final String ENABLEMGNT_TIMEOUT_ATTR = com.wat.melody.cloud.management.Common.ENABLEMGNT_TIMEOUT_ATTR;
+	public static final String ENABLEMGNT_TIMEOUT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR;
 
 	private boolean mbEnableManagement;
 	private long mlEnableManagementTimeout;
