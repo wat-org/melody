@@ -298,7 +298,7 @@ public abstract class LibVirtCloud {
 		Node nMacAddr = null;
 		try {
 			nMacAddr = netconf.evaluateAsNode("/network/ip/dhcp" + "/host"
-					+ "[ @mac='" + sMacAddr + "' and exists(@allocated) ]");
+					+ "[ upper-case(@mac)=upper-case('" + sMacAddr + "') and exists(@allocated) ]");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -333,7 +333,7 @@ public abstract class LibVirtCloud {
 	protected static String getDomainIpAddress(String sMacAddr) {
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
-					+ "/host[ @mac='" + sMacAddr + "' ]/@ip");
+					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr + "') ]/@ip");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.");
@@ -343,7 +343,7 @@ public abstract class LibVirtCloud {
 	protected static String getDomainDnsName(String sMacAddr) {
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
-					+ "/host[ @mac='" + sMacAddr + "' ]/@name");
+					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr + "') ]/@name");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.");
