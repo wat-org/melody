@@ -2,6 +2,7 @@ package com.wat.melody.xpathextensions;
 
 import java.util.List;
 
+import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Node;
@@ -9,7 +10,7 @@ import org.w3c.dom.Node;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public class GetManagementMethod {
+public class GetManagementMethod implements XPathFunction {
 
 	public static final String NAME = "getManagementMethod";
 

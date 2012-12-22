@@ -20,10 +20,10 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 			CustomXPathFunctions.NAMESPACE_URI, GetManagementHost.NAME);
 
 	static final QName f_getManagementPort = new QName(
-			CustomXPathFunctions.NAMESPACE_URI, GetManagementHost.NAME);
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementPort.NAME);
 
 	static final QName f_getManagementMethod = new QName(
-			CustomXPathFunctions.NAMESPACE_URI, GetManagementHost.NAME);
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementMethod.NAME);
 
 	/*
 	 * TODO : find a way to add custom XPath Function via configuration file
@@ -39,9 +39,9 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 		} else if (qName.equals(f_getManagementHost) && arity == 1) {
 			return new GetManagementHost();
 		} else if (qName.equals(f_getManagementPort) && arity == 1) {
-			return new GetManagementHost();
+			return new GetManagementPort();
 		} else if (qName.equals(f_getManagementMethod) && arity == 1) {
-			return new GetManagementHost();
+			return new GetManagementMethod();
 		}
 		return null;
 	}
