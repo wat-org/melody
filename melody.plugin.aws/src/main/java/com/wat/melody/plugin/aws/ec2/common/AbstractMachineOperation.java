@@ -25,6 +25,7 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.Protocol;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
@@ -471,10 +472,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new RuntimeException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new RuntimeException(Ex);
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
@@ -494,8 +492,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			return ManagementMethod.parseString(val);
 		} catch (IllegalManagementMethodException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT, TAG_MGNT, getED()
-							.getLocation(nl.item(0)).toFullString()), Ex);
+					Messages.MachineEx_INVALID_TAG_MGNT, TAG_MGNT, Doc
+							.getNodeLocation(nl.item(0)).toFullString()), Ex);
 		}
 	}
 
@@ -543,10 +541,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new RuntimeException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new RuntimeException(Ex);
 		}
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
@@ -564,8 +559,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			return Port.parseString(val);
 		} catch (IllegalPortException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT_PORT, portTag, getED()
-							.getLocation(nl.item(0)).toFullString()), Ex);
+					Messages.MachineEx_INVALID_TAG_MGNT_PORT, portTag, Doc
+							.getNodeLocation(nl.item(0)).toFullString()), Ex);
 		}
 	}
 

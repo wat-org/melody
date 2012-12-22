@@ -49,9 +49,6 @@ public final class GetHeritedContent implements XPathFunction {
 		try {
 			return getHeritedContent((Node) arg0, (String) arg1);
 		} catch (ResourcesDescriptorException | XPathExpressionException Ex) {
-			/*
-			 * TODO : add the location of the Node in the error message
-			 */
 			throw new XPathFunctionException(Ex);
 		}
 	}

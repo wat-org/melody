@@ -21,7 +21,7 @@ public abstract class ManagementHelperFactory {
 		}
 
 		ManagementHelper mh = null;
-		ManagementInfos mi = new ManagementInfos(context, instanceNode);
+		ManagementInfos mi = new ManagementInfos(instanceNode);
 		ManagementMethod mm = mi.getManagementMethod();
 		switch (mm) {
 		case SSH:

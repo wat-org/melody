@@ -102,10 +102,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new LibVirtException(Ex);
 		}
 		try {
 			if (v != null) {
@@ -140,7 +137,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	}
 
 	public String getTargetNodeLocation() {
-		return getED().getLocation(getTargetNode()).toFullString();
+		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
 	public Instance getInstance() {
@@ -236,10 +233,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 					.getManagementNetworkInterface(getTargetNode());
 			return getED().getMelodyID(mgmtNode);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new LibVirtException(Ex);
 		}
 	}
 

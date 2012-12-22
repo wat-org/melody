@@ -13,7 +13,6 @@ import com.wat.melody.api.exception.IllegalTargetFilterException;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Filter;
 import com.wat.melody.common.utils.FilterSet;
-import com.wat.melody.common.utils.Location;
 import com.wat.melody.common.utils.exception.IllegalDocException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.common.utils.exception.IllegalFilterException;
@@ -60,26 +59,6 @@ public interface IResourcesDescriptor {
 	 *             {@link DUNID}.
 	 */
 	public DUNID getMelodyID(Node n);
-
-	/**
-	 * <p>
-	 * Get the {@link Location} of the given{@link Node}.
-	 * </p>
-	 * 
-	 * @param n
-	 *            is a {@link Node} of the Resources Descriptor.
-	 * 
-	 * @return the {@link Location} of the given {@link Node}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is not owned by this object.
-	 * @throws RuntimeException
-	 *             if an error occurred while retrieving the {@link Location} of
-	 *             the given {@link Node}.
-	 */
-	public Location getLocation(Node n);
 
 	/**
 	 * <p>

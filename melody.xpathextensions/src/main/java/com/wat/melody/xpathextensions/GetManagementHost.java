@@ -33,9 +33,6 @@ public class GetManagementHost implements XPathFunction {
 			return ManagementInterfaceHelper
 					.getManagementNetworkInterfaceHost((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
-			/*
-			 * TODO : add the location of the Node in the error message
-			 */
 			throw new XPathFunctionException(Ex);
 		}
 	}

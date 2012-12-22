@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -15,11 +14,9 @@ import com.wat.melody.api.exception.IllegalResourcesFilterException;
 import com.wat.melody.api.exception.IllegalTargetFilterException;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.DUNIDDoc;
-import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.Filter;
 import com.wat.melody.common.utils.FilterSet;
 import com.wat.melody.common.utils.FilteredDoc;
-import com.wat.melody.common.utils.Location;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDocException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
@@ -136,35 +133,6 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized DUNID getMelodyID(Node n) {
 		return getDUNID(n);
-	}
-
-	@Override
-	public Location getLocation(Node n) {
-		if (n == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
-		}
-		if (n.getOwnerDocument() != getDocument()) {
-			throw new IllegalArgumentException("Given Node is not owned by "
-					+ "this object.");
-		}
-		if (n instanceof Attr) {
-			// Find the DUNIDDoc which holds the given Node
-			DUNID dunid = getMelodyID(((Attr) n).getOwnerElement());
-			DUNIDDoc doc = getOwnerDUNIDDoc(dunid);
-			// Find the original Node in the DUNIDDoc
-			Node originalNode = doc.getNode(dunid);
-			Node originalAttr = originalNode.getAttributes().getNamedItem(
-					n.getNodeName());
-			return Doc.getNodeLocation(originalAttr);
-		} else {
-			// Find the DUNIDDoc which holds the given Node
-			DUNID dunid = getMelodyID(n);
-			DUNIDDoc doc = getOwnerDUNIDDoc(dunid);
-			// Find the original Node in the DUNIDDoc
-			Node originalNode = doc.getNode(dunid);
-			return Doc.getNodeLocation(originalNode);
-		}
 	}
 
 	@Override

@@ -101,10 +101,7 @@ abstract public class AbstractAwsOperation implements ITask {
 			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new AwsException(Ex);
 		}
 		try {
 			if (v != null) {
@@ -134,7 +131,7 @@ abstract public class AbstractAwsOperation implements ITask {
 	}
 
 	public String getTargetNodeLocation() {
-		return getED().getLocation(getTargetNode()).toFullString();
+		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
 	public boolean instanceExists() {

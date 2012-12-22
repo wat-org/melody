@@ -32,9 +32,6 @@ public class GetManagementPort implements XPathFunction {
 		try {
 			return ManagementInterfaceHelper.getManagementPort((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
-			/*
-			 * TODO : add the location of the Node in the error message
-			 */
 			throw new XPathFunctionException(Ex);
 		}
 	}

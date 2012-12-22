@@ -48,10 +48,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 			return ManagementHelperFactory.getManagementHelper(getContext(),
 					getTargetNode());
 		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_RD_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new LibVirtException(Ex);
 		}
 	}
 

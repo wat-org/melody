@@ -2,6 +2,7 @@ package com.wat.melody.xpathextensions.common.exception;
 
 import org.w3c.dom.Node;
 
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.MelodyException;
 
 public class ResourcesDescriptorException extends MelodyException {
@@ -41,6 +42,12 @@ public class ResourcesDescriptorException extends MelodyException {
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 		moErrorNode = errorNode;
+	}
+
+	@Override
+	public String getMessage() {
+		return "[" + Doc.getNodeLocation(getErrorNode()).toFullString() + "] "
+				+ super.getMessage();
 	}
 
 }

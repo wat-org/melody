@@ -2,7 +2,6 @@ package com.wat.melody.common.utils;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -90,7 +89,8 @@ public class DUNIDDoc extends Doc {
 	 * 
 	 * @param n
 	 *            is a {@link Node}.
-	 * @return the {@link DUNID} of the given {@link Node}.
+	 * @return the {@link DUNID} of the given {@link Node}, found in the
+	 *         {@link #DUNID_ATTR} XML Attribute.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Node} is <code>null</code>.
@@ -104,7 +104,7 @@ public class DUNIDDoc extends Doc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
-		Attr a = (Attr) n.getAttributes().getNamedItem(DUNID_ATTR);
+		Node a = n.getAttributes().getNamedItem(DUNID_ATTR);
 		if (a == null) {
 			throw new RuntimeException("Unexpected error while retrieving the "
 					+ "'" + DUNID_ATTR + "' XML Attribute of the element node "
@@ -115,14 +115,15 @@ public class DUNIDDoc extends Doc {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.");
 		}
+		String sDunid = a.getNodeValue();
 		try {
-			return DUNID.parseString(a.getNodeValue());
+			return DUNID.parseString(sDunid);
 		} catch (IllegalDUNIDException Ex) {
 			throw new RuntimeException("Unexecpted error while creating a "
-					+ "DUNID based a '" + DUNID_ATTR + "' XML Attribute's "
-					+ "value. " + "Since this '" + DUNID_ATTR + "' XML "
-					+ "Attribute's value have been automaticaly created by "
-					+ "this object, such error cannot happened. "
+					+ "DUNID based on the value '" + sDunid + "'. Since this "
+					+ "value have been retrieved from the '" + DUNID_ATTR
+					+ "' XML Attribute, which have been automaticaly "
+					+ "created by this object, such error cannot happened. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
@@ -167,7 +168,7 @@ public class DUNIDDoc extends Doc {
 						Messages.NoSuchDUNIDEx_UNFOUND,
 						ownerNodeDUNID.getValue()));
 			}
-			Attr a = (Attr) n.getAttributes().getNamedItem(sAttrName);
+			Node a = n.getAttributes().getNamedItem(sAttrName);
 			if (a != null) {
 				return a.getNodeValue();
 			}
@@ -218,7 +219,7 @@ public class DUNIDDoc extends Doc {
 						Messages.NoSuchDUNIDEx_UNFOUND,
 						ownerNodeDUNID.getValue()));
 			}
-			Attr a = (Attr) n.getAttributes().getNamedItem(sAttrName);
+			Node a = n.getAttributes().getNamedItem(sAttrName);
 			if (a == null) {
 				createAttribute(sAttrName, sAttrValue, n);
 			} else {

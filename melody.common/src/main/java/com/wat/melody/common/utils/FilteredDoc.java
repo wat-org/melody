@@ -8,7 +8,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.common.utils.exception.IllegalDUNIDException;
 import com.wat.melody.common.utils.exception.IllegalDocException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.common.utils.exception.IllegalFilterException;
@@ -35,21 +34,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Must be a valid Document.");
 		}
 
-		DUNID dunid = null;
-		try {
-			dunid = DUNID.parseString(srcNode.getAttributes()
-					.getNamedItem(DUNID_ATTR).getNodeValue());
-		} catch (IllegalDUNIDException Ex) {
-			throw new RuntimeException("Unexecpted error while creating a "
-					+ "DUNID based a '" + DUNID_ATTR
-					+ "' XML Attribute's value. " + "Since this '" + DUNID_ATTR
-					+ "' XML Attribute's value "
-					+ "have been automaticaly created by this object, such "
-					+ "error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		Node oDestNode = getNode(doc, dunid);
+		Node oDestNode = getNode(doc, getDUNID(srcNode));
 		if (oDestNode != null) {
 			return oDestNode;
 		}

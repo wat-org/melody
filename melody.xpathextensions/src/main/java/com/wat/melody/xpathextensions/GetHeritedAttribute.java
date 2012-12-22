@@ -49,9 +49,6 @@ public final class GetHeritedAttribute implements XPathFunction {
 		try {
 			return getHeritedAttributeValue((Node) arg0, (String) arg1);
 		} catch (ResourcesDescriptorException Ex) {
-			/*
-			 * TODO : add the location of the Node in the error message
-			 */
 			throw new XPathFunctionException(Ex);
 		}
 	}

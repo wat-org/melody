@@ -107,10 +107,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 					Messages.UpdateDiskEx_INVALID_DISK_XPATH,
 					getDisksXprSuffix()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new AwsException(Ex);
 		}
 	}
 

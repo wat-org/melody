@@ -1,7 +1,5 @@
 package com.wat.melody.common.utils;
 
-import java.io.File;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
@@ -35,23 +33,25 @@ public class Location {
 		moNode = node;
 	}
 
-	public File getFile() {
-		return (File) moNode.getOwnerDocument().getUserData(Parser.FILE);
+	public String getSource() {
+		Node n = getRelatedNode();
+		String source = null;
+		do {
+			source = (String) n.getUserData(Parser.SOURCE);
+			if (source != null) {
+				return source;
+			}
+		} while ((n = n.getParentNode()) != null);
+		return null;
 	}
 
 	public int getLine() {
-		Node n = moNode;
-		if (moNode instanceof Attr) {
-			n = ((Attr) moNode).getOwnerElement();
-		}
+		Node n = getRelatedNode();
 		return (int) n.getUserData(Parser.LINE_NUMBER);
 	}
 
 	public int getColumn() {
-		Node n = moNode;
-		if (moNode instanceof Attr) {
-			n = ((Attr) moNode).getOwnerElement();
-		}
+		Node n = getRelatedNode();
 		return (int) n.getUserData(Parser.COLUMN_NUMBER);
 	}
 
@@ -66,7 +66,14 @@ public class Location {
 	}
 
 	public String toFullString() {
-		return "file:" + getFile() + ", " + toString();
+		return "file:" + getSource() + ", " + toString();
+	}
+
+	private Node getRelatedNode() {
+		if (moNode instanceof Attr) {
+			return ((Attr) moNode).getOwnerElement();
+		}
+		return moNode;
 	}
 
 }

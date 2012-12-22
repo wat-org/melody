@@ -185,10 +185,7 @@ public class NewMachine extends AbstractMachineOperation {
 				setPassphrase(v);
 			}
 		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_HERIT_ERROR, Ex.getMessage(), getED()
-							.getLocation(Ex.getErrorNode()).toFullString()),
-					Ex.getCause());
+			throw new AwsException(Ex);
 		}
 
 		// Get the default KeyPair Repository, if not provided.

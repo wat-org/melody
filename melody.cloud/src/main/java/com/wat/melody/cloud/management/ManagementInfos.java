@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.ManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
@@ -35,21 +35,20 @@ public class ManagementInfos {
 	 * The given node should contains a
 	 * {@link Common#MGMT_NETWORK_INTERFACE_NODE_SELECTOR} and a
 	 * {@link Common#MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML Attributes ; <BR/>
-	 * * The {@link Common#MGMT_NETWORK_INTERFACE_NODE_SELECTOR} XML attribute must
-	 * contains an XPath expression which select the Management Network
+	 * * The {@link Common#MGMT_NETWORK_INTERFACE_NODE_SELECTOR} XML attribute
+	 * must contains an XPath expression which select the Management Network
 	 * Interface Node ; <BR/>
-	 * * The {@link Common#MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML attribute must
-	 * contains the name of the attribute of the Management Network Interface
-	 * Node which contains the {@link Host} ; <BR/>
+	 * * The {@link Common#MGMT_NETWORK_INTERFACE_ATTR_SELECTOR} XML attribute
+	 * must contains the name of the attribute of the Management Network
+	 * Interface Node which contains the {@link Host} ; <BR/>
 	 * </i>
 	 * </p>
 	 * 
-	 * @param context
 	 * @param instanceNode
 	 * 
 	 * @throws ResourcesDescriptorException
 	 */
-	public ManagementInfos(ITaskContext context, Node instanceNode)
+	public ManagementInfos(Node instanceNode)
 			throws ResourcesDescriptorException {
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -57,8 +56,7 @@ public class ManagementInfos {
 		}
 
 		log.debug(Messages.bind(Messages.MgmtMsg_INTRO,
-				context.getProcessorManager().getResourcesDescriptor()
-						.getLocation(instanceNode).toFullString()));
+				Doc.getNodeLocation(instanceNode).toFullString()));
 		Node mgmtNode = ManagementInterfaceHelper.findMgmtNode(instanceNode);
 		setManagementMethod(ManagementInterfaceHelper
 				.getManagementMethod(mgmtNode));

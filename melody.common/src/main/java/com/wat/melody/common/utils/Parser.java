@@ -14,12 +14,12 @@ import javax.xml.parsers.SAXParserFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * <p>
@@ -33,112 +33,192 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public abstract class Parser {
 
+	/**
+	 * UserData key of each {@link Node}, which contains their line number.
+	 */
 	public static final String LINE_NUMBER = "l";
+
+	/**
+	 * UserData key of each {@link Node}, which contains their column number.
+	 */
 	public static final String COLUMN_NUMBER = "c";
-	public static final String FILE = "f";
+
+	/**
+	 * UserData key of the {@link Document}, which contains the source which was
+	 * used to load it.
+	 */
+	public static final String SOURCE = "s";
+
+	/**
+	 * Global UserDataHandler, which makes copy of all UserDatas of each
+	 * {@link Node} during IMPORT, CLONE, RENAME and ADOPT operation.
+	 */
+	public static final CloneUserDataHandler GenericCloneUserDataHandler = new CloneUserDataHandler();
 
 	/**
 	 * <p>
-	 * Parse a file and return a {@link Document}. Line number and column number
-	 * are added to each XML elements as user datas. The path of the source file
-	 * is also added to the returned {@link Document} as user data.
+	 * Parse the given file and return a {@link Document}. Line number and
+	 * column number are added to each XML Element {@link Node}s as user datas.
+	 * The path of the given file is also added to the returned XML Element
+	 * {@link Document} as user data.
 	 * 
 	 * <ul>
 	 * <li>To get the line number of a {@link Node}, call the
 	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
-	 * {@link #LINE_NUMBER} ;</li>
+	 * {@link #LINE_NUMBER} key ;</li>
 	 * <li>To get the column number of a {@link Node}, call the
 	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
-	 * {@link #COLUMN_NUMBER} ;</li>
+	 * {@link #COLUMN_NUMBER} key ;</li>
 	 * <li>To get the file which was used to load the {@link Document}, call the
 	 * {@link Node#getUserData(String)} on the {@link Document} object and query
-	 * for {@link #FILE} ;</li>
+	 * for {@link #SOURCE} key ;</li>
 	 * </ul>
 	 * </p>
+	 * 
+	 * @throws SAXException
 	 */
-	public static Document parse(final File sPath) throws IOException,
+	public static Document parse(final File file) throws IOException,
 			SAXException {
-		SAXParser parser;
-		try {
-			parser = SAXParserFactory.newInstance().newSAXParser();
-		} catch (ParserConfigurationException Ex) {
-			throw new RuntimeException("Unexecpted error while creating "
-					+ "a new Document Builder. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+		if (file == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + File.class.getCanonicalName() + ".");
 		}
-
-		Document doc = Doc.newDocument();
-		DefaultHandler handler = new MySAXHandler(doc);
-
-		parser.setProperty("http://xml.org/sax/properties/lexical-handler",
-				handler);
-
 		InputStream is = null;
 		try {
-			is = new FileInputStream(sPath);
-			parser.parse(is, handler);
+			is = new FileInputStream(file);
 			// track the file which was parsed
-			doc.setUserData(FILE, sPath, null);
+			Document doc = parse(new InputSource(is));
+			trackSource(doc, file);
+			return doc;
 		} finally {
 			if (is != null) {
 				is.close();
 			}
 		}
-
-		return doc;
 	}
 
 	/**
 	 * <p>
-	 * Parse an XML content and return a {@link Document}. Line number and
-	 * column number are added to each XML elements as user datas.
+	 * Parse the given String, which contains XML, and return a {@link Document}
+	 * . Line number and column number are added to each XML Element
+	 * {@link Node}s as user datas.
 	 * 
 	 * <ul>
 	 * <li>To get the line number of a {@link Node}, call the
 	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
-	 * {@link #LINE_NUMBER} ;</li>
+	 * {@link #LINE_NUMBER} key ;</li>
 	 * <li>To get the column number of a {@link Node}, call the
 	 * {@link Node#getUserData(String)} on the {@link Node} object and query for
-	 * {@link #COLUMN_NUMBER} ;</li>
+	 * {@link #COLUMN_NUMBER} key ;</li>
 	 * </ul>
 	 * </p>
+	 * 
+	 * @throws SAXException
 	 */
 	public static Document parse(final String content) throws IOException,
 			SAXException {
-		SAXParser parser;
+		StringReader sr = null;
 		try {
-			parser = SAXParserFactory.newInstance().newSAXParser();
-		} catch (ParserConfigurationException Ex) {
-			throw new RuntimeException("Unexecpted error while creating "
-					+ "a new Document Builder. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+			sr = new StringReader(content);
+			// track the content which was parsed
+			Document doc = parse(new InputSource(sr));
+			doc.setUserData(SOURCE, "input string",
+					Parser.GenericCloneUserDataHandler);
+			return doc;
+		} finally {
+			if (sr != null) {
+				sr.close();
+			}
 		}
+	}
 
-		Document doc = Doc.newDocument();
-		DefaultHandler handler = new MySAXHandler(doc);
+	private static Document parse(final InputSource is) throws IOException,
+			SAXException {
+		MySAXHandler handler = new MySAXHandler();
+		SAXParser parser = handler.getParser();
+		parser.parse(is, handler);
+		return handler.getDocument();
+	}
 
-		parser.setProperty("http://xml.org/sax/properties/lexical-handler",
-				handler);
+	private static void trackSource(Document doc, File file) {
+		Node n = doc.getFirstChild();
+		if (n != null) {
+			n.setUserData(SOURCE, file.toString(), GenericCloneUserDataHandler);
+		}
+	}
 
-		parser.parse(new InputSource(new StringReader(content)), handler);
-		// track the origin which was parsed
-		doc.setUserData(FILE, "inline content", null);
+	protected static void trackLineNumber(Element e, int lineNumber) {
+		e.setUserData(LINE_NUMBER, lineNumber, GenericCloneUserDataHandler);
+	}
 
-		return doc;
+	protected static void trackColumnNumber(Element e, int colunmNumber) {
+		e.setUserData(COLUMN_NUMBER, colunmNumber, GenericCloneUserDataHandler);
 	}
 
 }
 
 class MySAXHandler extends DefaultHandler2 {
+
+	public final static String LEXICAL_HANDLER_PROPERTY = "http://xml.org/sax/properties/lexical-handler";
+
+	SAXParser parser;
 	Document doc;
 	Stack<Element> elementStack = new Stack<Element>();
 	StringBuilder textBuffer = new StringBuilder();
 	private Locator locator;
 
-	public MySAXHandler(Document d) {
+	public MySAXHandler() {
+		SAXParser parser;
+		try {
+			parser = SAXParserFactory.newInstance().newSAXParser();
+		} catch (ParserConfigurationException | SAXException Ex) {
+			throw new RuntimeException("Unexecpted error while creating "
+					+ "a new SAX Parser. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+		try {
+			parser.setProperty(LEXICAL_HANDLER_PROPERTY, this);
+		} catch (SAXException Ex) {
+			throw new RuntimeException("Unexecpted error while setting "
+					+ "the lexical handler property to a SAX parser. "
+					+ "Because this property is recognize and supported by "
+					+ "the SAX parser, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+		setParser(parser);
+		setDocument(Doc.newDocument());
+	}
+
+	public SAXParser getParser() {
+		return parser;
+	}
+
+	public SAXParser setParser(SAXParser p) {
+		if (p == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + SAXParser.class.getCanonicalName()
+					+ ".");
+		}
+		SAXParser previous = getParser();
+		parser = p;
+		return previous;
+	}
+
+	public Document getDocument() {
+		return doc;
+	}
+
+	public Document setDocument(Document d) {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
+		}
+		Document previous = getDocument();
 		doc = d;
+		return previous;
 	}
 
 	@Override
@@ -156,10 +236,8 @@ class MySAXHandler extends DefaultHandler2 {
 		for (int i = 0; i < attributes.getLength(); i++) {
 			el.setAttribute(attributes.getQName(i), attributes.getValue(i));
 		}
-		// track the line number
-		el.setUserData(Parser.LINE_NUMBER, locator.getLineNumber(), null);
-		// track the column number
-		el.setUserData(Parser.COLUMN_NUMBER, locator.getColumnNumber(), null);
+		Parser.trackLineNumber(el, locator.getLineNumber());
+		Parser.trackColumnNumber(el, locator.getColumnNumber());
 		elementStack.push(el);
 	}
 
@@ -198,4 +276,16 @@ class MySAXHandler extends DefaultHandler2 {
 		Node textNode = doc.createComment(new String(ch, start, length));
 		el.appendChild(textNode);
 	}
+}
+
+class CloneUserDataHandler implements UserDataHandler {
+
+	@Override
+	public void handle(short op, String key, Object data, Node src, Node dst) {
+		if (dst == null) {
+			return;
+		}
+		dst.setUserData(key, data, this);
+	}
+
 }
