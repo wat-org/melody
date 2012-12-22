@@ -19,6 +19,7 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.jcraft.jsch.JSchException;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.cloud.InstanceType;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;

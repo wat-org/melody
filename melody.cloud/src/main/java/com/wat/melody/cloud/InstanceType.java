@@ -1,8 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud;
 
 import java.util.Arrays;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
 
 /**
  * 

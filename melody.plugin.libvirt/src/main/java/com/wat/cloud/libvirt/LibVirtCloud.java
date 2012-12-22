@@ -23,6 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
+import com.wat.melody.cloud.InstanceType;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
@@ -31,7 +32,6 @@ import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.common.utils.exception.IllegalPropertyException;
 import com.wat.melody.common.utils.exception.MelodyException;
 import com.wat.melody.plugin.libvirt.common.InstanceState;
-import com.wat.melody.plugin.libvirt.common.InstanceType;
 import com.wat.melody.plugin.libvirt.common.exception.IllegalInstanceStateException;
 import com.wat.melody.xpathextensions.XPathExpander;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
@@ -157,6 +157,13 @@ public abstract class LibVirtCloud {
 	public static final String SIZE_PATTERN = "([0-9]+)[\\s]?([tTgGmM])";
 	public static Pattern p = Pattern.compile("^" + SIZE_PATTERN + "$");
 
+	/**
+	 * 
+	 * @param type
+	 * 
+	 * @return the amount of RAM (in Ko) corresponding to the given
+	 *         {@link InstanceType}.
+	 */
 	public static int getRAM(InstanceType type) {
 		String sRam = null;
 		try {
@@ -203,6 +210,10 @@ public abstract class LibVirtCloud {
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
+	}
+
+	public static int getVCPU(InstanceType type) {
+		return getCore(type) * getSocket(type);
 	}
 
 	protected static InstanceType getDomainType(Domain d) {
@@ -298,7 +309,8 @@ public abstract class LibVirtCloud {
 		Node nMacAddr = null;
 		try {
 			nMacAddr = netconf.evaluateAsNode("/network/ip/dhcp" + "/host"
-					+ "[ upper-case(@mac)=upper-case('" + sMacAddr + "') and exists(@allocated) ]");
+					+ "[ upper-case(@mac)=upper-case('" + sMacAddr
+					+ "') and exists(@allocated) ]");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -333,7 +345,8 @@ public abstract class LibVirtCloud {
 	protected static String getDomainIpAddress(String sMacAddr) {
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
-					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr + "') ]/@ip");
+					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr
+					+ "') ]/@ip");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.");
@@ -343,7 +356,8 @@ public abstract class LibVirtCloud {
 	protected static String getDomainDnsName(String sMacAddr) {
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
-					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr + "') ]/@name");
+					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr
+					+ "') ]/@name");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.");
@@ -454,8 +468,8 @@ public abstract class LibVirtCloud {
 					ps.put(new Property("vmName", generateUniqDomainName(cnx)));
 					ps.put(new Property("uuid", generateUniqDomainUUID()));
 					ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
-					ps.put(new Property("vcpu", String.valueOf(type.getVCPU())));
-					ps.put(new Property("ram", String.valueOf(type.getRAM())));
+					ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
+					ps.put(new Property("ram", String.valueOf(getRAM(type))));
 				} catch (IllegalPropertyException Ex) {
 					throw new RuntimeException(Ex);
 				}

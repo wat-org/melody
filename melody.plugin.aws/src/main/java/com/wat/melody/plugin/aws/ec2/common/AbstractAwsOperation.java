@@ -11,6 +11,7 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.cloud.InstanceType;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.utils.DUNID;

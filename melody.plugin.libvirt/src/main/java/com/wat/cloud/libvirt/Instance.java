@@ -3,7 +3,7 @@ package com.wat.cloud.libvirt;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 
-import com.wat.melody.plugin.libvirt.common.InstanceType;
+import com.wat.melody.cloud.InstanceType;
 
 public class Instance {
 

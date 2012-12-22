@@ -1,8 +1,10 @@
-package com.wat.melody.plugin.aws.ec2.common.exception;
+package com.wat.melody.cloud.exception;
 
-public class IllegalInstanceTypeException extends AwsException {
+import com.wat.melody.common.utils.exception.MelodyException;
 
-	private static final long serialVersionUID = -127998078020202109L;
+public class IllegalInstanceTypeException extends MelodyException {
+
+	private static final long serialVersionUID = 127998078020202109L;
 
 	public IllegalInstanceTypeException() {
 		super();

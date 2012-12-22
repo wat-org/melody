@@ -39,6 +39,7 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
+import com.wat.melody.cloud.InstanceType;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalInstanceStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;

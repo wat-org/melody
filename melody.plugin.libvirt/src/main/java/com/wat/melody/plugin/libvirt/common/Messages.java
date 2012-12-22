@@ -6,9 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.libvirt.common.messages";
 
-	public static String InstanceTypeEx_EMPTY;
-	public static String InstanceTypeEx_INVALID;
-
 	public static String InstanceStateEx_EMPTY;
 	public static String InstanceStateEx_INVALID;
 
