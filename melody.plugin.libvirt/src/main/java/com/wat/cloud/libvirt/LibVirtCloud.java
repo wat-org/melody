@@ -437,7 +437,16 @@ public abstract class LibVirtCloud {
 		if (cs == null) {
 			return false;
 		}
-		return true;
+		return cs != InstanceState.SHUTTING_DOWN
+				&& cs != InstanceState.TERMINATED;
+	}
+
+	public static boolean instanceRuns(Connect cnx, String sAwsInstanceId) {
+		InstanceState cs = getInstanceState(cnx, sAwsInstanceId);
+		if (cs == null) {
+			return false;
+		}
+		return cs == InstanceState.PENDING || cs == InstanceState.RUNNING;
 	}
 
 	private static String LOCK_UNIQ_DOMAIN = "";

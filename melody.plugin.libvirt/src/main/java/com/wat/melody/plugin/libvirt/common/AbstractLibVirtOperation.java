@@ -154,6 +154,10 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		return LibVirtCloud.instanceLives(getConnect(), getInstanceID());
 	}
 
+	public boolean instanceRuns() {
+		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
+	}
+
 	public void newInstance(InstanceType type, String sImageId, String sKeyName)
 			throws LibVirtException {
 		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,

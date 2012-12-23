@@ -198,6 +198,9 @@ public class NewMachine extends AbstractMachineOperation {
 			log.warn(Messages.bind(Messages.NewMsg_LIVES, new Object[] {
 					getInstanceID(), "LIVE", getTargetNodeLocation() }));
 			setInstanceRelatedInfosToED(getInstance());
+			if (instanceRuns()) {
+				enableManagement();
+			}
 		} else {
 			newInstance(getInstanceType(), getImageId(), getKeyPairName());
 			setInstanceRelatedInfosToED(getInstance());
