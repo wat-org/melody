@@ -5,8 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -24,6 +22,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.cloud.InstanceType;
+import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
@@ -154,14 +153,13 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static final String SIZE_PATTERN = "([0-9]+)[\\s]?([tTgGmM])";
-	public static Pattern p = Pattern.compile("^" + SIZE_PATTERN + "$");
+	public static final String SIZE_PATTERN = "[0-9]+([.][0-9]+)?";
 
 	/**
 	 * 
 	 * @param type
 	 * 
-	 * @return the amount of RAM (in Ko) corresponding to the given
+	 * @return the amount of RAM (in Kilo Octet) corresponding to the given
 	 *         {@link InstanceType}.
 	 */
 	public static int getRAM(InstanceType type) {
@@ -172,24 +170,13 @@ public abstract class LibVirtCloud {
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
-		Matcher matcher = p.matcher(sRam);
-		matcher.matches();
-		int iRam = Integer.parseInt(matcher.group(1));
-		switch (matcher.group(2).charAt(0)) {
-		case 't':
-		case 'T':
-			iRam *= 1024 * 1024 * 1024;
-			break;
-		case 'g':
-		case 'G':
-			iRam *= 1024 * 1024;
-			break;
-		case 'm':
-		case 'M':
-			iRam *= 1024;
-			break;
+		if (!sRam.matches("^" + SIZE_PATTERN + "$")) {
+			throw new RuntimeException(sizeconf.getFileFullPath()
+					+ ": instance type '" + type
+					+ "' have an invalid ram attribute. '" + sRam
+					+ "' doesn't match pattern '" + SIZE_PATTERN + "'.");
 		}
-		return iRam;
+		return (int) (Float.parseFloat(sRam) * 1024 * 1024);
 	}
 
 	public static int getCore(InstanceType type) {
@@ -217,11 +204,24 @@ public abstract class LibVirtCloud {
 	}
 
 	protected static InstanceType getDomainType(Domain d) {
-		/*
-		 * TODO : deduce the instance type from the VCPU and RAM defined in the
-		 * instance
-		 */
-		return InstanceType.T1Micro;
+		float RAM = ((float) getDomainRAM(d) / 1024) / 1024;
+		String sType = null;
+		try {
+			sType = sizeconf.evaluateAsString("/sizings/sizing[@ram='" + RAM
+					+ "']/@name");
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException(Ex);
+		}
+
+		try {
+			return InstanceType.parseString(sType);
+		} catch (IllegalInstanceTypeException Ex) {
+			throw new RuntimeException(sizeconf.getFileFullPath()
+					+ ": instance name '" + sType
+					+ "' is not a valid instance type. "
+					+ "Accepted values are "
+					+ Arrays.asList(InstanceType.values()) + ".");
+		}
 	}
 
 	public static int getDomainVPCU(Domain domain) {
@@ -237,14 +237,14 @@ public abstract class LibVirtCloud {
 	/**
 	 * 
 	 * @param domain
-	 * @return the RAM quantity in KiloOctet
+	 * @return the RAM quantity in Kilo Octet
 	 */
 	public static int getDomainRAM(Domain domain) {
 		try {
 			Doc doc = getDomainXMLDesc(domain);
 			int ram = Integer.parseInt(doc
-					.evaluateAsString("/domain/vcpu/text()"));
-			String unit = doc.evaluateAsString("/domain/vcpu/@unit");
+					.evaluateAsString("/domain/memory/text()"));
+			String unit = doc.evaluateAsString("/domain/memory/@unit");
 			if (unit.equals("GiB")) {
 				return ram * 1024 * 1024;
 			} else if (unit.equals("MiB")) {

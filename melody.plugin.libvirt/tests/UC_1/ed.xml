@@ -6,7 +6,7 @@
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
-			<melody-management interfaceSelector="/toto" method="ssh" port="22"/>
+			<melody-management method="ssh" port="22"/>
 			<fwrules>
 				<in>
 					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
@@ -31,7 +31,7 @@
 				<interface device="eth0"/>
 				<interface device="eth1"/>
 			</network>
-		</instance>		
+		</instance>
 <!--
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
 			<network>
