@@ -9,6 +9,9 @@ public class Messages extends NLS {
 	public static String InstanceTypeEx_EMPTY;
 	public static String InstanceTypeEx_INVALID;
 
+	public static String InstanceStateEx_EMPTY;
+	public static String InstanceStateEx_INVALID;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

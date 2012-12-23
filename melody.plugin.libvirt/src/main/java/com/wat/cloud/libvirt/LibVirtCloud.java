@@ -21,7 +21,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
+import com.wat.melody.cloud.InstanceState;
 import com.wat.melody.cloud.InstanceType;
+import com.wat.melody.cloud.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
@@ -30,8 +32,7 @@ import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalFileException;
 import com.wat.melody.common.utils.exception.IllegalPropertyException;
 import com.wat.melody.common.utils.exception.MelodyException;
-import com.wat.melody.plugin.libvirt.common.InstanceState;
-import com.wat.melody.plugin.libvirt.common.exception.IllegalInstanceStateException;
+import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
 import com.wat.melody.xpathextensions.XPathExpander;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
 
@@ -420,7 +421,7 @@ public abstract class LibVirtCloud {
 			throw new RuntimeException(Ex);
 		}
 		try {
-			return InstanceState.parseDomainState(state);
+			return InstanceStateConverter.parse(state);
 		} catch (IllegalInstanceStateException Ex) {
 			throw new RuntimeException("Unexpected error while creating an "
 					+ "InstanceState Enum based on the value '" + state + "'. "

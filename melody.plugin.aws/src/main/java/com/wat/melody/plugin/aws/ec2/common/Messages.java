@@ -6,9 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.aws.ec2.common.messages";
 
-	public static String InstanceStateEx_EMPTY;
-	public static String InstanceStateEx_INVALID;
-
 	public static String VolumeStateEx_EMPTY;
 	public static String VolumeStateEx_INVALID;
 

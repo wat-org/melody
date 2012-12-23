@@ -3,8 +3,8 @@ package com.wat.melody.plugin.aws.ec2;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.wat.melody.cloud.InstanceState;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
-import com.wat.melody.plugin.aws.ec2.common.InstanceState;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 

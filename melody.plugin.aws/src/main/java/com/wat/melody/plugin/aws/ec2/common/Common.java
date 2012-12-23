@@ -39,9 +39,10 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
+import com.wat.melody.cloud.InstanceState;
 import com.wat.melody.cloud.InstanceType;
+import com.wat.melody.cloud.exception.IllegalInstanceStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalInstanceStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -571,7 +572,7 @@ public class Common {
 		}
 		int state = i.getState().getCode();
 		try {
-			return InstanceState.parseInt(state);
+			return InstanceStateConverter.parse(state);
 		} catch (IllegalInstanceStateException Ex) {
 			throw new RuntimeException("Unexpected error while creating an "
 					+ "InstanceState Enum based on the value '" + state + "'. "
