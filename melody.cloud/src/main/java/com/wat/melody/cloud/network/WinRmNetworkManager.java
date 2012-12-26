@@ -1,23 +1,23 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.cloud.network;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.cloud.management.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.ManagementException;
 
-public class WinRmManagementHelper implements ManagementHelper {
+public class WinRmNetworkManager implements NetworkManager {
 
-	private ManagementInfos moManagementInfos;
+	private NetworkManagerInfos moManagementInfos;
 	private ITaskContext moContext;
 
-	public ManagementInfos getManagementInfos() {
+	public NetworkManagerInfos getManagementInfos() {
 		return moManagementInfos;
 	}
 
 	@Override
-	public void setManagementInfos(ManagementInfos mi) {
+	public void setManagementInfos(NetworkManagerInfos mi) {
 		if (mi == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ ManagementInfos.class.getCanonicalName() + ".");
+					+ NetworkManagerInfos.class.getCanonicalName() + ".");
 		}
 		moManagementInfos = mi;
 	}

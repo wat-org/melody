@@ -39,9 +39,9 @@ public class UpdateDisks extends AbstractAwsOperation {
 	public static final String UPDATE_DISKS = "UpdateDisks";
 
 	/**
-	 * The 'DisksXprSuffix' XML attribute
+	 * The 'diskNodeSelector' XML attribute
 	 */
-	public static final String DISKS_XPR_SUFFIX_ATTR = "DisksXprSuffix";
+	public static final String DISKS_NODE_SELECTOR_ATTR = DiskManagementHelper.DISKS_NODE_SELECTOR_ATTR;
 
 	/**
 	 * The 'detachTimeout' XML attribute
@@ -58,7 +58,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private String msDisksXprSuffix;
+	private String msDisksNodeSelector;
 	private DiskList maDiskList;
 	private long mlDetachTimeout;
 	private long mlCreateTimeout;
@@ -66,7 +66,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 	public UpdateDisks() {
 		super();
-		setDisksXprSuffix(DiskManagementHelper.DEFAULT_DISKS_NODE_SELECTOR);
+		setDisksNodeSelector(DiskManagementHelper.DEFAULT_DISKS_NODE_SELECTOR);
 		initDiskList();
 		initDetachTimeout();
 		initCreateTimeout();
@@ -97,9 +97,9 @@ public class UpdateDisks extends AbstractAwsOperation {
 		// defined in the SD
 		try {
 			String sTargetSpecificDisksSelector = DiskManagementHelper
-					.findDiskManagementSelector(getTargetNode());
+					.findDiskManagementDisksSelector(getTargetNode());
 			if (sTargetSpecificDisksSelector == null) {
-				setDisksXprSuffix(sTargetSpecificDisksSelector);
+				setDisksNodeSelector(sTargetSpecificDisksSelector);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
@@ -108,13 +108,13 @@ public class UpdateDisks extends AbstractAwsOperation {
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
 			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
-					getDisksXprSuffix());
+					getDisksNodeSelector());
 			DisksLoader dl = new DisksLoader(getContext());
 			setDiskList(dl.load(nl));
 		} catch (XPathExpressionException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateDiskEx_INVALID_DISK_XPATH,
-					getDisksXprSuffix()), Ex);
+					getDisksNodeSelector()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -280,18 +280,18 @@ public class UpdateDisks extends AbstractAwsOperation {
 				diskList);
 	}
 
-	private String getDisksXprSuffix() {
-		return msDisksXprSuffix;
+	private String getDisksNodeSelector() {
+		return msDisksNodeSelector;
 	}
 
-	@Attribute(name = DISKS_XPR_SUFFIX_ATTR)
-	public String setDisksXprSuffix(String v) {
+	@Attribute(name = DISKS_NODE_SELECTOR_ATTR)
+	public String setDisksNodeSelector(String v) {
 		if (v == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		String previous = getDisksXprSuffix();
-		msDisksXprSuffix = v;
+		String previous = getDisksNodeSelector();
+		msDisksNodeSelector = v;
 		return previous;
 	}
 

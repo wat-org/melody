@@ -23,7 +23,7 @@ import com.wat.melody.plugin.libvirt.common.exception.ConfigurationException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
-import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractLibVirtOperation implements ITask {
@@ -248,8 +248,8 @@ public abstract class AbstractLibVirtOperation implements ITask {
 
 	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
 		try {
-			Node mgmtNode = ManagementInterfaceHelper
-					.getManagementNetworkInterface(getTargetNode());
+			Node mgmtNode = NetworkManagementHelper
+					.getNetworkManagementInterface(getTargetNode());
 			return getED().getMelodyID(mgmtNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

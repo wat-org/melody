@@ -1,27 +1,27 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.cloud.network;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.cloud.management.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
-public class SshManagementHelper implements ManagementHelper {
+public class SshNetworkManager implements NetworkManager {
 
-	private ManagementInfos moManagementInfos;
+	private NetworkManagerInfos moManagementInfos;
 	private ITaskContext moContext;
 
-	public ManagementInfos getManagementInfos() {
+	public NetworkManagerInfos getManagementInfos() {
 		return moManagementInfos;
 	}
 
 	@Override
-	public void setManagementInfos(ManagementInfos mi) {
+	public void setManagementInfos(NetworkManagerInfos mi) {
 		if (mi == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ ManagementInfos.class.getCanonicalName() + ".");
+					+ NetworkManagerInfos.class.getCanonicalName() + ".");
 		}
 		moManagementInfos = mi;
 	}
@@ -62,7 +62,7 @@ public class SshManagementHelper implements ManagementHelper {
 		if (result == false) {
 			throw new ManagementException(Messages.bind(
 					Messages.MgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
-					ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR));
+					NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR));
 		}
 	}
 

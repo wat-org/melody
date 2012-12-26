@@ -32,7 +32,7 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<newMachine	target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkManagementHost(§[srv]§) ]§" />
 			<echo message="+ instance '§[§[srv]§/@instanceId]§' created (IP: §[adm_ip]§)." />
 		</foreach>
 
@@ -76,7 +76,7 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<startMachine	target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkManagementHost(§[srv]§) ]§" />
 			<echo message="+ instance '§[§[srv]§/@instanceId]§' started (IP: §[adm_ip]§)." />
 		</foreach>
 

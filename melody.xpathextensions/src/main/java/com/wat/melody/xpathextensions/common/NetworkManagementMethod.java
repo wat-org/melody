@@ -4,13 +4,13 @@ import java.util.Arrays;
 
 import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 
-public enum ManagementMethod {
+public enum NetworkManagementMethod {
 
 	SSH("ssh"), WINRM("winrm");
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link ManagementMethod}
+	 * Convert the given <code>String</code> to a {@link NetworkManagementMethod}
 	 * object.
 	 * </p>
 	 * 
@@ -26,32 +26,32 @@ public enum ManagementMethod {
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */
-	public static ManagementMethod parseString(String sMethod)
+	public static NetworkManagementMethod parseString(String sMethod)
 			throws IllegalManagementMethodException {
 		if (sMethod == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
-					+ ManagementMethod.class.getCanonicalName()
+					+ NetworkManagementMethod.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
-					+ Arrays.asList(ManagementMethod.values()) + ").");
+					+ Arrays.asList(NetworkManagementMethod.values()) + ").");
 		}
 		if (sMethod.trim().length() == 0) {
 			throw new IllegalManagementMethodException(Messages.bind(
 					Messages.ManagementMethodEx_EMPTY, sMethod));
 		}
-		for (ManagementMethod c : ManagementMethod.class.getEnumConstants()) {
+		for (NetworkManagementMethod c : NetworkManagementMethod.class.getEnumConstants()) {
 			if (sMethod.equalsIgnoreCase(c.getValue())) {
 				return c;
 			}
 		}
 		throw new IllegalManagementMethodException(Messages.bind(
 				Messages.ManagementMethodEx_INVALID, sMethod,
-				Arrays.asList(ManagementMethod.values())));
+				Arrays.asList(NetworkManagementMethod.values())));
 	}
 
 	private final String msValue;
 
-	private ManagementMethod(String v) {
+	private NetworkManagementMethod(String v) {
 		this.msValue = v;
 	}
 

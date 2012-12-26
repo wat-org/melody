@@ -7,12 +7,12 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public final class GetManagementNetworkInterface implements XPathFunction {
+public class GetNetworkManagementHost implements XPathFunction {
 
-	public static final String NAME = "getManagementInterface";
+	public static final String NAME = "getNetworkManagementHost";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -30,8 +30,8 @@ public final class GetManagementNetworkInterface implements XPathFunction {
 					+ "() expects a Node " + "argument.");
 		}
 		try {
-			return ManagementInterfaceHelper
-					.getManagementNetworkInterface((Node) arg0);
+			return NetworkManagementHelper
+					.getNetworkManagementHost((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

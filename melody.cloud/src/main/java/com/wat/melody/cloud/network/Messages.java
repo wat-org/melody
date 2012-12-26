@@ -1,10 +1,10 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.cloud.network;
 
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-	private static final String BUNDLE_NAME = "com.wat.melody.cloud.management.messages";
+	private static final String BUNDLE_NAME = "com.wat.melody.cloud.network.messages";
 
 	public static String MgmtMsg_INTRO;
 	public static String MgmtMsg_RESUME;

@@ -1,17 +1,17 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.cloud.network;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.cloud.management.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.ManagementException;
 
-public interface ManagementHelper {
+public interface NetworkManager {
 
 	public ITaskContext getContext();
 
 	public void setContext(ITaskContext context);
 
-	public ManagementInfos getManagementInfos();
+	public NetworkManagerInfos getManagementInfos();
 
-	public void setManagementInfos(ManagementInfos mi);
+	public void setManagementInfos(NetworkManagerInfos mi);
 
 	/**
 	 * @param timeout

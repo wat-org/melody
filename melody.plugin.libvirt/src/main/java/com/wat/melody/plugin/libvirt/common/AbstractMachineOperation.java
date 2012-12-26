@@ -4,12 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.management.ManagementHelper;
-import com.wat.melody.cloud.management.ManagementHelperFactory;
-import com.wat.melody.cloud.management.exception.ManagementException;
+import com.wat.melody.cloud.network.NetworkManager;
+import com.wat.melody.cloud.network.NetworkManagerFactory;
+import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
+import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractMachineOperation extends AbstractLibVirtOperation {
@@ -19,12 +19,12 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 	/**
 	 * The 'enableManagement' XML attribute
 	 */
-	public static final String ENABLEMGNT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_ATTR;
+	public static final String ENABLE_NETWORK_MGNT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_ATTR;
 
 	/**
 	 * The 'enableManagementTimeout' XML attribute
 	 */
-	public static final String ENABLEMGNT_TIMEOUT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR;
+	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR;
 
 	private boolean mbEnableManagement;
 	private long mlEnableManagementTimeout;
@@ -44,9 +44,9 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		setEnableManagement(true);
 	}
 
-	private ManagementHelper buildManagementHelper() throws LibVirtException {
+	private NetworkManager buildManagementHelper() throws LibVirtException {
 		try {
-			return ManagementHelperFactory.getManagementHelper(getContext(),
+			return NetworkManagerFactory.getManagementHelper(getContext(),
 					getTargetNode());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -74,7 +74,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		if (getEnableManagement() == false) {
 			return;
 		}
-		ManagementHelper mh = buildManagementHelper();
+		NetworkManager mh = buildManagementHelper();
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceID()));
@@ -116,13 +116,13 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		 * will not try to disable management if no Management-datas are
 		 * present.
 		 */
-		ManagementHelper mh = null;
+		NetworkManager mh = null;
 		try {
 			mh = buildManagementHelper();
 		} catch (LibVirtException Ex) {
 			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					"Cannot disable Melody-Management.", Ex)));
+					"Cannot disable Network Management.", Ex)));
 			return;
 		}
 
@@ -143,7 +143,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		return mbEnableManagement;
 	}
 
-	@Attribute(name = ENABLEMGNT_ATTR)
+	@Attribute(name = ENABLE_NETWORK_MGNT_ATTR)
 	public boolean setEnableManagement(boolean enableManagement) {
 		boolean previous = getEnableManagement();
 		mbEnableManagement = enableManagement;
@@ -154,7 +154,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		return mlEnableManagementTimeout;
 	}
 
-	@Attribute(name = ENABLEMGNT_TIMEOUT_ATTR)
+	@Attribute(name = ENABLE_NETWORK_MGNT_TIMEOUT_ATTR)
 	public long setEnableManagementTimeout(long timeout)
 			throws LibVirtException {
 		if (timeout < 0) {

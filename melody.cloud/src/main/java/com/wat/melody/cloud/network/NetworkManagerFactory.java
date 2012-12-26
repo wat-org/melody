@@ -1,14 +1,14 @@
-package com.wat.melody.cloud.management;
+package com.wat.melody.cloud.network;
 
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.xpathextensions.common.ManagementMethod;
+import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public abstract class ManagementHelperFactory {
+public abstract class NetworkManagerFactory {
 
-	public static ManagementHelper getManagementHelper(ITaskContext context,
+	public static NetworkManager getManagementHelper(ITaskContext context,
 			Node instanceNode) throws ResourcesDescriptorException {
 		if (context == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -20,15 +20,15 @@ public abstract class ManagementHelperFactory {
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 
-		ManagementHelper mh = null;
-		ManagementInfos mi = new ManagementInfos(instanceNode);
-		ManagementMethod mm = mi.getManagementMethod();
+		NetworkManager mh = null;
+		NetworkManagerInfos mi = new NetworkManagerInfos(instanceNode);
+		NetworkManagementMethod mm = mi.getNetworkManagementMethod();
 		switch (mm) {
 		case SSH:
-			mh = new SshManagementHelper();
+			mh = new SshNetworkManager();
 			break;
 		case WINRM:
-			mh = new WinRmManagementHelper();
+			mh = new WinRmNetworkManager();
 			break;
 		default:
 			throw new RuntimeException("Unexpected error while branching "

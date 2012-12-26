@@ -42,8 +42,8 @@ import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
-import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
-import com.wat.melody.xpathextensions.common.ManagementMethod;
+import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
+import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
@@ -62,16 +62,16 @@ import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorExcept
  * </ul>
  * </p>
  * <p>
- * This class provides the Task's attribute {@link #ENABLEMGNT_ATTR} which
- * enable/disable such management enablement and the Task's attribute
- * {@link #ENABLEMGNT_TIMEOUT_ATTR} which represent the timeout of these
- * management enablement operations.
+ * This class provides the Task's attribute {@link #ENABLE_NETWORK_MGNT_ATTR}
+ * which enable/disable such management enablement and the Task's attribute
+ * {@link #ENABLE_NETWORK_MGNT_TIMEOUT_ATTR} which represent the timeout of
+ * these management enablement operations.
  * </p>
  * <p>
  * In order to perform these actions, each AWS Instance Node must have :
  * <ul>
  * <li>a "tags/tag[@name='mgnt']/@value" equal to one of
- * {@link ManagementMethod} ;</li>
+ * {@link NetworkManagementMethod} ;</li>
  * <li>for unix/lunix, a "tags/tag[@name='ssh.port']/@value" ;</li>
  * <li>for windows, a "tags/tag[@name='winrm.port']/@value" ;</li>
  * </ul>
@@ -87,12 +87,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	/**
 	 * The 'enableManagement' XML attribute
 	 */
-	public static final String ENABLEMGNT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_ATTR;
+	public static final String ENABLE_NETWORK_MGNT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_ATTR;
 
 	/**
 	 * The 'enableManagementTimeout' XML attribute
 	 */
-	public static final String ENABLEMGNT_TIMEOUT_ATTR = ManagementInterfaceHelper.ENABLEMGNT_TIMEOUT_ATTR;
+	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR;
 
 	private boolean mbEnableManagement;
 	private long mlEnableManagementTimeout;
@@ -379,7 +379,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 			return;
 		}
 		Instance i = getInstance();
-		ManagementMethod mm = findManagementMethodTag();
+		NetworkManagementMethod mm = findManagementMethodTag();
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				mm, getAwsInstanceID()));
 		switch (mm) {
@@ -423,7 +423,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (i == null) {
 			return;
 		}
-		ManagementMethod mm = findManagementMethodTag();
+		NetworkManagementMethod mm = findManagementMethodTag();
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
 				mm, getAwsInstanceID()));
 		switch (mm) {
@@ -448,19 +448,20 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 
 	/**
 	 * <p>
-	 * Retrieve the {@link ManagementMethod} of the Aws Instance defined by
-	 * {@link #getAwsInstanceID()} from the Aws Instance Node's management tag
-	 * {@link #TAG_MGNT}.
+	 * Retrieve the {@link NetworkManagementMethod} of the Aws Instance defined
+	 * by {@link #getAwsInstanceID()} from the Aws Instance Node's management
+	 * tag {@link #TAG_MGNT}.
 	 * </p>
 	 * 
-	 * @return the {@link ManagementMethod} of the Aws Instance defined by
-	 *         {@link #getAwsInstanceID()}.
+	 * @return the {@link NetworkManagementMethod} of the Aws Instance defined
+	 *         by {@link #getAwsInstanceID()}.
 	 * 
 	 * @throws AwsException
 	 *             if the structure of the tag {@link #TAG_MGNT} is not valid
 	 *             (ex : no tag, too many tags or invalid tag content).
 	 */
-	private ManagementMethod findManagementMethodTag() throws AwsException {
+	private NetworkManagementMethod findManagementMethodTag()
+			throws AwsException {
 		NodeList nl = null;
 		try {
 			nl = GetHeritedContent.getHeritedContent(getTargetNode(),
@@ -479,19 +480,19 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_TOO_MANY_TAG_MGNT,
-					new Object[] { TAG_MGNT, ENABLEMGNT_ATTR,
-							Arrays.asList(ManagementMethod.values()),
+					new Object[] { TAG_MGNT, ENABLE_NETWORK_MGNT_ATTR,
+							Arrays.asList(NetworkManagementMethod.values()),
 							getTargetNodeLocation() }));
 		} else if (nl.getLength() == 0) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_NO_TAG_MGNT,
-					new Object[] { TAG_MGNT, ENABLEMGNT_ATTR,
-							Arrays.asList(ManagementMethod.values()),
+					new Object[] { TAG_MGNT, ENABLE_NETWORK_MGNT_ATTR,
+							Arrays.asList(NetworkManagementMethod.values()),
 							getTargetNodeLocation() }));
 		}
 		String val = nl.item(0).getNodeValue();
 		try {
-			return ManagementMethod.parseString(val);
+			return NetworkManagementMethod.parseString(val);
 		} catch (IllegalManagementMethodException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_TAG_MGNT, TAG_MGNT, Doc
@@ -514,7 +515,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             {@link #TAG_WINRM_PORT} is not valid (ex : no tag, too many
 	 *             tags or invalid tag content).
 	 */
-	private Port findManagementPortTag(ManagementMethod mm) throws AwsException {
+	private Port findManagementPortTag(NetworkManagementMethod mm)
+			throws AwsException {
 		String portTag = null;
 		switch (mm) {
 		case SSH:
@@ -548,12 +550,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (nl.getLength() > 1) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT, new Object[] {
-							portTag, ENABLEMGNT_ATTR, TAG_MGNT, mm,
+							portTag, ENABLE_NETWORK_MGNT_ATTR, TAG_MGNT, mm,
 							getTargetNodeLocation() }));
 		} else if (nl.getLength() == 0) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_NO_TAG_MGNT_PORT, new Object[] {
-							portTag, ENABLEMGNT_ATTR, TAG_MGNT, mm,
+							portTag, ENABLE_NETWORK_MGNT_ATTR, TAG_MGNT, mm,
 							getTargetNodeLocation() }));
 		}
 		String val = nl.item(0).getNodeValue();
@@ -569,7 +571,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private void enableWinRmManagement(Instance i) throws AwsException {
 		throw new AwsException(Messages.bind(
 				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				new Object[] { TAG_MGNT, ManagementMethod.WINRM,
+				new Object[] { TAG_MGNT, NetworkManagementMethod.WINRM,
 						getTargetNodeLocation() }));
 	}
 
@@ -580,7 +582,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (!addMachineToKnownHosts(i)) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_ENABLE_SSH_MGNT_TIMEOUT, new Object[] {
-							i.getInstanceId(), ENABLEMGNT_TIMEOUT_ATTR,
+							i.getInstanceId(),
+							ENABLE_NETWORK_MGNT_TIMEOUT_ATTR,
 							getTargetNodeLocation() }));
 		}
 
@@ -629,7 +632,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private boolean addMachineToKnownHosts(Instance i) throws AwsException,
 			InterruptedException {
 		String sgname = i.getSecurityGroups().get(0).getGroupName();
-		Port p = findManagementPortTag(ManagementMethod.SSH);
+		Port p = findManagementPortTag(NetworkManagementMethod.SSH);
 
 		Host host = null;
 		try {
@@ -674,7 +677,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private void disableWinRmManagement(Instance i) throws AwsException {
 		throw new AwsException(Messages.bind(
 				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				new Object[] { TAG_MGNT, ManagementMethod.WINRM,
+				new Object[] { TAG_MGNT, NetworkManagementMethod.WINRM,
 						getTargetNodeLocation() }));
 	}
 
@@ -708,7 +711,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		return mbEnableManagement;
 	}
 
-	@Attribute(name = ENABLEMGNT_ATTR)
+	@Attribute(name = ENABLE_NETWORK_MGNT_ATTR)
 	public boolean setEnableManagement(boolean enableManagement) {
 		boolean previous = getEnableManagement();
 		mbEnableManagement = enableManagement;
@@ -719,7 +722,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		return mlEnableManagementTimeout;
 	}
 
-	@Attribute(name = ENABLEMGNT_TIMEOUT_ATTR)
+	@Attribute(name = ENABLE_NETWORK_MGNT_TIMEOUT_ATTR)
 	public long setEnableManagementTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(

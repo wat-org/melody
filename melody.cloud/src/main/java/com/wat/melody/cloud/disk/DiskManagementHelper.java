@@ -12,6 +12,11 @@ import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorExcept
 public abstract class DiskManagementHelper {
 
 	/**
+	 * The 'diskNodeSelector' XML attribute to use in the sequence descriptor
+	 */
+	public static final String DISKS_NODE_SELECTOR_ATTR = "diskNodeSelector";
+
+	/**
 	 * The XML Element which contains Disk Management datas in the RD
 	 */
 	public static final String DISK_MGMT_NODE = "disk-management";
@@ -36,16 +41,22 @@ public abstract class DiskManagementHelper {
 			+ DisksLoader.DISK_NE;
 
 	/**
+	 * <p>
+	 * Return the Disk Management {@link Node} related to the given Instance
+	 * {@link Node}.
+	 * </p>
 	 * 
 	 * @param instanceNode
+	 *            is a {@link Node} which describes an Instance.
 	 * 
 	 * @return the Disk Management {@link Node} if found, or <code>null</code>
 	 *         otherwise.
 	 * 
 	 * @throws ResourcesDescriptorException
-	 *             if multiple Disk Management {@link Node} were found.
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
-	 *             if an error in HERIT is found
+	 *             if multiple Disk Management {@link Node} can be found.
 	 */
 	public static Node findDiskManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -71,7 +82,7 @@ public abstract class DiskManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findDiskManagementSelector(Node instanceNode)
+	public static String findDiskManagementDisksSelector(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node n = findDiskManagementNode(instanceNode);
 		try {
@@ -84,6 +95,28 @@ public abstract class DiskManagementHelper {
 
 	public static void ensureDiskUpdateIsPossible(DiskList current,
 			DiskList target) throws DiskException {
+		if (current == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DiskList.class.getCanonicalName()
+					+ ".");
+		}
+		if (target == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DiskList.class.getCanonicalName()
+					+ ".");
+		}
+		if (current.size() == 0) {
+			throw new RuntimeException("Current Disk List is empty. It "
+					+ "should at least contains one device, which is the root "
+					+ "device. "
+					+ "There must be a bug in the current disk list creation.");
+		}
+		if (target.size() == 0) {
+			throw new DiskException(Messages.bind(
+					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
+					DisksLoader.DEVICE_ATTR, current.getRootDevice()
+							.getDevice()));
+		}
 		if (target.getRootDevice() == null) {
 			throw new DiskException(Messages.bind(
 					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
