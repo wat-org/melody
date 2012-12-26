@@ -35,11 +35,6 @@ public class DisksLoader {
 	 */
 	public static final String ROOTDEVICE_ATTR = "rootDevice";
 
-	/**
-	 * Default XPath Expression to select DiskNode in the RD
-	 */
-	public static final String DEFAULT_DISKS_NODE_SELECTOR = "//" + DISK_NE;
-
 	private ITaskContext moTC;
 
 	public DisksLoader(ITaskContext tc) {

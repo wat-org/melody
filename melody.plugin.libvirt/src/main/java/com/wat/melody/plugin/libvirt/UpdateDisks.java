@@ -8,8 +8,8 @@ import org.w3c.dom.NodeList;
 
 import com.wat.cloud.libvirt.Instance;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.disk.DiskHelper;
 import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.DisksLoader;
 import com.wat.melody.cloud.disk.exception.DiskException;
 import com.wat.melody.common.utils.Tools;
@@ -56,7 +56,7 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 
 	public UpdateDisks() {
 		super();
-		setDisksXprSuffix(DisksLoader.DEFAULT_DISKS_NODE_SELECTOR);
+		setDisksXprSuffix(DiskManagementHelper.DEFAULT_DISKS_NODE_SELECTOR);
 		initDiskList();
 		initDetachTimeout();
 		initCreateTimeout();
@@ -83,7 +83,19 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 	public void validate() throws LibVirtException {
 		super.validate();
 
-		// Build a FwRule's Collection with FwRule Nodes found
+		// Disk Nodes Selector found in the RD override Disk Nodes Selector
+		// defined in the SD
+		try {
+			String sTargetSpecificDisksSelector = DiskManagementHelper
+					.findDiskManagementSelector(getTargetNode());
+			if (sTargetSpecificDisksSelector != null) {
+				setDisksXprSuffix(sTargetSpecificDisksSelector);
+			}
+		} catch (ResourcesDescriptorException Ex) {
+			throw new LibVirtException(Ex);
+		}
+
+		// Build a DiskList with Disk Nodes found in the RD
 		try {
 			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
 					getDisksXprSuffix());
@@ -120,7 +132,8 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 
 		DiskList iDisks = getInstanceDisks(i);
 		try {
-			DiskHelper.ensureDiskUpdateIsPossible(iDisks, getDiskList());
+			DiskManagementHelper.ensureDiskUpdateIsPossible(iDisks,
+					getDiskList());
 		} catch (DiskException Ex) {
 			throw new LibVirtException("[" + getTargetNodeLocation()
 					+ "] Disk update is not possible till following "
@@ -129,8 +142,10 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 
 		DiskList disksToAdd = null;
 		DiskList disksToRemove = null;
-		disksToAdd = DiskHelper.computeDiskToAdd(iDisks, getDiskList());
-		disksToRemove = DiskHelper.computeDiskToRemove(iDisks, getDiskList());
+		disksToAdd = DiskManagementHelper.computeDiskToAdd(iDisks,
+				getDiskList());
+		disksToRemove = DiskManagementHelper.computeDiskToRemove(iDisks,
+				getDiskList());
 
 		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
 				new Object[] { getInstanceID(), getDiskList(), disksToAdd,

@@ -30,6 +30,7 @@ public abstract class ManagementInterfaceHelper {
 	 * The 'melody-management' XML Node in the RD
 	 */
 	public static final String MGMT_NODE = "melody-management";
+	public static final String MGMT_NODE_SELECTOR = "//" + MGMT_NODE;
 
 	/**
 	 * The 'method' XML attribute of the 'melody-management' XML Node
@@ -94,11 +95,11 @@ public abstract class ManagementInterfaceHelper {
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
-			nl = GetHeritedContent.getHeritedContent(instanceNode, "//"
-					+ MGMT_NODE);
+			nl = GetHeritedContent.getHeritedContent(instanceNode,
+					MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the herited content of '//" + MGMT_NODE + "'. "
+					+ "the herited content of '" + MGMT_NODE_SELECTOR + "'. "
 					+ "Because this XPath Expression is hard coded, "
 					+ "such error cannot happened. "
 					+ "Source code has certainly been modified and a bug have "

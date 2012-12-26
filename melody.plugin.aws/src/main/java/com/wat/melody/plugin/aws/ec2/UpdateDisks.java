@@ -13,6 +13,7 @@ import com.amazonaws.services.ec2.model.Volume;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.cloud.disk.Disk;
 import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.DisksLoader;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
@@ -65,7 +66,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 	public UpdateDisks() {
 		super();
-		setDisksXprSuffix(DisksLoader.DEFAULT_DISKS_NODE_SELECTOR);
+		setDisksXprSuffix(DiskManagementHelper.DEFAULT_DISKS_NODE_SELECTOR);
 		initDiskList();
 		initDetachTimeout();
 		initCreateTimeout();
@@ -91,6 +92,18 @@ public class UpdateDisks extends AbstractAwsOperation {
 	@Override
 	public void validate() throws AwsException {
 		super.validate();
+
+		// Disk Nodes Selector found in the RD override Disk Nodes Selector
+		// defined in the SD
+		try {
+			String sTargetSpecificDisksSelector = DiskManagementHelper
+					.findDiskManagementSelector(getTargetNode());
+			if (sTargetSpecificDisksSelector == null) {
+				setDisksXprSuffix(sTargetSpecificDisksSelector);
+			}
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
+		}
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
