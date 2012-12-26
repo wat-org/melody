@@ -7,7 +7,7 @@
 
 		<foreach	items="./environment//instance[exists(@instanceId)]"
 					itemName="srv" >
-			<ingressMachine	target="§[srv]§" FwRulesXprSuffix="//in//fwrule" />
+			<ingressMachine	target="§[srv]§" />
 			<echo message="+ fwrules updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
@@ -19,7 +19,7 @@
 
 		<foreach	items="./environment//instance"
 					itemName="srv" >
-			<updateDisks	target="§[srv]§" DisksXprSuffix="//disk" />
+			<updateDisks	target="§[srv]§" />
 			<echo message="+ disks updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
@@ -39,9 +39,9 @@
 		<echo message="-- All instances created." />
 <!--
 		<call orders="ingress" />
-
-		<call orders="update_disks" />
  -->
+		<call orders="update_disks" />
+
  	</order>
 		
 	<order name="stop_env" >

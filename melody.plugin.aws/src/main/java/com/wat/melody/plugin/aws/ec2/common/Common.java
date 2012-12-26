@@ -39,10 +39,12 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.InstanceType;
-import com.wat.melody.cloud.exception.IllegalInstanceStateException;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -117,11 +119,6 @@ public class Common {
 	 * The 'fwrule' XML Nested element of the Aws Instance Node
 	 */
 	public static final String FWRULE_NE = "fwrule";
-
-	/**
-	 * The 'disk' XML Nested element of the Aws Instance Node
-	 */
-	public static final String DISK_NE = "disk";
 
 	/**
 	 * <p>
@@ -1782,7 +1779,7 @@ public class Common {
 			// Modify the deleteOnTermimation flag
 			EbsInstanceBlockDeviceSpecification eibds = null;
 			eibds = new EbsInstanceBlockDeviceSpecification();
-			eibds.withDeleteOnTermination(disk.getDeleteOnTermination());
+			eibds.withDeleteOnTermination(disk.isDeletedOnTermination());
 
 			InstanceBlockDeviceMappingSpecification ibdms = null;
 			ibdms = new InstanceBlockDeviceMappingSpecification();

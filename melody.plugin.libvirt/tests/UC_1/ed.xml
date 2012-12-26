@@ -14,7 +14,9 @@
 				</in>
 			</fwrules>
 			<devices>
-				<disk deleteOnTermination="true" device="/dev/sda1" rootDevice="true"/>
+				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>
+				<disk deleteOnTermination="true" device="/dev/vdb" size="3 G"/>
+				<disk deleteOnTermination="true" device="/dev/vdc" size="6 G"/>
 			</devices>
 		</model>
 	</models>

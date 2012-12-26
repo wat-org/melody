@@ -1,8 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.disk;
 
 import java.util.ArrayList;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 
 public class DiskList extends ArrayList<Disk> {
 
@@ -15,6 +15,11 @@ public class DiskList extends ArrayList<Disk> {
 		setRootDevice(null);
 	}
 
+	public DiskList(DiskList dl) {
+		super(dl);
+		setRootDevice(dl.getRootDevice());
+	}
+
 	public boolean addDisk(Disk disk) throws IllegalDiskListException {
 		for (Disk d : this) {
 			if (d.getDevice().equals(disk.getDevice())) {
@@ -24,7 +29,7 @@ public class DiskList extends ArrayList<Disk> {
 						disk.getDevice()));
 			}
 		}
-		if (disk.getRootDevice()) {
+		if (disk.isRootDevice()) {
 			if (getRootDevice() != null) {
 				// Detects multiple RootDevice declaration
 				throw new IllegalDiskListException(Messages.bind(
@@ -41,7 +46,7 @@ public class DiskList extends ArrayList<Disk> {
 	}
 
 	private Disk setRootDevice(Disk d) {
-		if (d != null && !d.getRootDevice()) {
+		if (d != null && !d.isRootDevice()) {
 			throw new IllegalArgumentException("device " + d.getDevice()
 					+ " cannot be the root device because it's RootDevice "
 					+ "flag is false.");

@@ -1,15 +1,15 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.disk;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskException;
 
 public class Disk {
 
 	public static final String SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";
 
-	public static final String DEVICE_PATTERN = "/dev/sd[a-z]+[1-9]*";
+	public static final String DEVICE_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
 
 	private int miGiga;
 	private String msDevice;
@@ -32,7 +32,7 @@ public class Disk {
 	}
 
 	private void initDeleteOnTermination() {
-		mbDeleteOnTermination = false;
+		mbDeleteOnTermination = true;
 	}
 
 	private void initRootDevice() {
@@ -41,12 +41,34 @@ public class Disk {
 
 	@Override
 	public String toString() {
-		return "{ " + "device:" + getDevice() + ", size:" + getGiga()
-				+ " Go, rootDevice: " + getRootDevice() + " }";
+		return "{ "
+				+ "device:"
+				+ getDevice()
+				+ ", size:"
+				+ getGiga()
+				+ " Go"
+				+ (isRootDevice() == true ? ", rootDevice:true" : "")
+				+ (isDeletedOnTermination() == false ? ", deleteOnTermination:false "
+						: "") + " }";
 	}
 
+	// TODO to remove : shouldn't be needed
 	public boolean equals(Integer iSize, String sDevice) {
 		return iSize.equals(getGiga()) && sDevice.equals(getDevice());
+	}
+
+	@Override
+	public boolean equals(Object anObject) {
+		if (this == anObject) {
+			return true;
+		}
+		if (anObject instanceof Disk) {
+			Disk d = (Disk) anObject;
+			return (isRootDevice() && d.isRootDevice())
+					|| (getGiga() == d.getGiga() && getDevice().equals(
+							d.getDevice()));
+		}
+		return false;
 	}
 
 	public int setSize(String sSize) throws IllegalDiskException {
@@ -116,22 +138,22 @@ public class Disk {
 		return previous;
 	}
 
-	public boolean getDeleteOnTermination() {
+	public boolean isDeletedOnTermination() {
 		return mbDeleteOnTermination;
 	}
 
 	public boolean setDeleteOnTermination(boolean deleteOnTermination) {
-		boolean previous = getDeleteOnTermination();
+		boolean previous = isDeletedOnTermination();
 		mbDeleteOnTermination = deleteOnTermination;
 		return previous;
 	}
 
-	public boolean getRootDevice() {
+	public boolean isRootDevice() {
 		return mbRootDevice;
 	}
 
 	public boolean setRootDevice(boolean rootDevice) {
-		boolean previous = getRootDevice();
+		boolean previous = isRootDevice();
 		mbRootDevice = rootDevice;
 		return previous;
 	}

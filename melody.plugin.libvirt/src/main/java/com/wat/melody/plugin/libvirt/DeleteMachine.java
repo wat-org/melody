@@ -3,6 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -37,13 +38,20 @@ public class DeleteMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		if (getInstance() == null) {
-			log.warn(Messages.bind(Messages.DeleteMsg_NO_INSTANCE,
-					getTargetNodeLocation()));
+			LibVirtException Ex = new LibVirtException(Messages.bind(
+					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
+			// TODO : externalize error message
+			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+					"Cannot delete instance.", Ex)));
 			disableManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
-			log.warn(Messages.bind(Messages.DeleteMsg_TERMINATED, new Object[] {
-					getInstanceID(), "DEAD", getTargetNodeLocation() }));
+			LibVirtException Ex = new LibVirtException(Messages.bind(
+					Messages.DeleteMsg_TERMINATED, new Object[] {
+							getInstanceID(), "DEAD", getTargetNodeLocation() }));
+			// TODO : externalize error message
+			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+					"Cannot delete instance.", Ex)));
 			disableManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else {

@@ -7,6 +7,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.cloud.management.ManagementHelper;
 import com.wat.melody.cloud.management.ManagementHelperFactory;
 import com.wat.melody.cloud.management.exception.ManagementException;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.common.ManagementInterfaceHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
@@ -109,7 +110,21 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		if (getEnableManagement() == false) {
 			return;
 		}
-		ManagementHelper mh = buildManagementHelper();
+		/*
+		 * TODO : should test the validity of the Management-datas (e.g.
+		 * instance's ip) before the call to buildManagementHelper. Doing so, we
+		 * will not try to disable management if no Management-datas are
+		 * present.
+		 */
+		ManagementHelper mh = null;
+		try {
+			mh = buildManagementHelper();
+		} catch (LibVirtException Ex) {
+			// TODO : externalize error message
+			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+					"Cannot disable Melody-Management.", Ex)));
+			return;
+		}
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceID()));

@@ -1,14 +1,19 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.disk;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskException;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class DisksLoader {
+
+	/**
+	 * The 'disk' XML Nested element of the Instance Node in the RD
+	 */
+	public static final String DISK_NE = "disk";
 
 	/**
 	 * The 'size' XML attribute of a Disk Node
@@ -29,6 +34,11 @@ public class DisksLoader {
 	 * The 'rootDevice' XML attribute of a Disk Node
 	 */
 	public static final String ROOTDEVICE_ATTR = "rootDevice";
+
+	/**
+	 * Default XPath Expression to select DiskNode in the RD
+	 */
+	public static final String DEFAULT_DISKS_NODE_SELECTOR = "//" + DISK_NE;
 
 	private ITaskContext moTC;
 
@@ -140,7 +150,9 @@ public class DisksLoader {
 			try {
 				dl.addDisk(disk);
 			} catch (IllegalDiskListException Ex) {
-				throw new ResourcesDescriptorException(n, Ex);
+				throw new ResourcesDescriptorException(n, "This Disk Node "
+						+ "description is not no valid. Read message bellow "
+						+ "to get more details about this issue.", Ex);
 			}
 		}
 		return dl;

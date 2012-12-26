@@ -9,8 +9,8 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.InstanceType;
-import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;

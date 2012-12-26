@@ -12,16 +12,6 @@ public class Messages extends NLS {
 	public static String VolumeAttachmentStateEx_EMPTY;
 	public static String VolumeAttachmentStateEx_INVALID;
 
-	public static String DiskEx_EMPTY_SIZE_ATTR;
-	public static String DiskEx_INVALID_SIZE_ATTR;
-	public static String DiskEx_EMPTY_DEVICE_ATTR;
-	public static String DiskEx_INVALID_DEVICE_ATTR;
-
-	public static String DiskListEx_DEVICE_ALREADY_DEFINE;
-	public static String DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE;
-
-	public static String DiskLoadEx_MISSING_ATTR;
-
 	public static String ConfEx_MISSING_DIRECTIVE;
 	public static String ConfEx_INVALID_DIRECTIVE;
 	public static String ConfEx_EMPTY_DIRECTIVE;

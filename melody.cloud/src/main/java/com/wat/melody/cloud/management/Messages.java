@@ -8,6 +8,7 @@ public class Messages extends NLS {
 
 	public static String MgmtMsg_INTRO;
 	public static String MgmtMsg_RESUME;
+	public static String MgmtMsg_FAILED;
 
 	public static String MgmtEx_SSH_MGMT_ENABLE_TIMEOUT;
 

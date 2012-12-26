@@ -2,8 +2,8 @@ package com.wat.melody.plugin.aws.ec2.common;
 
 import java.util.Arrays;
 
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.exception.IllegalInstanceStateException;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 
 /**
  * 
@@ -44,7 +44,7 @@ public abstract class InstanceStateConverter {
 			return InstanceState.STOPPED;
 		}
 		throw new IllegalInstanceStateException(Messages.bind(
-				com.wat.melody.cloud.Messages.InstanceStateEx_INVALID, iState,
+				com.wat.melody.cloud.instance.Messages.InstanceStateEx_INVALID, iState,
 				Arrays.asList(new int[] { 0, 16, 32, 48, 64, 80 })));
 	}
 

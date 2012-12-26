@@ -13,8 +13,9 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.InstanceType;
+import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -174,6 +175,18 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	public void deleteInstance() {
 		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
 		setInstanceID(null);
+	}
+
+	public DiskList getInstanceDisks(Instance i) {
+		return LibVirtCloud.getInstanceDisks(i);
+	}
+
+	public void detachAndDeleteVolumes(Instance i, DiskList disksToRemove) {
+		LibVirtCloud.detachAndDeleteVolumes(i, disksToRemove);
+	}
+
+	public void createAndAttachVolumes(Instance i, DiskList disksToAdd) {
+		LibVirtCloud.createAndAttachVolumes(i, disksToAdd);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)
@@ -469,9 +482,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	public long setTimeout(long timeout) throws LibVirtException {
 		if (timeout < 0) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getTimeout();
 		mlTimeout = timeout;

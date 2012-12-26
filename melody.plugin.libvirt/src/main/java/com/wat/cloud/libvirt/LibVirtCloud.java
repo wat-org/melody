@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -21,10 +23,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.InstanceType;
-import com.wat.melody.cloud.exception.IllegalInstanceStateException;
-import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
@@ -258,6 +264,194 @@ public abstract class LibVirtCloud {
 		}
 	}
 
+	public static DiskList getInstanceDisks(Instance i) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		return getDomainDisks(i.getDomain());
+	}
+
+	public static DiskList getDomainDisks(Domain domain) {
+		try {
+			DiskList dl = new DiskList();
+			Doc ddoc = getDomainXMLDesc(domain);
+			NodeList nl = ddoc
+					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
+			for (int i = 0; i < nl.getLength(); i++) {
+				Disk d = new Disk();
+				String volPath = Doc.evaluateAsString("source/@file",
+						nl.item(i));
+				StorageVol sv = domain.getConnect().storageVolLookupByPath(
+						volPath);
+				d.setDeleteOnTermination(true);
+				d.setDevice("/dev/"
+						+ Doc.evaluateAsString("target/@dev", nl.item(i)));
+				d.setGiga((int) (sv.getInfo().capacity / (1024 * 1024 * 1024)));
+				if (d.getDevice().equals("/dev/vda")) {
+					d.setRootDevice(true);
+				}
+				dl.addDisk(d);
+			}
+			if (dl.size() == 0) {
+				throw new RuntimeException("No disk device found "
+						+ "for Domain '" + domain.getName() + "'.");
+			}
+			if (dl.getRootDevice() == null) {
+				throw new RuntimeException("No disk root device found "
+						+ "for Domain '" + domain.getName() + "'.");
+			}
+			return dl;
+		} catch (XPathExpressionException | IllegalDiskException
+				| LibvirtException | IllegalDiskListException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static final String DEL_VOLUME_XML_SNIPPET = "<volume>"
+			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
+			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
+			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
+			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
+
+	public static final String DETACH_VOLUME_XML_SNIPPET = "    <disk type='file' device='disk'>"
+			+ "<source file='§[volPath]§'/>"
+			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
+
+	public static void detachAndDeleteVolumes(Instance i, DiskList disksToRemove) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		detachAndDeleteVolumes(i.getDomain(), disksToRemove);
+	}
+
+	public static void detachAndDeleteVolumes(Domain d, DiskList disksToRemove) {
+		if (disksToRemove == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DiskList.class.getCanonicalName()
+					+ ".");
+		}
+		if (disksToRemove.size() == 0) {
+			return;
+		}
+
+		// preparation de la variabilisation du XML
+		PropertiesSet vars = new PropertiesSet();
+		try {
+			Doc ddoc = getDomainXMLDesc(d);
+			// pour chaque disque a supprimer
+			for (Disk disk : disksToRemove) {
+				String deviceToRemove = disk.getDevice().replace("/dev/", "");
+				// search the path of the disk which match device to remove
+				String volPath = ddoc
+						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
+								+ deviceToRemove + "']/source/@file");
+				if (volPath == null) {
+					throw new RuntimeException("Domain '" + d.getName()
+							+ "' has no disk device '" + deviceToRemove + "' !");
+				}
+				// variabilisation du detachement de la device
+				vars.put(new Property("targetDevice", deviceToRemove));
+				vars.put(new Property("volPath", volPath));
+				// detachement de la device
+				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+				d.detachDeviceFlags(XPathExpander.expand(
+						DETACH_VOLUME_XML_SNIPPET, null, vars), flag);
+				// suppression du volume
+				d.getConnect().storageVolLookupByPath(volPath).delete(0);
+			}
+		} catch (LibvirtException | IllegalPropertyException
+				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static final String NEW_VOLUME_XML_SNIPPET = "<volume>"
+			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
+			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
+			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
+			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
+
+	public static final String ATTACH_VOLUME_XML_SNIPPET = "    <disk type='file' device='disk'>"
+			+ "<driver name='qemu' type='raw' cache='none'/>"
+			+ "<source file='§[volPath]§'/>"
+			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
+
+	public static void createAndAttachVolumes(Instance i, DiskList disksToAdd) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		createAndAttachVolumes(i.getDomain(), disksToAdd);
+	}
+
+	public static void createAndAttachVolumes(Domain d, DiskList disksToAdd) {
+		if (disksToAdd == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DiskList.class.getCanonicalName()
+					+ ".");
+		}
+		if (disksToAdd.size() == 0) {
+			return;
+		}
+
+		try {
+			Doc ddoc = getDomainXMLDesc(d);
+			// Obtenir l'indice de volume le plus eleve
+			NodeList nl = ddoc
+					.evaluateAsNodeList("/domain/devices/disk[@device='disk']/source/@file");
+			if (nl.getLength() == 0) {
+				throw new RuntimeException("Domain '" + d.getName()
+						+ "' has no disk device !");
+			}
+			int lastVol = 0;
+			Pattern p2 = Pattern.compile("^/.*/i-[a-zA-Z0-9]{8}-vol(.)[.]img$");
+			for (int i = 0; i < nl.getLength(); i++) {
+				Matcher m = p2.matcher(nl.item(i).getNodeValue());
+				if (!m.matches()) {
+					throw new RuntimeException("Domain '" + d.getName()
+							+ "' disk device '" + nl.item(i).getNodeValue()
+							+ "' is not compliant !");
+				}
+				int curVol = Integer.parseInt(m.group(1));
+				if (curVol > lastVol) {
+					lastVol = curVol;
+				}
+			}
+			// recuperation du storage pool
+			StoragePool sp = d.getConnect().storagePoolLookupByName("default");
+			// preparation de la variabilisation des template XML
+			PropertiesSet vars = new PropertiesSet();
+			vars.put(new Property("vmName", d.getName()));
+			vars.put(new Property("allocation", "0"));
+			// pour chaque disque
+			for (Disk disk : disksToAdd) {
+				// variabilisation de la creation du volume
+				vars.put(new Property("volNum", String.valueOf(++lastVol)));
+				vars.put(new Property("capacity", String.valueOf((long) disk
+						.getGiga() * 1024 * 1024 * 1024)));
+				// creation du volume
+				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
+						NEW_VOLUME_XML_SNIPPET, null, vars), 0);
+				// variabilisation de l'attachement du volume
+				String deviceToAdd = disk.getDevice().replace("/dev/", "");
+				vars.put(new Property("targetDevice", deviceToAdd));
+				vars.put(new Property("volPath", sv.getPath()));
+				// attachement du volume
+				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+				d.attachDeviceFlags(XPathExpander.expand(
+						ATTACH_VOLUME_XML_SNIPPET, null, vars), flag);
+			}
+		} catch (LibvirtException | IllegalPropertyException
+				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
 	private static Path getImageDomainDescriptor(String sImageId) {
 		String sPath = null;
 		try {
@@ -272,6 +466,10 @@ public abstract class LibVirtCloud {
 
 	private static String generateUniqDomainName(Connect cnx)
 			throws LibvirtException {
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
 		String sNewName = null;
 		while (true) {
 			sNewName = "i-" + UUID.randomUUID().toString().substring(0, 8);
@@ -306,6 +504,11 @@ public abstract class LibVirtCloud {
 	}
 
 	private static synchronized void unregisterMacAddress(String sMacAddr) {
+		if (sMacAddr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
 		log.trace("Releasing Mac Address '" + sMacAddr + "'.");
 		Node nMacAddr = null;
 		try {
@@ -324,6 +527,11 @@ public abstract class LibVirtCloud {
 	}
 
 	private static Doc getDomainXMLDesc(Domain domain) {
+		if (domain == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
 		try {
 			Doc doc = new Doc();
 			doc.loadFromXML(domain.getXMLDesc(0));
@@ -344,6 +552,11 @@ public abstract class LibVirtCloud {
 	}
 
 	protected static String getDomainIpAddress(String sMacAddr) {
+		if (sMacAddr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
 					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr
@@ -355,6 +568,11 @@ public abstract class LibVirtCloud {
 	}
 
 	protected static String getDomainDnsName(String sMacAddr) {
+		if (sMacAddr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
 		try {
 			return netconf.evaluateAsString("/network/ip/dhcp"
 					+ "/host[ upper-case(@mac)=upper-case('" + sMacAddr
@@ -366,14 +584,18 @@ public abstract class LibVirtCloud {
 	}
 
 	public static boolean imageIdExists(String sImageId) {
-		Node n = null;
+		if (sImageId == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
 		try {
-			n = conf.evaluateAsNode("//images/image[@name='" + sImageId + "']");
+			return null != conf.evaluateAsNode("//images/image[@name='"
+					+ sImageId + "']");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.", Ex);
 		}
-		return n != null;
 	}
 
 	public static Domain getDomain(Connect cnx, String sInstanceId) {
@@ -400,23 +622,28 @@ public abstract class LibVirtCloud {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());
 		}
+		if (sInstanceId == null) {
+			return false;
+		}
 		String[] names = cnx.listDefinedDomains();
 		return Arrays.asList(names).contains(sInstanceId);
 	}
 
 	public static Instance getInstance(Connect cnx, String sInstanceId) {
-		return new Instance(getDomain(cnx, sInstanceId));
+		Domain d = getDomain(cnx, sInstanceId);
+		if (d == null) {
+			return null;
+		}
+		return new Instance(d);
 	}
 
-	public static InstanceState getInstanceState(Connect cnx,
-			String sAwsInstanceId) {
-		Domain i = getDomain(cnx, sAwsInstanceId);
-		if (i == null) {
+	public static InstanceState getDomainState(Domain d) {
+		if (d == null) {
 			return null;
 		}
 		DomainState state = null;
 		try {
-			state = i.getInfo().state;
+			state = d.getInfo().state;
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -425,15 +652,20 @@ public abstract class LibVirtCloud {
 		} catch (IllegalInstanceStateException Ex) {
 			throw new RuntimeException("Unexpected error while creating an "
 					+ "InstanceState Enum based on the value '" + state + "'. "
-					+ "Because this value was given by the AWS API, "
+					+ "Because this value was given by the LibVirt API, "
 					+ "such error cannot happened. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
 	}
 
-	public static boolean instanceLives(Connect cnx, String sAwsInstanceId) {
-		InstanceState cs = getInstanceState(cnx, sAwsInstanceId);
+	public static InstanceState getInstanceState(Connect cnx, String sInstanceId) {
+		Domain d = getDomain(cnx, sInstanceId);
+		return getDomainState(d);
+	}
+
+	public static boolean instanceLives(Connect cnx, String sInstanceId) {
+		InstanceState cs = getInstanceState(cnx, sInstanceId);
 		if (cs == null) {
 			return false;
 		}
@@ -441,8 +673,8 @@ public abstract class LibVirtCloud {
 				&& cs != InstanceState.TERMINATED;
 	}
 
-	public static boolean instanceRuns(Connect cnx, String sAwsInstanceId) {
-		InstanceState cs = getInstanceState(cnx, sAwsInstanceId);
+	public static boolean instanceRuns(Connect cnx, String sInstanceId) {
+		InstanceState cs = getInstanceState(cnx, sInstanceId);
 		if (cs == null) {
 			return false;
 		}

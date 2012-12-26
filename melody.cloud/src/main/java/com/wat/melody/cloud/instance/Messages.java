@@ -1,4 +1,4 @@
-package com.wat.melody.cloud;
+package com.wat.melody.cloud.instance;
 
 import org.eclipse.osgi.util.NLS;
 

@@ -11,11 +11,11 @@ import org.w3c.dom.NodeList;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Volume;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DisksLoader;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
-import com.wat.melody.plugin.aws.ec2.common.Disk;
-import com.wat.melody.plugin.aws.ec2.common.DiskList;
-import com.wat.melody.plugin.aws.ec2.common.DisksLoader;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -65,15 +65,11 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 	public UpdateDisks() {
 		super();
-		initDisksXprSuffix();
+		setDisksXprSuffix(DisksLoader.DEFAULT_DISKS_NODE_SELECTOR);
 		initDiskList();
 		initDetachTimeout();
 		initCreateTimeout();
 		initAttachTimeout();
-	}
-
-	private void initDisksXprSuffix() {
-		msDisksXprSuffix = "//" + Common.DISK_NE;
 	}
 
 	private void initDiskList() {
@@ -128,6 +124,13 @@ public class UpdateDisks extends AbstractAwsOperation {
 			setInstanceRelatedInfosToED(i);
 		}
 
+		/*
+		 * TODO Common.getInstanceVolumes should return DiskList instead of
+		 * Volume. Once it is done, refactor this code in order to use the
+		 * DiskHelper.
+		 */
+		// TODO don't forget to remove the Disk method 'equal' once this code is
+		// refactor
 		List<Volume> aVol = Common.getInstanceVolumes(getEc2(), i);
 		DiskList diskToAddList = computeAddRemoveDisks(i, aVol);
 		detachAndDeleteVolumes(aVol);
@@ -152,7 +155,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 		// Deduce which disk to add/remove
 		DiskList diskToAddList = new DiskList();
 		for (Disk d : getDiskList()) {
-			if (!d.getRootDevice() && !containsDisk(aVol, d)) {
+			if (!d.isRootDevice() && !containsDisk(aVol, d)) {
 				diskToAddList.add(d);
 			}
 		}
@@ -301,9 +304,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 	public long setDetachTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, DETACH_TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getDetachTimeout();
 		mlDetachTimeout = timeout;
@@ -318,9 +319,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 	public long setCreateTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, CREATE_TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getCreateTimeout();
 		mlCreateTimeout = timeout;
@@ -335,9 +334,7 @@ public class UpdateDisks extends AbstractAwsOperation {
 	public long setAttachTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, ATTACH_TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getAttachTimeout();
 		mlAttachTimeout = timeout;

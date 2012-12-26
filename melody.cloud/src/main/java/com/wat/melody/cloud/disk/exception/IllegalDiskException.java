@@ -1,6 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common.exception;
+package com.wat.melody.cloud.disk.exception;
 
-public class IllegalDiskException extends AwsException {
+import com.wat.melody.common.utils.exception.MelodyException;
+
+public class IllegalDiskException extends MelodyException {
 
 	private static final long serialVersionUID = -268994524679997771L;
 

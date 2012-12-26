@@ -1,8 +1,8 @@
-package com.wat.melody.cloud;
+package com.wat.melody.cloud.instance;
 
 import java.util.Arrays;
 
-import com.wat.melody.cloud.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 
 /**
  * 

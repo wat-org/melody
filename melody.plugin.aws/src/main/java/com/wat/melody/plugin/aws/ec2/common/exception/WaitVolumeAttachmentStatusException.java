@@ -1,6 +1,6 @@
 package com.wat.melody.plugin.aws.ec2.common.exception;
 
-import com.wat.melody.plugin.aws.ec2.common.Disk;
+import com.wat.melody.cloud.disk.Disk;
 import com.wat.melody.plugin.aws.ec2.common.VolumeAttachmentState;
 
 public class WaitVolumeAttachmentStatusException extends AwsException {

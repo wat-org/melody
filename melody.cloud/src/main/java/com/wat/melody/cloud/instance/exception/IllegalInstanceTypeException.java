@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.exception;
+package com.wat.melody.cloud.instance.exception;
 
 import com.wat.melody.common.utils.exception.MelodyException;
 

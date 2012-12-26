@@ -7,7 +7,7 @@
 		</fileset>
 	</path>
 
-	<target name="libvirt_UC1_create_env">
+	<target name="libvirt_UC1_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
@@ -16,7 +16,16 @@
 		</java>
 	</target>
 
-	<target name="libvirt_UC2_destroy_env">
+	<target name="libvirt_UC1_05_update_disks">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-o" />
+			<arg value="update_disks" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="libvirt_UC1_06_destroy_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
@@ -25,6 +34,6 @@
 		</java>
 	</target>
 
-	<target name="all" depends="libvirt_UC1_create_env, libvirt_UC2_destroy_env" />
+	<target name="all" depends="libvirt_UC1_01_create_env, libvirt_UC1_05_update_disks, libvirt_UC1_06_destroy_env" />
 
 </project>

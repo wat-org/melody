@@ -53,14 +53,4 @@ public class Common {
 	 */
 	public static final String PASSPHRASE_ATTR = "passphrase";
 
-	/**
-	 * The 'fwrule' XML Nested element of the LibVirt Instance Node
-	 */
-	public static final String FWRULE_NE = "fwrule";
-
-	/**
-	 * The 'disk' XML Nested element of the LibVirt Instance Node
-	 */
-	public static final String DISK_NE = "disk";
-
 }

@@ -41,6 +41,10 @@ public class Messages extends NLS {
 	public static String DeleteMsg_NO_INSTANCE;
 	public static String DeleteMsg_TERMINATED;
 
+	public static String UpdateDiskEx_INVALID_DISK_XPATH;
+	public static String UpdateDiskMsg_NO_INSTANCE;
+	public static String UpdateDiskMsg_DISKS_RESUME;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

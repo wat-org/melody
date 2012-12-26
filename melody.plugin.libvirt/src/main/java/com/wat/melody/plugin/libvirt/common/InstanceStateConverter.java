@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import org.libvirt.DomainInfo;
 
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.exception.IllegalInstanceStateException;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 
 /**
  * 
@@ -56,7 +56,7 @@ public abstract class InstanceStateConverter {
 		 * libVitCloud dé-provisionne le Domain
 		 */
 		throw new IllegalInstanceStateException(Messages.bind(
-				com.wat.melody.cloud.Messages.InstanceStateEx_INVALID, iState,
+				com.wat.melody.cloud.instance.Messages.InstanceStateEx_INVALID, iState,
 				Arrays.asList(DomainInfo.DomainState.values())));
 	}
 

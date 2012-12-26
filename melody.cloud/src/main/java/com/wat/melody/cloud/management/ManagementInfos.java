@@ -15,6 +15,11 @@ public class ManagementInfos {
 
 	private static Log log = LogFactory.getLog(ManagementInfos.class);
 
+	/*
+	 * TODO : add an enable/disable feature, which will indicate that we
+	 * want/don't want to use melody management
+	 */
+
 	private ManagementMethod moManagementMethod;
 	private Host moHost;
 	private Port moPort;
@@ -57,14 +62,26 @@ public class ManagementInfos {
 
 		log.debug(Messages.bind(Messages.MgmtMsg_INTRO,
 				Doc.getNodeLocation(instanceNode).toFullString()));
-		Node mgmtNode = ManagementInterfaceHelper.findMgmtNode(instanceNode);
-		setManagementMethod(ManagementInterfaceHelper
-				.getManagementMethod(mgmtNode));
-		setHost(ManagementInterfaceHelper.getManagementNetworkInterfaceHost(
-				mgmtNode, instanceNode));
-		setPort(ManagementInterfaceHelper.getManagementPort(mgmtNode));
-		log.info(Messages.bind(Messages.MgmtMsg_RESUME, new Object[] {
-				getManagementMethod(), getHost(), getPort() }));
+		try {
+			Node mgmtNode = ManagementInterfaceHelper
+					.findMgmtNode(instanceNode);
+			setManagementMethod(ManagementInterfaceHelper
+					.getManagementMethod(mgmtNode));
+			setHost(ManagementInterfaceHelper
+					.getManagementNetworkInterfaceHost(mgmtNode, instanceNode));
+			setPort(ManagementInterfaceHelper.getManagementPort(mgmtNode));
+			log.info(Messages.bind(Messages.MgmtMsg_RESUME, this));
+		} catch (ResourcesDescriptorException Ex) {
+			log.warn(Messages.bind(Messages.MgmtMsg_FAILED, Doc
+					.getNodeLocation(instanceNode).toFullString()));
+			throw Ex;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "{ method:" + getManagementMethod() + ", host:" + getHost()
+				+ ", port:" + getPort() + " }";
 	}
 
 	public ManagementMethod getManagementMethod() {

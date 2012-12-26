@@ -11,8 +11,8 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.InstanceState;
-import com.wat.melody.cloud.InstanceType;
+import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.utils.DUNID;
@@ -485,9 +485,7 @@ abstract public class AbstractAwsOperation implements ITask {
 	public long setTimeout(long timeout) throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, new Object[] {
-							timeout, TIMEOUT_ATTR,
-							getClass().getSimpleName().toLowerCase() }));
+					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getTimeout();
 		mlTimeout = timeout;
