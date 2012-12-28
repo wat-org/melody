@@ -7,9 +7,9 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskException;
 
 public class Disk {
 
-	public static final String SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";
+	public static final String DEVICE_SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";
 
-	public static final String DEVICE_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
+	public static final String DEVICE_NAME_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
 
 	private int miGiga;
 	private String msDevice;
@@ -52,11 +52,6 @@ public class Disk {
 						: "") + " }";
 	}
 
-	// TODO to remove : shouldn't be needed
-	public boolean equals(Integer iSize, String sDevice) {
-		return iSize.equals(getGiga()) && sDevice.equals(getDevice());
-	}
-
 	@Override
 	public boolean equals(Object anObject) {
 		if (this == anObject) {
@@ -71,6 +66,23 @@ public class Disk {
 		return false;
 	}
 
+	/**
+	 * <p>
+	 * Set the disk device size of this object.
+	 * </p>
+	 * <ul>
+	 * <li>The given disk device size should match the pattern
+	 * {@link #DEVICE_SIZE_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param sDevice
+	 *            is the disk device size to assign to this object.
+	 * 
+	 * @return the disk device size, in Go, before this operation.
+	 * 
+	 * @throws IllegalDiskException
+	 *             if the given disk device size is invalid.
+	 */
 	public int setSize(String sSize) throws IllegalDiskException {
 		if (sSize == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -81,11 +93,12 @@ public class Disk {
 					Messages.DiskEx_EMPTY_SIZE_ATTR, sSize));
 		}
 
-		Pattern p = Pattern.compile("^" + SIZE_PATTERN + "$");
+		Pattern p = Pattern.compile("^" + DEVICE_SIZE_PATTERN + "$");
 		Matcher matcher = p.matcher(sSize);
 		if (!matcher.matches()) {
 			throw new IllegalDiskException(Messages.bind(
-					Messages.DiskEx_INVALID_SIZE_ATTR, sSize, SIZE_PATTERN));
+					Messages.DiskEx_INVALID_SIZE_ATTR, sSize,
+					DEVICE_SIZE_PATTERN));
 		}
 
 		int iSize = Integer.parseInt(matcher.group(1));
@@ -119,6 +132,23 @@ public class Disk {
 		return msDevice;
 	}
 
+	/**
+	 * <p>
+	 * Set the disk device name of this object.
+	 * </p>
+	 * <ul>
+	 * <li>The given disk device name should match the pattern
+	 * {@link #DEVICE_NAME_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param sDevice
+	 *            is the disk device name to assign to this object.
+	 * 
+	 * @return the disk device name, before this operation.
+	 * 
+	 * @throws IllegalDiskException
+	 *             if the given disk device name is invalid.
+	 */
 	public String setDevice(String sDevice) throws IllegalDiskException {
 		if (sDevice == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -128,10 +158,10 @@ public class Disk {
 			throw new IllegalDiskException(Messages.bind(
 					Messages.DiskEx_EMPTY_DEVICE_ATTR, sDevice));
 		}
-		if (!sDevice.matches("^" + DEVICE_PATTERN + "$")) {
+		if (!sDevice.matches("^" + DEVICE_NAME_PATTERN + "$")) {
 			throw new IllegalDiskException(Messages.bind(
 					Messages.DiskEx_INVALID_DEVICE_ATTR, sDevice,
-					DEVICE_PATTERN));
+					DEVICE_NAME_PATTERN));
 		}
 		String previous = getDevice();
 		msDevice = sDevice;

@@ -19,6 +19,11 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class UpdateDisks extends AbstractLibVirtOperation {
 
 	private static Log log = LogFactory.getLog(UpdateDisks.class);
@@ -151,8 +156,11 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 				new Object[] { getInstanceID(), getDiskList(), disksToAdd,
 						disksToRemove, getTargetNodeLocation() }));
 
-		detachAndDeleteVolumes(i, disksToRemove);
-		createAndAttachVolumes(i, disksToAdd);
+		detachAndDeleteVolumes(i, disksToRemove, getDetachTimeout());
+		createAndAttachVolumes(i, disksToAdd, getCreateTimeout(),
+				getAttachTimeout());
+
+		updateDeleteOnTerminationFlag(getDiskList());
 	}
 
 	private String getDisksNodeSelector() {

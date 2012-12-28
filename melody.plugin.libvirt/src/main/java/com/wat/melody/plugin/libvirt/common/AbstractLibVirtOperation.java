@@ -181,12 +181,19 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		return LibVirtCloud.getInstanceDisks(i);
 	}
 
-	public void detachAndDeleteVolumes(Instance i, DiskList disksToRemove) {
+	protected void detachAndDeleteVolumes(Instance i, DiskList disksToRemove,
+			long detachTimeout) throws LibVirtException, InterruptedException {
 		LibVirtCloud.detachAndDeleteVolumes(i, disksToRemove);
 	}
 
-	public void createAndAttachVolumes(Instance i, DiskList disksToAdd) {
+	protected void createAndAttachVolumes(Instance i, DiskList disksToAdd,
+			long createTimeout, long attachTimeout) throws LibVirtException,
+			InterruptedException {
 		LibVirtCloud.createAndAttachVolumes(i, disksToAdd);
+	}
+
+	protected void updateDeleteOnTerminationFlag(DiskList diskList) {
+		// TODO : not supported by LibVirt
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)

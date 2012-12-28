@@ -1,7 +1,5 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import java.util.List;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.logging.Log;
@@ -9,18 +7,15 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.Volume;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.cloud.disk.Disk;
 import com.wat.melody.cloud.disk.DiskList;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.DisksLoader;
+import com.wat.melody.cloud.disk.exception.DiskException;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
-import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
@@ -126,158 +121,46 @@ public class UpdateDisks extends AbstractAwsOperation {
 
 		Instance i = getInstance();
 		if (i == null) {
-			log.warn(Messages.bind(
+			AwsException Ex = new AwsException(Messages.bind(
 					Messages.UpdateDiskMsg_NO_INSTANCE,
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
+			// TODO : externalize error message
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					"Cannot update instance's disks.", Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {
 			setInstanceRelatedInfosToED(i);
 		}
 
-		/*
-		 * TODO Common.getInstanceVolumes should return DiskList instead of
-		 * Volume. Once it is done, refactor this code in order to use the
-		 * DiskHelper.
-		 */
-		// TODO don't forget to remove the Disk method 'equal' once this code is
-		// refactor
-		List<Volume> aVol = Common.getInstanceVolumes(getEc2(), i);
-		DiskList diskToAddList = computeAddRemoveDisks(i, aVol);
-		detachAndDeleteVolumes(aVol);
-		createAndAttachVolumes(i, diskToAddList);
-		updateDeleteOnTerminationFlag(getDiskList());
-	}
-
-	/**
-	 * <p>
-	 * Let only the Disk to remove into the given list.
-	 * </p>
-	 * 
-	 * @param i
-	 * @param aVol
-	 * 
-	 * @return the Disks to add
-	 */
-	private DiskList computeAddRemoveDisks(Instance i, List<Volume> aVol)
-			throws AwsException {
-		// Validate and remove the root device
-		computeRootDevice(i, aVol);
-		// Deduce which disk to add/remove
-		DiskList diskToAddList = new DiskList();
-		for (Disk d : getDiskList()) {
-			if (!d.isRootDevice() && !containsDisk(aVol, d)) {
-				diskToAddList.add(d);
-			}
+		DiskList iDisks = getInstanceDisks(i);
+		try {
+			DiskManagementHelper.ensureDiskUpdateIsPossible(iDisks,
+					getDiskList());
+		} catch (DiskException Ex) {
+			throw new AwsException("[" + getTargetNodeLocation()
+					+ "] Disk update is not possible till following "
+					+ "errors are not corrected. ", Ex);
 		}
+
+		DiskList disksToAdd = null;
+		DiskList disksToRemove = null;
+		disksToAdd = DiskManagementHelper.computeDiskToAdd(iDisks,
+				getDiskList());
+		disksToRemove = DiskManagementHelper.computeDiskToRemove(iDisks,
+				getDiskList());
+
 		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
-				new Object[] { getAwsInstanceID(), getDiskList(),
-						diskToAddList, aVol, getTargetNodeLocation() }));
-		return diskToAddList;
-	}
+				new Object[] { getAwsInstanceID(), getDiskList(), disksToAdd,
+						disksToRemove, getTargetNodeLocation() }));
 
-	private void computeRootDevice(Instance i, List<Volume> aVol)
-			throws AwsException {
-		Disk rootDevice = getDiskList().getRootDevice();
-		if (rootDevice == null) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_UNDEF_ROOT_DEVICE, new Object[] {
-							DisksLoader.ROOTDEVICE_ATTR, i.getRootDeviceName(),
-							getTargetNodeLocation() }));
-		}
-		if (!i.getRootDeviceName().equals(rootDevice.getDevice())) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_INCORRECT_ROOT_DEVICE, new Object[] {
-							DisksLoader.ROOTDEVICE_ATTR,
-							rootDevice.getDevice(), i.getRootDeviceName(),
-							getTargetNodeLocation() }));
-		}
-		// Remove the root device from the list
-		// so that it will not be detached and delete
-		for (Volume v : aVol) {
-			if (v.getAttachments().get(0).getDevice()
-					.equals(i.getRootDeviceName())) {
-				aVol.remove(v);
-				break;
-			}
-		}
-	}
+		detachAndDeleteVolumes(i, disksToRemove, getDetachTimeout());
+		createAndAttachVolumes(i, disksToAdd, getCreateTimeout(),
+				getAttachTimeout());
 
-	/**
-	 * <p>
-	 * Return <code>true</code> if the given disk can be found in the given
-	 * volume list.
-	 * </p>
-	 * <p>
-	 * <i> Also note that, when found, the disk is removed from the volume
-	 * list.</i>
-	 * </p>
-	 * 
-	 * @param aVol
-	 * @param disk
-	 * 
-	 * @return <code>true</code> if the given disk can be found in the given
-	 *         volume list, <code>false</code> otherwise.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if volumeList is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if disk is <code>null</code>.
-	 */
-	private boolean containsDisk(List<Volume> aVol, Disk disk) {
-		if (aVol == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Volume>.");
-		}
-		if (disk == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Disk.");
-		}
-		for (Volume v : aVol) {
-			if (disk.equals(v.getSize(), v.getAttachments().get(0).getDevice())) {
-				aVol.remove(v);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void detachAndDeleteVolumes(List<Volume> aVol) throws AwsException,
-			InterruptedException {
-		try {
-			Common.detachAndDeleteVolumes(getEc2(), aVol, getDetachTimeout());
-		} catch (WaitVolumeStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_DETACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		}
-	}
-
-	private void createAndAttachVolumes(Instance i, DiskList diskList)
-			throws AwsException, InterruptedException {
-		String sAZ = i.getPlacement().getAvailabilityZone();
-		try {
-			Common.createAndAttachVolumes(getEc2(), getAwsInstanceID(), sAZ,
-					diskList, getCreateTimeout(), getAttachTimeout());
-		} catch (WaitVolumeStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_CREATE,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		} catch (WaitVolumeAttachmentStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_ATTACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		}
-	}
-
-	private void updateDeleteOnTerminationFlag(DiskList diskList) {
-		Common.updateDeleteOnTerminationFlag(getEc2(), getAwsInstanceID(),
-				diskList);
+		updateDeleteOnTerminationFlag(getDiskList());
 	}
 
 	private String getDisksNodeSelector() {

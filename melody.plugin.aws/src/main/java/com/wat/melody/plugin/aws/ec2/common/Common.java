@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -22,6 +21,7 @@ import com.amazonaws.services.ec2.model.DescribeRegionsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DetachVolumeRequest;
+import com.amazonaws.services.ec2.model.DetachVolumeResult;
 import com.amazonaws.services.ec2.model.EbsInstanceBlockDeviceSpecification;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
@@ -42,6 +42,7 @@ import com.amazonaws.services.ec2.model.VolumeAttachment;
 import com.wat.melody.cloud.disk.Disk;
 import com.wat.melody.cloud.disk.DiskList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
@@ -1173,18 +1174,13 @@ public class Common {
 	 * Get all Aws {@link Volume} attached to the given Aws Instance.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Remove the RootDevice from the list ; <BR/>
-	 * </i>
-	 * </p>
-	 * 
 	 * @param ec2
 	 * @param i
 	 *            is the Aws Instance.
 	 * 
 	 * @return an Aws {@link List<Volume>}, which contains all Aws
-	 *         {@link Volume} attached to the given Aws Instance (the list can
-	 *         be empty).
+	 *         {@link Volume} attached to the given Aws Instance (the list
+	 *         cannot be empty. It contains at least the root disk device).
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.
@@ -1213,9 +1209,61 @@ public class Common {
 
 		List<Volume> aVolList = ec2.describeVolumes(dvreq).getVolumes();
 		if (aVolList == null) {
-			return new ArrayList<Volume>();
+			throw new RuntimeException("Unexpected error retreiving the Aws "
+					+ "Instance Volumes List. "
+					+ "The resulting Volumes List is empty. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.");
 		}
 		return aVolList;
+	}
+
+	/**
+	 * <p>
+	 * Get all Aws {@link Volume} attached to the given Aws Instance.
+	 * </p>
+	 * 
+	 * @param ec2
+	 * @param i
+	 *            is the Aws Instance.
+	 * 
+	 * @return a {@link DiskList}, which contains all Aws {@link Disk} attached
+	 *         to the given Aws Instance (the list cannot be empty. It contains
+	 *         at least the root disk device).
+	 * 
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws IllegalArgumentException
+	 *             if ec2 is <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             if i is <code>null</code>.
+	 */
+	public static DiskList getInstanceDisks(AmazonEC2 ec2, Instance i) {
+		List<Volume> volumes = getInstanceVolumes(ec2, i);
+		DiskList disks = new DiskList();
+		try {
+			for (Volume volume : volumes) {
+				Disk disk = new Disk();
+				disk.setGiga(volume.getSize());
+				disk.setDeleteOnTermination(volume.getAttachments().get(0)
+						.getDeleteOnTermination());
+				disk.setDevice(volume.getAttachments().get(0).getDevice());
+				if (disk.getDevice().equals(i.getRootDeviceName())) {
+					disk.setRootDevice(true);
+				}
+				disks.addDisk(disk);
+			}
+		} catch (IllegalDiskException | IllegalDiskListException Ex) {
+			throw new RuntimeException("Unexpected error while building "
+					+ "DiskList from Aws Instance Volumes List. "
+					+ "Because Aws Instance Volumes List is valid, such error "
+					+ "cannot happened. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
+		}
+		return disks;
 	}
 
 	/**
@@ -1568,9 +1616,9 @@ public class Common {
 
 	/**
 	 * <p>
-	 * Detach the given {@link Volume}s.
+	 * Detach the given {@link DiskList}.
 	 * 
-	 * Also delete the given {@link Volume}s based on their
+	 * Also delete the given {@link DiskList} based on their
 	 * <code>deleteOnTermination</code>'s flag.
 	 * 
 	 * Wait for the detached volumes to reach the state
@@ -1578,8 +1626,10 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param aVolList
-	 *            contains the {@link Volume}s to detach.
+	 * @param instance
+	 *            the Aws Instance which is the Disk onwer.
+	 * @param volumes
+	 *            contains the {@link DiskList} to detach and delete.
 	 * @param detachTimeout
 	 *            is the maximum time to wait for the detach operation to
 	 *            complete. 0 means ifinite.
@@ -1599,40 +1649,34 @@ public class Common {
 	 * @throws InterruptedException
 	 *             if the current thread is interrupted during this call.
 	 */
-	public static void detachAndDeleteVolumes(AmazonEC2 ec2,
-			List<Volume> aVolList, long detachTimeout)
-			throws InterruptedException, WaitVolumeStatusException {
+	public static void detachAndDeleteVolumes(AmazonEC2 ec2, Instance instance,
+			DiskList volumes, long detachTimeout) throws InterruptedException,
+			WaitVolumeStatusException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
-		if (aVolList == null) {
+		if (volumes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List<Volume>.");
 		}
-		for (Volume v : aVolList) {
+		for (Disk disk : volumes) {
 			// Detach volume
 			DetachVolumeRequest detvreq = new DetachVolumeRequest();
-			detvreq.withVolumeId(v.getVolumeId());
-			ec2.detachVolume(detvreq);
-			if (!waitUntilVolumeStatusBecomes(ec2, v.getVolumeId(),
+			detvreq.withInstanceId(instance.getInstanceId());
+			detvreq.withDevice(disk.getDevice());
+			DetachVolumeResult detvres = null;
+			detvres = ec2.detachVolume(detvreq);
+			String volumeId = detvres.getAttachment().getVolumeId();
+			if (!waitUntilVolumeStatusBecomes(ec2, volumeId,
 					VolumeState.AVAILABLE, detachTimeout, 5000)) {
-				Disk disk = new Disk();
-				disk.setDeleteOnTermination(v.getAttachments().get(0)
-						.getDeleteOnTermination());
-				try {
-					disk.setDevice(v.getAttachments().get(0).getDevice());
-				} catch (IllegalDiskException Ex) {
-					throw new RuntimeException("TODO impossible");
-				}
-				disk.setGiga(v.getSize());
-				throw new WaitVolumeStatusException(disk, v.getVolumeId(),
+				throw new WaitVolumeStatusException(disk, volumeId,
 						VolumeState.AVAILABLE, detachTimeout);
 			}
 			// Delete volume if deleteOnTermination is true
-			if (v.getAttachments().get(0).getDeleteOnTermination()) {
+			if (disk.isDeletedOnTermination()) {
 				DeleteVolumeRequest delvreq = new DeleteVolumeRequest();
-				delvreq.withVolumeId(v.getVolumeId());
+				delvreq.withVolumeId(volumeId);
 				ec2.deleteVolume(delvreq);
 			}
 		}

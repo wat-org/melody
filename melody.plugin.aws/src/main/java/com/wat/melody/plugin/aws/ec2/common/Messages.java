@@ -105,8 +105,6 @@ public class Messages extends NLS {
 	public static String ResizeEx_FAILED;
 	public static String ResizeMsg_NO_NEED;
 
-	public static String UpdateDiskEx_UNDEF_ROOT_DEVICE;
-	public static String UpdateDiskEx_INCORRECT_ROOT_DEVICE;
 	public static String UpdateDiskEx_INVALID_DISK_XPATH;
 	public static String UpdateDiskEx_DETACH;
 	public static String UpdateDiskEx_CREATE;
