@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -40,9 +41,12 @@ public class StopMachine extends AbstractMachineOperation {
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
 		} else if (!instanceRuns()) {
-			log.warn(Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
-					new Object[] { getAwsInstanceID(), InstanceState.STOPPED,
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.StopMsg_ALREADY_STOPPED, new Object[] {
+							getAwsInstanceID(), InstanceState.STOPPED,
 							getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.StopMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(false);
 		} else {

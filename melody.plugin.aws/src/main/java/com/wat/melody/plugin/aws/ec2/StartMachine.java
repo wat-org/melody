@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -40,22 +41,31 @@ public class StartMachine extends AbstractMachineOperation {
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
 		} else if (is == InstanceState.PENDING) {
-			log.warn(Messages.bind(Messages.StartMsg_PENDING, new Object[] {
-					getAwsInstanceID(), InstanceState.PENDING,
-					InstanceState.RUNNING, getTargetNodeLocation() }));
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.StartMsg_PENDING, new Object[] {
+							getAwsInstanceID(), InstanceState.PENDING,
+							InstanceState.RUNNING, getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.StartMsg_GENERIC_WARN, Ex)));
 			waitUntilInstanceStatusBecomes(InstanceState.RUNNING, getTimeout());
 			setInstanceRelatedInfosToED(getInstance());
 			enableNetworkManagement();
 		} else if (is == InstanceState.RUNNING) {
-			log.warn(Messages.bind(Messages.StartMsg_RUNNING, new Object[] {
-					getAwsInstanceID(), InstanceState.RUNNING,
-					getTargetNodeLocation() }));
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.StartMsg_RUNNING, new Object[] {
+							getAwsInstanceID(), InstanceState.RUNNING,
+							getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.StartMsg_GENERIC_WARN, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			enableNetworkManagement();
 		} else if (is == InstanceState.STOPPING) {
-			log.warn(Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
-					getAwsInstanceID(), InstanceState.STOPPING,
-					InstanceState.STOPPED, getTargetNodeLocation() }));
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.StartMsg_STOPPING, new Object[] {
+							getAwsInstanceID(), InstanceState.STOPPING,
+							InstanceState.STOPPED, getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.StartMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			waitUntilInstanceStatusBecomes(InstanceState.STOPPED, getTimeout());
 			startInstance();

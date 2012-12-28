@@ -10,6 +10,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
@@ -127,9 +128,12 @@ public class ResizeMachine extends AbstractAwsOperation {
 											getTargetNodeLocation() }));
 				}
 			} else {
-				log.warn(Messages.bind(Messages.ResizeMsg_NO_NEED,
-						new Object[] { getAwsInstanceID(), getInstanceType(),
+				AwsException Ex = new AwsException(Messages.bind(
+						Messages.ResizeMsg_NO_NEED, new Object[] {
+								getAwsInstanceID(), getInstanceType(),
 								getTargetNodeLocation() }));
+				log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+						Messages.ResizeMsg_GENERIC_WARN, Ex)));
 			}
 			setInstanceRelatedInfosToED(i);
 		}

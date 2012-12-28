@@ -18,6 +18,7 @@ import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.FwRuleLoader;
@@ -86,11 +87,13 @@ public class IngressMachine extends AbstractAwsOperation {
 
 		Instance i = getInstance();
 		if (i == null) {
-			log.warn(Messages.bind(
+			AwsException Ex = new AwsException(Messages.bind(
 					Messages.IngressMsg_NO_INSTANCE,
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.IngressMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {

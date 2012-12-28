@@ -126,9 +126,8 @@ public class UpdateDisks extends AbstractAwsOperation {
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
-					"Cannot update instance's disks.", Ex)));
+					Messages.UpdateDiskMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {

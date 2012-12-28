@@ -247,8 +247,11 @@ public class NewMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		if (instanceLives()) {
-			log.warn(Messages.bind(Messages.NewMsg_LIVES, new Object[] {
-					getAwsInstanceID(), "LIVE", getTargetNodeLocation() }));
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.NewMsg_LIVES, new Object[] { getAwsInstanceID(),
+							"LIVE", getTargetNodeLocation() }));
+			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+					Messages.NewMsg_GENERIC_FAIL, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
 				enableNetworkManagement();
