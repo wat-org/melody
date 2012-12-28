@@ -40,18 +40,16 @@ public class DeleteMachine extends AbstractMachineOperation {
 		if (getInstance() == null) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
-			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					"Cannot delete instance.", Ex)));
+					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.DeleteMsg_TERMINATED, new Object[] {
 							getInstanceID(), "DEAD", getTargetNodeLocation() }));
-			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					"Cannot delete instance.", Ex)));
+					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else {

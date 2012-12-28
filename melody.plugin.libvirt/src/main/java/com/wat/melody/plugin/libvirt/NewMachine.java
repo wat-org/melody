@@ -198,9 +198,8 @@ public class NewMachine extends AbstractMachineOperation {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.NewMsg_LIVES, new Object[] { getInstanceID(),
 							"LIVE", getTargetNodeLocation() }));
-			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					"Cannot create instance.", Ex)));
+					Messages.NewMsg_GENERIC_WARN, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
 				enableNetworkManagement();

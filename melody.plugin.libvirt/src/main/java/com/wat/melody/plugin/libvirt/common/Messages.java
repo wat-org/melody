@@ -37,13 +37,16 @@ public class Messages extends NLS {
 	public static String NewEx_INVALID_KEYPAIR_REPO_ATTR;
 	public static String NewEx_FAILED;
 	public static String NewMsg_LIVES;
+	public static String NewMsg_GENERIC_WARN;
 
 	public static String DeleteMsg_NO_INSTANCE;
 	public static String DeleteMsg_TERMINATED;
+	public static String DeleteMsg_GENERIC_WARN;
 
 	public static String UpdateDiskEx_INVALID_DISK_XPATH;
 	public static String UpdateDiskMsg_NO_INSTANCE;
 	public static String UpdateDiskMsg_DISKS_RESUME;
+	public static String UpdateDiskMsg_GENERIC_WARN;
 
 	static {
 		// initialize resource bundle
