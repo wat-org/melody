@@ -20,18 +20,24 @@ public class GetNetworkManagementHost implements XPathFunction {
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node)) {
+		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
 			throw new IllegalArgumentException(arg0.getClass()
 					.getCanonicalName()
 					+ ": Not accepted. "
 					+ CustomXPathFunctions.NAMESPACE
 					+ ":"
 					+ NAME
-					+ "() expects a Node " + "argument.");
+					+ "() expects a Node or a List<Node> argument.");
 		}
 		try {
-			return NetworkManagementHelper
-					.findNetworkManagementHost((Node) arg0);
+			if (arg0 instanceof Node) {
+				return NetworkManagementHelper
+						.findNetworkManagementHost((Node) arg0);
+			} else {
+				// TODO : need some test
+				return NetworkManagementHelper
+						.findNetworkManagementHost((List<Node>) arg0);
+			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

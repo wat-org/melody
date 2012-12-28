@@ -31,7 +31,7 @@ public class StopMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		if (getInstance() == null) {
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(false);
 			throw new AwsException(Messages.bind(
 					Messages.StopEx_NO_INSTANCE,
@@ -43,10 +43,10 @@ public class StopMachine extends AbstractMachineOperation {
 			log.warn(Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
 					new Object[] { getAwsInstanceID(), InstanceState.STOPPED,
 							getTargetNodeLocation() }));
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(false);
 		} else {
-			disableManagement();
+			disableNetworkManagement();
 			stopInstance();
 			removeInstanceRelatedInfosToED(false);
 		}

@@ -3,13 +3,9 @@ package com.wat.melody.plugin.aws.ec2.common;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyPair;
-import java.util.Arrays;
-
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -17,34 +13,27 @@ import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
-import com.jcraft.jsch.JSchException;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.common.network.Host;
+import com.wat.melody.cloud.network.NetworkManager;
+import com.wat.melody.cloud.network.NetworkManagerFactory;
+import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.Protocol;
-import com.wat.melody.common.network.exception.IllegalHostException;
-import com.wat.melody.common.network.exception.IllegalPortException;
-import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
-import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
 import com.wat.melody.plugin.aws.ec2.IngressMachine;
 import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
-import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
@@ -85,22 +74,22 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	private static Log log = LogFactory.getLog(AbstractMachineOperation.class);
 
 	/**
-	 * The 'enableManagement' XML attribute
+	 * The 'enableNetworkManagement' XML attribute
 	 */
 	public static final String ENABLE_NETWORK_MGNT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_ATTR;
 
 	/**
-	 * The 'enableManagementTimeout' XML attribute
+	 * The 'enableNetworkManagementTimeout' XML attribute
 	 */
 	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR;
 
-	private boolean mbEnableManagement;
-	private long mlEnableManagementTimeout;
+	private boolean mbEnableNetworkManagement;
+	private long mlEnableNetworkManagementTimeout;
 
 	public AbstractMachineOperation() {
 		super();
 		try {
-			setEnableManagementTimeout(300000);
+			setEnableNetworkManagementTimeout(300000);
 		} catch (AwsException Ex) {
 			throw new RuntimeException("Unexpected error while setting "
 					+ "the management timeout to '300000'. "
@@ -109,7 +98,24 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-		setEnableManagement(true);
+		setEnableNetworkManagement(true);
+	}
+
+	@Override
+	public void validate() throws AwsException {
+		super.validate();
+
+		// Network Management found in the RD override Network Management
+		// defined in the SD
+		try {
+			boolean isNetMgmtEnale = NetworkManagementHelper
+					.isNetworkManagementEnable(getTargetNode());
+			if (isNetMgmtEnale == false) {
+				setEnableNetworkManagement(false);
+			}
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
+		}
 	}
 
 	/**
@@ -374,273 +380,25 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * @throws AwsException
 	 * @throws InterruptedException
 	 */
-	protected void enableManagement() throws AwsException, InterruptedException {
-		if (getEnableManagement() == false) {
+	protected void enableNetworkManagement() throws AwsException,
+			InterruptedException {
+		if (getEnableNetworkManagement() == false) {
 			return;
 		}
-		Instance i = getInstance();
-		NetworkManagementMethod mm = findManagementMethodTag();
+
+		NetworkManager mh = null;
+		try {
+			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+					getTargetNode());
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
+		}
+
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
-				mm, getAwsInstanceID()));
-		switch (mm) {
-		case SSH:
-			enableSshManagement(i);
-			break;
-		case WINRM:
-			enableWinRmManagement(i);
-		default:
-			throw new RuntimeException("Unexpected error while branching "
-					+ "based on the unknown management method '" + mm + "'. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.");
-		}
-		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
-				mm, getAwsInstanceID()));
-	}
+				getAwsInstanceID()));
 
-	/**
-	 * <p>
-	 * Based on the underlying operating system of the Aws Instance defined by
-	 * {@link #getAwsInstanceID()}, will perform different actions to
-	 * facilitates the management of the Aws Instance :
-	 * <ul>
-	 * <li>If the operating system is Unix/Linux : will remove the instance's
-	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
-	 * <li>If the operating system is Windows : will remove the instance's
-	 * certificate in the local WinRM Plug-In repo ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @throws AwsException
-	 * @throws InterruptedException
-	 */
-	protected void disableManagement() throws AwsException,
-			InterruptedException {
-		if (getEnableManagement() == false) {
-			return;
-		}
-		Instance i = getInstance();
-		if (i == null) {
-			return;
-		}
-		NetworkManagementMethod mm = findManagementMethodTag();
-		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
-				mm, getAwsInstanceID()));
-		switch (mm) {
-		case SSH:
-			disableSshManagement(i);
-			break;
-		case WINRM:
-			disableWinRmManagement(i);
-		default:
-			throw new RuntimeException("Unexpected error while branching "
-					+ "based on the unknown management method '" + mm + "'. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.");
-		}
-		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_SUCCESS,
-				mm, getAwsInstanceID()));
-	}
-
-	public static final String TAG_MGNT = "MGNT";
-	public static final String TAG_SSH_PORT = "SSH.PORT";
-	public static final String TAG_WINRM_PORT = "WINRM.PORT";
-
-	/**
-	 * <p>
-	 * Retrieve the {@link NetworkManagementMethod} of the Aws Instance defined
-	 * by {@link #getAwsInstanceID()} from the Aws Instance Node's management
-	 * tag {@link #TAG_MGNT}.
-	 * </p>
-	 * 
-	 * @return the {@link NetworkManagementMethod} of the Aws Instance defined
-	 *         by {@link #getAwsInstanceID()}.
-	 * 
-	 * @throws AwsException
-	 *             if the structure of the tag {@link #TAG_MGNT} is not valid
-	 *             (ex : no tag, too many tags or invalid tag content).
-	 */
-	private NetworkManagementMethod findManagementMethodTag()
-			throws AwsException {
-		NodeList nl = null;
-		try {
-			nl = GetHeritedContent.getHeritedContent(getTargetNode(),
-					"//tags//tag[@name='" + TAG_MGNT + "']/@value");
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the XPath Expression \"//tags//tag[@name='" + TAG_MGNT
-					+ "']/@value\". "
-					+ "Because this XPath Expression is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		} catch (ResourcesDescriptorException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		if (nl.getLength() > 1) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_TOO_MANY_TAG_MGNT,
-					new Object[] { TAG_MGNT, ENABLE_NETWORK_MGNT_ATTR,
-							Arrays.asList(NetworkManagementMethod.values()),
-							getTargetNodeLocation() }));
-		} else if (nl.getLength() == 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_NO_TAG_MGNT,
-					new Object[] { TAG_MGNT, ENABLE_NETWORK_MGNT_ATTR,
-							Arrays.asList(NetworkManagementMethod.values()),
-							getTargetNodeLocation() }));
-		}
-		String val = nl.item(0).getNodeValue();
-		try {
-			return NetworkManagementMethod.parseString(val);
-		} catch (IllegalManagementMethodException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT, TAG_MGNT, Doc
-							.getNodeLocation(nl.item(0)).toFullString()), Ex);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Retrieve the Management {@link Port} of the Aws Instance defined by
-	 * {@link #getAwsInstanceID()} from the Aws Instance Node's management tag
-	 * {@link #TAG_SSH_PORT} or {@link #TAG_WINRM_PORT}.
-	 * </p>
-	 * 
-	 * @return the Management {@link Port} of the Aws Instance defined by
-	 *         {@link #getAwsInstanceID()}.
-	 * 
-	 * @throws AwsException
-	 *             if the structure of the tag {@link #TAG_SSH_PORT} or
-	 *             {@link #TAG_WINRM_PORT} is not valid (ex : no tag, too many
-	 *             tags or invalid tag content).
-	 */
-	private Port findManagementPortTag(NetworkManagementMethod mm)
-			throws AwsException {
-		String portTag = null;
-		switch (mm) {
-		case SSH:
-			portTag = TAG_SSH_PORT;
-			break;
-		case WINRM:
-			portTag = TAG_WINRM_PORT;
-			break;
-		default:
-			throw new RuntimeException("Unexpected error while branching "
-					+ "based on the unknown management method " + mm + ". "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.");
-		}
-
-		NodeList nl = null;
-		try {
-			nl = GetHeritedContent.getHeritedContent(getTargetNode(),
-					"//tags//tag[@name='" + portTag + "']/@value");
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the XPath Expression \"//tags//tag[@name='" + portTag
-					+ "']/@value\". "
-					+ "Because this XPath Expression is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		} catch (ResourcesDescriptorException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		if (nl.getLength() > 1) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_TOO_MANY_TAG_MGNT_PORT, new Object[] {
-							portTag, ENABLE_NETWORK_MGNT_ATTR, TAG_MGNT, mm,
-							getTargetNodeLocation() }));
-		} else if (nl.getLength() == 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_NO_TAG_MGNT_PORT, new Object[] {
-							portTag, ENABLE_NETWORK_MGNT_ATTR, TAG_MGNT, mm,
-							getTargetNodeLocation() }));
-		}
-		String val = nl.item(0).getNodeValue();
-		try {
-			return Port.parseString(val);
-		} catch (IllegalPortException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TAG_MGNT_PORT, portTag, Doc
-							.getNodeLocation(nl.item(0)).toFullString()), Ex);
-		}
-	}
-
-	private void enableWinRmManagement(Instance i) throws AwsException {
-		throw new AwsException(Messages.bind(
-				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				new Object[] { TAG_MGNT, NetworkManagementMethod.WINRM,
-						getTargetNodeLocation() }));
-	}
-
-	private void enableSshManagement(Instance i) throws AwsException,
-			InterruptedException {
-		disableSshManagement(i);
-
-		if (!addMachineToKnownHosts(i)) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_ENABLE_SSH_MGNT_TIMEOUT, new Object[] {
-							i.getInstanceId(),
-							ENABLE_NETWORK_MGNT_TIMEOUT_ATTR,
-							getTargetNodeLocation() }));
-		}
-
-		String k = getSshPluginConf().getKnownHostsHostKey(
-				i.getPublicIpAddress()).getKey();
-		try {
-			getSshPluginConf().addKnownHostsHostKey(i.getPrivateIpAddress(), k);
-			getSshPluginConf().addKnownHostsHostKey(i.getPublicDnsName(), k);
-			getSshPluginConf().addKnownHostsHostKey(i.getPrivateDnsName(), k);
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Unexpected error while adding an "
-					+ "host with the HostKey '" + k + "' into the KnownHosts "
-					+ "file. "
-					+ "Because this HostKey have been retrieve from the "
-					+ "KnownHosts file, this key should be valid. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Add the public IP of the given {@link Instance} to the KnownHosts file
-	 * (which is defined in the configuration Ssh Plug-In).
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * After the operation complete, retrieve the HostKey of the AWS
-	 * {@link Instance} by calling {@link Configuration#getKnownHostsHostKey} ;
-	 * <BR/>
-	 * </i>
-	 * </p>
-	 * 
-	 * @param i
-	 *            is the AWS {@link Instance} to add to the known hosts file.
-	 * 
-	 * @return <tt>true</tt> if the operation complete before the timeout
-	 *         elapsed, <tt>false</tt> if the operation isn't complete before
-	 *         the timeout elapsed.
-	 * 
-	 * @throws AwsException
-	 *             if ...
-	 * @throws InterruptedException
-	 *             if this operation is interrupted.
-	 */
-	private boolean addMachineToKnownHosts(Instance i) throws AwsException,
-			InterruptedException {
-		String sgname = i.getSecurityGroups().get(0).getGroupName();
-		Port p = findManagementPortTag(NetworkManagementMethod.SSH);
-
-		Host host = null;
-		try {
-			host = Host.parseString(i.getPublicIpAddress());
-		} catch (IllegalHostException Ex) {
-			throw new RuntimeException(Ex);
-		}
-
+		Port p = mh.getManagementDatas().getPort();
+		String sgname = getInstance().getSecurityGroups().get(0).getGroupName();
 		IpPermission toAdd = new IpPermission();
 		toAdd.withFromPort(p.getValue());
 		toAdd.withToPort(p.getValue());
@@ -660,10 +418,11 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 
 		try {
-			return getSshPluginConf().addKnownHostsHost(getContext(), host, p,
-					getEnableManagementTimeout());
-		} catch (SshException Ex) {
-			throw new AwsException(Ex);
+			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
+		} catch (ManagementException Ex) {
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
+					getAwsInstanceID(), getTargetNodeLocation()), Ex);
 		} finally {
 			if (!doNotRevoke) {
 				RevokeSecurityGroupIngressRequest revreq = null;
@@ -672,64 +431,77 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 				getEc2().revokeSecurityGroupIngress(revreq);
 			}
 		}
+		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
+				getAwsInstanceID()));
 	}
 
-	private void disableWinRmManagement(Instance i) throws AwsException {
-		throw new AwsException(Messages.bind(
-				Messages.MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT,
-				new Object[] { TAG_MGNT, NetworkManagementMethod.WINRM,
-						getTargetNodeLocation() }));
-	}
-
-	private void disableSshManagement(Instance i) {
-		if (i != null) {
-			getSshPluginConf().removeKnownHostsHostKey(i.getPublicIpAddress());
-			getSshPluginConf().removeKnownHostsHostKey(i.getPrivateIpAddress());
-			getSshPluginConf().removeKnownHostsHostKey(i.getPublicDnsName());
-			getSshPluginConf().removeKnownHostsHostKey(i.getPrivateDnsName());
+	/**
+	 * <p>
+	 * Based on the underlying operating system of the Aws Instance defined by
+	 * {@link #getAwsInstanceID()}, will perform different actions to
+	 * facilitates the management of the Aws Instance :
+	 * <ul>
+	 * <li>If the operating system is Unix/Linux : will remove the instance's
+	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
+	 * <li>If the operating system is Windows : will remove the instance's
+	 * certificate in the local WinRM Plug-In repo ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @throws AwsException
+	 * @throws InterruptedException
+	 */
+	protected void disableNetworkManagement() throws AwsException,
+			InterruptedException {
+		if (getEnableNetworkManagement() == false) {
+			return;
 		}
+
+		NetworkManager mh = null;
 		try {
-			String v = null;
-			v = getED().getAttributeValue(getMelodyID(), Common.IP_PUB_ATTR);
-			getSshPluginConf().removeKnownHostsHostKey(v);
-			v = getED().getAttributeValue(getMelodyID(), Common.FQDN_PUB_ATTR);
-			getSshPluginConf().removeKnownHostsHostKey(v);
-			v = getED().getAttributeValue(getMelodyID(), Common.IP_PRIV_ATTR);
-			getSshPluginConf().removeKnownHostsHostKey(v);
-			v = getED().getAttributeValue(getMelodyID(), Common.FQDN_PRIV_ATTR);
-			getSshPluginConf().removeKnownHostsHostKey(v);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while retrieving a "
-					+ "node via its DUNID. " + "No node DUNID match "
-					+ getMelodyID() + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
+			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+					getTargetNode());
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
 		}
+
+		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
+				getAwsInstanceID()));
+		try {
+			mh.disableNetworkManagement();
+		} catch (ManagementException Ex) {
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
+					getAwsInstanceID(), getTargetNodeLocation()), Ex);
+		}
+		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_SUCCESS,
+				getAwsInstanceID()));
 	}
 
-	public boolean getEnableManagement() {
-		return mbEnableManagement;
+	public boolean getEnableNetworkManagement() {
+		return mbEnableNetworkManagement;
 	}
 
 	@Attribute(name = ENABLE_NETWORK_MGNT_ATTR)
-	public boolean setEnableManagement(boolean enableManagement) {
-		boolean previous = getEnableManagement();
-		mbEnableManagement = enableManagement;
+	public boolean setEnableNetworkManagement(boolean enableManagement) {
+		boolean previous = getEnableNetworkManagement();
+		mbEnableNetworkManagement = enableManagement;
 		return previous;
 	}
 
-	public long getEnableManagementTimeout() {
-		return mlEnableManagementTimeout;
+	public long getEnableNetworkManagementTimeout() {
+		return mlEnableNetworkManagementTimeout;
 	}
 
 	@Attribute(name = ENABLE_NETWORK_MGNT_TIMEOUT_ATTR)
-	public long setEnableManagementTimeout(long timeout) throws AwsException {
+	public long setEnableNetworkManagementTimeout(long timeout)
+			throws AwsException {
 		if (timeout < 0) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
-		long previous = getEnableManagementTimeout();
-		mlEnableManagementTimeout = timeout;
+		long previous = getEnableNetworkManagementTimeout();
+		mlEnableNetworkManagementTimeout = timeout;
 		return previous;
 	}
 

@@ -251,14 +251,14 @@ public class NewMachine extends AbstractMachineOperation {
 					getAwsInstanceID(), "LIVE", getTargetNodeLocation() }));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
-				enableManagement();
+				enableNetworkManagement();
 			}
 		} else {
 			newInstance(getInstanceType(), getImageId(),
 					getSecurityGroupName(), getSecurityGroupDescription(),
 					getAvailabilityZoneFullName(), getKeyPairName());
 			setInstanceRelatedInfosToED(getInstance());
-			enableManagement();
+			enableNetworkManagement();
 		}
 	}
 

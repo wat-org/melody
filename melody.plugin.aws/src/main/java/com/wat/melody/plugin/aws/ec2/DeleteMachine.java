@@ -45,17 +45,17 @@ public class DeleteMachine extends AbstractMachineOperation {
 		if (getInstance() == null) {
 			log.warn(Messages.bind(Messages.DeleteMsg_NO_INSTANCE,
 					getTargetNodeLocation()));
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
 			log.warn(Messages.bind(Messages.DeleteMsg_TERMINATED, new Object[] {
 					getAwsInstanceID(), "DEAD", getTargetNodeLocation() }));
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 			Common.deleteSecurityGroup(getEc2(), getInstance()
 					.getSecurityGroups().get(0).getGroupName());
 		} else {
-			disableManagement();
+			disableNetworkManagement();
 			deleteInstance();
 			removeInstanceRelatedInfosToED(true);
 		}

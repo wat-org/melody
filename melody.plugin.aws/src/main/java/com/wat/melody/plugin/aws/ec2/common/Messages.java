@@ -56,6 +56,8 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_TAG_MGNT_PORT;
 	public static String MachineEx_ENABLE_SSH_MGNT_TIMEOUT;
 	public static String MachineEx_TIMEOUT;
+	public static String MachineEx_MANAGEMENT_ENABLE_FAILED;
+	public static String MachineEx_MANAGEMENT_DISABLE_FAILED;
 	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
 	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
 	public static String MachineMsg_MANAGEMENT_DISABLE_BEGIN;

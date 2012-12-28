@@ -1,5 +1,8 @@
 package com.wat.melody.xpathextensions.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.logging.Log;
@@ -275,6 +278,23 @@ public abstract class NetworkManagementHelper {
 					Messages.NetMgmtEx_NO_MGMT_NETWORK_INTERFACE);
 		}
 		return nl.item(0);
+	}
+
+	public static List<Host> findNetworkManagementHost(List<Node> instanceNodes)
+			throws ResourcesDescriptorException {
+		List<Host> hl = new ArrayList<Host>();
+		Node mgmtNode = null;
+		for (Node instanceNode : instanceNodes) {
+			try {
+				mgmtNode = findNetworkManagementNode(instanceNode);
+			} catch (ResourcesDescriptorException Ex) {
+				// raised when Network management datas are invalid.
+				// in this situation, we consider eth0 is the management
+				// interface
+			}
+			hl.add(getNetworkManagementHost(mgmtNode, instanceNode));
+		}
+		return hl;
 	}
 
 	public static Host findNetworkManagementHost(Node instanceNode)

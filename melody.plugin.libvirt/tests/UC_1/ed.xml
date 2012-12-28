@@ -11,7 +11,7 @@
 			<fwrules>
 				<in>
 					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
-					<fwrule herit="./environment/global_fwrules/in[@name='SSH']"/>
+					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
 				</in>
 			</fwrules>
 			<disks>
