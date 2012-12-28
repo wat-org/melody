@@ -6,7 +6,8 @@
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
-			<network-management method="ssh" port="22"/>
+			<network-management enable="true" method="ssh" port="22"/>
+			<disk-management diskNodeSelector="//disk"/>
 			<fwrules>
 				<in>
 					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
@@ -22,7 +23,9 @@
 	</models>
 	
 	<instances>
+		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
+			<network-management enable="false" interfaceNodeSelector="//network//interface[@device='eth1']" method="ssh" port="22"/>
 			<disk-management diskNodeSelector="//disque"/>
 			<network>
 				<interface device="eth0"/>
@@ -34,12 +37,13 @@
 				<disque deleteOnTermination="true" device="/dev/vdc" size="6 G"/>
 			</disks>
 		</instance>
+		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">
 			<network>
 				<interface device="eth0"/>
 				<interface device="eth1"/>
 			</network>
-		</instance>
+		</instance>		
 <!--
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
 			<network>

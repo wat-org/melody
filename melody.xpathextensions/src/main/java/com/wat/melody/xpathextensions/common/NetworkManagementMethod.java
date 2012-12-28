@@ -37,7 +37,7 @@ public enum NetworkManagementMethod {
 		}
 		if (sMethod.trim().length() == 0) {
 			throw new IllegalManagementMethodException(Messages.bind(
-					Messages.ManagementMethodEx_EMPTY, sMethod));
+					Messages.NetMgmtMethodEx_EMPTY, sMethod));
 		}
 		for (NetworkManagementMethod c : NetworkManagementMethod.class.getEnumConstants()) {
 			if (sMethod.equalsIgnoreCase(c.getValue())) {
@@ -45,7 +45,7 @@ public enum NetworkManagementMethod {
 			}
 		}
 		throw new IllegalManagementMethodException(Messages.bind(
-				Messages.ManagementMethodEx_INVALID, sMethod,
+				Messages.NetMgmtMethodEx_INVALID, sMethod,
 				Arrays.asList(NetworkManagementMethod.values())));
 	}
 

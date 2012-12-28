@@ -43,7 +43,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
 					"Cannot delete instance.", Ex)));
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
@@ -52,10 +52,10 @@ public class DeleteMachine extends AbstractMachineOperation {
 			// TODO : externalize error message
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
 					"Cannot delete instance.", Ex)));
-			disableManagement();
+			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 		} else {
-			disableManagement();
+			disableNetworkManagement();
 			deleteInstance();
 			removeInstanceRelatedInfosToED(true);
 		}

@@ -7,7 +7,6 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.ManagementException;
-import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
@@ -17,37 +16,45 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 	private static Log log = LogFactory.getLog(AbstractMachineOperation.class);
 
 	/**
-	 * The 'enableManagement' XML attribute
+	 * The 'enableNetworkManagement' XML attribute
 	 */
 	public static final String ENABLE_NETWORK_MGNT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_ATTR;
 
 	/**
-	 * The 'enableManagementTimeout' XML attribute
+	 * The 'enableNetworkManagementTimeout' XML attribute
 	 */
 	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR;
 
-	private boolean mbEnableManagement;
-	private long mlEnableManagementTimeout;
+	private boolean mbEnableNetworkManagement;
+	private long mlEnableNetworkManagementTimeout;
 
 	public AbstractMachineOperation() {
 		super();
 		try {
-			setEnableManagementTimeout(300000);
+			setEnableNetworkManagementTimeout(300000);
 		} catch (LibVirtException Ex) {
 			throw new RuntimeException("Unexpected error while setting "
-					+ "the management timeout to '300000'. "
+					+ "the Network Management timeout to '300000'. "
 					+ "Because this value is hard coded, such error "
 					+ "cannot happened. "
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-		setEnableManagement(true);
+		setEnableNetworkManagement(true);
 	}
 
-	private NetworkManager buildManagementHelper() throws LibVirtException {
+	@Override
+	public void validate() throws LibVirtException {
+		super.validate();
+
+		// Network Management found in the RD override Network Management
+		// defined in the SD
 		try {
-			return NetworkManagerFactory.getManagementHelper(getContext(),
-					getTargetNode());
+			boolean isNetMgmtEnale = NetworkManagementHelper
+					.isNetworkManagementEnable(getTargetNode());
+			if (isNetMgmtEnale == false) {
+				setEnableNetworkManagement(false);
+			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
@@ -69,17 +76,24 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 	 * @throws LibVirtException
 	 * @throws InterruptedException
 	 */
-	protected void enableManagement() throws LibVirtException,
+	protected void enableNetworkManagement() throws LibVirtException,
 			InterruptedException {
-		if (getEnableManagement() == false) {
+		if (getEnableNetworkManagement() == false) {
 			return;
 		}
-		NetworkManager mh = buildManagementHelper();
+
+		NetworkManager mh = null;
+		try {
+			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+					getTargetNode());
+		} catch (ResourcesDescriptorException Ex) {
+			throw new LibVirtException(Ex);
+		}
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceID()));
 		try {
-			mh.enableManagement(getEnableManagementTimeout());
+			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (ManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
@@ -105,31 +119,24 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 	 * @throws LibVirtException
 	 * @throws InterruptedException
 	 */
-	protected void disableManagement() throws LibVirtException,
+	protected void disableNetworkManagement() throws LibVirtException,
 			InterruptedException {
-		if (getEnableManagement() == false) {
+		if (getEnableNetworkManagement() == false) {
 			return;
 		}
-		/*
-		 * TODO : should test the validity of the Management-datas (e.g.
-		 * instance's ip) before the call to buildManagementHelper. Doing so, we
-		 * will not try to disable management if no Management-datas are
-		 * present.
-		 */
+
 		NetworkManager mh = null;
 		try {
-			mh = buildManagementHelper();
-		} catch (LibVirtException Ex) {
-			// TODO : externalize error message
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					"Cannot disable Network Management.", Ex)));
-			return;
+			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+					getTargetNode());
+		} catch (ResourcesDescriptorException Ex) {
+			throw new LibVirtException(Ex);
 		}
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceID()));
 		try {
-			mh.disableManagement();
+			mh.disableNetworkManagement();
 		} catch (ManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
@@ -139,30 +146,30 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 				getInstanceID()));
 	}
 
-	public boolean getEnableManagement() {
-		return mbEnableManagement;
+	public boolean getEnableNetworkManagement() {
+		return mbEnableNetworkManagement;
 	}
 
 	@Attribute(name = ENABLE_NETWORK_MGNT_ATTR)
-	public boolean setEnableManagement(boolean enableManagement) {
-		boolean previous = getEnableManagement();
-		mbEnableManagement = enableManagement;
+	public boolean setEnableNetworkManagement(boolean enableManagement) {
+		boolean previous = getEnableNetworkManagement();
+		mbEnableNetworkManagement = enableManagement;
 		return previous;
 	}
 
-	public long getEnableManagementTimeout() {
-		return mlEnableManagementTimeout;
+	public long getEnableNetworkManagementTimeout() {
+		return mlEnableNetworkManagementTimeout;
 	}
 
 	@Attribute(name = ENABLE_NETWORK_MGNT_TIMEOUT_ATTR)
-	public long setEnableManagementTimeout(long timeout)
+	public long setEnableNetworkManagementTimeout(long timeout)
 			throws LibVirtException {
 		if (timeout < 0) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
-		long previous = getEnableManagementTimeout();
-		mlEnableManagementTimeout = timeout;
+		long previous = getEnableNetworkManagementTimeout();
+		mlEnableNetworkManagementTimeout = timeout;
 		return previous;
 	}
 

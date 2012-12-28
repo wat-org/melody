@@ -2,6 +2,8 @@ package com.wat.melody.xpathextensions.common;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -9,11 +11,14 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class NetworkManagementHelper {
+
+	private static Log log = LogFactory.getLog(NetworkManagementHelper.class);
 
 	/**
 	 * The 'enableNetworkManagement' XML attribute to use in the sequence
@@ -38,6 +43,11 @@ public abstract class NetworkManagementHelper {
 	 */
 	public static final String NETWORK_MGMT_NODE_SELECTOR = "//"
 			+ NETWORK_MGMT_NODE;
+
+	/**
+	 * The 'enable' XML attribute of the Network Management Node
+	 */
+	public static final String NETWORK_MGMT_ENABLE_ATTRIBUTE = "enable";
 
 	/**
 	 * The 'method' XML attribute of the Network Management Node
@@ -96,8 +106,6 @@ public abstract class NetworkManagementHelper {
 	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
 	 *             if no Network Management {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if multiple Network Management {@link Node} can be found.
 	 */
 	public static Node findNetworkManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -113,12 +121,14 @@ public abstract class NetworkManagementHelper {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-		if (nl.getLength() > 1) {
+		if (nl.getLength() == 0) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
-					Messages.MgmtEx_TOO_MANY_MGMT_NODE, NETWORK_MGMT_NODE));
-		} else if (nl.getLength() == 0) {
-			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
-					Messages.MgmtEx_NO_MGMT_NODE, NETWORK_MGMT_NODE));
+					Messages.NetMgmtEx_NO_MGMT_NODE, NETWORK_MGMT_NODE));
+		} else if (nl.getLength() > 1) {
+			log.debug(Messages.bind(Messages.NetMgmtMsg_TOO_MANY_MGMT_NODE,
+					NETWORK_MGMT_NODE, Doc.getNodeLocation(instanceNode)
+							.toFullString()));
+			return nl.item(nl.getLength() - 1);
 		}
 		return nl.item(0);
 	}
@@ -204,18 +214,16 @@ public abstract class NetworkManagementHelper {
 	 *             if multiple Network Management Interface{@link Node} can be
 	 *             found.
 	 */
-	public static Node getNetworkManagementInterface(Node instanceNode)
+	public static Node findNetworkManagementInterface(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
-			mgmtNode = NetworkManagementHelper
-					.findNetworkManagementNode(instanceNode);
+			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
 			// raised when Network management datas are invalid.
 			// in this situation, we consider eth0 is the management interface
 		}
-		return NetworkManagementHelper.getNetworkManagementInterface(mgmtNode,
-				instanceNode);
+		return getNetworkManagementInterface(mgmtNode, instanceNode);
 	}
 
 	/**
@@ -252,35 +260,33 @@ public abstract class NetworkManagementHelper {
 					sMgmtInterfaceSelector);
 			if (nl != null && nl.getLength() > 1) {
 				throw new ResourcesDescriptorException(instanceNode,
-						Messages.MgmtEx_TOO_MANY_MGMT_NETWORK_INTERFACE);
+						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_INTERFACE);
 			} else if (nl == null || nl.getLength() == 0) {
 				nl = GetHeritedContent.getHeritedContent(instanceNode,
 						SECONDARY_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR);
 			}
 		} catch (XPathExpressionException Ex) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
-					Messages.MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_SELECTOR,
+					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_INTERFACE_SELECTOR,
 					sMgmtInterfaceSelector), Ex);
 		}
 		if (nl == null || nl.getLength() == 0) {
 			throw new ResourcesDescriptorException(instanceNode,
-					Messages.MgmtEx_NO_MGMT_NETWORK_INTERFACE);
+					Messages.NetMgmtEx_NO_MGMT_NETWORK_INTERFACE);
 		}
 		return nl.item(0);
 	}
 
-	public static Host getNetworkManagementHost(Node instanceNode)
+	public static Host findNetworkManagementHost(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
-			mgmtNode = NetworkManagementHelper
-					.findNetworkManagementNode(instanceNode);
+			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
 			// raised when Network management datas are invalid.
 			// in this situation, we consider eth0 is the management interface
 		}
-		return NetworkManagementHelper.getNetworkManagementHost(mgmtNode,
-				instanceNode);
+		return getNetworkManagementHost(mgmtNode, instanceNode);
 	}
 
 	/**
@@ -299,16 +305,24 @@ public abstract class NetworkManagementHelper {
 		try {
 			sHost = netNode.getAttributes().getNamedItem(attr).getNodeValue();
 		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.MgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
-					attr));
+			throw new ResourcesDescriptorException(
+					netNode,
+					Messages.bind(
+							Messages.NetMgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
+							attr));
 		}
 		try {
 			return Host.parseString(sHost);
 		} catch (IllegalHostException Ex) {
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.MgmtEx_INVALID_ATTR, attr), Ex);
+					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
+	}
+
+	public static Port findNetworkManagementPort(Node instanceNode)
+			throws ResourcesDescriptorException {
+		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		return getNetworkManagementPort(mgmtNode);
 	}
 
 	public static Port getNetworkManagementPort(Node mgmtNode)
@@ -319,15 +333,22 @@ public abstract class NetworkManagementHelper {
 					.getNamedItem(NETWORK_MGMT_PORT_ATTRIBUTE).getNodeValue();
 		} catch (NullPointerException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_MISSING_ATTR, NETWORK_MGMT_PORT_ATTRIBUTE));
+					Messages.NetMgmtEx_MISSING_ATTR,
+					NETWORK_MGMT_PORT_ATTRIBUTE));
 		}
 		try {
 			return Port.parseString(sPort);
 		} catch (IllegalPortException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.MgmtEx_INVALID_ATTR, NETWORK_MGMT_PORT_ATTRIBUTE),
-					Ex);
+					Messages.NetMgmtEx_INVALID_ATTR,
+					NETWORK_MGMT_PORT_ATTRIBUTE), Ex);
 		}
+	}
+
+	public static NetworkManagementMethod findNetworkManagementMethod(
+			Node instanceNode) throws ResourcesDescriptorException {
+		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		return getNetworkManagementMethod(mgmtNode);
 	}
 
 	public static NetworkManagementMethod getNetworkManagementMethod(
@@ -337,17 +358,43 @@ public abstract class NetworkManagementHelper {
 			sMethod = mgmtNode.getAttributes()
 					.getNamedItem(NETWORK_MGMT_METHOD_ATTRIBUTE).getNodeValue();
 		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode,
-					Messages.bind(Messages.MgmtEx_MISSING_ATTR,
-							NETWORK_MGMT_METHOD_ATTRIBUTE));
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.NetMgmtEx_MISSING_ATTR,
+					NETWORK_MGMT_METHOD_ATTRIBUTE));
 		}
 		try {
 			return NetworkManagementMethod.parseString(sMethod);
 		} catch (IllegalManagementMethodException Ex) {
-			throw new ResourcesDescriptorException(mgmtNode,
-					Messages.bind(Messages.MgmtEx_INVALID_ATTR,
-							NETWORK_MGMT_METHOD_ATTRIBUTE), Ex);
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.NetMgmtEx_INVALID_ATTR,
+					NETWORK_MGMT_METHOD_ATTRIBUTE), Ex);
 		}
+	}
+
+	public static boolean isNetworkManagementEnable(Node instanceNode)
+			throws ResourcesDescriptorException {
+		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		return getNetworkManagementEnable(mgmtNode);
+	}
+
+	/**
+	 * 
+	 * @param mgmtNode
+	 * 
+	 * @return <code>true</code> by default.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 */
+	public static boolean getNetworkManagementEnable(Node mgmtNode)
+			throws ResourcesDescriptorException {
+		String sEnable = null;
+		try {
+			sEnable = mgmtNode.getAttributes()
+					.getNamedItem(NETWORK_MGMT_ENABLE_ATTRIBUTE).getNodeValue();
+		} catch (NullPointerException Ex) {
+			return true;
+		}
+		return Boolean.parseBoolean(sEnable);
 	}
 
 }

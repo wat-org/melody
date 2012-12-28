@@ -88,7 +88,7 @@
 	<order name="destroy_env" >
 		<echo message="Destroying instances ..." />
 
-		<foreach	items="./environment//instance"
+		<foreach	items="./environment//instance[exists(@instanceId)]"
 					itemName="srv" >
 			<property name="id" value="§[§[srv]§/@instanceId]§" />
 			<deleteMachine	target="§[srv]§" />

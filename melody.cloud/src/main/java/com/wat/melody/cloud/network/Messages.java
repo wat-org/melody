@@ -6,9 +6,9 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.network.messages";
 
-	public static String MgmtMsg_INTRO;
-	public static String MgmtMsg_RESUME;
-	public static String MgmtMsg_FAILED;
+	public static String NetMgmtMsg_INTRO;
+	public static String NetMgmtMsg_RESUME;
+	public static String NetMgmtMsg_FAILED;
 
 	public static String MgmtEx_SSH_MGMT_ENABLE_TIMEOUT;
 

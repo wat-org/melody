@@ -7,11 +7,7 @@ public interface NetworkManager {
 
 	public ITaskContext getContext();
 
-	public void setContext(ITaskContext context);
-
-	public NetworkManagerInfos getManagementInfos();
-
-	public void setManagementInfos(NetworkManagerInfos mi);
+	public NetworkManagementDatas getManagementDatas();
 
 	/**
 	 * @param timeout
@@ -19,13 +15,13 @@ public interface NetworkManager {
 	 * @throws ManagementException
 	 * @throws InterruptedException
 	 */
-	public void enableManagement(long timeout) throws ManagementException,
+	public void enableNetworkManagement(long timeout) throws ManagementException,
 			InterruptedException;
 
 	/**
 	 * 
 	 * @throws ManagementException
 	 */
-	public void disableManagement() throws ManagementException;
+	public void disableNetworkManagement() throws ManagementException;
 
 }

@@ -19,7 +19,8 @@ public class Messages extends NLS {
 	public static String DiskDefEx_EMPTY_DEVICE_LIST;
 	public static String DiskDefEx_UNDEF_ROOT_DEVICE;
 	public static String DiskDefEx_INCORRECT_ROOT_DEVICE;
-	public static String DiskMgmtEx_TOO_MANY_DISK_MGMT_NODE;
+
+	public static String DiskMgmtMsg_TOO_MANY_MGMT_NODE;
 
 	static {
 		// initialize resource bundle

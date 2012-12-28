@@ -2,14 +2,19 @@ package com.wat.melody.cloud.disk;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.exception.DiskException;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class DiskManagementHelper {
+
+	private static Log log = LogFactory.getLog(DiskManagementHelper.class);
 
 	/**
 	 * The 'diskNodeSelector' XML attribute to use in the sequence descriptor
@@ -55,8 +60,6 @@ public abstract class DiskManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
-	 *             if multiple Disk Management {@link Node} can be found.
 	 */
 	public static Node findDiskManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -72,12 +75,13 @@ public abstract class DiskManagementHelper {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-		if (nl.getLength() > 1) {
-			throw new ResourcesDescriptorException(instanceNode,
-					Messages.bind(Messages.DiskMgmtEx_TOO_MANY_DISK_MGMT_NODE,
-							DISK_MGMT_NODE));
-		} else if (nl.getLength() == 0) {
+		if (nl.getLength() == 0) {
 			return null;
+		} else if (nl.getLength() > 1) {
+			log.debug(Messages.bind(Messages.DiskMgmtMsg_TOO_MANY_MGMT_NODE,
+					DISK_MGMT_NODE, Doc.getNodeLocation(instanceNode)
+							.toFullString()));
+			return nl.item(nl.getLength() - 1);
 		}
 		return nl.item(0);
 	}

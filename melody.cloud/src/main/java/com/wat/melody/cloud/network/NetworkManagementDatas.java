@@ -11,16 +11,15 @@ import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
-public class NetworkManagerInfos {
+public abstract class NetworkManagementDatas {
 
-	private static Log log = LogFactory.getLog(NetworkManagerInfos.class);
+	private static Log log = LogFactory.getLog(SshNetworkManagementDatas.class);
 
 	/*
 	 * TODO : add an enable/disable feature, which will indicate that we
 	 * want/don't want to use melody management
 	 */
 
-	private NetworkManagementMethod moNetworkManagementMethod;
 	private Host moHost;
 	private Port moPort;
 
@@ -54,26 +53,24 @@ public class NetworkManagerInfos {
 	 * 
 	 * @throws ResourcesDescriptorException
 	 */
-	public NetworkManagerInfos(Node instanceNode)
+	public NetworkManagementDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 
-		log.debug(Messages.bind(Messages.MgmtMsg_INTRO,
+		log.debug(Messages.bind(Messages.NetMgmtMsg_INTRO,
 				Doc.getNodeLocation(instanceNode).toFullString()));
 		try {
 			Node mgmtNode = NetworkManagementHelper
 					.findNetworkManagementNode(instanceNode);
-			setManagementMethod(NetworkManagementHelper
-					.getNetworkManagementMethod(mgmtNode));
 			setHost(NetworkManagementHelper.getNetworkManagementHost(mgmtNode,
 					instanceNode));
 			setPort(NetworkManagementHelper.getNetworkManagementPort(mgmtNode));
-			log.info(Messages.bind(Messages.MgmtMsg_RESUME, this));
+			log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, this));
 		} catch (ResourcesDescriptorException Ex) {
-			log.warn(Messages.bind(Messages.MgmtMsg_FAILED, Doc
+			log.warn(Messages.bind(Messages.NetMgmtMsg_FAILED, Doc
 					.getNodeLocation(instanceNode).toFullString()));
 			throw Ex;
 		}
@@ -85,21 +82,7 @@ public class NetworkManagerInfos {
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	public NetworkManagementMethod getNetworkManagementMethod() {
-		return moNetworkManagementMethod;
-	}
-
-	private NetworkManagementMethod setManagementMethod(
-			NetworkManagementMethod mm) {
-		if (mm == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ NetworkManagementMethod.class.getCanonicalName() + ".");
-		}
-		NetworkManagementMethod previous = getNetworkManagementMethod();
-		moNetworkManagementMethod = mm;
-		return previous;
-	}
+	abstract public NetworkManagementMethod getNetworkManagementMethod();
 
 	public Host getHost() {
 		return moHost;

@@ -31,7 +31,7 @@ public class GetNetworkManagementHost implements XPathFunction {
 		}
 		try {
 			return NetworkManagementHelper
-					.getNetworkManagementHost((Node) arg0);
+					.findNetworkManagementHost((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

@@ -203,12 +203,12 @@ public class NewMachine extends AbstractMachineOperation {
 					"Cannot create instance.", Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
-				enableManagement();
+				enableNetworkManagement();
 			}
 		} else {
 			newInstance(getInstanceType(), getImageId(), getKeyPairName());
 			setInstanceRelatedInfosToED(getInstance());
-			enableManagement();
+			enableNetworkManagement();
 		}
 	}
 

@@ -126,7 +126,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 							Common.REGION_ATTR, getTargetNodeLocation() }));
 		}
 
-		// Keep the Connection in a dedicated membre
+		// Keep the Connection in a dedicated member
 		try {
 			// TODO : put the new Connect into another place
 			setConnect(new Connect(getRegion(), false));
@@ -249,7 +249,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
 		try {
 			Node mgmtNode = NetworkManagementHelper
-					.getNetworkManagementInterface(getTargetNode());
+					.findNetworkManagementInterface(getTargetNode());
 			return getED().getMelodyID(mgmtNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

@@ -1,49 +1,56 @@
 package com.wat.melody.cloud.network;
 
+import org.w3c.dom.Node;
+
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class WinRmNetworkManager implements NetworkManager {
 
-	private NetworkManagerInfos moManagementInfos;
+	private WinRmNetworkManagementDatas moManagementDatas;
 	private ITaskContext moContext;
 
-	public NetworkManagerInfos getManagementInfos() {
-		return moManagementInfos;
+	public WinRmNetworkManager(Node instanceNode, ITaskContext context)
+			throws ResourcesDescriptorException {
+		setContext(context);
+		setManagementDatas(new WinRmNetworkManagementDatas(instanceNode));
 	}
 
-	@Override
-	public void setManagementInfos(NetworkManagerInfos mi) {
+	public WinRmNetworkManagementDatas getManagementDatas() {
+		return moManagementDatas;
+	}
+
+	private void setManagementDatas(WinRmNetworkManagementDatas mi) {
 		if (mi == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkManagerInfos.class.getCanonicalName() + ".");
+					+ SshNetworkManagementDatas.class.getCanonicalName() + ".");
 		}
-		moManagementInfos = mi;
+		moManagementDatas = mi;
 	}
 
 	public ITaskContext getContext() {
 		return moContext;
 	}
 
-	@Override
-	public void setContext(ITaskContext mi) {
-		if (mi == null) {
+	private void setContext(ITaskContext tc) {
+		if (tc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ITaskContext.class.getCanonicalName() + ".");
 		}
-		moContext = mi;
+		moContext = tc;
 	}
 
 	@Override
-	public void enableManagement(long timeout) throws ManagementException,
+	public void enableNetworkManagement(long timeout) throws ManagementException,
 			InterruptedException {
 		throw new ManagementException(Messages.MgmtEx_WINRM_MGMT_NOT_SUPPORTED);
 	}
 
 	@Override
-	public void disableManagement() throws ManagementException {
+	public void disableNetworkManagement() throws ManagementException {
 		throw new ManagementException(Messages.MgmtEx_WINRM_MGMT_NOT_SUPPORTED);
 	}
 
