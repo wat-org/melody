@@ -15,11 +15,6 @@ public abstract class NetworkManagementDatas {
 
 	private static Log log = LogFactory.getLog(SshNetworkManagementDatas.class);
 
-	/*
-	 * TODO : add an enable/disable feature, which will indicate that we
-	 * want/don't want to use melody management
-	 */
-
 	private Host moHost;
 	private Port moPort;
 
