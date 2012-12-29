@@ -9,6 +9,7 @@ import com.wat.melody.plugin.libvirt.common.exception.ConfigurationException;
 
 public class Configuration implements IPluginConfiguration {
 
+	// TODO : supprimer le NAME de IPluginConfiguration
 	public static final String NAME = "LIBVIRT";
 
 	public static Configuration get(IProcessorManager pm)
