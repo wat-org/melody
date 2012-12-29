@@ -354,7 +354,7 @@ public abstract class NetworkManagementHelper {
 	 *             if no Management Network Device {@link Node} can be found.
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a attribute equal to the Isntance's Network
+	 *             doesn't have a attribute equal to the Instance's Network
 	 *             Management Device Attribute Selector.
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.
@@ -380,19 +380,19 @@ public abstract class NetworkManagementHelper {
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Isntance's Management Network Device {@link Host}.
+	 * @return the Instance's Management Network Device {@link Host}.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
-	 *             if the Isntance's Network Management Device Node Selector is
+	 *             if the Instance's Network Management Device Node Selector is
 	 *             not a valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 * @throws ResourcesDescriptorException
-	 *             if the Isntance's Management Network Device {@link Node}
-	 *             doesn't have a attribute equal to the Isntance's Network
+	 *             if the Instance's Management Network Device {@link Node}
+	 *             doesn't have a attribute equal to the Instance's Network
 	 *             Management Device Attribute Selector.
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.

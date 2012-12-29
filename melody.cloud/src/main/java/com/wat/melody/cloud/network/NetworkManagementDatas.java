@@ -20,33 +20,36 @@ public abstract class NetworkManagementDatas {
 
 	/**
 	 * <p>
-	 * Initialize this object with management informations found in the given
-	 * {@link Node}.
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * The given node must contains a {@link Common#MGMT_HOST_ATTR} and a
-	 * {@link Common#NETWORK_MGMT_PORT_ATTRIBUTE} XML Attributes ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_METHOD_ATTRIBUTE} XML attribute must
-	 * contains a {@link NetworkManagementMethod} ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_PORT_ATTRIBUTE} XML attribute must
-	 * contains a {@link Port} ; <BR/>
-	 * The given node should contains a
-	 * {@link Common#NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} and a
-	 * {@link Common#NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML Attributes
-	 * ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} XML
-	 * attribute must contains an XPath expression which select the Management
-	 * Network Interface Node ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML
-	 * attribute must contains the name of the attribute of the Management
-	 * Network Interface Node which contains the {@link Host} ; <BR/>
-	 * </i>
+	 * Initialize this object with Network Management datas found in the given
+	 * Instance {@link Node}.
 	 * </p>
 	 * 
 	 * @param instanceNode
+	 *            is an Instance {@link Node}.
 	 * 
 	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Network Management {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if the Instance's Network Management Device Node Selector is
+	 *             not a valid XPath expression.
+	 * @throws ResourcesDescriptorException
+	 *             if no Management Network Device {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if the Instance's Management Network Device {@link Node}
+	 *             doesn't have a attribute equal to the Instance's Network
+	 *             Management Device Attribute Selector.
+	 * @throws ResourcesDescriptorException
+	 *             if the found value is not a valid {@link Host}.
+	 * @throws ResourcesDescriptorException
+	 *             if no {@link #NETWORK_MGMT_PORT_ATTRIBUTE} can be found in
+	 *             the Instance's Network Management {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTRIBUTE}
+	 *             found in the Instance's Network Management {@link Node} is
+	 *             not a valid {@link Port}.
 	 */
 	public NetworkManagementDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
