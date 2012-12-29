@@ -36,7 +36,8 @@ public abstract class NetworkManagementHelper {
 	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = "enableNetworkManagement";
 
 	/**
-	 * The XML Element which contains Network Management datas in the RD
+	 * The XML Element which contains Network Management datas in the RD (e.g
+	 * the Network Management Node)
 	 */
 	public static final String NETWORK_MGMT_NODE = "network-management";
 
@@ -64,33 +65,38 @@ public abstract class NetworkManagementHelper {
 
 	/**
 	 * The XML attribute of the Network Management Node, which contains the
-	 * Network Management Interface Nodes Selector
+	 * XPath Expression to select Management Network Device Node
 	 */
-	public static final String NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE = "interfaceNodeSelector";
+	public static final String NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE = "networkMgmtDeviceSelector";
 
 	/**
-	 * The XML attribute of the Network Management Node, which contains the
-	 * Network Management Interface Nodes Attribute Selector
+	 * The XML attribute of the Network Management Node, which contains the XML
+	 * attribute of the Management Network Device Node which select the Host to
+	 * manage
 	 */
-	public static final String NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE = "interfaceNodeAttribute";
+	public static final String NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE = "networkMgmtDeviceAttribute";
 
 	/**
-	 * XPath Expression to select Network Management Interface Node in Primary
-	 * search
+	 * Default XPath Expression to select Management Network Device Node
 	 */
-	public static final String DEFAULT_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR = "//network//interface[@device='eth0']";
+	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_SELECTOR = "//interface[@device='eth0']";
 
 	/**
-	 * XPath Expression to select Network Management Interface Node in Secondary
-	 * search
+	 * Default XML attribute of the Management Network Device Node which select
+	 * the Host to manage
 	 */
-	public static final String SECONDARY_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR = "//network//interface";
+	public static final String DEFAULT_NETWORK_MGMT_DEVICE_ATTR_SELECTOR = "ip";
 
 	/**
-	 * the XML attribute of the Network Management Interface Node which select
-	 * the Host
+	 * The XML attribute which contains the XPath Expression to select Network
+	 * Device Nodes
 	 */
-	public static final String DEFAULT_NETWORK_MGMT_INTERFACE_ATTR_SELECTOR = "ip";
+	public static final String NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "networkDevicesSelector";
+
+	/**
+	 * Default XPath Expression to select Network Device Nodes
+	 */
+	public static final String DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR = "//interface";
 
 	/**
 	 * <p>
@@ -101,8 +107,14 @@ public abstract class NetworkManagementHelper {
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Network Management {@link Node} related to the given Instance
-	 *         {@link Node}.
+	 * @return <ul>
+	 *         <li>The Network Management {@link Node} related to the given
+	 *         Instance {@link Node}, if one Network Management {@link Node} is
+	 *         found ;</li>
+	 *         <li>The last Network Management {@link Node} related to the given
+	 *         Instance {@link Node}, if multiple Network Management
+	 *         {@link Node} is found ;</li>
+	 *         </ul>
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
@@ -143,143 +155,172 @@ public abstract class NetworkManagementHelper {
 	 * </p>
 	 * 
 	 * @param mgmtNode
-	 *            is a Network Management {@link Node}.
+	 *            is a Network Management {@link Node}, or <code>null</code>.
 	 * 
-	 * @return the content of the
-	 *         {@link #NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE} XML
-	 *         Attribute of the given Network Management {@link Node} or
-	 *         {@link #DEFAULT_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR} if no
-	 *         {@link #NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE} XML
-	 *         Attribute can be found.
+	 * @return <ul>
+	 *         <li>The content of the
+	 *         {@link #NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} XML
+	 *         Attribute of the given Network Management {@link Node} ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETOWRK_MGMT_DEVICE_NODE_SELECTOR} if the given
+	 *         Network Management {@link Node} was <code>null</code> ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETOWRK_MGMT_DEVICE_NODE_SELECTOR} if no
+	 *         {@link #NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} XML
+	 *         Attribute can be found ;</li>
+	 *         </ul>
 	 */
-	public static String findNetworkManagementInterfaceSelector(Node mgmtNode) {
+	public static String findManagementNetworkDeviceSelector(Node mgmtNode) {
 		try {
-			return mgmtNode
-					.getAttributes()
-					.getNamedItem(
-							NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE)
+			return mgmtNode.getAttributes()
+					.getNamedItem(NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR;
+			return DEFAULT_NETOWRK_MGMT_DEVICE_NODE_SELECTOR;
 		}
 	}
 
 	/**
 	 * <p>
-	 * Return the Network Management Interface Attribute Selector of the given
+	 * Return the Management Network Device Attribute Selector of the given
 	 * Network Management {@link Node}.
 	 * </p>
 	 * 
 	 * @param mgmtNode
-	 *            is a Network Management {@link Node}.
+	 *            is a Network Management {@link Node}, or <code>null</code>.
 	 * 
-	 * @return the content of the
-	 *         {@link #NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE} XML
-	 *         Attribute of the given Network Management {@link Node} or
-	 *         {@link #DEFAULT_NETWORK_MGMT_INTERFACE_ATTR_SELECTOR} if no
-	 *         {@link #NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE} XML
-	 *         Attribute can be found.
+	 * @return <ul>
+	 *         <li>The content of the
+	 *         {@link #NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML
+	 *         Attribute of the given Network Management {@link Node} ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETWORK_MGMT_DEVICE_ATTR_SELECTOR} if the given
+	 *         Network Management {@link Node} was <code>null</code> ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETWORK_MGMT_DEVICE_ATTR_SELECTOR} if no
+	 *         {@link #NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML
+	 *         Attribute can be found ;</li>
+	 *         </ul>
 	 */
-	public static String findNetworkManagementInterfaceAttribute(Node mgmtNode) {
+	public static String findManagementNetworkDeviceAttribute(Node mgmtNode) {
 		try {
-			return mgmtNode
-					.getAttributes()
-					.getNamedItem(
-							NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE)
+			return mgmtNode.getAttributes()
+					.getNamedItem(NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_NETWORK_MGMT_INTERFACE_ATTR_SELECTOR;
+			return DEFAULT_NETWORK_MGMT_DEVICE_ATTR_SELECTOR;
 		}
 	}
 
 	/**
 	 * <p>
-	 * Return the Network Management Interface {@link Node} related to the given
+	 * Return the Management Network Device {@link Node} related to the given
 	 * Instance {@link Node}.
 	 * </p>
 	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Network Management Interface {@link Node} related to the
-	 *         given Instance {@link Node}.
+	 * @return the Management Network Device {@link Node} related to the given
+	 *         Instance {@link Node}.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
-	 *             if no Network Management {@link Node} can be found.
+	 *             if the Network Management Device Node Selector is not a valid
+	 *             XPath expression.
 	 * @throws ResourcesDescriptorException
-	 *             if multiple Network Management {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if no Network Management Interface{@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if multiple Network Management Interface{@link Node} can be
-	 *             found.
+	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node findNetworkManagementInterface(Node instanceNode)
+	public static Node findNetworkManagementDevice(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
 			// raised when Network management datas are invalid.
-			// in this situation, we consider eth0 is the management interface
+			// in this situation, we will use default values
 		}
-		return getNetworkManagementInterface(mgmtNode, instanceNode);
+		return getNetworkManagementDevice(mgmtNode, instanceNode);
 	}
 
 	/**
 	 * <p>
-	 * Return the Network Management Interface {@link Node} related to the given
+	 * Return the Management Network Device {@link Node} related to the given
 	 * Instance {@link Node}.
 	 * </p>
 	 * 
 	 * @param mgmtNode
 	 *            is the Network Management {@link Node} related to the given
-	 *            Instance {@link Node} (can be null, if the given Instance
-	 *            {@link Node} has no Network Management {@link Node}).
+	 *            Instance {@link Node}, or <code>null</code>, if the given
+	 *            Instance {@link Node} has no Network Management {@link Node}.
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Network Management Interface {@link Node} related to the
-	 *         given Instance {@link Node}.
+	 * @return the Management Network Device {@link Node} related to the given
+	 *         Instance {@link Node}.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
-	 *             if no Network Management Interface {@link Node} can be found.
+	 *             if the Network Management Device Node Selector is not a valid
+	 *             XPath expression.
 	 * @throws ResourcesDescriptorException
-	 *             if multiple Network Management Interface {@link Node} can be
-	 *             found.
+	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node getNetworkManagementInterface(Node mgmtNode,
+	public static Node getNetworkManagementDevice(Node mgmtNode,
 			Node instanceNode) throws ResourcesDescriptorException {
-		String sMgmtInterfaceSelector = findNetworkManagementInterfaceSelector(mgmtNode);
+		String sMgmtInterfaceSelector = findManagementNetworkDeviceSelector(mgmtNode);
 		NodeList nl = null;
 		try {
 			nl = GetHeritedContent.getHeritedContent(instanceNode,
 					sMgmtInterfaceSelector);
 			if (nl != null && nl.getLength() > 1) {
 				throw new ResourcesDescriptorException(instanceNode,
-						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_INTERFACE);
+						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE);
 			} else if (nl == null || nl.getLength() == 0) {
 				nl = GetHeritedContent.getHeritedContent(instanceNode,
-						SECONDARY_NETOWRK_MGMT_INTERFACE_NODE_SELECTOR);
+						DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR);
 			}
 		} catch (XPathExpressionException Ex) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
-					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_INTERFACE_SELECTOR,
+					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_SELECTOR,
 					sMgmtInterfaceSelector), Ex);
 		}
 		if (nl == null || nl.getLength() == 0) {
 			throw new ResourcesDescriptorException(instanceNode,
-					Messages.NetMgmtEx_NO_MGMT_NETWORK_INTERFACE);
+					Messages.NetMgmtEx_NO_MGMT_NETWORK_DEVICE);
 		}
 		return nl.item(0);
 	}
 
+	/**
+	 * 
+	 * @param instanceNodes
+	 *            is a {@link List} of {@link Node} which describes multiple
+	 *            Instances.
+	 * 
+	 * @return a {@link list} of Management Network Device {@link Host} related
+	 *         to the given {@link List} of Instance {@link Node}.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if one Instance {@link Node} is not valid (ex : contains
+	 *             invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if the Network Management Device Node Selector of one
+	 *             Instance is not a valid XPath expression.
+	 * @throws ResourcesDescriptorException
+	 *             if no Management Network Device {@link Node} can be found in
+	 *             at least one Instance.
+	 * @throws ResourcesDescriptorException
+	 *             if the Management Network Device {@link Node} of one Instance
+	 *             doesn't have a attribute equal to the Network Management
+	 *             Device Attribute Selector.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of one attribute is not a valid {@link Host}.
+	 */
 	public static List<Host> findNetworkManagementHost(List<Node> instanceNodes)
 			throws ResourcesDescriptorException {
 		List<Host> hl = new ArrayList<Host>();
@@ -289,14 +330,35 @@ public abstract class NetworkManagementHelper {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
 				// raised when Network management datas are invalid.
-				// in this situation, we consider eth0 is the management
-				// interface
+				// in this situation, we will use default values
 			}
 			hl.add(getNetworkManagementHost(mgmtNode, instanceNode));
 		}
 		return hl;
 	}
 
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is a {@link Node} which describes an Instance.
+	 * 
+	 * @return the Instance's Management Network Device's {@link Host}.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if the Instance's Network Management Device Node Selector is
+	 *             not a valid XPath expression.
+	 * @throws ResourcesDescriptorException
+	 *             if no Management Network Device {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if the Instance's Management Network Device {@link Node}
+	 *             doesn't have a attribute equal to the Isntance's Network
+	 *             Management Device Attribute Selector.
+	 * @throws ResourcesDescriptorException
+	 *             if the found value is not a valid {@link Host}.
+	 */
 	public static Host findNetworkManagementHost(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
@@ -304,32 +366,48 @@ public abstract class NetworkManagementHelper {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
 			// raised when Network management datas are invalid.
-			// in this situation, we consider eth0 is the management interface
+			// in this situation, we will use default values
 		}
 		return getNetworkManagementHost(mgmtNode, instanceNode);
 	}
 
 	/**
-	 * /!\ Will not fail if mgmtNode is null
 	 * 
 	 * @param mgmtNode
+	 *            is the Network Management {@link Node} related to the given
+	 *            Instance {@link Node}, or <code>null</code>, if the given
+	 *            Instance {@link Node} has no Network Management {@link Node}.
 	 * @param instanceNode
-	 * @return
+	 *            is a {@link Node} which describes an Instance.
+	 * 
+	 * @return the Isntance's Management Network Device {@link Host}.
+	 * 
 	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if the Isntance's Network Management Device Node Selector is
+	 *             not a valid XPath expression.
+	 * @throws ResourcesDescriptorException
+	 *             if no Management Network Device {@link Node} can be found.
+	 * @throws ResourcesDescriptorException
+	 *             if the Isntance's Management Network Device {@link Node}
+	 *             doesn't have a attribute equal to the Isntance's Network
+	 *             Management Device Attribute Selector.
+	 * @throws ResourcesDescriptorException
+	 *             if the found value is not a valid {@link Host}.
 	 */
 	public static Host getNetworkManagementHost(Node mgmtNode, Node instanceNode)
 			throws ResourcesDescriptorException {
-		Node netNode = getNetworkManagementInterface(mgmtNode, instanceNode);
-		String attr = findNetworkManagementInterfaceAttribute(mgmtNode);
+		Node netNode = getNetworkManagementDevice(mgmtNode, instanceNode);
+		String attr = findManagementNetworkDeviceAttribute(mgmtNode);
 		String sHost = null;
 		try {
 			sHost = netNode.getAttributes().getNamedItem(attr).getNodeValue();
 		} catch (NullPointerException Ex) {
-			throw new ResourcesDescriptorException(
-					netNode,
-					Messages.bind(
-							Messages.NetMgmtEx_INVALID_MGMT_NETWORK_INTERFACE_ATTRIBUTE,
-							attr));
+			throw new ResourcesDescriptorException(netNode, Messages.bind(
+					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_ATTRIBUTE,
+					attr));
 		}
 		try {
 			return Host.parseString(sHost);
@@ -339,12 +417,50 @@ public abstract class NetworkManagementHelper {
 		}
 	}
 
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return the Instance's Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_PORT_ATTRIBUTE} XML Attribute.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance doesn't have any Network Management
+	 *             {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if no {@link #NETWORK_MGMT_PORT_ATTRIBUTE} can be found in
+	 *             the given Instance's Network Management {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTRIBUTE}
+	 *             found in the given Instance's Network Management {@link Node}
+	 *             is not a valid {@link Port}.
+	 */
 	public static Port findNetworkManagementPort(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = findNetworkManagementNode(instanceNode);
 		return getNetworkManagementPort(mgmtNode);
 	}
 
+	/**
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Management {@link Node}.
+	 * 
+	 * @return the Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_PORT_ATTRIBUTE} XML Attribute.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Network Management {@link Node} is
+	 *             <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if no {@link #NETWORK_MGMT_PORT_ATTRIBUTE} can be found in
+	 *             the given Network Management {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTRIBUTE}
+	 *             found in the given Network Management {@link Node} is not a
+	 *             valid {@link Port}.
+	 */
 	public static Port getNetworkManagementPort(Node mgmtNode)
 			throws ResourcesDescriptorException {
 		String sPort = null;
@@ -365,12 +481,50 @@ public abstract class NetworkManagementHelper {
 		}
 	}
 
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return the Instance's Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_METHOD_ATTRIBUTE} XML Attribute.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance doesn't have any Network Management
+	 *             {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if no {@link #NETWORK_MGMT_METHOD_ATTRIBUTE} can be found in
+	 *             the given Instance's Network Management {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTRIBUTE}
+	 *             found in the given Instance's Network Management {@link Node}
+	 *             is not a valid {@link NetworkManagementMethod}.
+	 */
 	public static NetworkManagementMethod findNetworkManagementMethod(
 			Node instanceNode) throws ResourcesDescriptorException {
 		Node mgmtNode = findNetworkManagementNode(instanceNode);
 		return getNetworkManagementMethod(mgmtNode);
 	}
 
+	/**
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Management {@link Node}.
+	 * 
+	 * @return the Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_METHOD_ATTRIBUTE} XML Attribute.
+	 * 
+	 * @throws ResourcesDescriptorException
+	 *             if the given Network Management {@link Node} is
+	 *             <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if no {@link #NETWORK_MGMT_METHOD_ATTRIBUTE} can be found in
+	 *             the given Network Management {@link Node}.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTRIBUTE}
+	 *             found in the given Network Management {@link Node} is not a
+	 *             valid {@link NetworkManagementMethod}.
+	 */
 	public static NetworkManagementMethod getNetworkManagementMethod(
 			Node mgmtNode) throws ResourcesDescriptorException {
 		String sMethod = null;
@@ -391,22 +545,46 @@ public abstract class NetworkManagementHelper {
 		}
 	}
 
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return <ul>
+	 *         <li>The Instance's Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_ENABLE_ATTRIBUTE} XML Attribute ;</li>
+	 *         <li><code>false</code> if the given Instance has no Network
+	 *         Management {@link Node} ;</li>
+	 *         <li><code>true</code> if the given Instance's Network Management
+	 *         {@link Node} has no {@link #NETWORK_MGMT_ENABLE_ATTRIBUTE} XML
+	 *         Attribute ;</li>
+	 *         </ul>
+	 */
 	public static boolean isNetworkManagementEnable(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		if (mgmtNode == null) {
+			return false;
+		}
 		return getNetworkManagementEnable(mgmtNode);
 	}
 
 	/**
 	 * 
 	 * @param mgmtNode
+	 *            is a Network Management {@link Node}.
 	 * 
-	 * @return <code>true</code> by default.
-	 * 
-	 * @throws ResourcesDescriptorException
+	 * @return <ul>
+	 *         <li>The Network Management {@link Node}'s
+	 *         {@link #NETWORK_MGMT_ENABLE_ATTRIBUTE} XML Attribute ;</li>
+	 *         <li><code>true</code> if the given Network Management
+	 *         {@link Node} is <code>null</code> ;</li>
+	 *         <li><code>true</code> if the given Network Management
+	 *         {@link Node} has no {@link #NETWORK_MGMT_ENABLE_ATTRIBUTE} XML
+	 *         Attribute ;</li>
+	 *         </ul>
 	 */
-	public static boolean getNetworkManagementEnable(Node mgmtNode)
-			throws ResourcesDescriptorException {
+	public static boolean getNetworkManagementEnable(Node mgmtNode) {
 		String sEnable = null;
 		try {
 			sEnable = mgmtNode.getAttributes()
@@ -415,6 +593,46 @@ public abstract class NetworkManagementHelper {
 			return true;
 		}
 		return Boolean.parseBoolean(sEnable);
+	}
+
+	/**
+	 * <p>
+	 * Return the Network Device Nodes Selector of the given Instance
+	 * {@link Node}.
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return <ul>
+	 *         <li>The content of the
+	 *         {@link #NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE} XML Attribute of
+	 *         the given Instance's Network Management {@link Node} ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR} if the given
+	 *         Instance has no Network Management {@link Node} ;</li>
+	 *         <li>
+	 *         {@link #DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR} if the given
+	 *         Instance's Network Management {@link Node} has no
+	 *         {@link #NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE} XML Attribute ;</li>
+	 *         </ul>
+	 */
+	public static String findNetworkDevicesSelector(Node instanceNode)
+			throws ResourcesDescriptorException {
+		Node mgmtNode = null;
+		try {
+			mgmtNode = findNetworkManagementNode(instanceNode);
+		} catch (ResourcesDescriptorException Ex) {
+			// raised when Network management datas are invalid.
+			// in this situation, we will use default values
+		}
+		try {
+			return mgmtNode.getAttributes()
+					.getNamedItem(NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE)
+					.getNodeValue();
+		} catch (NullPointerException Ex) {
+			return DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR;
+		}
 	}
 
 }

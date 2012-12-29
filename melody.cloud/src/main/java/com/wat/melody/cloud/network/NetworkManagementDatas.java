@@ -32,13 +32,13 @@ public abstract class NetworkManagementDatas {
 	 * * The {@link Common#NETWORK_MGMT_PORT_ATTRIBUTE} XML attribute must
 	 * contains a {@link Port} ; <BR/>
 	 * The given node should contains a
-	 * {@link Common#NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE} and a
-	 * {@link Common#NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE} XML
-	 * Attributes ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_INTERFACE_NODE_SELECTOR_ATTRIBUTE} XML
+	 * {@link Common#NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} and a
+	 * {@link Common#NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML Attributes
+	 * ; <BR/>
+	 * * The {@link Common#NETWORK_MGMT_DEVICE_NODE_SELECTOR_ATTRIBUTE} XML
 	 * attribute must contains an XPath expression which select the Management
 	 * Network Interface Node ; <BR/>
-	 * * The {@link Common#NETWORK_MGMT_INTERFACE_ATTR_SELECTOR_ATTRIBUTE} XML
+	 * * The {@link Common#NETWORK_MGMT_DEVICE_ATTR_SELECTOR_ATTRIBUTE} XML
 	 * attribute must contains the name of the attribute of the Management
 	 * Network Interface Node which contains the {@link Host} ; <BR/>
 	 * </i>

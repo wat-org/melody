@@ -6,6 +6,13 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.network.messages";
 
+	public static String NetworkEx_EMPTY_DEVICE_NAME;
+	public static String NetworkEx_INVALID_DEVICE_NAME;
+
+	public static String NetworkListEx_DEVICE_ALREADY_DEFINE;
+
+	public static String NetworkLoadEx_MISSING_ATTR;
+
 	public static String NetMgmtMsg_INTRO;
 	public static String NetMgmtMsg_RESUME;
 	public static String NetMgmtMsg_FAILED;

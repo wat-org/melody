@@ -8,7 +8,7 @@
 	<instances>
 	
 		<instance imageId="ami-59d0e22d" instanceType="t1.micro" keyPairName="id_rsa_aws" name="web-01" region="eu-west-1">
-			<network-management interfaceNodeSelector="" interfaceNodeAttribute="IP_priv" method="ssh" port="22"/>
+			<network-management networkMgmtDeviceSelector="" networkMgmtDeviceAttribute="IP_priv" method="ssh" port="22"/>
 			<fwrules>
 				<in>
 					<fwrule access="allow" from="all" ports="80-443" protocols="tcp"/>

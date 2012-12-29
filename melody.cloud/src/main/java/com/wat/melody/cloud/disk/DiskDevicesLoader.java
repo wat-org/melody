@@ -5,7 +5,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 
 public class DiskDevicesLoader {
@@ -40,7 +40,8 @@ public class DiskDevicesLoader {
 	public DiskDevicesLoader(ITaskContext tc) {
 		if (tc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
+					+ "Must be a valid "
+					+ ITaskContext.class.getCanonicalName() + ".");
 		}
 		moTC = tc;
 	}
@@ -49,7 +50,7 @@ public class DiskDevicesLoader {
 		return moTC;
 	}
 
-	private void loadDevice(Node n, Disk disk)
+	private void loadDevice(Node n, DiskDevice disk)
 			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
 		if (attr == null) {
@@ -61,13 +62,13 @@ public class DiskDevicesLoader {
 			return;
 		}
 		try {
-			disk.setDevice(v);
-		} catch (IllegalDiskException Ex) {
+			disk.setDeviceName(v);
+		} catch (IllegalDiskDeviceException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
-	private void loadGiga(Node n, Disk disk)
+	private void loadGiga(Node n, DiskDevice disk)
 			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(SIZE_ATTR);
 		if (attr == null) {
@@ -79,12 +80,12 @@ public class DiskDevicesLoader {
 		}
 		try {
 			disk.setSize(v);
-		} catch (IllegalDiskException Ex) {
+		} catch (IllegalDiskDeviceException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
-	private void loadDeleteOnTermination(Node n, Disk disk) {
+	private void loadDeleteOnTermination(Node n, DiskDevice disk) {
 		Node attr = n.getAttributes().getNamedItem(DELETEONTERMINATION_ATTR);
 		if (attr == null) {
 			return;
@@ -96,7 +97,7 @@ public class DiskDevicesLoader {
 		disk.setDeleteOnTermination(Boolean.parseBoolean(v));
 	}
 
-	private void loadRootDevice(Node n, Disk disk) {
+	private void loadRootDevice(Node n, DiskDevice disk) {
 		Node attr = n.getAttributes().getNamedItem(ROOTDEVICE_ATTR);
 		if (attr == null) {
 			return;
@@ -110,44 +111,48 @@ public class DiskDevicesLoader {
 
 	/**
 	 * <p>
-	 * Converts the given Disk <code>Node</code>s into a {@link DiskDeviceList}.
+	 * Converts the given Disk Device {@link Node}s into a
+	 * {@link DiskDeviceList}.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>A Disk <code>Node</code> must have the attributes : <BR/>
-	 * * size : which should contains a SIZE ; <BR/>
-	 * * device : which should contains a LINUX DEVICE NAME ; <BR/>
-	 * * deleteOnTermination : which should contains true/false ; <BR/>
-	 * * rootDevice : which should contains true/false ; <BR/>
-	 * </i>
+	 * A Disk Device {@link Node} must have the attributes :
+	 * <ul>
+	 * <li>size : which should contains a SIZE in Go ;</li>
+	 * <li>device : which should contains a LINUX DEVICE NAME (ex: /dev/sda1,
+	 * /dev/vda) ;</li>
+	 * <li>deleteOnTermination : which should contains true/false ;</li>
+	 * <li>rootDevice : which should contains true/false ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param nl
-	 *            a list of Disk <code>Node</code>s.
+	 *            a list of Disk Device {@link Node}s.
 	 * 
-	 * @return a {@link DiskDeviceList} object, which is a collection of {@link Disk}
-	 *         .
+	 * @return a {@link DiskDeviceList} object, which is a collection of
+	 *         {@link DiskDevice} .
 	 * 
 	 * @throws ResourcesDescriptorException
-	 *             if the conversion failed (ex : the content of a Disk Node'n
-	 *             attribute is not valid)
+	 *             if the conversion failed (ex : the content of a Disk Device
+	 *             Node is not valid, multiple root device are found, multiple
+	 *             device declare with the same name).
 	 */
 	public DiskDeviceList load(NodeList nl) throws ResourcesDescriptorException {
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
-			Disk disk = new Disk();
+			DiskDevice disk = new DiskDevice();
 			loadDevice(n, disk);
 			loadGiga(n, disk);
 			loadDeleteOnTermination(n, disk);
 			loadRootDevice(n, disk);
 
 			try {
-				dl.addDisk(disk);
+				dl.addDiskDevice(disk);
 			} catch (IllegalDiskListException Ex) {
-				throw new ResourcesDescriptorException(n, "This Disk Node "
-						+ "description is not no valid. Read message bellow "
-						+ "to get more details about this issue.", Ex);
+				throw new ResourcesDescriptorException(n, "This Disk device "
+						+ "Node description is not valid. Read message "
+						+ "bellow to get more details about this issue.", Ex);
 			}
 		}
 		return dl;

@@ -23,9 +23,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
-import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -280,19 +280,19 @@ public abstract class LibVirtCloud {
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				Disk d = new Disk();
+				DiskDevice d = new DiskDevice();
 				String volPath = Doc.evaluateAsString("source/@file",
 						nl.item(i));
 				StorageVol sv = domain.getConnect().storageVolLookupByPath(
 						volPath);
 				d.setDeleteOnTermination(true);
-				d.setDevice("/dev/"
+				d.setDeviceName("/dev/"
 						+ Doc.evaluateAsString("target/@dev", nl.item(i)));
-				d.setGiga((int) (sv.getInfo().capacity / (1024 * 1024 * 1024)));
-				if (d.getDevice().equals("/dev/vda")) {
+				d.setSize((int) (sv.getInfo().capacity / (1024 * 1024 * 1024)));
+				if (d.getDeviceName().equals("/dev/vda")) {
 					d.setRootDevice(true);
 				}
-				dl.addDisk(d);
+				dl.addDiskDevice(d);
 			}
 			if (dl.size() == 0) {
 				throw new RuntimeException("No disk device found "
@@ -303,7 +303,7 @@ public abstract class LibVirtCloud {
 						+ "for Domain '" + domain.getName() + "'.");
 			}
 			return dl;
-		} catch (XPathExpressionException | IllegalDiskException
+		} catch (XPathExpressionException | IllegalDiskDeviceException
 				| LibvirtException | IllegalDiskListException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -345,8 +345,8 @@ public abstract class LibVirtCloud {
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
 			// pour chaque disque a supprimer
-			for (Disk disk : disksToRemove) {
-				String deviceToRemove = disk.getDevice().replace("/dev/", "");
+			for (DiskDevice disk : disksToRemove) {
+				String deviceToRemove = disk.getDeviceName().replace("/dev/", "");
 				// search the path of the disk which match device to remove
 				String volPath = ddoc
 						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
@@ -433,16 +433,16 @@ public abstract class LibVirtCloud {
 			vars.put(new Property("vmName", d.getName()));
 			vars.put(new Property("allocation", "0"));
 			// pour chaque disque
-			for (Disk disk : disksToAdd) {
+			for (DiskDevice disk : disksToAdd) {
 				// variabilisation de la creation du volume
 				vars.put(new Property("volNum", String.valueOf(++lastVol)));
 				vars.put(new Property("capacity", String.valueOf((long) disk
-						.getGiga() * 1024 * 1024 * 1024)));
+						.getSize() * 1024 * 1024 * 1024)));
 				// creation du volume
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
 						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
 				// variabilisation de l'attachement du volume
-				String deviceToAdd = disk.getDevice().replace("/dev/", "");
+				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
 				vars.put(new Property("targetDevice", deviceToAdd));
 				vars.put(new Property("volPath", sv.getPath()));
 				// attachement du volume

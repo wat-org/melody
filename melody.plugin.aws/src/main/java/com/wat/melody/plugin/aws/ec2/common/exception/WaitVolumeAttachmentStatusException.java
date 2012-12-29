@@ -1,19 +1,19 @@
 package com.wat.melody.plugin.aws.ec2.common.exception;
 
-import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.plugin.aws.ec2.common.VolumeAttachmentState;
 
 public class WaitVolumeAttachmentStatusException extends AwsException {
 
 	private static final long serialVersionUID = 870139684684091797L;
 
-	private final Disk moDisk;
+	private final DiskDevice moDisk;
 	private final String msVolumeId;
 	private final int miAttachmentIndex;
 	private final VolumeAttachmentState moExpectedState;
 	private final long mlTimeout;
 
-	public WaitVolumeAttachmentStatusException(Disk disk,
+	public WaitVolumeAttachmentStatusException(DiskDevice disk,
 			String sVolumeId, int iAttachmentIndex,
 			VolumeAttachmentState expectedState, long timeout) {
 		if (disk == null) {
@@ -43,7 +43,7 @@ public class WaitVolumeAttachmentStatusException extends AwsException {
 		mlTimeout = timeout;
 	}
 
-	public Disk getDisk() {
+	public DiskDevice getDisk() {
 		return moDisk;
 	}
 

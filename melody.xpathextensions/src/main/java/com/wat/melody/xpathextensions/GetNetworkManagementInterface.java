@@ -31,7 +31,7 @@ public final class GetNetworkManagementInterface implements XPathFunction {
 		}
 		try {
 			return NetworkManagementHelper
-					.findNetworkManagementInterface((Node) arg0);
+					.findNetworkManagementDevice((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

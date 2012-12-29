@@ -39,9 +39,9 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
-import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.exception.IllegalDiskException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -1227,7 +1227,7 @@ public class Common {
 	 * @param i
 	 *            is the Aws Instance.
 	 * 
-	 * @return a {@link DiskDeviceList}, which contains all Aws {@link Disk}
+	 * @return a {@link DiskDeviceList}, which contains all Aws {@link DiskDevice}
 	 *         attached to the given Aws Instance (the list cannot be empty. It
 	 *         contains at least the root disk device).
 	 * 
@@ -1245,17 +1245,17 @@ public class Common {
 		DiskDeviceList disks = new DiskDeviceList();
 		try {
 			for (Volume volume : volumes) {
-				Disk disk = new Disk();
-				disk.setGiga(volume.getSize());
+				DiskDevice disk = new DiskDevice();
+				disk.setSize(volume.getSize());
 				disk.setDeleteOnTermination(volume.getAttachments().get(0)
 						.getDeleteOnTermination());
-				disk.setDevice(volume.getAttachments().get(0).getDevice());
-				if (disk.getDevice().equals(i.getRootDeviceName())) {
+				disk.setDeviceName(volume.getAttachments().get(0).getDevice());
+				if (disk.getDeviceName().equals(i.getRootDeviceName())) {
 					disk.setRootDevice(true);
 				}
-				disks.addDisk(disk);
+				disks.addDiskDevice(disk);
 			}
-		} catch (IllegalDiskException | IllegalDiskListException Ex) {
+		} catch (IllegalDiskDeviceException | IllegalDiskListException Ex) {
 			throw new RuntimeException("Unexpected error while building "
 					+ "DiskList from Aws Instance Volumes List. "
 					+ "Because Aws Instance Volumes List is valid, such error "
@@ -1660,11 +1660,11 @@ public class Common {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List<Volume>.");
 		}
-		for (Disk disk : volumes) {
+		for (DiskDevice disk : volumes) {
 			// Detach volume
 			DetachVolumeRequest detvreq = new DetachVolumeRequest();
 			detvreq.withInstanceId(instance.getInstanceId());
-			detvreq.withDevice(disk.getDevice());
+			detvreq.withDevice(disk.getDeviceName());
 			DetachVolumeResult detvres = null;
 			detvres = ec2.detachVolume(detvreq);
 			String volumeId = detvres.getAttachment().getVolumeId();
@@ -1684,7 +1684,7 @@ public class Common {
 
 	/**
 	 * <p>
-	 * Create and attach {@Volume}s according to the given {@link Disk}
+	 * Create and attach {@Volume}s according to the given {@link DiskDevice}
 	 * s specifications.
 	 * 
 	 * Wait for the created volumes to reach the state
@@ -1702,7 +1702,7 @@ public class Common {
 	 *            is the Aws Availbility Zone Name of the Aws Instance, where
 	 *            the {@link Volume}s will be created.
 	 * @param diskList
-	 *            contains the {@link Disk}s to create and attach.
+	 *            contains the {@link DiskDevice}s to create and attach.
 	 * @param createTimeout
 	 *            is the maximum time to wait for the create operation to
 	 *            complete. 0 means ifinite.
@@ -1753,11 +1753,11 @@ public class Common {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid DiskList.");
 		}
-		for (Disk disk : diskList) {
+		for (DiskDevice disk : diskList) {
 			// Create volume
 			CreateVolumeRequest cvreq = new CreateVolumeRequest();
 			cvreq.withAvailabilityZone(sAZ);
-			cvreq.withSize(disk.getGiga());
+			cvreq.withSize(disk.getSize());
 			String sVolId = ec2.createVolume(cvreq).getVolume().getVolumeId();
 			if (!waitUntilVolumeStatusBecomes(ec2, sVolId,
 					VolumeState.AVAILABLE, createTimeout, 2000)) {
@@ -1768,7 +1768,7 @@ public class Common {
 			AttachVolumeRequest avreq = new AttachVolumeRequest();
 			avreq.withVolumeId(sVolId);
 			avreq.withInstanceId(sAwsInstanceId);
-			avreq.withDevice(disk.getDevice());
+			avreq.withDevice(disk.getDeviceName());
 			ec2.attachVolume(avreq);
 			/*
 			 * TODO : bug : sometimes, the attachment is somehow "freezed", and
@@ -1819,7 +1819,7 @@ public class Common {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid DiskList.");
 		}
-		for (Disk disk : diskList) {
+		for (DiskDevice disk : diskList) {
 			// Modify the deleteOnTermimation flag
 			EbsInstanceBlockDeviceSpecification eibds = null;
 			eibds = new EbsInstanceBlockDeviceSpecification();
@@ -1827,7 +1827,7 @@ public class Common {
 
 			InstanceBlockDeviceMappingSpecification ibdms = null;
 			ibdms = new InstanceBlockDeviceMappingSpecification();
-			ibdms.withDeviceName(disk.getDevice());
+			ibdms.withDeviceName(disk.getDeviceName());
 			ibdms.withEbs(eibds);
 
 			ModifyInstanceAttributeRequest miareq = null;

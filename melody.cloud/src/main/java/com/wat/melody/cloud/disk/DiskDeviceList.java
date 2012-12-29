@@ -4,55 +4,55 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 
-public class DiskDeviceList extends ArrayList<Disk> {
+public class DiskDeviceList extends ArrayList<DiskDevice> {
 
 	private static final long serialVersionUID = 799928265740695276L;
 
-	private Disk moRootDevice;
+	private DiskDevice moRootDevice;
 
 	public DiskDeviceList() {
 		super();
 		setRootDevice(null);
 	}
 
-	public DiskDeviceList(DiskDeviceList dl) {
-		super(dl);
-		setRootDevice(dl.getRootDevice());
+	public DiskDeviceList(DiskDeviceList ddl) {
+		super(ddl);
+		setRootDevice(ddl.getRootDevice());
 	}
 
-	public boolean addDisk(Disk disk) throws IllegalDiskListException {
-		for (Disk d : this) {
-			if (d.getDevice().equals(disk.getDevice())) {
+	public boolean addDiskDevice(DiskDevice dd) throws IllegalDiskListException {
+		for (DiskDevice d : this) {
+			if (d.getDeviceName().equals(dd.getDeviceName())) {
 				// Detects duplicated deviceName declaration
 				throw new IllegalDiskListException(Messages.bind(
 						Messages.DiskListEx_DEVICE_ALREADY_DEFINE,
-						disk.getDevice()));
+						dd.getDeviceName()));
 			}
 		}
-		if (disk.isRootDevice()) {
+		if (dd.isRootDevice()) {
 			if (getRootDevice() != null) {
 				// Detects multiple RootDevice declaration
 				throw new IllegalDiskListException(Messages.bind(
 						Messages.DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE,
-						disk.getDevice()));
+						dd.getDeviceName()));
 			}
-			setRootDevice(disk);
+			setRootDevice(dd);
 		}
-		return super.add(disk);
+		return super.add(dd);
 	}
 
-	public Disk getRootDevice() {
+	public DiskDevice getRootDevice() {
 		return moRootDevice;
 	}
 
-	private Disk setRootDevice(Disk d) {
-		if (d != null && !d.isRootDevice()) {
-			throw new IllegalArgumentException("device " + d.getDevice()
+	private DiskDevice setRootDevice(DiskDevice dd) {
+		if (dd != null && !dd.isRootDevice()) {
+			throw new IllegalArgumentException("device " + dd.getDeviceName()
 					+ " cannot be the root device because it's RootDevice "
 					+ "flag is false.");
 		}
-		Disk previous = getRootDevice();
-		moRootDevice = d;
+		DiskDevice previous = getRootDevice();
+		moRootDevice = dd;
 		return previous;
 	}
 

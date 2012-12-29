@@ -1,18 +1,18 @@
 package com.wat.melody.plugin.aws.ec2.common.exception;
 
-import com.wat.melody.cloud.disk.Disk;
+import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.plugin.aws.ec2.common.VolumeState;
 
 public class WaitVolumeStatusException extends AwsException {
 
 	private static final long serialVersionUID = 4897604537494850805L;
 
-	private final Disk moDisk;
+	private final DiskDevice moDisk;
 	private final String msVolumeId;
 	private final VolumeState moExpectedState;
 	private final long mlTimeout;
 
-	public WaitVolumeStatusException(Disk disk, String sVolumeId,
+	public WaitVolumeStatusException(DiskDevice disk, String sVolumeId,
 			VolumeState expectedState, long timeout) {
 		if (disk == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -36,7 +36,7 @@ public class WaitVolumeStatusException extends AwsException {
 		mlTimeout = timeout;
 	}
 
-	public Disk getDisk() {
+	public DiskDevice getDisk() {
 		return moDisk;
 	}
 

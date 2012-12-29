@@ -78,13 +78,13 @@ public abstract class DiskManagementHelper {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-		if (nl.getLength() == 0) {
-			return null;
-		} else if (nl.getLength() > 1) {
+		if (nl.getLength() > 1) {
 			log.debug(Messages.bind(Messages.DiskMgmtMsg_TOO_MANY_MGMT_NODE,
 					DISK_DEVICES_MGMT_NODE, Doc.getNodeLocation(instanceNode)
 							.toFullString()));
 			return nl.item(nl.getLength() - 1);
+		} else if (nl.getLength() == 0) {
+			return null;
 		}
 		return nl.item(0);
 	}
@@ -101,8 +101,9 @@ public abstract class DiskManagementHelper {
 		}
 	}
 
-	public static void ensureDiskDevicesUpdateIsPossible(DiskDeviceList current,
-			DiskDeviceList target) throws DiskDeviceException {
+	public static void ensureDiskDevicesUpdateIsPossible(
+			DiskDeviceList current, DiskDeviceList target)
+			throws DiskDeviceException {
 		if (current == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -123,32 +124,32 @@ public abstract class DiskManagementHelper {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
 					DiskDevicesLoader.DEVICE_ATTR, current.getRootDevice()
-							.getDevice()));
+							.getDeviceName()));
 		}
 		if (target.getRootDevice() == null) {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
 					DiskDevicesLoader.ROOTDEVICE_ATTR, current.getRootDevice()
-							.getDevice()));
+							.getDeviceName()));
 		}
 		if (!current.getRootDevice().equals(target.getRootDevice())) {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE, new Object[] {
 							DiskDevicesLoader.ROOTDEVICE_ATTR,
-							target.getRootDevice().getDevice(),
-							current.getRootDevice().getDevice() }));
+							target.getRootDevice().getDeviceName(),
+							current.getRootDevice().getDeviceName() }));
 		}
 	}
 
-	public static DiskDeviceList computeDiskDevicesToAdd(DiskDeviceList current,
-			DiskDeviceList target) {
+	public static DiskDeviceList computeDiskDevicesToAdd(
+			DiskDeviceList current, DiskDeviceList target) {
 		DiskDeviceList disksToAdd = new DiskDeviceList(target);
 		disksToAdd.removeAll(current);
 		return disksToAdd;
 	}
 
-	public static DiskDeviceList computeDiskDevicesToRemove(DiskDeviceList current,
-			DiskDeviceList target) {
+	public static DiskDeviceList computeDiskDevicesToRemove(
+			DiskDeviceList current, DiskDeviceList target) {
 		DiskDeviceList disksToRemove = new DiskDeviceList(current);
 		disksToRemove.removeAll(target);
 		return disksToRemove;
