@@ -5,6 +5,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRule;
 import com.wat.melody.common.network.FwRules;
@@ -16,7 +17,6 @@ import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class FwRuleLoader {
 

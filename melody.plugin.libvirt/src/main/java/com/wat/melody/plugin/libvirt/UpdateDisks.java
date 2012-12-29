@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.cloud.libvirt.Instance;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskList;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.DisksLoader;
@@ -17,7 +18,6 @@ import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 

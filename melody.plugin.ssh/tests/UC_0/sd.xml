@@ -4,16 +4,17 @@
 
 	<order name="main">
 
-		<foreach	items="//instance[exists(@IP_pub)]"
+		<foreach	items="//instance[exists(@instanceId)]"
 					itemName="svr">
 					
+			<property name="IP" value="§[melody:getNetworkManagementHost(§[svr]§)]§"/>
 			<property name="application" value="myApp"/>
 			<property name="module" value="myMod"/>
 			<property name="instance" value="myInst"/>
 			
-			<echo message="Transfering files to 'IP:§[§[svr]§/@IP_pub]§' ..."/>
+			<echo message="Transfering files to 'IP:§[IP]§' ..."/>
 
-			<upload host="§[§[svr]§/@IP_pub]§" login="ec2-user" keyPairName="§[melody:getHeritedAttributeValue(§[svr]§, 'keyPairName')]§" maxpar="10" >
+			<upload host="§[IP]§" login="root" keyPairName="§[melody:getHeritedAttributeValue(§[svr]§, 'keyPairName')]§" maxpar="10" >
 			<!--
 			'resources' XML Nested Element allow to select files.
 			Select files will be transfered on the remote computer.
@@ -77,7 +78,7 @@
 				-->					
 			</upload>
 
-			<echo message="Files successfully transfered to 'IP:§[§[svr]§/@IP_pub]§'."/>
+			<echo message="Files successfully transfered to 'IP:§[IP]§'." />
 
 		</foreach>	
 

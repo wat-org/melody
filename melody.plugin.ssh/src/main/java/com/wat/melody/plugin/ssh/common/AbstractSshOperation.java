@@ -1,11 +1,8 @@
 package com.wat.melody.plugin.ssh.common;
 
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UIKeyboardInteractive;
-import com.jcraft.jsch.UserInfo;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -14,7 +11,7 @@ import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
 abstract public class AbstractSshOperation extends AbstractSshTask implements
-		UserInfo, UIKeyboardInteractive {
+		JSchConnectionDatas {
 
 	/**
 	 * The 'login' XML attribute
@@ -35,11 +32,6 @@ abstract public class AbstractSshOperation extends AbstractSshTask implements
 	 * The 'password' XML attribute
 	 */
 	public static final String PASSWORD_ATTR = "password";
-
-	/**
-	 * The 'knownhosts' XML attribute
-	 */
-	public static final String KNOWNHOSTS_ATTR = "knownhosts";
 
 	/**
 	 * The 'trust' XML attribute
@@ -116,7 +108,9 @@ abstract public class AbstractSshOperation extends AbstractSshTask implements
 	 * @throws SshException
 	 */
 	public Session openSession() throws SshException {
-		return getPluginConf().openSession(this);
+		Session session = JSchHelper.openSession(this, getPluginConf());
+		session.getConnectThread().setName(Thread.currentThread().getName());
+		return session;
 	}
 
 	/**
@@ -129,68 +123,28 @@ abstract public class AbstractSshOperation extends AbstractSshTask implements
 	 * @throws SshException
 	 */
 	public ChannelSftp openSftpChannel(Session session) throws SshException {
-		ChannelSftp channel = null;
-		try {
-			channel = (ChannelSftp) session.openChannel("sftp");
-			channel.connect(getPluginConf().getConnectionTimeout());
-		} catch (JSchException Ex) {
-			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
-				// will match message 'Auth cancel' and 'Auth fail'
-				Ex = new JSchException("Incorrect credentials.", Ex);
-			}
-			throw new SshException(Messages.bind(
-					Messages.SshEx_FAILED_TO_CONNECT, new Object[] {
-							getHost().getValue().getHostAddress(),
-							getPort().getValue(), getLogin() }), Ex);
-		}
-		return channel;
+		return JSchHelper.openSftpChannel(session, getPluginConf());
 	}
 
-	public int execSshCommand(Session s, String sCommand, String outputPrefix)
+	public int execSshCommand(Session session, String sCommand,
+			String outputPrefix) throws SshException, InterruptedException {
+		LoggerOutputStream out = new LoggerOutputStream(outputPrefix
+				+ " [STDOUT]", LogThreshold.DEBUG);
+		LoggerOutputStream err = new LoggerOutputStream(outputPrefix
+				+ " [STDERR]", LogThreshold.ERROR);
+		return JSchHelper.execSshCommand(session, sCommand, out, err);
+	}
+
+	public int execSshCommand(String sCommand, String outputPrefix)
 			throws SshException, InterruptedException {
-		s.getConnectThread().setName(Thread.currentThread().getName());
-		ChannelExec c = null;
+		Session session = openSession();
 		try {
-			c = (ChannelExec) s.openChannel("exec");
-			
-			// force the tty allocation
-			c.setPty(true);
-			
-			c.setCommand(sCommand);
-
-			c.setInputStream(null);
-			c.setOutputStream(new LoggerOutputStream(
-					outputPrefix + " [STDOUT]", LogThreshold.DEBUG));
-			c.setErrStream(new LoggerOutputStream(outputPrefix + " [STDERR]",
-					LogThreshold.ERROR));
-
-			c.connect();
-			while (true) {
-				if (c.isClosed()) {
-					break;
-				}
-				/*
-				 * can't find a way to 'join' the session or the channel... So
-				 * we're pooling the isClosed ....
-				 */
-				Thread.sleep(500);
-			}
-		} catch (JSchException Ex) {
-			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
-				// will match message 'Auth cancel' and 'Auth fail'
-				Ex = new JSchException("Incorrect credentials.", Ex);
-			}
-			throw new SshException(Messages.bind(
-					Messages.SshEx_FAILED_TO_CONNECT, new Object[] {
-							getHost().getValue().getHostAddress(),
-							getPort().getValue(), getLogin() }), Ex);
+			return execSshCommand(session, sCommand, outputPrefix);
 		} finally {
-			if (c != null) {
-				c.disconnect();
+			if (session != null) {
+				session.disconnect();
 			}
 		}
-
-		return c.getExitStatus();
 	}
 
 	public String getLogin() {

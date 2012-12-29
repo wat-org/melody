@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 
 import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.utils.Tools;
@@ -18,7 +19,6 @@ import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 

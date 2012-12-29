@@ -4,12 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class NetworkManagementDatas {
 

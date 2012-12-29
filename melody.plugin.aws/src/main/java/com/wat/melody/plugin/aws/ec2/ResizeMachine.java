@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
@@ -16,7 +17,6 @@ import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 

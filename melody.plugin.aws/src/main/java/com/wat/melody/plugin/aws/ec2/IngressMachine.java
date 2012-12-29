@@ -14,6 +14,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
@@ -25,7 +26,6 @@ import com.wat.melody.plugin.aws.ec2.common.FwRuleLoader;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 

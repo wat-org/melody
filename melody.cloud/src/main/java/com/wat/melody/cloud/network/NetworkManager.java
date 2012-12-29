@@ -5,8 +5,6 @@ import com.wat.melody.cloud.network.exception.ManagementException;
 
 public interface NetworkManager {
 
-	public ITaskContext getContext();
-
 	public NetworkManagementDatas getManagementDatas();
 
 	/**

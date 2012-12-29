@@ -14,6 +14,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.NetworkManager;
@@ -34,7 +35,6 @@ import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * <p>
@@ -390,7 +390,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (ResourcesDescriptorException | ManagementException Ex) {
 			throw new AwsException(Ex);
 		}
 
@@ -461,7 +461,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (ResourcesDescriptorException | ManagementException Ex) {
 			throw new AwsException(Ex);
 		}
 

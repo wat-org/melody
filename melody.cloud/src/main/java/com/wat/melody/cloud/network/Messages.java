@@ -10,9 +10,10 @@ public class Messages extends NLS {
 	public static String NetMgmtMsg_RESUME;
 	public static String NetMgmtMsg_FAILED;
 
-	public static String MgmtEx_SSH_MGMT_ENABLE_TIMEOUT;
+	public static String NetMgmtEx_SSH_MGMT_ENABLE_TIMEOUT;
+	public static String NetMgmtMsg_SSH_WAIT_FOR_MGMT_ENABLE;
 
-	public static String MgmtEx_WINRM_MGMT_NOT_SUPPORTED;
+	public static String NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED;
 
 	static {
 		// initialize resource bundle

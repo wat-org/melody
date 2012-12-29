@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskList;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.DisksLoader;
@@ -17,7 +18,6 @@ import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.GetHeritedContent;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 /**
  * 

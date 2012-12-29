@@ -4,18 +4,14 @@ import java.io.File;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import com.wat.melody.api.IPluginConfiguration;
 import com.wat.melody.api.IProcessorManager;
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.PluginConfigurationException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -25,16 +21,12 @@ import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.plugin.ssh.Upload;
 import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionLevelException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionTypeException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalProxyTypeException;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
 
 public class Configuration implements IPluginConfiguration {
-
-	private static Log log = LogFactory.getLog(Configuration.class);
 
 	public static final String NAME = "SSH";
 
@@ -327,89 +319,6 @@ public class Configuration implements IPluginConfiguration {
 		}
 	}
 
-	public boolean addKnownHostsHost(ITaskContext context, Host host, Port p,
-			long timeout) throws SshException, InterruptedException {
-		Upload upload = new Upload();
-
-		upload.setContext(context);
-		upload.setTrust(true);
-		upload.setHost(host);
-		upload.setPort(p);
-
-		try {
-			upload.setLogin("melody");
-		} catch (SshException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "login of the Ssh connection to 'melody'. "
-					+ "Because this login is harcoded, it must be valid. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-
-		final long WAIT_STEP = 5000;
-		final long start = System.currentTimeMillis();
-		long left;
-		boolean enablementDone = true;
-
-		Session session = null;
-		while (true) {
-			// Don't upload anything, just connect.
-			try {
-				session = upload.openSession();
-				break;
-			} catch (Throwable Ex) {
-				if (Ex.getCause() == null || Ex.getCause().getMessage() == null) {
-					throw new SshException(Ex);
-				} else if (Ex.getCause().getMessage()
-						.indexOf("Incorrect credentials") != -1) {
-					// connection succeed
-					break;
-				} else if (Ex.getCause().getMessage().indexOf("refused") == -1
-						&& Ex.getCause().getMessage().indexOf("timeout") == -1
-						&& Ex.getCause().getMessage().indexOf("No route") == -1) {
-					throw new SshException(Ex);
-				}
-			} finally {
-				if (session != null) {
-					session.disconnect();
-				}
-			}
-			log.debug(Messages.bind(Messages.SshMsg_WAIT_FOR_MANAGEMENT, host
-					.getValue().getHostAddress(), p.getValue()));
-			if (timeout == 0) {
-				Thread.sleep(WAIT_STEP);
-				continue;
-			}
-			left = timeout - (System.currentTimeMillis() - start);
-			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
-			if (left < 0) {
-				enablementDone = false;
-				break;
-			}
-		}
-
-		String k = getKnownHostsHostKey(host.getValue().getHostAddress())
-				.getKey();
-		try {
-			addKnownHostsHostKey(host.getValue().getHostName(), k);
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Unexpected error while adding an "
-					+ "host with the HostKey '" + k + "' into the KnownHosts "
-					+ "file. "
-					+ "Because this HostKey have been retrieve from the "
-					+ "KnownHosts file, this key should be valid. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-
-		return enablementDone;
-	}
-
-	public void removeKnownHostsHost(Host host) {
-		removeKnownHostsHostKey(host.getValue().getHostAddress());
-		removeKnownHostsHostKey(host.getValue().getHostName());
-	}
-
 	/**
 	 * 
 	 * @param host
@@ -434,12 +343,12 @@ public class Configuration implements IPluginConfiguration {
 
 	public void removeKnownHostsHostKey(String host) {
 		if (host == null) {
-			host = "";
+			return;
 		}
 		getJSch().getHostKeyRepository().remove(host, null);
 	}
 
-	private JSch getJSch() {
+	public JSch getJSch() {
 		return moJSch;
 	}
 
@@ -814,85 +723,6 @@ public class Configuration implements IPluginConfiguration {
 		} catch (IllegalPortException Ex) {
 			throw new ConfigurationException(Ex);
 		}
-	}
-
-	/**
-	 * <p>
-	 * Open a ssh session.
-	 * </p>
-	 * 
-	 * @return the opened session.
-	 * 
-	 * @throws SshException
-	 */
-	public Session openSession(AbstractSshOperation base) throws SshException {
-		Session session = null;
-		try {
-			session = getJSch().getSession(base.getLogin(),
-					base.getHost().getValue().getHostAddress(),
-					base.getPort().getValue());
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "a Ssh Session. "
-					+ "Because all parameters have already been validated, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		session.setUserInfo(base);
-
-		session.setServerAliveCountMax(getServerAliveCountMax());
-
-		try {
-			session.setServerAliveInterval(getServerAliveInterval());
-		} catch (JSchException Ex) {
-			throw new SshException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_INTERVAL,
-					getServerAliveInterval()), Ex);
-		}
-
-		try {
-			session.setTimeout(getReadTimeout());
-		} catch (JSchException Ex) {
-			throw new SshException(Messages.bind(
-					Messages.ConfEx_INVALID_READ_TIMEOUT,
-					getServerAliveInterval()), Ex);
-		}
-
-		session.setConfig("compression.s2c", getCompressionType().getValue());
-		session.setConfig("compression.c2s", getCompressionType().getValue());
-		session.setConfig("compression_level", getCompressionLevel().getValue());
-		/*
-		 * TODO : when the target sshd is Kerberized, and when the client has no
-		 * Kerberos ticket yet, the auth method 'gssapi-with-mic' will wait for
-		 * the user to prompt a password.
-		 * 
-		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
-		 * as the bug is not solved, we must exclude kerberos/GSS auth method.
-		 */
-		session.setConfig("PreferredAuthentications",
-				"publickey,keyboard-interactive,password");
-
-		if (getProxyType() != null) {
-			/*
-			 * TODO : hande proxy parameters
-			 */
-		}
-
-		try {
-			session.connect(getConnectionTimeout());
-		} catch (JSchException Ex) {
-			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
-				// will match message 'Auth cancel' and 'Auth fail'
-				Ex = new JSchException("Incorrect credentials.", Ex);
-			}
-			throw new SshException(Messages.bind(
-					Messages.SshEx_FAILED_TO_CONNECT, new Object[] {
-							base.getHost().getValue().getHostAddress(),
-							base.getPort().getValue(), base.getLogin() }), Ex);
-		}
-
-		return session;
 	}
 
 }

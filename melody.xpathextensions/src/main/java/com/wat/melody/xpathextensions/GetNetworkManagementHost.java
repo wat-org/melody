@@ -7,8 +7,8 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Node;
 
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public class GetNetworkManagementHost implements XPathFunction {
 

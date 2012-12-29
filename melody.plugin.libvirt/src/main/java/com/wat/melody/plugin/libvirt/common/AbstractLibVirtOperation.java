@@ -13,6 +13,7 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -24,7 +25,6 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractLibVirtOperation implements ITask {
 

@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.jcraft.jsch.Session;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
@@ -67,34 +66,24 @@ public class Ssh extends AbstractSshOperation {
 
 	@Override
 	public void doProcessing() throws SshException, InterruptedException {
-		Session s = null;
-		int exitStatus = 255;
-		try {
-			s = getPluginConf().openSession(this);
-			exitStatus = execSshCommand(s, getCommandToExecute(),
-					getDescription());
-		} finally {
-			if (s != null) {
-				s.disconnect();
-			}
-		}
-		String extraDatas = getDescription() + " " + "[STATUS] ";
+		int exitStatus = execSshCommand(getCommandToExecute(), getDescription());
+		String recapMsg = getDescription() + " " + "[STATUS] ";
 		switch (exitStatus) {
 		case 0:
-			log.info(extraDatas + "--->    OK    <---");
+			log.info(recapMsg + "--->    OK    <---");
 			break;
 		case 200:
-			log.warn(extraDatas + "--->   WARN   <---");
+			log.warn(recapMsg + "--->   WARN   <---");
 			break;
 		case 201:
-			log.warn(extraDatas + "--->   KILL   <---");
+			log.warn(recapMsg + "--->   KILL   <---");
 			break;
 		case 202:
-			log.error(extraDatas + "--->   FAIL   <---");
-			throw new SshException(extraDatas + "--->   FAIL   <---");
+			log.error(recapMsg + "--->   FAIL   <---");
+			throw new SshException(recapMsg + "--->   FAIL   <---");
 		default:
-			log.error(extraDatas + "---> CRITICAL <---  [" + exitStatus + "]");
-			throw new SshException(extraDatas + "---> CRITICAL <---  ["
+			log.error(recapMsg + "---> CRITICAL <---  [" + exitStatus + "]");
+			throw new SshException(recapMsg + "---> CRITICAL <---  ["
 					+ exitStatus + "]" + Tools.NEW_LINE
 					+ "Here is the complete script which generates the error :"
 					+ Tools.NEW_LINE + "-----" + Tools.NEW_LINE

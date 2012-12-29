@@ -4,12 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.exception.ResourcesDescriptorException;
 
 public abstract class AbstractMachineOperation extends AbstractLibVirtOperation {
 
@@ -86,7 +86,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (ResourcesDescriptorException | ManagementException Ex) {
 			throw new LibVirtException(Ex);
 		}
 
@@ -129,7 +129,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (ResourcesDescriptorException | ManagementException Ex) {
 			throw new LibVirtException(Ex);
 		}
 
