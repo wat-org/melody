@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.cloud.disk.Disk;
-import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.cloud.instance.InstanceState;
@@ -264,18 +264,18 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static DiskList getInstanceDisks(Instance i) {
+	public static DiskDeviceList getInstanceDiskDevices(Instance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		return getDomainDisks(i.getDomain());
+		return getDomainDiskDevices(i.getDomain());
 	}
 
-	public static DiskList getDomainDisks(Domain domain) {
+	public static DiskDeviceList getDomainDiskDevices(Domain domain) {
 		try {
-			DiskList dl = new DiskList();
+			DiskDeviceList dl = new DiskDeviceList();
 			Doc ddoc = getDomainXMLDesc(domain);
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
@@ -309,30 +309,32 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static final String DEL_VOLUME_XML_SNIPPET = "<volume>"
+	public static final String DEL_DISK_DEVICE_XML_SNIPPET = "<volume>"
 			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
 			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
 			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
 			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
 
-	public static final String DETACH_VOLUME_XML_SNIPPET = "    <disk type='file' device='disk'>"
+	public static final String DETACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<source file='§[volPath]§'/>"
 			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
 
-	public static void detachAndDeleteVolumes(Instance i, DiskList disksToRemove) {
+	public static void detachAndDeleteDiskDevices(Instance i,
+			DiskDeviceList disksToRemove) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		detachAndDeleteVolumes(i.getDomain(), disksToRemove);
+		detachAndDeleteDiskDevices(i.getDomain(), disksToRemove);
 	}
 
-	public static void detachAndDeleteVolumes(Domain d, DiskList disksToRemove) {
+	public static void detachAndDeleteDiskDevices(Domain d,
+			DiskDeviceList disksToRemove) {
 		if (disksToRemove == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + DiskList.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		if (disksToRemove.size() == 0) {
 			return;
@@ -359,7 +361,7 @@ public abstract class LibVirtCloud {
 				// detachement de la device
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
-						DETACH_VOLUME_XML_SNIPPET, null, vars), flag);
+						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
 				// suppression du volume
 				d.getConnect().storageVolLookupByPath(volPath).delete(0);
 			}
@@ -369,31 +371,33 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static final String NEW_VOLUME_XML_SNIPPET = "<volume>"
+	public static final String NEW_DISK_DEVICE_XML_SNIPPET = "<volume>"
 			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
 			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
 			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
 			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
 
-	public static final String ATTACH_VOLUME_XML_SNIPPET = "    <disk type='file' device='disk'>"
+	public static final String ATTACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<driver name='qemu' type='raw' cache='none'/>"
 			+ "<source file='§[volPath]§'/>"
 			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
 
-	public static void createAndAttachVolumes(Instance i, DiskList disksToAdd) {
+	public static void createAndAttachDiskDevices(Instance i,
+			DiskDeviceList disksToAdd) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		createAndAttachVolumes(i.getDomain(), disksToAdd);
+		createAndAttachDiskDevices(i.getDomain(), disksToAdd);
 	}
 
-	public static void createAndAttachVolumes(Domain d, DiskList disksToAdd) {
+	public static void createAndAttachDiskDevices(Domain d,
+			DiskDeviceList disksToAdd) {
 		if (disksToAdd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + DiskList.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		if (disksToAdd.size() == 0) {
 			return;
@@ -436,7 +440,7 @@ public abstract class LibVirtCloud {
 						.getGiga() * 1024 * 1024 * 1024)));
 				// creation du volume
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
-						NEW_VOLUME_XML_SNIPPET, null, vars), 0);
+						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
 				// variabilisation de l'attachement du volume
 				String deviceToAdd = disk.getDevice().replace("/dev/", "");
 				vars.put(new Property("targetDevice", deviceToAdd));
@@ -444,7 +448,7 @@ public abstract class LibVirtCloud {
 				// attachement du volume
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
-						ATTACH_VOLUME_XML_SNIPPET, null, vars), flag);
+						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {

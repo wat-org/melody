@@ -8,12 +8,12 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 
-public class DisksLoader {
+public class DiskDevicesLoader {
 
 	/**
 	 * The 'disk' XML Nested element of the Instance Node in the RD
 	 */
-	public static final String DISK_NE = "disk";
+	public static final String DISK_DEVICE_NE = "disk";
 
 	/**
 	 * The 'size' XML attribute of a Disk Node
@@ -37,7 +37,7 @@ public class DisksLoader {
 
 	private ITaskContext moTC;
 
-	public DisksLoader(ITaskContext tc) {
+	public DiskDevicesLoader(ITaskContext tc) {
 		if (tc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ITaskContext.");
@@ -110,7 +110,7 @@ public class DisksLoader {
 
 	/**
 	 * <p>
-	 * Converts the given Disk <code>Node</code>s into a {@link DiskList}.
+	 * Converts the given Disk <code>Node</code>s into a {@link DiskDeviceList}.
 	 * </p>
 	 * 
 	 * <p>
@@ -125,15 +125,15 @@ public class DisksLoader {
 	 * @param nl
 	 *            a list of Disk <code>Node</code>s.
 	 * 
-	 * @return a {@link DiskList} object, which is a collection of {@link Disk}
+	 * @return a {@link DiskDeviceList} object, which is a collection of {@link Disk}
 	 *         .
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the conversion failed (ex : the content of a Disk Node'n
 	 *             attribute is not valid)
 	 */
-	public DiskList load(NodeList nl) throws ResourcesDescriptorException {
-		DiskList dl = new DiskList();
+	public DiskDeviceList load(NodeList nl) throws ResourcesDescriptorException {
+		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
 			Disk disk = new Disk();

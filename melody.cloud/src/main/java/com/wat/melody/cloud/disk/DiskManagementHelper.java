@@ -8,7 +8,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.exception.DiskException;
+import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 
@@ -17,60 +17,63 @@ public abstract class DiskManagementHelper {
 	private static Log log = LogFactory.getLog(DiskManagementHelper.class);
 
 	/**
-	 * The 'diskNodeSelector' XML attribute to use in the sequence descriptor
+	 * The XML attribute to use in the sequence descriptor
 	 */
-	public static final String DISKS_NODE_SELECTOR_ATTR = "diskNodeSelector";
+	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = "diskDeviceNodesSelector";
 
 	/**
-	 * The XML Element which contains Disk Management datas in the RD
+	 * The XML Element which contains Disk Device Management datas in the RD
+	 * (e.g. the Disk Device Management Node)
 	 */
-	public static final String DISK_MGMT_NODE = "disk-management";
+	public static final String DISK_DEVICES_MGMT_NODE = "disk-management";
 
 	/**
-	 * XPath Expression to select Disk Management Node in the RD, related to an
-	 * Instance Node
+	 * XPath Expression to select Disk Device Management Node in the RD, related
+	 * to an Instance Node
 	 */
-	public static final String DISK_MGMT_NODE_SELECTOR = "//" + DISK_MGMT_NODE;
+	public static final String DISK_DEVICES_MGMT_NODE_SELECTOR = "//"
+			+ DISK_DEVICES_MGMT_NODE;
 
 	/**
-	 * The XML attribute of the Disk Management Node, which contains the Disk
-	 * Nodes Selector
+	 * The XML attribute of the Disk Device Management Node, which contains the
+	 * Disk Device Nodes Selector
 	 */
-	public static final String DISKS_NODE_SELECTOR_ATTRIBUTE = "diskNodeSelector";
+	public static final String DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE = "diskDeviceNodesSelector";
 
 	/**
-	 * Default XPath Expression to select Disk Nodes in the RD, related to an
-	 * Instance Node
+	 * Default XPath Expression to select Disk Device Nodes in the RD, related
+	 * to an Instance Node
 	 */
-	public static final String DEFAULT_DISKS_NODE_SELECTOR = "//"
-			+ DisksLoader.DISK_NE;
+	public static final String DEFAULT_DISK_DEVICES_NODE_SELECTOR = "//"
+			+ DiskDevicesLoader.DISK_DEVICE_NE;
 
 	/**
 	 * <p>
-	 * Return the Disk Management {@link Node} related to the given Instance
-	 * {@link Node}.
+	 * Return the Disk Device Management {@link Node} related to the given
+	 * Instance {@link Node}.
 	 * </p>
 	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Disk Management {@link Node} if found, or <code>null</code>
-	 *         otherwise.
+	 * @return the Disk Device Management {@link Node} if found, or
+	 *         <code>null</code> otherwise.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
 	 */
-	public static Node findDiskManagementNode(Node instanceNode)
+	public static Node findDiskDeviceManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
 			nl = GetHeritedContent.getHeritedContent(instanceNode,
-					DISK_MGMT_NODE_SELECTOR);
+					DISK_DEVICES_MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the herited content of '" + DISK_MGMT_NODE_SELECTOR
-					+ "'. " + "Because this XPath Expression is hard coded, "
+					+ "the herited content of '"
+					+ DISK_DEVICES_MGMT_NODE_SELECTOR + "'. "
+					+ "Because this XPath Expression is hard coded, "
 					+ "such error cannot happened. "
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
@@ -79,71 +82,74 @@ public abstract class DiskManagementHelper {
 			return null;
 		} else if (nl.getLength() > 1) {
 			log.debug(Messages.bind(Messages.DiskMgmtMsg_TOO_MANY_MGMT_NODE,
-					DISK_MGMT_NODE, Doc.getNodeLocation(instanceNode)
+					DISK_DEVICES_MGMT_NODE, Doc.getNodeLocation(instanceNode)
 							.toFullString()));
 			return nl.item(nl.getLength() - 1);
 		}
 		return nl.item(0);
 	}
 
-	public static String findDiskManagementDisksSelector(Node instanceNode)
+	public static String findDiskDeviceManagementSelector(Node instanceNode)
 			throws ResourcesDescriptorException {
-		Node n = findDiskManagementNode(instanceNode);
+		Node n = findDiskDeviceManagementNode(instanceNode);
 		try {
 			return n.getAttributes()
-					.getNamedItem(DISKS_NODE_SELECTOR_ATTRIBUTE).getNodeValue();
+					.getNamedItem(DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE)
+					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_DISKS_NODE_SELECTOR;
+			return DEFAULT_DISK_DEVICES_NODE_SELECTOR;
 		}
 	}
 
-	public static void ensureDiskUpdateIsPossible(DiskList current,
-			DiskList target) throws DiskException {
+	public static void ensureDiskDevicesUpdateIsPossible(DiskDeviceList current,
+			DiskDeviceList target) throws DiskDeviceException {
 		if (current == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + DiskList.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		if (target == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + DiskList.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		if (current.size() == 0) {
-			throw new RuntimeException("Current Disk List is empty. It "
+			throw new RuntimeException("Current Disk Device List is empty. It "
 					+ "should at least contains one device, which is the root "
 					+ "device. "
 					+ "There must be a bug in the current disk list creation.");
 		}
 		if (target.size() == 0) {
-			throw new DiskException(Messages.bind(
+			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
-					DisksLoader.DEVICE_ATTR, current.getRootDevice()
+					DiskDevicesLoader.DEVICE_ATTR, current.getRootDevice()
 							.getDevice()));
 		}
 		if (target.getRootDevice() == null) {
-			throw new DiskException(Messages.bind(
+			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
-					DisksLoader.ROOTDEVICE_ATTR, current.getRootDevice()
+					DiskDevicesLoader.ROOTDEVICE_ATTR, current.getRootDevice()
 							.getDevice()));
 		}
 		if (!current.getRootDevice().equals(target.getRootDevice())) {
-			throw new DiskException(Messages.bind(
+			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE, new Object[] {
-							DisksLoader.ROOTDEVICE_ATTR,
+							DiskDevicesLoader.ROOTDEVICE_ATTR,
 							target.getRootDevice().getDevice(),
 							current.getRootDevice().getDevice() }));
 		}
 	}
 
-	public static DiskList computeDiskToAdd(DiskList current, DiskList target) {
-		DiskList disksToAdd = new DiskList(target);
+	public static DiskDeviceList computeDiskDevicesToAdd(DiskDeviceList current,
+			DiskDeviceList target) {
+		DiskDeviceList disksToAdd = new DiskDeviceList(target);
 		disksToAdd.removeAll(current);
 		return disksToAdd;
 	}
 
-	public static DiskList computeDiskToRemove(DiskList current, DiskList target) {
-		DiskList disksToRemove = new DiskList(current);
+	public static DiskDeviceList computeDiskDevicesToRemove(DiskDeviceList current,
+			DiskDeviceList target) {
+		DiskDeviceList disksToRemove = new DiskDeviceList(current);
 		disksToRemove.removeAll(target);
 		return disksToRemove;
 	}

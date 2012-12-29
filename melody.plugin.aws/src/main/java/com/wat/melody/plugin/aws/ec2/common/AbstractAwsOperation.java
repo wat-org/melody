@@ -12,7 +12,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.common.network.Host;
@@ -175,14 +175,15 @@ abstract public class AbstractAwsOperation implements ITask {
 				instanceType);
 	}
 
-	protected DiskList getInstanceDisks(Instance i) {
+	protected DiskDeviceList getInstanceDiskDevices(Instance i) {
 		return Common.getInstanceDisks(getEc2(), i);
 	}
 
-	protected void detachAndDeleteVolumes(Instance i, DiskList disksToRemove,
-			long detachTimeout) throws AwsException, InterruptedException {
+	protected void detachAndDeleteDiskDevices(Instance i,
+			DiskDeviceList disksToRemove, long detachTimeout)
+			throws AwsException, InterruptedException {
 		try {
-			Common.detachAndDeleteVolumes(getEc2(), i, disksToRemove,
+			Common.detachAndDeleteDiskDevices(getEc2(), i, disksToRemove,
 					detachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new AwsException(Messages.bind(
@@ -192,13 +193,13 @@ abstract public class AbstractAwsOperation implements ITask {
 		}
 	}
 
-	protected void createAndAttachVolumes(Instance i, DiskList diskList,
-			long createTimeout, long attachTimeout) throws AwsException,
-			InterruptedException {
+	protected void createAndAttachDiskDevices(Instance i,
+			DiskDeviceList diskList, long createTimeout, long attachTimeout)
+			throws AwsException, InterruptedException {
 		String sAZ = i.getPlacement().getAvailabilityZone();
 		try {
-			Common.createAndAttachVolumes(getEc2(), getAwsInstanceID(), sAZ,
-					diskList, createTimeout, attachTimeout);
+			Common.createAndAttachDiskDevices(getEc2(), getAwsInstanceID(),
+					sAZ, diskList, createTimeout, attachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateDiskEx_CREATE,
@@ -212,7 +213,7 @@ abstract public class AbstractAwsOperation implements ITask {
 		}
 	}
 
-	protected void updateDeleteOnTerminationFlag(DiskList diskList) {
+	protected void updateDeleteOnTerminationFlag(DiskDeviceList diskList) {
 		Common.updateDeleteOnTerminationFlag(getEc2(), getAwsInstanceID(),
 				diskList);
 	}

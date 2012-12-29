@@ -40,7 +40,7 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
 import com.wat.melody.cloud.disk.Disk;
-import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 import com.wat.melody.cloud.instance.InstanceState;
@@ -1227,9 +1227,9 @@ public class Common {
 	 * @param i
 	 *            is the Aws Instance.
 	 * 
-	 * @return a {@link DiskList}, which contains all Aws {@link Disk} attached
-	 *         to the given Aws Instance (the list cannot be empty. It contains
-	 *         at least the root disk device).
+	 * @return a {@link DiskDeviceList}, which contains all Aws {@link Disk}
+	 *         attached to the given Aws Instance (the list cannot be empty. It
+	 *         contains at least the root disk device).
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.
@@ -1240,9 +1240,9 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if i is <code>null</code>.
 	 */
-	public static DiskList getInstanceDisks(AmazonEC2 ec2, Instance i) {
+	public static DiskDeviceList getInstanceDisks(AmazonEC2 ec2, Instance i) {
 		List<Volume> volumes = getInstanceVolumes(ec2, i);
-		DiskList disks = new DiskList();
+		DiskDeviceList disks = new DiskDeviceList();
 		try {
 			for (Volume volume : volumes) {
 				Disk disk = new Disk();
@@ -1616,9 +1616,9 @@ public class Common {
 
 	/**
 	 * <p>
-	 * Detach the given {@link DiskList}.
+	 * Detach the given {@link DiskDeviceList}.
 	 * 
-	 * Also delete the given {@link DiskList} based on their
+	 * Also delete the given {@link DiskDeviceList} based on their
 	 * <code>deleteOnTermination</code>'s flag.
 	 * 
 	 * Wait for the detached volumes to reach the state
@@ -1629,7 +1629,7 @@ public class Common {
 	 * @param instance
 	 *            the Aws Instance which is the Disk onwer.
 	 * @param volumes
-	 *            contains the {@link DiskList} to detach and delete.
+	 *            contains the {@link DiskDeviceList} to detach and delete.
 	 * @param detachTimeout
 	 *            is the maximum time to wait for the detach operation to
 	 *            complete. 0 means ifinite.
@@ -1649,9 +1649,9 @@ public class Common {
 	 * @throws InterruptedException
 	 *             if the current thread is interrupted during this call.
 	 */
-	public static void detachAndDeleteVolumes(AmazonEC2 ec2, Instance instance,
-			DiskList volumes, long detachTimeout) throws InterruptedException,
-			WaitVolumeStatusException {
+	public static void detachAndDeleteDiskDevices(AmazonEC2 ec2,
+			Instance instance, DiskDeviceList volumes, long detachTimeout)
+			throws InterruptedException, WaitVolumeStatusException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
@@ -1732,8 +1732,8 @@ public class Common {
 	 * @throws InterruptedException
 	 *             if the current thread is interrupted during this call.
 	 */
-	public static void createAndAttachVolumes(AmazonEC2 ec2,
-			String sAwsInstanceId, String sAZ, DiskList diskList,
+	public static void createAndAttachDiskDevices(AmazonEC2 ec2,
+			String sAwsInstanceId, String sAZ, DiskDeviceList diskList,
 			long createTimeout, long attachTimeout)
 			throws InterruptedException, WaitVolumeStatusException,
 			WaitVolumeAttachmentStatusException {
@@ -1806,7 +1806,7 @@ public class Common {
 	 *             if diskList is <code>null</code>.
 	 */
 	public static void updateDeleteOnTerminationFlag(AmazonEC2 ec2,
-			String sAwsInstanceId, DiskList diskList) {
+			String sAwsInstanceId, DiskDeviceList diskList) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");

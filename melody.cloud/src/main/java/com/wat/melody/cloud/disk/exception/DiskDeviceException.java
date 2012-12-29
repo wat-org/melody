@@ -2,23 +2,23 @@ package com.wat.melody.cloud.disk.exception;
 
 import com.wat.melody.common.utils.exception.MelodyException;
 
-public class DiskException extends MelodyException {
+public class DiskDeviceException extends MelodyException {
 
 	private static final long serialVersionUID = -168997524679997771L;
 
-	public DiskException() {
+	public DiskDeviceException() {
 		super();
 	}
 
-	public DiskException(String msg) {
+	public DiskDeviceException(String msg) {
 		super(msg);
 	}
 
-	public DiskException(Throwable cause) {
+	public DiskDeviceException(Throwable cause) {
 		super(cause);
 	}
 
-	public DiskException(String msg, Throwable cause) {
+	public DiskDeviceException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

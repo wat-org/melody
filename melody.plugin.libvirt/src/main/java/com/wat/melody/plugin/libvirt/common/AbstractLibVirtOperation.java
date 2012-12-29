@@ -14,7 +14,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.common.utils.DUNID;
@@ -177,22 +177,22 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		setInstanceID(null);
 	}
 
-	public DiskList getInstanceDisks(Instance i) {
-		return LibVirtCloud.getInstanceDisks(i);
+	public DiskDeviceList getInstanceDiskDevices(Instance i) {
+		return LibVirtCloud.getInstanceDiskDevices(i);
 	}
 
-	protected void detachAndDeleteVolumes(Instance i, DiskList disksToRemove,
+	protected void detachAndDeleteDiskDevices(Instance i, DiskDeviceList disksToRemove,
 			long detachTimeout) throws LibVirtException, InterruptedException {
-		LibVirtCloud.detachAndDeleteVolumes(i, disksToRemove);
+		LibVirtCloud.detachAndDeleteDiskDevices(i, disksToRemove);
 	}
 
-	protected void createAndAttachVolumes(Instance i, DiskList disksToAdd,
+	protected void createAndAttachDiskDevices(Instance i, DiskDeviceList disksToAdd,
 			long createTimeout, long attachTimeout) throws LibVirtException,
 			InterruptedException {
-		LibVirtCloud.createAndAttachVolumes(i, disksToAdd);
+		LibVirtCloud.createAndAttachDiskDevices(i, disksToAdd);
 	}
 
-	protected void updateDeleteOnTerminationFlag(DiskList diskList) {
+	protected void updateDeleteOnTerminationFlag(DiskDeviceList diskList) {
 		// TODO : not supported by LibVirt
 	}
 

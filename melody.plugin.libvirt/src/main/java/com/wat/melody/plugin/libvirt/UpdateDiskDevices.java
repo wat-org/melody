@@ -9,10 +9,10 @@ import org.w3c.dom.NodeList;
 import com.wat.cloud.libvirt.Instance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskList;
+import com.wat.melody.cloud.disk.DiskDeviceList;
+import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
-import com.wat.melody.cloud.disk.DisksLoader;
-import com.wat.melody.cloud.disk.exception.DiskException;
+import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -24,19 +24,19 @@ import com.wat.melody.xpathextensions.GetHeritedContent;
  * @author Guillaume Cornet
  * 
  */
-public class UpdateDisks extends AbstractLibVirtOperation {
+public class UpdateDiskDevices extends AbstractLibVirtOperation {
 
-	private static Log log = LogFactory.getLog(UpdateDisks.class);
-
-	/**
-	 * The 'UpdateDisks' XML element
-	 */
-	public static final String UPDATE_DISKS = "UpdateDisks";
+	private static Log log = LogFactory.getLog(UpdateDiskDevices.class);
 
 	/**
-	 * The 'diskNodeSelector' XML attribute
+	 * The 'UpdateDiskDevices' XML element
 	 */
-	public static final String DISKS_NODE_SELECTOR_ATTR = DiskManagementHelper.DISKS_NODE_SELECTOR_ATTR;
+	public static final String UPDATE_DISK_DEVICES = "UpdateDiskDevices";
+
+	/**
+	 * The 'diskDeviceNodesSelector' XML attribute
+	 */
+	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = DiskManagementHelper.DISK_DEVICE_NODES_SELECTOR_ATTR;
 
 	/**
 	 * The 'detachTimeout' XML attribute
@@ -53,63 +53,60 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private String msDisksNodeSelector;
-	private DiskList maDiskList;
+	private String msDiskDeviceNodesSelector;
+	private DiskDeviceList maDiskDeviceList;
 	private long mlDetachTimeout;
 	private long mlCreateTimeout;
 	private long mlAttachTimeout;
 
-	public UpdateDisks() {
+	public UpdateDiskDevices() {
 		super();
-		setDisksNodeSelector(DiskManagementHelper.DEFAULT_DISKS_NODE_SELECTOR);
-		initDiskList();
-		initDetachTimeout();
-		initCreateTimeout();
-		initAttachTimeout();
+		initDiskDeviceList();
+		setDiskDeviceNodesSelector(DiskManagementHelper.DEFAULT_DISK_DEVICES_NODE_SELECTOR);
+		try {
+			setDetachTimeout(getTimeout());
+			setCreateTimeout(getTimeout());
+			setAttachTimeout(getTimeout());
+		} catch (LibVirtException Ex) {
+			throw new RuntimeException("Unexpected error while setting "
+					+ "timeouts. "
+					+ "Because this value comes from the parent class, such "
+					+ "error cannot happened. "
+					+ "Source code has certainly been modified and a bug have "
+					+ "been introduced.", Ex);
+		}
 	}
 
-	private void initDiskList() {
-		maDiskList = null;
-	}
-
-	private void initDetachTimeout() {
-		mlDetachTimeout = getTimeout();
-	}
-
-	private void initCreateTimeout() {
-		mlCreateTimeout = getTimeout();
-	}
-
-	private void initAttachTimeout() {
-		mlAttachTimeout = getTimeout();
+	private void initDiskDeviceList() {
+		maDiskDeviceList = null;
 	}
 
 	@Override
 	public void validate() throws LibVirtException {
 		super.validate();
 
-		// Disk Nodes Selector found in the RD override Disk Nodes Selector
-		// defined in the SD
+		// Disk Device Nodes Selector found in the RD override Disk Device Nodes
+		// Selector defined in the SD
 		try {
-			String sTargetSpecificDisksSelector = DiskManagementHelper
-					.findDiskManagementDisksSelector(getTargetNode());
-			if (sTargetSpecificDisksSelector != null) {
-				setDisksNodeSelector(sTargetSpecificDisksSelector);
+			String sTargetSpecificDiskDevicesSelector = DiskManagementHelper
+					.findDiskDeviceManagementSelector(getTargetNode());
+			if (sTargetSpecificDiskDevicesSelector != null) {
+				setDiskDeviceNodesSelector(sTargetSpecificDiskDevicesSelector);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
 
-		// Build a DiskList with Disk Nodes found in the RD
+		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
 			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
-					getDisksNodeSelector());
-			DisksLoader dl = new DisksLoader(getContext());
-			setDiskList(dl.load(nl));
+					getDiskDeviceNodesSelector());
+			DiskDevicesLoader dl = new DiskDevicesLoader(getContext());
+			setDiskDeviceList(dl.load(nl));
 		} catch (XPathExpressionException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.UpdateDiskEx_INVALID_DISK_XPATH,
-					getDisksNodeSelector()), Ex);
+					getDiskDeviceNodesSelector()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
@@ -134,60 +131,62 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 			setInstanceRelatedInfosToED(i);
 		}
 
-		DiskList iDisks = getInstanceDisks(i);
+		DiskDeviceList iDisks = getInstanceDiskDevices(i);
 		try {
-			DiskManagementHelper.ensureDiskUpdateIsPossible(iDisks,
-					getDiskList());
-		} catch (DiskException Ex) {
+			DiskManagementHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
+					getDiskDeviceList());
+		} catch (DiskDeviceException Ex) {
 			throw new LibVirtException("[" + getTargetNodeLocation()
-					+ "] Disk update is not possible till following "
+					+ "] Disk Device update is not possible till following "
 					+ "errors are not corrected. ", Ex);
 		}
 
-		DiskList disksToAdd = null;
-		DiskList disksToRemove = null;
-		disksToAdd = DiskManagementHelper.computeDiskToAdd(iDisks,
-				getDiskList());
-		disksToRemove = DiskManagementHelper.computeDiskToRemove(iDisks,
-				getDiskList());
+		DiskDeviceList disksToAdd = null;
+		DiskDeviceList disksToRemove = null;
+		disksToAdd = DiskManagementHelper.computeDiskDevicesToAdd(iDisks,
+				getDiskDeviceList());
+		disksToRemove = DiskManagementHelper.computeDiskDevicesToRemove(iDisks,
+				getDiskDeviceList());
 
 		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
-				new Object[] { getInstanceID(), getDiskList(), disksToAdd,
-						disksToRemove, getTargetNodeLocation() }));
+				new Object[] { getInstanceID(), getDiskDeviceList(),
+						disksToAdd, disksToRemove, getTargetNodeLocation() }));
 
-		detachAndDeleteVolumes(i, disksToRemove, getDetachTimeout());
-		createAndAttachVolumes(i, disksToAdd, getCreateTimeout(),
+		detachAndDeleteDiskDevices(i, disksToRemove, getDetachTimeout());
+		createAndAttachDiskDevices(i, disksToAdd, getCreateTimeout(),
 				getAttachTimeout());
 
-		updateDeleteOnTerminationFlag(getDiskList());
+		updateDeleteOnTerminationFlag(getDiskDeviceList());
 	}
 
-	private String getDisksNodeSelector() {
-		return msDisksNodeSelector;
+	private String getDiskDeviceNodesSelector() {
+		return msDiskDeviceNodesSelector;
 	}
 
-	@Attribute(name = DISKS_NODE_SELECTOR_ATTR)
-	public String setDisksNodeSelector(String v) {
+	@Attribute(name = DISK_DEVICE_NODES_SELECTOR_ATTR)
+	public String setDiskDeviceNodesSelector(String v) {
 		if (v == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
-		String previous = getDisksNodeSelector();
-		msDisksNodeSelector = v;
+		String previous = getDiskDeviceNodesSelector();
+		msDiskDeviceNodesSelector = v;
 		return previous;
 	}
 
-	private DiskList getDiskList() {
-		return maDiskList;
+	private DiskDeviceList getDiskDeviceList() {
+		return maDiskDeviceList;
 	}
 
-	private DiskList setDiskList(DiskList fwrs) {
-		if (fwrs == null) {
+	private DiskDeviceList setDiskDeviceList(DiskDeviceList dd) {
+		if (dd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DiskList.");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
-		DiskList previous = getDiskList();
-		maDiskList = fwrs;
+		DiskDeviceList previous = getDiskDeviceList();
+		maDiskDeviceList = dd;
 		return previous;
 	}
 
@@ -235,4 +234,5 @@ public class UpdateDisks extends AbstractLibVirtOperation {
 		mlAttachTimeout = timeout;
 		return previous;
 	}
+
 }

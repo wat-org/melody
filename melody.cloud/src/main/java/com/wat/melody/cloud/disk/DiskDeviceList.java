@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
 
-public class DiskList extends ArrayList<Disk> {
+public class DiskDeviceList extends ArrayList<Disk> {
 
 	private static final long serialVersionUID = 799928265740695276L;
 
 	private Disk moRootDevice;
 
-	public DiskList() {
+	public DiskDeviceList() {
 		super();
 		setRootDevice(null);
 	}
 
-	public DiskList(DiskList dl) {
+	public DiskDeviceList(DiskDeviceList dl) {
 		super(dl);
 		setRootDevice(dl.getRootDevice());
 	}
