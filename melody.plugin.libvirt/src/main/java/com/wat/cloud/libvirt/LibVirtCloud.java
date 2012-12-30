@@ -19,10 +19,10 @@ import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
@@ -32,6 +32,7 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
@@ -158,6 +159,13 @@ public abstract class LibVirtCloud {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. "
 							+ "'source' XML attribute cannot be found for "
+							+ "Disk Nested element n°" + i + ".");
+				}
+				Node device = disk.getAttributes().getNamedItem("device");
+				if (device == null) {
+					throw new RuntimeException("Image '" + sImageId
+							+ "' is not valid. "
+							+ "'device' XML attribute cannot be found for "
 							+ "Disk Nested element n°" + i + ".");
 				}
 			}
@@ -299,12 +307,14 @@ public abstract class LibVirtCloud {
 				dl.addDiskDevice(d);
 			}
 			if (dl.size() == 0) {
-				throw new RuntimeException("No disk device found "
-						+ "for Domain '" + domain.getName() + "'.");
+				throw new RuntimeException("Failed to build Domain '"
+						+ domain.getName()
+						+ "' Disk Device List. No Disk Device found ");
 			}
 			if (dl.getRootDevice() == null) {
-				throw new RuntimeException("No disk root device found "
-						+ "for Domain '" + domain.getName() + "'.");
+				throw new RuntimeException("Failed to build Domain '"
+						+ domain.getName()
+						+ "' Disk Device List. No Root Disk Device found ");
 			}
 			return dl;
 		} catch (XPathExpressionException | IllegalDiskDeviceException
@@ -364,11 +374,22 @@ public abstract class LibVirtCloud {
 				vars.put(new Property("targetDevice", deviceToRemove));
 				vars.put(new Property("volPath", volPath));
 				// detachement de la device
+				log.trace("Detaching Disk Device '" + disk.getDeviceName()
+						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
 						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+				log.trace("Disk Device '" + disk.getDeviceName()
+						+ "' detached on Domain '" + d.getName() + "'.");
 				// suppression du volume
-				d.getConnect().storageVolLookupByPath(volPath).delete(0);
+				StorageVol sv = d.getConnect().storageVolLookupByPath(volPath);
+				log.trace("Deleting Disk Device '" + disk.getDeviceName()
+						+ "' on domain '" + d.getName()
+						+ "' ... LibVirt Volume path is '" + sv.getPath()
+						+ "'.");
+				sv.delete(0);
+				log.debug("Disk Device '" + disk.getDeviceName()
+						+ "' deleted on Domain '" + d.getName() + "'.");
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
@@ -415,7 +436,7 @@ public abstract class LibVirtCloud {
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']/source/@file");
 			if (nl.getLength() == 0) {
 				throw new RuntimeException("Domain '" + d.getName()
-						+ "' has no disk device !");
+						+ "' has no Disk Device !");
 			}
 			int lastVol = 0;
 			Pattern p2 = Pattern.compile("^/.*/i-[a-zA-Z0-9]{8}-vol(.)[.]img$");
@@ -423,8 +444,9 @@ public abstract class LibVirtCloud {
 				Matcher m = p2.matcher(nl.item(i).getNodeValue());
 				if (!m.matches()) {
 					throw new RuntimeException("Domain '" + d.getName()
-							+ "' disk device '" + nl.item(i).getNodeValue()
-							+ "' is not compliant !");
+							+ "' Disk Device Name '"
+							+ nl.item(i).getNodeValue()
+							+ "' doesn't match Disk Device Name pattern !");
 				}
 				int curVol = Integer.parseInt(m.group(1));
 				if (curVol > lastVol) {
@@ -444,16 +466,26 @@ public abstract class LibVirtCloud {
 				vars.put(new Property("capacity", String.valueOf((long) disk
 						.getSize() * 1024 * 1024 * 1024)));
 				// creation du volume
+				log.trace("Creating Disk Device '" + disk.getDeviceName()
+						+ "' for Domain '" + d.getName() + "' ...");
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
 						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
+				log.debug("Disk Device '" + disk.getDeviceName()
+						+ "' created for Domain '" + d.getName()
+						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
+
 				// variabilisation de l'attachement du volume
 				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
 				vars.put(new Property("targetDevice", deviceToAdd));
 				vars.put(new Property("volPath", sv.getPath()));
 				// attachement de la device
+				log.trace("Attaching Disk Device '" + disk.getDeviceName()
+						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
 						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+				log.debug("Disk Device '" + disk.getDeviceName()
+						+ "' attached on Domain '" + d.getName() + "'.");
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
@@ -472,20 +504,21 @@ public abstract class LibVirtCloud {
 
 	public static NetworkDeviceList getDomainNetworkDevices(Domain domain) {
 		try {
-			NetworkDeviceList dl = new NetworkDeviceList();
+			NetworkDeviceList ndl = new NetworkDeviceList();
 			Doc ddoc = getDomainXMLDesc(domain);
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/interface[@type='network']");
 			for (int i = 0; i < nl.getLength(); i++) {
 				NetworkDevice d = new NetworkDevice();
 				d.setDeviceName("eth" + String.valueOf(i));
-				dl.addNetworkDevice(d);
+				ndl.addNetworkDevice(d);
 			}
-			if (dl.size() == 0) {
-				throw new RuntimeException("No network device found "
-						+ "for Domain '" + domain.getName() + "'.");
+			if (ndl.size() == 0) {
+				throw new RuntimeException("Failed to build Domain '"
+						+ domain.getName()
+						+ "' Network Device List. No Network Device found ");
 			}
-			return dl;
+			return ndl;
 		} catch (XPathExpressionException | IllegalNetworkDeviceException
 				| LibvirtException | IllegalNetworkDeviceListException Ex) {
 			throw new RuntimeException(Ex);
@@ -522,17 +555,23 @@ public abstract class LibVirtCloud {
 		PropertiesSet vars = new PropertiesSet();
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
-			// pour chaque network device a ajouter
+			// pour chaque network device a supprimer
 			for (NetworkDevice netDev : netDevicesToRemove) {
+				log.trace("Detaching Network Device '" + netDev.getDeviceName()
+						+ "' on Domain '" + d.getName() + "' ...");
 				String sMacAddr = ddoc
 						.evaluateAsString("/domain/devices/interface[@type='network' and alias/@name='"
 								+ netDev.getDeviceName().replace("eth", "net")
 								+ "']/mac/@address");
 				vars.put(new Property("vmMacAddr", sMacAddr));
-				// attachement de la device
+				// detachement de la device
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
 						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+				log.debug("Network Device '" + netDev.getDeviceName()
+						+ "' detached on Domain '" + d.getName() + "'.");
+				// release the @mac
+				unregisterMacAddress(sMacAddr);
 			}
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException | XPathExpressionException Ex) {
@@ -567,13 +606,53 @@ public abstract class LibVirtCloud {
 			// pour chaque network device a ajouter
 			for (NetworkDevice netDev : netDevicesToAdd) {
 				vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
+				log.trace("Attaching Network Device '" + netDev.getDeviceName()
+						+ "' on Domain '" + d.getName()
+						+ "' ... MacAddress is '"
+						+ vars.getProperty("vmMacAddr").getValue() + "'.");
 				// attachement de la device
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
 						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+				log.debug("Network Device '" + netDev.getDeviceName()
+						+ "' attached on Domain '" + d.getName() + "'.");
 			}
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Instance i,
+			NetworkDevice netDev) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		return getInstanceNetworkDeviceDatas(i.getDomain(), netDev);
+	}
+
+	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Domain d,
+			NetworkDevice netDev) {
+		if (netDev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDevice.class.getCanonicalName() + ".");
+		}
+
+		try {
+			Doc ddoc = getDomainXMLDesc(d);
+			String sMacAddr = ddoc
+					.evaluateAsString("/domain/devices/interface[@type='network' and alias/@name='"
+							+ netDev.getDeviceName().replace("eth", "net")
+							+ "']/mac/@address");
+			NetworkDeviceDatas ndd = new NetworkDeviceDatas();
+			ndd.setMacAddress(sMacAddr);
+			ndd.setIP(getDomainIpAddress(sMacAddr));
+			ndd.setFQDN(getDomainDnsName(sMacAddr));
+			return ndd;
+		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -622,7 +701,7 @@ public abstract class LibVirtCloud {
 		}
 		String sFirstFreeMacAddr = nlFreeMacAddrPool.item(0).getAttributes()
 				.getNamedItem("mac").getNodeValue();
-		log.trace("Allocating Mac Address '" + sFirstFreeMacAddr + "'.");
+		log.trace("Allocating Mac Address '" + sFirstFreeMacAddr + "' ...");
 		Doc.createAttribute("allocated", "true", nlFreeMacAddrPool.item(0));
 		netconf.store();
 		log.debug("Mac Address '" + sFirstFreeMacAddr + "' allocated.");
@@ -635,7 +714,7 @@ public abstract class LibVirtCloud {
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		log.trace("Releasing Mac Address '" + sMacAddr + "'.");
+		log.trace("Releasing Mac Address '" + sMacAddr + "' ...");
 		Node nMacAddr = null;
 		try {
 			nMacAddr = netconf.evaluateAsNode("/network/ip/dhcp" + "/host"
@@ -830,10 +909,11 @@ public abstract class LibVirtCloud {
 			Path ddt = getImageDomainDescriptor(sImageId);
 			PropertiesSet ps = new PropertiesSet();
 			Domain domain = null;
+			String sInstanceId = generateUniqDomainName(cnx);
 			synchronized (LOCK_UNIQ_DOMAIN) {
 				// so that the UniqDomainName is consistent
 				try {
-					ps.put(new Property("vmName", generateUniqDomainName(cnx)));
+					ps.put(new Property("vmName", sInstanceId));
 					ps.put(new Property("uuid", generateUniqDomainUUID()));
 					ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
 					ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
@@ -841,10 +921,9 @@ public abstract class LibVirtCloud {
 				} catch (IllegalPropertyException Ex) {
 					throw new RuntimeException(Ex);
 				}
-				log.trace("Creating domain '"
-						+ ps.getProperty("vmName").getValue()
+				log.trace("Creating domain '" + sInstanceId
 						+ "' based on the template " + sImageId
-						+ ". MacAddress is '"
+						+ " ... MacAddress is '"
 						+ ps.getProperty("vmMacAddr").getValue() + "'.");
 				try {
 					domain = cnx.domainDefineXML(XPathExpander.expand(ddt,
@@ -863,56 +942,44 @@ public abstract class LibVirtCloud {
 					+ "' created.");
 
 			NodeList nl = null;
-			try {
-				nl = conf.evaluateAsNodeList("//images/image[@name='"
-						+ sImageId + "']/disk");
-			} catch (XPathExpressionException Ex) {
-				throw new RuntimeException(Ex);
-			}
+			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
+					+ "']/disk");
 			StoragePool sp = cnx.storagePoolLookupByName("default");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node n = nl.item(i);
 				Node descriptor = n.getAttributes().getNamedItem("descriptor");
 				Node source = n.getAttributes().getNamedItem("source");
+				Node device = n.getAttributes().getNamedItem("device");
 				String sDescriptorPath = descriptor.getNodeValue();
 				String sSourceVolumePath = source.getNodeValue();
-				log.trace("Creating domain '"
-						+ ps.getProperty("vmName").getValue() + "' volume "
-						+ (i + 1) + " from Volume '" + sSourceVolumePath + "'.");
+				String sDiskDeviceName = device.getNodeValue();
+				log.trace("Creating Disk Device '" + sDiskDeviceName
+						+ "' for Domain '" + sInstanceId
+						+ "' ... LibVirt Volume Image is '" + sSourceVolumePath
+						+ "'.");
 				StorageVol sourceVolume = cnx
 						.storageVolLookupByPath(sSourceVolumePath);
 				String sDescriptor = null;
-				try {
-					sDescriptor = XPathExpander.expand(
-							Paths.get(sDescriptorPath), null, ps);
-				} catch (ExpressionSyntaxException e) {
-					throw new RuntimeException(sDescriptorPath
-							+ ": template contains invalid syntax");
-				} catch (IOException e) {
-					throw new RuntimeException(sDescriptorPath
-							+ ": IO error while expanding template");
-				} catch (IllegalFileException Ex) {
-					throw new RuntimeException(Ex);
-				}
-				StorageVol dest = null;
+				sDescriptor = XPathExpander.expand(Paths.get(sDescriptorPath),
+						null, ps);
+				StorageVol sv = null;
 				synchronized (LOCK_CLONE_DISK) {
 					// we can't clone a volume which is already being cloned
 					// and we can't use nio.Files.copy which is 4 times slower
-					dest = sp.storageVolCreateXMLFrom(sDescriptor,
-							sourceVolume, 0);
+					sv = sp.storageVolCreateXMLFrom(sDescriptor, sourceVolume,
+							0);
 				}
-				log.debug("Domain '" + ps.getProperty("vmName").getValue()
-						+ "' volume " + (i + 1) + " created. Volume path is '"
-						+ dest.getPath() + "'.");
+				log.debug("Disk Device '" + sDiskDeviceName
+						+ "' created for Domain '" + sInstanceId
+						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
-			log.trace("Starting domain '" + ps.getProperty("vmName").getValue()
-					+ "'.");
+			log.trace("Starting Domain '" + sInstanceId + "' ...");
 			domain.create();
-			log.debug("Domain '" + ps.getProperty("vmName").getValue()
-					+ "' started.");
+			log.debug("Domain '" + sInstanceId + "' started.");
 			return new Instance(domain);
-		} catch (LibvirtException Ex) {
+		} catch (LibvirtException | XPathExpressionSyntaxException
+				| IllegalFileException | IOException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -928,6 +995,7 @@ public abstract class LibVirtCloud {
 		 * Should shutdown (instead of destroy) the domain. Should handle a
 		 * SHUTTING_DOWN and a TERMINATED state.
 		 */
+		NodeList nl = null;
 		try {
 			// get Domain
 			Domain domain = getDomain(cnx, sInstanceId);
@@ -936,40 +1004,37 @@ public abstract class LibVirtCloud {
 			// destroy domain
 			if (state == DomainState.VIR_DOMAIN_RUNNING
 					|| state == DomainState.VIR_DOMAIN_PAUSED) {
-				log.trace("Destroying domain '" + sInstanceId + "'.");
+				log.trace("Destroying Domain '" + sInstanceId + "' ...");
 				domain.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
-			// TODO release network devices
-			// destroy disks
-			NodeList nl = null;
-			try {
-				nl = doc.evaluateAsNodeList("/domain/devices/disk[@device='disk']"
-						+ "/source/@file");
-			} catch (XPathExpressionException Ex) {
-				throw new RuntimeException(Ex);
-			}
+			// release network devices
+			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']"
+					+ "/mac/@address");
 			for (int i = 0; i < nl.getLength(); i++) {
+				// release the @mac
+				unregisterMacAddress(nl.item(i).getNodeValue());
+			}
+			// destroy disks
+			nl = doc.evaluateAsNodeList("/domain/devices/disk[@device='disk']"
+					+ "/source/@file");
+			for (int i = 0; i < nl.getLength(); i++) {
+				String sDiskDeviceName = "/dev/"
+						+ Doc.evaluateAsString("../target/@dev",
+								((Attr) nl.item(i)).getOwnerElement());
 				StorageVol sv = cnx.storageVolLookupByPath(nl.item(i)
 						.getNodeValue());
-				log.trace("Deleting domain '" + sInstanceId + "' volume "
-						+ (i + 1) + ". Volume path iss '" + sv.getPath() + "'.");
+				log.trace("Deleting Disk Device '" + sDiskDeviceName
+						+ "' for Domain '" + sInstanceId
+						+ "' ... LibVirt Volume path is '" + sv.getPath()
+						+ "'.");
 				sv.delete(0);
-				log.debug("Domain '" + sInstanceId + "' volume " + (i + 1)
-						+ " deleted.");
+				log.debug("Disk Device '" + sDiskDeviceName
+						+ "' deleted for Domain '" + sInstanceId + "'.");
 			}
 			// undefine domain
 			domain.undefine();
-			// free macAddr
-			String sMac = null;
-			try {
-				sMac = doc.evaluateAsString("//devices/interface"
-						+ "[@type='network'][1]/mac/@address");
-			} catch (XPathExpressionException Ex) {
-				throw new RuntimeException(Ex);
-			}
-			unregisterMacAddress(sMac);
-		} catch (LibvirtException Ex) {
+		} catch (LibvirtException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}

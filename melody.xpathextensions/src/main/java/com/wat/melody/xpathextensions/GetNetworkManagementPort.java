@@ -31,7 +31,7 @@ public class GetNetworkManagementPort implements XPathFunction {
 		}
 		try {
 			return NetworkManagementHelper
-					.getNetworkManagementPort((Node) arg0);
+					.getManagementNetworkPort((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

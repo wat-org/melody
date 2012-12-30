@@ -17,7 +17,10 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -194,10 +197,11 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		LibVirtCloud.createAndAttachDiskDevices(i, disksToAdd);
 	}
 
-	protected void updateDeleteOnTerminationFlag(DiskDeviceList diskList) {
+	protected void updateDeleteOnTerminationFlag(Instance i,
+			DiskDeviceList diskList) {
 		/*
-		 * TODO : not supported by LibVirt. Disk are always deleted on instance
-		 * termination
+		 * Not supported by LibVirt. Disk are always deleted on instance
+		 * termination.
 		 */
 	}
 
@@ -224,9 +228,13 @@ public abstract class AbstractLibVirtOperation implements ITask {
 					+ "Must be a valid Instance.");
 		}
 		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
-		DUNID dunid = getManagementNetworkDeviceDUNID();
-		setDataToED(dunid, Common.IP_ATTR, i.getPrivateIpAddress());
-		setDataToED(dunid, Common.FQDN_ATTR, i.getPrivateDnsName());
+		for (NetworkDevice netDevice : getInstanceNetworkDevices(i)) {
+			NetworkDeviceDatas ndd = LibVirtCloud
+					.getInstanceNetworkDeviceDatas(i, netDevice);
+			DUNID dunid = getNetworkDeviceDUNID(netDevice);
+			setDataToED(dunid, Common.IP_ATTR, ndd.getIP());
+			setDataToED(dunid, Common.FQDN_ATTR, ndd.getFQDN());
+		}
 	}
 
 	private void setDataToED(DUNID dunid, String sAttr, String sValue) {
@@ -257,9 +265,20 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		if (deleted == true) {
 			removeDataFromED(getMelodyID(), Common.INSTANCE_ID_ATTR);
 		}
-		DUNID dunid = getManagementNetworkDeviceDUNID();
-		removeDataFromED(dunid, Common.IP_ATTR);
-		removeDataFromED(dunid, Common.FQDN_ATTR);
+		NetworkDeviceList netDevices = null;
+		try {
+			NodeList nl = NetworkManagementHelper
+					.findNetworkDevices(getTargetNode());
+			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
+			netDevices = ndl.load(nl);
+		} catch (ResourcesDescriptorException Ex) {
+			throw new LibVirtException(Ex);
+		}
+		for (NetworkDevice netDev : netDevices) {
+			DUNID dunid = getNetworkDeviceDUNID(netDev);
+			removeDataFromED(dunid, Common.IP_ATTR);
+			removeDataFromED(dunid, Common.FQDN_ATTR);
+		}
 	}
 
 	private void removeDataFromED(DUNID dunid, String sAttr) {
@@ -274,11 +293,12 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		}
 	}
 
-	protected DUNID getManagementNetworkDeviceDUNID() throws LibVirtException {
+	protected DUNID getNetworkDeviceDUNID(NetworkDevice nd)
+			throws LibVirtException {
 		try {
-			Node mgmtNode = NetworkManagementHelper
-					.findNetworkManagementDevice(getTargetNode());
-			return getED().getMelodyID(mgmtNode);
+			Node netDevNode = NetworkManagementHelper.findNetworkDeviceByName(
+					getTargetNode(), nd.getDeviceName());
+			return getED().getMelodyID(netDevNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}

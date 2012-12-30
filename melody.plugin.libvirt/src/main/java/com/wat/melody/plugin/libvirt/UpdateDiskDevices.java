@@ -157,7 +157,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 		createAndAttachDiskDevices(i, disksToAdd, getCreateTimeout(),
 				getAttachTimeout());
 
-		updateDeleteOnTerminationFlag(getDiskDeviceList());
+		updateDeleteOnTerminationFlag(i, getDiskDeviceList());
 	}
 
 	private String getDiskDeviceNodesSelector() {

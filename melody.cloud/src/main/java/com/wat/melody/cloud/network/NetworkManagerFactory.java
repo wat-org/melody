@@ -26,7 +26,7 @@ public abstract class NetworkManagerFactory {
 		}
 
 		NetworkManagementMethod mm = NetworkManagementHelper
-				.findNetworkManagementMethod(instanceNode);
+				.findManagementNetworkMethod(instanceNode);
 
 		switch (mm) {
 		case SSH:

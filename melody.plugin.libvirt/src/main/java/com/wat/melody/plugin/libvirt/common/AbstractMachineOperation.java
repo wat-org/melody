@@ -51,7 +51,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		// defined in the SD
 		try {
 			boolean isNetMgmtEnale = NetworkManagementHelper
-					.isNetworkManagementEnable(getTargetNode());
+					.isManagementNetworkEnable(getTargetNode());
 			if (isNetMgmtEnale == false) {
 				setEnableNetworkManagement(false);
 			}

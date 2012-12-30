@@ -11,11 +11,6 @@ import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 public class NetworkDevicesLoader {
 
 	/**
-	 * The 'interface' XML Nested element of the Instance Node in the RD
-	 */
-	public static final String NETWORK_DEVICE_NE = "interface";
-
-	/**
 	 * The 'device' XML attribute of a Network Device Node
 	 */
 	public static final String DEVICE_ATTR = "device";

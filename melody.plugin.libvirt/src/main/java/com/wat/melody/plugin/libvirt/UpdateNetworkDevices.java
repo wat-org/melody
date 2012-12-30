@@ -12,11 +12,11 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-import com.wat.melody.xpathextensions.GetHeritedContent;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
 /**
@@ -36,7 +36,11 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	/**
 	 * The 'networkDeviceNodeSelector' XML attribute
 	 */
-	public static final String NETWORK_DEVICES_NODE_SELECTOR_ATTR = NetworkManagementHelper.NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE;
+	/*
+	 * TODO : remove this attribute. It conflicts with NetworkManagementHelper
+	 * methods.
+	 */
+	public static final String NETWORK_DEVICES_NODE_SELECTOR_ATTR = NetworkManagementHelper.NETWORK_DEVICE_NODES_SELECTOR_ATTR;
 
 	/**
 	 * The 'detachTimeout' XML attribute
@@ -80,20 +84,16 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 
 		// Disk Nodes Selector found in the RD override Disk Nodes Selector
 		// defined in the SD
-		try {
-			String sTargetSpecificNetworkDevicesSelector = NetworkManagementHelper
-					.findNetworkDevicesSelector(getTargetNode());
-			if (sTargetSpecificNetworkDevicesSelector != null) {
-				setNetworkDeviceNodesSelector(sTargetSpecificNetworkDevicesSelector);
-			}
-		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Ex);
+		String sTargetSpecificNetworkDevicesSelector = NetworkManagementHelper
+				.findNetworkDevicesSelector(getTargetNode());
+		if (sTargetSpecificNetworkDevicesSelector != null) {
+			setNetworkDeviceNodesSelector(sTargetSpecificNetworkDevicesSelector);
 		}
 
-		// Build a DiskList with Disk Nodes found in the RD
+		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
-			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
-					getNetworkDeviceNodesSelector());
+			NodeList nl = Doc.evaluateAsNodeList("."
+					+ getNetworkDeviceNodesSelector(), getTargetNode());
 			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
 			setNetworkDeviceList(ndl.load(nl));
 		} catch (XPathExpressionException Ex) {
@@ -120,8 +120,6 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 					Messages.UpdateNetDevMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
-		} else {
-			setInstanceRelatedInfosToED(i);
 		}
 
 		NetworkDeviceList nds = getInstanceNetworkDevices(i);
@@ -138,8 +136,8 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 
 		detachNetworkDevices(i, disksToRemove, getDetachTimeout());
 		attachNetworkDevices(i, disksToAdd, getAttachTimeout());
-		// TODO release network devices when deleteInstance
-		// TODO update RD with IP/fqdn
+
+		setInstanceRelatedInfosToED(i);
 	}
 
 	private String getNetworkDeviceNodesSelector() {

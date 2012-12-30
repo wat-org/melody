@@ -14,19 +14,19 @@
 		<echo message="-- FireWall rules updated." />		
 	</order>
 
-	<order name="update_disks" >
-		<echo message="Updating disks ..." />
+	<order name="update_disk_devices" >
+		<echo message="Updating disk devices ..." />
 
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<updateDiskDevices	target="§[srv]§" />
-			<echo message="+ disks updated for instance '§[§[srv]§/@instanceId]§'." />
+			<echo message="+ disks devices updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
-		<echo message="-- Disks updated." />		
+		<echo message="-- Disks devices updated." />		
 	</order>
 
-	<order name="update_network_device" >
+	<order name="update_network_devices" >
 		<echo message="Updating network devices ..." />
 
 		<foreach	items="./environment//instance"
@@ -52,8 +52,8 @@
 <!--
 		<call orders="ingress" />
  -->
-		<call orders="update_disks" />
-		<call orders="update_network_device" />
+		<call orders="update_disk_devices" />
+		<call orders="update_network_devices" />
 
  	</order>
 		

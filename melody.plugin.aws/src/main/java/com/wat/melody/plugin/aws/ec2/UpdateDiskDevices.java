@@ -157,7 +157,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 		createAndAttachDiskDevices(i, disksToAdd, getCreateTimeout(),
 				getAttachTimeout());
 
-		updateDeleteOnTerminationFlag(getDiskDeviceList());
+		updateDeleteOnTerminationFlag(i, getDiskDeviceList());
 	}
 
 	private String getDiskDeviceNodesSelector() {

@@ -44,12 +44,14 @@ public abstract class NetworkManagementDatas {
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_PORT_ATTRIBUTE} can be found in
-	 *             the Instance's Network Management {@link Node}.
+	 *             if no {@link NetworkManagementHelper#NETWORK_MGMT_PORT_ATTR}
+	 *             can be found in the Instance's Network Management
+	 *             {@link Node}.
 	 * @throws ResourcesDescriptorException
-	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTRIBUTE}
-	 *             found in the Instance's Network Management {@link Node} is
-	 *             not a valid {@link Port}.
+	 *             if the value of the
+	 *             {@link NetworkManagementHelper#NETWORK_MGMT_PORT_ATTR} found
+	 *             in the Instance's Network Management {@link Node} is not a
+	 *             valid {@link Port}.
 	 */
 	public NetworkManagementDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -63,9 +65,9 @@ public abstract class NetworkManagementDatas {
 		try {
 			Node mgmtNode = NetworkManagementHelper
 					.findNetworkManagementNode(instanceNode);
-			setHost(NetworkManagementHelper.getNetworkManagementHost(mgmtNode,
-					instanceNode));
-			setPort(NetworkManagementHelper.getNetworkManagementPort(mgmtNode));
+			setHost(NetworkManagementHelper.getManagementNetworkHost(
+					instanceNode, mgmtNode));
+			setPort(NetworkManagementHelper.getManagementNetworkPort(mgmtNode));
 			log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, this));
 		} catch (ResourcesDescriptorException Ex) {
 			log.warn(Messages.bind(Messages.NetMgmtMsg_FAILED, Doc

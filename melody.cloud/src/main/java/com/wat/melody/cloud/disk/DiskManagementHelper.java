@@ -2,40 +2,37 @@ package com.wat.melody.cloud.disk;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 
 public abstract class DiskManagementHelper {
 
-	private static Log log = LogFactory.getLog(DiskManagementHelper.class);
-
 	/**
-	 * The XML attribute to use in the sequence descriptor
+	 * XML attribute in the SD, which contains an XPath Expression which select
+	 * Disk Device Nodes.
 	 */
 	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = "diskDevicesSelector";
 
 	/**
-	 * The XML Element which contains Disk Device Management datas in the RD
-	 * (e.g. the Disk Device Management Node)
+	 * XML Element in the RD, which contains Disk Device Management datas of the
+	 * related Instance Node (more formally called the
+	 * "Disk Device Management Node")
 	 */
-	public static final String DISK_DEVICES_MGMT_NODE = "disk-management";
+	public static final String DISK_DEVICES_MGMT_NE = "disk-management";
 
 	/**
-	 * XPath Expression to select Disk Device Management Node in the RD, related
-	 * to an Instance Node
+	 * XPath Expression which select the Disk Device Management Node of the
+	 * related Instance Node
 	 */
 	public static final String DISK_DEVICES_MGMT_NODE_SELECTOR = "//"
-			+ DISK_DEVICES_MGMT_NODE;
+			+ DISK_DEVICES_MGMT_NE;
 
 	/**
-	 * The XML attribute of the Disk Device Management Node, which contains the
-	 * Disk Device Nodes Selector
+	 * XML attribute of the Disk Device Management Node, which contains the Disk
+	 * Device Nodes Selector
 	 */
 	public static final String DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE = "diskDevicesSelector";
 
@@ -86,9 +83,6 @@ public abstract class DiskManagementHelper {
 					+ "been introduced.", Ex);
 		}
 		if (nl.getLength() > 1) {
-			log.debug(Messages.bind(Messages.DiskMgmtMsg_TOO_MANY_MGMT_NODE,
-					DISK_DEVICES_MGMT_NODE, Doc.getNodeLocation(instanceNode)
-							.toFullString()));
 			return nl.item(nl.getLength() - 1);
 		} else if (nl.getLength() == 0) {
 			return null;

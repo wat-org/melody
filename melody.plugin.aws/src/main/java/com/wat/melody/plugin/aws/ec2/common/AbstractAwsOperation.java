@@ -213,7 +213,8 @@ abstract public class AbstractAwsOperation implements ITask {
 		}
 	}
 
-	protected void updateDeleteOnTerminationFlag(DiskDeviceList diskList) {
+	protected void updateDeleteOnTerminationFlag(Instance i,
+			DiskDeviceList diskList) {
 		Common.updateDeleteOnTerminationFlag(getEc2(), getAwsInstanceID(),
 				diskList);
 	}
