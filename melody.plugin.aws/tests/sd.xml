@@ -19,7 +19,7 @@
 
 		<foreach	items="./environment//instance"
 					itemName="srv" >
-			<updateDisks	target="§[srv]§" />
+			<updateDiskDevices	target="§[srv]§" />
 			<echo message="+ disks updated for instance '§[§[srv]§/@AWS_instance_Id]§'." />
 		</foreach>
 

@@ -43,10 +43,15 @@ public class Messages extends NLS {
 	public static String DeleteMsg_TERMINATED;
 	public static String DeleteMsg_GENERIC_WARN;
 
-	public static String UpdateDiskEx_INVALID_DISK_XPATH;
-	public static String UpdateDiskMsg_NO_INSTANCE;
-	public static String UpdateDiskMsg_DISKS_RESUME;
-	public static String UpdateDiskMsg_GENERIC_WARN;
+	public static String UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR;
+	public static String UpdateDiskDevMsg_NO_INSTANCE;
+	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
+	public static String UpdateDiskDevMsg_GENERIC_WARN;
+
+	public static String UpdateNetDevEx_INVALID_NETWORK_DEVICES_SELECTOR;
+	public static String UpdateNetDevMsg_NO_INSTANCE;
+	public static String UpdateNetDevMsg_NETWORK_DEVICES_RESUME;
+	public static String UpdateNetDevMsg_GENERIC_WARN;
 
 	static {
 		// initialize resource bundle

@@ -17,6 +17,7 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -181,19 +182,39 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		return LibVirtCloud.getInstanceDiskDevices(i);
 	}
 
-	protected void detachAndDeleteDiskDevices(Instance i, DiskDeviceList disksToRemove,
-			long detachTimeout) throws LibVirtException, InterruptedException {
+	protected void detachAndDeleteDiskDevices(Instance i,
+			DiskDeviceList disksToRemove, long detachTimeout)
+			throws LibVirtException, InterruptedException {
 		LibVirtCloud.detachAndDeleteDiskDevices(i, disksToRemove);
 	}
 
-	protected void createAndAttachDiskDevices(Instance i, DiskDeviceList disksToAdd,
-			long createTimeout, long attachTimeout) throws LibVirtException,
-			InterruptedException {
+	protected void createAndAttachDiskDevices(Instance i,
+			DiskDeviceList disksToAdd, long createTimeout, long attachTimeout)
+			throws LibVirtException, InterruptedException {
 		LibVirtCloud.createAndAttachDiskDevices(i, disksToAdd);
 	}
 
 	protected void updateDeleteOnTerminationFlag(DiskDeviceList diskList) {
-		// TODO : not supported by LibVirt
+		/*
+		 * TODO : not supported by LibVirt. Disk are always deleted on instance
+		 * termination
+		 */
+	}
+
+	public NetworkDeviceList getInstanceNetworkDevices(Instance i) {
+		return LibVirtCloud.getInstanceNetworkDevices(i);
+	}
+
+	protected void detachNetworkDevices(Instance i,
+			NetworkDeviceList netDevivesToRemove, long detachTimeout)
+			throws LibVirtException, InterruptedException {
+		LibVirtCloud.detachNetworkDevices(i, netDevivesToRemove);
+	}
+
+	protected void attachNetworkDevices(Instance i,
+			NetworkDeviceList netDevivesToAdd, long attachTimeout)
+			throws LibVirtException, InterruptedException {
+		LibVirtCloud.attachNetworkDevices(i, netDevivesToAdd);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)

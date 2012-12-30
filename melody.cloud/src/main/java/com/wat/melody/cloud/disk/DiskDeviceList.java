@@ -2,7 +2,7 @@ package com.wat.melody.cloud.disk;
 
 import java.util.ArrayList;
 
-import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 
 public class DiskDeviceList extends ArrayList<DiskDevice> {
 
@@ -20,11 +20,11 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		setRootDevice(ddl.getRootDevice());
 	}
 
-	public boolean addDiskDevice(DiskDevice dd) throws IllegalDiskListException {
+	public boolean addDiskDevice(DiskDevice dd) throws IllegalDiskDeviceListException {
 		for (DiskDevice d : this) {
 			if (d.getDeviceName().equals(dd.getDeviceName())) {
 				// Detects duplicated deviceName declaration
-				throw new IllegalDiskListException(Messages.bind(
+				throw new IllegalDiskDeviceListException(Messages.bind(
 						Messages.DiskListEx_DEVICE_ALREADY_DEFINE,
 						dd.getDeviceName()));
 			}
@@ -32,7 +32,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		if (dd.isRootDevice()) {
 			if (getRootDevice() != null) {
 				// Detects multiple RootDevice declaration
-				throw new IllegalDiskListException(Messages.bind(
+				throw new IllegalDiskDeviceListException(Messages.bind(
 						Messages.DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE,
 						dd.getDeviceName()));
 			}

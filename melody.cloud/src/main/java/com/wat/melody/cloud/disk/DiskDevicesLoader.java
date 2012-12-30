@@ -6,7 +6,7 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
-import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 
 public class DiskDevicesLoader {
 
@@ -149,7 +149,7 @@ public class DiskDevicesLoader {
 
 			try {
 				dl.addDiskDevice(disk);
-			} catch (IllegalDiskListException Ex) {
+			} catch (IllegalDiskDeviceListException Ex) {
 				throw new ResourcesDescriptorException(n, "This Disk device "
 						+ "Node description is not valid. Read message "
 						+ "bellow to get more details about this issue.", Ex);

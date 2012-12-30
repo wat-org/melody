@@ -26,11 +26,15 @@ import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
-import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
@@ -304,7 +308,7 @@ public abstract class LibVirtCloud {
 			}
 			return dl;
 		} catch (XPathExpressionException | IllegalDiskDeviceException
-				| LibvirtException | IllegalDiskListException Ex) {
+				| LibvirtException | IllegalDiskDeviceListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -346,7 +350,8 @@ public abstract class LibVirtCloud {
 			Doc ddoc = getDomainXMLDesc(d);
 			// pour chaque disque a supprimer
 			for (DiskDevice disk : disksToRemove) {
-				String deviceToRemove = disk.getDeviceName().replace("/dev/", "");
+				String deviceToRemove = disk.getDeviceName().replace("/dev/",
+						"");
 				// search the path of the disk which match device to remove
 				String volPath = ddoc
 						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
@@ -445,13 +450,130 @@ public abstract class LibVirtCloud {
 				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
 				vars.put(new Property("targetDevice", deviceToAdd));
 				vars.put(new Property("volPath", sv.getPath()));
-				// attachement du volume
+				// attachement de la device
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
 						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static NetworkDeviceList getInstanceNetworkDevices(Instance i) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		return getDomainNetworkDevices(i.getDomain());
+	}
+
+	public static NetworkDeviceList getDomainNetworkDevices(Domain domain) {
+		try {
+			NetworkDeviceList dl = new NetworkDeviceList();
+			Doc ddoc = getDomainXMLDesc(domain);
+			NodeList nl = ddoc
+					.evaluateAsNodeList("/domain/devices/interface[@type='network']");
+			for (int i = 0; i < nl.getLength(); i++) {
+				NetworkDevice d = new NetworkDevice();
+				d.setDeviceName("eth" + String.valueOf(i));
+				dl.addNetworkDevice(d);
+			}
+			if (dl.size() == 0) {
+				throw new RuntimeException("No network device found "
+						+ "for Domain '" + domain.getName() + "'.");
+			}
+			return dl;
+		} catch (XPathExpressionException | IllegalNetworkDeviceException
+				| LibvirtException | IllegalNetworkDeviceListException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static final String NETWORK_DEVICE_XML_SNIPPET = "<interface type='network'>"
+			+ "<mac address='§[vmMacAddr]§'/>"
+			+ "<source network='default'/>"
+			+ "</interface>";
+
+	public static void detachNetworkDevices(Instance i,
+			NetworkDeviceList netDevicesToRemove) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		detachNetworkDevices(i.getDomain(), netDevicesToRemove);
+	}
+
+	public static void detachNetworkDevices(Domain d,
+			NetworkDeviceList netDevicesToRemove) {
+		if (netDevicesToRemove == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceList.class.getCanonicalName() + ".");
+		}
+		if (netDevicesToRemove.size() == 0) {
+			return;
+		}
+
+		// preparation de la variabilisation du XML
+		PropertiesSet vars = new PropertiesSet();
+		try {
+			Doc ddoc = getDomainXMLDesc(d);
+			// pour chaque network device a ajouter
+			for (NetworkDevice netDev : netDevicesToRemove) {
+				String sMacAddr = ddoc
+						.evaluateAsString("/domain/devices/interface[@type='network' and alias/@name='"
+								+ netDev.getDeviceName().replace("eth", "net")
+								+ "']/mac/@address");
+				vars.put(new Property("vmMacAddr", sMacAddr));
+				// attachement de la device
+				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+				d.detachDeviceFlags(XPathExpander.expand(
+						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+			}
+		} catch (XPathExpressionSyntaxException | IllegalPropertyException
+				| LibvirtException | XPathExpressionException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static void attachNetworkDevices(Instance i,
+			NetworkDeviceList netDevicesToAdd) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
+		attachNetworkDevices(i.getDomain(), netDevicesToAdd);
+	}
+
+	public static void attachNetworkDevices(Domain d,
+			NetworkDeviceList netDevicesToAdd) {
+		if (netDevicesToAdd == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceList.class.getCanonicalName() + ".");
+		}
+		if (netDevicesToAdd.size() == 0) {
+			return;
+		}
+
+		// preparation de la variabilisation du XML
+		PropertiesSet vars = new PropertiesSet();
+		try {
+			// pour chaque network device a ajouter
+			for (NetworkDevice netDev : netDevicesToAdd) {
+				vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
+				// attachement de la device
+				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+				d.attachDeviceFlags(XPathExpander.expand(
+						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+			}
+		} catch (XPathExpressionSyntaxException | IllegalPropertyException
+				| LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -818,6 +940,7 @@ public abstract class LibVirtCloud {
 				domain.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
+			// TODO release network devices
 			// destroy disks
 			NodeList nl = null;
 			try {

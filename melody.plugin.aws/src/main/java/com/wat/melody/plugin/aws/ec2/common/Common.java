@@ -42,7 +42,7 @@ import com.amazonaws.services.ec2.model.VolumeAttachment;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
-import com.wat.melody.cloud.disk.exception.IllegalDiskListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
@@ -1227,9 +1227,9 @@ public class Common {
 	 * @param i
 	 *            is the Aws Instance.
 	 * 
-	 * @return a {@link DiskDeviceList}, which contains all Aws {@link DiskDevice}
-	 *         attached to the given Aws Instance (the list cannot be empty. It
-	 *         contains at least the root disk device).
+	 * @return a {@link DiskDeviceList}, which contains all Aws
+	 *         {@link DiskDevice} attached to the given Aws Instance (the list
+	 *         cannot be empty. It contains at least the root disk device).
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.
@@ -1255,7 +1255,7 @@ public class Common {
 				}
 				disks.addDiskDevice(disk);
 			}
-		} catch (IllegalDiskDeviceException | IllegalDiskListException Ex) {
+		} catch (IllegalDiskDeviceException | IllegalDiskDeviceListException Ex) {
 			throw new RuntimeException("Unexpected error while building "
 					+ "DiskList from Aws Instance Volumes List. "
 					+ "Because Aws Instance Volumes List is valid, such error "
@@ -1684,8 +1684,8 @@ public class Common {
 
 	/**
 	 * <p>
-	 * Create and attach {@Volume}s according to the given {@link DiskDevice}
-	 * s specifications.
+	 * Create and attach {@Volume}s according to the given
+	 * {@link DiskDevice} s specifications.
 	 * 
 	 * Wait for the created volumes to reach the state
 	 * {@link VolumeState#AVAILABLE}.

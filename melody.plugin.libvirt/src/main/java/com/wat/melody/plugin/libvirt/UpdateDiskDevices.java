@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 import com.wat.cloud.libvirt.Instance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.disk.DiskDeviceHelper;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
@@ -89,7 +90,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 		// Selector defined in the SD
 		try {
 			String sTargetSpecificDiskDevicesSelector = DiskManagementHelper
-					.findDiskDeviceManagementSelector(getTargetNode());
+					.findDiskDevicesSelector(getTargetNode());
 			if (sTargetSpecificDiskDevicesSelector != null) {
 				setDiskDeviceNodesSelector(sTargetSpecificDiskDevicesSelector);
 			}
@@ -105,7 +106,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 			setDiskDeviceList(dl.load(nl));
 		} catch (XPathExpressionException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.UpdateDiskEx_INVALID_DISK_XPATH,
+					Messages.UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR,
 					getDiskDeviceNodesSelector()), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -119,12 +120,12 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 		Instance i = getInstance();
 		if (i == null) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
-					Messages.UpdateDiskMsg_NO_INSTANCE,
+					Messages.UpdateDiskDevMsg_NO_INSTANCE,
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
 			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
-					Messages.UpdateDiskMsg_GENERIC_WARN, Ex)));
+					Messages.UpdateDiskDevMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {
@@ -133,7 +134,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 
 		DiskDeviceList iDisks = getInstanceDiskDevices(i);
 		try {
-			DiskManagementHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
+			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
 					getDiskDeviceList());
 		} catch (DiskDeviceException Ex) {
 			throw new LibVirtException("[" + getTargetNodeLocation()
@@ -143,12 +144,12 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 
 		DiskDeviceList disksToAdd = null;
 		DiskDeviceList disksToRemove = null;
-		disksToAdd = DiskManagementHelper.computeDiskDevicesToAdd(iDisks,
+		disksToAdd = DiskDeviceHelper.computeDiskDevicesToAdd(iDisks,
 				getDiskDeviceList());
-		disksToRemove = DiskManagementHelper.computeDiskDevicesToRemove(iDisks,
+		disksToRemove = DiskDeviceHelper.computeDiskDevicesToRemove(iDisks,
 				getDiskDeviceList());
 
-		log.info(Messages.bind(Messages.UpdateDiskMsg_DISKS_RESUME,
+		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
 				new Object[] { getInstanceID(), getDiskDeviceList(),
 						disksToAdd, disksToRemove, getTargetNodeLocation() }));
 

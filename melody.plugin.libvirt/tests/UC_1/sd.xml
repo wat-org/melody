@@ -19,11 +19,23 @@
 
 		<foreach	items="./environment//instance"
 					itemName="srv" >
-			<updateDisks	target="§[srv]§" />
+			<updateDiskDevices	target="§[srv]§" />
 			<echo message="+ disks updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
 		<echo message="-- Disks updated." />		
+	</order>
+
+	<order name="update_network_device" >
+		<echo message="Updating network devices ..." />
+
+		<foreach	items="./environment//instance"
+					itemName="srv" >
+			<updateNetworkDevices	target="§[srv]§" />
+			<echo message="+ Network devices updated for instance '§[§[srv]§/@instanceId]§'." />
+		</foreach>
+
+		<echo message="-- Network devices updated." />		
 	</order>
 
 	<order name="create_env" >
@@ -41,6 +53,7 @@
 		<call orders="ingress" />
  -->
 		<call orders="update_disks" />
+		<call orders="update_network_device" />
 
  	</order>
 		

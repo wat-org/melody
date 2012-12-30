@@ -8,7 +8,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.GetHeritedContent;
 
@@ -19,7 +18,7 @@ public abstract class DiskManagementHelper {
 	/**
 	 * The XML attribute to use in the sequence descriptor
 	 */
-	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = "diskDeviceNodesSelector";
+	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = "diskDevicesSelector";
 
 	/**
 	 * The XML Element which contains Disk Device Management datas in the RD
@@ -38,7 +37,7 @@ public abstract class DiskManagementHelper {
 	 * The XML attribute of the Disk Device Management Node, which contains the
 	 * Disk Device Nodes Selector
 	 */
-	public static final String DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE = "diskDeviceNodesSelector";
+	public static final String DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE = "diskDevicesSelector";
 
 	/**
 	 * Default XPath Expression to select Disk Device Nodes in the RD, related
@@ -49,21 +48,29 @@ public abstract class DiskManagementHelper {
 
 	/**
 	 * <p>
-	 * Return the Disk Device Management {@link Node} related to the given
-	 * Instance {@link Node}.
+	 * Return the Disk Management {@link Node} related to the given Instance
+	 * {@link Node}.
 	 * </p>
 	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
-	 * @return the Disk Device Management {@link Node} if found, or
-	 *         <code>null</code> otherwise.
+	 * @return <ul>
+	 *         <li>The Disk Management {@link Node} related to the given
+	 *         Instance {@link Node}, if one Disk Management {@link Node} is
+	 *         found ;</li>
+	 *         <li>The last Disk Management {@link Node} related to the given
+	 *         Instance {@link Node}, if multiple Disk Management {@link Node}
+	 *         were found ;</li>
+	 *         <li><code>null</code>, if no Disk Management {@link Node} were
+	 *         found ;</li>
+	 *         </ul>
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the given Instance {@link Node} is not valid (ex :
 	 *             contains invalid HERIT_ATTR).
 	 */
-	public static Node findDiskDeviceManagementNode(Node instanceNode)
+	public static Node findDiskManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
@@ -89,9 +96,9 @@ public abstract class DiskManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findDiskDeviceManagementSelector(Node instanceNode)
+	public static String findDiskDevicesSelector(Node instanceNode)
 			throws ResourcesDescriptorException {
-		Node n = findDiskDeviceManagementNode(instanceNode);
+		Node n = findDiskManagementNode(instanceNode);
 		try {
 			return n.getAttributes()
 					.getNamedItem(DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE)
@@ -99,60 +106,6 @@ public abstract class DiskManagementHelper {
 		} catch (NullPointerException Ex) {
 			return DEFAULT_DISK_DEVICES_NODE_SELECTOR;
 		}
-	}
-
-	public static void ensureDiskDevicesUpdateIsPossible(
-			DiskDeviceList current, DiskDeviceList target)
-			throws DiskDeviceException {
-		if (current == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ DiskDeviceList.class.getCanonicalName() + ".");
-		}
-		if (target == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ DiskDeviceList.class.getCanonicalName() + ".");
-		}
-		if (current.size() == 0) {
-			throw new RuntimeException("Current Disk Device List is empty. It "
-					+ "should at least contains one device, which is the root "
-					+ "device. "
-					+ "There must be a bug in the current disk list creation.");
-		}
-		if (target.size() == 0) {
-			throw new DiskDeviceException(Messages.bind(
-					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
-					DiskDevicesLoader.DEVICE_ATTR, current.getRootDevice()
-							.getDeviceName()));
-		}
-		if (target.getRootDevice() == null) {
-			throw new DiskDeviceException(Messages.bind(
-					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
-					DiskDevicesLoader.ROOTDEVICE_ATTR, current.getRootDevice()
-							.getDeviceName()));
-		}
-		if (!current.getRootDevice().equals(target.getRootDevice())) {
-			throw new DiskDeviceException(Messages.bind(
-					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE, new Object[] {
-							DiskDevicesLoader.ROOTDEVICE_ATTR,
-							target.getRootDevice().getDeviceName(),
-							current.getRootDevice().getDeviceName() }));
-		}
-	}
-
-	public static DiskDeviceList computeDiskDevicesToAdd(
-			DiskDeviceList current, DiskDeviceList target) {
-		DiskDeviceList disksToAdd = new DiskDeviceList(target);
-		disksToAdd.removeAll(current);
-		return disksToAdd;
-	}
-
-	public static DiskDeviceList computeDiskDevicesToRemove(
-			DiskDeviceList current, DiskDeviceList target) {
-		DiskDeviceList disksToRemove = new DiskDeviceList(current);
-		disksToRemove.removeAll(target);
-		return disksToRemove;
 	}
 
 }
