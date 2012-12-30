@@ -562,8 +562,10 @@ public abstract class NetworkManagementHelper {
 	 */
 	public static boolean isNetworkManagementEnable(Node instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
-		if (mgmtNode == null) {
+		Node mgmtNode = null;
+		try {
+			mgmtNode = findNetworkManagementNode(instanceNode);
+		} catch (ResourcesDescriptorException Ex) {
 			return false;
 		}
 		return getNetworkManagementEnable(mgmtNode);
