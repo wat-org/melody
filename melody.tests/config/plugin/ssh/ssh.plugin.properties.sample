@@ -2,11 +2,8 @@
 ### Mandatory Melody plugin configuration directives
 #####################
 
-### the name of this plugin
-plugin.configuration.name=SSH
-
 ### the class which will load this configuration
-plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.Configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlugInConfiguration
 
 
 #####################

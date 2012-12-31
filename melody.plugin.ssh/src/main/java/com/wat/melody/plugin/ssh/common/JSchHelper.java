@@ -26,7 +26,7 @@ public abstract class JSchHelper {
 	 * 
 	 */
 	public static Session openSession(JSchConnectionDatas base,
-			Configuration conf) throws SshException {
+			SshPlugInConfiguration conf) throws SshException {
 		if (base == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -35,7 +35,7 @@ public abstract class JSchHelper {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ Configuration.class.getCanonicalName() + ".");
+					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
 		}
 		Session session = null;
 		try {
@@ -120,7 +120,7 @@ public abstract class JSchHelper {
 	 * @throws SshException
 	 */
 	public static ChannelSftp openSftpChannel(Session session,
-			Configuration conf) throws SshException {
+			SshPlugInConfiguration conf) throws SshException {
 		if (session == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Session.class.getCanonicalName()
@@ -129,7 +129,7 @@ public abstract class JSchHelper {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ Configuration.class.getCanonicalName() + ".");
+					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
 		}
 		if (!session.isConnected()) {
 			throw new IllegalArgumentException("session: Not accepted. "

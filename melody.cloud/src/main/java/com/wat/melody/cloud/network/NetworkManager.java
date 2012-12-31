@@ -1,6 +1,5 @@
 package com.wat.melody.cloud.network;
 
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.cloud.network.exception.ManagementException;
 
 public interface NetworkManager {
@@ -13,8 +12,8 @@ public interface NetworkManager {
 	 * @throws ManagementException
 	 * @throws InterruptedException
 	 */
-	public void enableNetworkManagement(long timeout) throws ManagementException,
-			InterruptedException;
+	public void enableNetworkManagement(long timeout)
+			throws ManagementException, InterruptedException;
 
 	/**
 	 * 

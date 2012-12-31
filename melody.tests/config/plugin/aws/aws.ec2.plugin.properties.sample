@@ -2,11 +2,8 @@
 ### Mandatory Melody plugin configuration directives
 #####################
 
-### the name of this plugin
-plugin.configuration.name=AWS.EC2
-
 ### the class which will load this configuration
-plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.ec2.common.Configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.ec2.common.AwsPlugInConfiguration
 
 
 #####################

@@ -6,6 +6,8 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.api.messages";
 
+	public static String ConfEx_CONF_NOT_REGISTERED;
+
 	public static String TaskFactoryEx_INVALID_ATTR;
 	public static String TaskFactoryEx_MANDATORY_ATTR_NOT_FOUND;
 	public static String TaskFactoryEx_ATTR_SPEC_CONFLICT;

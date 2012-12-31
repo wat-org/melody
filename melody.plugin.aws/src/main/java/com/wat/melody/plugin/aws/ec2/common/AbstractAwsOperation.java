@@ -11,6 +11,7 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
@@ -21,9 +22,9 @@ import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.aws.ec2.common.exception.ConfigurationException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
+import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.GetHeritedAttribute;
 
@@ -45,8 +46,8 @@ abstract public class AbstractAwsOperation implements ITask {
 	public static final String TIMEOUT_ATTR = "timeout";
 
 	private ITaskContext moContext;
-	private Configuration moPluginConf;
-	private com.wat.melody.plugin.ssh.common.Configuration moSshPluginConf;
+	private AwsPlugInConfiguration moPluginConf;
+	private SshPlugInConfiguration moSshPluginConf;
 	private AmazonEC2 moEC2;
 	private String msAwsInstanceID;
 	private Node moTargetNode;
@@ -313,19 +314,18 @@ abstract public class AbstractAwsOperation implements ITask {
 	/**
 	 * <p>
 	 * Set the {@link ITaskContext} of this object with the given
-	 * {@link ITaskContext}. Retrieve the Aws Plug-In {@link Configuration} and
-	 * the Ssh Plug-In {@link com.wat.melody.plugin.ssh.common.Configuration}.
+	 * {@link ITaskContext}. Retrieve the Aws Plug-In
+	 * {@link AwsPlugInConfiguration} and the Ssh Plug-In
+	 * {@link SshPlugInConfiguration}.
 	 * </p>
-	 * 
-	 * @param p
-	 *            is the {@link ITaskContext} to set.
+	 * SshPlugInConfiguration is the {@link ITaskContext} to set.
 	 * 
 	 * @throws AwsException
 	 *             if an error occurred while retrieving the Aws Plug-In
-	 *             {@link Configuration}.
+	 *             {@link AwsPlugInConfiguration}.
 	 * @throws SshException
 	 *             if an error occurred while retrieving the Ssh Plug-In
-	 *             {@link com.wat.melody.plugin.ssh.common.Configuration}.
+	 *             {@link SshPlugInConfiguration}.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link ITaskContext} is <tt>null</tt>.
 	 */
@@ -339,45 +339,45 @@ abstract public class AbstractAwsOperation implements ITask {
 
 		// Get the configuration at the very beginning
 		try {
-			setPluginConf(Configuration.get(getContext().getProcessorManager()));
-		} catch (ConfigurationException Ex) {
+			setPluginConf(AwsPlugInConfiguration.get(getContext()
+					.getProcessorManager()));
+		} catch (PlugInConfigurationException Ex) {
 			throw new AwsException(Ex);
 		}
 
 		// Get the Ssh Plug-In configuration at the very beginning
 		try {
-			setSshPluginConf(com.wat.melody.plugin.ssh.common.Configuration
-					.get(getContext().getProcessorManager()));
-		} catch (com.wat.melody.plugin.ssh.common.exception.ConfigurationException Ex) {
+			setSshPluginConf(SshPlugInConfiguration.get(getContext()
+					.getProcessorManager()));
+		} catch (PlugInConfigurationException Ex) {
 			throw new SshException(Ex);
 		}
 	}
 
-	protected Configuration getPluginConf() {
+	protected AwsPlugInConfiguration getPluginConf() {
 		return moPluginConf;
 	}
 
-	public Configuration setPluginConf(Configuration p) {
+	public AwsPlugInConfiguration setPluginConf(AwsPlugInConfiguration p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Configuration.");
 		}
-		Configuration previous = getPluginConf();
+		AwsPlugInConfiguration previous = getPluginConf();
 		moPluginConf = p;
 		return previous;
 	}
 
-	protected com.wat.melody.plugin.ssh.common.Configuration getSshPluginConf() {
+	protected SshPlugInConfiguration getSshPluginConf() {
 		return moSshPluginConf;
 	}
 
-	public com.wat.melody.plugin.ssh.common.Configuration setSshPluginConf(
-			com.wat.melody.plugin.ssh.common.Configuration p) {
+	public SshPlugInConfiguration setSshPluginConf(SshPlugInConfiguration p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Configuration.");
 		}
-		com.wat.melody.plugin.ssh.common.Configuration previous = getSshPluginConf();
+		SshPlugInConfiguration previous = getSshPluginConf();
 		moSshPluginConf = p;
 		return previous;
 	}

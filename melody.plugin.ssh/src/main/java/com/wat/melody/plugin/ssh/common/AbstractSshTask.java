@@ -7,9 +7,9 @@ import com.jcraft.jsch.JSchException;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
-import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
 public abstract class AbstractSshTask implements ITask {
@@ -31,7 +31,7 @@ public abstract class AbstractSshTask implements ITask {
 	public static final String PASSPHRASE_ATTR = "passphrase";
 
 	private ITaskContext moContext;
-	private Configuration moPluginConf;
+	private SshPlugInConfiguration moPluginConf;
 	private File moKeyPairRepository;
 	private String moKeyPairName;
 	private String msPassphrase;
@@ -109,7 +109,8 @@ public abstract class AbstractSshTask implements ITask {
 	/**
 	 * <p>
 	 * Set the {@link ITaskContext} of this object with the given
-	 * {@link ITaskContext} and retrieve the Ssh Plug-In {@link Configuration}.
+	 * {@link ITaskContext} and retrieve the Ssh Plug-In
+	 * {@link SshPlugInConfiguration}.
 	 * </p>
 	 * 
 	 * @param p
@@ -117,7 +118,7 @@ public abstract class AbstractSshTask implements ITask {
 	 * 
 	 * @throws SshException
 	 *             if an error occurred while retrieving the Ssh Plug-In
-	 *             {@link Configuration}.
+	 *             {@link SshPlugInConfiguration}.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link ITaskContext} is <tt>null</tt>.
 	 */
@@ -131,23 +132,24 @@ public abstract class AbstractSshTask implements ITask {
 
 		// Get the configuration at the very beginning
 		try {
-			setPluginConf(Configuration.get(getContext().getProcessorManager()));
-		} catch (ConfigurationException Ex) {
+			setPluginConf(SshPlugInConfiguration.get(getContext()
+					.getProcessorManager()));
+		} catch (PlugInConfigurationException Ex) {
 			throw new SshException(Ex);
 		}
 
 	}
 
-	protected Configuration getPluginConf() {
+	protected SshPlugInConfiguration getPluginConf() {
 		return moPluginConf;
 	}
 
-	public Configuration setPluginConf(Configuration p) {
+	public SshPlugInConfiguration setPluginConf(SshPlugInConfiguration p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Configuration.");
 		}
-		Configuration previous = getPluginConf();
+		SshPlugInConfiguration previous = getPluginConf();
 		moPluginConf = p;
 		return previous;
 	}

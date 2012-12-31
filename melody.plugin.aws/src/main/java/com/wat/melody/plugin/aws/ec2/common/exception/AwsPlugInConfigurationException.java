@@ -1,24 +1,30 @@
 package com.wat.melody.plugin.aws.ec2.common.exception;
 
-import com.wat.melody.api.exception.PluginConfigurationException;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 
-public class ConfigurationException extends PluginConfigurationException {
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public class AwsPlugInConfigurationException extends
+		PlugInConfigurationException {
 
 	private static final long serialVersionUID = 983212356657786543L;
 
-	public ConfigurationException() {
+	public AwsPlugInConfigurationException() {
 		super();
 	}
 
-	public ConfigurationException(String msg) {
+	public AwsPlugInConfigurationException(String msg) {
 		super(msg);
 	}
 
-	public ConfigurationException(Throwable cause) {
+	public AwsPlugInConfigurationException(Throwable cause) {
 		super(cause);
 	}
 
-	public ConfigurationException(String msg, Throwable cause) {
+	public AwsPlugInConfigurationException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

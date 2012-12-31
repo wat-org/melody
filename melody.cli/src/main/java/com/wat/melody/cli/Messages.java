@@ -35,14 +35,12 @@ public class Messages extends NLS {
 	public static String ConfEx_NVF_PLUGINS_DIRECTIVE;
 	public static String ConfEx_NVPS_PLUGINS_DIRECTIVE;
 
-	public static String ConfEx_MISSING_PCN_DIRECTIVE;
-	public static String ConfEx_EMPTY_PCN_DIRECTIVE;
-	public static String ConfEx_INVALID_PCN_DIRECTIVE;
 	public static String ConfEx_MISSING_PCC_DIRECTIVE;
 	public static String ConfEx_EMPTY_PCC_DIRECTIVE;
 	public static String ConfEx_CNF_CONF_DIRECTIVE;
 	public static String ConfEx_NCDF_CONF_DIRECTIVE;
 	public static String ConfEx_CC_CONF_DIRECTIVE;
+	public static String ConfEx_DUPLICATE_CONF_DIRECTIVE;
 	public static String ConfEx_GENERIC_PLUGIN_LOAD;
 
 	static {

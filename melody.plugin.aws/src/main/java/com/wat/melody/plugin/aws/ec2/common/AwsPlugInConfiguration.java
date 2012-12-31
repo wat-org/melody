@@ -12,39 +12,24 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.wat.melody.api.IPluginConfiguration;
+import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.plugin.aws.ec2.common.exception.ConfigurationException;
+import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class Configuration implements IPluginConfiguration, AWSCredentials {
+public class AwsPlugInConfiguration implements IPlugInConfiguration,
+		AWSCredentials {
 
-	public static final String NAME = "AWS.EC2";
-
-	public static Configuration get(IProcessorManager pm)
-			throws ConfigurationException {
-		Map<String, IPluginConfiguration> pcs = pm.getPluginConfigurations();
-		IPluginConfiguration pc = null;
-		pc = pcs.get(NAME);
-		if (pc == null) {
-			throw new ConfigurationException(Messages.bind(
-					Messages.ConfEx_CONF_NOT_REGISTERED, NAME));
-		}
-		try {
-			return (Configuration) pc;
-		} catch (ClassCastException Ex) {
-			throw new ConfigurationException(Messages.bind(
-					Messages.ConfEx_CONF_REGISTRATION_ERROR,
-					new Object[] { NAME,
-							IPluginConfiguration.PLUGIN_CONF_CLASS,
-							pc.getFilePath(),
-							Configuration.class.getCanonicalName() }));
-		}
+	public static AwsPlugInConfiguration get(IProcessorManager pm)
+			throws PlugInConfigurationException {
+		return (AwsPlugInConfiguration) pm
+				.getPluginConfiguration(AwsPlugInConfiguration.class);
 	}
 
 	// MANDATORY CONFIGURATION DIRECTIVE
@@ -73,14 +58,9 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 	private ClientConfiguration moCC;
 	private Map<String, AmazonEC2> moPooledEc2s;
 
-	public Configuration() {
+	public AwsPlugInConfiguration() {
 		setCC(new ClientConfiguration());
 		setPooledEc2s(new Hashtable<String, AmazonEC2>());
-	}
-
-	@Override
-	public String getName() {
-		return NAME;
 	}
 
 	@Override
@@ -98,7 +78,7 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 	}
 
 	@Override
-	public void load(PropertiesSet ps) throws ConfigurationException {
+	public void load(PropertiesSet ps) throws AwsPlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid PropertiesSet.");
@@ -123,204 +103,212 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		validate();
 	}
 
-	private void loadAccessKey(PropertiesSet ps) throws ConfigurationException {
+	private void loadAccessKey(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_ACCESS_KEY)) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, EC2_ACCESS_KEY));
 		}
 		try {
 			setAccessKey(ps.get(EC2_ACCESS_KEY));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_ACCESS_KEY), Ex);
 		}
 	}
 
-	private void loadSecretKey(PropertiesSet ps) throws ConfigurationException {
+	private void loadSecretKey(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_SECRET_KEY)) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, EC2_SECRET_KEY));
 		}
 		try {
 			setSecretKey(ps.get(EC2_SECRET_KEY));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_SECRET_KEY), Ex);
 		}
 	}
 
 	private void loadConnectionTimeout(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_CONNECTION_TIMEOUT)) {
 			return;
 		}
 		try {
 			setConnectionTimeout(ps.get(EC2_CONNECTION_TIMEOUT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_TIMEOUT),
 					Ex);
 		}
 	}
 
 	private void loadSocketTimeout(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_READ_TIMEOUT)) {
 			return;
 		}
 		try {
 			setSocketTimeout(ps.get(EC2_READ_TIMEOUT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_READ_TIMEOUT), Ex);
 		}
 	}
 
 	private void loadMaxErrorRetry(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_CONNECTION_RETRY)) {
 			return;
 		}
 		try {
 			setMaxErrorRetry(ps.get(EC2_CONNECTION_RETRY));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_RETRY),
 					Ex);
 		}
 	}
 
 	private void loadMaxConnections(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_MAX_CONNECTION)) {
 			return;
 		}
 		try {
 			setMaxConnections(ps.get(EC2_MAX_CONNECTION));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_MAX_CONNECTION), Ex);
 		}
 	}
 
 	private void loadSocketSendBufferSizeHints(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_SEND_BUFFER_SIZE_HINT)) {
 			return;
 		}
 		try {
 			setSocketSendBufferSizeHints(ps.get(EC2_SEND_BUFFER_SIZE_HINT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					EC2_SEND_BUFFER_SIZE_HINT), Ex);
 		}
 	}
 
 	private void loadSocketReceiveBufferSizeHints(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_RECEIVE_BUFFER_SIZE_HINTS)) {
 			return;
 		}
 		try {
 			setSocketReceiveBufferSizeHints(ps
 					.get(EC2_RECEIVE_BUFFER_SIZE_HINTS));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					EC2_RECEIVE_BUFFER_SIZE_HINTS), Ex);
 		}
 	}
 
-	private void loadProtocol(PropertiesSet ps) throws ConfigurationException {
+	private void loadProtocol(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROTOCOL)) {
 			return;
 		}
 		try {
 			setProtocol(ps.get(EC2_PROTOCOL));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROTOCOL), Ex);
 		}
 	}
 
-	private void loadUserAgent(PropertiesSet ps) throws ConfigurationException {
+	private void loadUserAgent(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_USER_AGENT)) {
 			return;
 		}
 		try {
 			setUserAgent(ps.get(EC2_USER_AGENT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_USER_AGENT), Ex);
 		}
 	}
 
-	private void loadProxyHost(PropertiesSet ps) throws ConfigurationException {
+	private void loadProxyHost(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_HOST)) {
 			return;
 		}
 		try {
 			setProxyHost(ps.get(EC2_PROXY_HOST));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_HOST), Ex);
 		}
 	}
 
-	private void loadProxyPort(PropertiesSet ps) throws ConfigurationException {
+	private void loadProxyPort(PropertiesSet ps)
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_PORT)) {
 			return;
 		}
 		try {
 			setProxyPort(ps.get(EC2_PROXY_PORT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PORT), Ex);
 		}
 	}
 
 	private void loadProxyUsername(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_USERNAME)) {
 			return;
 		}
 		try {
 			setProxyUsername(ps.get(EC2_PROXY_USERNAME));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_USERNAME), Ex);
 		}
 	}
 
 	private void loadProxyPassword(PropertiesSet ps)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_PASSWORD)) {
 			return;
 		}
 		try {
 			setProxyPassword(ps.get(EC2_PROXY_PASSWORD));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PASSWORD), Ex);
 		}
 	}
 
-	private void validate() throws ConfigurationException {
+	private void validate() throws AwsPlugInConfigurationException {
 		try {
 			Common.validate(new AmazonEC2Client(this, getCC()));
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
-				throw new ConfigurationException(
+				throw new AwsPlugInConfigurationException(
 						Messages.bind(Messages.ConfEx_INVALID_AWS_CREDENTIALS,
 								new Object[] { getAWSAccessKeyId(),
 										getAWSSecretKey(), EC2_ACCESS_KEY,
 										EC2_SECRET_KEY, getFilePath() }));
 			} else {
-				throw new ConfigurationException(Messages.ConfEx_VALIDATION, Ex);
+				throw new AwsPlugInConfigurationException(
+						Messages.ConfEx_VALIDATION, Ex);
 			}
 		} catch (AmazonClientException Ex) {
-			throw new ConfigurationException(Messages.ConfEx_VALIDATION, Ex);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_VALIDATION, Ex);
 		}
 	}
 
@@ -358,13 +346,15 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return msAccessKey;
 	}
 
-	public String setAccessKey(String accessKey) throws ConfigurationException {
+	public String setAccessKey(String accessKey)
+			throws AwsPlugInConfigurationException {
 		if (accessKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an AWS accesKey).");
 		}
 		if (accessKey.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getAWSAccessKeyId();
 		msAccessKey = accessKey;
@@ -376,13 +366,15 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return msSecretKey;
 	}
 
-	public String setSecretKey(String secretKey) throws ConfigurationException {
+	public String setSecretKey(String secretKey)
+			throws AwsPlugInConfigurationException {
 		if (secretKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an AWS secretKey).");
 		}
 		if (secretKey.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getAWSSecretKey();
 		msSecretKey = secretKey;
@@ -393,26 +385,29 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getConnectionTimeout();
 	}
 
-	public int setConnectionTimeout(String val) throws ConfigurationException {
+	public int setConnectionTimeout(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a connection timeout).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setConnectionTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, val));
 		}
 	}
 
-	public int setConnectionTimeout(int ival) throws ConfigurationException {
+	public int setConnectionTimeout(int ival)
+			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, ival));
 		}
 		int previous = getCC().getConnectionTimeout();
@@ -424,26 +419,29 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getSocketTimeout();
 	}
 
-	public int setSocketTimeout(String val) throws ConfigurationException {
+	public int setSocketTimeout(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a socket timeout).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setSocketTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, val));
 		}
 	}
 
-	public int setSocketTimeout(int ival) throws ConfigurationException {
+	public int setSocketTimeout(int ival)
+			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, ival));
 		}
 		int previous = getCC().getSocketTimeout();
@@ -455,26 +453,29 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getMaxErrorRetry();
 	}
 
-	public int setMaxErrorRetry(String val) throws ConfigurationException {
+	public int setMaxErrorRetry(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a retry attempts).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setMaxErrorRetry(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_RETRY, val));
 		}
 	}
 
-	public int setMaxErrorRetry(int ival) throws ConfigurationException {
+	public int setMaxErrorRetry(int ival)
+			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_RETRY, ival));
 		}
 		int previous = getCC().getMaxErrorRetry();
@@ -486,26 +487,29 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getMaxConnections();
 	}
 
-	public int setMaxConnections(String val) throws ConfigurationException {
+	public int setMaxConnections(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a maximum connection amount).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setMaxConnections(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_MAX_CONN, val));
 		}
 	}
 
-	public int setMaxConnections(int ival) throws ConfigurationException {
+	public int setMaxConnections(int ival)
+			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_MAX_CONN, ival));
 		}
 		int previous = getCC().getMaxConnections();
@@ -518,27 +522,28 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 	}
 
 	public int setSocketSendBufferSizeHints(String val)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer (a Send Buffer Size).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setSocketSendBufferSizeHints(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SEND_BUFFSIZE, val));
 		}
 	}
 
 	public int setSocketSendBufferSizeHints(int ival)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (ival <= 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SEND_BUFFSIZE, ival));
 		}
 		int previous = getSocketSendBufferSizeHints();
@@ -552,27 +557,28 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 	}
 
 	public int setSocketReceiveBufferSizeHints(String val)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer (a Receive Buffer Size).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setSocketReceiveBufferSizeHints(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_RECEIVE_BUFFSIZE, val));
 		}
 	}
 
 	public int setSocketReceiveBufferSizeHints(int ival)
-			throws ConfigurationException {
+			throws AwsPlugInConfigurationException {
 		if (ival <= 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_RECEIVE_BUFFSIZE, ival));
 		}
 		int previous = getSocketReceiveBufferSizeHints();
@@ -584,7 +590,8 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getProtocol();
 	}
 
-	public Protocol setProtocol(String val) throws ConfigurationException {
+	public Protocol setProtocol(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents a Protocol "
@@ -592,7 +599,8 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 					+ "').");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		Protocol previous = getCC().getProtocol();
 		if (val.equalsIgnoreCase(Protocol.HTTP.toString())) {
@@ -600,7 +608,7 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		} else if (val.equalsIgnoreCase(Protocol.HTTPS.toString())) {
 			getCC().setProtocol(Protocol.HTTPS);
 		} else {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_PROTOCOL, val, Protocol.values()
 							.toString()));
 		}
@@ -611,13 +619,15 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getUserAgent();
 	}
 
-	public String setUserAgent(String val) throws ConfigurationException {
+	public String setUserAgent(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a User Agent).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getCC().getUserAgent();
 		getCC().setUserAgent(val);
@@ -628,19 +638,21 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getProxyHost();
 	}
 
-	public String setProxyHost(String val) throws ConfigurationException {
+	public String setProxyHost(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Proxy Host FQDN or IP "
 					+ "address).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			InetAddress.getByName(val);
 		} catch (UnknownHostException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_PROXY_HOST, val), Ex);
 		}
 		String previous = getCC().getProxyHost();
@@ -652,26 +664,27 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getProxyPort();
 	}
 
-	public int setProxyPort(String val) throws ConfigurationException {
+	public int setProxyPort(String val) throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents a positive "
 					+ "Integer (a Proxy Port).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setProxyPort(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_PROXY_PORT, val));
 		}
 	}
 
-	public int setProxyPort(int ival) throws ConfigurationException {
+	public int setProxyPort(int ival) throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_PROXY_PORT, ival));
 		}
 		int previous = getCC().getProxyPort();
@@ -683,13 +696,15 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getProxyUsername();
 	}
 
-	public String setProxyUsername(String val) throws ConfigurationException {
+	public String setProxyUsername(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Proxy Username).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getCC().getProxyUsername();
 		getCC().setProxyUsername(val);
@@ -700,13 +715,15 @@ public class Configuration implements IPluginConfiguration, AWSCredentials {
 		return getCC().getProxyPassword();
 	}
 
-	public String setProxyPassword(String val) throws ConfigurationException {
+	public String setProxyPassword(String val)
+			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Proxy Password).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getCC().getProxyPassword();
 		getCC().setProxyPassword(val);

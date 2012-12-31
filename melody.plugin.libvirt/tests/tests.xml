@@ -20,7 +20,7 @@
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
-			<arg value="update_disks" />
+			<arg value="update_disk_devices" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

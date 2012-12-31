@@ -1,7 +1,6 @@
 package com.wat.melody.plugin.ssh.common;
 
 import java.io.File;
-import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -10,9 +9,9 @@ import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.UserInfo;
-import com.wat.melody.api.IPluginConfiguration;
+import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
-import com.wat.melody.api.exception.PluginConfigurationException;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -21,34 +20,22 @@ import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.plugin.ssh.common.exception.ConfigurationException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionLevelException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionTypeException;
 import com.wat.melody.plugin.ssh.common.exception.IllegalProxyTypeException;
+import com.wat.melody.plugin.ssh.common.exception.SshPlugInConfigurationException;
 
-public class Configuration implements IPluginConfiguration {
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public class SshPlugInConfiguration implements IPlugInConfiguration {
 
-	public static final String NAME = "SSH";
-
-	public static Configuration get(IProcessorManager pm)
-			throws ConfigurationException {
-		Map<String, IPluginConfiguration> pcs = pm.getPluginConfigurations();
-		IPluginConfiguration pc = null;
-		pc = pcs.get(NAME);
-		if (pc == null) {
-			throw new ConfigurationException(Messages.bind(
-					Messages.ConfEx_CONF_NOT_REGISTERED, NAME));
-		}
-		try {
-			return (Configuration) pc;
-		} catch (ClassCastException Ex) {
-			throw new ConfigurationException(Messages.bind(
-					Messages.ConfEx_CONF_REGISTRATION_ERROR,
-					new Object[] { NAME,
-							IPluginConfiguration.PLUGIN_CONF_CLASS,
-							pc.getFilePath(),
-							Configuration.class.getCanonicalName() }));
-		}
+	public static SshPlugInConfiguration get(IProcessorManager pm)
+			throws PlugInConfigurationException {
+		return (SshPlugInConfiguration) pm
+				.getPluginConfiguration(SshPlugInConfiguration.class);
 	}
 
 	public final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
@@ -88,13 +75,8 @@ public class Configuration implements IPluginConfiguration {
 	private Host moProxyHost;
 	private Port moProxyPort;
 
-	public Configuration() {
+	public SshPlugInConfiguration() {
 		setJSch(new JSch());
-	}
-
-	@Override
-	public String getName() {
-		return NAME;
 	}
 
 	@Override
@@ -112,7 +94,7 @@ public class Configuration implements IPluginConfiguration {
 	}
 
 	@Override
-	public void load(PropertiesSet ps) throws PluginConfigurationException {
+	public void load(PropertiesSet ps) throws PlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid PropertiesSet.");
@@ -135,161 +117,165 @@ public class Configuration implements IPluginConfiguration {
 		validate();
 	}
 
-	private void loadKnownHosts(PropertiesSet ps) throws ConfigurationException {
+	private void loadKnownHosts(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KNOWN_HOSTS)) {
 			return;
 		}
 		try {
 			setKnownHosts(ps.get(KNOWN_HOSTS));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KNOWN_HOSTS), Ex);
 		}
 	}
 
 	private void loadKeyPairRepo(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KEYPAIR_REPO)) {
 			return;
 		}
 		try {
 			setKeyPairRepo(ps.get(KEYPAIR_REPO));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KEYPAIR_REPO), Ex);
 		}
 	}
 
 	private void loadKeyPairSize(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KEYPAIR_SIZE)) {
 			return;
 		}
 		try {
 			setKeyPairSize(ps.get(KEYPAIR_SIZE));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KEYPAIR_SIZE), Ex);
 		}
 	}
 
 	private void loadCompressionLevel(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(COMPRESSION_LEVEL)) {
 			return;
 		}
 		try {
 			setCompressionLevel(ps.get(COMPRESSION_LEVEL));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, COMPRESSION_LEVEL), Ex);
 		}
 	}
 
 	private void loadCompressionType(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(COMPRESSION_TYPE)) {
 			return;
 		}
 		try {
 			setCompressionType(ps.get(COMPRESSION_TYPE));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, COMPRESSION_TYPE), Ex);
 		}
 	}
 
 	private void loadConnectionTimeout(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(CONNECTION_TIMEOUT)) {
 			return;
 		}
 		try {
 			setConnectionTimeout(ps.get(CONNECTION_TIMEOUT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, CONNECTION_TIMEOUT), Ex);
 		}
 	}
 
 	private void loadReadTimeout(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(READ_TIMEOUT)) {
 			return;
 		}
 		try {
 			setReadTimeout(ps.get(READ_TIMEOUT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, READ_TIMEOUT), Ex);
 		}
 	}
 
 	private void loadServerAliveCountMax(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(SERVER_ALIVE_MAX_COUNT)) {
 			return;
 		}
 		try {
 			setServerAliveCountMax(ps.get(SERVER_ALIVE_MAX_COUNT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, SERVER_ALIVE_MAX_COUNT),
 					Ex);
 		}
 	}
 
 	private void loadServerAliveInterval(PropertiesSet ps)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(SERVER_ALIVE_INTERVAL)) {
 			return;
 		}
 		try {
 			setServerAliveInterval(ps.get(SERVER_ALIVE_INTERVAL));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, SERVER_ALIVE_INTERVAL),
 					Ex);
 		}
 	}
 
-	private void loadProxyType(PropertiesSet ps) throws ConfigurationException {
+	private void loadProxyType(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_TYPE)) {
 			return;
 		}
 		try {
 			setProxyType(ps.get(PROXY_TYPE));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_TYPE), Ex);
 		}
 	}
 
-	private void loadProxyHost(PropertiesSet ps) throws ConfigurationException {
+	private void loadProxyHost(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_HOST)) {
 			return;
 		}
 		try {
 			setProxyHost(ps.get(PROXY_HOST));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_HOST), Ex);
 		}
 	}
 
-	private void loadProxyPort(PropertiesSet ps) throws ConfigurationException {
+	private void loadProxyPort(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_PORT)) {
 			return;
 		}
 		try {
 			setProxyPort(ps.get(PROXY_PORT));
-		} catch (ConfigurationException Ex) {
-			throw new ConfigurationException(Messages.bind(
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_PORT), Ex);
 		}
 	}
 
-	private void validate() throws ConfigurationException {
+	private void validate() throws SshPlugInConfigurationException {
 		/*
 		 * TODO : try to connect to the proxy, if set.
 		 */
@@ -362,7 +348,8 @@ public class Configuration implements IPluginConfiguration {
 		return moKnownHosts;
 	}
 
-	public File setKnownHosts(File knownHosts) throws ConfigurationException {
+	public File setKnownHosts(File knownHosts)
+			throws SshPlugInConfigurationException {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a KnownHosts File).");
@@ -377,7 +364,7 @@ public class Configuration implements IPluginConfiguration {
 			getJSch().setKnownHosts(knownHosts.getPath());
 		} catch (IllegalFileException | IllegalDirectoryException
 				| JSchException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KNOWNHOSTS, knownHosts), Ex);
 		}
 		File previous = getKnownHosts();
@@ -385,13 +372,15 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public File setKnownHosts(String val) throws ConfigurationException {
+	public File setKnownHosts(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a KnownHosts File path).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		return setKnownHosts(new File(val));
 	}
@@ -400,7 +389,8 @@ public class Configuration implements IPluginConfiguration {
 		return moKeyPairRepo;
 	}
 
-	public File setKeyPairRepo(File keyPairRepo) throws ConfigurationException {
+	public File setKeyPairRepo(File keyPairRepo)
+			throws SshPlugInConfigurationException {
 		if (keyPairRepo == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Directory (a KeyPair Repo).");
@@ -413,7 +403,7 @@ public class Configuration implements IPluginConfiguration {
 		try {
 			Tools.validateDirExists(keyPairRepo.getPath());
 		} catch (IllegalDirectoryException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KEYPAIR_REPO, keyPairRepo), Ex);
 		}
 		File previous = getKnownHosts();
@@ -421,13 +411,15 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public File setKeyPairRepo(String val) throws ConfigurationException {
+	public File setKeyPairRepo(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Directory (a KeyPair Repo path).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		return setKeyPairRepo(new File(val));
 	}
@@ -436,9 +428,9 @@ public class Configuration implements IPluginConfiguration {
 		return miKeyPairSize;
 	}
 
-	public int setKeyPairSize(int ival) throws ConfigurationException {
+	public int setKeyPairSize(int ival) throws SshPlugInConfigurationException {
 		if (ival < 1024) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KEYPAIR_SIZE, ival));
 		}
 		int previous = getKeyPairSize();
@@ -446,19 +438,21 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public int setKeyPairSize(String val) throws ConfigurationException {
+	public int setKeyPairSize(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer > 1024 (a KeyPair Size).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setKeyPairSize(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KEYPAIR_SIZE, val));
 		}
 	}
@@ -468,7 +462,8 @@ public class Configuration implements IPluginConfiguration {
 	}
 
 	public CompressionLevel setCompressionLevel(
-			CompressionLevel compressionLevel) throws ConfigurationException {
+			CompressionLevel compressionLevel)
+			throws SshPlugInConfigurationException {
 		if (compressionLevel == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a CompressionLevel).");
@@ -479,7 +474,7 @@ public class Configuration implements IPluginConfiguration {
 	}
 
 	public CompressionLevel setCompressionLevel(String val)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an "
@@ -488,7 +483,7 @@ public class Configuration implements IPluginConfiguration {
 		try {
 			return setCompressionLevel(CompressionLevel.parseString(val));
 		} catch (IllegalCompressionLevelException Ex) {
-			throw new ConfigurationException(Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -507,7 +502,7 @@ public class Configuration implements IPluginConfiguration {
 	}
 
 	public CompressionType setCompressionType(String val)
-			throws ConfigurationException {
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a CompressionType).");
@@ -515,7 +510,7 @@ public class Configuration implements IPluginConfiguration {
 		try {
 			return CompressionType.parseString(val);
 		} catch (IllegalCompressionTypeException Ex) {
-			throw new ConfigurationException(Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -523,9 +518,10 @@ public class Configuration implements IPluginConfiguration {
 		return miConnectionTimeout;
 	}
 
-	public int setConnectionTimeout(int ival) throws ConfigurationException {
+	public int setConnectionTimeout(int ival)
+			throws SshPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, ival));
 		}
 		int previous = getConnectionTimeout();
@@ -533,19 +529,21 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public int setConnectionTimeout(String val) throws ConfigurationException {
+	public int setConnectionTimeout(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a connection timeout).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setConnectionTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, val));
 		}
 	}
@@ -554,9 +552,9 @@ public class Configuration implements IPluginConfiguration {
 		return miReadTimeout;
 	}
 
-	public int setReadTimeout(int ival) throws ConfigurationException {
+	public int setReadTimeout(int ival) throws SshPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, ival));
 		}
 		int previous = getReadTimeout();
@@ -564,19 +562,21 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public int setReadTimeout(String val) throws ConfigurationException {
+	public int setReadTimeout(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a read timeout).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setReadTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, val));
 		}
 	}
@@ -585,9 +585,10 @@ public class Configuration implements IPluginConfiguration {
 		return miServerAliveCountMax;
 	}
 
-	public int setServerAliveCountMax(int ival) throws ConfigurationException {
+	public int setServerAliveCountMax(int ival)
+			throws SshPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT, ival));
 		}
 		int previous = getServerAliveCountMax();
@@ -595,19 +596,21 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public int setServerAliveCountMax(String val) throws ConfigurationException {
+	public int setServerAliveCountMax(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a server alive count max).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setServerAliveCountMax(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT, val));
 		}
 	}
@@ -616,9 +619,10 @@ public class Configuration implements IPluginConfiguration {
 		return miServerAliveInterval;
 	}
 
-	public int setServerAliveInterval(int ival) throws ConfigurationException {
+	public int setServerAliveInterval(int ival)
+			throws SshPlugInConfigurationException {
 		if (ival < 0) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SERVER_ALIVE_INTERVAL, ival));
 		}
 		int previous = getServerAliveInterval();
@@ -626,19 +630,21 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public int setServerAliveInterval(String val) throws ConfigurationException {
+	public int setServerAliveInterval(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a server alive interval).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setServerAliveInterval(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new ConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_SERVER_ALIVE_INTERVAL, val));
 		}
 	}
@@ -647,7 +653,8 @@ public class Configuration implements IPluginConfiguration {
 		return moProxyType;
 	}
 
-	public ProxyType setProxyType(String val) throws ConfigurationException {
+	public ProxyType setProxyType(String val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a proxy type).");
@@ -655,11 +662,12 @@ public class Configuration implements IPluginConfiguration {
 		try {
 			return setProxyType(ProxyType.parseString(val));
 		} catch (IllegalProxyTypeException Ex) {
-			throw new ConfigurationException(Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
-	public ProxyType setProxyType(ProxyType val) throws ConfigurationException {
+	public ProxyType setProxyType(ProxyType val)
+			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ProxyType.");
@@ -673,7 +681,7 @@ public class Configuration implements IPluginConfiguration {
 		return moProxyHost;
 	}
 
-	public Host setProxyHost(Host val) throws ConfigurationException {
+	public Host setProxyHost(Host val) throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Host.");
@@ -683,7 +691,7 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public Host setProxyHost(String val) throws ConfigurationException {
+	public Host setProxyHost(String val) throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a proxy host).");
@@ -691,7 +699,7 @@ public class Configuration implements IPluginConfiguration {
 		try {
 			return setProxyHost(Host.parseString(val));
 		} catch (IllegalHostException Ex) {
-			throw new ConfigurationException(Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -699,7 +707,7 @@ public class Configuration implements IPluginConfiguration {
 		return moProxyPort;
 	}
 
-	public Port setProxyPort(Port port) throws ConfigurationException {
+	public Port setProxyPort(Port port) throws SshPlugInConfigurationException {
 		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Port.");
@@ -709,19 +717,20 @@ public class Configuration implements IPluginConfiguration {
 		return previous;
 	}
 
-	public Port setProxyPort(String val) throws ConfigurationException {
+	public Port setProxyPort(String val) throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String which represents an positive "
 					+ "Integer or zero (a Port).");
 		}
 		if (val.trim().length() == 0) {
-			throw new ConfigurationException(Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
 			return setProxyPort(Port.parseString(val));
 		} catch (IllegalPortException Ex) {
-			throw new ConfigurationException(Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 

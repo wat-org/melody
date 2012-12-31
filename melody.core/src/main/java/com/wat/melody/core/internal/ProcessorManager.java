@@ -1,15 +1,14 @@
 package com.wat.melody.core.internal;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.IPluginConfiguration;
+import com.wat.melody.api.IPlugInConfiguration;
+import com.wat.melody.api.IPlugInConfigurations;
 import com.wat.melody.api.IProcessorListener;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
@@ -25,6 +24,7 @@ import com.wat.melody.api.event.State;
 import com.wat.melody.api.event.TaskCreatedEvent;
 import com.wat.melody.api.event.TaskFinishedEvent;
 import com.wat.melody.api.event.TaskStartedEvent;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.api.exception.TaskException;
@@ -73,7 +73,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private SequenceDescriptor moSequenceDescriptor;
 	private ResourcesDescriptor moResourcesDescriptor;
 
-	private Map<String, IPluginConfiguration> moPluginConfigurations;
+	private PlugInConfigurations moPluginConfigurations;
 
 	private boolean mbStopRequested;
 	private boolean mbPauseRequested;
@@ -105,7 +105,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		setResourcesDescriptor(new ResourcesDescriptor());
 
 		// Processing members
-		setPluginConfigurations(new Hashtable<String, IPluginConfiguration>());
+		setPluginConfigurations(new PlugInConfigurations());
 		setStopRequested(false);
 		setPauseRequested(false);
 		setThreadGroup(null);
@@ -309,19 +309,31 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	@Override
-	public Map<String, IPluginConfiguration> getPluginConfigurations() {
+	public PlugInConfigurations getPluginConfigurations() {
 		return moPluginConfigurations;
 	}
 
-	public Map<String, IPluginConfiguration> setPluginConfigurations(
-			Map<String, IPluginConfiguration> pcs) {
+	public PlugInConfigurations setPluginConfigurations(PlugInConfigurations pcs) {
 		if (pcs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Map<String, PropertiesSet>.");
 		}
-		Map<String, IPluginConfiguration> previous = getPluginConfigurations();
+		PlugInConfigurations previous = getPluginConfigurations();
 		moPluginConfigurations = pcs;
 		return previous;
+	}
+
+	public IPlugInConfiguration getPluginConfiguration(
+			Class<? extends IPlugInConfiguration> key)
+			throws PlugInConfigurationException {
+		IPlugInConfigurations pcs = getPluginConfigurations();
+		IPlugInConfiguration pc = null;
+		pc = pcs.get(key);
+		if (pc == null) {
+			throw new PlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_CONF_NOT_REGISTERED, key));
+		}
+		return pc;
 	}
 
 	private boolean isSubPM() {

@@ -8,7 +8,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.LevelRangeFilter;
 
-import com.wat.melody.api.IPluginConfiguration;
+import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.IResourcesDescriptor;
@@ -18,7 +18,7 @@ import com.wat.melody.api.ProcessorManagerFactory;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
 import com.wat.melody.api.exception.IllegalTargetFilterException;
-import com.wat.melody.api.exception.PluginConfigurationException;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 import com.wat.melody.cli.exception.CommandLineParsingException;
 import com.wat.melody.cli.exception.ConfigurationLoadingException;
@@ -1228,12 +1228,11 @@ public class ProcessorManagerLoader {
 			throws ConfigurationLoadingException, IOException {
 		String pcf = loadPlugInConfigurationDirective(oProps, pcd);
 		PropertiesSet pcps = loadPlugInConfigurationFile(oProps, pcd, pcf);
-		String pcn = findPlugInRegistrationName(oProps, pcd, pcps);
 		String pcc = findPlugInConfigurationClassName(oProps, pcd, pcps);
-		Class<IPluginConfiguration> c = convertPlugInConfigurationClass(pcps,
-				pcn, pcc);
-		IPluginConfiguration pc = instanciatePlugInConfiguration(pcps, c);
-		registerPlugInConfiguration(pcn, pc);
+		Class<IPlugInConfiguration> c = convertPlugInConfigurationClass(pcps,
+				pcc);
+		IPlugInConfiguration pc = instanciatePlugInConfiguration(pcps, c);
+		registerPlugInConfiguration(pc);
 	}
 
 	private String loadPlugInConfigurationDirective(PropertiesSet oProps,
@@ -1270,51 +1269,27 @@ public class ProcessorManagerLoader {
 		return pcps;
 	}
 
-	private String findPlugInRegistrationName(PropertiesSet oProps, String pcd,
-			PropertiesSet pcps) throws ConfigurationLoadingException {
-		if (!pcps.containsKey(IPluginConfiguration.PLUGIN_CONF_NAME)) {
-			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_MISSING_PCN_DIRECTIVE, new Object[] { pcd,
-							pcps.getFilePath(),
-							IPluginConfiguration.PLUGIN_CONF_NAME }));
-		}
-		String pcn = pcps.get(IPluginConfiguration.PLUGIN_CONF_NAME);
-		if (pcn.trim().length() == 0) {
-			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_EMPTY_PCN_DIRECTIVE,
-					IPluginConfiguration.PLUGIN_CONF_NAME, pcps.getFilePath()));
-		}
-		IProcessorManager pm = getProcessorManager();
-		if (pm.getPluginConfigurations().containsKey(pcn)) {
-			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_INVALID_PCN_DIRECTIVE,
-					new Object[] { IPluginConfiguration.PLUGIN_CONF_NAME,
-							pcps.getFilePath(), pcn }));
-		}
-		return pcn;
-	}
-
 	private String findPlugInConfigurationClassName(PropertiesSet oProps,
 			String pcd, PropertiesSet pcps)
 			throws ConfigurationLoadingException {
-		if (!pcps.containsKey(IPluginConfiguration.PLUGIN_CONF_CLASS)) {
+		if (!pcps.containsKey(IPlugInConfiguration.PLUGIN_CONF_CLASS)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_PCC_DIRECTIVE, new Object[] { pcd,
 							pcps.getFilePath(),
-							IPluginConfiguration.PLUGIN_CONF_CLASS }));
+							IPlugInConfiguration.PLUGIN_CONF_CLASS }));
 		}
-		String pcc = pcps.get(IPluginConfiguration.PLUGIN_CONF_CLASS);
+		String pcc = pcps.get(IPlugInConfiguration.PLUGIN_CONF_CLASS);
 		if (pcc.trim().length() == 0) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_EMPTY_PCC_DIRECTIVE,
-					IPluginConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath()));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath()));
 		}
 		return pcc;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class<IPluginConfiguration> convertPlugInConfigurationClass(
-			PropertiesSet pcps, String pcn, String pcc)
+	private Class<IPlugInConfiguration> convertPlugInConfigurationClass(
+			PropertiesSet pcps, String pcc)
 			throws ConfigurationLoadingException {
 		Class<?> c = null;
 		try {
@@ -1322,44 +1297,51 @@ public class ProcessorManagerLoader {
 		} catch (ClassNotFoundException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CNF_CONF_DIRECTIVE,
-					new Object[] { IPluginConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), pcc, pcn }));
+					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
+							pcps.getFilePath(), pcc }));
 		} catch (NoClassDefFoundError Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NCDF_CONF_DIRECTIVE,
-					new Object[] { IPluginConfiguration.PLUGIN_CONF_CLASS,
+					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
 							pcps.getFilePath(), pcc,
 							Ex.getMessage().replaceAll("/", ".") }));
 		}
-		Class<IPluginConfiguration> cc = null;
+		Class<IPlugInConfiguration> cc = null;
 		try {
-			cc = (Class<IPluginConfiguration>) c;
+			cc = (Class<IPlugInConfiguration>) c;
 		} catch (ClassCastException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CC_CONF_DIRECTIVE,
-					new Object[] { IPluginConfiguration.PLUGIN_CONF_CLASS,
+					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
 							pcps.getFilePath(), pcc }));
+		}
+		IProcessorManager pm = getProcessorManager();
+		if (pm.getPluginConfigurations().containsKey(cc)) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
+					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
+							pcps.getFilePath(), cc }));
 		}
 		return cc;
 	}
 
-	private IPluginConfiguration instanciatePlugInConfiguration(
-			PropertiesSet pcps, Class<IPluginConfiguration> c)
+	private IPlugInConfiguration instanciatePlugInConfiguration(
+			PropertiesSet pcps, Class<IPlugInConfiguration> c)
 			throws ConfigurationLoadingException {
-		IPluginConfiguration pc = null;
+		IPlugInConfiguration pc = null;
 		try {
-			pc = (IPluginConfiguration) c.newInstance();
+			pc = (IPlugInConfiguration) c.newInstance();
 		} catch (InstantiationException | IllegalAccessException Ex) {
 			throw new ConfigurationLoadingException(
 					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
 							new Object[] {
-									IPluginConfiguration.PLUGIN_CONF_CLASS,
+									IPlugInConfiguration.PLUGIN_CONF_CLASS,
 									pcps.getFilePath(),
 									c.getClass().getCanonicalName() }));
 		}
 		try {
 			pc.load(pcps);
-		} catch (PluginConfigurationException Ex) {
+		} catch (PlugInConfigurationException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_GENERIC_PLUGIN_LOAD, pcps.getFilePath()),
 					Ex);
@@ -1367,9 +1349,9 @@ public class ProcessorManagerLoader {
 		return pc;
 	}
 
-	private void registerPlugInConfiguration(String pcn, IPluginConfiguration pc) {
+	private void registerPlugInConfiguration(IPlugInConfiguration pc) {
 		IProcessorManager pm = getProcessorManager();
-		pm.getPluginConfigurations().put(pcn, pc);
+		pm.getPluginConfigurations().put(pc.getClass(), pc);
 	}
 
 	/**

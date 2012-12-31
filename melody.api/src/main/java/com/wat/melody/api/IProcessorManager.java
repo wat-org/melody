@@ -1,8 +1,8 @@
 package com.wat.melody.api;
 
 import java.util.List;
-import java.util.Map;
 
+import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 
@@ -68,7 +68,11 @@ public interface IProcessorManager {
 
 	public IResourcesDescriptor getResourcesDescriptor();
 
-	public Map<String, IPluginConfiguration> getPluginConfigurations();
+	public IPlugInConfigurations getPluginConfigurations();
+
+	public IPlugInConfiguration getPluginConfiguration(
+			Class<? extends IPlugInConfiguration> key)
+			throws PlugInConfigurationException;
 
 	public IRegisteredTasks getRegisteredTasks();
 

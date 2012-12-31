@@ -10,9 +10,9 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.plugin.ssh.common.Configuration;
 import com.wat.melody.plugin.ssh.common.JSchConnectionDatas;
 import com.wat.melody.plugin.ssh.common.JSchHelper;
+import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
@@ -21,9 +21,9 @@ public class SshNetworkManager implements NetworkManager {
 	private static Log log = LogFactory.getLog(SshNetworkManager.class);
 
 	private SshNetworkManagementDatas moManagementDatas;
-	private Configuration moContext;
+	private SshPlugInConfiguration moContext;
 
-	public SshNetworkManager(Node instanceNode, Configuration context)
+	public SshNetworkManager(Node instanceNode, SshPlugInConfiguration context)
 			throws ResourcesDescriptorException {
 		setConfiguration(context);
 		setManagementDatas(new SshNetworkManagementDatas(instanceNode));
@@ -42,15 +42,15 @@ public class SshNetworkManager implements NetworkManager {
 		moManagementDatas = nmd;
 	}
 
-	public Configuration getConfiguration() {
+	public SshPlugInConfiguration getConfiguration() {
 		return moContext;
 	}
 
-	private void setConfiguration(Configuration conf) {
+	private void setConfiguration(SshPlugInConfiguration conf) {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ Configuration.class.getCanonicalName() + ".");
+					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
 		}
 		moContext = conf;
 	}
@@ -73,9 +73,9 @@ public class SshNetworkManager implements NetworkManager {
 		}
 	}
 
-	public static boolean addKnownHostsHost(Configuration sshPlugInConf,
-			Host host, Port port, long timeout) throws SshException,
-			InterruptedException {
+	public static boolean addKnownHostsHost(
+			SshPlugInConfiguration sshPlugInConf, Host host, Port port,
+			long timeout) throws SshException, InterruptedException {
 		JSchConnectionTester sshCnxTester = new JSchConnectionTester(host, port);
 
 		final long WAIT_STEP = 5000;
@@ -143,11 +143,12 @@ public class SshNetworkManager implements NetworkManager {
 		removeKnownHostsHost(getConfiguration(), getManagementDatas().getHost());
 	}
 
-	public static void removeKnownHostsHost(Configuration conf, Host host) {
+	public static void removeKnownHostsHost(SshPlugInConfiguration conf,
+			Host host) {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ Configuration.class.getCanonicalName() + ".");
+					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
 		}
 		conf.removeKnownHostsHostKey(host.getValue().getHostAddress());
 		conf.removeKnownHostsHostKey(host.getValue().getHostName());

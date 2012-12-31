@@ -1,24 +1,30 @@
 package com.wat.melody.plugin.libvirt.common.exception;
 
-import com.wat.melody.api.exception.PluginConfigurationException;
+import com.wat.melody.api.exception.PlugInConfigurationException;
 
-public class ConfigurationException extends PluginConfigurationException {
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public class LibVirtPlugInConfigurationException extends
+		PlugInConfigurationException {
 
 	private static final long serialVersionUID = 983212356657786543L;
 
-	public ConfigurationException() {
+	public LibVirtPlugInConfigurationException() {
 		super();
 	}
 
-	public ConfigurationException(String msg) {
+	public LibVirtPlugInConfigurationException(String msg) {
 		super(msg);
 	}
 
-	public ConfigurationException(Throwable cause) {
+	public LibVirtPlugInConfigurationException(Throwable cause) {
 		super(cause);
 	}
 
-	public ConfigurationException(String msg, Throwable cause) {
+	public LibVirtPlugInConfigurationException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
