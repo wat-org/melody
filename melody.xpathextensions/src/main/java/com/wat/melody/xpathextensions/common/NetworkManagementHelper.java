@@ -760,7 +760,8 @@ public abstract class NetworkManagementHelper {
 	 */
 	public static NodeList findNetworkDevices(Node instanceNode)
 			throws ResourcesDescriptorException {
-		String sAllNetDevSelector = findNetworkDevicesSelector(instanceNode);
+		String sAllNetDevSelector = "."
+				+ findNetworkDevicesSelector(instanceNode);
 		try {
 			return Doc.evaluateAsNodeList(sAllNetDevSelector, instanceNode);
 		} catch (XPathExpressionException Ex) {
