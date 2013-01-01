@@ -395,17 +395,17 @@ public class Upload extends AbstractSshOperation {
 					throw Ex;
 				}
 			}
+			// if the dirPath cannot be created => create its parent
+			Path parent = null;
+			try {
+				parent = dir.resolve("..").normalize();
+				mkdirs(channel, parent);
+			} catch (SshException Ex) {
+				throw new SshException(Messages.bind(Messages.UploadEx_MKDIRS,
+						parent), Ex);
+			}
+			mkdir(channel, dir);
 		}
-		// if the dirPath cannot be created => create its parent
-		Path parent = null;
-		try {
-			parent = dir.resolve("..").normalize();
-			mkdirs(channel, parent);
-		} catch (SshException Ex) {
-			throw new SshException(Messages.bind(Messages.UploadEx_MKDIRS,
-					parent), Ex);
-		}
-		mkdirs(channel, dir);
 	}
 
 	protected void ln_keep(ChannelSftp channel, SimpleResource r)
