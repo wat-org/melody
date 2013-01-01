@@ -3,7 +3,7 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
+import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 
 public class SshNetworkManagementDatas extends NetworkManagementDatas {
 
@@ -18,8 +18,8 @@ public class SshNetworkManagementDatas extends NetworkManagementDatas {
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	public NetworkManagementMethod getNetworkManagementMethod() {
-		return NetworkManagementMethod.SSH;
+	public ManagementNetworkMethod getNetworkManagementMethod() {
+		return ManagementNetworkMethod.SSH;
 	}
 
 }

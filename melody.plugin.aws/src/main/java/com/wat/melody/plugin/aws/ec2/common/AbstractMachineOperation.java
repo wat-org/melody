@@ -33,8 +33,8 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
+import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 
 /**
  * <p>
@@ -60,7 +60,7 @@ import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
  * In order to perform these actions, each AWS Instance Node must have :
  * <ul>
  * <li>a "tags/tag[@name='mgnt']/@value" equal to one of
- * {@link NetworkManagementMethod} ;</li>
+ * {@link ManagementNetworkMethod} ;</li>
  * <li>for unix/lunix, a "tags/tag[@name='ssh.port']/@value" ;</li>
  * <li>for windows, a "tags/tag[@name='winrm.port']/@value" ;</li>
  * </ul>

@@ -10,9 +10,9 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
-public class GetNetworkManagementHost implements XPathFunction {
+public class GetManagementNetworkPort implements XPathFunction {
 
-	public static final String NAME = "getNetworkManagementHost";
+	public static final String NAME = "getManagementNetworkPort";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -20,24 +20,18 @@ public class GetNetworkManagementHost implements XPathFunction {
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
+		if (!(arg0 instanceof Node)) {
 			throw new IllegalArgumentException(arg0.getClass()
 					.getCanonicalName()
 					+ ": Not accepted. "
 					+ CustomXPathFunctions.NAMESPACE
 					+ ":"
 					+ NAME
-					+ "() expects a Node or a List<Node> argument.");
+					+ "() expects a Node " + "argument.");
 		}
 		try {
-			if (arg0 instanceof Node) {
-				return NetworkManagementHelper
-						.findNetworkManagementHost((Node) arg0);
-			} else {
-				// TODO : need some test
-				return NetworkManagementHelper
-						.findManagementNetworkHost((List<Node>) arg0);
-			}
+			return NetworkManagementHelper
+					.getManagementNetworkPort((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

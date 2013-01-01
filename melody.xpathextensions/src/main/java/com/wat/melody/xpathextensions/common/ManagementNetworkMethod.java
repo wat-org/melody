@@ -4,14 +4,14 @@ import java.util.Arrays;
 
 import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
 
-public enum NetworkManagementMethod {
+public enum ManagementNetworkMethod {
 
 	SSH("ssh"), WINRM("winrm");
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link NetworkManagementMethod}
-	 * object.
+	 * Convert the given <code>String</code> to a
+	 * {@link ManagementNetworkMethod} object.
 	 * </p>
 	 * 
 	 * @param sMethod
@@ -26,32 +26,33 @@ public enum NetworkManagementMethod {
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */
-	public static NetworkManagementMethod parseString(String sMethod)
+	public static ManagementNetworkMethod parseString(String sMethod)
 			throws IllegalManagementMethodException {
 		if (sMethod == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
-					+ NetworkManagementMethod.class.getCanonicalName()
+					+ ManagementNetworkMethod.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
-					+ Arrays.asList(NetworkManagementMethod.values()) + ").");
+					+ Arrays.asList(ManagementNetworkMethod.values()) + ").");
 		}
 		if (sMethod.trim().length() == 0) {
 			throw new IllegalManagementMethodException(Messages.bind(
 					Messages.NetMgmtMethodEx_EMPTY, sMethod));
 		}
-		for (NetworkManagementMethod c : NetworkManagementMethod.class.getEnumConstants()) {
+		for (ManagementNetworkMethod c : ManagementNetworkMethod.class
+				.getEnumConstants()) {
 			if (sMethod.equalsIgnoreCase(c.getValue())) {
 				return c;
 			}
 		}
 		throw new IllegalManagementMethodException(Messages.bind(
 				Messages.NetMgmtMethodEx_INVALID, sMethod,
-				Arrays.asList(NetworkManagementMethod.values())));
+				Arrays.asList(ManagementNetworkMethod.values())));
 	}
 
 	private final String msValue;
 
-	private NetworkManagementMethod(String v) {
+	private ManagementNetworkMethod(String v) {
 		this.msValue = v;
 	}
 

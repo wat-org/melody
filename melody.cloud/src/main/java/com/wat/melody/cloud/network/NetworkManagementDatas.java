@@ -8,8 +8,8 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.utils.Doc;
+import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 
 public abstract class NetworkManagementDatas {
 
@@ -82,7 +82,7 @@ public abstract class NetworkManagementDatas {
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	abstract public NetworkManagementMethod getNetworkManagementMethod();
+	abstract public ManagementNetworkMethod getNetworkManagementMethod();
 
 	public Host getHost() {
 		return moHost;

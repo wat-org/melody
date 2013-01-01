@@ -7,8 +7,8 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.ManagementException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
+import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
-import com.wat.melody.xpathextensions.common.NetworkManagementMethod;
 
 public abstract class NetworkManagerFactory {
 
@@ -25,7 +25,7 @@ public abstract class NetworkManagerFactory {
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 
-		NetworkManagementMethod mm = NetworkManagementHelper
+		ManagementNetworkMethod mm = NetworkManagementHelper
 				.findManagementNetworkMethod(instanceNode);
 
 		switch (mm) {

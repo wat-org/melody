@@ -10,9 +10,9 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
-public class GetNetworkManagementMethod implements XPathFunction {
+public class GetManagementNetworkMethod implements XPathFunction {
 
-	public static final String NAME = "getNetworkManagementMethod";
+	public static final String NAME = "getManagementNetworkMethod";
 
 	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -31,7 +31,7 @@ public class GetNetworkManagementMethod implements XPathFunction {
 		}
 		try {
 			return NetworkManagementHelper
-					.getManagementNetworkMethod((Node) arg0);
+					.findManagementNetworkMethod((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

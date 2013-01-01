@@ -359,7 +359,7 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.
 	 */
-	public static Host findNetworkManagementHost(Node instanceNode)
+	public static Host findManagementNetworkHost(Node instanceNode)
 			throws ResourcesDescriptorException {
 		Node mgmtNode = null;
 		try {
@@ -501,9 +501,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTR} found
 	 *             in the given Instance's Network Device Management
-	 *             {@link Node} is not a valid {@link NetworkManagementMethod}.
+	 *             {@link Node} is not a valid {@link ManagementNetworkMethod}.
 	 */
-	public static NetworkManagementMethod findManagementNetworkMethod(
+	public static ManagementNetworkMethod findManagementNetworkMethod(
 			Node instanceNode) throws ResourcesDescriptorException {
 		Node mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkMethod(mgmtNode);
@@ -526,9 +526,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTR} found
 	 *             in the given Network Device Management {@link Node} is not a
-	 *             valid {@link NetworkManagementMethod}.
+	 *             valid {@link ManagementNetworkMethod}.
 	 */
-	public static NetworkManagementMethod getManagementNetworkMethod(
+	public static ManagementNetworkMethod getManagementNetworkMethod(
 			Node mgmtNode) throws ResourcesDescriptorException {
 		String sMethod = null;
 		try {
@@ -539,7 +539,7 @@ public abstract class NetworkManagementHelper {
 					Messages.NetMgmtEx_MISSING_ATTR, NETWORK_MGMT_METHOD_ATTR));
 		}
 		try {
-			return NetworkManagementMethod.parseString(sMethod);
+			return ManagementNetworkMethod.parseString(sMethod);
 		} catch (IllegalManagementMethodException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, NETWORK_MGMT_METHOD_ATTR),

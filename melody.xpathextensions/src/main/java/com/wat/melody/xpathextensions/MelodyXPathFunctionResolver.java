@@ -13,17 +13,16 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 			CustomXPathFunctions.NAMESPACE_URI, GetHeritedContent.NAME);
 
 	static final QName f_getNetworkManagementInterface = new QName(
-			CustomXPathFunctions.NAMESPACE_URI,
-			GetNetworkManagementInterface.NAME);
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkDevice.NAME);
 
-	static final QName f_getNetworkManagementHost = new QName(
-			CustomXPathFunctions.NAMESPACE_URI, GetNetworkManagementHost.NAME);
+	static final QName f_getManagementNetworkHost = new QName(
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkHost.NAME);
 
-	static final QName f_getNetworkManagementPort = new QName(
-			CustomXPathFunctions.NAMESPACE_URI, GetNetworkManagementPort.NAME);
+	static final QName f_getManagementNetworkPort = new QName(
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkPort.NAME);
 
-	static final QName f_getNetworkManagementMethod = new QName(
-			CustomXPathFunctions.NAMESPACE_URI, GetNetworkManagementMethod.NAME);
+	static final QName f_getManagementNetworkMethod = new QName(
+			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkMethod.NAME);
 
 	/*
 	 * TODO : find a way to add custom XPath Function via configuration file
@@ -35,13 +34,13 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 		} else if (qName.equals(f_getHeritedContent) && arity == 2) {
 			return new GetHeritedContent();
 		} else if (qName.equals(f_getNetworkManagementInterface) && arity == 1) {
-			return new GetNetworkManagementInterface();
-		} else if (qName.equals(f_getNetworkManagementHost) && arity == 1) {
-			return new GetNetworkManagementHost();
-		} else if (qName.equals(f_getNetworkManagementPort) && arity == 1) {
-			return new GetNetworkManagementPort();
-		} else if (qName.equals(f_getNetworkManagementMethod) && arity == 1) {
-			return new GetNetworkManagementMethod();
+			return new GetManagementNetworkDevice();
+		} else if (qName.equals(f_getManagementNetworkHost) && arity == 1) {
+			return new GetManagementNetworkHost();
+		} else if (qName.equals(f_getManagementNetworkPort) && arity == 1) {
+			return new GetManagementNetworkPort();
+		} else if (qName.equals(f_getManagementNetworkMethod) && arity == 1) {
+			return new GetManagementNetworkMethod();
 		}
 		return null;
 	}
