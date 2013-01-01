@@ -5,7 +5,7 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 
-public class SshNetworkManagementDatas extends NetworkManagementDatas {
+public class SshNetworkManagementDatas extends ManagementNetworkDatas {
 
 	public SshNetworkManagementDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -14,11 +14,11 @@ public class SshNetworkManagementDatas extends NetworkManagementDatas {
 
 	@Override
 	public String toString() {
-		return "{ method:" + getNetworkManagementMethod() + ", host:"
+		return "{ method:" + getManagementNetworkMethod() + ", host:"
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	public ManagementNetworkMethod getNetworkManagementMethod() {
+	public ManagementNetworkMethod getManagementNetworkMethod() {
 		return ManagementNetworkMethod.SSH;
 	}
 

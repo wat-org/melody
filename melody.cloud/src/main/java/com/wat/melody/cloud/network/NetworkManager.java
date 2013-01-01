@@ -4,7 +4,7 @@ import com.wat.melody.cloud.network.exception.ManagementException;
 
 public interface NetworkManager {
 
-	public NetworkManagementDatas getManagementDatas();
+	public ManagementNetworkDatas getManagementDatas();
 
 	/**
 	 * @param timeout

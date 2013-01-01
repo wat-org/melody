@@ -5,7 +5,7 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 
-public class WinRmNetworkManagementDatas extends NetworkManagementDatas {
+public class WinRmNetworkManagementDatas extends ManagementNetworkDatas {
 
 	public WinRmNetworkManagementDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -14,11 +14,11 @@ public class WinRmNetworkManagementDatas extends NetworkManagementDatas {
 
 	@Override
 	public String toString() {
-		return "{ method:" + getNetworkManagementMethod() + ", host:"
+		return "{ method:" + getManagementNetworkMethod() + ", host:"
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	public ManagementNetworkMethod getNetworkManagementMethod() {
+	public ManagementNetworkMethod getManagementNetworkMethod() {
 		return ManagementNetworkMethod.WINRM;
 	}
 

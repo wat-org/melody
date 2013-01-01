@@ -11,7 +11,7 @@ import com.wat.melody.common.utils.Doc;
 import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
-public abstract class NetworkManagementDatas {
+public abstract class ManagementNetworkDatas {
 
 	private static Log log = LogFactory.getLog(SshNetworkManagementDatas.class);
 
@@ -53,7 +53,7 @@ public abstract class NetworkManagementDatas {
 	 *             in the Instance's Network Management {@link Node} is not a
 	 *             valid {@link Port}.
 	 */
-	public NetworkManagementDatas(Node instanceNode)
+	public ManagementNetworkDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -78,11 +78,11 @@ public abstract class NetworkManagementDatas {
 
 	@Override
 	public String toString() {
-		return "{ method:" + getNetworkManagementMethod() + ", host:"
+		return "{ method:" + getManagementNetworkMethod() + ", host:"
 				+ getHost() + ", port:" + getPort() + " }";
 	}
 
-	abstract public ManagementNetworkMethod getNetworkManagementMethod();
+	abstract public ManagementNetworkMethod getManagementNetworkMethod();
 
 	public Host getHost() {
 		return moHost;
