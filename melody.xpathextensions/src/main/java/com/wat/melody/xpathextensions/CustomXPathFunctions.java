@@ -11,11 +11,6 @@ public abstract class CustomXPathFunctions {
 	public static final String NAMESPACE = "melody";
 	public static final String NAMESPACE_URI = "http://localhost/" + NAMESPACE;
 
-	/**
-	 * The 'herit' XML attribute of an XML Element in the Resources Descriptor
-	 */
-	public static final String HERIT_ATTR = "herit";
-
 	public static void load() {
 
 		Doc.getXPath().setNamespaceContext(new NamespaceContext() {

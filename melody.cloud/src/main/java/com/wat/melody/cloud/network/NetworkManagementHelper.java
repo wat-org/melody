@@ -1,4 +1,4 @@
-package com.wat.melody.xpathextensions.common;
+package com.wat.melody.cloud.network;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,14 +9,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.network.exception.IllegalManagementMethodNetworkException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.utils.Doc;
-import com.wat.melody.xpathextensions.GetHeritedContent;
-import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
+import com.wat.melody.xpath.XPathHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class NetworkManagementHelper {
 
 	/**
@@ -134,7 +139,7 @@ public abstract class NetworkManagementHelper {
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
-			nl = GetHeritedContent.getHeritedContent(instanceNode,
+			nl = XPathHelper.getHeritedContent(instanceNode,
 					NETWORK_MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
@@ -540,7 +545,7 @@ public abstract class NetworkManagementHelper {
 		}
 		try {
 			return ManagementNetworkMethod.parseString(sMethod);
-		} catch (IllegalManagementMethodException Ex) {
+		} catch (IllegalManagementMethodNetworkException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, NETWORK_MGMT_METHOD_ATTR),
 					Ex);

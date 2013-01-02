@@ -26,8 +26,13 @@ import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatus
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpath.XPathHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 abstract public class AbstractAwsOperation implements ITask {
 
 	/**
@@ -104,7 +109,7 @@ abstract public class AbstractAwsOperation implements ITask {
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);

@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class NetworkDeviceList extends ArrayList<NetworkDevice> {
 
 	private static final long serialVersionUID = 985446445095495276L;

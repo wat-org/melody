@@ -1,7 +1,12 @@
 package com.wat.melody.cloud.network;
 
-import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public interface NetworkManager {
 
 	public ManagementNetworkDatas getManagementDatas();
@@ -9,16 +14,16 @@ public interface NetworkManager {
 	/**
 	 * @param timeout
 	 * 
-	 * @throws ManagementException
+	 * @throws NetworkManagementException
 	 * @throws InterruptedException
 	 */
 	public void enableNetworkManagement(long timeout)
-			throws ManagementException, InterruptedException;
+			throws NetworkManagementException, InterruptedException;
 
 	/**
 	 * 
-	 * @throws ManagementException
+	 * @throws NetworkManagementException
 	 */
-	public void disableNetworkManagement() throws ManagementException;
+	public void disableNetworkManagement() throws NetworkManagementException;
 
 }

@@ -1,9 +1,14 @@
-package com.wat.melody.xpathextensions.common;
+package com.wat.melody.cloud.network;
 
 import java.util.Arrays;
 
-import com.wat.melody.xpathextensions.common.exception.IllegalManagementMethodException;
+import com.wat.melody.cloud.network.exception.IllegalManagementMethodNetworkException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public enum ManagementNetworkMethod {
 
 	SSH("ssh"), WINRM("winrm");
@@ -20,14 +25,14 @@ public enum ManagementNetworkMethod {
 	 * @return a <code>ManagementMethod</code> object, whose equal to the given
 	 *         input <code>String</code>.
 	 * 
-	 * @throws IllegalManagementMethodException
+	 * @throws IllegalManagementMethodNetworkException
 	 *             if the given input <code>String</code> is not a valid
 	 *             <code>ManagementMethod</code> Enumeration Constant.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */
 	public static ManagementNetworkMethod parseString(String sMethod)
-			throws IllegalManagementMethodException {
+			throws IllegalManagementMethodNetworkException {
 		if (sMethod == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
@@ -36,7 +41,7 @@ public enum ManagementNetworkMethod {
 					+ Arrays.asList(ManagementNetworkMethod.values()) + ").");
 		}
 		if (sMethod.trim().length() == 0) {
-			throw new IllegalManagementMethodException(Messages.bind(
+			throw new IllegalManagementMethodNetworkException(Messages.bind(
 					Messages.NetMgmtMethodEx_EMPTY, sMethod));
 		}
 		for (ManagementNetworkMethod c : ManagementNetworkMethod.class
@@ -45,7 +50,7 @@ public enum ManagementNetworkMethod {
 				return c;
 			}
 		}
-		throw new IllegalManagementMethodException(Messages.bind(
+		throw new IllegalManagementMethodNetworkException(Messages.bind(
 				Messages.NetMgmtMethodEx_INVALID, sMethod,
 				Arrays.asList(ManagementNetworkMethod.values())));
 	}

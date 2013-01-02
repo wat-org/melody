@@ -1,5 +1,10 @@
 package com.wat.melody.cloud.network;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class NetworkDeviceHelper {
 
 	public static NetworkDeviceList computeNetworkDevicesToAdd(

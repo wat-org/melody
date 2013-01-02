@@ -8,6 +8,11 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class DiskDevicesLoader {
 
 	/**

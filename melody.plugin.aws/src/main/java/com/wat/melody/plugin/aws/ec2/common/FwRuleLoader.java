@@ -16,8 +16,13 @@ import com.wat.melody.common.network.exception.IllegalAccessException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
-import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpath.XPathHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class FwRuleLoader {
 
 	/**
@@ -56,7 +61,7 @@ public class FwRuleLoader {
 
 	private boolean loadFrom(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = GetHeritedAttribute.getHeritedAttribute(n, FROM_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, FROM_ATTR);
 		if (attr == null) {
 			return false;
 		}
@@ -82,7 +87,7 @@ public class FwRuleLoader {
 
 	private boolean loadPorts(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = GetHeritedAttribute.getHeritedAttribute(n, PORTS_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, PORTS_ATTR);
 		if (attr == null) {
 			return false;
 		}
@@ -108,7 +113,7 @@ public class FwRuleLoader {
 
 	private boolean loadProtocols(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = GetHeritedAttribute.getHeritedAttribute(n, PROTOCOLS_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, PROTOCOLS_ATTR);
 		if (attr == null) {
 			return false;
 		}
@@ -134,7 +139,7 @@ public class FwRuleLoader {
 
 	private boolean loadAccess(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = GetHeritedAttribute.getHeritedAttribute(n, ACCESS_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, ACCESS_ATTR);
 		if (attr == null) {
 			return false;
 		}

@@ -16,7 +16,7 @@ import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpathextensions.GetHeritedAttribute;
+import com.wat.melody.xpath.XPathHelper;
 
 /**
  * 
@@ -54,7 +54,7 @@ public class ResizeMachine extends AbstractAwsOperation {
 
 		try {
 			String v = null;
-			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
 					Common.INSTANCETYPE_ATTR);
 			try {
 				try {

@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class DiskDeviceList extends ArrayList<DiskDevice> {
 
 	private static final long serialVersionUID = 799928265740695276L;
@@ -20,7 +25,8 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		setRootDevice(ddl.getRootDevice());
 	}
 
-	public boolean addDiskDevice(DiskDevice dd) throws IllegalDiskDeviceListException {
+	public boolean addDiskDevice(DiskDevice dd)
+			throws IllegalDiskDeviceListException {
 		for (DiskDevice d : this) {
 			if (d.getDeviceName().equals(dd.getDeviceName())) {
 				// Detects duplicated deviceName declaration

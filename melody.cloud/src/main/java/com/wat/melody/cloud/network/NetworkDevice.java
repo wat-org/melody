@@ -2,6 +2,11 @@ package com.wat.melody.cloud.network;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class NetworkDevice {
 
 	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";

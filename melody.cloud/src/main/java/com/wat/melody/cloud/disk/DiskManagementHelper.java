@@ -6,8 +6,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpath.XPathHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class DiskManagementHelper {
 
 	/**
@@ -71,7 +76,7 @@ public abstract class DiskManagementHelper {
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
-			nl = GetHeritedContent.getHeritedContent(instanceNode,
+			nl = XPathHelper.getHeritedContent(instanceNode,
 					DISK_DEVICES_MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "

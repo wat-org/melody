@@ -17,9 +17,11 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.ManagementNetworkMethod;
+import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
-import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.Protocol;
@@ -33,8 +35,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.KeyPairHelper;
 import com.wat.melody.plugin.ssh.common.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
-import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
 /**
  * <p>
@@ -390,7 +390,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException | ManagementException Ex) {
+		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new AwsException(Ex);
 		}
 
@@ -419,7 +419,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 
 		try {
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
-		} catch (ManagementException Ex) {
+		} catch (NetworkManagementException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getAwsInstanceID(), getTargetNodeLocation()), Ex);
@@ -461,7 +461,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException | ManagementException Ex) {
+		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new AwsException(Ex);
 		}
 
@@ -469,7 +469,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 				getAwsInstanceID()));
 		try {
 			mh.disableNetworkManagement();
-		} catch (ManagementException Ex) {
+		} catch (NetworkManagementException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
 					getAwsInstanceID(), getTargetNodeLocation()), Ex);

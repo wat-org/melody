@@ -18,7 +18,7 @@ import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpath.XPathHelper;
 
 /**
  * 
@@ -100,7 +100,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
-			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
+			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
 					getDiskDeviceNodesSelector());
 			DiskDevicesLoader dl = new DiskDevicesLoader(getContext());
 			setDiskDeviceList(dl.load(nl));

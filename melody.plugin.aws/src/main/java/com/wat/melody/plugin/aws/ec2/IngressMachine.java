@@ -25,7 +25,7 @@ import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.FwRuleLoader;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpathextensions.GetHeritedContent;
+import com.wat.melody.xpath.XPathHelper;
 
 /**
  * 
@@ -69,7 +69,7 @@ public class IngressMachine extends AbstractAwsOperation {
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			NodeList nl = GetHeritedContent.getHeritedContent(getTargetNode(),
+			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
 					getFWRulesXprSuffix());
 			FwRuleLoader fwl = new FwRuleLoader(getContext());
 			setFwRules(fwl.load(nl).decompose().simplify());

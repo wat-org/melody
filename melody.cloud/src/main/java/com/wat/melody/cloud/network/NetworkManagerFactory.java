@@ -5,16 +5,19 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class NetworkManagerFactory {
 
 	public static NetworkManager createNetworkManager(ITaskContext context,
 			Node instanceNode) throws ResourcesDescriptorException,
-			ManagementException {
+			NetworkManagementException {
 		if (context == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -35,7 +38,7 @@ public abstract class NetworkManagerFactory {
 				sshPlugInConf = SshPlugInConfiguration.get(context
 						.getProcessorManager());
 			} catch (PlugInConfigurationException Ex) {
-				throw new ManagementException(Ex);
+				throw new NetworkManagementException(Ex);
 			}
 			return new SshNetworkManager(instanceNode, sshPlugInConf);
 		case WINRM:

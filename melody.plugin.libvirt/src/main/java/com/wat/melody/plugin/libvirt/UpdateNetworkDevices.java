@@ -12,12 +12,12 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
 /**
  * 

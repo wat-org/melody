@@ -8,12 +8,15 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.utils.Doc;
-import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class ManagementNetworkDatas {
 
-	private static Log log = LogFactory.getLog(SshNetworkManagementDatas.class);
+	private static Log log = LogFactory.getLog(SshManagementNetworkDatas.class);
 
 	private Host moHost;
 	private Port moPort;

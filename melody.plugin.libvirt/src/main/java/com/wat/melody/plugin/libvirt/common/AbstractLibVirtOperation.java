@@ -22,15 +22,20 @@ import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.xpathextensions.GetHeritedAttribute;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
+import com.wat.melody.xpath.XPathHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class AbstractLibVirtOperation implements ITask {
 
 	/**
@@ -107,7 +112,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = GetHeritedAttribute.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

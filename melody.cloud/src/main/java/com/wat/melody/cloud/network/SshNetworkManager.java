@@ -7,37 +7,41 @@ import org.w3c.dom.Node;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.plugin.ssh.common.JSchConnectionDatas;
 import com.wat.melody.plugin.ssh.common.JSchHelper;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class SshNetworkManager implements NetworkManager {
 
 	private static Log log = LogFactory.getLog(SshNetworkManager.class);
 
-	private SshNetworkManagementDatas moManagementDatas;
+	private SshManagementNetworkDatas moManagementDatas;
 	private SshPlugInConfiguration moContext;
 
 	public SshNetworkManager(Node instanceNode, SshPlugInConfiguration context)
 			throws ResourcesDescriptorException {
 		setConfiguration(context);
-		setManagementDatas(new SshNetworkManagementDatas(instanceNode));
+		setManagementDatas(new SshManagementNetworkDatas(instanceNode));
 	}
 
-	public SshNetworkManagementDatas getManagementDatas() {
+	public SshManagementNetworkDatas getManagementDatas() {
 		return moManagementDatas;
 	}
 
-	public void setManagementDatas(SshNetworkManagementDatas nmd) {
+	public void setManagementDatas(SshManagementNetworkDatas nmd) {
 		if (nmd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SshNetworkManagementDatas.class.getCanonicalName() + ".");
+					+ SshManagementNetworkDatas.class.getCanonicalName() + ".");
 		}
 		moManagementDatas = nmd;
 	}
@@ -57,17 +61,17 @@ public class SshNetworkManager implements NetworkManager {
 
 	@Override
 	public void enableNetworkManagement(long timeout)
-			throws ManagementException, InterruptedException {
+			throws NetworkManagementException, InterruptedException {
 		disableNetworkManagement();
 		boolean result = false;
 		try {
 			result = addKnownHostsHost(getConfiguration(), getManagementDatas()
 					.getHost(), getManagementDatas().getPort(), timeout);
 		} catch (SshException Ex) {
-			throw new ManagementException(Ex);
+			throw new NetworkManagementException(Ex);
 		}
 		if (result == false) {
-			throw new ManagementException(Messages.bind(
+			throw new NetworkManagementException(Messages.bind(
 					Messages.NetMgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
 					NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR));
 		}
@@ -139,7 +143,7 @@ public class SshNetworkManager implements NetworkManager {
 	}
 
 	@Override
-	public void disableNetworkManagement() throws ManagementException {
+	public void disableNetworkManagement() throws NetworkManagementException {
 		removeKnownHostsHost(getConfiguration(), getManagementDatas().getHost());
 	}
 

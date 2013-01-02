@@ -8,6 +8,11 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class NetworkDevicesLoader {
 
 	/**

@@ -5,6 +5,11 @@ import java.util.regex.Pattern;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class DiskDevice {
 
 	public static final String DISK_DEVICE_SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";

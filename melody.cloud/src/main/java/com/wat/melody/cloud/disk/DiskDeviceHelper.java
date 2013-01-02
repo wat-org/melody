@@ -2,6 +2,11 @@ package com.wat.melody.cloud.disk;
 
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class DiskDeviceHelper {
 
 	public static void ensureDiskDevicesUpdateIsPossible(

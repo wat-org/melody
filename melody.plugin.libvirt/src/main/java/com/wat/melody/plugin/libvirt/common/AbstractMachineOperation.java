@@ -5,12 +5,17 @@ import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
-import com.wat.melody.cloud.network.exception.ManagementException;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-import com.wat.melody.xpathextensions.common.NetworkManagementHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class AbstractMachineOperation extends AbstractLibVirtOperation {
 
 	private static Log log = LogFactory.getLog(AbstractMachineOperation.class);
@@ -86,7 +91,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException | ManagementException Ex) {
+		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new LibVirtException(Ex);
 		}
 
@@ -94,7 +99,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 				getInstanceID()));
 		try {
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
-		} catch (ManagementException Ex) {
+		} catch (NetworkManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceID(), getTargetNodeLocation()), Ex);
@@ -129,7 +134,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(getContext(),
 					getTargetNode());
-		} catch (ResourcesDescriptorException | ManagementException Ex) {
+		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new LibVirtException(Ex);
 		}
 
@@ -137,7 +142,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 				getInstanceID()));
 		try {
 			mh.disableNetworkManagement();
-		} catch (ManagementException Ex) {
+		} catch (NetworkManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
 					getInstanceID(), getTargetNodeLocation()), Ex);

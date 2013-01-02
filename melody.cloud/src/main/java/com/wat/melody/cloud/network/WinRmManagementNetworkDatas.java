@@ -3,11 +3,15 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.xpathextensions.common.ManagementNetworkMethod;
 
-public class SshNetworkManagementDatas extends ManagementNetworkDatas {
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public class WinRmManagementNetworkDatas extends ManagementNetworkDatas {
 
-	public SshNetworkManagementDatas(Node instanceNode)
+	public WinRmManagementNetworkDatas(Node instanceNode)
 			throws ResourcesDescriptorException {
 		super(instanceNode);
 	}
@@ -19,7 +23,7 @@ public class SshNetworkManagementDatas extends ManagementNetworkDatas {
 	}
 
 	public ManagementNetworkMethod getManagementNetworkMethod() {
-		return ManagementNetworkMethod.SSH;
+		return ManagementNetworkMethod.WINRM;
 	}
 
 }
