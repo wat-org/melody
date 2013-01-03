@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.ssh.common;
+package com.wat.melody.plugin.ssh.common.jsch;
 
 import java.io.OutputStream;
 
@@ -7,9 +7,21 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.wat.melody.common.utils.LogThreshold;
+import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class JSchHelper {
+
+	/*
+	 * TODO : extract a JSchConfiguration from SshPlugInConfiguration, so that
+	 * all links to the Ssh Plug-In disappear. This would be difficult due to
+	 * SshPlugInConfigurationException.
+	 */
 
 	/**
 	 * <p>
@@ -57,17 +69,19 @@ public abstract class JSchHelper {
 		try {
 			session.setServerAliveInterval(conf.getServerAliveInterval());
 		} catch (JSchException Ex) {
-			throw new SshException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_INTERVAL,
-					conf.getServerAliveInterval()), Ex);
+			throw new RuntimeException("Failed to set the serverAliveInterval "
+					+ "to '" + conf.getServerAliveInterval() + "'. "
+					+ "Because this value have been retreives from the "
+					+ "configuration, such error cannot happened.", Ex);
 		}
 
 		try {
 			session.setTimeout(conf.getReadTimeout());
 		} catch (JSchException Ex) {
-			throw new SshException(Messages.bind(
-					Messages.ConfEx_INVALID_READ_TIMEOUT,
-					conf.getServerAliveInterval()), Ex);
+			throw new RuntimeException("Failed to set the timeout " + "to '"
+					+ conf.getReadTimeout() + "'. "
+					+ "Because this value have been retreives from the "
+					+ "configuration, such error cannot happened.", Ex);
 		}
 
 		session.setConfig("compression.s2c", conf.getCompressionType()

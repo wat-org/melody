@@ -68,17 +68,13 @@ public class Messages extends NLS {
 	public static String NewEx_INVALID_IMAGEID_ATTR;
 	public static String NewEx_MISSING_INSTANCETYPE_ATTR;
 	public static String NewEx_INSTANCETYPE_ERROR;
-	public static String NewEx_INVALID_INSTANCETYPE_ATTR;
 	public static String NewEx_AVAILABILITYZONE_ERROR;
 	public static String NewEx_INVALID_AVAILABILITYZONE_ATTR;
 	public static String NewEx_MISSING_KEYPAIR_NAME_ATTR;
 	public static String NewEx_KEYPAIR_NAME_ERROR;
-	public static String NewEx_EMPTY_KEYPAIR_NAME_ATTR;
-	public static String NewEx_INVALID_KEYPAIR_NAME_ATTR;
-	public static String NewEx_INVALID_KEYPAIR_REPO_ATTR;
 	public static String NewEx_FAILED;
 	public static String NewMsg_LIVES;
-	public static String NewMsg_GENERIC_FAIL;
+	public static String NewMsg_GENERIC_WARN;
 
 	public static String StartEx_NO_INSTANCE;
 	public static String StartEx_SHUTTING_DOWN;

@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.libvirt;
 
-import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -12,8 +11,10 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -61,21 +62,17 @@ public class NewMachine extends AbstractMachineOperation {
 
 	private InstanceType msInstanceType;
 	private String msImageId;
-	private String msKeyPairName;
+	private KeyPairRepository moKeyPairRepository;
+	private KeyPairName msKeyPairName;
 	private String msPassphrase;
-	private File moKeyPairRepository;
 
 	public NewMachine() {
 		super();
-		initKeyPairRepository();
 		initPassphrase();
 		initKeyPairName();
+		initKeyPairRepository();
 		initImageId();
 		initInstanceType();
-	}
-
-	private void initKeyPairRepository() {
-		moKeyPairRepository = null;
 	}
 
 	private void initPassphrase() {
@@ -84,6 +81,10 @@ public class NewMachine extends AbstractMachineOperation {
 
 	private void initKeyPairName() {
 		msKeyPairName = null;
+	}
+
+	private void initKeyPairRepository() {
+		moKeyPairRepository = null;
 	}
 
 	private void initImageId() {
@@ -105,15 +106,10 @@ public class NewMachine extends AbstractMachineOperation {
 			v = XPathHelper.getHeritedAttributeValue(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
-				try {
-					if (v != null) {
-						setInstanceType(InstanceType.parseString(v));
-					}
-				} catch (IllegalInstanceTypeException Ex) {
-					throw new LibVirtException(Messages.bind(
-							Messages.NewEx_INVALID_INSTANCETYPE_ATTR, v));
+				if (v != null) {
+					setInstanceType(InstanceType.parseString(v));
 				}
-			} catch (LibVirtException Ex) {
+			} catch (IllegalInstanceTypeException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.NewEx_INSTANCETYPE_ERROR,
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
@@ -134,9 +130,9 @@ public class NewMachine extends AbstractMachineOperation {
 					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
-					setKeyPairName(v);
+					setKeyPairName(KeyPairName.parseString(v));
 				}
-			} catch (LibVirtException Ex) {
+			} catch (IllegalKeyPairNameException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.NewEx_KEYPAIR_NAME_ERROR,
 						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
@@ -179,7 +175,7 @@ public class NewMachine extends AbstractMachineOperation {
 		}
 
 		// Validate task's attributes
-		// imageId must be validated AFTER the Aws Region is known
+		// imageId must be validated AFTER the libvirt Region is known
 		if (!LibVirtCloud.imageIdExists(getImageId())) {
 			throw new LibVirtException(Messages.bind(
 					Messages.NewEx_INVALID_IMAGEID_ATTR, getImageId(),
@@ -233,33 +229,24 @@ public class NewMachine extends AbstractMachineOperation {
 	public String setImageId(String imageId) throws LibVirtException {
 		if (imageId == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS AMI Id).");
+					+ "Must be a valid String (an libvirt AMI Id).");
 		}
 		String previous = getImageId();
 		msImageId = imageId;
 		return previous;
 	}
 
-	public String getKeyPairName() {
+	public KeyPairName getKeyPairName() {
 		return msKeyPairName;
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
-	public String setKeyPairName(String keyPairName) throws LibVirtException {
+	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS KeyPair Name).");
+					+ "Must be a valid String (an libvirt KeyPair Name).");
 		}
-		if (keyPairName.trim().length() == 0) {
-			throw new LibVirtException(Messages.bind(
-					Messages.NewEx_EMPTY_KEYPAIR_NAME_ATTR, keyPairName));
-		} else if (!keyPairName
-				.matches("^" + Common.KEYPAIR_NAME_PATTERN + "$")) {
-			throw new LibVirtException(Messages.bind(
-					Messages.NewEx_INVALID_KEYPAIR_NAME_ATTR, keyPairName,
-					Common.KEYPAIR_NAME_PATTERN));
-		}
-		String previous = getKeyPairName();
+		KeyPairName previous = getKeyPairName();
 		msKeyPairName = keyPairName;
 		return previous;
 	}
@@ -279,25 +266,18 @@ public class NewMachine extends AbstractMachineOperation {
 		return previous;
 	}
 
-	public File getKeyPairRepository() {
+	public KeyPairRepository getKeyPairRepository() {
 		return moKeyPairRepository;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public File setKeyPairRepository(File keyPairRepository)
-			throws LibVirtException {
+	public KeyPairRepository setKeyPairRepository(
+			KeyPairRepository keyPairRepository) {
 		if (keyPairRepository == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a Key Repository Path).");
 		}
-		try {
-			Tools.validateDirExists(keyPairRepository.getAbsolutePath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new LibVirtException(
-					Messages.bind(Messages.NewEx_INVALID_KEYPAIR_REPO_ATTR,
-							keyPairRepository), Ex);
-		}
-		File previous = getKeyPairRepository();
+		KeyPairRepository previous = getKeyPairRepository();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
 	}

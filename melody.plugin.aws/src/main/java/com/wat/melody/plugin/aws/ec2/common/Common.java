@@ -46,6 +46,7 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -109,7 +110,6 @@ public class Common {
 	 * The 'keyName' XML attribute of the Aws Instance Node
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
-	public static final String KEYPAIR_NAME_PATTERN = "[.\\d\\w-_\\[\\]\\{\\}\\(\\)\\\\ \"']+";
 
 	/**
 	 * The 'passphrase' XML attribute of the Aws Instance Node
@@ -356,8 +356,8 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sKeyPairName
-	 *            is the key pair to retrieve.
+	 * @param keyPairName
+	 *            is the name of the key pair to retrieve.
 	 * 
 	 * @return an Aws {@link KeyPairInfo} if the given key pair exists,
 	 *         <code>null</code> otherwise.
@@ -369,16 +369,16 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static KeyPairInfo getKeyPair(AmazonEC2 ec2, String sKeyPairName) {
+	public static KeyPairInfo getKeyPair(AmazonEC2 ec2, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
-		if (sKeyPairName == null || sKeyPairName.length() == 0) {
+		if (keyPairName == null) {
 			return null;
 		}
 		DescribeKeyPairsRequest dkpreq = new DescribeKeyPairsRequest();
-		dkpreq.withKeyNames(sKeyPairName);
+		dkpreq.withKeyNames(keyPairName.getValue());
 
 		try {
 			return ec2.describeKeyPairs(dkpreq).getKeyPairs().get(0);
@@ -400,8 +400,8 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sKeyPairName
-	 *            is the key pair to test.
+	 * @param keyPairName
+	 *            is the name of the key pair to validate existence.
 	 * 
 	 * @return <code>true</code> if the given key pair exists,
 	 *         <code>false</code> otherwise.
@@ -413,8 +413,8 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static boolean keyPairExists(AmazonEC2 ec2, String sKeyPairName) {
-		return getKeyPair(ec2, sKeyPairName) != null;
+	public static boolean keyPairExists(AmazonEC2 ec2, KeyPairName keyPairName) {
+		return getKeyPair(ec2, keyPairName) != null;
 	}
 
 	/**
@@ -423,8 +423,11 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sKeyPairName
-	 *            is the key pair to test.
+	 * @param keyPairName
+	 *            is the name of the remote key pair to compare the given
+	 *            fingerprint to.
+	 * @param sFingerprint
+	 *            is the fingerprint of the local key pair.
 	 * 
 	 * @return <code>true</code> if the given fingerprint and the given Aws
 	 *         KeyPair's fingerprint are equals, <code>false</code> otherwise.
@@ -436,9 +439,9 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static boolean keyPairCompare(AmazonEC2 ec2, String sKeyPairName,
-			String sFingerprint) {
-		KeyPairInfo kpi = getKeyPair(ec2, sKeyPairName);
+	public static boolean keyPairCompare(AmazonEC2 ec2,
+			KeyPairName keyPairName, String sFingerprint) {
+		KeyPairInfo kpi = getKeyPair(ec2, keyPairName);
 		if (kpi == null) {
 			return false;
 		}
@@ -451,8 +454,8 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sKeyPairName
-	 *            is the key pair to import.
+	 * @param keyPairName
+	 *            is the name of the key pair which will be imported.
 	 * @param sPublicKey
 	 *            is the public key material, in the openssh format.
 	 * 
@@ -463,13 +466,13 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static void importKeyPair(AmazonEC2 ec2, String sKeyPairName,
+	public static void importKeyPair(AmazonEC2 ec2, KeyPairName keyPairName,
 			String sPublicKey) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
-		if (sKeyPairName == null || sKeyPairName.length() == 0) {
+		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an Aws KeyPair Name).");
 		}
@@ -479,7 +482,7 @@ public class Common {
 		}
 
 		ImportKeyPairRequest ikpreq = new ImportKeyPairRequest();
-		ikpreq.withKeyName(sKeyPairName);
+		ikpreq.withKeyName(keyPairName.getValue());
 		ikpreq.withPublicKeyMaterial(sPublicKey);
 
 		try {
@@ -767,8 +770,8 @@ public class Common {
 	 * @param sAZ
 	 *            if <code>null</code>, the default Availability Zone will be
 	 *            selected (e.g. AWS EC2 will select the default AZ).
-	 * @param sKeyName
-	 *            is the AWS Key Name.
+	 * @param keyPairName
+	 *            is the AWS Key Pair Name to attach to the new instance.
 	 * 
 	 * @return an {@link Instance} which represents the newly created Aws
 	 *         Instance if the operation succeed, <code>null</code> otherwise.
@@ -781,7 +784,7 @@ public class Common {
 	 *             if ec2 is <code>null</code>.
 	 */
 	public static Instance newAwsInstance(AmazonEC2 ec2, InstanceType type,
-			String sImageId, String sSGName, String sAZ, String sKeyName) {
+			String sImageId, String sSGName, String sAZ, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
@@ -791,7 +794,7 @@ public class Common {
 		rireq.withInstanceType(type.toString());
 		rireq.withImageId(sImageId);
 		rireq.withSecurityGroups(sSGName);
-		rireq.withKeyName(sKeyName);
+		rireq.withKeyName(keyPairName.getValue());
 		rireq.withMinCount(1);
 		rireq.withMaxCount(1);
 		if (sAZ != null) {

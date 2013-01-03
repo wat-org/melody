@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.ssh.common;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.jcraft.jsch.JSchException;
@@ -8,10 +7,15 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class AbstractSshTask implements ITask {
 
 	/**
@@ -23,7 +27,6 @@ public abstract class AbstractSshTask implements ITask {
 	 * The 'keyPairName' XML attribute
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
-	public static final String KEYPAIR_NAME_PATTERN = "[.\\d\\w-_\\[\\]\\{\\}\\(\\)\\\\ \"']+";
 
 	/**
 	 * The 'passphrase' XML attribute
@@ -32,16 +35,16 @@ public abstract class AbstractSshTask implements ITask {
 
 	private ITaskContext moContext;
 	private SshPlugInConfiguration moPluginConf;
-	private File moKeyPairRepository;
-	private String moKeyPairName;
+	private KeyPairRepository moKeyPairRepository;
+	private KeyPairName moKeyPairName;
 	private String msPassphrase;
 
 	public AbstractSshTask() {
 		initContext();
 		initPluginConf();
-		initKeyPairRepository();
-		initPrivateKey();
 		initPassphrase();
+		initKeyPairName();
+		initKeyPairRepository();
 	}
 
 	private void initContext() {
@@ -52,16 +55,16 @@ public abstract class AbstractSshTask implements ITask {
 		moPluginConf = null;
 	}
 
-	private void initKeyPairRepository() {
-		moKeyPairRepository = null;
+	private void initPassphrase() {
+		msPassphrase = null;
 	}
 
-	private void initPrivateKey() {
+	private void initKeyPairName() {
 		moKeyPairName = null;
 	}
 
-	private void initPassphrase() {
-		msPassphrase = null;
+	private void initKeyPairRepository() {
+		moKeyPairRepository = null;
 	}
 
 	@Override
@@ -73,18 +76,7 @@ public abstract class AbstractSshTask implements ITask {
 		if (getKeyPairRepository() == null) {
 			setKeyPairRepository(getPluginConf().getKeyPairRepo());
 		}
-		KeyPairRepository kpr = null;
-		try {
-			kpr = new KeyPairRepository(getKeyPairRepository());
-		} catch (IllegalDirectoryException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the KeyPair Repository " + getKeyPairRepository() + ". "
-					+ "Because this KeyPair Repository have been previously "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced, or an external process made this "
-					+ "KeyPair Repository is no more available.", Ex);
-		}
+		KeyPairRepository kpr = getKeyPairRepository();
 		try {
 			if (!kpr.containsKeyPair(getKeyPairName())) {
 				kpr.createKeyPair(getKeyPairName(), getPluginConf()
@@ -154,48 +146,33 @@ public abstract class AbstractSshTask implements ITask {
 		return previous;
 	}
 
-	public File getKeyPairRepository() {
+	public KeyPairRepository getKeyPairRepository() {
 		return moKeyPairRepository;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public File setKeyPairRepository(File keyPairRepository)
-			throws SshException {
+	public KeyPairRepository setKeyPairRepository(
+			KeyPairRepository keyPairRepository) {
 		if (keyPairRepository == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a Key Repository Path).");
 		}
-		try {
-			Tools.validateDirExists(keyPairRepository.getAbsolutePath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new SshException(
-					Messages.bind(Messages.SshEx_INVALID_KEYPAIR_REPO_ATTR,
-							keyPairRepository), Ex);
-		}
-		File previous = getKeyPairRepository();
+		KeyPairRepository previous = getKeyPairRepository();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
 	}
 
-	public String getKeyPairName() {
+	public KeyPairName getKeyPairName() {
 		return moKeyPairName;
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
-	public String setKeyPairName(String keyPairName) throws SshException {
+	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		if (keyPairName.trim().length() == 0) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_EMPTY_KEYPAIR_NAME_ATTR, keyPairName));
-		} else if (!keyPairName.matches("^" + KEYPAIR_NAME_PATTERN + "$")) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_INVALID_KEYPAIR_NAME_ATTR, keyPairName,
-					KEYPAIR_NAME_PATTERN));
-		}
-		String previous = getKeyPairName();
+		KeyPairName previous = getKeyPairName();
 		moKeyPairName = keyPairName;
 		return previous;
 	}

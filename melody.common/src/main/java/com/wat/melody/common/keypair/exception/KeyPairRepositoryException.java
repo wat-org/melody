@@ -1,4 +1,6 @@
-package com.wat.melody.plugin.ssh.common.exception;
+package com.wat.melody.common.keypair.exception;
+
+import com.wat.melody.common.utils.exception.MelodyException;
 
 /**
  * <p>
@@ -7,7 +9,7 @@ package com.wat.melody.plugin.ssh.common.exception;
  * @author Guillaume Cornet
  * 
  */
-public class KeyPairRepositoryException extends SshException {
+public class KeyPairRepositoryException extends MelodyException {
 
 	private static final long serialVersionUID = -2133590963141244905L;
 

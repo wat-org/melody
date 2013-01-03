@@ -9,8 +9,16 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
+import com.wat.melody.plugin.ssh.common.jsch.JSchConnectionDatas;
+import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
+import com.wat.melody.plugin.ssh.common.jsch.LoggerOutputStream;
 
-abstract public class AbstractSshOperation extends AbstractSshTask implements
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public abstract class AbstractSshOperation extends AbstractSshTask implements
 		JSchConnectionDatas {
 
 	/**

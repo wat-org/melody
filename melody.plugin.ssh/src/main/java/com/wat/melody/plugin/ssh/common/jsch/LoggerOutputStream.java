@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.ssh.common;
+package com.wat.melody.plugin.ssh.common.jsch;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,6 +8,11 @@ import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.common.utils.LogThreshold;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class LoggerOutputStream extends OutputStream {
 
 	private static Log log = LogFactory.getLog(LoggerOutputStream.class);
@@ -16,21 +21,21 @@ public class LoggerOutputStream extends OutputStream {
 	private String msPrefix;
 	private LogThreshold moLevel;
 
-	protected LoggerOutputStream(String sPrefix, LogThreshold level) {
+	public LoggerOutputStream(String sPrefix, LogThreshold level) {
 		setBuffer(new StringBuffer());
 		setPrefix(sPrefix);
 		setLevel(level);
 	}
 
-	protected LoggerOutputStream() {
+	public LoggerOutputStream() {
 		this(LogThreshold.INFO);
 	}
 
-	protected LoggerOutputStream(String sPrefix) {
+	public LoggerOutputStream(String sPrefix) {
 		this(sPrefix, LogThreshold.INFO);
 	}
 
-	protected LoggerOutputStream(LogThreshold level) {
+	public LoggerOutputStream(LogThreshold level) {
 		this("", level);
 	}
 

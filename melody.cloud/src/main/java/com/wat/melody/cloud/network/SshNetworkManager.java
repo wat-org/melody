@@ -10,10 +10,10 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.plugin.ssh.common.JSchConnectionDatas;
-import com.wat.melody.plugin.ssh.common.JSchHelper;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
+import com.wat.melody.plugin.ssh.common.jsch.JSchConnectionDatas;
+import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
 
 /**
  * 
@@ -22,6 +22,9 @@ import com.wat.melody.plugin.ssh.common.exception.SshException;
  */
 public class SshNetworkManager implements NetworkManager {
 
+	/*
+	 * TODO : remove all reference to Ssh Plug-In.
+	 */
 	private static Log log = LogFactory.getLog(SshNetworkManager.class);
 
 	private SshManagementNetworkDatas moManagementDatas;

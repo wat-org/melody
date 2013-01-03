@@ -23,6 +23,7 @@ import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
+import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.utils.DUNID;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
@@ -169,13 +170,13 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
 	}
 
-	public void newInstance(InstanceType type, String sImageId, String sKeyName)
-			throws LibVirtException {
+	public void newInstance(InstanceType type, String sImageId,
+			KeyPairName keyPairName) throws LibVirtException {
 		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,
-				sKeyName);
+				keyPairName);
 		if (i == null) {
 			throw new LibVirtException(Messages.bind(Messages.NewEx_FAILED,
-					new Object[] { getRegion(), sImageId, type, sKeyName,
+					new Object[] { getRegion(), sImageId, type, keyPairName,
 							getTargetNodeLocation() }));
 		}
 		setInstanceID(i.getInstanceId());

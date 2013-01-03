@@ -4,6 +4,11 @@ import java.util.Arrays;
 
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionLevelException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public enum CompressionLevel {
 
 	NONE("0"), BEST_SPEED("1"), TWO("2"), THREE("3"), FOUR("4"), FIVE("5"), BEST_COMPRESSION(

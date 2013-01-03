@@ -2,13 +2,6 @@ package com.wat.melody.plugin.ssh.common;
 
 import org.eclipse.osgi.util.NLS;
 
-/**
- * <p>
- * </p>
- * 
- * @author Guillaume Cornet
- * 
- */
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.ssh.common.messages";
@@ -19,10 +12,6 @@ public class Messages extends NLS {
 	public static String CompressionTypeEx_EMPTY;
 	public static String CompressionTypeEx_INVALID;
 
-	public static String KeyPairRepoEx_PRIVATE_KEY_NOT_FOUND;
-	public static String KeyPairRepoEx_PUBLIC_KEY_NOT_FOUND;
-	public static String KeyPairRepoEx_FINGERPRINT_NOT_FOUND;
-
 	public static String ProxyTypeEx_EMPTY;
 	public static String ProxyTypeEx_INVALID;
 
@@ -30,7 +19,6 @@ public class Messages extends NLS {
 	public static String ConfEx_INVALID_DIRECTIVE;
 	public static String ConfEx_EMPTY_DIRECTIVE;
 	public static String ConfEx_INVALID_KNOWNHOSTS;
-	public static String ConfEx_INVALID_KEYPAIR_REPO;
 	public static String ConfEx_INVALID_KEYPAIR_SIZE;
 	public static String ConfEx_INVALID_CONNECTION_TIMEOUT;
 	public static String ConfEx_INVALID_READ_TIMEOUT;
@@ -40,12 +28,8 @@ public class Messages extends NLS {
 	public static String ConfEx_CONF_REGISTRATION_ERROR;
 
 	public static String SshEx_EMPTY_LOGIN_ATTR;
-	public static String SshEx_EMPTY_KEYPAIR_NAME_ATTR;
-	public static String SshEx_INVALID_KEYPAIR_NAME_ATTR;
-	public static String SshEx_INVALID_KEYPAIR_REPO_ATTR;
 	public static String SshEx_BOTH_PASSWORD_OR_PK_ATTR;
 	public static String SshEx_MISSING_PASSWORD_OR_PK_ATTR;
-	public static String SshEx_FAILED_TO_CONNECT;
 
 	public static String SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR;
 	public static String SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR;

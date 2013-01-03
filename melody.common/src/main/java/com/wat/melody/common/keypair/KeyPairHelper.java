@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.ssh.common;
+package com.wat.melody.common.keypair;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +22,17 @@ import org.bouncycastle.openssl.PEMWriter;
 
 import com.jcraft.jsch.Buffer;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class KeyPairHelper {
+
+	/*
+	 * TODO : remove the reference to com.jcraft.jsch.Buffer, by using its own
+	 * method.
+	 */
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
@@ -34,7 +44,7 @@ public abstract class KeyPairHelper {
 		FileReader fr = null;
 		try {
 			/*
-			 * TODO : deal with pass-phrase
+			 * TODO : deal with pass-phrase when reading the private key
 			 */
 			fr = new FileReader(fin);
 			PEMReader pemr = new PEMReader(fr);
@@ -166,6 +176,9 @@ public abstract class KeyPairHelper {
 		return sshrsa;
 	}
 
+	/*
+	 * TODO : use common-codec.
+	 */
 	private static byte[] toBase64(byte[] buf, int start, int length) {
 
 		byte[] tmp = new byte[length * 2];

@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -12,8 +11,10 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
@@ -66,9 +67,9 @@ public class NewMachine extends AbstractMachineOperation {
 
 	private InstanceType msInstanceType;
 	private String msImageId;
-	private String msKeyPairName;
+	private KeyPairRepository moKeyPairRepository;
+	private KeyPairName moKeyPairName;
 	private String msPassphrase;
-	private File moKeyPairRepository;
 	private String msSecurityGroupName;
 	private String msSecurityGroupDescription;
 	private String msAvailabilityZone;
@@ -78,9 +79,9 @@ public class NewMachine extends AbstractMachineOperation {
 		initAvailabilityZone();
 		initSecurityGroupDescription();
 		initSecurityGroupName();
-		initKeyPairRepository();
 		initPassphrase();
 		initKeyPairName();
+		initKeyPairRepository();
 		initImageId();
 		initInstanceType();
 	}
@@ -97,16 +98,16 @@ public class NewMachine extends AbstractMachineOperation {
 		msSecurityGroupName = "MelodySg" + "_" + System.currentTimeMillis();
 	}
 
-	private void initKeyPairRepository() {
-		moKeyPairRepository = null;
-	}
-
 	private void initPassphrase() {
 		msPassphrase = null;
 	}
 
 	private void initKeyPairName() {
-		msKeyPairName = null;
+		moKeyPairName = null;
+	}
+
+	private void initKeyPairRepository() {
+		moKeyPairRepository = null;
 	}
 
 	private void initImageId() {
@@ -128,15 +129,10 @@ public class NewMachine extends AbstractMachineOperation {
 			v = XPathHelper.getHeritedAttributeValue(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
-				try {
-					if (v != null) {
-						setInstanceType(InstanceType.parseString(v));
-					}
-				} catch (IllegalInstanceTypeException Ex) {
-					throw new AwsException(Messages.bind(
-							Messages.NewEx_INVALID_INSTANCETYPE_ATTR, v));
+				if (v != null) {
+					setInstanceType(InstanceType.parseString(v));
 				}
-			} catch (AwsException Ex) {
+			} catch (IllegalInstanceTypeException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_INSTANCETYPE_ERROR,
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
@@ -170,9 +166,9 @@ public class NewMachine extends AbstractMachineOperation {
 					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
-					setKeyPairName(v);
+					setKeyPairName(KeyPairName.parseString(v));
 				}
-			} catch (AwsException Ex) {
+			} catch (IllegalKeyPairNameException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_KEYPAIR_NAME_ERROR,
 						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
@@ -249,7 +245,7 @@ public class NewMachine extends AbstractMachineOperation {
 					Messages.NewMsg_LIVES, new Object[] { getAwsInstanceID(),
 							"LIVE", getTargetNodeLocation() }));
 			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
-					Messages.NewMsg_GENERIC_FAIL, Ex)));
+					Messages.NewMsg_GENERIC_WARN, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {
 				enableNetworkManagement();
@@ -316,27 +312,18 @@ public class NewMachine extends AbstractMachineOperation {
 		return getRegion() + getAvailabilityZone();
 	}
 
-	public String getKeyPairName() {
-		return msKeyPairName;
+	public KeyPairName getKeyPairName() {
+		return moKeyPairName;
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
-	public String setKeyPairName(String keyPairName) throws AwsException {
+	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an AWS KeyPair Name).");
 		}
-		if (keyPairName.trim().length() == 0) {
-			throw new AwsException(Messages.bind(
-					Messages.NewEx_EMPTY_KEYPAIR_NAME_ATTR, keyPairName));
-		} else if (!keyPairName
-				.matches("^" + Common.KEYPAIR_NAME_PATTERN + "$")) {
-			throw new AwsException(Messages.bind(
-					Messages.NewEx_INVALID_KEYPAIR_NAME_ATTR, keyPairName,
-					Common.KEYPAIR_NAME_PATTERN));
-		}
-		String previous = getKeyPairName();
-		msKeyPairName = keyPairName;
+		KeyPairName previous = getKeyPairName();
+		moKeyPairName = keyPairName;
 		return previous;
 	}
 
@@ -355,25 +342,18 @@ public class NewMachine extends AbstractMachineOperation {
 		return previous;
 	}
 
-	public File getKeyPairRepository() {
+	public KeyPairRepository getKeyPairRepository() {
 		return moKeyPairRepository;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public File setKeyPairRepository(File keyPairRepository)
-			throws AwsException {
+	public KeyPairRepository setKeyPairRepository(
+			KeyPairRepository keyPairRepository) {
 		if (keyPairRepository == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a Key Repository Path).");
 		}
-		try {
-			Tools.validateDirExists(keyPairRepository.getAbsolutePath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new AwsException(
-					Messages.bind(Messages.NewEx_INVALID_KEYPAIR_REPO_ATTR,
-							keyPairRepository), Ex);
-		}
-		File previous = getKeyPairRepository();
+		KeyPairRepository previous = getKeyPairRepository();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
 	}

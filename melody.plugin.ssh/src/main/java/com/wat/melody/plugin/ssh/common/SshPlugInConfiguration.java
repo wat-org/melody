@@ -12,6 +12,8 @@ import com.jcraft.jsch.UserInfo;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -63,7 +65,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	private String msConfigurationFilePath;
 	private JSch moJSch;
 	private File moKnownHosts;
-	private File moKeyPairRepo;
+	private KeyPairRepository moKeyPairRepo;
 	private int miKeyPairSize = 2048;
 	private CompressionLevel miCompressionLevel = CompressionLevel.NONE;
 	private CompressionType msCompressionType = CompressionType.NONE;
@@ -385,15 +387,26 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		return setKnownHosts(new File(val));
 	}
 
-	public File getKeyPairRepo() {
+	public KeyPairRepository getKeyPairRepo() {
 		return moKeyPairRepo;
 	}
 
-	public File setKeyPairRepo(File keyPairRepo)
+	public KeyPairRepository setKeyPairRepo(KeyPairRepository keyPairRepo)
 			throws SshPlugInConfigurationException {
 		if (keyPairRepo == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Directory (a KeyPair Repo).");
+					+ "Must be a valid Directory (a KeyPair Repo path).");
+		}
+		KeyPairRepository previous = getKeyPairRepo();
+		moKeyPairRepo = keyPairRepo;
+		return previous;
+	}
+
+	public KeyPairRepository setKeyPairRepo(File keyPairRepo)
+			throws SshPlugInConfigurationException {
+		if (keyPairRepo == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Directory (a KeyPair Repo path).");
 		}
 		if (!keyPairRepo.isAbsolute()) {
 			// Resolve from this configuration File's parent location
@@ -401,14 +414,10 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 					keyPairRepo.getPath());
 		}
 		try {
-			Tools.validateDirExists(keyPairRepo.getPath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_KEYPAIR_REPO, keyPairRepo), Ex);
+			return setKeyPairRepo(new KeyPairRepository(keyPairRepo));
+		} catch (KeyPairRepositoryException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
 		}
-		File previous = getKnownHosts();
-		moKeyPairRepo = keyPairRepo;
-		return previous;
 	}
 
 	public File setKeyPairRepo(String val)

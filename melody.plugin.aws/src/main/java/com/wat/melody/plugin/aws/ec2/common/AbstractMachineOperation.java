@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.KeyPair;
 
@@ -22,19 +21,18 @@ import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.common.keypair.KeyPairHelper;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.Protocol;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
 import com.wat.melody.plugin.aws.ec2.IngressMachine;
 import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.ssh.common.KeyPairHelper;
-import com.wat.melody.plugin.ssh.common.KeyPairRepository;
-import com.wat.melody.plugin.ssh.common.exception.KeyPairRepositoryException;
 
 /**
  * <p>
@@ -142,16 +140,17 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * @param type
 	 *            is the Aws Instance Type of the Aws Instance to create.
 	 * @param sImageId
-	 *            is the Aws Ami Id of the Aws Instance to create.
+	 *            is the Aws Ami Id the Aws Instance will be created from.
 	 * @param sSGName
 	 *            if the name of the Security Group to create and associate to
 	 *            the Aws Instance to create.
 	 * @param sSGDesc
 	 *            is the description of the Security Group.
 	 * @param sAZ
-	 *            is the Aws Availability Zone of the Aws Instance to create.
-	 * @param sKeyName
-	 *            is the Aws KeyPair Name of the Aws Instance to create.
+	 *            is the Aws Availability Zone the Aws Instance will be placed
+	 *            in.
+	 * @param keyPairName
+	 *            is the Aws Key Pair Name to attache to the Aws Instance.
 	 * 
 	 * @throws AwsException
 	 *             if the Aws Instance was not created.
@@ -163,14 +162,14 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void newInstance(InstanceType type, String sImageId,
-			String sSGName, String sSGDesc, String sAZ, String sKeyName)
+			String sSGName, String sSGDesc, String sAZ, KeyPairName keyPairName)
 			throws AwsException, InterruptedException {
 		Common.createSecurityGroup(getEc2(), sSGName, sSGDesc);
 		Instance i = Common.newAwsInstance(getEc2(), type, sImageId, sSGName,
-				sAZ, sKeyName);
+				sAZ, keyPairName);
 		if (i == null) {
 			throw new AwsException(Messages.bind(Messages.NewEx_FAILED,
-					new Object[] { getRegion(), sImageId, type, sKeyName,
+					new Object[] { getRegion(), sImageId, type, keyPairName,
 							getTargetNodeLocation() }));
 		}
 		// Immediately store the instanceID to the ED
@@ -296,8 +295,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param keyPairRepoFile
-	 *            is the path of the local {@link KeyPairRepository}.
+	 * @param keyPairRepo
+	 *            is the {@link KeyPairRepository}.
 	 * @param sKeyPairName
 	 *            is the name of the {@link KeyPair} to enable.
 	 * @param iKeySize
@@ -319,29 +318,12 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if an I/O error occurred while storing the {@link KeyPair} in
 	 *             the local {@link KeyPairRepository}.
 	 */
-	protected synchronized void enableKeyPair(File keyPairRepoFile,
-			String sKeyPairName, int iKeySize, String sPassphrase)
+	protected synchronized void enableKeyPair(KeyPairRepository keyPairRepo,
+			KeyPairName sKeyPairName, int iKeySize, String sPassphrase)
 			throws AwsException, IOException {
 		// Create KeyPair in the KeyPair Repository
-		KeyPairRepository keyPairRepo;
-		try {
-			keyPairRepo = new KeyPairRepository(keyPairRepoFile);
-		} catch (IllegalDirectoryException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the KeyPair Repository " + keyPairRepoFile + ". "
-					+ "Because this KeyPair Repository have been previously "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced, or an external process made this "
-					+ "KeyPair Repository is no more available.", Ex);
-		}
-
-		try {
-			if (keyPairRepo.containsKeyPair(sKeyPairName) == false) {
-				keyPairRepo.createKeyPair(sKeyPairName, iKeySize, sPassphrase);
-			}
-		} catch (KeyPairRepositoryException Ex) {
-			throw new AwsException(Ex);
+		if (!keyPairRepo.containsKeyPair(sKeyPairName)) {
+			keyPairRepo.createKeyPair(sKeyPairName, iKeySize, sPassphrase);
 		}
 
 		KeyPair kp = KeyPairHelper.readOpenSslPEMPrivateKey(keyPairRepo

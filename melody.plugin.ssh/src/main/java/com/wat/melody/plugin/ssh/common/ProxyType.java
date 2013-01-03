@@ -4,6 +4,11 @@ import java.util.Arrays;
 
 import com.wat.melody.plugin.ssh.common.exception.IllegalProxyTypeException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public enum ProxyType {
 
 	ProxyHTTP("ProxyHTTP"), ProxySOCKS4("ProxySOCKS4"), ProxySOCKS5(

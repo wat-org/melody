@@ -36,6 +36,7 @@ import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Property;
@@ -47,6 +48,14 @@ import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
 import com.wat.melody.xpathextensions.XPathExpander;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
 
+/**
+ * <p>
+ * Quick and dirty class which provide access to libvirt features.
+ * </p>
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class LibVirtCloud {
 
 	private static Log log = LogFactory.getLog(LibVirtCloud.class);
@@ -890,7 +899,7 @@ public abstract class LibVirtCloud {
 	private static String LOCK_CLONE_DISK = "";
 
 	public static Instance newInstance(Connect cnx, InstanceType type,
-			String sImageId, String sKeyName) {
+			String sImageId, KeyPairName keyPairName) {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());

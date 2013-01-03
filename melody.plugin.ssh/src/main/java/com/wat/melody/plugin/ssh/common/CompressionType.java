@@ -4,6 +4,11 @@ import java.util.Arrays;
 
 import com.wat.melody.plugin.ssh.common.exception.IllegalCompressionTypeException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public enum CompressionType {
 
 	ZLIB("zlib"), NONE("none");
