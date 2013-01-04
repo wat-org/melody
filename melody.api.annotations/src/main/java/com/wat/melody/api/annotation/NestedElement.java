@@ -11,13 +11,22 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(ElementType.METHOD)
 public @interface NestedElement {
-	
+
 	String name();
 
 	boolean mandatory() default false;
 
 	Type type() default Type.ADD;
 
-	public static enum Type { ADD, CREATE };
-	
+	public static enum Type {
+		ADD, CREATE
+	};
+
+	/**
+	 * <p>
+	 * Specifies the description of the attribute.
+	 * </p>
+	 */
+	String decription() default "";
+
 }

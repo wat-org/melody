@@ -581,6 +581,10 @@ public class TaskFactory {
 					continue;
 				}
 			} catch (TaskFactoryException Ex) {
+				/*
+				 * TODO : add the description of the nest element (defined in
+				 * method's annotation) in the error message
+				 */
 				throw new TaskFactoryException(Messages.bind(
 						Messages.TaskFactoryEx_SET_NE, new Object[] {
 								n.getNodeName().toLowerCase(), State.FAILED,
@@ -725,6 +729,10 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
+			/*
+			 * TODO : add the description of the attribute (defined in method's
+			 * annotation) in the error message
+			 */
 			throw new TaskFactoryException(Messages.bind(
 					Messages.TaskFactoryEx_SET_ATTR, new Object[] { sAttrName,
 							State.FAILED, Doc.getNodeLocation(attr) }),

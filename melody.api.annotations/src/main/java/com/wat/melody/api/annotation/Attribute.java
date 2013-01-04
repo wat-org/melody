@@ -26,4 +26,11 @@ public @interface Attribute {
 	 */
 	boolean mandatory() default false;
 
+	/**
+	 * <p>
+	 * Specifies the description of the attribute.
+	 * </p>
+	 */
+	String decription() default "";
+
 }
