@@ -64,7 +64,7 @@ public abstract class KeyPairHelper {
 
 	public static void writeOpenSslPEMFingerprint(Path filePath, KeyPair kp)
 			throws IOException {
-		Files.write(filePath, generateOpenSslPEMFingerprint(kp).getBytes());
+		Files.write(filePath, generateFingerprint(kp).getBytes());
 	}
 
 	public static void writeOpenSslPEMPrivateKey(Path filePath, KeyPair kp)
@@ -98,12 +98,14 @@ public abstract class KeyPairHelper {
 		}
 	}
 
-	public static String generateOpenSslPEMFingerprint(KeyPair kp) {
+	public static String generateFingerprint(KeyPair kp) {
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("MD5");
 		} catch (NoSuchAlgorithmException Ex) {
-			throw new RuntimeException("MD5 algorithm doesn't exists !", Ex);
+			throw new RuntimeException("MD5 algorithm doesn't exists ! "
+					+ "Source code have been modified and a bug introduced.",
+					Ex);
 		}
 		md.update(kp.getPublic().getEncoded());
 		return bytesToHex(md.digest());

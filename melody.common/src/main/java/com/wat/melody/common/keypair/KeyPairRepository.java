@@ -123,7 +123,7 @@ public class KeyPairRepository extends File {
 	 * </p>
 	 * F
 	 * 
-	 * @param sKeyPairName
+	 * @param keyPairName
 	 * 
 	 * @return <code>true</code> if the given KeyPair exists in the Repository,
 	 *         <code>false</code> otherwise.
@@ -133,15 +133,15 @@ public class KeyPairRepository extends File {
 	 *             privateKey is not a valid private key in the Open Ssl PEM
 	 *             format)
 	 */
-	public boolean containsKeyPair(KeyPairName sKeyPairName) throws IOException {
+	public boolean containsKeyPair(KeyPairName keyPairName) throws IOException {
 		try {
-			Tools.validateFileExists(getPrivateKeyFile(sKeyPairName).getPath());
+			Tools.validateFileExists(getPrivateKeyFile(keyPairName).getPath());
 		} catch (IllegalFileException Ex) {
 			return false;
 		}
 		KeyPair kp = null;
 		kp = KeyPairHelper
-				.readOpenSslPEMPrivateKey(getPrivateKeyPath(sKeyPairName));
+				.readOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName));
 		if (!(kp.getPrivate() instanceof RSAPrivateKey)) {
 			return false;
 		}
@@ -150,30 +150,32 @@ public class KeyPairRepository extends File {
 
 	/**
 	 * <p>
-	 * Create a KeyPair in this Repository.
+	 * Create a RSA KeyPair in this Repository.
 	 * </p>
 	 * 
-	 * @param sKeyPairName
+	 * @param keyPairName
 	 *            is the name of the key to create.
+	 * @param size
+	 *            is the size of the key to create.
+	 * @param sPassphrase
+	 *            is the passphrase of the key to create.
+	 * 
+	 * @return the created
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if a KeyPair with the same name already exists in this
 	 *             KeyPairRepository.
 	 * @throws IOException
-	 *             if an IO error occured while creating the KeyPair in the
+	 *             if an IO error occurred while creating the KeyPair in the
 	 *             repository.
 	 */
-	public void createKeyPair(KeyPairName sKeyPairName, int size,
+	public KeyPair createKeyPair(KeyPairName keyPairName, int size,
 			String sPassphrase) throws IOException {
 		/*
 		 * TODO : deal with pass-phrase when creating the private key
 		 */
-		if (sKeyPairName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a KeyPair Name)");
-		}
-		if (containsKeyPair(sKeyPairName)) {
-			throw new IllegalArgumentException(sKeyPairName
+		if (containsKeyPair(keyPairName)) {
+			throw new IllegalArgumentException(keyPairName
 					+ ": KeyPair Name already exists. "
 					+ "Cannot create a KeyPair with this Name in the KeyPair "
 					+ "Repository '" + getPath() + "'.");
@@ -182,17 +184,20 @@ public class KeyPairRepository extends File {
 		try {
 			keyGen = KeyPairGenerator.getInstance("RSA");
 		} catch (NoSuchAlgorithmException Ex) {
-			throw new RuntimeException("TODO developpement error.", Ex);
+			throw new RuntimeException("RSA algorithm doesn't exists ! "
+					+ "Source code have been modified and a bug introduced.",
+					Ex);
 		}
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
-		KeyPairHelper.writeOpenSslPEMPrivateKey(
-				getPrivateKeyPath(sKeyPairName), kp);
+		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
+				kp);
+		return kp;
 	}
 
 	/**
 	 * 
-	 * @param sKeyPairName
+	 * @param keyPairName
 	 * 
 	 * @return
 	 * 
@@ -202,32 +207,47 @@ public class KeyPairRepository extends File {
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
 	 */
-	public String getPrivateKey(KeyPairName sKeyPairName)
+	public String getPrivateKey(KeyPairName keyPairName)
 			throws KeyPairRepositoryException, IOException {
 		try {
-			Path path = getPrivateKeyPath(sKeyPairName);
+			Path path = getPrivateKeyPath(keyPairName);
 			return new String(Files.readAllBytes(path));
 		} catch (FileNotFoundException Ex) {
 			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_PRIVATE_KEY_NOT_FOUND, sKeyPairName,
+					Messages.KeyPairRepoEx_PRIVATE_KEY_NOT_FOUND, keyPairName,
 					getPath()), Ex);
 		}
 	}
 
-	public Path getPrivateKeyPath(KeyPairName sKeyPairName) {
-		if (sKeyPairName == null) {
+	public Path getPrivateKeyPath(KeyPairName keyPairName) {
+		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a KeyPair Name)");
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
 		}
-		return Paths.get(getPath().toString(), sKeyPairName.getValue());
+		return Paths.get(getPath().toString(), keyPairName.getValue());
 	}
 
-	public File getPrivateKeyFile(KeyPairName sKeyPairName) {
-		if (sKeyPairName == null) {
+	public File getPrivateKeyFile(KeyPairName keyPairName) {
+		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a KeyPair Name)");
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
 		}
-		return new File(getPath(), sKeyPairName.getValue());
+		return new File(getPath(), keyPairName.getValue());
+	}
+
+	public KeyPair getKeyPair(KeyPairName keyPairName) throws IOException {
+		return KeyPairHelper
+				.readOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName));
+	}
+
+	public static String getPublicKeyInOpenSshFormat(KeyPair kp, String sComment) {
+		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
+	}
+
+	public static String getFingerprint(KeyPair kp) {
+		return KeyPairHelper.generateFingerprint(kp);
 	}
 
 }
