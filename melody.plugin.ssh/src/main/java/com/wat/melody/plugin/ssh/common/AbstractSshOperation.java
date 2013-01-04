@@ -1,9 +1,17 @@
 package com.wat.melody.plugin.ssh.common;
 
+import java.io.IOException;
+
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UIKeyboardInteractive;
+import com.wat.melody.api.ITask;
+import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.utils.LogThreshold;
@@ -17,59 +25,102 @@ import com.wat.melody.plugin.ssh.common.jsch.LoggerOutputStream;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractSshOperation extends AbstractSshTask implements
+public abstract class AbstractSshOperation implements ITask,
 		JSchConnectionDatas {
 
 	/**
-	 * The 'login' XML attribute
+	 * XML attribute in the SD which define the remote account to connect to
 	 */
 	public static final String LOGIN_ATTR = "login";
 
 	/**
-	 * The 'host' XML attribute
+	 * XML attribute in the SD which is either the password of the remote
+	 * account, or the password of the keypair.
+	 */
+	public static final String PASS_ATTR = "password";
+
+	/**
+	 * XML attribute in the SD which define the ip of the remote system to
+	 * connect to
 	 */
 	public static final String HOST_ATTR = "host";
 
 	/**
-	 * The 'port' XML attribute
+	 * XML attribute in the SD which define the port of the ssh daemon on the
+	 * remote system to connect to
 	 */
 	public static final String PORT_ATTR = "port";
 
 	/**
-	 * The 'password' XML attribute
-	 */
-	public static final String PASSWORD_ATTR = "password";
-
-	/**
-	 * The 'trust' XML attribute
+	 * XML attribute in the SD which define how the remote system to connect to
+	 * should be trusted. 'false' means that the remote system must have been
+	 * previously registered in the knownhosts file in order to connect to.
+	 * 'true' means that the remote system to connect to will be automatically
+	 * trusted, even if it is not registered in the knownhosts file.
 	 */
 	public static final String TRUST_ATTR = "trust";
 
+	/**
+	 * XML attribute in the SD which define the path of the keypair repository
+	 * which contains the keypair use to connect to the remote system.
+	 */
+	public static final String KEYPAIR_REPO_ATTR = "keyPairRepository";
+
+	/**
+	 * XML attribute in the SD which define the name of the keypair to use to
+	 * connect to the remote system; The keypair will be found/created in the
+	 * keypair repositoy.
+	 */
+	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
+
+	private ITaskContext moContext;
+	private SshPlugInConfiguration moPluginConf;
 	private String msLogin;
+	private String msPassword;
 	private Host moHost;
 	private Port moPort;
-	private String msPassword;
 	private Boolean mbTrust;
+	private KeyPairRepository moKeyPairRepository;
+	private KeyPairName moKeyPairName;
 
 	public AbstractSshOperation() {
-		super();
+		initContext();
+		initPluginConf();
+		initKeyPairRepository();
+		initKeyPairName();
 		initLogin();
+		initPassword();
 		initHost();
 		setPort(Port.SSH);
-		initPassword();
 		initTrust();
+	}
+
+	private void initContext() {
+		moContext = null;
+	}
+
+	private void initPluginConf() {
+		moPluginConf = null;
+	}
+
+	private void initKeyPairRepository() {
+		moKeyPairRepository = null;
+	}
+
+	private void initKeyPairName() {
+		moKeyPairName = null;
 	}
 
 	private void initLogin() {
 		msLogin = null;
 	}
 
-	private void initHost() {
-		moHost = null;
-	}
-
 	private void initPassword() {
 		msPassword = null;
+	}
+
+	private void initHost() {
+		moHost = null;
 	}
 
 	private void initTrust() {
@@ -78,16 +129,31 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 
 	@Override
 	public void validate() throws SshException {
-		super.validate();
+		if (getKeyPairName() == null) {
+			return;
+		}
+		if (getKeyPairRepository() == null) {
+			setKeyPairRepository(getPluginConf().getKeyPairRepo());
+		}
+		KeyPairRepository kpr = getKeyPairRepository();
+		try {
+			if (!kpr.containsKeyPair(getKeyPairName())) {
+				kpr.createKeyPair(getKeyPairName(), getPluginConf()
+						.getKeyPairSize(), getPassphrase());
+			}
+		} catch (IOException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		try {
+			getPluginConf()
+					.addIdentity(kpr.getPrivateKeyFile(getKeyPairName()));
+		} catch (JSchException Ex) {
+			throw new SshException(Ex);
+		}
 
-		// Validate task attribute
-		if (getPassword() != null && getKeyPairName() != null) {
+		if (getPassword() == null && getKeyPairName() == null) {
 			throw new SshException(Messages.bind(
-					Messages.SshEx_BOTH_PASSWORD_OR_PK_ATTR, PASSWORD_ATTR,
-					KEYPAIR_NAME_ATTR));
-		} else if (getPassword() == null && getKeyPairName() == null) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASSWORD_ATTR,
+					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
 					KEYPAIR_NAME_ATTR));
 		}
 	}
@@ -139,6 +205,59 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 				session.disconnect();
 			}
 		}
+	}
+
+	@Override
+	public ITaskContext getContext() {
+		return moContext;
+	}
+
+	/**
+	 * <p>
+	 * Set the {@link ITaskContext} of this object with the given
+	 * {@link ITaskContext} and retrieve the Ssh Plug-In
+	 * {@link SshPlugInConfiguration}.
+	 * </p>
+	 * 
+	 * @param p
+	 *            is the {@link ITaskContext} to set.
+	 * 
+	 * @throws SshException
+	 *             if an error occurred while retrieving the Ssh Plug-In
+	 *             {@link SshPlugInConfiguration}.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link ITaskContext} is <tt>null</tt>.
+	 */
+	@Override
+	public void setContext(ITaskContext p) throws SshException {
+		if (p == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid ITaskContext.");
+		}
+		moContext = p;
+
+		// Get the configuration at the very beginning
+		try {
+			setPluginConf(SshPlugInConfiguration.get(getContext()
+					.getProcessorManager()));
+		} catch (PlugInConfigurationException Ex) {
+			throw new SshException(Ex);
+		}
+
+	}
+
+	protected SshPlugInConfiguration getPluginConf() {
+		return moPluginConf;
+	}
+
+	public SshPlugInConfiguration setPluginConf(SshPlugInConfiguration p) {
+		if (p == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Configuration.");
+		}
+		SshPlugInConfiguration previous = getPluginConf();
+		moPluginConf = p;
+		return previous;
 	}
 
 	public String getLogin() {
@@ -195,7 +314,7 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 		return msPassword;
 	}
 
-	@Attribute(name = PASSWORD_ATTR)
+	@Attribute(name = PASS_ATTR)
 	public String setPassword(String sPassword) {
 		if (sPassword == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -215,6 +334,42 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 		boolean previous = getTrust();
 		mbTrust = b;
 		return previous;
+	}
+
+	public KeyPairRepository getKeyPairRepository() {
+		return moKeyPairRepository;
+	}
+
+	@Attribute(name = KEYPAIR_REPO_ATTR)
+	public KeyPairRepository setKeyPairRepository(
+			KeyPairRepository keyPairRepository) {
+		if (keyPairRepository == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid File (a Key Repository Path).");
+		}
+		KeyPairRepository previous = getKeyPairRepository();
+		moKeyPairRepository = keyPairRepository;
+		return previous;
+	}
+
+	public KeyPairName getKeyPairName() {
+		return moKeyPairName;
+	}
+
+	@Attribute(name = KEYPAIR_NAME_ATTR)
+	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
+		if (keyPairName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Cannot be null.");
+		}
+		KeyPairName previous = getKeyPairName();
+		moKeyPairName = keyPairName;
+		return previous;
+	}
+
+	@Override
+	public String getPassphrase() {
+		return msPassword;
 	}
 
 	/**
