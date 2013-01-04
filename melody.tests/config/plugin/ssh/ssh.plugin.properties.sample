@@ -11,12 +11,13 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlug
 #####################
 
 ### location of the knownHosts file (relative path are resolved from the current file location)
-### default value is '.ssh/known_hosts'
 #ssh.knownhosts=.ssh/known_hosts
 
 ### location of the keyPair repository directory (relative path are resolved from the current file location)
-### default value is '.ssh'
 #ssh.keypair.repository=.ssh/
+
+### size of the keyPair to create when not found in the keypair repository
+#ssh.keypair.size=2048
 
 
 #####################
@@ -52,3 +53,28 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlug
 #ssh.conn.proxy.host=
 #ssh.conn.proxy.port=
 
+
+#####################
+### MANAGEMENT
+#####################
+
+### Ssh Management is a feature of the Ssh Plug-In which aim is to simplify connections to target remote systems.
+### Using Ssh Plug-In's Ssh Management feature, you can connect to a remote system as a user, without providing neither the password nor keypair of that specific user.
+### Pre-requisites for Ssh Management are :
+###   - A private key on the local system (more formally called the 'ssh management key'), 
+###     which will be automatically deployed by Ssh Plug-In's Ssh Management feature to each remote account ;
+###   - A 'super user account' on each remote system (more formally called the 'ssh management master user'), 
+###     which Ssh Plug-In's Ssh Management feature can connect to, providing either its password (more 
+###     formally called the 'ssh management master password'), or its private key (more formally called 
+###     the 'ssh management master key').
+###     This 'super user account' must be either a root account or a common account which can do 'sudo su -' 
+###     without password prompting.
+
+### the default ssh management key (will be stored in the previously defined keypair repository)
+#ssh.management.key=melody_mgmt_kp
+#ssh.management.pass=changeit!
+
+### the ssh management master user
+#ssh.management.master.user=root
+#ssh.management.master.key=melody_mgmt_kp
+#ssh.management.master.pass=changeit!

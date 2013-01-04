@@ -12,7 +12,9 @@ import com.jcraft.jsch.UserInfo;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -40,8 +42,15 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 				.getPluginConfiguration(SshPlugInConfiguration.class);
 	}
 
+	// CONFIGURATION DIRECTIVES DEFAULT VALUES
 	public final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
 	public final String DEFAULT_KEYPAIR_REPO = ".ssh/";
+
+	public final String DEFAULT_MGMT_KEY = "melody_mgmt_kp";
+	public final String DEFAULT_MGMT_PASS = "changeit!";
+	public final String DEFAULT_MGMT_MASTER_USER = "root";
+	public final String DEFAULT_MGMT_MASTER_KEY = "melody_mgmt_kp";
+	public final String DEFAULT_MGMT_MASTER_PASS = "changeit!";
 
 	// MANDATORY CONFIGURATION DIRECTIVE
 
@@ -62,6 +71,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	public static final String PROXY_HOST = "ssh.conn.proxy.host";
 	public static final String PROXY_PORT = "ssh.conn.proxy.port";
 
+	public static final String MGMT_KEY = "ssh.management.key";
+	public static final String MGMT_PASS = "ssh.management.pass";
+	public static final String MGMT_MASTER_USER = "ssh.management.master.user";
+	public static final String MGMT_MASTER_KEY = "ssh.management.master.key";
+	public static final String MGMT_MASTER_PASS = "ssh.management.master.pass";
+
 	private String msConfigurationFilePath;
 	private JSch moJSch;
 	private File moKnownHosts;
@@ -76,6 +91,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	private ProxyType moProxyType;
 	private Host moProxyHost;
 	private Port moProxyPort;
+
+	private KeyPairName moMgmtKey;
+	private String moMgmtPass;
+	private String moMgmtMasterUser;
+	private KeyPairName moMgmtMasterKey;
+	private String moMgmtMasterPass;
 
 	public SshPlugInConfiguration() {
 		setJSch(new JSch());
@@ -115,6 +136,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		loadProxyType(ps);
 		loadProxyHost(ps);
 		loadProxyPort(ps);
+
+		loadMgmtKey(ps);
+		loadMgmtPass(ps);
+		loadMgmtMasterUser(ps);
+		loadMgmtMasterKey(ps);
+		loadMgmtMasterPass(ps);
 
 		validate();
 	}
@@ -277,6 +304,71 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
+	private void loadMgmtKey(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(MGMT_KEY)) {
+			return;
+		}
+		try {
+			setMgmtKey(ps.get(MGMT_KEY));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_KEY), Ex);
+		}
+	}
+
+	private void loadMgmtPass(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(MGMT_PASS)) {
+			return;
+		}
+		try {
+			setMgmtPass(ps.get(MGMT_PASS));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_PASS), Ex);
+		}
+	}
+
+	private void loadMgmtMasterUser(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(MGMT_MASTER_USER)) {
+			return;
+		}
+		try {
+			setMgmtMasterUser(ps.get(MGMT_MASTER_USER));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_MASTER_USER), Ex);
+		}
+	}
+
+	private void loadMgmtMasterKey(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(MGMT_MASTER_KEY)) {
+			return;
+		}
+		try {
+			setMgmtMasterKey(ps.get(MGMT_MASTER_KEY));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_MASTER_KEY), Ex);
+		}
+	}
+
+	private void loadMgmtMasterPass(PropertiesSet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(MGMT_MASTER_PASS)) {
+			return;
+		}
+		try {
+			setMgmtMasterPass(ps.get(MGMT_MASTER_PASS));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_MASTER_PASS), Ex);
+		}
+	}
+
 	private void validate() throws SshPlugInConfigurationException {
 		/*
 		 * TODO : try to connect to the proxy, if set.
@@ -391,8 +483,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		return moKeyPairRepo;
 	}
 
-	public KeyPairRepository setKeyPairRepo(KeyPairRepository keyPairRepo)
-			throws SshPlugInConfigurationException {
+	public KeyPairRepository setKeyPairRepo(KeyPairRepository keyPairRepo) {
 		if (keyPairRepo == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Directory (a KeyPair Repo path).");
@@ -471,8 +562,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	}
 
 	public CompressionLevel setCompressionLevel(
-			CompressionLevel compressionLevel)
-			throws SshPlugInConfigurationException {
+			CompressionLevel compressionLevel) {
 		if (compressionLevel == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a CompressionLevel).");
@@ -662,6 +752,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		return moProxyType;
 	}
 
+	public ProxyType setProxyType(ProxyType val) {
+		if (val == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid ProxyType.");
+		}
+		ProxyType previous = getProxyType();
+		moProxyType = val;
+		return previous;
+	}
+
 	public ProxyType setProxyType(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
@@ -675,22 +775,11 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	public ProxyType setProxyType(ProxyType val)
-			throws SshPlugInConfigurationException {
-		if (val == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ProxyType.");
-		}
-		ProxyType previous = getProxyType();
-		moProxyType = val;
-		return previous;
-	}
-
 	public Host getProxyHost() {
 		return moProxyHost;
 	}
 
-	public Host setProxyHost(Host val) throws SshPlugInConfigurationException {
+	public Host setProxyHost(Host val) {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Host.");
@@ -716,7 +805,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		return moProxyPort;
 	}
 
-	public Port setProxyPort(Port port) throws SshPlugInConfigurationException {
+	public Port setProxyPort(Port port) {
 		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Port.");
@@ -741,6 +830,121 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		} catch (IllegalPortException Ex) {
 			throw new SshPlugInConfigurationException(Ex);
 		}
+	}
+
+	public KeyPairName getMgmtKey() {
+		return moMgmtKey;
+	}
+
+	public KeyPairName setMgmtKey(KeyPairName keyPairName) {
+		if (keyPairName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
+		}
+		KeyPairName previous = getMgmtKey();
+		moMgmtKey = keyPairName;
+		return previous;
+	}
+
+	public KeyPairName setMgmtKey(String val)
+			throws SshPlugInConfigurationException {
+		if (val == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String which represents a "
+					+ KeyPairName.class.getCanonicalName() + ".");
+		}
+		try {
+			return setMgmtKey(KeyPairName.parseString(val));
+		} catch (IllegalKeyPairNameException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
+		}
+	}
+
+	public String getMgmtPass() {
+		return moMgmtPass;
+	}
+
+	public String setMgmtPass(String mgmtPass)
+			throws SshPlugInConfigurationException {
+		if (mgmtPass == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String which represents a password.");
+		}
+		if (mgmtPass.trim().length() == 0) {
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
+		}
+		String previous = getMgmtPass();
+		moMgmtPass = mgmtPass;
+		return previous;
+	}
+
+	public String getMgmtMasterUser() {
+		return moMgmtMasterUser;
+	}
+
+	public String setMgmtMasterUser(String mgmtMasterUser)
+			throws SshPlugInConfigurationException {
+		if (mgmtMasterUser == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String which represents a user.");
+		}
+		if (mgmtMasterUser.trim().length() == 0) {
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
+		}
+		String previous = getMgmtMasterUser();
+		moMgmtMasterUser = mgmtMasterUser;
+		return previous;
+	}
+
+	public KeyPairName getMgmtMasterKey() {
+		return moMgmtMasterKey;
+	}
+
+	public KeyPairName setMgmtMasterKey(KeyPairName keyPairName) {
+		if (keyPairName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
+		}
+		KeyPairName previous = getMgmtMasterKey();
+		moMgmtMasterKey = keyPairName;
+		return previous;
+	}
+
+	public KeyPairName setMgmtMasterKey(String val)
+			throws SshPlugInConfigurationException {
+		if (val == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String which represents a "
+					+ KeyPairName.class.getCanonicalName() + ".");
+		}
+		try {
+			return setMgmtMasterKey(KeyPairName.parseString(val));
+		} catch (IllegalKeyPairNameException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
+		}
+	}
+
+	public String getMgmtMasterPass() {
+		return moMgmtMasterPass;
+	}
+
+	public String setMgmtMasterPass(String mgmtMasterPass)
+			throws SshPlugInConfigurationException {
+		if (mgmtMasterPass == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String which represents a password.");
+		}
+		if (mgmtMasterPass.trim().length() == 0) {
+			throw new SshPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
+		}
+		String previous = getMgmtMasterUser();
+		moMgmtMasterPass = mgmtMasterPass;
+		return previous;
 	}
 
 }
