@@ -6,7 +6,6 @@ import com.jcraft.jsch.UIKeyboardInteractive;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.plugin.ssh.common.jsch.JSchConnectionDatas;
@@ -56,7 +55,7 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 		super();
 		initLogin();
 		initHost();
-		initPort();
+		setPort(Port.SSH);
 		initPassword();
 		initTrust();
 	}
@@ -67,19 +66,6 @@ public abstract class AbstractSshOperation extends AbstractSshTask implements
 
 	private void initHost() {
 		moHost = null;
-	}
-
-	private void initPort() {
-		try {
-			moPort = new Port(Port.SSH);
-		} catch (IllegalPortException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the Port with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
 	}
 
 	private void initPassword() {

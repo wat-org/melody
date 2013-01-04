@@ -11,9 +11,22 @@ public class Port {
 
 	public static final int MIN = 1;
 	public static final int MAX = 65535;
-	public static final int SSH = 22;
-	public static final int HTTP = 80;
-	public static final int HTTPS = 443;
+	public static final Port SSH = createPort(22);
+	public static final Port HTTP = createPort(80);
+	public static final Port HTTPS = createPort(443);
+
+	private static Port createPort(int port) {
+		try {
+			return new Port(port);
+		} catch (IllegalPortException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a Port with value '" + port + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	/**
 	 * <p>
