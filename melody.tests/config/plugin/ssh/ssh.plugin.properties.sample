@@ -70,6 +70,8 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlug
 ###     This 'super user account' must be either a root account or a common account which can do 'sudo su -' 
 ###     without password prompting.
 
+#ssh.management.enable=true
+
 ### the ssh management master user
 #ssh.management.master.user=root
 #ssh.management.master.key=melody_mgmt_kp
