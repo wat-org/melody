@@ -30,19 +30,19 @@ public abstract class JSchHelper {
 	 * 
 	 * @return the opened session.
 	 * 
+	 * @throws IncorrectCredentialsException
+	 *             on credentials error.
 	 * @throws SshException
-	 *             on error.
-	 * @throws SshException
-	 *             which contains a {@link JSchException}, which error message
-	 *             is "Incorrect credentials" on credential error.
+	 *             on most error.
 	 * 
 	 */
-	public static Session openSession(JSchConnectionDatas base,
-			SshPlugInConfiguration conf) throws SshException {
-		if (base == null) {
+	public static Session openSession(SshConnectionDatas cnxDatas,
+			SshPlugInConfiguration conf) throws SshException,
+			IncorrectCredentialsException {
+		if (cnxDatas == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ JSchConnectionDatas.class.getCanonicalName() + ".");
+					+ SshConnectionDatas.class.getCanonicalName() + ".");
 		}
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -51,9 +51,9 @@ public abstract class JSchHelper {
 		}
 		Session session = null;
 		try {
-			session = conf.getJSch().getSession(base.getLogin(),
-					base.getHost().getValue().getHostAddress(),
-					base.getPort().getValue());
+			session = conf.getJSch().getSession(cnxDatas.getLogin(),
+					cnxDatas.getHost().getValue().getHostAddress(),
+					cnxDatas.getPort().getValue());
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a Ssh Session. "
@@ -62,7 +62,7 @@ public abstract class JSchHelper {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		session.setUserInfo(base);
+		session.setUserInfo(cnxDatas);
 
 		session.setServerAliveCountMax(conf.getServerAliveCountMax());
 
@@ -91,15 +91,19 @@ public abstract class JSchHelper {
 		session.setConfig("compression_level", conf.getCompressionLevel()
 				.getValue());
 		/*
-		 * TODO : when the target sshd is Kerberized, and when the client has no
+		 * TODO : We remove 'gssapi-with-mic' authentication method because,
+		 * when the target sshd is Kerberized, and when the client has no
 		 * Kerberos ticket yet, the auth method 'gssapi-with-mic' will wait for
 		 * the user to prompt a password.
 		 * 
 		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
 		 * as the bug is not solved, we must exclude kerberos/GSS auth method.
 		 */
-		session.setConfig("PreferredAuthentications",
-				"publickey,keyboard-interactive,password");
+		/*
+		 * We remove 'keyboard-interactive' authentication method because, we
+		 * don't want the user to be prompt for anything.
+		 */
+		session.setConfig("PreferredAuthentications", "publickey,password");
 
 		if (conf.getProxyType() != null) {
 			/*
@@ -112,15 +116,26 @@ public abstract class JSchHelper {
 		} catch (JSchException Ex) {
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'
-				// provide an unified error message on credentials errors
-				Ex = new JSchException("Incorrect credentials.", Ex);
+				// => dedicated exception on credentials errors
+				throw new IncorrectCredentialsException(Messages.bind(
+						Messages.SshEx_FAILED_TO_CONNECT,
+						new Object[] {
+								cnxDatas.getHost().getValue().getHostAddress(),
+								cnxDatas.getPort().getValue(),
+								cnxDatas.getLogin() }), Ex);
 			}
-			throw new SshException(Messages.bind(
-					Messages.SshEx_FAILED_TO_CONNECT, new Object[] {
-							base.getHost().getValue().getHostAddress(),
-							base.getPort().getValue(), base.getLogin() }), Ex);
+			throw new SshException(
+					Messages.bind(
+							Messages.SshEx_FAILED_TO_CONNECT,
+							new Object[] {
+									cnxDatas.getHost().getValue()
+											.getHostAddress(),
+									cnxDatas.getPort().getValue(),
+									cnxDatas.getLogin() }), Ex);
 		}
 
+		// Change the name of the thread so that the log is more clear
+		session.getConnectThread().setName(Thread.currentThread().getName());
 		return session;
 	}
 

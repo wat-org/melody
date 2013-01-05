@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence basedir="." default="main">
+
+	<order name="main">
+
+		<property name="IP" value="127.0.0.1"/>
+		
+		<echo message="Executing command on 'IP:§[IP]§' ..." />
+
+		<ssh description="[test_script:§[IP]§]" host="§[IP]§" login="jboss" keyPairName="akey" trust="y" mgmt-master-login="root" mgmt-master-pass="changeit!" >
+			<exec command="echo ---------------------------"/>
+			<exec command="echo -e &quot;\033[80G[\033[0;32m  NOT GREEN  \033[0;39m]&quot;"/>
+			<exec command="echo ---------------------------"/>
+		</ssh>
+
+		<echo message="Command successfully executed on 'IP:§[IP]§'."/>
+
+	</order>
+
+</sequence>

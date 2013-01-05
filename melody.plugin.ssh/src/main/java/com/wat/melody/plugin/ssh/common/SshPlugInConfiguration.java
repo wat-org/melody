@@ -46,12 +46,6 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	public final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
 	public final String DEFAULT_KEYPAIR_REPO = ".ssh/";
 
-	public final String DEFAULT_MGMT_KEY = "melody_mgmt_kp";
-	public final String DEFAULT_MGMT_PASS = "changeit!";
-	public final String DEFAULT_MGMT_MASTER_USER = "root";
-	public final String DEFAULT_MGMT_MASTER_KEY = "melody_mgmt_kp";
-	public final String DEFAULT_MGMT_MASTER_PASS = "changeit!";
-
 	// MANDATORY CONFIGURATION DIRECTIVE
 
 	// OPTIONNAL CONFIGURATION DIRECTIVE
@@ -71,8 +65,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	public static final String PROXY_HOST = "ssh.conn.proxy.host";
 	public static final String PROXY_PORT = "ssh.conn.proxy.port";
 
-	public static final String MGMT_KEY = "ssh.management.key";
-	public static final String MGMT_PASS = "ssh.management.pass";
+	public static final String MGMT_ENABLE = "ssh.management.enable";
 	public static final String MGMT_MASTER_USER = "ssh.management.master.user";
 	public static final String MGMT_MASTER_KEY = "ssh.management.master.key";
 	public static final String MGMT_MASTER_PASS = "ssh.management.master.pass";
@@ -92,9 +85,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 	private Host moProxyHost;
 	private Port moProxyPort;
 
-	private KeyPairName moMgmtKey;
-	private String moMgmtPass;
-	private String moMgmtMasterUser;
+	private Boolean mbMgmtEnable = true;
+	private String moMgmtMasterUser = "root";
 	private KeyPairName moMgmtMasterKey;
 	private String moMgmtMasterPass;
 
@@ -137,8 +129,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		loadProxyHost(ps);
 		loadProxyPort(ps);
 
-		loadMgmtKey(ps);
-		loadMgmtPass(ps);
+		loadMgmtEnable(ps);
 		loadMgmtMasterUser(ps);
 		loadMgmtMasterKey(ps);
 		loadMgmtMasterPass(ps);
@@ -304,30 +295,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private void loadMgmtKey(PropertiesSet ps)
+	private void loadMgmtEnable(PropertiesSet ps)
 			throws SshPlugInConfigurationException {
-		if (!ps.containsKey(MGMT_KEY)) {
+		if (!ps.containsKey(MGMT_ENABLE)) {
 			return;
 		}
-		try {
-			setMgmtKey(ps.get(MGMT_KEY));
-		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_KEY), Ex);
-		}
-	}
-
-	private void loadMgmtPass(PropertiesSet ps)
-			throws SshPlugInConfigurationException {
-		if (!ps.containsKey(MGMT_PASS)) {
-			return;
-		}
-		try {
-			setMgmtPass(ps.get(MGMT_PASS));
-		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_PASS), Ex);
-		}
+		setMgmtEnable(ps.get(MGMT_ENABLE));
 	}
 
 	private void loadMgmtMasterUser(PropertiesSet ps)
@@ -832,54 +805,28 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	public KeyPairName getMgmtKey() {
-		return moMgmtKey;
+	public boolean getMgmtEnable() {
+		return mbMgmtEnable;
 	}
 
-	public KeyPairName setMgmtKey(KeyPairName keyPairName) {
-		if (keyPairName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
-					+ ".");
-		}
-		KeyPairName previous = getMgmtKey();
-		moMgmtKey = keyPairName;
+	public boolean setMgmtEnable(boolean val) {
+		boolean previous = getMgmtEnable();
+		mbMgmtEnable = val;
 		return previous;
 	}
 
-	public KeyPairName setMgmtKey(String val)
-			throws SshPlugInConfigurationException {
+	public boolean setMgmtEnable(String val) {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a "
-					+ KeyPairName.class.getCanonicalName() + ".");
+					+ "Must be a valid String (a boolean).");
 		}
-		try {
-			return setMgmtKey(KeyPairName.parseString(val));
-		} catch (IllegalKeyPairNameException Ex) {
-			throw new SshPlugInConfigurationException(Ex);
-		}
+		return setMgmtEnable(Boolean.parseBoolean(val));
 	}
 
-	public String getMgmtPass() {
-		return moMgmtPass;
-	}
-
-	public String setMgmtPass(String mgmtPass)
-			throws SshPlugInConfigurationException {
-		if (mgmtPass == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a password.");
-		}
-		if (mgmtPass.trim().length() == 0) {
-			throw new SshPlugInConfigurationException(
-					Messages.ConfEx_EMPTY_DIRECTIVE);
-		}
-		String previous = getMgmtPass();
-		moMgmtPass = mgmtPass;
-		return previous;
-	}
-
+	/**
+	 * 
+	 * @return the ssh management master user. Cannot be null.
+	 */
 	public String getMgmtMasterUser() {
 		return moMgmtMasterUser;
 	}
@@ -899,6 +846,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		return previous;
 	}
 
+	/**
+	 * 
+	 * @return the keypair name of the ssh management master user. Can be null,
+	 *         when the connection as ssh management master user should be done
+	 *         without keypair.
+	 */
 	public KeyPairName getMgmtMasterKey() {
 		return moMgmtMasterKey;
 	}
@@ -928,6 +881,13 @@ public class SshPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
+	/**
+	 * 
+	 * @return the password of the ssh management master user, or the password
+	 *         of the keypair of the ssh management master user. Can be null, if
+	 *         the keypair of the ssh management master user is defined and if
+	 *         this key don't have a passphrase.
+	 */
 	public String getMgmtMasterPass() {
 		return moMgmtMasterPass;
 	}

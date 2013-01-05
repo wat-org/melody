@@ -46,7 +46,7 @@ public class Exec {
 		msCommand = c;
 		return previous;
 	}
-	
+
 	public File getFile() {
 		return msFile;
 	}

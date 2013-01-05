@@ -177,8 +177,8 @@ public class KeyPairRepository extends File {
 		if (containsKeyPair(keyPairName)) {
 			throw new IllegalArgumentException(keyPairName
 					+ ": KeyPair Name already exists. "
-					+ "Cannot create a KeyPair with this Name in the KeyPair "
-					+ "Repository '" + getPath() + "'.");
+					+ "Cannot create this KeyPair KeyPair Repository '"
+					+ getPath() + "'.");
 		}
 		KeyPairGenerator keyGen = null;
 		try {
@@ -238,8 +238,25 @@ public class KeyPairRepository extends File {
 	}
 
 	public KeyPair getKeyPair(KeyPairName keyPairName) throws IOException {
+		if (!containsKeyPair(keyPairName)) {
+			throw new IllegalArgumentException(keyPairName
+					+ ": KeyPair Name doens't exists. "
+					+ "Cannot get this KeyPair in the KeyPair Repository '"
+					+ getPath() + "'.");
+		}
 		return KeyPairHelper
 				.readOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName));
+	}
+
+	public String getPublicKeyInOpenSshFormat(KeyPairName keyPairName,
+			String sComment) throws IOException {
+		KeyPair kp = getKeyPair(keyPairName);
+		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
+	}
+
+	public String getFingerprint(KeyPairName keyPairName) throws IOException {
+		KeyPair kp = getKeyPair(keyPairName);
+		return KeyPairHelper.generateFingerprint(kp);
 	}
 
 	public static String getPublicKeyInOpenSshFormat(KeyPair kp, String sComment) {

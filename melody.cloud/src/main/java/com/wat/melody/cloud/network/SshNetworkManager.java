@@ -8,12 +8,15 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.plugin.ssh.common.jsch.JSchConnectionDatas;
+import com.wat.melody.plugin.ssh.common.jsch.IncorrectCredentialsException;
 import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
+import com.wat.melody.plugin.ssh.common.jsch.SshConnectionDatas;
 
 /**
  * 
@@ -94,19 +97,21 @@ public class SshNetworkManager implements NetworkManager {
 		while (true) {
 			try {
 				session = JSchHelper.openSession(sshCnxTester, sshPlugInConf);
+				// connection succeed, and credential invalid => ok
 				break;
-			} catch (Throwable Ex) {
+			} catch (IncorrectCredentialsException Ex) {
+				// connection succeed, but credential invalid => ok
+				break;
+			} catch (SshException Ex) {
+				// if something bad happened => re throw
 				if (Ex.getCause() == null || Ex.getCause().getMessage() == null) {
-					throw new SshException(Ex);
-				} else if (Ex.getCause().getMessage()
-						.indexOf("Incorrect credentials") != -1) {
-					// connection succeed
-					break;
+					throw Ex;
 				} else if (Ex.getCause().getMessage().indexOf("refused") == -1
 						&& Ex.getCause().getMessage().indexOf("timeout") == -1
 						&& Ex.getCause().getMessage().indexOf("No route") == -1) {
-					throw new SshException(Ex);
+					throw Ex;
 				}
+				// in other case => loop
 			} finally {
 				if (session != null) {
 					session.disconnect();
@@ -163,7 +168,7 @@ public class SshNetworkManager implements NetworkManager {
 
 }
 
-class JSchConnectionTester implements JSchConnectionDatas {
+class JSchConnectionTester implements SshConnectionDatas {
 
 	private Host moHost;
 	private Port moPort;
@@ -174,13 +179,12 @@ class JSchConnectionTester implements JSchConnectionDatas {
 	}
 
 	@Override
-	public String getPassphrase() {
-		return "crazyssh";
+	public void showMessage(String message) {
 	}
 
 	@Override
-	public String getPassword() {
-		return "crazyssh";
+	public boolean promptYesNo(String message) {
+		return true;
 	}
 
 	@Override
@@ -194,32 +198,28 @@ class JSchConnectionTester implements JSchConnectionDatas {
 	}
 
 	@Override
-	public boolean promptYesNo(String message) {
-		return true;
-	}
-
-	@Override
-	public void showMessage(String message) {
-	}
-
-	@Override
-	public String[] promptKeyboardInteractive(String destination, String name,
-			String instruction, String[] prompt, boolean[] echo) {
+	public KeyPairName getKeyPairName() {
 		return null;
+	}
+
+	@Override
+	public KeyPairRepository getKeyPairRepository() {
+		return null;
+	}
+
+	@Override
+	public String getPassword() {
+		return "crazyssh";
+	}
+
+	@Override
+	public String getPassphrase() {
+		return "crazyssh";
 	}
 
 	@Override
 	public String getLogin() {
 		return "crazyssh";
-	}
-
-	@Override
-	public Host getHost() {
-		return moHost;
-	}
-
-	public void setHost(Host h) {
-		moHost = h;
 	}
 
 	@Override
@@ -229,6 +229,15 @@ class JSchConnectionTester implements JSchConnectionDatas {
 
 	public void setPort(Port p) {
 		moPort = p;
+	}
+
+	@Override
+	public Host getHost() {
+		return moHost;
+	}
+
+	public void setHost(Host h) {
+		moHost = h;
 	}
 
 }

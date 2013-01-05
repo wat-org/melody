@@ -25,11 +25,11 @@ import com.wat.melody.common.typedef.SimpleResource;
 import com.wat.melody.common.typedef.exception.ResourceException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.plugin.ssh.common.AbstractSshOperation;
+import com.wat.melody.plugin.ssh.common.AbstractSshConnectionManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
-public class Upload extends AbstractSshOperation {
+public class Upload extends AbstractSshConnectionManagedOperation {
 
 	private static Log log = LogFactory.getLog(Upload.class);
 

@@ -7,21 +7,21 @@
 		</fileset>
 	</path>
 
-	<target name="Scp_UC0">
+	<target name="Upload_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.ssh/tests/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="Scp_UC1">
+	<target name="Upload_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.ssh/tests/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="Scp_UC2">
+	<target name="Ssh_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.ssh/tests/UC_2/mc.properties" />
 			<arg value="-v" />
@@ -29,6 +29,14 @@
 		</java>
 	</target>
 
-	<target name="all" depends="Scp_UC0, Scp_UC1, Scp_UC2" />
+	<target name="SshManagement_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.ssh/tests/UC_3/mc.properties" />
+			<arg value="-v" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="all" depends="Upload_UC0, Upload_UC1, Ssh_UC0, SshManagement_UC0" />
 
 </project>

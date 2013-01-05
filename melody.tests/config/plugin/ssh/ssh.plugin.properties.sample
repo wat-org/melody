@@ -59,20 +59,16 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlug
 #####################
 
 ### Ssh Management is a feature of the Ssh Plug-In which aim is to simplify connections to target remote systems.
-### Using Ssh Plug-In's Ssh Management feature, you can connect to a remote system as a user, without providing neither the password nor keypair of that specific user.
-### Pre-requisites for Ssh Management are :
-###   - A private key on the local system (more formally called the 'ssh management key'), 
-###     which will be automatically deployed by Ssh Plug-In's Ssh Management feature to each remote account ;
+### Using Ssh Plug-In's Ssh Management feature, you can connect to a remote system using Ssh Task or Upload Task with any remote user, without knowing its credentials.
+### Its the aim of Ssh Plug-In's Ssh Management feature to deploy the given credentials on the remote system.
+###
+### Ssh Management needs :
 ###   - A 'super user account' on each remote system (more formally called the 'ssh management master user'), 
-###     which Ssh Plug-In's Ssh Management feature can connect to, providing either its password (more 
-###     formally called the 'ssh management master password'), or its private key (more formally called 
-###     the 'ssh management master key').
+###     which will be used by Ssh Plug-In's Ssh Management feature to connect to the remote system, providing
+###     either its password (more formally called the 'ssh management master password'), or its private key 
+###     (more formally called the 'ssh management master key').
 ###     This 'super user account' must be either a root account or a common account which can do 'sudo su -' 
 ###     without password prompting.
-
-### the default ssh management key (will be stored in the previously defined keypair repository)
-#ssh.management.key=melody_mgmt_kp
-#ssh.management.pass=changeit!
 
 ### the ssh management master user
 #ssh.management.master.user=root

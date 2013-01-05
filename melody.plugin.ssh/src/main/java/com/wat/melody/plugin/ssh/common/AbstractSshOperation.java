@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UIKeyboardInteractive;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
@@ -16,17 +15,16 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.plugin.ssh.common.jsch.JSchConnectionDatas;
 import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
 import com.wat.melody.plugin.ssh.common.jsch.LoggerOutputStream;
+import com.wat.melody.plugin.ssh.common.jsch.SshConnectionDatas;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractSshOperation implements ITask,
-		JSchConnectionDatas {
+public abstract class AbstractSshOperation implements ITask, SshConnectionDatas {
 
 	/**
 	 * XML attribute in the SD which define the remote account to connect to
@@ -168,9 +166,7 @@ public abstract class AbstractSshOperation implements ITask,
 	 * @throws SshException
 	 */
 	public Session openSession() throws SshException {
-		Session session = JSchHelper.openSession(this, getPluginConf());
-		session.getConnectThread().setName(Thread.currentThread().getName());
-		return session;
+		return JSchHelper.openSession(this, getPluginConf());
 	}
 
 	/**
@@ -205,6 +201,13 @@ public abstract class AbstractSshOperation implements ITask,
 				session.disconnect();
 			}
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "{ host:" + getHost() + ", port:" + getPort() + ", user:"
+				+ getLogin() + ", password:" + getPassword() + ", keypairname:"
+				+ getKeyPairName() + " }";
 	}
 
 	@Override
@@ -336,6 +339,7 @@ public abstract class AbstractSshOperation implements ITask,
 		return previous;
 	}
 
+	@Override
 	public KeyPairRepository getKeyPairRepository() {
 		return moKeyPairRepository;
 	}
@@ -352,6 +356,7 @@ public abstract class AbstractSshOperation implements ITask,
 		return previous;
 	}
 
+	@Override
 	public KeyPairName getKeyPairName() {
 		return moKeyPairName;
 	}
@@ -411,34 +416,6 @@ public abstract class AbstractSshOperation implements ITask,
 	 */
 	@Override
 	public void showMessage(String message) {
-	}
-
-	/**
-	 * Implementation of {@link UIKeyboardInteractive#promptKeyboardInteractive}
-	 * .
-	 * 
-	 * @param destination
-	 *            not used.
-	 * @param name
-	 *            not used.
-	 * @param instruction
-	 *            not used.
-	 * @param prompt
-	 *            the method checks if this is one in length.
-	 * @param echo
-	 *            the method checks if the first element is false.
-	 * @return the password in a size one array if there is a password and if
-	 *         the prompt and echo checks pass.
-	 */
-	@Override
-	public String[] promptKeyboardInteractive(String destination, String name,
-			String instruction, String[] prompt, boolean[] echo) {
-		if (prompt.length != 1 || echo[0] || getPassword() == null) {
-			return null;
-		}
-		String[] response = new String[1];
-		response[0] = getPassword();
-		return response;
 	}
 
 }
