@@ -177,8 +177,8 @@ public class SshConnectionManager {
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "selrest() { c=$(readlink -f \"$1\"); /sbin/restorecon \"$c\"; [ \"$c\" = \"/\" ] || selrest \"$c/..\"; } ;"
-			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys || exit 107 ;" // selinux_support
+			+ "selrest() { c=$(readlink -f \"$1\"); [ \"$c\" != \"/\" ] && { /sbin/restorecon -v \"$c\"; selrest \"$(dirname \"$c\")\"; } ; } ;"
+			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys || exit 108 ;" // selinux_support
 			+ "exit 0";
 
 	private static String createCommandToDeployKey(SshConnectionDatas cnxDatas)
@@ -239,6 +239,8 @@ public class SshConnectionManager {
 		case 106:
 			break;
 		case 107:
+			break;
+		case 108:
 			break;
 		default:
 			break;
