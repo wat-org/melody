@@ -28,6 +28,7 @@ public class Messages extends NLS {
 	public static String ConfEx_CONF_REGISTRATION_ERROR;
 
 	public static String SshEx_EMPTY_LOGIN_ATTR;
+	public static String SshEx_INVALID_KEYPAIR_NAME_ATTR;
 	public static String SshEx_MISSING_PASSWORD_OR_PK_ATTR;
 
 	public static String SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR;

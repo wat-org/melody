@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.ssh.common;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -134,19 +135,25 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 			setKeyPairRepository(getPluginConf().getKeyPairRepo());
 		}
 		KeyPairRepository kpr = getKeyPairRepository();
+		File kpf = kpr.getPrivateKeyFile(getKeyPairName());
 		try {
 			if (!kpr.containsKeyPair(getKeyPairName())) {
 				kpr.createKeyPair(getKeyPairName(), getPluginConf()
 						.getKeyPairSize(), getPassphrase());
 			}
 		} catch (IOException Ex) {
-			throw new RuntimeException(Ex);
+			throw new SshException(Messages.bind(
+					Messages.SshEx_INVALID_KEYPAIR_NAME_ATTR, kpf), Ex);
 		}
 		try {
-			getPluginConf()
-					.addIdentity(kpr.getPrivateKeyFile(getKeyPairName()));
+			getPluginConf().addIdentity(kpf);
 		} catch (JSchException Ex) {
-			throw new SshException(Ex);
+			throw new RuntimeException("Unexpected error while adding a "
+					+ "keypair '" + kpf + "' to the ssh session. "
+					+ "Because this key have been previously validated, "
+					+ "such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
 		}
 
 		if (getPassword() == null && getKeyPairName() == null) {
@@ -165,7 +172,7 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 	 * 
 	 * @throws SshException
 	 */
-	public Session openSession() throws SshException {
+	public Session openSession() throws SshException, InterruptedException {
 		return JSchHelper.openSession(this, getPluginConf());
 	}
 

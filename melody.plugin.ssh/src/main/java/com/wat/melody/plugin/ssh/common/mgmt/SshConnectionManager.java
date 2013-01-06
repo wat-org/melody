@@ -25,17 +25,73 @@ public class SshConnectionManager {
 
 	private static Log log = LogFactory.getLog(SshConnectionManager.class);
 
+	/**
+	 * <p>
+	 * Deploy the given key on the given remote system for the specified user,
+	 * using the given master user credentials.
+	 * </p>
+	 * 
+	 * @param cnxMgmtDatas
+	 *            contains the master user credentials (e.g. credentials to
+	 *            connect to remote system to deploy the key on).
+	 * @param cnxDatas
+	 *            contains the remote system datas, the specified user and the
+	 *            key to deploy.
+	 * @param conf
+	 *            contains all datas to open a ssh session (proxy, timeouts,
+	 *            packets size, etc).
+	 * 
+	 * @return the opened session (which was opened using the specified user
+	 *         credentials).
+	 * 
+	 * @throws SshException
+	 *             if the Ssh Management Feature failed to operate properly (ex
+	 *             : no user key have been provided, or the given user key is
+	 *             not valid, or the given master user key is not valid, or the
+	 *             given master user credentials are invalid, or the remote host
+	 *             is not reachable - no route to host, dns failure, ... -, or
+	 *             ... ).
+	 * @throws InterruptedException
+	 *             if the key deployment was interrupted. Note that when this
+	 *             exception is raised, the command have been completely
+	 *             executed.
+	 */
 	public static Session enableSshConnectionManagementOnRemoteSystem(
-			final SshManagementConnectionDatas cnxMgmtDatas,
-			final SshConnectionDatas cnxDatas, final SshPlugInConfiguration conf)
-			throws SshException {
-		SshConnectionDatas cnxSuperDatas = createSuperConnectionDatas(
-				cnxMgmtDatas, cnxDatas);
-		addIdentityFile(cnxMgmtDatas, conf);
-		Session session = openMasterSession(cnxSuperDatas, conf);
-		String suCommand = createCommandToDeployKey(cnxDatas);
-		executeCommandToDeployKey(session, suCommand);
-		return openUserSession(cnxDatas, conf);
+			SshManagementConnectionDatas cnxMgmtDatas,
+			SshConnectionDatas cnxDatas, SshPlugInConfiguration conf)
+			throws SshException, InterruptedException {
+		if (cnxMgmtDatas == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ SshManagementConnectionDatas.class.getCanonicalName()
+					+ ".");
+		}
+		if (cnxDatas == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ SshConnectionDatas.class.getCanonicalName() + ".");
+		}
+		if (conf == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
+		}
+		try {
+			if (cnxDatas.getKeyPairName() == null) {
+				throw new SshException(Messages.SshMgmtCnxEx_NO_KEY);
+			}
+			SshConnectionDatas cnxSuperDatas = createSuperConnectionDatas(
+					cnxMgmtDatas, cnxDatas);
+			addIdentityFile(cnxMgmtDatas, conf);
+			Session session = openMasterSession(cnxSuperDatas, conf);
+			String key = getKey(cnxDatas);
+			String suCommand = createCommandToDeployKey(cnxDatas, key);
+			int res = executeCommandToDeployKey(session, suCommand);
+			analyseCommandToDeployKeyResult(res, cnxDatas, key);
+			return openUserSession(cnxDatas, conf);
+		} catch (SshException Ex) {
+			throw new SshException(Messages.SshMgmtCnxEx_GENERIC_FAIL, Ex);
+		}
 	}
 
 	private static SshConnectionDatas createSuperConnectionDatas(
@@ -111,20 +167,19 @@ public class SshConnectionManager {
 			SshManagementConnectionDatas cnxMgmtDatas,
 			SshPlugInConfiguration conf) throws SshException {
 		if (cnxMgmtDatas.getManagementMasterKey() != null) {
-			File keypairfile = cnxMgmtDatas.getManagementKeyPairRepository()
-					.getPrivateKeyFile(cnxMgmtDatas.getManagementMasterKey());
+			KeyPairRepository kpr = cnxMgmtDatas
+					.getManagementKeyPairRepository();
+			KeyPairName kpn = cnxMgmtDatas.getManagementMasterKey();
+			File kpf = cnxMgmtDatas.getManagementKeyPairRepository()
+					.getPrivateKeyFile(kpn);
 			try {
-				if (!cnxMgmtDatas.getManagementKeyPairRepository()
-						.containsKeyPair(cnxMgmtDatas.getManagementMasterKey())) {
-					/*
-					 * TODO : externalize error message
-					 */
-					throw new SshException(keypairfile
-							+ ": Not accepted. Identity file doesn't exists.");
+				if (!kpr.containsKeyPair(kpn)) {
+					kpr.createKeyPair(kpn, conf.getKeyPairSize(),
+							cnxMgmtDatas.getManagementMasterPass());
 				}
 			} catch (IOException Ex) {
-				throw new SshException(keypairfile
-						+ ": Not accepted. Identity file is not valid.");
+				throw new SshException(Messages.bind(
+						Messages.SshMgmtCnxEx_INVALID_MASTER_KEY, kpf), Ex);
 			}
 			try {
 				/*
@@ -132,12 +187,14 @@ public class SshConnectionManager {
 				 * fly' to the session with
 				 * session.setIdentityRepository(identityRepository).
 				 */
-				conf.addIdentity(keypairfile);
+				conf.addIdentity(kpf);
 			} catch (JSchException Ex) {
-				throw new RuntimeException(
-						keypairfile
-								+ ": Not accepted. Identity file is not valid. Shouldn't happened because key have been validated previously.",
-						Ex);
+				throw new RuntimeException("Unexpected error while adding a "
+						+ "keypair '" + kpf + "' to the ssh session. "
+						+ "Because this key have been previously validated, "
+						+ "such error cannot happened. "
+						+ "Source code has certainly been modified and "
+						+ "a bug have been introduced.", Ex);
 			}
 		}
 	}
@@ -150,11 +207,8 @@ public class SshConnectionManager {
 			log.trace(Messages.SshMgmtCnxMsg_OPENED);
 			return session;
 		} catch (IncorrectCredentialsException Ex) {
-			/*
-			 * TODO : externalize error message
-			 */
-			throw new SshException("Connection failed. "
-					+ "Master user credentials should be incorrect.", Ex);
+			throw new SshException(
+					Messages.SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS, Ex);
 		}
 	}
 
@@ -164,8 +218,102 @@ public class SshConnectionManager {
 			return JSchHelper.openSession(cnxDatas, conf);
 		} catch (IncorrectCredentialsException Ex) {
 			throw new RuntimeException("Failed to connect to remote system. "
-					+ "Ssh Management feature must have fail to do its job.",
-					Ex);
+					+ "Ssh Management Feature must have fail to do its job. "
+					+ "Please send feedback to the development team so that "
+					+ "they can provide a fix.", Ex);
+		}
+	}
+
+	private static String getKey(SshConnectionDatas cnxDatas)
+			throws SshException {
+		KeyPairRepository kpr = cnxDatas.getKeyPairRepository();
+		KeyPairName kpn = cnxDatas.getKeyPairName();
+		String key = null;
+		try {
+			key = kpr.getPublicKeyInOpenSshFormat(kpn, null);
+		} catch (IOException Ex) {
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_INVALID_KEY,
+					kpr.getPrivateKeyFile(kpn)), Ex);
+		}
+		return key;
+	}
+
+	private static String createCommandToDeployKey(SshConnectionDatas cnxDatas,
+			String key) throws SshException {
+		String sCommand = COMMAND_TO_DEPLOY_KEY.replaceAll("[{][{]LOGIN[}][}]",
+				cnxDatas.getLogin());
+		return "KEY=\"" + key + "\" ; [ $(id -g) = 0 ] && { " + sCommand
+				+ "; } || " + "{ sudo su - <<EOF \n" + sCommand + "\nEOF\n }";
+		/*
+		 * TODO : find a way to test remote sudo configuration (ex : require
+		 * tty, password needed, ...) ...
+		 */
+	}
+
+	/**
+	 * 
+	 * @param session
+	 * @param suCommand
+	 * 
+	 * @return the return value of the command.
+	 * 
+	 * @throws SshException
+	 * @throws InterruptedException
+	 *             if the key deployment was interrupted. Note that when this
+	 *             exception is raised, the command have been completely
+	 *             executed.
+	 */
+	private static int executeCommandToDeployKey(Session session,
+			String suCommand) throws SshException, InterruptedException {
+		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, suCommand));
+		OutputStream outStream = new LoggerOutputStream("[ssh_cnx_mgmt:"
+				+ session.getHost() + "]", LogThreshold.DEBUG);
+		try {
+			return JSchHelper.execSshCommand(session, suCommand, outStream,
+					outStream);
+		} catch (InterruptedException Ex) {
+			InterruptedException iex = new InterruptedException(
+					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED);
+			iex.initCause(Ex);
+			throw iex;
+		}
+	}
+
+	private static void analyseCommandToDeployKeyResult(int res,
+			SshConnectionDatas cnxDatas, String key) throws SshException {
+		switch (res) {
+		case 0:
+			log.trace(Messages.SshMgmtCnxMsg_DEPLOYED);
+			return;
+		case 100:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_USERADD_FAIL, cnxDatas.getLogin()));
+		case 101:
+			throw new SshException(Messages.SshMgmtCnxEx_UMASK_FAIL);
+		case 102:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_MKDIR_FAIL, cnxDatas.getLogin()));
+		case 103:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, cnxDatas.getLogin()));
+		case 104:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, cnxDatas.getLogin()));
+		case 105:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, cnxDatas.getLogin()));
+		case 106:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_ADD_KEY_FAIL, cnxDatas.getLogin(),
+					key));
+		case 107:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_SELIUNX_FAIL, cnxDatas.getLogin()));
+		default:
+			throw new SshException(Messages.bind(
+					Messages.SshMgmtCnxEx_DEPLOY_GENERIC_FAIL,
+					cnxDatas.getLogin(), key));
 		}
 	}
 
@@ -177,73 +325,8 @@ public class SshConnectionManager {
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "selrest() { c=$(readlink -f \"$1\"); [ \"$c\" != \"/\" ] && { /sbin/restorecon -v \"$c\"; selrest \"$(dirname \"$c\")\"; } ; } ;"
-			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys || exit 108 ;" // selinux_support
+			+ "selrest() { c=$(readlink -f \"$1\"); [ \"$c\" != \"/\" ] && { /sbin/restorecon -v \"$c\" || exit 107 ; selrest \"$(dirname \"$c\")\"; } ; } ;"
+			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
 			+ "exit 0";
 
-	private static String createCommandToDeployKey(SshConnectionDatas cnxDatas)
-			throws SshException {
-		if (cnxDatas.getKeyPairName() == null) {
-			throw new SshException(
-					"No user's keypairname provided. Ssh management feature require a such info. Please provide a user's keypairname.");
-		}
-		String key = null;
-		try {
-			key = cnxDatas.getKeyPairRepository().getPublicKeyInOpenSshFormat(
-					cnxDatas.getKeyPairName(), "");
-		} catch (IOException Ex) {
-			throw new SshException(cnxDatas.getKeyPairRepository()
-					.getPrivateKeyFile(cnxDatas.getKeyPairName())
-					+ ": Not accepted. Identity file is not valid.");
-		}
-		if (key.charAt(key.length() - 1) == '\n') {
-			key = key.substring(0, key.length() - 2);
-		}
-		String sCommand = COMMAND_TO_DEPLOY_KEY.replaceAll("[{][{]LOGIN[}][}]",
-				cnxDatas.getLogin());
-		return "KEY=\"" + key + "\" ; [ $(id -u) = 0 ] && { " + sCommand
-				+ "; } || " + "{ sudo su - <<EOF \n" + sCommand + "\nEOF\n }";
-	}
-
-	private static void executeCommandToDeployKey(Session session,
-			String suCommand) throws SshException {
-		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, suCommand));
-		OutputStream outStream = new LoggerOutputStream("[ssh_cnx_mgmt:"
-				+ session.getHost() + "]", LogThreshold.DEBUG);
-		int res = -1;
-		try {
-			res = JSchHelper.execSshCommand(session, suCommand, outStream,
-					outStream);
-		} catch (InterruptedException Ex) {
-			/*
-			 * TODO : deal with interrupted exception into execSshCommand
-			 */
-		}
-		switch (res) {
-		case 0:
-			log.trace(Messages.SshMgmtCnxMsg_DEPLOYED);
-			return;
-		case 101:
-			/*
-			 * TODO : throw error
-			 */
-			break;
-		case 102:
-			break;
-		case 103:
-			break;
-		case 104:
-			break;
-		case 105:
-			break;
-		case 106:
-			break;
-		case 107:
-			break;
-		case 108:
-			break;
-		default:
-			break;
-		}
-	}
 }

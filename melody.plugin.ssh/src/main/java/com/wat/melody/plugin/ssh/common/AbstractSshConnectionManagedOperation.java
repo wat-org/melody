@@ -95,8 +95,9 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	 * @return the opened session.
 	 * 
 	 * @throws SshException
+	 * @throws InterruptedException
 	 */
-	public Session openSession() throws SshException {
+	public Session openSession() throws SshException, InterruptedException {
 		try {
 			return super.openSession();
 		} catch (IncorrectCredentialsException Ex) {

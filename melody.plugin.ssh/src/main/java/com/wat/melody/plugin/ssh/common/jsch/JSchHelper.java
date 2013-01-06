@@ -2,6 +2,9 @@ package com.wat.melody.plugin.ssh.common.jsch;
 
 import java.io.OutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
@@ -22,6 +25,8 @@ public abstract class JSchHelper {
 	 * all links to the Ssh Plug-In disappear. This would be difficult due to
 	 * SshPlugInConfigurationException.
 	 */
+
+	private static Log log = LogFactory.getLog(JSchHelper.class);
 
 	/**
 	 * <p>
@@ -114,24 +119,15 @@ public abstract class JSchHelper {
 		try {
 			session.connect(conf.getConnectionTimeout());
 		} catch (JSchException Ex) {
+			String msg = Messages.bind(Messages.SshEx_FAILED_TO_CONNECT,
+					new Object[] { session.getHost(), session.getPort(),
+							session.getUserName() });
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'
 				// => dedicated exception on credentials errors
-				throw new IncorrectCredentialsException(Messages.bind(
-						Messages.SshEx_FAILED_TO_CONNECT,
-						new Object[] {
-								cnxDatas.getHost().getValue().getHostAddress(),
-								cnxDatas.getPort().getValue(),
-								cnxDatas.getLogin() }), Ex);
+				throw new IncorrectCredentialsException(msg, Ex);
 			}
-			throw new SshException(
-					Messages.bind(
-							Messages.SshEx_FAILED_TO_CONNECT,
-							new Object[] {
-									cnxDatas.getHost().getValue()
-											.getHostAddress(),
-									cnxDatas.getPort().getValue(),
-									cnxDatas.getLogin() }), Ex);
+			throw new SshException(msg, Ex);
 		}
 
 		// Change the name of the thread so that the log is more clear
@@ -175,6 +171,33 @@ public abstract class JSchHelper {
 		return channel;
 	}
 
+	/**
+	 * <p>
+	 * Synchronously execute a command on a remote system, write standard output
+	 * and error into streams.
+	 * </p>
+	 * 
+	 * @param session
+	 *            is a connected {@link Session} through which the command will
+	 *            be executed.
+	 * @param sCommand
+	 *            is the command to execute.
+	 * @param outStream
+	 *            is the {@link OutputStream} which will receive the standard
+	 *            output.
+	 * @param errStream
+	 *            is the {@link OutputStream} which will receive the standard
+	 *            error.
+	 * 
+	 * @return the return value of the command which have been executed.
+	 * 
+	 * @throws SshException
+	 *             if the given {@link Session} is down, ...
+	 * @throws InterruptedException
+	 *             if this remote command execution was interrupted. Note that
+	 *             when this exception is raised, the command have been
+	 *             completely executed .
+	 */
 	public static int execSshCommand(Session session, String sCommand,
 			OutputStream outStream, OutputStream errStream)
 			throws SshException, InterruptedException {
@@ -188,10 +211,10 @@ public abstract class JSchHelper {
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ " (a ssh command).");
 		}
-		if (outStream == null) {
+		if (outStream == null) { // default impl
 			outStream = new LoggerOutputStream("[STDOUT]", LogThreshold.DEBUG);
 		}
-		if (errStream == null) {
+		if (errStream == null) { // default impl
 			errStream = new LoggerOutputStream("[STDERR]", LogThreshold.ERROR);
 		}
 		if (!session.isConnected()) {
@@ -199,6 +222,7 @@ public abstract class JSchHelper {
 					+ "Given session must be connected.");
 		}
 		ChannelExec c = null;
+		InterruptedException iex = null;
 		try {
 			c = (ChannelExec) session.openChannel("exec");
 
@@ -213,22 +237,32 @@ public abstract class JSchHelper {
 
 			c.connect();
 			while (true) {
+				/*
+				 * Can't find a way to 'join' the session or the channel ... So
+				 * we're pooling the isClosed ....
+				 */
 				if (c.isClosed()) {
 					break;
 				}
-				/*
-				 * can't find a way to 'join' the session or the channel... So
-				 * we're pooling the isClosed ....
-				 */
-				Thread.sleep(500);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException Ex) {
+					log.info(Messages.SshMsg_GRACEFULL_SHUTDOWN);
+					iex = new InterruptedException(
+							Messages.SshEx_EXEC_INTERRUPTED);
+					iex.initCause(Ex);
+				}
 			}
 		} catch (JSchException Ex) {
-			throw new RuntimeException("Failed to exec an ssh command through "
-					+ "a JSch 'exec' Channel.", Ex);
+			throw new RuntimeException("Failed to exec an ssh command "
+					+ "through a JSch 'exec' Channel.", Ex);
 		} finally {
 			if (c != null) {
 				c.disconnect();
 			}
+		}
+		if (iex != null) {
+			throw iex;
 		}
 
 		return c.getExitStatus();

@@ -121,7 +121,6 @@ public class KeyPairRepository extends File {
 	 * <p>
 	 * Tests if the given KeyPair exists in the Repository.
 	 * </p>
-	 * F
 	 * 
 	 * @param keyPairName
 	 * 
