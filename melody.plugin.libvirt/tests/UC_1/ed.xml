@@ -25,7 +25,7 @@
 	<instances>
 		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
-			<network-management enable="false" method="ssh" networkDevicesSelector="//if" port="22"/>
+			<network-management method="ssh" networkDevicesSelector="//if" port="22"/>
 			<disk-management diskDevicesSelector="//disque"/>
 			<devices>
 				<if device="eth0"/>

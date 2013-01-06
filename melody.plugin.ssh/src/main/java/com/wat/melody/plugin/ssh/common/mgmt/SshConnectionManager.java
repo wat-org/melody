@@ -169,14 +169,16 @@ public class SshConnectionManager {
 		}
 	}
 
-	private static final String COMMAND_TO_DEPLOY_KEY = "id ${LOGIN} 1>/dev/null 2>&1 || useradd ${LOGIN} || exit 101 ;"
-			+ "mkdir -p ~${LOGIN}/.ssh || exit 102 ;"
-			+ "chown ${LOGIN}:${LOGIN} ~${LOGIN}/.ssh || exit 103 ;"
-			+ "chmod 700 ~${LOGIN}/.ssh || exit 104 ;"
-			+ "touch ~${LOGIN}/.ssh/authorized_keys || exit 105 ;"
-			+ "chown ${LOGIN}:${LOGIN} ~${LOGIN}/.ssh/authorized_keys || exit 106 ;"
-			+ "chmod 600 ~${LOGIN}/.ssh/authorized_keys || exit 107 ;"
-			+ "grep \"${KEY}\" ~${LOGIN}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} ${LOGIN}@melody\" >> ~${LOGIN}/.ssh/authorized_keys || exit 108 ;"
+	private static final String COMMAND_TO_DEPLOY_KEY = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} || exit 100 ;"
+			+ "umask 077 || exit 101 ;"
+			+ "mkdir -p ~{{LOGIN}}/.ssh || exit 102 ;"
+			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh || exit 103 ;"
+			+ "touch ~{{LOGIN}}/.ssh/authorized_keys || exit 104 ;"
+			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
+			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
+			+ "test -x /sbin/restorecon || exit 0 ;"
+			+ "selrest() { c=$(readlink -f \"$1\"); /sbin/restorecon \"$c\"; [ \"$c\" = \"/\" ] || selrest \"$c/..\"; } ;"
+			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys || exit 107 ;" // selinux_support
 			+ "exit 0";
 
 	private static String createCommandToDeployKey(SshConnectionDatas cnxDatas)
@@ -197,9 +199,10 @@ public class SshConnectionManager {
 		if (key.charAt(key.length() - 1) == '\n') {
 			key = key.substring(0, key.length() - 2);
 		}
-		return "LOGIN=" + cnxDatas.getLogin() + " ;" + "KEY=\"" + key + "\" ;"
-				+ "[ $(id -u) = 0 ] && { " + COMMAND_TO_DEPLOY_KEY + "; } || "
-				+ "{ sudo su - <<EOF \n" + COMMAND_TO_DEPLOY_KEY + "\nEOF\n }";
+		String sCommand = COMMAND_TO_DEPLOY_KEY.replaceAll("[{][{]LOGIN[}][}]",
+				cnxDatas.getLogin());
+		return "KEY=\"" + key + "\" ; [ $(id -u) = 0 ] && { " + sCommand
+				+ "; } || " + "{ sudo su - <<EOF \n" + sCommand + "\nEOF\n }";
 	}
 
 	private static void executeCommandToDeployKey(Session session,
@@ -236,8 +239,6 @@ public class SshConnectionManager {
 		case 106:
 			break;
 		case 107:
-			break;
-		case 108:
 			break;
 		default:
 			break;
