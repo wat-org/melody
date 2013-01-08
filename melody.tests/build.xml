@@ -62,6 +62,7 @@
 				<exclude name="build.xml" />
 				<exclude name="pom.xml" />
 				<exclude name="build*.bat" />
+				<exclude name="config/**/*.properties" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name=".version_info" />
