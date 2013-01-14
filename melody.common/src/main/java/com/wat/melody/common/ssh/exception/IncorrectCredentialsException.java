@@ -1,15 +1,13 @@
-package com.wat.melody.plugin.ssh.common.jsch;
-
-import com.wat.melody.plugin.ssh.common.exception.SshException;
+package com.wat.melody.common.ssh.exception;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class IncorrectCredentialsException extends SshException {
+public class IncorrectCredentialsException extends SshSessionException {
 
-	private static final long serialVersionUID = -2987434586437897875L;
+	private static final long serialVersionUID = -2945679655497676554L;
 
 	public IncorrectCredentialsException() {
 		super();

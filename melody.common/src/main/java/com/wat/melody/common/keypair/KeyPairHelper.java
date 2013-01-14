@@ -21,17 +21,14 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
 
+import com.jcraft.jsch.Buffer;
+
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
 public abstract class KeyPairHelper {
-
-	/*
-	 * TODO : remove the reference to com.jcraft.jsch.Buffer, by using its own
-	 * method.
-	 */
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
@@ -148,8 +145,8 @@ public abstract class KeyPairHelper {
 				.toByteArray();
 		byte[] n_array = ((RSAPrivateKey) kp.getPrivate()).getModulus()
 				.toByteArray();
-		ASN1Buffer buf = new ASN1Buffer(sshrsa.length + 4 + pub_array.length
-				+ 4 + n_array.length + 4);
+		Buffer buf = new Buffer(sshrsa.length + 4 + pub_array.length + 4
+				+ n_array.length + 4);
 		buf.putString(sshrsa);
 		buf.putString(pub_array);
 		buf.putString(n_array);

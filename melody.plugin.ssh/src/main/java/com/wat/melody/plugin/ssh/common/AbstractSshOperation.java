@@ -3,9 +3,6 @@ package com.wat.melody.plugin.ssh.common;
 import java.io.File;
 import java.io.IOException;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
@@ -14,29 +11,24 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
+import com.wat.melody.common.ssh.ISshConnectionDatas;
+import com.wat.melody.common.ssh.ISshSession;
+import com.wat.melody.common.ssh.ISshUserDatas;
+import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
+import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.impl.LoggerOutputStream;
+import com.wat.melody.common.ssh.impl.SshConnectionDatas;
+import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.ssh.impl.SshUserDatas;
 import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
-import com.wat.melody.plugin.ssh.common.jsch.LoggerOutputStream;
-import com.wat.melody.plugin.ssh.common.jsch.SshConnectionDatas;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractSshOperation implements ITask, SshConnectionDatas {
-
-	/**
-	 * XML attribute in the SD which define the remote account to connect to
-	 */
-	public static final String LOGIN_ATTR = "login";
-
-	/**
-	 * XML attribute in the SD which is either the password of the remote
-	 * account, or the password of the keypair.
-	 */
-	public static final String PASS_ATTR = "password";
+public abstract class AbstractSshOperation implements ITask {
 
 	/**
 	 * XML attribute in the SD which define the ip of the remote system to
@@ -60,8 +52,19 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 	public static final String TRUST_ATTR = "trust";
 
 	/**
+	 * XML attribute in the SD which define the remote account to connect to
+	 */
+	public static final String LOGIN_ATTR = "login";
+
+	/**
+	 * XML attribute in the SD which is either the password of the remote
+	 * account, or the password of the keypair.
+	 */
+	public static final String PASS_ATTR = "password";
+
+	/**
 	 * XML attribute in the SD which define the path of the keypair repository
-	 * which contains the keypair use to connect to the remote system.
+	 * which contains the keypair used to connect to the remote system.
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keyPairRepository";
 
@@ -74,24 +77,14 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 
 	private ITaskContext moContext;
 	private SshPlugInConfiguration moPluginConf;
-	private String msLogin;
-	private String msPassword;
-	private Host moHost;
-	private Port moPort;
-	private Boolean mbTrust;
-	private KeyPairRepository moKeyPairRepository;
-	private KeyPairName moKeyPairName;
+	private ISshUserDatas moUserDatas;
+	private ISshConnectionDatas moCnxDatas;
 
 	public AbstractSshOperation() {
 		initContext();
 		initPluginConf();
-		initKeyPairRepository();
-		initKeyPairName();
-		initLogin();
-		initPassword();
-		initHost();
-		setPort(Port.SSH);
-		initTrust();
+		setUserDatas(new SshUserDatas());
+		setConnectionDatas(new SshConnectionDatas());
 	}
 
 	private void initContext() {
@@ -102,32 +95,33 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 		moPluginConf = null;
 	}
 
-	private void initKeyPairRepository() {
-		moKeyPairRepository = null;
+	private ISshUserDatas getUserDatas() {
+		return moUserDatas;
 	}
 
-	private void initKeyPairName() {
-		moKeyPairName = null;
+	private ISshUserDatas setUserDatas(ISshUserDatas ud) {
+		ISshUserDatas previous = getUserDatas();
+		moUserDatas = ud;
+		return previous;
 	}
 
-	private void initLogin() {
-		msLogin = null;
+	private ISshConnectionDatas getConnectionDatas() {
+		return moCnxDatas;
 	}
 
-	private void initPassword() {
-		msPassword = null;
-	}
-
-	private void initHost() {
-		moHost = null;
-	}
-
-	private void initTrust() {
-		mbTrust = false;
+	private ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd) {
+		ISshConnectionDatas previous = getConnectionDatas();
+		moCnxDatas = cd;
+		return previous;
 	}
 
 	@Override
 	public void validate() throws SshException {
+		if (getPassword() == null && getKeyPairName() == null) {
+			throw new SshException(Messages.bind(
+					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
+					KEYPAIR_NAME_ATTR));
+		}
 		if (getKeyPairName() == null) {
 			return;
 		}
@@ -139,27 +133,11 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 		try {
 			if (!kpr.containsKeyPair(getKeyPairName())) {
 				kpr.createKeyPair(getKeyPairName(), getPluginConf()
-						.getKeyPairSize(), getPassphrase());
+						.getKeyPairSize(), getPassword());
 			}
 		} catch (IOException Ex) {
 			throw new SshException(Messages.bind(
 					Messages.SshEx_INVALID_KEYPAIR_NAME_ATTR, kpf), Ex);
-		}
-		try {
-			getPluginConf().addIdentity(kpf);
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Unexpected error while adding a "
-					+ "keypair '" + kpf + "' to the ssh session. "
-					+ "Because this key have been previously validated, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-
-		if (getPassword() == null && getKeyPairName() == null) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
-					KEYPAIR_NAME_ATTR));
 		}
 	}
 
@@ -169,52 +147,55 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 	 * </p>
 	 * 
 	 * @return the opened session.
+	 * @throws InterruptedException
+	 * @throws SshSessionException
 	 * 
 	 * @throws SshException
 	 */
-	public Session openSession() throws SshException, InterruptedException {
-		return JSchHelper.openSession(this, getPluginConf());
+	public ISshSession openSession() throws SshException, InterruptedException {
+		ISshSession session = createSession();
+		try {
+			session.connect();
+		} catch (SshSessionException Ex) {
+			/*
+			 * TODO : error message
+			 */
+			throw new SshException(Ex);
+		}
+		return session;
 	}
 
 	/**
-	 * <p>
-	 * Open a sftp channel.
-	 * </p>
-	 * 
-	 * @return the opened sftp channel.
-	 * 
-	 * @throws SshException
+	 * Can be override by subclasses to provide another ISshSession.
 	 */
-	public ChannelSftp openSftpChannel(Session session) throws SshException {
-		return JSchHelper.openSftpChannel(session, getPluginConf());
-	}
-
-	public int execSshCommand(Session session, String sCommand,
-			String outputPrefix) throws SshException, InterruptedException {
-		LoggerOutputStream out = new LoggerOutputStream(outputPrefix
-				+ " [STDOUT]", LogThreshold.DEBUG);
-		LoggerOutputStream err = new LoggerOutputStream(outputPrefix
-				+ " [STDERR]", LogThreshold.ERROR);
-		return JSchHelper.execSshCommand(session, sCommand, out, err);
+	protected ISshSession createSession() {
+		ISshSession session = new SshSession();
+		session.setUserDatas(getUserDatas());
+		session.setConnectionDatas(getConnectionDatas());
+		session.setSessionConfiguration(getPluginConf());
+		return session;
 	}
 
 	public int execSshCommand(String sCommand, String outputPrefix)
 			throws SshException, InterruptedException {
-		Session session = openSession();
+		ISshSession session = null;
 		try {
-			return execSshCommand(session, sCommand, outputPrefix);
+			session = openSession();
+			LoggerOutputStream out = new LoggerOutputStream(outputPrefix
+					+ " [STDOUT]", LogThreshold.DEBUG);
+			LoggerOutputStream err = new LoggerOutputStream(outputPrefix
+					+ " [STDERR]", LogThreshold.ERROR);
+			return session.execRemoteCommand(sCommand, out, err);
+		} catch (SshSessionException Ex) {
+			/*
+			 * TODO : error message
+			 */
+			throw new SshException(Ex);
 		} finally {
 			if (session != null) {
 				session.disconnect();
 			}
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "{ host:" + getHost() + ", port:" + getPort() + ", user:"
-				+ getLogin() + ", password:" + getPassword() + ", keypairname:"
-				+ getKeyPairName() + " }";
 	}
 
 	@Override
@@ -270,27 +251,8 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 		return previous;
 	}
 
-	public String getLogin() {
-		return msLogin;
-	}
-
-	@Attribute(name = LOGIN_ATTR, mandatory = true)
-	public String setLogin(String sLogin) throws SshException {
-		if (sLogin == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
-		}
-		if (sLogin.trim().length() == 0) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_EMPTY_LOGIN_ATTR, sLogin));
-		}
-		String previous = getLogin();
-		msLogin = sLogin;
-		return previous;
-	}
-
 	public Host getHost() {
-		return moHost;
+		return getConnectionDatas().getHost();
 	}
 
 	@Attribute(name = HOST_ATTR, mandatory = true)
@@ -299,13 +261,11 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		Host previous = getHost();
-		moHost = host;
-		return previous;
+		return getConnectionDatas().setHost(host);
 	}
 
 	public Port getPort() {
-		return moPort;
+		return getConnectionDatas().getPort();
 	}
 
 	@Attribute(name = PORT_ATTR)
@@ -314,115 +274,57 @@ public abstract class AbstractSshOperation implements ITask, SshConnectionDatas 
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		Port previous = getPort();
-		moPort = port;
-		return previous;
+		return getConnectionDatas().setPort(port);
 	}
 
-	@Override
-	public String getPassword() {
-		return msPassword;
-	}
-
-	@Attribute(name = PASS_ATTR)
-	public String setPassword(String sPassword) {
-		if (sPassword == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
-		}
-		String previous = getPassword();
-		msPassword = sPassword;
-		return previous;
+	public String getLogin() {
+		return getUserDatas().getLogin();
 	}
 
 	public boolean getTrust() {
-		return mbTrust;
+		return getConnectionDatas().getTrust();
 	}
 
 	@Attribute(name = TRUST_ATTR)
 	public boolean setTrust(boolean b) {
-		boolean previous = getTrust();
-		mbTrust = b;
-		return previous;
+		return getConnectionDatas().setTrust(b);
 	}
 
-	@Override
+	@Attribute(name = LOGIN_ATTR, mandatory = true)
+	public String setLogin(String sLogin) throws IllegalSshUserDatasException {
+		if (sLogin == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (a login).");
+		}
+		return getUserDatas().setLogin(sLogin);
+	}
+
+	public String getPassword() {
+		return getUserDatas().getPassword();
+	}
+
+	@Attribute(name = PASS_ATTR)
+	public String setPassword(String sPassword) {
+		return getUserDatas().setPassword(sPassword);
+	}
+
 	public KeyPairRepository getKeyPairRepository() {
-		return moKeyPairRepository;
+		return getUserDatas().getKeyPairRepository();
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
 	public KeyPairRepository setKeyPairRepository(
 			KeyPairRepository keyPairRepository) {
-		if (keyPairRepository == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a Key Repository Path).");
-		}
-		KeyPairRepository previous = getKeyPairRepository();
-		moKeyPairRepository = keyPairRepository;
-		return previous;
+		return getUserDatas().setKeyPairRepository(keyPairRepository);
 	}
 
-	@Override
 	public KeyPairName getKeyPairName() {
-		return moKeyPairName;
+		return getUserDatas().getKeyPairName();
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
 	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
-		if (keyPairName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
-		}
-		KeyPairName previous = getKeyPairName();
-		moKeyPairName = keyPairName;
-		return previous;
-	}
-
-	@Override
-	public String getPassphrase() {
-		return msPassword;
-	}
-
-	/**
-	 * @param message
-	 *            ignored
-	 * 
-	 * @return true always
-	 */
-	@Override
-	public boolean promptPassphrase(String message) {
-		return true;
-	}
-
-	/**
-	 * @param passwordPrompt
-	 *            ignored
-	 * 
-	 * @return true always
-	 */
-	@Override
-	public boolean promptPassword(String passwordPrompt) {
-		return true;
-	}
-
-	/**
-	 * @param message
-	 *            ignored
-	 * 
-	 * @return the value of trustAllCertificates
-	 */
-	@Override
-	public boolean promptYesNo(String message) {
-		return getTrust();
-	}
-
-	/**
-	 * @param message
-	 *            ignored
-	 */
-	@Override
-	public void showMessage(String message) {
+		return getUserDatas().setKeyPairName(keyPairName);
 	}
 
 }

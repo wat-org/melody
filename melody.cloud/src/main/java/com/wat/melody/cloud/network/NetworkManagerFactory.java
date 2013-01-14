@@ -16,7 +16,7 @@ import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 public abstract class NetworkManagerFactory {
 
 	/*
-	 * TODO : remove all reference to Ssh Plug-In.
+	 * TODO : remove all reference to Ssh Plug-In, not so easy ...
 	 */
 	public static NetworkManager createNetworkManager(ITaskContext context,
 			Node instanceNode) throws ResourcesDescriptorException,

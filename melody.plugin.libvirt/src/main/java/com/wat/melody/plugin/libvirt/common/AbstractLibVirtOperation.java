@@ -29,7 +29,6 @@ import com.wat.melody.common.utils.Doc;
 import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpath.XPathHelper;
 
 /**
@@ -330,15 +329,14 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	 * @throws LibVirtException
 	 *             if an error occurred while retrieving the Libvirt Plug-In
 	 *             {@link LibVirtPlugInConfiguration}.
-	 * @throws SshException
+	 * @throws LibVirtException
 	 *             if an error occurred while retrieving the Ssh Plug-In
 	 *             {@link SshPlugInConfiguration}.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link ITaskContext} is <tt>null</tt>.
 	 */
 	@Override
-	public void setContext(ITaskContext p) throws LibVirtException,
-			SshException {
+	public void setContext(ITaskContext p) throws LibVirtException {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ITaskContext.");
@@ -358,7 +356,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 			setSshPluginConf(SshPlugInConfiguration.get(getContext()
 					.getProcessorManager()));
 		} catch (PlugInConfigurationException Ex) {
-			throw new SshException(Ex);
+			throw new LibVirtException(Ex);
 		}
 	}
 
