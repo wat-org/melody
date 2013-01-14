@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.ssh.common.jsch;
+package com.wat.melody.common.ssh.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;

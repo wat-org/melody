@@ -39,7 +39,7 @@ public class Messages extends NLS {
 	public static String UploadEx_INVALID_NE;
 	public static String UploadEx_INVALID_MAXPAR_ATTR;
 	public static String UploadEx_MISSING_ATTR;
-	public static String UploadEx_NOTFOUND;
+	public static String UploadMsg_NOTFOUND;
 	public static String UploadEx_FAILED;
 	public static String UploadEx_INTERRUPTED;
 	public static String UploadEx_MANAGED;

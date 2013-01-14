@@ -25,7 +25,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.xpath.XPathHelper;
 
 /**
@@ -328,14 +327,14 @@ abstract public class AbstractAwsOperation implements ITask {
 	 * @throws AwsException
 	 *             if an error occurred while retrieving the Aws Plug-In
 	 *             {@link AwsPlugInConfiguration}.
-	 * @throws SshException
+	 * @throws AwsException
 	 *             if an error occurred while retrieving the Ssh Plug-In
 	 *             {@link SshPlugInConfiguration}.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link ITaskContext} is <tt>null</tt>.
 	 */
 	@Override
-	public void setContext(ITaskContext p) throws AwsException, SshException {
+	public void setContext(ITaskContext p) throws AwsException {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ITaskContext.");
@@ -355,7 +354,7 @@ abstract public class AbstractAwsOperation implements ITask {
 			setSshPluginConf(SshPlugInConfiguration.get(getContext()
 					.getProcessorManager()));
 		} catch (PlugInConfigurationException Ex) {
-			throw new SshException(Ex);
+			throw new AwsException(Ex);
 		}
 	}
 

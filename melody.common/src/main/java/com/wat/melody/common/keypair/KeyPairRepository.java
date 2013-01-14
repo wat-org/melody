@@ -46,13 +46,15 @@ public class KeyPairRepository extends File {
 	 * @throws NullPointerException
 	 *             if the given path is <code>null</code>.
 	 */
-	public KeyPairRepository(String sPath) throws KeyPairRepositoryException {
-		super(sPath);
+	public KeyPairRepository(String parent, String child)
+			throws KeyPairRepositoryException {
+		super(parent, child);
 		try {
-			Tools.validateDirExists(sPath);
+			Tools.validateDirExists(this.getPath());
 		} catch (IllegalDirectoryException Ex) {
 			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_INVALID_REPO_PATH, sPath), Ex);
+					Messages.KeyPairRepoEx_INVALID_REPO_PATH, this.getPath()),
+					Ex);
 		}
 	}
 
@@ -65,16 +67,22 @@ public class KeyPairRepository extends File {
 	 * @throws NullPointerException
 	 *             if the given path is <code>null</code>.
 	 */
-	public KeyPairRepository(String parent, String child)
+	public KeyPairRepository(File parent, String child)
 			throws KeyPairRepositoryException {
-		super(parent, child);
-		try {
-			Tools.validateDirExists(this.getPath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_INVALID_REPO_PATH, this.getPath()),
-					Ex);
-		}
+		this(parent.getPath(), child);
+	}
+
+	/**
+	 * 
+	 * @param path
+	 * 
+	 * @throws KeyPairRepositoryException
+	 *             if the given path is not a valid KeyPairRepository path.
+	 * @throws NullPointerException
+	 *             if the given path is <code>null</code>.
+	 */
+	public KeyPairRepository(String sPath) throws KeyPairRepositoryException {
+		this((String) null, sPath);
 	}
 
 	/**
@@ -101,20 +109,6 @@ public class KeyPairRepository extends File {
 	 */
 	public KeyPairRepository(Path path) throws KeyPairRepositoryException {
 		this(path.toString());
-	}
-
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(File parent, String child)
-			throws KeyPairRepositoryException {
-		this(parent.getPath(), child);
 	}
 
 	/**

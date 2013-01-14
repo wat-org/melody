@@ -1,13 +1,13 @@
-package com.wat.melody.plugin.ssh.common.exception;
+package com.wat.melody.common.ssh.exception;
+
+import com.wat.melody.common.utils.exception.MelodyException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class IllegalProxyTypeException extends SshException {
+public class IllegalProxyTypeException extends MelodyException {
 
 	private static final long serialVersionUID = -2133590963741240905L;
 

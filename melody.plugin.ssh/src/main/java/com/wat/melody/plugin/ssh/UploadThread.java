@@ -62,7 +62,7 @@ public class UploadThread implements Runnable {
 	public void run() {
 		ChannelSftp channel = null;
 		try {
-			channel = getUpload().openSftpChannel(getUpload().getSession());
+			channel = getUpload().getSession().openSftpChannel();
 			while (true) {
 				SimpleResource r = null;
 				synchronized (getUpload().getSimpleResourcesList()) {

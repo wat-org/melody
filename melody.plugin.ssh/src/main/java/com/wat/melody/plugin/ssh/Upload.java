@@ -11,12 +11,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
+import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.typedef.GroupID;
 import com.wat.melody.common.typedef.Modifiers;
 import com.wat.melody.common.typedef.ResourceMatcher;
@@ -58,7 +58,7 @@ public class Upload extends AbstractSshConnectionManagedOperation {
 	private List<Resources> maResourcesList;
 	private int miMaxPar;
 
-	private Session moSession;
+	private ISshSession moSession;
 	private List<SimpleResource> maSimpleResourcesList;
 	private short miState;
 	private ThreadGroup moThreadGroup;
@@ -274,10 +274,9 @@ public class Upload extends AbstractSshConnectionManagedOperation {
 
 	public void upload(ChannelSftp channel, SimpleResource r)
 			throws SshException {
-		if (channel == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a SftpChannel.");
-		}
+		/*
+		 * TODO : remove all reference to JSch !
+		 */
 		log.debug("Uploading:" + r);
 		try {
 			if (r.isDirectory()) {
@@ -285,8 +284,8 @@ public class Upload extends AbstractSshConnectionManagedOperation {
 			} else if (r.isFile()) {
 				put(channel, r);
 			} else {
-				throw new SshException(Messages.bind(
-						Messages.UploadEx_NOTFOUND, r));
+				log.warn(Messages.bind(Messages.UploadMsg_NOTFOUND, r));
+				return;
 			}
 			if (r.getGroup() != null && !r.isSymbolicLink()) {
 				chgrp(channel, r.getDestination(), r.getGroup());
@@ -644,13 +643,13 @@ public class Upload extends AbstractSshConnectionManagedOperation {
 		return previous;
 	}
 
-	protected Session getSession() {
+	protected ISshSession getSession() {
 		return moSession;
 	}
 
-	private Session setSession(Session session) {
+	private ISshSession setSession(ISshSession session) {
 		// can be null
-		Session previous = getSession();
+		ISshSession previous = getSession();
 		moSession = session;
 		return previous;
 	}

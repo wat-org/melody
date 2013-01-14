@@ -4,19 +4,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
-import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
-import com.wat.melody.plugin.ssh.common.jsch.IncorrectCredentialsException;
-import com.wat.melody.plugin.ssh.common.jsch.JSchHelper;
-import com.wat.melody.plugin.ssh.common.jsch.SshConnectionDatas;
+import com.wat.melody.common.ssh.ISshConnectionDatas;
+import com.wat.melody.common.ssh.ISshSession;
+import com.wat.melody.common.ssh.ISshSessionConfiguration;
+import com.wat.melody.common.ssh.ISshUserDatas;
+import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
+import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
+import com.wat.melody.common.ssh.exception.KnownHostsFileException;
+import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.impl.SshConnectionDatas;
+import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.ssh.impl.SshUserDatas;
 
 /**
  * 
@@ -25,15 +27,12 @@ import com.wat.melody.plugin.ssh.common.jsch.SshConnectionDatas;
  */
 public class SshNetworkManager implements NetworkManager {
 
-	/*
-	 * TODO : remove all reference to Ssh Plug-In.
-	 */
 	private static Log log = LogFactory.getLog(SshNetworkManager.class);
 
 	private SshManagementNetworkDatas moManagementDatas;
-	private SshPlugInConfiguration moContext;
+	private ISshSessionConfiguration moContext;
 
-	public SshNetworkManager(Node instanceNode, SshPlugInConfiguration context)
+	public SshNetworkManager(Node instanceNode, ISshSessionConfiguration context)
 			throws ResourcesDescriptorException {
 		setConfiguration(context);
 		setManagementDatas(new SshManagementNetworkDatas(instanceNode));
@@ -52,15 +51,15 @@ public class SshNetworkManager implements NetworkManager {
 		moManagementDatas = nmd;
 	}
 
-	public SshPlugInConfiguration getConfiguration() {
+	public ISshSessionConfiguration getConfiguration() {
 		return moContext;
 	}
 
-	private void setConfiguration(SshPlugInConfiguration conf) {
+	private void setConfiguration(ISshSessionConfiguration conf) {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
+					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
 		}
 		moContext = conf;
 	}
@@ -73,7 +72,7 @@ public class SshNetworkManager implements NetworkManager {
 		try {
 			result = addKnownHostsHost(getConfiguration(), getManagementDatas()
 					.getHost(), getManagementDatas().getPort(), timeout);
-		} catch (SshException Ex) {
+		} catch (SshSessionException Ex) {
 			throw new NetworkManagementException(Ex);
 		}
 		if (result == false) {
@@ -83,26 +82,39 @@ public class SshNetworkManager implements NetworkManager {
 		}
 	}
 
-	public static boolean addKnownHostsHost(
-			SshPlugInConfiguration sshPlugInConf, Host host, Port port,
-			long timeout) throws SshException, InterruptedException {
-		JSchConnectionTester sshCnxTester = new JSchConnectionTester(host, port);
-
+	public static boolean addKnownHostsHost(ISshSessionConfiguration sc,
+			Host host, Port port, long timeout) throws SshSessionException,
+			InterruptedException {
 		final long WAIT_STEP = 5000;
 		final long start = System.currentTimeMillis();
 		long left;
 		boolean enablementDone = true;
 
-		Session session = null;
+		ISshUserDatas ud = new SshUserDatas();
+		try {
+			ud.setLogin("crazyssh");
+		} catch (IllegalSshUserDatasException Ex) {
+			throw new RuntimeException("bug !");
+		}
+		ud.setPassword("");
+		ISshConnectionDatas cd = new SshConnectionDatas();
+		cd.setHost(host);
+		cd.setPort(port);
+		cd.setTrust(true);
+		ISshSession session = new SshSession();
+		session.setUserDatas(ud);
+		session.setConnectionDatas(cd);
+		session.setSessionConfiguration(sc);
+
 		while (true) {
 			try {
-				session = JSchHelper.openSession(sshCnxTester, sshPlugInConf);
+				session.connect();
 				// connection succeed, and credential invalid => ok
 				break;
 			} catch (IncorrectCredentialsException Ex) {
 				// connection succeed, but credential invalid => ok
 				break;
-			} catch (SshException Ex) {
+			} catch (SshSessionException Ex) {
 				// if something bad happened => re throw
 				if (Ex.getCause() == null || Ex.getCause().getMessage() == null) {
 					throw Ex;
@@ -132,17 +144,14 @@ public class SshNetworkManager implements NetworkManager {
 			}
 		}
 
-		String k = sshPlugInConf.getKnownHostsHostKey(
-				host.getValue().getHostAddress()).getKey();
+		byte[] key = session.getHostKey().getKeyBytes();
 		try {
-			sshPlugInConf
-					.addKnownHostsHostKey(host.getValue().getHostName(), k);
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Unexpected error while adding an "
-					+ "host with the HostKey '" + k + "' into the KnownHosts "
-					+ "file. "
+			sc.getKnownHosts().add(host.getValue().getHostName(), key);
+		} catch (KnownHostsFileException Ex) {
+			throw new RuntimeException("Unexpected error while creating an "
+					+ "HostKey. "
 					+ "Because this HostKey have been retrieve from the "
-					+ "KnownHosts file, this key should be valid. "
+					+ "JSch session, this HostKey should be valid. "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		}
@@ -155,89 +164,15 @@ public class SshNetworkManager implements NetworkManager {
 		removeKnownHostsHost(getConfiguration(), getManagementDatas().getHost());
 	}
 
-	public static void removeKnownHostsHost(SshPlugInConfiguration conf,
+	public static void removeKnownHostsHost(ISshSessionConfiguration conf,
 			Host host) {
 		if (conf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SshPlugInConfiguration.class.getCanonicalName() + ".");
+					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
 		}
-		conf.removeKnownHostsHostKey(host.getValue().getHostAddress());
-		conf.removeKnownHostsHostKey(host.getValue().getHostName());
-	}
-
-}
-
-class JSchConnectionTester implements SshConnectionDatas {
-
-	private Host moHost;
-	private Port moPort;
-
-	public JSchConnectionTester(Host host, Port port) {
-		setHost(host);
-		setPort(port);
-	}
-
-	@Override
-	public void showMessage(String message) {
-	}
-
-	@Override
-	public boolean promptYesNo(String message) {
-		return true;
-	}
-
-	@Override
-	public boolean promptPassword(String message) {
-		return false;
-	}
-
-	@Override
-	public boolean promptPassphrase(String message) {
-		return false;
-	}
-
-	@Override
-	public KeyPairName getKeyPairName() {
-		return null;
-	}
-
-	@Override
-	public KeyPairRepository getKeyPairRepository() {
-		return null;
-	}
-
-	@Override
-	public String getPassword() {
-		return "crazyssh";
-	}
-
-	@Override
-	public String getPassphrase() {
-		return "crazyssh";
-	}
-
-	@Override
-	public String getLogin() {
-		return "crazyssh";
-	}
-
-	@Override
-	public Port getPort() {
-		return moPort;
-	}
-
-	public void setPort(Port p) {
-		moPort = p;
-	}
-
-	@Override
-	public Host getHost() {
-		return moHost;
-	}
-
-	public void setHost(Host h) {
-		moHost = h;
+		conf.getKnownHosts().remove(host.getValue().getHostAddress(), null);
+		conf.getKnownHosts().remove(host.getValue().getHostName(), null);
 	}
 
 }

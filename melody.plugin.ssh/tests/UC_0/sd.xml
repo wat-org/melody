@@ -14,7 +14,7 @@
 			
 			<echo message="Transfering files to 'IP:§[IP]§' ..."/>
 
-			<upload host="§[IP]§" login="root" keyPairName="§[melody:getHeritedAttributeValue(§[svr]§, 'keyPairName')]§" maxpar="10" >
+			<upload host="§[IP]§" login="couille" keyPairName="§[melody:getHeritedAttributeValue(§[svr]§, 'keyPairName')]§" maxpar="10" >
 			<!--
 			'resources' XML Nested Element allow to select files.
 			Select files will be transfered on the remote computer.
