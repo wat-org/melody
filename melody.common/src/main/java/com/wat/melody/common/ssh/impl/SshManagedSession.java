@@ -2,11 +2,11 @@ package com.wat.melody.common.ssh.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.HostKey;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
@@ -15,8 +15,10 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.utils.LogThreshold;
 
 /**
@@ -115,8 +117,9 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	@Override
-	public ChannelSftp openSftpChannel() {
-		return _session.openSftpChannel();
+	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
+			throws SshSessionException, InterruptedException {
+		_session.upload(r, maxPar, th);
 	}
 
 	public HostKey getHostKey() {
@@ -278,8 +281,8 @@ public class SshManagedSession implements ISshSession {
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "selrest() { c=$(readlink -f \"$1\"); [ \"$c\" != \"/\" ] && { /sbin/restorecon -v \"$c\" || exit 107 ; selrest \"$(dirname \"$c\")\"; } ; } ;"
 			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
+			+ "selrest ~{{LOGIN}}/.ssh/ ;" // selinux_support
 			+ "exit 0";
 
 }

@@ -2,13 +2,13 @@ package com.wat.melody.common.ssh.impl;
 
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.common.ssh.CompressionLevel;
-import com.wat.melody.common.ssh.CompressionType;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.KnownHostsFile;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.ProxyType;
 import com.wat.melody.common.ssh.exception.IllegalSshSessionConfigurationException;
+import com.wat.melody.common.ssh.types.CompressionLevel;
+import com.wat.melody.common.ssh.types.CompressionType;
 import com.wat.melody.common.utils.GenericTimeout;
 import com.wat.melody.common.utils.Timeout;
 import com.wat.melody.common.utils.exception.IllegalTimeoutException;

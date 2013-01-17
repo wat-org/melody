@@ -75,6 +75,9 @@ public abstract class AbstractSshConnectionManagedOperation extends
 					+ "Source code have certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		}
+		if (getManagementKeyPairRepository() == null) {
+			setManagementKeyPairRepository(getPluginConf().getKeyPairRepo());
+		}
 		if (getManagementKeyPairName() == null) {
 			setManagementKeyPairName(getPluginConf().getManagementKeyPairName());
 		}

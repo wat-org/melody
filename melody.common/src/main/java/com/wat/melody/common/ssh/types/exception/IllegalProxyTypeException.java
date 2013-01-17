@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.exception;
+package com.wat.melody.common.ssh.types.exception;
 
 import com.wat.melody.common.utils.exception.MelodyException;
 

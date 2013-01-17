@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh;
+package com.wat.melody.common.ssh.types;
 
 /**
  * 

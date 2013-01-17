@@ -1,8 +1,8 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.typedef.exception.IllegalLinkOptionException;
+import com.wat.melody.common.ssh.types.exception.IllegalLinkOptionException;
 
 /**
  * 

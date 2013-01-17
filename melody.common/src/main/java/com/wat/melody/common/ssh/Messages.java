@@ -52,6 +52,23 @@ public class Messages extends NLS {
 	public static String SshMgmtCnxEx_DEPLOY_GENERIC_FAIL;
 	public static String SshMgmtCnxEx_DEPLOY_INTERRUPTED;
 
+	public static String UploadMsg_NOTFOUND;
+	public static String UploadEx_FAILED;
+	public static String UploadEx_INTERRUPTED;
+	public static String UploadEx_MANAGED;
+	public static String UploadEx_UNMANAGED;
+	public static String UploadMsg_COPY_UNSAFE_IMPOSSIBLE;
+
+	public static String UploadEx_STAT;
+	public static String UploadEx_LN;
+	public static String UploadEx_MKDIR;
+	public static String UploadEx_MKDIRS;
+	public static String UploadEx_CD;
+	public static String UploadEx_PWD;
+	public static String UploadEx_CHMOD;
+	public static String UploadEx_CHGRP;
+	public static String UploadEx_PUT;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

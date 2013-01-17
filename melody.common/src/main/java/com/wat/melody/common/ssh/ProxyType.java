@@ -2,7 +2,7 @@ package com.wat.melody.common.ssh;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.ssh.exception.IllegalProxyTypeException;
+import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
 
 /**
  * 

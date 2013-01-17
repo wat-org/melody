@@ -1,20 +1,24 @@
-package com.wat.melody.plugin.ssh;
+package com.wat.melody.common.ssh.impl;
 
 import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.wat.melody.common.typedef.SimpleResource;
+import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.utils.exception.MelodyException;
-import com.wat.melody.plugin.ssh.common.exception.SshException;
 
-public class UploadThread implements Runnable {
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+class UploadThread implements Runnable {
 
-	private Upload moUpload;
+	private Uploader moUpload;
 	private Thread moThread;
 	private Throwable moFinalError;
 
-	public UploadThread(Upload p, int index) {
-		setUpload(p);
+	protected UploadThread(Uploader p, int index) {
+		setUploader(p);
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
 		initFinalError();
@@ -24,36 +28,36 @@ public class UploadThread implements Runnable {
 		moFinalError = null;
 	}
 
-	public short getFinalState() {
+	protected short getFinalState() {
 		if (getThread().getState() == State.NEW) {
-			return Upload.NEW;
+			return Uploader.NEW;
 		} else if (getThread().getState() != State.TERMINATED) {
-			return Upload.RUNNING;
+			return Uploader.RUNNING;
 		} else if (getFinalError() == null) {
-			return Upload.SUCCEED;
+			return Uploader.SUCCEED;
 		} else if (getFinalError() instanceof MelodyException) {
-			return Upload.FAILED;
+			return Uploader.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
-			return Upload.INTERRUPTED;
+			return Uploader.INTERRUPTED;
 		} else {
-			return Upload.CRITICAL;
+			return Uploader.CRITICAL;
 		}
 	}
 
-	public void startProcessing() {
+	protected void startProcessing() {
 		getThread().start();
 	}
 
-	public void waitTillProcessingIsDone() throws InterruptedException {
+	protected void waitTillProcessingIsDone() throws InterruptedException {
 		waitTillProcessingIsDone(0, 0);
 	}
 
-	public void waitTillProcessingIsDone(long millis)
+	protected void waitTillProcessingIsDone(long millis)
 			throws InterruptedException {
 		waitTillProcessingIsDone(millis, 0);
 	}
 
-	public void waitTillProcessingIsDone(long millis, int nanos)
+	protected void waitTillProcessingIsDone(long millis, int nanos)
 			throws InterruptedException {
 		getThread().join(millis, nanos);
 	}
@@ -62,25 +66,16 @@ public class UploadThread implements Runnable {
 	public void run() {
 		ChannelSftp channel = null;
 		try {
-			channel = getUpload().getSession().openSftpChannel();
+			channel = getUploader().getSession().openSftpChannel();
 			while (true) {
 				SimpleResource r = null;
-				synchronized (getUpload().getSimpleResourcesList()) {
-					if (getUpload().getSimpleResourcesList().size() == 0) {
+				synchronized (getUploader().getSimpleResourcesList()) {
+					if (getUploader().getSimpleResourcesList().size() == 0) {
 						return;
 					}
-					r = getUpload().getSimpleResourcesList().remove(0);
+					r = getUploader().getSimpleResourcesList().remove(0);
 				}
-				try {
-					getUpload().upload(channel, r);
-				} catch (SshException Ex) {
-					/*
-					 * add the exception the Upload's exception list and goes on
-					 * uploading another resource.
-					 */
-					getUpload().markState(Upload.FAILED);
-					getUpload().getExceptionsList().add(Ex);
-				}
+				getUploader().upload(channel, r);
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);
@@ -91,14 +86,15 @@ public class UploadThread implements Runnable {
 		}
 	}
 
-	private Upload getUpload() {
+	private Uploader getUploader() {
 		return moUpload;
 	}
 
-	private void setUpload(Upload p) {
+	private void setUploader(Uploader p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Upload.");
+					+ "Must be a valid " + Uploader.class.getCanonicalName()
+					+ ".");
 		}
 		moUpload = p;
 	}
@@ -111,7 +107,7 @@ public class UploadThread implements Runnable {
 		return moThread = t;
 	}
 
-	public Throwable getFinalError() {
+	protected Throwable getFinalError() {
 		return moFinalError;
 	}
 
