@@ -1,4 +1,4 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
-import com.wat.melody.common.typedef.exception.ResourceException;
+import com.wat.melody.common.ssh.types.exception.ResourceException;
 
 /**
  * <p>

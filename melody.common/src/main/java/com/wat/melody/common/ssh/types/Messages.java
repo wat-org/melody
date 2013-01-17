@@ -1,4 +1,4 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
 import org.eclipse.osgi.util.NLS;
 

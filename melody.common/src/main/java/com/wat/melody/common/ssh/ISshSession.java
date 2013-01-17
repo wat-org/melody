@@ -1,10 +1,11 @@
 package com.wat.melody.common.ssh;
 
 import java.io.OutputStream;
+import java.util.List;
 
-import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.HostKey;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.types.SimpleResource;
 
 /**
  * 
@@ -35,14 +36,12 @@ public interface ISshSession {
 	public int execRemoteCommand(String sCommand, OutputStream out,
 			OutputStream err) throws SshSessionException, InterruptedException;
 
-	/*
-	 * TODO : remove everything which concern JSch !
-	 */
-	public HostKey getHostKey();
+	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
+			throws SshSessionException, InterruptedException;
 
 	/*
 	 * TODO : remove everything which concern JSch !
 	 */
-	public ChannelSftp openSftpChannel();
+	public HostKey getHostKey();
 
 }

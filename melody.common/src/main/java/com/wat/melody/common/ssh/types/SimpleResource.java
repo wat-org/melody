@@ -1,4 +1,4 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
 import java.io.File;
 import java.io.IOException;

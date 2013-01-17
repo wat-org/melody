@@ -1,6 +1,6 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
-import com.wat.melody.common.typedef.exception.IllegalModifiersException;
+import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 
 public class Modifiers {
 

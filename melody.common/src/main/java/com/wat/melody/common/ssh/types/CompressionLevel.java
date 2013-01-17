@@ -1,8 +1,9 @@
-package com.wat.melody.common.ssh;
+package com.wat.melody.common.ssh.types;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.ssh.exception.IllegalCompressionLevelException;
+import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.types.exception.IllegalCompressionLevelException;
 
 /**
  * 

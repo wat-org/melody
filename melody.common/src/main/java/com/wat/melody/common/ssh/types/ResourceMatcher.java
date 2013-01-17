@@ -1,4 +1,4 @@
-package com.wat.melody.common.typedef;
+package com.wat.melody.common.ssh.types;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.typedef.exception.IllegalModifiersException;
-import com.wat.melody.common.typedef.exception.ResourceException;
+import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
+import com.wat.melody.common.ssh.types.exception.ResourceException;
 import com.wat.melody.common.utils.Tools;
 import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 

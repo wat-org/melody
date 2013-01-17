@@ -1,6 +1,7 @@
 package com.wat.melody.common.ssh.impl;
 
 import java.io.OutputStream;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,13 +13,17 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.utils.LogThreshold;
 
 /**
@@ -61,6 +66,11 @@ public class SshSession implements ISshSession {
 
 	@Override
 	public ISshUserDatas setUserDatas(ISshUserDatas ud) {
+		if (ud == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshUserDatas.class.getCanonicalName() + ".");
+		}
 		ISshUserDatas previous = getUserDatas();
 		moSshUserDatas = ud;
 		return previous;
@@ -73,6 +83,11 @@ public class SshSession implements ISshSession {
 
 	@Override
 	public ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd) {
+		if (cd == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshConnectionDatas.class.getCanonicalName() + ".");
+		}
 		ISshConnectionDatas previous = getConnectionDatas();
 		moSshConnectionDatas = cd;
 		return previous;
@@ -190,27 +205,53 @@ public class SshSession implements ISshSession {
 		return channel.getExitStatus();
 	}
 
-	public ChannelSftp openSftpChannel() {
+	@Override
+	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
+			throws SshSessionException, InterruptedException {
 		if (!isConnected()) {
 			throw new IllegalStateException("session: Not accepted. "
 					+ "Session must be connected.");
 		}
-		ChannelSftp channel = null;
-		try {
-			channel = (ChannelSftp) _session.openChannel("sftp");
-			channel.connect();
-		} catch (JSchException Ex) {
-			if (channel != null) {
-				channel.disconnect();
-			}
-			throw new RuntimeException(
-					"Failed to connect a JSch 'sftp' Channel.", Ex);
-		}
-		return channel;
+		new Uploader(this, r, maxPar, th).upload();
+	}
+
+	@Override
+	public String toString() {
+		return "{ host:" + getHost() + ", port:" + getPort() + ", login:"
+				+ getLogin() + " }";
 	}
 
 	public HostKey getHostKey() {
 		return _session != null ? _session.getHostKey() : null;
+	}
+
+	protected String getHost() {
+		return getConnectionDatas().getHost().toString();
+	}
+
+	protected int getPort() {
+		return getConnectionDatas().getPort().getValue();
+	}
+
+	protected String getLogin() {
+		return getUserDatas().getLogin();
+	}
+
+	protected String getPassword() {
+		return getUserDatas().getPassword();
+	}
+
+	protected KeyPairRepository getKeyPairRepository() {
+		return getUserDatas().getKeyPairRepository();
+	}
+
+	protected KeyPairName getKeyPairName() {
+		return getUserDatas().getKeyPairName();
+	}
+
+	protected String getKeyPairPath() {
+		return getKeyPairRepository().getPrivateKeyFile(getKeyPairName())
+				.toString();
 	}
 
 	private void applyDatas() {
@@ -221,9 +262,7 @@ public class SshSession implements ISshSession {
 			throw new IllegalStateException("No connection datas defined.");
 		}
 		try {
-			_session = JSCH.getSession(getUserDatas().getLogin(),
-					getConnectionDatas().getHost().toString(),
-					getConnectionDatas().getPort().getValue());
+			_session = JSCH.getSession(getLogin(), getHost(), getPort());
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Improbable, tous les param ont été "
 					+ "validés.", Ex);
@@ -231,18 +270,15 @@ public class SshSession implements ISshSession {
 		_session.setUserInfo(new JSchUserInfoAdapter(getUserDatas(),
 				getConnectionDatas()));
 
-		if (getUserDatas().getKeyPairName() == null) {
+		if (getKeyPairName() == null) {
 			return;
 		}
 		LocalIdentityRepository ir = new LocalIdentityRepository(JSCH);
 		try {
-			ir.add(getUserDatas().getKeyPairRepository()
-					.getPrivateKeyFile(getUserDatas().getKeyPairName())
-					.toString(), getUserDatas().getPassword());
+			ir.add(getKeyPairPath(), getPassword());
 		} catch (JSchException Ex) {
-			throw new RuntimeException(getUserDatas().getKeyPairRepository()
-					.getPrivateKeyFile(getUserDatas().getKeyPairName())
-					+ ": Invalid Key.", Ex);
+			throw new RuntimeException(getKeyPairPath()
+					+ ": Invalid Private Key file.", Ex);
 		}
 		_session.setIdentityRepository(ir);
 	}
@@ -326,6 +362,25 @@ public class SshSession implements ISshSession {
 			}
 			throw new SshSessionException(msg, Ex);
 		}
+	}
+
+	public ChannelSftp openSftpChannel() {
+		if (!isConnected()) {
+			throw new IllegalStateException("session: Not accepted. "
+					+ "Session must be connected.");
+		}
+		ChannelSftp channel = null;
+		try {
+			channel = (ChannelSftp) _session.openChannel("sftp");
+			channel.connect();
+		} catch (JSchException Ex) {
+			if (channel != null) {
+				channel.disconnect();
+			}
+			throw new RuntimeException(
+					"Failed to connect a JSch 'sftp' Channel.", Ex);
+		}
+		return channel;
 	}
 
 }
