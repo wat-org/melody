@@ -281,8 +281,8 @@ public class SshManagedSession implements ISshSession {
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "selrest ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
-			+ "selrest ~{{LOGIN}}/.ssh/ ;" // selinux_support
+			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
+			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/ ;" // selinux_support
 			+ "exit 0";
 
 }
