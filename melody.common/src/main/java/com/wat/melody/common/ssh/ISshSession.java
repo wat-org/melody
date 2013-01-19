@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import com.jcraft.jsch.HostKey;
+import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
 
@@ -27,7 +28,8 @@ public interface ISshSession {
 
 	public ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd);
 
-	public void connect() throws SshSessionException, InterruptedException;
+	public void connect() throws SshSessionException,
+			InvalidCredentialException, InterruptedException;
 
 	public void disconnect();
 

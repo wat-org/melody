@@ -13,7 +13,7 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
-import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
+import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.KnownHostsFileException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.SshConnectionDatas;
@@ -109,9 +109,9 @@ public class SshNetworkManager implements NetworkManager {
 		while (true) {
 			try {
 				session.connect();
-				// connection succeed, and credential invalid => ok
+				// connection succeed, and credential valid => ok
 				break;
-			} catch (IncorrectCredentialsException Ex) {
+			} catch (InvalidCredentialException Ex) {
 				// connection succeed, but credential invalid => ok
 				break;
 			} catch (SshSessionException Ex) {
