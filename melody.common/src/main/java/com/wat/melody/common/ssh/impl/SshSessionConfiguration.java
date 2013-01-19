@@ -4,9 +4,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.KnownHostsFile;
-import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.ProxyType;
-import com.wat.melody.common.ssh.exception.IllegalSshSessionConfigurationException;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
 import com.wat.melody.common.utils.GenericTimeout;
@@ -135,11 +133,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public int setServerAliveCountMax(int ival)
-			throws IllegalSshSessionConfigurationException {
+	public int setServerAliveCountMax(int ival) {
 		if (ival < 0) {
-			throw new IllegalSshSessionConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT, ival));
+			throw new IllegalArgumentException(ival + ": Not accepted. "
+					+ "Since this value is neither a Positive Integer nor "
+					+ "zero, such value is not a Server Alive Max Count. "
+					+ "Also note that 0 means no retry will be done."
+					+ "Default value is 1.");
 		}
 		int previous = getServerAliveCountMax();
 		miServerAliveCountMax = ival;

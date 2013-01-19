@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.ssh;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,16 +98,19 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	private void validateResourceElement(ResourceMatcher r, String which)
 			throws SshException {
 		if (r.getLocalBaseDir() == null) {
+			File localBaseDir = getContext().getProcessorManager()
+					.getSequenceDescriptor().getBaseDir();
 			try {
-				r.setLocalBaseDir(getContext().getProcessorManager()
-						.getSequenceDescriptor().getBaseDir());
+				r.setLocalBaseDir(localBaseDir);
 			} catch (ResourceException Ex) {
-				/*
-				 * TODO : error message
-				 */
-				throw new RuntimeException(
-						"Sequence Descriptor BaseDir is no more available ...",
-						Ex);
+				throw new RuntimeException("Unexpected error occurred while "
+						+ "setting the localBaseDir to '" + localBaseDir
+						+ "'. "
+						+ "Source code has certainly been modified and "
+						+ "a bug have been introduced. "
+						+ "Or an external event made the file no more "
+						+ "accessible (deleted, moved, read permission "
+						+ "removed, ...).", Ex);
 			}
 		}
 		if (r.getMatch() == null) {

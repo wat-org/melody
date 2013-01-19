@@ -162,6 +162,10 @@ public class SshSession implements ISshSession {
 
 			channel.setInputStream(null);
 			channel.setOutputStream(outStream);
+			/*
+			 * FIXME : nothing is never writen in stderr. Everything goes into
+			 * stdout... Jsh bug ?
+			 */
 			channel.setErrStream(errStream);
 
 			channel.connect();
@@ -212,7 +216,7 @@ public class SshSession implements ISshSession {
 			throw new IllegalStateException("session: Not accepted. "
 					+ "Session must be connected.");
 		}
-		new Uploader(this, r, maxPar, th).upload();
+		new UploaderMultiThread(this, r, maxPar, th).upload();
 	}
 
 	@Override
@@ -343,7 +347,6 @@ public class SshSession implements ISshSession {
 
 	private void _connect() throws SshSessionException,
 			InvalidCredentialException {
-
 		int cnxTimeout = 0;
 		if (getSessionConfiguration() != null) {
 			cnxTimeout = (int) getSessionConfiguration().getConnectionTimeout()
@@ -352,9 +355,8 @@ public class SshSession implements ISshSession {
 		try {
 			_session.connect(cnxTimeout);
 		} catch (JSchException Ex) {
-			String msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT,
-					new Object[] { _session.getHost(), _session.getPort(),
-							_session.getUserName() });
+			String msg;
+			msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT, this);
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'
 				// => dedicated exception on credentials errors

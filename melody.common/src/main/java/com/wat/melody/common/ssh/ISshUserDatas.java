@@ -2,7 +2,6 @@ package com.wat.melody.common.ssh;
 
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
-import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
 
 /**
  * 
@@ -13,7 +12,10 @@ public interface ISshUserDatas {
 
 	public String getLogin();
 
-	public String setLogin(String sLogin) throws IllegalSshUserDatasException;
+	/**
+	 * Cannot be null or empty.
+	 */
+	public String setLogin(String sLogin);
 
 	public String getPassword();
 

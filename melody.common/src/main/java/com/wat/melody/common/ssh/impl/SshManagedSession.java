@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -79,9 +80,14 @@ public class SshManagedSession implements ISshSession {
 		return _sshManagementUserDatas;
 	}
 
-	public ISshUserDatas setManagementUserDatas(ISshUserDatas nd) {
+	public ISshUserDatas setManagementUserDatas(ISshUserDatas ud) {
+		if (ud == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshUserDatas.class.getCanonicalName() + ".");
+		}
 		ISshUserDatas previous = getManagementUserDatas();
-		_sshManagementUserDatas = nd;
+		_sshManagementUserDatas = ud;
 		return previous;
 	}
 
@@ -89,14 +95,14 @@ public class SshManagedSession implements ISshSession {
 	public synchronized void connect() throws SshSessionException,
 			InvalidCredentialException, InterruptedException {
 		try {
-			openSession(_sshUserDatas);
+			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
-			/*
-			 * On auth error, connect with ManagementMaster User and deploy
-			 * user's key. Then open session.
-			 */
+			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX_USER_FAIL,
+					_session, getUserDatas().getLogin()));
 			connectAsMasterUserAndDeployKey();
 			openUserSession();
+			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX_USER_OK,
+					_session));
 		}
 	}
 
@@ -129,13 +135,15 @@ public class SshManagedSession implements ISshSession {
 	private void openSession(ISshUserDatas sshUserDatas)
 			throws SshSessionException, InterruptedException {
 		_session.setUserDatas(sshUserDatas);
+		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX, _session));
 		_session.connect();
+		log.trace(Messages.SshMgmtCnxMsg_CNX_OK);
 	}
 
 	private void openUserSession() throws SshSessionException,
 			InterruptedException {
 		try {
-			openSession(_sshUserDatas);
+			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
 			throw new RuntimeException("Failed to connect to remote system. "
 					+ "Ssh Management Feature must have fail to do its job. "
@@ -147,17 +155,18 @@ public class SshManagedSession implements ISshSession {
 	private void connectAsMasterUserAndDeployKey() throws SshSessionException,
 			InvalidCredentialException, InterruptedException {
 		if (getManagementUserDatas() == null) {
-			throw new IllegalStateException("No user datas defined.");
+			throw new IllegalStateException("BUG: No Management User Datas "
+					+ "defined! "
+					+ "Caller source code should set Management User Datas.");
+		}
+		if (getUserDatas().getKeyPairName() == null) {
+			throw new IllegalStateException("BUG: No User keypairname "
+					+ "defined! "
+					+ "Caller source code should set a User keyPairName.");
 		}
 		try {
-			if (getUserDatas().getKeyPairName() == null) {
-				throw new SshSessionException(Messages.SshMgmtCnxEx_NO_KEY);
-			}
 			openMasterSession();
-			String key = getKey();
-			String suCommand = createCommandToDeployKey(key);
-			int res = executeCommandToDeployKey(suCommand);
-			analyseCommandToDeployKeyResult(res, key);
+			deployKey();
 		} catch (SshSessionException Ex) {
 			throw new SshSessionException(Messages.SshMgmtCnxEx_GENERIC_FAIL,
 					Ex);
@@ -168,15 +177,42 @@ public class SshManagedSession implements ISshSession {
 
 	private void openMasterSession() throws SshSessionException,
 			InvalidCredentialException, InterruptedException {
-		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_OPENING,
-				getManagementUserDatas()));
 		try {
-			openSession(_sshManagementUserDatas);
+			openSession(getManagementUserDatas());
 			log.trace(Messages.SshMgmtCnxMsg_OPENED);
 		} catch (InvalidCredentialException Ex) {
-			throw new InvalidCredentialException(
-					Messages.SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS, Ex);
+			throw new InvalidCredentialException(Messages.bind(
+					Messages.SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS,
+					getManagementUserDatas()), Ex);
 		}
+	}
+
+	/**
+	 * 
+	 * @throws SshException
+	 * @throws InterruptedException
+	 *             if the key deployment was interrupted. Note that when this
+	 *             exception is raised, the command have been completely
+	 *             executed.
+	 */
+	private void deployKey() throws SshSessionException, InterruptedException {
+		String k = getKey();
+		String dkc = createDeployKeyCommand(k);
+		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, dkc,
+				getUserDatas().getLogin()));
+		OutputStream outStream = new LoggerOutputStream("[ssh_cnx_mgmt:"
+				+ getConnectionDatas().getHost() + "]", LogThreshold.DEBUG);
+		OutputStream errStream = new ByteArrayOutputStream();
+		int res = -1;
+		try {
+			res = execRemoteCommand(dkc, outStream, errStream);
+		} catch (InterruptedException Ex) {
+			InterruptedException iex = new InterruptedException(
+					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED);
+			iex.initCause(Ex);
+			throw iex;
+		}
+		analyseDeployKeyCommandResult(res, k, errStream.toString());
 	}
 
 	private String getKey() throws SshSessionException {
@@ -187,99 +223,85 @@ public class SshManagedSession implements ISshSession {
 		try {
 			key = kpr.getPublicKeyInOpenSshFormat(kpn, null);
 		} catch (IOException Ex) {
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_INVALID_KEY,
-					kpr.getPrivateKeyFile(kpn)), Ex);
+			throw new RuntimeException("Unexpected error while reading "
+					+ "the key '" + kpr.getPrivateKeyFile(kpn) + "' . "
+					+ "Because this key have been validated previously, "
+					+ "such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
 		}
 		return key;
 	}
 
-	private String createCommandToDeployKey(String key)
-			throws SshSessionException {
-		ISshUserDatas cnxDatas = getUserDatas();
-		String sCommand = COMMAND_TO_DEPLOY_KEY.replaceAll("[{][{]LOGIN[}][}]",
-				cnxDatas.getLogin());
-		return "KEY=\"" + key + "\" ; [ $(id -g) = 0 ] && { " + sCommand
-				+ "; } || " + "{ sudo su - <<EOF \n" + sCommand + "\nEOF\n }";
+	private String createDeployKeyCommand(String k) throws SshSessionException {
+		String login = getUserDatas().getLogin();
+		String c = DEPLOY_KEY_COMMAND.replaceAll("[{][{]LOGIN[}][}]", login);
+		String f = "KEY=\"" + k + "\" || exit 99\n";
+		f += "CMD=\"" + c + "\" || exit 98\n";
+		f += "[ $(id -g) = 0 ] && { $CMD; } || "
+				+ "{ sudo su - <<EOF\n$CMD\nEOF\n}";
+		return f;
 		/*
 		 * TODO : find a way to test remote sudo configuration (ex : require
 		 * tty, password needed, ...) ...
 		 */
 	}
 
-	/**
-	 * 
-	 * @param session
-	 * @param suCommand
-	 * 
-	 * @return the return value of the command.
-	 * 
-	 * @throws SshException
-	 * @throws InterruptedException
-	 *             if the key deployment was interrupted. Note that when this
-	 *             exception is raised, the command have been completely
-	 *             executed.
-	 */
-	private int executeCommandToDeployKey(String suCommand)
-			throws SshSessionException, InterruptedException {
-		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, suCommand));
-		OutputStream outStream = new LoggerOutputStream("[ssh_cnx_mgmt:"
-				+ getConnectionDatas().getHost() + "]", LogThreshold.DEBUG);
-		try {
-			return execRemoteCommand(suCommand, outStream, outStream);
-		} catch (InterruptedException Ex) {
-			InterruptedException iex = new InterruptedException(
-					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED);
-			iex.initCause(Ex);
-			throw iex;
-		}
-	}
-
-	private void analyseCommandToDeployKeyResult(int res, String key)
+	private void analyseDeployKeyCommandResult(int res, String k, String errMsg)
 			throws SshSessionException {
-		ISshUserDatas cnxDatas = getUserDatas();
-		switch (res) {
-		case 0:
-			log.trace(Messages.SshMgmtCnxMsg_DEPLOYED);
+		String login = getUserDatas().getLogin();
+		if (res == 0) {
+			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYED, login));
 			return;
-		case 100:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_USERADD_FAIL, cnxDatas.getLogin()));
-		case 101:
-			throw new SshSessionException(Messages.SshMgmtCnxEx_UMASK_FAIL);
-		case 102:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_MKDIR_FAIL, cnxDatas.getLogin()));
-		case 103:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, cnxDatas.getLogin()));
-		case 104:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, cnxDatas.getLogin()));
-		case 105:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, cnxDatas.getLogin()));
-		case 106:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_ADD_KEY_FAIL, cnxDatas.getLogin(),
-					key));
-		case 107:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_SELIUNX_FAIL, cnxDatas.getLogin()));
-		default:
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_DEPLOY_GENERIC_FAIL,
-					cnxDatas.getLogin(), key));
 		}
+		String msg = null;
+		switch (res) {
+		case 98:
+			msg = "BUG";
+			break;
+		case 99:
+			msg = "BUG";
+			break;
+		case 100:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_USERADD_FAIL, login);
+			break;
+		case 101:
+			msg = Messages.SshMgmtCnxEx_UMASK_FAIL;
+			break;
+		case 102:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_MKDIR_FAIL, login);
+		case 103:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, login);
+			break;
+		case 104:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, login);
+			break;
+		case 105:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, login);
+			break;
+		case 106:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_ADD_KEY_FAIL, login, k);
+			break;
+		case 107:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_SELIUNX_FAIL, login);
+		default:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_DEPLOY_FAIL, login, k);
+			break;
+		}
+		SshSessionException cause = null;
+		if (errMsg != null && errMsg.length() != 0) {
+			cause = new SshSessionException(errMsg);
+		}
+		throw new SshSessionException(msg, cause);
 	}
 
-	private static final String COMMAND_TO_DEPLOY_KEY = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} || exit 100 ;"
+	private static final String DEPLOY_KEY_COMMAND = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} || exit 100 ;"
 			+ "umask 077 || exit 101 ;"
 			+ "mkdir -p ~{{LOGIN}}/.ssh || exit 102 ;"
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh || exit 103 ;"
 			+ "touch ~{{LOGIN}}/.ssh/authorized_keys || exit 104 ;"
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
-			+ "grep \"${KEY}\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \"${KEY} {{LOGIN}}@melody\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
+			+ "grep \\\"${KEY}\\\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \\\"${KEY} {{LOGIN}}@melody\\\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
 			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
 			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/ ;" // selinux_support
