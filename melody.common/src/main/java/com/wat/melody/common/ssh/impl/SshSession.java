@@ -21,7 +21,7 @@ import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
+import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.utils.LogThreshold;
@@ -95,7 +95,7 @@ public class SshSession implements ISshSession {
 
 	/**
 	 * 
-	 * @throws IncorrectCredentialsException
+	 * @throws InvalidCredentialException
 	 *             on credentials error.
 	 * @throws SshSessionException
 	 *             if the Ssh Management Feature failed to operate properly (ex
@@ -107,7 +107,7 @@ public class SshSession implements ISshSession {
 	 */
 	@Override
 	public synchronized void connect() throws SshSessionException,
-			IncorrectCredentialsException {
+			InvalidCredentialException {
 		if (isConnected()) {
 			return;
 		}
@@ -342,7 +342,7 @@ public class SshSession implements ISshSession {
 	}
 
 	private void _connect() throws SshSessionException,
-			IncorrectCredentialsException {
+			InvalidCredentialException {
 
 		int cnxTimeout = 0;
 		if (getSessionConfiguration() != null) {
@@ -358,7 +358,7 @@ public class SshSession implements ISshSession {
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'
 				// => dedicated exception on credentials errors
-				throw new IncorrectCredentialsException(msg, Ex);
+				throw new InvalidCredentialException(msg, Ex);
 			}
 			throw new SshSessionException(msg, Ex);
 		}

@@ -16,7 +16,7 @@ import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.exception.IncorrectCredentialsException;
+import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.utils.LogThreshold;
@@ -87,10 +87,10 @@ public class SshManagedSession implements ISshSession {
 
 	@Override
 	public synchronized void connect() throws SshSessionException,
-			IncorrectCredentialsException, InterruptedException {
+			InvalidCredentialException, InterruptedException {
 		try {
 			openSession(_sshUserDatas);
-		} catch (IncorrectCredentialsException Ex) {
+		} catch (InvalidCredentialException Ex) {
 			/*
 			 * On auth error, connect with ManagementMaster User and deploy
 			 * user's key. Then open session.
@@ -136,7 +136,7 @@ public class SshManagedSession implements ISshSession {
 			InterruptedException {
 		try {
 			openSession(_sshUserDatas);
-		} catch (IncorrectCredentialsException Ex) {
+		} catch (InvalidCredentialException Ex) {
 			throw new RuntimeException("Failed to connect to remote system. "
 					+ "Ssh Management Feature must have fail to do its job. "
 					+ "Please send feedback to the development team so that "
@@ -145,7 +145,7 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private void connectAsMasterUserAndDeployKey() throws SshSessionException,
-			IncorrectCredentialsException, InterruptedException {
+			InvalidCredentialException, InterruptedException {
 		if (getManagementUserDatas() == null) {
 			throw new IllegalStateException("No user datas defined.");
 		}
@@ -167,14 +167,14 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private void openMasterSession() throws SshSessionException,
-			IncorrectCredentialsException, InterruptedException {
+			InvalidCredentialException, InterruptedException {
 		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_OPENING,
 				getManagementUserDatas()));
 		try {
 			openSession(_sshManagementUserDatas);
 			log.trace(Messages.SshMgmtCnxMsg_OPENED);
-		} catch (IncorrectCredentialsException Ex) {
-			throw new IncorrectCredentialsException(
+		} catch (InvalidCredentialException Ex) {
+			throw new InvalidCredentialException(
 					Messages.SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS, Ex);
 		}
 	}
