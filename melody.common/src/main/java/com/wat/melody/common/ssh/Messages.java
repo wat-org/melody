@@ -52,6 +52,8 @@ public class Messages extends NLS {
 	public static String SshMgmtCnxEx_ADD_KEY_FAIL;
 	public static String SshMgmtCnxEx_SELIUNX_FAIL;
 	public static String SshMgmtCnxEx_DEPLOY_FAIL;
+	public static String SshMgmtCnxEx_NO_SUDO;
+	public static String SshMgmtCnxEx_NO_AUTH_SUDO;
 	public static String SshMgmtCnxMsg_CNX_USER_FAIL;
 	public static String SshMgmtCnxMsg_OPENED;
 	public static String SshMgmtCnxMsg_DEPLOYING;

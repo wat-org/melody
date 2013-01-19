@@ -168,8 +168,8 @@ public class SshManagedSession implements ISshSession {
 			openMasterSession();
 			deployKey();
 		} catch (SshSessionException Ex) {
-			throw new SshSessionException(Messages.SshMgmtCnxEx_GENERIC_FAIL,
-					Ex);
+			throw new SshSessionException(Messages.bind(
+					Messages.SshMgmtCnxEx_GENERIC_FAIL, _session), Ex);
 		} finally {
 			disconnect();
 		}
@@ -238,13 +238,11 @@ public class SshManagedSession implements ISshSession {
 		String c = DEPLOY_KEY_COMMAND.replaceAll("[{][{]LOGIN[}][}]", login);
 		String f = "KEY=\"" + k + "\" || exit 99\n";
 		f += "CMD=\"" + c + "\" || exit 98\n";
-		f += "[ $(id -g) = 0 ] && { $CMD; } || "
-				+ "{ sudo su - <<EOF\n$CMD\nEOF\n}";
+		f += "[ $(id -g) = 0 ] && eval \"$CMD\"\n";
+		f += "test -x /usr/bin/sudo || exit 97\n";
+		f += "sudo -l | grep \"(root) NOPASSWD: /bin/su -\" 1>/dev/null || exit 96\n";
+		f += "sudo su - <<EOF\n$CMD\nEOF";
 		return f;
-		/*
-		 * TODO : find a way to test remote sudo configuration (ex : require
-		 * tty, password needed, ...) ...
-		 */
 	}
 
 	private void analyseDeployKeyCommandResult(int res, String k, String errMsg)
@@ -256,12 +254,18 @@ public class SshManagedSession implements ISshSession {
 		}
 		String msg = null;
 		switch (res) {
+		case 96:
+			msg = Messages.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, login);
+			break;
+		case 97:
+			msg = Messages.SshMgmtCnxEx_NO_SUDO;
+			break;
 		case 98:
-			msg = "BUG";
-			break;
+			throw new RuntimeException("BUG during the construction of CMD."
+					+ "Please report this.");
 		case 99:
-			msg = "BUG";
-			break;
+			throw new RuntimeException("BUG during the construction of KEY."
+					+ "Please report this.");
 		case 100:
 			msg = Messages.bind(Messages.SshMgmtCnxEx_USERADD_FAIL, login);
 			break;
