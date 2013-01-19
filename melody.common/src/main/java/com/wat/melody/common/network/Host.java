@@ -33,7 +33,9 @@ public class Host {
 
 	private InetAddress setValue(String sHost) throws IllegalHostException {
 		if (sHost == null) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (which represents a "
+					+ "HostName, FQND, InetV4Address or InetV6Address)");
 		}
 		if (sHost.trim().length() == 0) {
 			throw new IllegalHostException(Messages.bind(Messages.HostEx_EMPTY,

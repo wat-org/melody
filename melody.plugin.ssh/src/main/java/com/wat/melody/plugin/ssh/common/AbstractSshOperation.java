@@ -14,7 +14,6 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
-import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.LoggerOutputStream;
 import com.wat.melody.common.ssh.impl.SshConnectionDatas;
@@ -157,9 +156,6 @@ public abstract class AbstractSshOperation implements ITask {
 		try {
 			session.connect();
 		} catch (SshSessionException Ex) {
-			/*
-			 * TODO : error message
-			 */
 			throw new SshException(Ex);
 		}
 		return session;
@@ -187,9 +183,6 @@ public abstract class AbstractSshOperation implements ITask {
 					+ " [STDERR]", LogThreshold.ERROR);
 			return session.execRemoteCommand(sCommand, out, err);
 		} catch (SshSessionException Ex) {
-			/*
-			 * TODO : error message
-			 */
 			throw new SshException(Ex);
 		} finally {
 			if (session != null) {
@@ -291,7 +284,7 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	@Attribute(name = LOGIN_ATTR, mandatory = true)
-	public String setLogin(String sLogin) throws IllegalSshUserDatasException {
+	public String setLogin(String sLogin) {
 		if (sLogin == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a login).");

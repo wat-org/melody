@@ -11,13 +11,13 @@ import com.wat.melody.common.utils.exception.MelodyException;
  * @author Guillaume Cornet
  * 
  */
-class UploadThread implements Runnable {
+class UploaderThread implements Runnable {
 
-	private Uploader moUpload;
+	private UploaderMultiThread moUpload;
 	private Thread moThread;
 	private Throwable moFinalError;
 
-	protected UploadThread(Uploader p, int index) {
+	protected UploaderThread(UploaderMultiThread p, int index) {
 		setUploader(p);
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
@@ -30,17 +30,17 @@ class UploadThread implements Runnable {
 
 	protected short getFinalState() {
 		if (getThread().getState() == State.NEW) {
-			return Uploader.NEW;
+			return UploaderMultiThread.NEW;
 		} else if (getThread().getState() != State.TERMINATED) {
-			return Uploader.RUNNING;
+			return UploaderMultiThread.RUNNING;
 		} else if (getFinalError() == null) {
-			return Uploader.SUCCEED;
+			return UploaderMultiThread.SUCCEED;
 		} else if (getFinalError() instanceof MelodyException) {
-			return Uploader.FAILED;
+			return UploaderMultiThread.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
-			return Uploader.INTERRUPTED;
+			return UploaderMultiThread.INTERRUPTED;
 		} else {
-			return Uploader.CRITICAL;
+			return UploaderMultiThread.CRITICAL;
 		}
 	}
 
@@ -86,15 +86,15 @@ class UploadThread implements Runnable {
 		}
 	}
 
-	private Uploader getUploader() {
+	private UploaderMultiThread getUploader() {
 		return moUpload;
 	}
 
-	private void setUploader(Uploader p) {
+	private void setUploader(UploaderMultiThread p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Uploader.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ UploaderMultiThread.class.getCanonicalName() + ".");
 		}
 		moUpload = p;
 	}

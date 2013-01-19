@@ -3,8 +3,6 @@ package com.wat.melody.common.ssh.impl;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.ssh.ISshUserDatas;
-import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
 
 /**
  * 
@@ -31,14 +29,14 @@ public class SshUserDatas implements ISshUserDatas {
 	}
 
 	@Override
-	public String setLogin(String sLogin) throws IllegalSshUserDatasException {
+	public String setLogin(String sLogin) {
 		if (sLogin == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
 		if (sLogin.trim().length() == 0) {
-			throw new IllegalSshUserDatasException(
-					Messages.ConfEx_EMPTY_DIRECTIVE);
+			throw new IllegalArgumentException(": Not accepted. "
+					+ "Cannot be empty String.");
 		}
 		String previous = getLogin();
 		msLogin = sLogin;

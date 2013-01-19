@@ -5,7 +5,6 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
-import com.wat.melody.common.ssh.exception.IllegalSshUserDatasException;
 import com.wat.melody.common.ssh.impl.SshManagedSession;
 import com.wat.melody.common.ssh.impl.SshUserDatas;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -65,15 +64,8 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	@Override
 	public void validate() throws SshException {
 		super.validate();
-		try {
-			if (getManagementLogin() == null) {
-				setManagementLogin(getPluginConf().getManagementLogin());
-			}
-		} catch (IllegalSshUserDatasException Ex) {
-			throw new RuntimeException("Failed to assign ssh mgmt master user "
-					+ "with value taken in the configuration. "
-					+ "Source code have certainly been modified and a bug "
-					+ "have been introduced.", Ex);
+		if (getManagementLogin() == null) {
+			setManagementLogin(getPluginConf().getManagementLogin());
 		}
 		if (getManagementKeyPairRepository() == null) {
 			setManagementKeyPairRepository(getPluginConf().getKeyPairRepo());
@@ -107,8 +99,7 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	}
 
 	@Attribute(name = MGMT_MASTER_USER_ATTR)
-	public String setManagementLogin(String mgmtLogin)
-			throws IllegalSshUserDatasException {
+	public String setManagementLogin(String mgmtLogin) {
 		if (mgmtLogin == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a login).");
