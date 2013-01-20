@@ -20,7 +20,6 @@ import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
-import com.wat.melody.common.utils.LogThreshold;
 
 /**
  * 
@@ -117,9 +116,10 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	@Override
-	public int execRemoteCommand(String sCommand, OutputStream out,
-			OutputStream err) throws SshSessionException, InterruptedException {
-		return _session.execRemoteCommand(sCommand, out, err);
+	public int execRemoteCommand(String sCommand, boolean requiretty,
+			OutputStream out, OutputStream err) throws SshSessionException,
+			InterruptedException {
+		return _session.execRemoteCommand(sCommand, requiretty, out, err);
 	}
 
 	@Override
@@ -201,12 +201,10 @@ public class SshManagedSession implements ISshSession {
 		String dkc = createDeployKeyCommand(k);
 		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, dkc,
 				getUserDatas().getLogin()));
-		OutputStream outStream = new LoggerOutputStream("[ssh_cnx_mgmt:"
-				+ getConnectionDatas().getHost() + "]", LogThreshold.DEBUG);
 		OutputStream errStream = new ByteArrayOutputStream();
 		int res = -1;
 		try {
-			res = execRemoteCommand(dkc, outStream, errStream);
+			res = execRemoteCommand(dkc, true, errStream, errStream);
 		} catch (InterruptedException Ex) {
 			InterruptedException iex = new InterruptedException(
 					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED);
@@ -259,7 +257,7 @@ public class SshManagedSession implements ISshSession {
 			msg = Messages.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, login);
 			break;
 		case 97:
-			msg = Messages.SshMgmtCnxEx_NO_SUDO;
+			msg = Messages.bind(Messages.SshMgmtCnxEx_NO_SUDO, login);
 			break;
 		case 98:
 			throw new RuntimeException("BUG during the construction of CMD."
@@ -300,7 +298,7 @@ public class SshManagedSession implements ISshSession {
 		throw new SshSessionException(msg, cause);
 	}
 
-	private static final String DEPLOY_KEY_COMMAND = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} || exit 100 ;"
+	private static final String DEPLOY_KEY_COMMAND = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} 1>/dev/null || exit 100 ;"
 			+ "umask 077 || exit 101 ;"
 			+ "mkdir -p ~{{LOGIN}}/.ssh || exit 102 ;"
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh || exit 103 ;"
@@ -308,8 +306,8 @@ public class SshManagedSession implements ISshSession {
 			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "grep \\\"${KEY}\\\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \\\"${KEY} {{LOGIN}}@melody\\\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
-			+ "/sbin/restorecon -v ~{{LOGIN}}/.ssh/ ;" // selinux_support
+			+ "/sbin/restorecon ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
+			+ "/sbin/restorecon ~{{LOGIN}}/.ssh/ ;" // selinux_support
 			+ "exit 0";
 
 }
