@@ -37,12 +37,6 @@ public abstract class NetworkManagementHelper {
 	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = "enableNetworkManagementTimeout";
 
 	/**
-	 * XML attribute in the SD, which contains the XPath Expression to select
-	 * Network Devices
-	 */
-	public static final String NETWORK_DEVICE_NODES_SELECTOR_ATTR = "networkDevicesSelector";
-
-	/**
 	 * XML Element in the RD, which contains Network Device Management datas of
 	 * the related Instance Node (more formally called the
 	 * "Network Device Management Node")
