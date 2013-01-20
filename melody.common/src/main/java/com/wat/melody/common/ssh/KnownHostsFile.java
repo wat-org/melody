@@ -22,20 +22,16 @@ public class KnownHostsFile implements HostKeyRepository {
 		try {
 			Tools.validateFileExists(path);
 		} catch (IllegalFileException Ex) {
-			/*
-			 * TODO : enhance error message
-			 */
-			throw new KnownHostsFileException(Ex);
+			throw new KnownHostsFileException(Messages.bind(
+					Messages.KnownHostsEx_INVALID_PATH, path), Ex);
 		}
 		try {
 			KnownHosts kh = new KnownHosts();
 			kh.setKnownHosts(path);
 			_kh = kh;
 		} catch (JSchException Ex) {
-			/*
-			 * TODO : enhance error message
-			 */
-			throw new KnownHostsFileException(Ex);
+			throw new KnownHostsFileException(Messages.bind(
+					Messages.KnownHostsEx_INVALID_CONTENT, path), Ex);
 		}
 	}
 
@@ -67,15 +63,12 @@ public class KnownHostsFile implements HostKeyRepository {
 		return _kh.getHostKey(host, type);
 	}
 
-	public void add(String host, byte[] key) throws KnownHostsFileException {
+	public void add(String host, byte[] key) {
 		HostKey hk = null;
 		try {
 			hk = new HostKey(host, key);
 		} catch (JSchException Ex) {
-			/*
-			 * TODO : enhance error message
-			 */
-			throw new KnownHostsFileException(Ex);
+			throw new IllegalArgumentException(Ex);
 		}
 		_kh.add(hk, AnswerYes.getInstance());
 	}

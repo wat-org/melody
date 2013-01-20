@@ -12,6 +12,9 @@ public class Messages extends NLS {
 	public static String CompressionTypeEx_EMPTY;
 	public static String CompressionTypeEx_INVALID;
 
+	public static String KnownHostsEx_INVALID_PATH;
+	public static String KnownHostsEx_INVALID_CONTENT;
+
 	public static String ProxyTypeEx_EMPTY;
 	public static String ProxyTypeEx_INVALID;
 

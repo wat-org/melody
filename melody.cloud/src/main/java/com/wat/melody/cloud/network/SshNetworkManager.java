@@ -13,7 +13,6 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
-import com.wat.melody.common.ssh.exception.KnownHostsFileException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.SshConnectionDatas;
 import com.wat.melody.common.ssh.impl.SshSession;
@@ -140,16 +139,7 @@ public class SshNetworkManager implements NetworkManager {
 		}
 
 		byte[] key = session.getHostKey().getKeyBytes();
-		try {
-			sc.getKnownHosts().add(host.getValue().getHostName(), key);
-		} catch (KnownHostsFileException Ex) {
-			throw new RuntimeException("Unexpected error while creating an "
-					+ "HostKey. "
-					+ "Because this HostKey have been retrieve from the "
-					+ "JSch session, this HostKey should be valid. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
+		sc.getKnownHosts().add(host.getValue().getHostName(), key);
 
 		return enablementDone;
 	}
