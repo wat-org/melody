@@ -122,9 +122,9 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
 					getDiskDeviceList());
 		} catch (DiskDeviceException Ex) {
-			throw new LibVirtException("[" + getTargetNodeLocation()
-					+ "] Disk Device update is not possible till following "
-					+ "errors are not corrected. ", Ex);
+			throw new LibVirtException(Messages.bind(
+					Messages.UpdateDiskDevEx_IMPOSSIBLE,
+					getTargetNodeLocation()), Ex);
 		}
 
 		DiskDeviceList disksToAdd = null;

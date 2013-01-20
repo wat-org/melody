@@ -107,10 +107,11 @@ public class Messages extends NLS {
 	public static String ResizeMsg_NO_NEED;
 	public static String ResizeMsg_GENERIC_WARN;
 
+	public static String UpdateDiskDevEx_IMPOSSIBLE;
 	public static String UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR;
-	public static String UpdateDiskEx_DETACH;
-	public static String UpdateDiskEx_CREATE;
-	public static String UpdateDiskEx_ATTACH;
+	public static String UpdateDiskDevEx_DETACH;
+	public static String UpdateDiskDevEx_CREATE;
+	public static String UpdateDiskDevEx_ATTACH;
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
 	public static String UpdateDiskDevMsg_GENERIC_WARN;

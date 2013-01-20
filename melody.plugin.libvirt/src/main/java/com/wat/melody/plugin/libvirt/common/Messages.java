@@ -36,6 +36,7 @@ public class Messages extends NLS {
 	public static String DeleteMsg_TERMINATED;
 	public static String DeleteMsg_GENERIC_WARN;
 
+	public static String UpdateDiskDevEx_IMPOSSIBLE;
 	public static String UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR;
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;

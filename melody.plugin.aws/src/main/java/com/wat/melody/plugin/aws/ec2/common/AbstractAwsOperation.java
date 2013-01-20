@@ -192,7 +192,7 @@ abstract public class AbstractAwsOperation implements ITask {
 					detachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_DETACH,
+					Messages.UpdateDiskDevEx_DETACH,
 					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
 							Ex.getTimeout() }), Ex);
 		}
@@ -207,12 +207,12 @@ abstract public class AbstractAwsOperation implements ITask {
 					sAZ, diskList, createTimeout, attachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_CREATE,
+					Messages.UpdateDiskDevEx_CREATE,
 					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
 							Ex.getTimeout() }), Ex);
 		} catch (WaitVolumeAttachmentStatusException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskEx_ATTACH,
+					Messages.UpdateDiskDevEx_ATTACH,
 					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
 							Ex.getTimeout() }), Ex);
 		}

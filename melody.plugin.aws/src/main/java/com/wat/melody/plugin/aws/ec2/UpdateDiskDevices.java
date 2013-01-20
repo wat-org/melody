@@ -122,9 +122,9 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
 					getDiskDeviceList());
 		} catch (DiskDeviceException Ex) {
-			throw new AwsException("[" + getTargetNodeLocation()
-					+ "] Disk device update is not possible till following "
-					+ "errors are not corrected. ", Ex);
+			throw new AwsException(Messages.bind(
+					Messages.UpdateDiskDevEx_IMPOSSIBLE,
+					getTargetNodeLocation()), Ex);
 		}
 
 		DiskDeviceList disksToAdd = null;
