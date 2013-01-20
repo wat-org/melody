@@ -1,11 +1,7 @@
 package com.wat.melody.common.ssh.impl;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -25,7 +21,6 @@ import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
-import com.wat.melody.common.utils.LogThreshold;
 
 /**
  * 
@@ -33,8 +28,6 @@ import com.wat.melody.common.utils.LogThreshold;
  * 
  */
 public class SshSession implements ISshSession {
-
-	private static Log log = LogFactory.getLog(SshSession.class);
 
 	private static JSch JSCH = new JSch();
 
@@ -132,102 +125,15 @@ public class SshSession implements ISshSession {
 		return _session != null && _session.isConnected();
 	}
 
-	@Override
 	public int execRemoteCommand(String sCommand, OutputStream outStream,
 			OutputStream errStream) throws SshSessionException,
 			InterruptedException {
-		if (sCommand == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (a ssh command).");
-		}
-		if (outStream == null) { // default impl
-			outStream = new LoggerOutputStream("[STDOUT]", LogThreshold.DEBUG);
-		}
-		if (errStream == null) { // default impl
-			errStream = new LoggerOutputStream("[STDERR]", LogThreshold.ERROR);
-		}
-		if (!isConnected()) {
-			throw new IllegalStateException("session: Not accepted. "
-					+ "Session must be connected.");
-		}
-		ChannelExec channel = null;
-		InterruptedException iex = null;
-		try {
-			channel = (ChannelExec) _session.openChannel("exec");
-
-			// force the tty allocation
-			channel.setPty(true);
-
-			channel.setCommand(sCommand);
-
-			channel.setInputStream(null);
-			channel.setOutputStream(outStream);
-			/*
-			 * FIXME : nothing is never writen in stderr. Everything goes into
-			 * stdout... Jsh bug ?
-			 */
-			channel.setErrStream(errStream);
-
-			channel.connect();
-			while (true) {
-				/*
-				 * Can't find a way to 'join' the session or the channel ... So
-				 * we're pooling the isClosed ....
-				 */
-				if (channel.isClosed()) {
-					break;
-				}
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException Ex) {
-					if (iex == null) {
-						log.info(Messages.SessionExecMsg_GRACEFULL_SHUTDOWN);
-						iex = new InterruptedException(
-								Messages.SessionExecEx_EXEC_INTERRUPTED);
-						iex.initCause(Ex);
-					} else {
-						log.warn(Messages.SessionExecMsg_FORCE_SHUTDOWN);
-						iex = new InterruptedException(
-								Messages.SessionExecEx_EXEC_INTERRUPTED);
-						iex.initCause(Ex);
-						throw iex;
-					}
-				}
-			}
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Failed to exec an ssh command "
-					+ "through a JSch 'exec' Channel.", Ex);
-		} finally {
-			try {
-				/*
-				 * LoggerOutputStream don't write the last line if it doesn't
-				 * end with '\n'. A simple workaround is to call flush.
-				 */
-				outStream.flush();
-				errStream.flush();
-			} catch (IOException Ex) {
-				throw new RuntimeException("Failed to flush stream "
-						+ "of a JSch 'exec' Channel.", Ex);
-			}
-			if (channel != null) {
-				channel.disconnect();
-			}
-		}
-		if (iex != null) {
-			throw iex;
-		}
-
-		return channel.getExitStatus();
+		return new RemoteExec(this, sCommand, outStream, errStream).exec();
 	}
 
 	@Override
 	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
 			throws SshSessionException, InterruptedException {
-		if (!isConnected()) {
-			throw new IllegalStateException("session: Not accepted. "
-					+ "Session must be connected.");
-		}
 		new UploaderMultiThread(this, r, maxPar, th).upload();
 	}
 
@@ -380,7 +286,22 @@ public class SshSession implements ISshSession {
 		}
 	}
 
-	public ChannelSftp openSftpChannel() {
+	protected ChannelExec openExecChannel() {
+		if (!isConnected()) {
+			throw new IllegalStateException("session: Not accepted. "
+					+ "Session must be connected.");
+		}
+		ChannelExec channel = null;
+		try {
+			channel = (ChannelExec) _session.openChannel("exec");
+		} catch (JSchException Ex) {
+			throw new RuntimeException(
+					"Failed to connect a JSch 'exec' Channel.", Ex);
+		}
+		return channel;
+	}
+
+	protected ChannelSftp openSftpChannel() {
 		if (!isConnected()) {
 			throw new IllegalStateException("session: Not accepted. "
 					+ "Session must be connected.");
