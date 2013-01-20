@@ -15,15 +15,19 @@ import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.KnownHostsFile;
-import com.wat.melody.common.ssh.ProxyType;
 import com.wat.melody.common.ssh.exception.KnownHostsFileException;
 import com.wat.melody.common.ssh.impl.SshSessionConfiguration;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
+import com.wat.melody.common.ssh.types.ConnectionTimeout;
+import com.wat.melody.common.ssh.types.ProxyType;
+import com.wat.melody.common.ssh.types.ReadTimeout;
+import com.wat.melody.common.ssh.types.ServerAliveInterval;
+import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionLevelException;
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionTypeException;
 import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
-import com.wat.melody.common.utils.GenericTimeout;
+import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
 import com.wat.melody.common.utils.PropertiesSet;
 import com.wat.melody.common.utils.Timeout;
 import com.wat.melody.common.utils.exception.IllegalTimeoutException;
@@ -518,17 +522,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		return getSshSessionConfiguration().getConnectionTimeout();
 	}
 
-	public Timeout setConnectionTimeout(GenericTimeout ival) {
+	public Timeout setConnectionTimeout(ConnectionTimeout ival) {
 		return getSshSessionConfiguration().setConnectionTimeout(ival);
 	}
 
 	public Timeout setConnectionTimeout(String val)
 			throws SshPlugInConfigurationException {
 		try {
-			return setConnectionTimeout(GenericTimeout.parseString(val));
+			return setConnectionTimeout(ConnectionTimeout.parseString(val));
 		} catch (IllegalTimeoutException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, val), Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -536,45 +539,33 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		return getSshSessionConfiguration().getReadTimeout();
 	}
 
-	public Timeout setReadTimeout(GenericTimeout ival) {
+	public Timeout setReadTimeout(ReadTimeout ival) {
 		return getSshSessionConfiguration().setReadTimeout(ival);
 	}
 
 	public Timeout setReadTimeout(String val)
 			throws SshPlugInConfigurationException {
 		try {
-			return setReadTimeout(GenericTimeout.parseString(val));
+			return setReadTimeout(ReadTimeout.parseString(val));
 		} catch (IllegalTimeoutException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_READ_TIMEOUT, val), Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
-	public int getServerAliveCountMax() {
+	public ServerAliveMaxCount getServerAliveCountMax() {
 		return getSshSessionConfiguration().getServerAliveCountMax();
 	}
 
-	public int setServerAliveCountMax(int ival) {
+	public ServerAliveMaxCount setServerAliveCountMax(ServerAliveMaxCount ival) {
 		return getSshSessionConfiguration().setServerAliveCountMax(ival);
 	}
 
-	public int setServerAliveCountMax(String val)
+	public ServerAliveMaxCount setServerAliveCountMax(String val)
 			throws SshPlugInConfigurationException {
-		if (val == null) {
-			throw new IllegalArgumentException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT, val));
-		}
-		if (val.trim().length() == 0) {
-			throw new SshPlugInConfigurationException(
-					Messages.ConfEx_EMPTY_DIRECTIVE);
-		}
 		try {
-			return setServerAliveCountMax(Integer.parseInt(val));
-		} catch (NumberFormatException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT, val));
-		} catch (IllegalArgumentException Ex) {
-			throw new SshPlugInConfigurationException(Ex.getMessage());
+			return setServerAliveCountMax(ServerAliveMaxCount.parseString(val));
+		} catch (IllegalServerAliveMaxCountException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -582,17 +573,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		return getSshSessionConfiguration().getServerAliveInterval();
 	}
 
-	public Timeout setServerAliveInterval(GenericTimeout ival) {
+	public Timeout setServerAliveInterval(ServerAliveInterval ival) {
 		return getSshSessionConfiguration().setServerAliveInterval(ival);
 	}
 
 	public Timeout setServerAliveInterval(String val)
 			throws SshPlugInConfigurationException {
 		try {
-			return setServerAliveInterval(GenericTimeout.parseString(val));
+			return setServerAliveInterval(ServerAliveInterval.parseString(val));
 		} catch (IllegalTimeoutException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_SERVER_ALIVE_INTERVAL, val), Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 

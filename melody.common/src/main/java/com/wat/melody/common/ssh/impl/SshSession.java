@@ -305,7 +305,8 @@ public class SshSession implements ISshSession {
 			// no session configuration defined, will use defaults
 			return;
 		}
-		_session.setServerAliveCountMax(conf.getServerAliveCountMax());
+		_session.setServerAliveCountMax(conf.getServerAliveCountMax()
+				.getValue());
 
 		try {
 			_session.setServerAliveInterval((int) conf.getServerAliveInterval()
