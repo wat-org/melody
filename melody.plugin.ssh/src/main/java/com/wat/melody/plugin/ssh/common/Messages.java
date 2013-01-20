@@ -11,10 +11,6 @@ public class Messages extends NLS {
 	public static String ConfEx_EMPTY_DIRECTIVE;
 	public static String ConfEx_INVALID_KNOWNHOSTS;
 	public static String ConfEx_INVALID_KEYPAIR_SIZE;
-	public static String ConfEx_INVALID_CONNECTION_TIMEOUT;
-	public static String ConfEx_INVALID_READ_TIMEOUT;
-	public static String ConfEx_INVALID_SERVER_ALIVE_MAX_COUNT;
-	public static String ConfEx_INVALID_SERVER_ALIVE_INTERVAL;
 
 	public static String SshEx_INVALID_KEYPAIR_NAME_ATTR;
 	public static String SshEx_MISSING_PASSWORD_OR_PK_ATTR;

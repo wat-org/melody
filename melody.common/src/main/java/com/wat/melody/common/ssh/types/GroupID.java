@@ -2,6 +2,11 @@ package com.wat.melody.common.ssh.types;
 
 import com.wat.melody.common.ssh.types.exception.IllegalGroupIDException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class GroupID {
 
 	/**

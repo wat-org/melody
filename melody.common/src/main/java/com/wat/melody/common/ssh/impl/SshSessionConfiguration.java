@@ -4,10 +4,14 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.KnownHostsFile;
-import com.wat.melody.common.ssh.ProxyType;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
-import com.wat.melody.common.utils.GenericTimeout;
+import com.wat.melody.common.ssh.types.ConnectionTimeout;
+import com.wat.melody.common.ssh.types.ProxyType;
+import com.wat.melody.common.ssh.types.ReadTimeout;
+import com.wat.melody.common.ssh.types.ServerAliveInterval;
+import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
+import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
 import com.wat.melody.common.utils.Timeout;
 import com.wat.melody.common.utils.exception.IllegalTimeoutException;
 
@@ -21,10 +25,10 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	private KnownHostsFile moKnownHosts;
 	private CompressionLevel miCompressionLevel;
 	private CompressionType msCompressionType;
-	private Timeout miConnectionTimeout;
-	private Timeout miReadTimeout;
-	private int miServerAliveCountMax;
-	private Timeout miServerAliveInterval;
+	private ConnectionTimeout miConnectionTimeout;
+	private ReadTimeout miReadTimeout;
+	private ServerAliveMaxCount miServerAliveCountMax;
+	private ServerAliveInterval miServerAliveInterval;
 	private ProxyType moProxyType;
 	private Host moProxyHost;
 	private Port moProxyPort;
@@ -32,12 +36,12 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	public SshSessionConfiguration() {
 		miCompressionLevel = CompressionLevel.NONE;
 		msCompressionType = CompressionType.NONE;
-		miServerAliveCountMax = 1;
 		try {
-			miConnectionTimeout = GenericTimeout.parseLong(15000);
-			miReadTimeout = GenericTimeout.parseLong(60000);
-			miServerAliveInterval = GenericTimeout.parseLong(10000);
-		} catch (IllegalTimeoutException Ex) {
+			miServerAliveCountMax = ServerAliveMaxCount.parseInt(1);
+			miConnectionTimeout = ConnectionTimeout.parseLong(15000);
+			miReadTimeout = ReadTimeout.parseLong(60000);
+			miServerAliveInterval = ServerAliveInterval.parseLong(10000);
+		} catch (IllegalServerAliveMaxCountException | IllegalTimeoutException Ex) {
 			throw new RuntimeException("Hard coded value is not valid. "
 					+ "Source code have been modified and a bug have "
 					+ "been introduced.", Ex);
@@ -53,7 +57,8 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	public KnownHostsFile setKnownHosts(KnownHostsFile knownHosts) {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a KnownHosts File).");
+					+ "Must be a valid "
+					+ KnownHostsFile.class.getCanonicalName() + ".");
 		}
 		KnownHostsFile previous = getKnownHosts();
 		moKnownHosts = knownHosts;
@@ -70,7 +75,8 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 			CompressionLevel compressionLevel) {
 		if (compressionLevel == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a CompressionLevel).");
+					+ "Must be a valid "
+					+ CompressionLevel.class.getCanonicalName() + ".");
 		}
 		CompressionLevel previous = getCompressionLevel();
 		miCompressionLevel = compressionLevel;
@@ -86,7 +92,8 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	public CompressionType setCompressionType(CompressionType compressionType) {
 		if (compressionType == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a CompressionType).");
+					+ "Must be a valid "
+					+ CompressionType.class.getCanonicalName() + ".");
 		}
 		CompressionType previous = getCompressionType();
 		msCompressionType = compressionType;
@@ -99,11 +106,11 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout setConnectionTimeout(GenericTimeout ival) {
+	public Timeout setConnectionTimeout(ConnectionTimeout ival) {
 		if (ival == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ GenericTimeout.class.getCanonicalName() + ".");
+					+ ConnectionTimeout.class.getCanonicalName() + ".");
 		}
 		Timeout previous = getConnectionTimeout();
 		miConnectionTimeout = ival;
@@ -116,11 +123,11 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout setReadTimeout(GenericTimeout ival) {
+	public Timeout setReadTimeout(ReadTimeout ival) {
 		if (ival == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ GenericTimeout.class.getCanonicalName() + ".");
+					+ "Must be a valid " + ReadTimeout.class.getCanonicalName()
+					+ ".");
 		}
 		Timeout previous = getReadTimeout();
 		miReadTimeout = ival;
@@ -128,20 +135,18 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public int getServerAliveCountMax() {
+	public ServerAliveMaxCount getServerAliveCountMax() {
 		return miServerAliveCountMax;
 	}
 
 	@Override
-	public int setServerAliveCountMax(int ival) {
-		if (ival < 0) {
-			throw new IllegalArgumentException(ival + ": Not accepted. "
-					+ "Since this value is neither a Positive Integer nor "
-					+ "zero, such value is not a Server Alive Max Count. "
-					+ "Also note that 0 means no retry will be done."
-					+ "Default value is 1.");
+	public ServerAliveMaxCount setServerAliveCountMax(ServerAliveMaxCount ival) {
+		if (ival == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ServerAliveMaxCount.class.getCanonicalName() + ".");
 		}
-		int previous = getServerAliveCountMax();
+		ServerAliveMaxCount previous = getServerAliveCountMax();
 		miServerAliveCountMax = ival;
 		return previous;
 	}
@@ -152,11 +157,11 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout setServerAliveInterval(GenericTimeout ival) {
+	public Timeout setServerAliveInterval(ServerAliveInterval ival) {
 		if (ival == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ GenericTimeout.class.getCanonicalName() + ".");
+					+ ServerAliveInterval.class.getCanonicalName() + ".");
 		}
 		Timeout previous = getServerAliveInterval();
 		miServerAliveInterval = ival;
@@ -189,7 +194,7 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	public Host setProxyHost(Host val) {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Host.");
+					+ "Must be a valid " + Host.class.getCanonicalName() + ".");
 		}
 		Host previous = getProxyHost();
 		moProxyHost = val;
@@ -205,7 +210,7 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	public Port setProxyPort(Port port) {
 		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Port.");
+					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
 		}
 		Port previous = getProxyPort();
 		moProxyPort = port;

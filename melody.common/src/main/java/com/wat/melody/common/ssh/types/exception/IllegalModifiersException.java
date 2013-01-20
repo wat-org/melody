@@ -2,6 +2,11 @@ package com.wat.melody.common.ssh.types.exception;
 
 import com.wat.melody.common.utils.exception.MelodyException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class IllegalModifiersException extends MelodyException {
 
 	private static final long serialVersionUID = -6543122347878787772L;

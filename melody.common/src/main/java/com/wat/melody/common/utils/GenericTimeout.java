@@ -82,8 +82,8 @@ public class GenericTimeout implements Timeout {
 			return true;
 		}
 		if (anObject instanceof Timeout) {
-			Timeout ipRange = (Timeout) anObject;
-			return getTimeout() == ipRange.getTimeout();
+			Timeout timeout = (Timeout) anObject;
+			return getTimeout() == timeout.getTimeout();
 		}
 		return false;
 	}
@@ -145,14 +145,12 @@ public class GenericTimeout implements Timeout {
 			throw new IllegalTimeoutException(Messages.bind(
 					Messages.TimeoutEx_EMPTY, sTimeout));
 		}
-		long iPort = 0;
 		try {
-			iPort = Long.parseLong(sTimeout);
+			return setTimeout(Long.parseLong(sTimeout));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalTimeoutException(Messages.bind(
 					Messages.TimeoutEx_NOT_A_NUMBER, sTimeout));
 		}
-		return setTimeout(iPort);
 	}
 
 }

@@ -2,6 +2,11 @@ package com.wat.melody.common.ssh.types;
 
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class Modifiers {
 
 	public static final String PATTERN = "[0-7]{3}";
