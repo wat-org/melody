@@ -138,7 +138,7 @@ public class SshNetworkManager implements NetworkManager {
 			}
 		}
 
-		byte[] key = session.getHostKey().getKeyBytes();
+		byte[] key = session.getHostKey().getBytes();
 		sc.getKnownHosts().add(host.getValue().getHostName(), key);
 
 		return enablementDone;

@@ -8,9 +8,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.jcraft.jsch.HostKey;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
@@ -128,7 +128,8 @@ public class SshManagedSession implements ISshSession {
 		_session.upload(r, maxPar, th);
 	}
 
-	public HostKey getHostKey() {
+	@Override
+	public IHostKey getHostKey() {
 		return _session.getHostKey();
 	}
 

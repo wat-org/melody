@@ -9,13 +9,13 @@ import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
@@ -237,8 +237,9 @@ public class SshSession implements ISshSession {
 				+ getLogin() + " }";
 	}
 
-	public HostKey getHostKey() {
-		return _session != null ? _session.getHostKey() : null;
+	public IHostKey getHostKey() {
+		return _session != null ? new HostKeyAdapter(_session.getHostKey())
+				: null;
 	}
 
 	protected String getHost() {

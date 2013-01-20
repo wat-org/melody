@@ -3,7 +3,6 @@ package com.wat.melody.common.ssh;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.jcraft.jsch.HostKey;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.SimpleResource;
@@ -41,9 +40,6 @@ public interface ISshSession {
 	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
 			throws SshSessionException, InterruptedException;
 
-	/*
-	 * TODO : remove everything which concern JSch !
-	 */
-	public HostKey getHostKey();
+	public IHostKey getHostKey();
 
 }

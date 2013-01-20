@@ -16,6 +16,9 @@ import com.wat.melody.common.utils.exception.IllegalFileException;
  */
 public class KnownHostsFile implements HostKeyRepository {
 
+	/*
+	 * TODO : remove depends to JSch
+	 */
 	private HostKeyRepository _kh;
 
 	public KnownHostsFile(String path) throws KnownHostsFileException {
