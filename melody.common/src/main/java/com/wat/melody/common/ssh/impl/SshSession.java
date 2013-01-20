@@ -125,10 +125,12 @@ public class SshSession implements ISshSession {
 		return _session != null && _session.isConnected();
 	}
 
-	public int execRemoteCommand(String sCommand, OutputStream outStream,
-			OutputStream errStream) throws SshSessionException,
-			InterruptedException {
-		return new RemoteExec(this, sCommand, outStream, errStream).exec();
+	@Override
+	public int execRemoteCommand(String sCommand, boolean requiretty,
+			OutputStream outStream, OutputStream errStream)
+			throws SshSessionException, InterruptedException {
+		return new RemoteExec(this, sCommand, requiretty, outStream, errStream)
+				.exec();
 	}
 
 	@Override
@@ -143,6 +145,7 @@ public class SshSession implements ISshSession {
 				+ getLogin() + " }";
 	}
 
+	@Override
 	public IHostKey getHostKey() {
 		return _session != null ? new HostKeyAdapter(_session.getHostKey())
 				: null;

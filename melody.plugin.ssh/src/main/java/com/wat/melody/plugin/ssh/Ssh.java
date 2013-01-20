@@ -50,13 +50,20 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 
+	/**
+	 * The 'requiretty' XML attribute
+	 */
+	public static final String REQUIRETTY_ATTR = "requiretty";
+
 	private String msCommandToExecute;
 	private String msDescription;
+	private boolean mbRequiretty;
 
 	public Ssh() {
 		super();
 		msCommandToExecute = "";
 		setDescription("[exec ssh]");
+		setRequiretty(false);
 	}
 
 	@Override
@@ -66,7 +73,8 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 
 	@Override
 	public void doProcessing() throws SshException, InterruptedException {
-		int exitStatus = execSshCommand(getCommandToExecute(), getDescription());
+		int exitStatus = execSshCommand(getCommandToExecute(), getRequiretty(),
+				getDescription());
 		String recapMsg = getDescription() + " " + "[STATUS] ";
 		switch (exitStatus) {
 		case 0:
@@ -104,6 +112,17 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 	public String setDescription(String d) {
 		String previous = getDescription();
 		msDescription = d;
+		return previous;
+	}
+
+	protected boolean getRequiretty() {
+		return mbRequiretty;
+	}
+
+	@Attribute(name = REQUIRETTY_ATTR)
+	private boolean setRequiretty(boolean requiretty) {
+		boolean previous = getRequiretty();
+		mbRequiretty = requiretty;
 		return previous;
 	}
 

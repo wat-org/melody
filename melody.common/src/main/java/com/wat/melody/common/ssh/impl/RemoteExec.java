@@ -21,35 +21,29 @@ class RemoteExec {
 
 	private SshSession _session;
 	private String _cmd;
+	private boolean _requiretty;
 	private OutputStream _out;
 	private OutputStream _err;
 
 	protected RemoteExec(SshSession session, String command,
-			OutputStream outStream, OutputStream errStream) {
+			boolean requiretty, OutputStream outStream, OutputStream errStream) {
 		setSession(session);
 		setCommand(command);
+		setRequiretty(requiretty);
 		setOutputStream(outStream);
 		setErrorStream(errStream);
 	}
 
 	public int exec() throws InterruptedException {
-		if (!getSession().isConnected()) {
-			throw new IllegalStateException("session: Not accepted. "
-					+ "Session must be connected.");
-		}
 		ChannelExec channel = null;
 		InterruptedException iex = null;
 		try {
 			channel = getSession().openExecChannel();
-			channel.setCommand(_cmd);
-			channel.setPty(true); // force the tty allocation
+			channel.setCommand(getCommand());
+			channel.setPty(getRequiretty());
 			channel.setInputStream(null);
-			channel.setOutputStream(_out);
-			/*
-			 * FIXME : nothing is never writen in stderr. Everything goes into
-			 * stdout... Jsh bug ?
-			 */
-			channel.setErrStream(_err);
+			channel.setOutputStream(getOutputStream());
+			channel.setErrStream(getErrorStream());
 
 			channel.connect();
 			while (true) {
@@ -82,7 +76,7 @@ class RemoteExec {
 					+ "through a JSch 'exec' Channel.", Ex);
 		} finally {
 			if (channel != null) {
-				channel.disconnect();// This closes stream
+				channel.disconnect(); // This closes stream
 			}
 		}
 		if (iex != null) {
@@ -121,6 +115,31 @@ class RemoteExec {
 		return previous;
 	}
 
+	protected boolean getRequiretty() {
+		return _requiretty;
+	}
+
+	/**
+	 * <p>
+	 * Note that :
+	 * <ul>
+	 * <li>Set requiretty to <tt>true</tt> is necessary when remote system
+	 * sudo's configuration requires tty ;</li>
+	 * <li>When requiretty is set to <tt>true</tt>, all stderr will be received
+	 * into stdout ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param requiretty
+	 * 
+	 * @return
+	 */
+	private boolean setRequiretty(boolean requiretty) {
+		boolean previous = getRequiretty();
+		_requiretty = requiretty;
+		return previous;
+	}
+
 	protected OutputStream getOutputStream() {
 		return _out;
 	}
@@ -128,20 +147,20 @@ class RemoteExec {
 	private OutputStream setOutputStream(OutputStream outputStream) {
 		OutputStream previous = getOutputStream();
 		_out = outputStream;
-		if (_out == null) { // default impl
+		if (_out == null) { // provide a default impl
 			_out = new LoggerOutputStream("[STDOUT]", LogThreshold.DEBUG);
 		}
 		return previous;
 	}
 
 	protected OutputStream getErrorStream() {
-		return _out;
+		return _err;
 	}
 
 	private OutputStream setErrorStream(OutputStream errorStream) {
 		OutputStream previous = getErrorStream();
 		_err = errorStream;
-		if (_err == null) { // default impl
+		if (_err == null) { // provide a default impl
 			_err = new LoggerOutputStream("[STDERR]", LogThreshold.ERROR);
 		}
 		return previous;

@@ -172,8 +172,8 @@ public abstract class AbstractSshOperation implements ITask {
 		return session;
 	}
 
-	public int execSshCommand(String sCommand, String outputPrefix)
-			throws SshException, InterruptedException {
+	public int execSshCommand(String sCommand, boolean requiretty,
+			String outputPrefix) throws SshException, InterruptedException {
 		ISshSession session = null;
 		try {
 			session = openSession();
@@ -181,7 +181,7 @@ public abstract class AbstractSshOperation implements ITask {
 					+ " [STDOUT]", LogThreshold.DEBUG);
 			LoggerOutputStream err = new LoggerOutputStream(outputPrefix
 					+ " [STDERR]", LogThreshold.ERROR);
-			return session.execRemoteCommand(sCommand, out, err);
+			return session.execRemoteCommand(sCommand, requiretty, out, err);
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {

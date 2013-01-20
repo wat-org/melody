@@ -34,8 +34,9 @@ public interface ISshSession {
 
 	public boolean isConnected();
 
-	public int execRemoteCommand(String sCommand, OutputStream out,
-			OutputStream err) throws SshSessionException, InterruptedException;
+	public int execRemoteCommand(String sCommand, boolean requiretty,
+			OutputStream out, OutputStream err) throws SshSessionException,
+			InterruptedException;
 
 	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
 			throws SshSessionException, InterruptedException;
