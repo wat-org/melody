@@ -29,6 +29,7 @@
 			<exec command="echo -e &quot;\033[80G[\033[0;32m  NOT GREEN  \033[0;39m]&quot;"/>
 			<exec command="echo ---------------------------"/>
 			<exec file="./scripts/test1.sh"/>
+			<exec command="echo -n ---------------------------"/>
 		</ssh>
 
 		<echo message="Command successfully executed on 'IP:§[IP]§'."/>

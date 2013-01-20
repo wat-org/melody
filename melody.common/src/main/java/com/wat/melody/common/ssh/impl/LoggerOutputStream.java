@@ -96,6 +96,18 @@ public class LoggerOutputStream extends OutputStream {
 		}
 	}
 
+	/**
+	 * This object doesn't write the last line if it doesn't end with '\n'. A
+	 * simple workaround is to call flush.
+	 */
+	@Override
+	public void flush() {
+		if (getBuffer().length() != 0) {
+			write();
+			setBuffer(new StringBuffer());
+		}
+	}
+
 	@Override
 	public void write(int b) throws IOException {
 		if (getLastChar() == (char) 13) {
