@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.impl;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -198,6 +199,17 @@ public class SshSession implements ISshSession {
 			throw new RuntimeException("Failed to exec an ssh command "
 					+ "through a JSch 'exec' Channel.", Ex);
 		} finally {
+			try {
+				/*
+				 * LoggerOutputStream don't write the last line if it doesn't
+				 * end with '\n'. A simple workaround is to call flush.
+				 */
+				outStream.flush();
+				errStream.flush();
+			} catch (IOException Ex) {
+				throw new RuntimeException("Failed to flush stream "
+						+ "of a JSch 'exec' Channel.", Ex);
+			}
 			if (channel != null) {
 				channel.disconnect();
 			}
