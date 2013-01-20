@@ -52,6 +52,10 @@ class UploaderMultiThread {
 	}
 
 	protected void upload() throws UploaderException, InterruptedException {
+		if (!getSession().isConnected()) {
+			throw new IllegalStateException("session: Not accepted. "
+					+ "Session must be connected.");
+		}
 		if (getSimpleResourcesList().size() == 0) {
 			return;
 		}

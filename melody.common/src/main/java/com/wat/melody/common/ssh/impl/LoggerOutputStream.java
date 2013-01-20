@@ -1,6 +1,5 @@
 package com.wat.melody.common.ssh.impl;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
@@ -98,28 +97,43 @@ public class LoggerOutputStream extends OutputStream {
 
 	/**
 	 * This object doesn't write the last line if it doesn't end with '\n'. A
-	 * simple workaround is to call flush.
+	 * simple workaround is to call close.
 	 */
 	@Override
-	public void flush() {
+	public void close() {
 		if (getBuffer().length() != 0) {
-			write();
+			log();
 			setBuffer(new StringBuffer());
 		}
 	}
 
+	/**
+	 * <p>
+	 * Append the given byte to this object. If the byte if a '\r' or a '\n',
+	 * all previously written bytes will be logged and this object will be
+	 * restored to its initial state.
+	 * </p>
+	 * 
+	 * <p>
+	 * Note that when writing '\r' and just after '\n', this object will ignore
+	 * the '\n'.
+	 * </p>
+	 * 
+	 * @param b
+	 *            is the byte to write into the buffer.
+	 */
 	@Override
-	public void write(int b) throws IOException {
+	public void write(int b) {
 		if (getLastChar() == (char) 13) {
 			// when \r\n, just print \n
 			deleteLastChar();
-			write();
+			log();
 			setBuffer(new StringBuffer());
 			if (b != 10) {
 				getBuffer().append((char) b);
 			}
 		} else if (b == 10) {
-			write();
+			log();
 			setBuffer(new StringBuffer());
 		} else {
 			getBuffer().append((char) b);
@@ -127,7 +141,7 @@ public class LoggerOutputStream extends OutputStream {
 
 	}
 
-	public void write() {
+	public void log() {
 		String msg = getBuffer().toString();
 		// Removing all colorized stuff
 		msg = msg.replaceAll("\\033\\[[0-9]+G", "");
