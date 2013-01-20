@@ -34,15 +34,6 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public static final String UPDATE_NETWORK_DEVICES = "UpdateNetworkDevices";
 
 	/**
-	 * The 'networkDeviceNodeSelector' XML attribute
-	 */
-	/*
-	 * TODO : remove this attribute. It conflicts with NetworkManagementHelper
-	 * methods.
-	 */
-	public static final String NETWORK_DEVICES_NODE_SELECTOR_ATTR = NetworkManagementHelper.NETWORK_DEVICE_NODES_SELECTOR_ATTR;
-
-	/**
 	 * The 'detachTimeout' XML attribute
 	 */
 	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
@@ -52,7 +43,6 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private String msNetworkDeviceNodesSelector;
 	private NetworkDeviceList maNetworkDeviceList;
 	private long mlDetachTimeout;
 	private long mlAttachTimeout;
@@ -60,7 +50,6 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public UpdateNetworkDevices() {
 		super();
 		initNetworkDeviceList();
-		setNetworkDeviceNodesSelector(NetworkManagementHelper.DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR);
 		try {
 			setDetachTimeout(getTimeout());
 			setAttachTimeout(getTimeout());
@@ -82,24 +71,20 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public void validate() throws LibVirtException {
 		super.validate();
 
-		// Disk Nodes Selector found in the RD override Disk Nodes Selector
-		// defined in the SD
-		String sTargetSpecificNetworkDevicesSelector = NetworkManagementHelper
+		// Find Disk Nodes Selector in the RD
+		String networkDevicesSelector = NetworkManagementHelper
 				.findNetworkDevicesSelector(getTargetNode());
-		if (sTargetSpecificNetworkDevicesSelector != null) {
-			setNetworkDeviceNodesSelector(sTargetSpecificNetworkDevicesSelector);
-		}
 
 		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
-			NodeList nl = Doc.evaluateAsNodeList("."
-					+ getNetworkDeviceNodesSelector(), getTargetNode());
+			NodeList nl = Doc.evaluateAsNodeList("." + networkDevicesSelector,
+					getTargetNode());
 			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
 			setNetworkDeviceList(ndl.load(nl));
 		} catch (XPathExpressionException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.UpdateNetDevEx_INVALID_NETWORK_DEVICES_SELECTOR,
-					getNetworkDeviceNodesSelector()), Ex);
+					networkDevicesSelector), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
@@ -138,21 +123,6 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 		attachNetworkDevices(i, disksToAdd, getAttachTimeout());
 
 		setInstanceRelatedInfosToED(i);
-	}
-
-	private String getNetworkDeviceNodesSelector() {
-		return msNetworkDeviceNodesSelector;
-	}
-
-	@Attribute(name = NETWORK_DEVICES_NODE_SELECTOR_ATTR)
-	public String setNetworkDeviceNodesSelector(String v) {
-		if (v == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
-		}
-		String previous = getNetworkDeviceNodesSelector();
-		msNetworkDeviceNodesSelector = v;
-		return previous;
 	}
 
 	private NetworkDeviceList getNetworkDeviceList() {

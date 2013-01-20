@@ -35,11 +35,6 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public static final String UPDATE_DISK_DEVICES = "UpdateDiskDevices";
 
 	/**
-	 * The 'diskDeviceNodesSelector' XML attribute
-	 */
-	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = DiskManagementHelper.DISK_DEVICE_NODES_SELECTOR_ATTR;
-
-	/**
 	 * The 'detachTimeout' XML attribute
 	 */
 	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
@@ -54,7 +49,6 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private String msDiskDeviceNodesSelector;
 	private DiskDeviceList maDiskDeviceList;
 	private long mlDetachTimeout;
 	private long mlCreateTimeout;
@@ -63,7 +57,6 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public UpdateDiskDevices() {
 		super();
 		initDiskDeviceList();
-		setDiskDeviceNodesSelector(DiskManagementHelper.DEFAULT_DISK_DEVICES_NODE_SELECTOR);
 		try {
 			setDetachTimeout(getTimeout());
 			setCreateTimeout(getTimeout());
@@ -86,28 +79,20 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public void validate() throws AwsException {
 		super.validate();
 
-		// Disk Device Nodes Selector found in the RD override Disk Device Nodes
-		// Selector defined in the SD
-		try {
-			String sTargetSpecificDiskDevicesSelector = DiskManagementHelper
-					.findDiskDevicesSelector(getTargetNode());
-			if (sTargetSpecificDiskDevicesSelector == null) {
-				setDiskDeviceNodesSelector(sTargetSpecificDiskDevicesSelector);
-			}
-		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
-		}
+		// Find Disk Device Nodes Selector in the RD
+		String diskDevicesSelector = DiskManagementHelper
+				.findDiskDevicesSelector(getTargetNode());
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
 			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
-					getDiskDeviceNodesSelector());
+					diskDevicesSelector);
 			DiskDevicesLoader dl = new DiskDevicesLoader(getContext());
 			setDiskDeviceList(dl.load(nl));
 		} catch (XPathExpressionException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR,
-					getDiskDeviceNodesSelector()), Ex);
+					diskDevicesSelector), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -158,22 +143,6 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 				getAttachTimeout());
 
 		updateDeleteOnTerminationFlag(i, getDiskDeviceList());
-	}
-
-	private String getDiskDeviceNodesSelector() {
-		return msDiskDeviceNodesSelector;
-	}
-
-	@Attribute(name = DISK_DEVICE_NODES_SELECTOR_ATTR)
-	public String setDiskDeviceNodesSelector(String v) {
-		if (v == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		String previous = getDiskDeviceNodesSelector();
-		msDiskDeviceNodesSelector = v;
-		return previous;
 	}
 
 	private DiskDeviceList getDiskDeviceList() {

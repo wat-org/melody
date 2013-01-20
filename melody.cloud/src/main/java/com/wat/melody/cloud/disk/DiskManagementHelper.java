@@ -16,12 +16,6 @@ import com.wat.melody.xpath.XPathHelper;
 public abstract class DiskManagementHelper {
 
 	/**
-	 * XML attribute in the SD, which contains an XPath Expression which select
-	 * Disk Device Nodes.
-	 */
-	public static final String DISK_DEVICE_NODES_SELECTOR_ATTR = "diskDevicesSelector";
-
-	/**
 	 * XML Element in the RD, which contains Disk Device Management datas of the
 	 * related Instance Node (more formally called the
 	 * "Disk Device Management Node")
@@ -95,11 +89,16 @@ public abstract class DiskManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findDiskDevicesSelector(Node instanceNode)
-			throws ResourcesDescriptorException {
-		Node n = findDiskManagementNode(instanceNode);
+	public static String findDiskDevicesSelector(Node instanceNode) {
+		Node mgmtNode = null;
 		try {
-			return n.getAttributes()
+			mgmtNode = findDiskManagementNode(instanceNode);
+		} catch (ResourcesDescriptorException Ex) {
+			// raised when Network Device Management datas are invalid.
+			// in this situation, we will use default values
+		}
+		try {
+			return mgmtNode.getAttributes()
 					.getNamedItem(DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
