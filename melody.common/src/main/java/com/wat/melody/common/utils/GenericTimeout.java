@@ -117,7 +117,7 @@ public class GenericTimeout implements Timeout {
 	private long setTimeout(long iTimeout) throws IllegalTimeoutException {
 		if (iTimeout < 0) {
 			throw new IllegalTimeoutException(Messages.bind(
-					Messages.GenericTimeoutEx_NEGATIVE, iTimeout));
+					Messages.TimeoutEx_NEGATIVE, iTimeout));
 		}
 		long previous = getTimeout();
 		_timeout = iTimeout;

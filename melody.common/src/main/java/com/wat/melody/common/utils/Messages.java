@@ -15,12 +15,9 @@ public class Messages extends NLS {
 
 	public static String NoSuchDUNIDEx_UNFOUND;
 
-	/*
-	 * TODO : create error message
-	 */
 	public static String TimeoutEx_EMPTY;
 	public static String TimeoutEx_NOT_A_NUMBER;
-	public static String GenericTimeoutEx_NEGATIVE;
+	public static String TimeoutEx_NEGATIVE;
 
 	public static String TarGzEx_NOT_A_TARGZ;
 	public static String TarGzEx_INVALID_EXTENSION;
