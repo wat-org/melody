@@ -115,12 +115,12 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 		return previous;
 	}
 
-	protected boolean getRequiretty() {
+	public boolean getRequiretty() {
 		return mbRequiretty;
 	}
 
 	@Attribute(name = REQUIRETTY_ATTR)
-	private boolean setRequiretty(boolean requiretty) {
+	public boolean setRequiretty(boolean requiretty) {
 		boolean previous = getRequiretty();
 		mbRequiretty = requiretty;
 		return previous;
