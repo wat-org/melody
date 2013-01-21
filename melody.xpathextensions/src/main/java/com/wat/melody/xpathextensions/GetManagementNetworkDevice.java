@@ -14,13 +14,13 @@ public final class GetManagementNetworkDevice implements XPathFunction {
 
 	public static final String NAME = "getManagementNetworkDevice";
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node)) {
+		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
 			throw new IllegalArgumentException(arg0.getClass()
 					.getCanonicalName()
 					+ ": Not accepted. "
@@ -30,8 +30,13 @@ public final class GetManagementNetworkDevice implements XPathFunction {
 					+ "() expects a Node " + "argument.");
 		}
 		try {
-			return NetworkManagementHelper
-					.findManagementNetworkDevice((Node) arg0);
+			if (arg0 instanceof Node) {
+				return NetworkManagementHelper
+						.findManagementNetworkDeviceNode((Node) arg0);
+			} else {
+				return NetworkManagementHelper
+						.findManagementNetworkDeviceNode((List<Node>) arg0);
+			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
