@@ -31,7 +31,7 @@ public class GetManagementNetworkMethod implements XPathFunction {
 		}
 		try {
 			return NetworkManagementHelper
-					.findManagementNetworkMethod((Node) arg0);
+					.findManagementNetworkMethodNode((Node) arg0);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

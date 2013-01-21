@@ -14,7 +14,7 @@ public class GetManagementNetworkHost implements XPathFunction {
 
 	public static final String NAME = "getManagementNetworkHost";
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
@@ -32,11 +32,10 @@ public class GetManagementNetworkHost implements XPathFunction {
 		try {
 			if (arg0 instanceof Node) {
 				return NetworkManagementHelper
-						.findManagementNetworkHost((Node) arg0);
+						.findManagementNetworkHostNode((Node) arg0);
 			} else {
-				// TODO : need some test
 				return NetworkManagementHelper
-						.findManagementNetworkHost((List<Node>) arg0);
+						.findManagementNetworkHostNode((List<Node>) arg0);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
