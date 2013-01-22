@@ -2,8 +2,8 @@ package com.wat.melody.api.exception;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.xml.Doc;
 
 public class ResourcesDescriptorException extends MelodyException {
 

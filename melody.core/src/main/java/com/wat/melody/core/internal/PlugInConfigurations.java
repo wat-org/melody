@@ -2,8 +2,8 @@ package com.wat.melody.core.internal;
 
 import java.util.HashMap;
 
-import com.wat.melody.api.IPlugInConfigurations;
 import com.wat.melody.api.IPlugInConfiguration;
+import com.wat.melody.api.IPlugInConfigurations;
 
 public class PlugInConfigurations extends
 		HashMap<Class<? extends IPlugInConfiguration>, IPlugInConfiguration>

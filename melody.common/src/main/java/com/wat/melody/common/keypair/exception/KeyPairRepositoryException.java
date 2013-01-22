@@ -1,10 +1,8 @@
 package com.wat.melody.common.keypair.exception;
 
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

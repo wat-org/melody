@@ -14,7 +14,7 @@ import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -109,7 +109,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.UpdateDiskDevMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;

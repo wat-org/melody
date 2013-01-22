@@ -14,7 +14,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
-import com.wat.melody.common.utils.Doc;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.xpath.XPathHelper;
 
 /**

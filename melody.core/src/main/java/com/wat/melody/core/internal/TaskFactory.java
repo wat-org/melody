@@ -24,14 +24,12 @@ import com.wat.melody.api.event.State;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryException;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.PropertiesSet;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

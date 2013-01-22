@@ -1,8 +1,6 @@
 package com.wat.melody.common.utils;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

@@ -11,10 +11,10 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
-import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -192,7 +192,7 @@ public class NewMachine extends AbstractMachineOperation {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.NewMsg_LIVES, new Object[] { getInstanceID(),
 							"LIVE", getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
 					Messages.NewMsg_GENERIC_WARN, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			if (instanceRuns()) {

@@ -11,9 +11,9 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.properties.Property;
 import com.wat.melody.plugin.ssh.common.AbstractSshConnectionManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -92,11 +92,11 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 		default:
 			log.error(recapMsg + "---> CRITICAL <---  [" + exitStatus + "]");
 			throw new SshException(recapMsg + "---> CRITICAL <---  ["
-					+ exitStatus + "]" + Tools.NEW_LINE
+					+ exitStatus + "]" + Util.NEW_LINE
 					+ "Here is the complete script which generates the error :"
-					+ Tools.NEW_LINE + "-----" + Tools.NEW_LINE
-					+ getCommandToExecute().trim() + Tools.NEW_LINE + "-----"
-					+ Tools.NEW_LINE);
+					+ Util.NEW_LINE + "-----" + Util.NEW_LINE
+					+ getCommandToExecute().trim() + Util.NEW_LINE + "-----"
+					+ Util.NEW_LINE);
 		}
 	}
 

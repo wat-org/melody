@@ -8,21 +8,19 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.exception.IllegalOrderException;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.OrderName;
-import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
-import com.wat.melody.common.utils.exception.IllegalDocException;
-import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.core.nativeplugin.order.Order;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -236,7 +234,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a Directory Path).");
 		}
-		Tools.validateDirExists(v.getAbsolutePath());
+		FS.validateDirExists(v.getAbsolutePath());
 		File previous = getBaseDir();
 		msBaseDir = v;
 		return previous;

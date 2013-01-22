@@ -1,6 +1,6 @@
 package com.wat.melody.api.exception;
 
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
 
 public class PlugInConfigurationException extends MelodyException {
 

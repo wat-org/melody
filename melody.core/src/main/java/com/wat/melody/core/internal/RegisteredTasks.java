@@ -14,8 +14,6 @@ import com.wat.melody.core.nativeplugin.sequence.Sequence;
 import com.wat.melody.core.nativeplugin.setEDAttrValue.SetEDAttrValue;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

@@ -14,16 +14,14 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.common.utils.OrderName;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.properties.Property;
 import com.wat.melody.core.internal.SequenceDescriptor;
 import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

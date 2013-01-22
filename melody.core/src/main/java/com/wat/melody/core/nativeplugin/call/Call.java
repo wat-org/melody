@@ -10,8 +10,8 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 
 /**
@@ -332,14 +332,13 @@ public class Call extends Ref implements ITask {
 		}
 		String err = "";
 		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Tools.NEW_LINE
+			err += Util.NEW_LINE
 					+ "Error "
 					+ (i + 1)
 					+ " : "
-					+ Tools.getUserFriendlyStackTrace(getExceptionsList()
-							.get(i));
+					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
 		}
-		err = err.replaceAll(Tools.NEW_LINE, Tools.NEW_LINE + "   ");
+		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
 		return new CallException(err);
 	}
 

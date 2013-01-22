@@ -9,13 +9,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.IllegalOrderException;
-import com.wat.melody.common.utils.OrderName;
-import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
-import com.wat.melody.common.utils.exception.IllegalDocException;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.xml.exception.IllegalDocException;
 
 /**
  * <p>

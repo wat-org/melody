@@ -1,6 +1,6 @@
 package com.wat.melody.common.network.exception;
 
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
 
 public class IllegalIpAddressException extends MelodyException {
 

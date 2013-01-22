@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Set;
 
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 import com.wat.melody.common.ssh.types.exception.ResourceException;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
 
 /**
  * <p>
@@ -193,7 +193,7 @@ public class ResourceMatcher {
 					+ "Mus be a valid String (a Directory Path).");
 		}
 		try {
-			Tools.validateDirExists(basedir.getAbsolutePath());
+			FS.validateDirExists(basedir.getAbsolutePath());
 		} catch (IllegalDirectoryException Ex) {
 			throw new ResourceException(Ex);
 		}
@@ -331,7 +331,7 @@ class Finder extends SimpleFileVisitor<Path> {
 					+ "match is null.");
 		}
 		String path = baseResource.getLocalBaseDir().getAbsolutePath()
-				+ Tools.FILE_SEPARATOR + baseResource.getMatch();
+				+ FS.FILE_SEPARATOR + baseResource.getMatch();
 		String sPattern = "glob:" + Paths.get(path).normalize().toString();
 		moBaseResource = baseResource;
 		matcher = FileSystems.getDefault().getPathMatcher(sPattern);

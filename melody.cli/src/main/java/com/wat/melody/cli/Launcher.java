@@ -7,9 +7,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.utils.ReturnCode;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.MelodyException;
 
 public class Launcher {
 
@@ -141,13 +141,13 @@ public class Launcher {
 			pml = new ProcessorManagerLoader();
 			pm = pml.parseCommandLine(args);
 		} catch (MelodyException Ex) {
-			System.out.println(Tools.getUserFriendlyStackTrace(Ex));
+			System.out.println(Util.getUserFriendlyStackTrace(Ex));
 			System.exit(ReturnCode.KO.getValue());
 		} catch (Throwable Ex) {
 			System.out
 					.println("Something bad happend. Please report this bug at Wat-Org."
-							+ Tools.NEW_LINE
-							+ Tools.getUserFriendlyStackTrace(Ex));
+							+ Util.NEW_LINE
+							+ Util.getUserFriendlyStackTrace(Ex));
 			System.exit(ReturnCode.ERRGEN.getValue());
 		}
 
@@ -167,15 +167,15 @@ public class Launcher {
 			}
 			iReturnCode = ReturnCode.OK;
 		} catch (MelodyException Ex) {
-			log.error(Tools.getUserFriendlyStackTrace(Ex));
+			log.error(Util.getUserFriendlyStackTrace(Ex));
 			iReturnCode = ReturnCode.KO;
 		} catch (InterruptedException Ex) {
-			log.warn(Tools.getUserFriendlyStackTrace(Ex));
+			log.warn(Util.getUserFriendlyStackTrace(Ex));
 			iReturnCode = ReturnCode.INTERRUPTED;
 		} catch (Throwable Ex) {
 			Exception e = new Exception("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			log.fatal(Tools.getUserFriendlyStackTrace(e));
+			log.fatal(Util.getUserFriendlyStackTrace(e));
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
 			if (pm != null && dpl != null)
@@ -186,7 +186,7 @@ public class Launcher {
 				} catch (IOException Ex) {
 					Exception e = new Exception("Failed to delete CLI "
 							+ "temporary resources.", Ex);
-					log.error(Tools.getUserFriendlyStackTrace(e));
+					log.error(Util.getUserFriendlyStackTrace(e));
 				}
 			// If we call System.exit while the processing has already been
 			// stopped by user (i.e. the shutdownHook is started), it will block

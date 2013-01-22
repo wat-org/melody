@@ -9,7 +9,7 @@ import com.wat.melody.common.ssh.types.ProxyType;
 import com.wat.melody.common.ssh.types.ReadTimeout;
 import com.wat.melody.common.ssh.types.ServerAliveInterval;
 import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
-import com.wat.melody.common.utils.Timeout;
+import com.wat.melody.common.timeout.Timeout;
 
 /**
  * 

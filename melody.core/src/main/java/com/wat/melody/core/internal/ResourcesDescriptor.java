@@ -12,21 +12,19 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
 import com.wat.melody.api.exception.IllegalTargetFilterException;
-import com.wat.melody.common.utils.DUNID;
-import com.wat.melody.common.utils.DUNIDDoc;
-import com.wat.melody.common.utils.Filter;
-import com.wat.melody.common.utils.FilterSet;
-import com.wat.melody.common.utils.FilteredDoc;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDocException;
-import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.common.utils.exception.IllegalFilterException;
-import com.wat.melody.common.utils.exception.MelodyException;
-import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.filter.Filter;
+import com.wat.melody.common.filter.FilterSet;
+import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.xml.DUNID;
+import com.wat.melody.common.xml.DUNIDDoc;
+import com.wat.melody.common.xml.FilteredDoc;
+import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -117,12 +115,12 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		for (DUNIDDoc rd : getDUNIDDocList()) {
 			s += rd.getFileFullPath() + ", ";
 		}
-		s += Tools.NEW_LINE;
+		s += Util.NEW_LINE;
 		s += "Resources Filter(s)" + "=";
 		for (int i = 0; i < countFilters(); i++) {
 			s += getFilter(i) + ", ";
 		}
-		s += Tools.NEW_LINE;
+		s += Util.NEW_LINE;
 		s += "Target Filter(s)" + "=";
 		for (int i = 0; i < countTargetsFilters(); i++) {
 			s += getTargetsFilter(i) + ", ";

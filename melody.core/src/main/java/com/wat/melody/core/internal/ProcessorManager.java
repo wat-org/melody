@@ -29,10 +29,11 @@ import com.wat.melody.api.exception.ProcessorException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryException;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
+import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
 
 /**
@@ -151,7 +152,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	@Override
 	public String setWorkingFolderPath(String v)
 			throws IllegalDirectoryException {
-		Tools.validateDirPath(v);
+		FS.validateDirPath(v);
 		String previous = msWorkingFolderPath;
 		msWorkingFolderPath = v;
 		return previous;
@@ -392,23 +393,23 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		String s;
 		// Mandatory Configuration Directive
 		s = "Working Folder Path" + "=" + getWorkingFolderPath()
-				+ Tools.NEW_LINE;
+				+ Util.NEW_LINE;
 		s += "Max Simultaneous Order" + "=" + getMaxSimultaneousStep()
-				+ Tools.NEW_LINE;
-		s += "Hard Kill Timeout" + "=" + getHardKillTimeout() + Tools.NEW_LINE;
+				+ Util.NEW_LINE;
+		s += "Hard Kill Timeout" + "=" + getHardKillTimeout() + Util.NEW_LINE;
 
 		// Optional Configuration Directive
-		s += getResourcesDescriptor().toString() + Tools.NEW_LINE;
-		s += "Batch Mode" + "=" + isBatchModeEnable() + Tools.NEW_LINE;
+		s += getResourcesDescriptor().toString() + Util.NEW_LINE;
+		s += "Batch Mode" + "=" + isBatchModeEnable() + Util.NEW_LINE;
 		s += "Preserve Temporary Resources Mode" + "="
-				+ isPreserveTemporaryFilesModeEnable() + Tools.NEW_LINE;
-		s += "Run Dry Mode" + "=" + isRunDryModeEnable() + Tools.NEW_LINE;
+				+ isPreserveTemporaryFilesModeEnable() + Util.NEW_LINE;
+		s += "Run Dry Mode" + "=" + isRunDryModeEnable() + Util.NEW_LINE;
 		s += "Sequence Descriptor File Path" + "="
-				+ getSequenceDescriptor().getFileFullPath() + Tools.NEW_LINE;
+				+ getSequenceDescriptor().getFileFullPath() + Util.NEW_LINE;
 		s += "Order(s)" + "=";
 		for (int i = 0; i < getSequenceDescriptor().countOrders(); i++)
 			s += getSequenceDescriptor().getOrder(i) + " ";
-		s += Tools.NEW_LINE;
+		s += Util.NEW_LINE;
 		return s;
 	}
 
@@ -776,11 +777,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				return;
 			}
 			if (getWorkingFolderPath() != null) {
-				Tools.deleteDirectoryAndEmptyParentDirectory(getWorkingFolderPath());
+				FS.deleteDirectoryAndEmptyParentDirectory(getWorkingFolderPath());
 			}
 			log.debug("Temporary resources cleaned.");
 		} catch (Throwable Ex) {
-			log.warn(Tools.getUserFriendlyStackTrace(new Exception(
+			log.warn(Util.getUserFriendlyStackTrace(new Exception(
 					"Failed to delete temporary resources.", Ex)));
 		}
 	}

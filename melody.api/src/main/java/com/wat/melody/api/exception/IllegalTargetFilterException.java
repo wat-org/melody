@@ -1,6 +1,6 @@
 package com.wat.melody.api.exception;
 
-import com.wat.melody.common.utils.exception.IllegalFilterException;
+import com.wat.melody.common.filter.exception.IllegalFilterException;
 
 public class IllegalTargetFilterException extends IllegalFilterException {
 

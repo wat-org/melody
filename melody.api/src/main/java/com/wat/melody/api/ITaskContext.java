@@ -11,9 +11,9 @@ import com.wat.melody.api.event.TaskFinishedEvent;
 import com.wat.melody.api.event.TaskStartedEvent;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.properties.PropertiesSet;
 
 /**
  * <p>

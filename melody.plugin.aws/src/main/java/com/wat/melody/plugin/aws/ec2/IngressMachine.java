@@ -15,11 +15,11 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.utils.Tools;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.FwRuleLoader;
@@ -92,7 +92,7 @@ public class IngressMachine extends AbstractAwsOperation {
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.IngressMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;

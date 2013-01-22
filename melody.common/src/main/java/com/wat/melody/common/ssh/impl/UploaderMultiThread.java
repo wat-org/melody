@@ -7,10 +7,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.types.SimpleResource;
-import com.wat.melody.common.utils.Tools;
 
 /**
  * 
@@ -174,14 +174,13 @@ class UploaderMultiThread {
 		}
 		String err = "";
 		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Tools.NEW_LINE
+			err += Util.NEW_LINE
 					+ "Error "
 					+ (i + 1)
 					+ " : "
-					+ Tools.getUserFriendlyStackTrace(getExceptionsList()
-							.get(i));
+					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
 		}
-		err = err.replaceAll(Tools.NEW_LINE, Tools.NEW_LINE + "   ");
+		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
 		return new UploaderException(err);
 	}
 

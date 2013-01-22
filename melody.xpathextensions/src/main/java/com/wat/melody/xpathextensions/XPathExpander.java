@@ -9,11 +9,11 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.PropertyName;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertyName;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.xpathextensions.common.Messages;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
 
@@ -71,7 +71,7 @@ public abstract class XPathExpander {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Path (a File Path).");
 		}
-		Tools.validateFileExists(fileToExpand.toString());
+		FS.validateFileExists(fileToExpand.toString());
 		String fileContent = new String(Files.readAllBytes(fileToExpand));
 		try {
 			return expand(fileContent, context, vars);

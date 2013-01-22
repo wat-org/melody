@@ -1,6 +1,6 @@
 package com.wat.melody.cli.exception;
 
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
 
 public class Log4JConfigurationException extends MelodyException {
 

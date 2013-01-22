@@ -3,7 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -40,7 +40,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 		if (getInstance() == null) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
@@ -48,7 +48,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.DeleteMsg_TERMINATED, new Object[] {
 							getInstanceID(), "DEAD", getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);

@@ -22,18 +22,18 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 import com.wat.melody.cli.exception.CommandLineParsingException;
 import com.wat.melody.cli.exception.ConfigurationLoadingException;
-import com.wat.melody.common.utils.Filter;
-import com.wat.melody.common.utils.LogThreshold;
-import com.wat.melody.common.utils.OrderName;
-import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.common.utils.exception.IllegalFilterException;
-import com.wat.melody.common.utils.exception.IllegalLogThresholdException;
-import com.wat.melody.common.utils.exception.IllegalPropertiesSetFileFormatException;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.filter.Filter;
+import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.log.LogThreshold;
+import com.wat.melody.common.log.exception.IllegalLogThresholdException;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.exception.IllegalPropertiesSetFileFormatException;
 
 /**
  * <p>
@@ -251,7 +251,7 @@ public class ProcessorManagerLoader {
 						Messages.CmdEx_MISSING_DEFAULT_GLOBAL_CONF_FILE);
 			}
 			try {
-				Tools.validateFileExists(cmdLine[0]);
+				FS.validateFileExists(cmdLine[0]);
 			} catch (IllegalFileException Ex) {
 				throw new CommandLineParsingException(
 						Messages.CmdEx_INVALID_DEFAULT_GLOBAL_CONF_FILE, Ex);
@@ -752,7 +752,7 @@ public class ProcessorManagerLoader {
 				throw new ConfigurationLoadingException(
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
-			Tools.validateFileExists(val);
+			FS.validateFileExists(val);
 			org.apache.log4j.xml.DOMConfigurator.configure(val);
 		} catch (MelodyException | FactoryConfigurationError Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(

@@ -3,8 +3,8 @@ package com.wat.melody.plugin.ssh.common.types;
 import java.io.File;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
 
 public class Exec {
 
@@ -57,7 +57,7 @@ public class Exec {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a File (which list shell commands).");
 		}
-		Tools.validateFileExists(c.toString());
+		FS.validateFileExists(c.toString());
 		File previous = getFile();
 		msFile = c;
 		return previous;

@@ -1,8 +1,8 @@
 package com.wat.melody.common.ssh.types;
 
-import com.wat.melody.common.utils.GenericTimeout;
-import com.wat.melody.common.utils.Timeout;
-import com.wat.melody.common.utils.exception.IllegalTimeoutException;
+import com.wat.melody.common.timeout.GenericTimeout;
+import com.wat.melody.common.timeout.Timeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
  * 

@@ -6,19 +6,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.IllegalTargetFilterException;
-import com.wat.melody.common.utils.FilteredDoc;
-import com.wat.melody.common.utils.exception.IllegalFilterException;
+import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.xml.FilteredDoc;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
 public class TargetDescriptor extends FilteredDoc {
 
-	public void load(ResourcesDescriptor doc) throws IllegalTargetFilterException {
+	public void load(ResourcesDescriptor doc)
+			throws IllegalTargetFilterException {
 		try {
 			super.load(doc);
 		} catch (IllegalFilterException Ex) {

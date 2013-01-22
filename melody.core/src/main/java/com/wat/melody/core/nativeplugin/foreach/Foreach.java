@@ -11,16 +11,14 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.PropertyName;
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.PropertyName;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.core.nativeplugin.foreach.exception.ForeachException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -325,14 +323,13 @@ public class Foreach implements ITask, ITaskContainer {
 		}
 		String err = "";
 		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Tools.NEW_LINE
+			err += Util.NEW_LINE
 					+ "Error "
 					+ (i + 1)
 					+ " : "
-					+ Tools.getUserFriendlyStackTrace(getExceptionsList()
-							.get(i));
+					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
 		}
-		err = err.replaceAll(Tools.NEW_LINE, Tools.NEW_LINE + "   ");
+		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
 		return new ForeachException(err);
 	}
 

@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
 
-import com.wat.melody.common.utils.Doc;
+import com.wat.melody.common.xml.Doc;
 
 public abstract class CustomXPathFunctions {
 
