@@ -3,7 +3,7 @@ package com.wat.melody.plugin.aws.ec2;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
@@ -46,7 +46,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 		if (getInstance() == null) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
@@ -55,7 +55,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 					Messages.DeleteMsg_TERMINATED,
 					new Object[] { getAwsInstanceID(), "DEAD",
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);

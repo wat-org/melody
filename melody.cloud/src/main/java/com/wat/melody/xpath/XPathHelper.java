@@ -9,7 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.common.utils.Doc;
+import com.wat.melody.common.xml.Doc;
 
 /**
  * 

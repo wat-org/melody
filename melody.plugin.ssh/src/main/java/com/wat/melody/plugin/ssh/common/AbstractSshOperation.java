@@ -9,6 +9,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
@@ -19,7 +20,6 @@ import com.wat.melody.common.ssh.impl.LoggerOutputStream;
 import com.wat.melody.common.ssh.impl.SshConnectionDatas;
 import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.ssh.impl.SshUserDatas;
-import com.wat.melody.common.utils.LogThreshold;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
 /**

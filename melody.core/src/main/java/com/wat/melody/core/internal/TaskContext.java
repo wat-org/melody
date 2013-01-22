@@ -9,8 +9,8 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**

@@ -3,8 +3,8 @@ package com.wat.melody.common.ssh.impl;
 import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ssh.types.SimpleResource;
-import com.wat.melody.common.utils.exception.MelodyException;
 
 /**
  * 

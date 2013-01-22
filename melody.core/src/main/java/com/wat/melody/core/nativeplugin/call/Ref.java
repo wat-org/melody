@@ -9,11 +9,11 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
-import com.wat.melody.common.utils.OrderName;
-import com.wat.melody.common.utils.OrderNameSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.exception.IllegalDocException;
-import com.wat.melody.common.utils.exception.IllegalFileException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 
 /**

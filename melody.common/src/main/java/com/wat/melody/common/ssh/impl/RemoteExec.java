@@ -7,8 +7,8 @@ import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.utils.LogThreshold;
 
 /**
  * 

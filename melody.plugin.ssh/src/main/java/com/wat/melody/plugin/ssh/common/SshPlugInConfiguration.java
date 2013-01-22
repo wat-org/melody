@@ -13,6 +13,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
+import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.KnownHostsFile;
 import com.wat.melody.common.ssh.exception.KnownHostsFileException;
@@ -28,9 +29,8 @@ import com.wat.melody.common.ssh.types.exception.IllegalCompressionLevelExceptio
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionTypeException;
 import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Timeout;
-import com.wat.melody.common.utils.exception.IllegalTimeoutException;
+import com.wat.melody.common.timeout.Timeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.plugin.ssh.common.exception.SshPlugInConfigurationException;
 
 /**

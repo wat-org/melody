@@ -15,7 +15,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
-import com.wat.melody.common.utils.PropertiesSet;
+import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationException;
 
 /**

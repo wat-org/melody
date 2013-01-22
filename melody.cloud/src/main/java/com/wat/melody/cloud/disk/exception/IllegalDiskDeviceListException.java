@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.disk.exception;
 
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
 
 public class IllegalDiskDeviceListException extends MelodyException {
 

@@ -13,8 +13,8 @@ import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -101,7 +101,7 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
 					Messages.UpdateNetDevMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;

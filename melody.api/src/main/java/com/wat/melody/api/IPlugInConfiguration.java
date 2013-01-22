@@ -1,7 +1,7 @@
 package com.wat.melody.api;
 
 import com.wat.melody.api.exception.PlugInConfigurationException;
-import com.wat.melody.common.utils.PropertiesSet;
+import com.wat.melody.common.properties.PropertiesSet;
 
 public interface IPlugInConfiguration {
 

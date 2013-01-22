@@ -36,14 +36,14 @@ import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.utils.Doc;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.Property;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
-import com.wat.melody.common.utils.exception.IllegalPropertyException;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.exception.IllegalPropertyException;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
 import com.wat.melody.xpathextensions.XPathExpander;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
@@ -155,7 +155,7 @@ public abstract class LibVirtCloud {
 							+ "Disk Nested element n°" + i + ".");
 				}
 				try {
-					Tools.validateFileExists(descriptor.getNodeValue());
+					FS.validateFileExists(descriptor.getNodeValue());
 				} catch (IllegalFileException Ex) {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. "

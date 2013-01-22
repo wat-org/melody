@@ -12,8 +12,8 @@ import com.wat.melody.common.ssh.types.ReadTimeout;
 import com.wat.melody.common.ssh.types.ServerAliveInterval;
 import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
-import com.wat.melody.common.utils.Timeout;
-import com.wat.melody.common.utils.exception.IllegalTimeoutException;
+import com.wat.melody.common.timeout.Timeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
  * 

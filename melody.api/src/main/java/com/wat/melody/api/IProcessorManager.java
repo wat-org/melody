@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 
 /**
  * <p>

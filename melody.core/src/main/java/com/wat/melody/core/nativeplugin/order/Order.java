@@ -16,7 +16,7 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.common.utils.OrderName;
+import com.wat.melody.common.order.OrderName;
 import com.wat.melody.core.nativeplugin.order.exception.OrderException;
 
 /**

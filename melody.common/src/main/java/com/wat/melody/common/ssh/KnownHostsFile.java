@@ -5,9 +5,9 @@ import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KnownHosts;
 import com.jcraft.jsch.UserInfo;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.ssh.exception.KnownHostsFileException;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalFileException;
 
 /**
  * 
@@ -23,7 +23,7 @@ public class KnownHostsFile implements HostKeyRepository {
 
 	public KnownHostsFile(String path) throws KnownHostsFileException {
 		try {
-			Tools.validateFileExists(path);
+			FS.validateFileExists(path);
 		} catch (IllegalFileException Ex) {
 			throw new KnownHostsFileException(Messages.bind(
 					Messages.KnownHostsEx_INVALID_PATH, path), Ex);

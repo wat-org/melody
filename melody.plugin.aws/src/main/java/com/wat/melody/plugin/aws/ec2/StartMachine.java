@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.cloud.instance.InstanceState;
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -45,7 +45,7 @@ public class StartMachine extends AbstractMachineOperation {
 					Messages.StartMsg_PENDING, new Object[] {
 							getAwsInstanceID(), InstanceState.PENDING,
 							InstanceState.RUNNING, getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StartMsg_GENERIC_WARN, Ex)));
 			waitUntilInstanceStatusBecomes(InstanceState.RUNNING, getTimeout());
 			setInstanceRelatedInfosToED(getInstance());
@@ -55,7 +55,7 @@ public class StartMachine extends AbstractMachineOperation {
 					Messages.StartMsg_RUNNING, new Object[] {
 							getAwsInstanceID(), InstanceState.RUNNING,
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StartMsg_GENERIC_WARN, Ex)));
 			setInstanceRelatedInfosToED(getInstance());
 			enableNetworkManagement();
@@ -64,7 +64,7 @@ public class StartMachine extends AbstractMachineOperation {
 					Messages.StartMsg_STOPPING, new Object[] {
 							getAwsInstanceID(), InstanceState.STOPPING,
 							InstanceState.STOPPED, getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new AwsException(
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StartMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			waitUntilInstanceStatusBecomes(InstanceState.STOPPED, getTimeout());

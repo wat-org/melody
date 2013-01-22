@@ -1,12 +1,10 @@
 package com.wat.melody.core.internal;
 
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
-import com.wat.melody.common.utils.FilteredDoc;
-import com.wat.melody.common.utils.exception.IllegalFilterException;
+import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.xml.FilteredDoc;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

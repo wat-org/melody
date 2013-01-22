@@ -5,8 +5,8 @@ import java.lang.Thread.State;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.common.utils.PropertiesSet;
-import com.wat.melody.common.utils.exception.MelodyException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.properties.PropertiesSet;
 
 /**
  * <p>

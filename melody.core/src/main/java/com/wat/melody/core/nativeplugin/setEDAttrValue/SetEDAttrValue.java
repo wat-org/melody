@@ -10,13 +10,11 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.utils.DUNID;
-import com.wat.melody.common.utils.exception.NoSuchDUNIDException;
+import com.wat.melody.common.xml.DUNID;
+import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.core.nativeplugin.setEDAttrValue.exception.SetEDAttrValueException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

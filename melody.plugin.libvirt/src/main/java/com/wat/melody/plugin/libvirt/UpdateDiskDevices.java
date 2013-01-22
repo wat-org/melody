@@ -14,7 +14,7 @@ import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
-import com.wat.melody.common.utils.Tools;
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -109,7 +109,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 					new Object[] { NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-			log.warn(Tools.getUserFriendlyStackTrace(new LibVirtException(
+			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
 					Messages.UpdateDiskDevMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;

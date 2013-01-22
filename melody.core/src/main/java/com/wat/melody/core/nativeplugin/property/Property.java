@@ -3,8 +3,8 @@ package com.wat.melody.core.nativeplugin.property;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 
-public class Property extends com.wat.melody.common.utils.Property implements
-		ITask {
+public class Property extends com.wat.melody.common.properties.Property
+		implements ITask {
 
 	private ITaskContext moContext;
 

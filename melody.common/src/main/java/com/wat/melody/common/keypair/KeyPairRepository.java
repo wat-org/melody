@@ -12,10 +12,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPrivateKey;
 
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
-import com.wat.melody.common.utils.Tools;
-import com.wat.melody.common.utils.exception.IllegalDirectoryException;
-import com.wat.melody.common.utils.exception.IllegalFileException;
 
 /**
  * <p>
@@ -50,7 +50,7 @@ public class KeyPairRepository extends File {
 			throws KeyPairRepositoryException {
 		super(parent, child);
 		try {
-			Tools.validateDirExists(this.getPath());
+			FS.validateDirExists(this.getPath());
 		} catch (IllegalDirectoryException Ex) {
 			throw new KeyPairRepositoryException(Messages.bind(
 					Messages.KeyPairRepoEx_INVALID_REPO_PATH, this.getPath()),
@@ -128,7 +128,7 @@ public class KeyPairRepository extends File {
 	 */
 	public boolean containsKeyPair(KeyPairName keyPairName) throws IOException {
 		try {
-			Tools.validateFileExists(getPrivateKeyFile(keyPairName).getPath());
+			FS.validateFileExists(getPrivateKeyFile(keyPairName).getPath());
 		} catch (IllegalFileException Ex) {
 			return false;
 		}
