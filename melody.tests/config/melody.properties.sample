@@ -2,7 +2,7 @@
 ### CUSTOM CONFIGURATION DIRECTIVES
 
 ### 'rootFolderPath' is a custom configuration directive used to eliminate redundancy in folder declaration
-rootFolderPath=.\\
+rootFolderPath=<REPLACE ME WITH THE ABSOLUTE HOME DIR OF MELODY.SH>
 
 ####################################################
 ### MANDATORY CONFIGURATION DIRECTIVES
@@ -60,13 +60,13 @@ tasks.directives=tasks.standard
 tasks.standard=com.wat.melody.plugin.echo.Echo,com.wat.melody.plugin.sleep.Sleep,com.wat.melody.plugin.ssh.Ssh,com.wat.melody.plugin.ssh.Upload
 
 ### Folder where plugins configuration are stored (used to eliminate redundancy in folder declaration)
-pluginConfigurationFolderPath=${rootFolderPath}\\config\\plugin
+pluginConfigurationFolderPath=${rootFolderPath}/config/plugin
 
 ### list all Plugin Configuration Directive
 ### comma separated list
 plugin.configuration.directives=ssh.plugin.configuration.filepath
 
-ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}\\ssh\\ssh.plugin.properties
+ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugin.properties
 
 
 ####################################################
@@ -76,7 +76,7 @@ ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}\\ssh\\ssh.plu
 ### Path of the Resources Descriptor
 ### Can be override by Command Line Option -E <Resources Descriptor File Path>
 #resourcesDescriptors=rd1
-#rd1=${rootFolderPath}\\input\\default-resources-descriptor.xml
+#rd1=${rootFolderPath}/input/default-resources-descriptor.xml
 
 ### Batch mode : when enabled, will answer yes to any questions without prompting
 ### Can be override by Command Line Option -b / -B
@@ -95,7 +95,7 @@ ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}\\ssh\\ssh.plu
 
 ### Path of the TarGz archive or Sequence Descriptor file
 ### Can be override by Command Line Option -f <TarGz Archive or Sequence Descriptor File Path>
-#sequenceDescriptorFilePath=${rootFolderPath}\\input\\sequence.xml
+#sequenceDescriptorFilePath=${rootFolderPath}/input/sequence.xml
 
 ### Path of the specific configuration
 ### Can be override by Command Line Option -C <Specific Configuration File Path>

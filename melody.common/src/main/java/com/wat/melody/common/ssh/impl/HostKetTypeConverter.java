@@ -29,7 +29,8 @@ abstract class HostKetTypeConverter {
 		case RSA:
 			return "ssh-rsa";
 		default:
-			throw new RuntimeException("BUG ! '" + type + "' is supported. "
+			throw new RuntimeException("BUG ! '" + type
+					+ "' is not supported. "
 					+ "This method should handle this.");
 		}
 	}

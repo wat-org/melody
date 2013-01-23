@@ -14,9 +14,10 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.ssh.IKnownHosts;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
-import com.wat.melody.common.ssh.KnownHostsFile;
-import com.wat.melody.common.ssh.exception.KnownHostsFileException;
+import com.wat.melody.common.ssh.exception.KnownHostsException;
+import com.wat.melody.common.ssh.impl.KnownHostsFile;
 import com.wat.melody.common.ssh.impl.SshSessionConfiguration;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
@@ -441,16 +442,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	public KnownHostsFile getKnownHosts() {
+	public IKnownHosts getKnownHosts() {
 		return getSshSessionConfiguration().getKnownHosts();
 	}
 
-	public KnownHostsFile setKnownHosts(KnownHostsFile knownHosts) {
+	public IKnownHosts setKnownHosts(IKnownHosts knownHosts) {
 		return getSshSessionConfiguration().setKnownHosts(knownHosts);
 
 	}
 
-	public KnownHostsFile setKnownHosts(File knownHosts)
+	public IKnownHosts setKnownHosts(File knownHosts)
 			throws SshPlugInConfigurationException {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -463,13 +464,13 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 		try {
 			return setKnownHosts(new KnownHostsFile(knownHosts.getPath()));
-		} catch (KnownHostsFileException Ex) {
+		} catch (KnownHostsException Ex) {
 			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KNOWNHOSTS, knownHosts), Ex);
 		}
 	}
 
-	public KnownHostsFile setKnownHosts(String val)
+	public IKnownHosts setKnownHosts(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
