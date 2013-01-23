@@ -7,23 +7,23 @@ import com.wat.melody.common.ex.MelodyException;
  * @author Guillaume Cornet
  * 
  */
-public class KnownHostsFileException extends MelodyException {
+public class KnownHostsException extends MelodyException {
 
 	private static final long serialVersionUID = -2998553237876325454L;
 
-	public KnownHostsFileException() {
+	public KnownHostsException() {
 		super();
 	}
 
-	public KnownHostsFileException(String msg) {
+	public KnownHostsException(String msg) {
 		super(msg);
 	}
 
-	public KnownHostsFileException(Throwable cause) {
+	public KnownHostsException(Throwable cause) {
 		super(cause);
 	}
 
-	public KnownHostsFileException(String msg, Throwable cause) {
+	public KnownHostsException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

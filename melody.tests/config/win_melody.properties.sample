@@ -2,7 +2,7 @@
 ### CUSTOM CONFIGURATION DIRECTIVES
 
 ### 'rootFolderPath' is a custom configuration directive used to eliminate redundancy in folder declaration
-rootFolderPath=.\\
+rootFolderPath=<REPLACE ME WITH THE ABSOLUTE HOME DIR OF MELODY.BAT>
 
 ####################################################
 ### MANDATORY CONFIGURATION DIRECTIVES

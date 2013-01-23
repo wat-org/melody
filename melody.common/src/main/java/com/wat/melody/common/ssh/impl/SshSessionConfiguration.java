@@ -2,8 +2,8 @@ package com.wat.melody.common.ssh.impl;
 
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
+import com.wat.melody.common.ssh.IKnownHosts;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
-import com.wat.melody.common.ssh.KnownHostsFile;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
 import com.wat.melody.common.ssh.types.ConnectionTimeout;
@@ -22,7 +22,7 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  */
 public class SshSessionConfiguration implements ISshSessionConfiguration {
 
-	private KnownHostsFile moKnownHosts;
+	private IKnownHosts moKnownHosts;
 	private CompressionLevel miCompressionLevel;
 	private CompressionType msCompressionType;
 	private ConnectionTimeout miConnectionTimeout;
@@ -49,18 +49,18 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public KnownHostsFile getKnownHosts() {
+	public IKnownHosts getKnownHosts() {
 		return moKnownHosts;
 	}
 
 	@Override
-	public KnownHostsFile setKnownHosts(KnownHostsFile knownHosts) {
+	public IKnownHosts setKnownHosts(IKnownHosts knownHosts) {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ KnownHostsFile.class.getCanonicalName() + ".");
 		}
-		KnownHostsFile previous = getKnownHosts();
+		IKnownHosts previous = getKnownHosts();
 		moKnownHosts = knownHosts;
 		return previous;
 	}

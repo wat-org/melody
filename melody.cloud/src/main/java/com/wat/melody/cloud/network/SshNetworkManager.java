@@ -124,8 +124,8 @@ public class SshNetworkManager implements NetworkManager {
 				}
 			}
 			log.debug(Messages.bind(
-					Messages.NetMgmtMsg_SSH_WAIT_FOR_MGMT_ENABLE, host
-							.getValue().getHostAddress(), port.getValue()));
+					Messages.NetMgmtMsg_SSH_WAIT_FOR_MGMT_ENABLE,
+					host.getAddress(), port.getValue()));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
@@ -138,26 +138,13 @@ public class SshNetworkManager implements NetworkManager {
 			}
 		}
 
-		byte[] key = session.getHostKey().getBytes();
-		sc.getKnownHosts().add(host.getValue().getHostName(), key);
-
 		return enablementDone;
 	}
 
 	@Override
 	public void disableNetworkManagement() throws NetworkManagementException {
-		removeKnownHostsHost(getConfiguration(), getManagementDatas().getHost());
-	}
-
-	public static void removeKnownHostsHost(ISshSessionConfiguration conf,
-			Host host) {
-		if (conf == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
-		}
-		conf.getKnownHosts().remove(host.getValue().getHostAddress(), null);
-		conf.getKnownHosts().remove(host.getValue().getHostName(), null);
+		getConfiguration().getKnownHosts().remove(
+				getManagementDatas().getHost());
 	}
 
 }

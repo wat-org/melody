@@ -24,10 +24,18 @@ public class Host {
 
 	@Override
 	public String toString() {
-		return getValue().getHostAddress();
+		return getAddress();
 	}
 
-	public InetAddress getValue() {
+	public String getName() {
+		return moInetAddress.getHostName();
+	}
+
+	public String getAddress() {
+		return moInetAddress.getHostAddress();
+	}
+
+	private InetAddress getValue() {
 		return moInetAddress;
 	}
 

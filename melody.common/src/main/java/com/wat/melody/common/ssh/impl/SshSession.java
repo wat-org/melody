@@ -152,7 +152,7 @@ public class SshSession implements ISshSession {
 	}
 
 	protected String getHost() {
-		return getConnectionDatas().getHost().toString();
+		return getConnectionDatas().getHost().getAddress();
 	}
 
 	protected int getPort() {
@@ -259,7 +259,8 @@ public class SshSession implements ISshSession {
 		 */
 		_session.setConfig("PreferredAuthentications", "publickey,password");
 
-		_session.setHostKeyRepository(getSessionConfiguration().getKnownHosts());
+		_session.setHostKeyRepository(new KnownHostsAdapter(
+				getSessionConfiguration().getKnownHosts()));
 
 		if (conf.getProxyType() != null) {
 			/*
