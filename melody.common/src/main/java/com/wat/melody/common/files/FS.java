@@ -73,11 +73,13 @@ public abstract class FS {
 						Messages.DirEx_CANT_WRITE, sPath));
 			}
 		} else if (!item.exists()) {
-			try {
-				validateDirExists(item.getParent());
-			} catch (IllegalDirectoryException Ex) {
-				throw new IllegalDirectoryException(Messages.bind(
-						Messages.DirEx_NOT_FOUND, sPath), Ex);
+			if (item.getParent() != null) {
+				try {
+					validateDirExists(item.getParent());
+				} catch (IllegalDirectoryException Ex) {
+					throw new IllegalDirectoryException(Messages.bind(
+							Messages.DirEx_NOT_FOUND, sPath), Ex);
+				}
 			}
 			throw new IllegalDirectoryException(Messages.bind(
 					Messages.DirEx_NOT_FOUND, sPath));
@@ -122,7 +124,7 @@ public abstract class FS {
 				throw new IllegalDirectoryException(Messages.bind(
 						Messages.DirEx_CANT_WRITE, sPath));
 			}
-		} else {
+		} else if (item.getParent() != null) {
 			try {
 				validateDirPath(item.getParent());
 			} catch (IllegalDirectoryException Ex) {
@@ -172,11 +174,13 @@ public abstract class FS {
 						Messages.FileEx_CANT_WRITE, sPath));
 			}
 		} else if (!item.exists()) {
-			try {
-				validateDirExists(item.getParent());
-			} catch (IllegalDirectoryException Ex) {
-				throw new IllegalFileException(Messages.bind(
-						Messages.FileEx_NOT_FOUND, sPath), Ex);
+			if (item.getParent() != null) {
+				try {
+					validateDirExists(item.getParent());
+				} catch (IllegalDirectoryException Ex) {
+					throw new IllegalFileException(Messages.bind(
+							Messages.FileEx_NOT_FOUND, sPath), Ex);
+				}
 			}
 			throw new IllegalFileException(Messages.bind(
 					Messages.FileEx_NOT_FOUND, sPath));
