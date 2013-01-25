@@ -12,6 +12,7 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -20,6 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.PasswordFinder;
 
 import com.jcraft.jsch.Buffer;
 
@@ -34,20 +36,34 @@ public abstract class KeyPairHelper {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
-	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey, String passphrase)
-			throws IOException {
+	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey,
+			final String passphrase) throws IOException {
 		File fin = privateKey.toFile();
 		FileReader fr = null;
+		PEMReader pemr = null;
 		try {
-			/*
-			 * TODO : deal with pass-phrase when reading the private key
-			 */
 			fr = new FileReader(fin);
-			PEMReader pemr = new PEMReader(fr);
+			if (passphrase == null || passphrase.length() == 0) {
+				pemr = new PEMReader(fr);
+			} else {
+				pemr = new PEMReader(fr, new PasswordFinder() {
+
+					@Override
+					public char[] getPassword() {
+						return passphrase.toCharArray();
+					}
+				});
+			}
 			return (KeyPair) pemr.readObject();
 		} finally {
-			if (fr != null) {
-				fr.close();
+			try {
+				if (pemr != null) {
+					pemr.close();
+				}
+			} finally {
+				if (fr != null) {
+					fr.close();
+				}
 			}
 		}
 	}
@@ -63,33 +79,41 @@ public abstract class KeyPairHelper {
 		Files.write(filePath, generateFingerprint(kp).getBytes());
 	}
 
-	public static void writeOpenSslPEMPrivateKey(Path filePath, KeyPair kp)
-			throws IOException {
-		writeOpenSslPEMDatas(filePath.toString(), kp.getPrivate());
+	public static void writeOpenSslPEMPrivateKey(Path filePath, KeyPair kp,
+			String sPassphrase) throws IOException {
+		writeOpenSslPEMDatas(filePath.toString(), kp.getPrivate(), sPassphrase);
 	}
 
 	public static void writeOpenSslPEMPublicKey(Path filePath, KeyPair kp)
 			throws IOException {
-		writeOpenSslPEMDatas(filePath.toString(), kp.getPublic());
+		writeOpenSslPEMDatas(filePath.toString(), kp.getPublic(), null);
 	}
 
-	private static void writeOpenSslPEMDatas(String fileName, Key datas)
-			throws IOException {
+	private static void writeOpenSslPEMDatas(String fileName, Key datas,
+			String passphrase) throws IOException {
 		File fprivout = new File(fileName);
 		OutputStream privos = null;
 		PEMWriter privpemw = null;
 		try {
 			privos = new FileOutputStream(fprivout);
 			privpemw = new PEMWriter(new OutputStreamWriter(privos));
-			privpemw.writeObject(datas);
+			if (passphrase == null || passphrase.length() == 0) {
+				privpemw.writeObject(datas);
+			} else {
+				privpemw.writeObject(datas, "DESEDE", passphrase.toCharArray(),
+						new SecureRandom());
+			}
 			privpemw.flush();
 			privos.flush();
 		} finally {
-			if (privpemw != null) {
-				privpemw.close();
-			}
-			if (privos != null) {
-				privos.close();
+			try {
+				if (privpemw != null) {
+					privpemw.close();
+				}
+			} finally {
+				if (privos != null) {
+					privos.close();
+				}
 			}
 		}
 	}

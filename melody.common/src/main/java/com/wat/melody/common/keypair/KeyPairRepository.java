@@ -152,9 +152,6 @@ public class KeyPairRepository extends File {
 	 */
 	public KeyPair createKeyPair(KeyPairName keyPairName, int size,
 			String sPassphrase) throws IOException {
-		/*
-		 * TODO : deal with pass-phrase when creating the private key
-		 */
 		if (containsKeyPair(keyPairName)) {
 			throw new IllegalArgumentException(keyPairName
 					+ ": KeyPair Name already exists. "
@@ -172,7 +169,7 @@ public class KeyPairRepository extends File {
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
-				kp);
+				kp, sPassphrase);
 		return kp;
 	}
 
