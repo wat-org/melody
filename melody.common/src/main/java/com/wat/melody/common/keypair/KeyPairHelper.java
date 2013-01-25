@@ -34,7 +34,7 @@ public abstract class KeyPairHelper {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
-	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey)
+	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey, String passphrase)
 			throws IOException {
 		File fin = privateKey.toFile();
 		FileReader fr = null;

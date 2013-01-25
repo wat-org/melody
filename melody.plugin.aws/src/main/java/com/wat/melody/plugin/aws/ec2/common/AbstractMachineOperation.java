@@ -325,7 +325,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		if (!keyPairRepo.containsKeyPair(keyPairName)) {
 			kp = keyPairRepo.createKeyPair(keyPairName, iKeySize, sPassphrase);
 		} else {
-			kp = keyPairRepo.getKeyPair(keyPairName);
+			kp = keyPairRepo.getKeyPair(keyPairName, sPassphrase);
 		}
 
 		// Create KeyPair in Aws

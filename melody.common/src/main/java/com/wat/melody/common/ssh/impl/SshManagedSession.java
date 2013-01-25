@@ -215,12 +215,13 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private String getKey() throws SshSessionException {
-		ISshUserDatas cnxDatas = getUserDatas();
-		KeyPairRepository kpr = cnxDatas.getKeyPairRepository();
-		KeyPairName kpn = cnxDatas.getKeyPairName();
+		ISshUserDatas usrDatas = getUserDatas();
+		KeyPairRepository kpr = usrDatas.getKeyPairRepository();
+		KeyPairName kpn = usrDatas.getKeyPairName();
+		String kpp = usrDatas.getPassword();
 		String key = null;
 		try {
-			key = kpr.getPublicKeyInOpenSshFormat(kpn, null);
+			key = kpr.getPublicKeyInOpenSshFormat(kpn, kpp, null);
 		} catch (IOException Ex) {
 			throw new RuntimeException("Unexpected error while reading "
 					+ "the key '" + kpr.getPrivateKeyFile(kpn) + "' . "

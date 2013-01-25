@@ -10,7 +10,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.interfaces.RSAPrivateKey;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
@@ -120,22 +119,11 @@ public class KeyPairRepository extends File {
 	 * 
 	 * @return <code>true</code> if the given KeyPair exists in the Repository,
 	 *         <code>false</code> otherwise.
-	 * 
-	 * @throws IOException
-	 *             if the KeyPair's data are corrupted (ex : the content of the
-	 *             privateKey is not a valid private key in the Open Ssl PEM
-	 *             format)
 	 */
-	public boolean containsKeyPair(KeyPairName keyPairName) throws IOException {
+	public boolean containsKeyPair(KeyPairName keyPairName) {
 		try {
 			FS.validateFileExists(getPrivateKeyFile(keyPairName).getPath());
 		} catch (IllegalFileException Ex) {
-			return false;
-		}
-		KeyPair kp = null;
-		kp = KeyPairHelper
-				.readOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName));
-		if (!(kp.getPrivate() instanceof RSAPrivateKey)) {
 			return false;
 		}
 		return true;
@@ -230,25 +218,27 @@ public class KeyPairRepository extends File {
 		return new File(getPath(), keyPairName.getValue());
 	}
 
-	public KeyPair getKeyPair(KeyPairName keyPairName) throws IOException {
+	public KeyPair getKeyPair(KeyPairName keyPairName, String passphrase)
+			throws IOException {
 		if (!containsKeyPair(keyPairName)) {
 			throw new IllegalArgumentException(keyPairName
 					+ ": KeyPair Name doens't exists. "
 					+ "Cannot get this KeyPair in the KeyPair Repository '"
 					+ getPath() + "'.");
 		}
-		return KeyPairHelper
-				.readOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName));
+		return KeyPairHelper.readOpenSslPEMPrivateKey(
+				getPrivateKeyPath(keyPairName), passphrase);
 	}
 
 	public String getPublicKeyInOpenSshFormat(KeyPairName keyPairName,
-			String sComment) throws IOException {
-		KeyPair kp = getKeyPair(keyPairName);
+			String passphrase, String sComment) throws IOException {
+		KeyPair kp = getKeyPair(keyPairName, passphrase);
 		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
 	}
 
-	public String getFingerprint(KeyPairName keyPairName) throws IOException {
-		KeyPair kp = getKeyPair(keyPairName);
+	public String getFingerprint(KeyPairName keyPairName, String passphrase)
+			throws IOException {
+		KeyPair kp = getKeyPair(keyPairName, passphrase);
 		return KeyPairHelper.generateFingerprint(kp);
 	}
 
