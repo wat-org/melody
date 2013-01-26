@@ -14,6 +14,10 @@ public class ProcessorManagerConfigurationException extends MelodyException {
 		super(msg);
 	}
 
+	public ProcessorManagerConfigurationException(Throwable cause) {
+		super(cause);
+	}
+
 	public ProcessorManagerConfigurationException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

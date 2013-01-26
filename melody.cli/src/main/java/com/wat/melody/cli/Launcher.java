@@ -144,10 +144,9 @@ public class Launcher {
 			System.out.println(Util.getUserFriendlyStackTrace(Ex));
 			System.exit(ReturnCode.KO.getValue());
 		} catch (Throwable Ex) {
-			System.out
-					.println("Something bad happend. Please report this bug at Wat-Org."
-							+ Util.NEW_LINE
-							+ Util.getUserFriendlyStackTrace(Ex));
+			Exception e = new Exception("Something bad happend. "
+					+ "Please report this bug at Wat-Org.", Ex);
+			System.out.println(Util.getUserFriendlyStackTrace(e));
 			System.exit(ReturnCode.ERRGEN.getValue());
 		}
 

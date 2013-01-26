@@ -15,6 +15,7 @@ public class Messages extends NLS {
 	public static String CmdEx_INVALID_OPTION_VALUE;
 	public static String CmdEx_TOOMUCH_LOG_THRESHOLD;
 	public static String CmdEx_UNKNOWN_ARGUMENT_ERROR;
+	public static String CmdEx_MISSING_SD;
 	public static String CmdEx_GENERIC_PARSE;
 	public static String CmdMsg_DISPLAY_CMDLINE;
 
