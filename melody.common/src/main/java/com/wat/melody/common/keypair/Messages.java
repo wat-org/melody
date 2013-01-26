@@ -4,7 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-	private static final String BUNDLE_NAME = "com.wat.melody.plugin.ssh.common.keypair.messages";
+	private static final String BUNDLE_NAME = "com.wat.melody.common.keypair.messages";
 
 	public static String KeyPairNameEx_EMPTY;
 	public static String KeyPairNameEx_INVALID;
