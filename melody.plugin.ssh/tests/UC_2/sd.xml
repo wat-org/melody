@@ -12,11 +12,11 @@
 		<echo message="Executing command on 'IP:§[IP]§' ..." />
 
 		<ssh description="[test_script:§[IP]§]" host="§[IP]§" keyPairName="id_rsa_aws" login="jboss" trust="y">
-			<declare name="var1" value="&#34;§[property1]§&#34;"/>
+			<declare name="var1" value="&quot;§[property1]§&quot;"/>
 			<exec file="./scripts/include1.sh"/>
 			<exec file="./scripts/include2.sh" template="y"/>
-			<declare name="var8" value="&#34;§[substring('§[substring('§[property1]§',3)]§',3)]§&#34;"/>
-			<export name="var9" value="&#34;§[substring('§[substring('§[property1]§',3)]§',3)]§&#34;"/>
+			<declare name="var8" value="&quot;§[substring('§[substring('§[property1]§',3)]§',3)]§&quot;"/>
+			<export name="var9" value="&quot;§[substring(substring('§[property1]§',3),3)]§&quot;"/>
 			<declare name="var10" value="( §[concat('§[case1]§',' ','§[case2]§',' ','§[case3]§')]§ )"/>
 			<export name="var11" value="( §[case1]§ §[case2]§ §[case3]§ )"/>
 			<exec command="ls -l"/>
