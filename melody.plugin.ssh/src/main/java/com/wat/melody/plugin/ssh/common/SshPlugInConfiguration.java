@@ -81,7 +81,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	private int miKeyPairSize = 2048;
 	private ISshSessionConfiguration moSshSessionConfiguration;
 	private Boolean mbMgmtEnable = true;
-	private String moMgmtLogin = "root";
+	private String moMgmtLogin;
 	private KeyPairName moMgmtKeyPairName;
 	private String moMgmtPassword;
 
