@@ -460,6 +460,10 @@ public class TaskFactory {
 		// Duplicate the PropertiesSet, so the Task can work with its own
 		// PropertiesSet
 		// Doesn't apply to the Property Nested Element
+		/*
+		 * TODO : create an interface IPropertyModifier instead of comparing to
+		 * Property.class
+		 */
 		PropertiesSet ownPs = c == Property.class ? ps : ps.copy();
 		try {
 			t.setContext(new TaskContext(n, ownPs, getProcessorManager()));
