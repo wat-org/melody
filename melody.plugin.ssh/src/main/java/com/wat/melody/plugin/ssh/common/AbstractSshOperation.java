@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.ssh.common;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.wat.melody.api.ITask;
@@ -128,15 +127,13 @@ public abstract class AbstractSshOperation implements ITask {
 			setKeyPairRepository(getPluginConf().getKeyPairRepo());
 		}
 		KeyPairRepository kpr = getKeyPairRepository();
-		File kpf = kpr.getPrivateKeyFile(getKeyPairName());
-		try {
-			if (!kpr.containsKeyPair(getKeyPairName())) {
+		if (!kpr.containsKeyPair(getKeyPairName())) {
+			try {
 				kpr.createKeyPair(getKeyPairName(), getPluginConf()
 						.getKeyPairSize(), getPassword());
+			} catch (IOException Ex) {
+				throw new SshException(Ex);
 			}
-		} catch (IOException Ex) {
-			throw new SshException(Messages.bind(
-					Messages.SshEx_INVALID_KEYPAIR_NAME_ATTR, kpf), Ex);
 		}
 	}
 
