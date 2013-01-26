@@ -214,7 +214,7 @@ public class Echo implements ITask {
 		return moFile;
 	}
 
-	@Attribute(name = FILE_ATTR)
+	@Attribute(name = FILE_ATTR, description="The '"+FILE_ATTR+"' attribute of the '"+ECHO+"' Task defines the file where the message will be written. If this attribute is not specified, the message will be displayed in the standard output.")
 	public File setFile(File f) throws IllegalFileException,
 			IllegalDirectoryException {
 		FS.validateFilePath(f.getPath());

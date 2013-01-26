@@ -296,6 +296,33 @@ public class TaskFactory {
 		return null;
 	}
 
+	private static String getDescription(Method m) {
+		NestedElement n = m.getAnnotation(NestedElement.class);
+		if (n == null) {
+			// search an Attribute
+		} else if (n.description().length() == 0) {
+			return null;
+		} else {
+			return n.description();
+		}
+		Attribute a = m.getAnnotation(Attribute.class);
+		if (a == null) {
+			return null;
+		} else if (a.description().length() == 0) {
+			return null;
+		} else {
+			return a.description();
+		}
+	}
+
+	private static String formatDescription(String desc) {
+		if (desc == null) {
+			return "";
+		} else {
+			return "\n  --> Doc : " + desc;
+		}
+	}
+
 	private ProcessorManager moProcessorManager;
 	private IRegisteredTasks moRegisteredTasks;
 
@@ -583,6 +610,7 @@ public class TaskFactory {
 				 * TODO : add the description of the nest element (defined in
 				 * method's annotation) in the error message
 				 */
+				
 				throw new TaskFactoryException(Messages.bind(
 						Messages.TaskFactoryEx_SET_NE, new Object[] {
 								n.getNodeName().toLowerCase(), State.FAILED,
@@ -727,13 +755,10 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
-			/*
-			 * TODO : add the description of the attribute (defined in method's
-			 * annotation) in the error message
-			 */
+			String desc = formatDescription(getDescription(m));
 			throw new TaskFactoryException(Messages.bind(
 					Messages.TaskFactoryEx_SET_ATTR, new Object[] { sAttrName,
-							State.FAILED, Doc.getNodeLocation(attr) }),
+							State.FAILED, desc, Doc.getNodeLocation(attr) }),
 					Ex.getCause());
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(Messages.bind(
