@@ -23,7 +23,9 @@ import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.event.State;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.api.exception.TaskFactoryAttributeException;
 import com.wat.melody.api.exception.TaskFactoryException;
+import com.wat.melody.api.exception.TaskFactoryNestedElementException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.core.nativeplugin.property.Property;
@@ -101,8 +103,9 @@ public class TaskFactory {
 	 * <p>
 	 * <i> The setter's method should respect the following rules :<BR/>
 	 * * must be <code>public</code>,<BR/>
-	 * * must not be an <code>abstract</code>,<BR/>
-	 * * must have a name equal to "set"+ the attribute name (no case match),<BR/>
+	 * * must not be <code>abstract</code>,<BR/>
+	 * * must have an {@link Attribute} annotation whose name is equal to the
+	 * attribute name (no case match),<BR/>
 	 * * must have 1 argument,<BR/>
 	 * * the argument type must be public,<BR/>
 	 * * the argument type must not be an abstract,<BR/>
@@ -168,8 +171,10 @@ public class TaskFactory {
 	 * <p>
 	 * <i> The add's method should respect the following rules :<BR/>
 	 * * must be <code>public</code>,<BR/>
-	 * * must not be an <code>abstract</code>,<BR/>
-	 * * must have a name equal to "add"+ the attribute name (no case match),<BR/>
+	 * * must not be <code>abstract</code>,<BR/>
+	 * * must have an {@link NestedElement} annotation whose name is equal to
+	 * the attribute name (no case match) and whose type is equal to
+	 * {@link NestedElement.Type#ADD},<BR/>
 	 * * must not return <code>void</code>,<BR/>
 	 * * must have 1 argument,<BR/>
 	 * * the argument type must be public,<BR/>
@@ -251,8 +256,9 @@ public class TaskFactory {
 	 * <i> The create's method should respect the following rules :<BR/>
 	 * * must be <code>public</code>,<BR/>
 	 * * must not be an <code>abstract</code>,<BR/>
-	 * * must have a name equal to "create"+ the attribute name (no case match),
-	 * <BR/>
+	 * * must have an {@link NestedElement} annotation whose name is equal to
+	 * the attribute name (no case match) and whose type is equal to
+	 * {@link NestedElement.Type#CREATE},<BR/>
 	 * * must not return <code>void</code>,<BR/>
 	 * * must have 0 argument.<BR/>
 	 * </i>
@@ -294,33 +300,6 @@ public class TaskFactory {
 			return m;
 		}
 		return null;
-	}
-
-	private static String getDescription(Method m) {
-		NestedElement n = m.getAnnotation(NestedElement.class);
-		if (n == null) {
-			// search an Attribute
-		} else if (n.description().length() == 0) {
-			return null;
-		} else {
-			return n.description();
-		}
-		Attribute a = m.getAnnotation(Attribute.class);
-		if (a == null) {
-			return null;
-		} else if (a.description().length() == 0) {
-			return null;
-		} else {
-			return a.description();
-		}
-	}
-
-	private static String formatDescription(String desc) {
-		if (desc == null) {
-			return "";
-		} else {
-			return "\n  --> Doc : " + desc;
-		}
 	}
 
 	private ProcessorManager moProcessorManager;
@@ -538,24 +517,22 @@ public class TaskFactory {
 		for (int i = 0; i < attrs.getLength(); i++) {
 			Node attr = attrs.item(i);
 			String sAttrName = attr.getNodeName();
-			String sAttrVal = null;
-			try {
-				sAttrVal = XPathExpander.expand(attr.getNodeValue(),
-						getProcessorManager().getResourcesDescriptor()
-								.getDocument().getFirstChild(), ps);
-			} catch (ExpressionSyntaxException Ex) {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_EXPAND_ATTR,
-						new Object[] { sAttrName, State.FAILED,
-								Doc.getNodeLocation(attr) }), Ex);
-			} catch (Throwable Ex) {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_EXPAND_ATTR,
-						new Object[] { sAttrName, State.CRITICAL,
-								Doc.getNodeLocation(attr) }), Ex);
-			}
 			Method m = findSetMethod(base.getClass(), sAttrName);
 			if (m != null) {
+				String sAttrVal = null;
+				try {
+					sAttrVal = XPathExpander.expand(attr.getNodeValue(),
+							getProcessorManager().getResourcesDescriptor()
+									.getDocument().getFirstChild(), ps);
+				} catch (ExpressionSyntaxException Ex) {
+					throw new TaskFactoryAttributeException(attr, m,
+							Messages.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
+									sAttrName, State.FAILED), Ex);
+				} catch (Throwable Ex) {
+					throw new TaskFactoryAttributeException(attr, m,
+							Messages.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
+									sAttrName, State.CRITICAL), Ex);
+				}
 				setMember(base, m, m.getParameterTypes()[0], attr, sAttrVal);
 			} else {
 				throw new TaskFactoryException(Messages.bind(
@@ -599,31 +576,14 @@ public class TaskFactory {
 			if (n.getNodeType() != Node.ELEMENT_NODE) {
 				continue;
 			}
-			try {
-				if (addNestedElement(base, n, ps)
-						|| createNestedElement(base, n, ps)
-						|| addNodeNestedElement(base, n)) {
-					continue;
-				}
-			} catch (TaskFactoryException Ex) {
-				/*
-				 * TODO : add the description of the nest element (defined in
-				 * method's annotation) in the error message
-				 */
-				
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_SET_NE, new Object[] {
-								n.getNodeName().toLowerCase(), State.FAILED,
-								Doc.getNodeLocation(n) }), Ex);
-			} catch (Throwable Ex) {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_SET_NE, new Object[] {
-								n.getNodeName().toLowerCase(), State.CRITICAL,
-								Doc.getNodeLocation(n) }), Ex);
+			if (addNestedElement(base, n, ps)
+					|| createNestedElement(base, n, ps)
+					|| addNodeNestedElement(base, n)) {
+				continue;
 			}
 			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_INVALID_NE,
-					new Object[] { n.getNodeName(), Doc.getNodeLocation(n) }));
+					Messages.TaskFactoryEx_INVALID_NE, n.getNodeName(),
+					Doc.getNodeLocation(n)));
 		}
 		detectsUndefinedMandatoryNestedElements(base.getClass(), nestedNodes);
 	}
@@ -656,28 +616,38 @@ public class TaskFactory {
 		if (m == null) {
 			return false;
 		}
-		Object o;
 		try {
-			o = m.getParameterTypes()[0].newInstance();
-		} catch (InstantiationException | IllegalAccessException Ex) {
-			throw new RuntimeException("Unexpected error while creating a "
-					+ "nested element by reflection. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
+			Object o;
+			try {
+				o = m.getParameterTypes()[0].newInstance();
+			} catch (InstantiationException | IllegalAccessException Ex) {
+				throw new RuntimeException("Unexpected error while adding a "
+						+ "nested element by reflection. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.", Ex);
+			}
 
-		setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
-		setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
+			setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
+			setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
 
-		try {
-			m.invoke(base, o);
-		} catch (IllegalAccessException | IllegalArgumentException Ex) {
-			throw new RuntimeException("Unexpected error while adding a "
-					+ "nested element by reflection. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		} catch (InvocationTargetException Ex) {
-			throw new TaskFactoryException(Ex.getCause());
+			try {
+				m.invoke(base, o);
+			} catch (IllegalAccessException | IllegalArgumentException Ex) {
+				throw new RuntimeException("Unexpected error while adding a "
+						+ "nested element by reflection. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.", Ex);
+			} catch (InvocationTargetException Ex) {
+				throw new TaskFactoryException(Ex.getCause());
+			}
+		} catch (TaskFactoryException Ex) {
+			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
+					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.FAILED), Ex);
+		} catch (Throwable Ex) {
+			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
+					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.CRITICAL), Ex);
 		}
 
 		return true;
@@ -689,20 +659,30 @@ public class TaskFactory {
 		if (m == null) {
 			return false;
 		}
-		Object o = null;
 		try {
-			o = m.invoke(base);
-		} catch (IllegalAccessException | IllegalArgumentException Ex) {
-			throw new RuntimeException("Unexpected error while creating a "
-					+ "nested element by reflection. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		} catch (InvocationTargetException Ex) {
-			throw new TaskFactoryException(Ex.getCause());
-		}
+			Object o = null;
+			try {
+				o = m.invoke(base);
+			} catch (IllegalAccessException | IllegalArgumentException Ex) {
+				throw new RuntimeException("Unexpected error while creating a "
+						+ "nested element by reflection. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.", Ex);
+			} catch (InvocationTargetException Ex) {
+				throw new TaskFactoryException(Ex.getCause());
+			}
 
-		setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
-		setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
+			setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
+			setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
+		} catch (TaskFactoryException Ex) {
+			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
+					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.FAILED), Ex);
+		} catch (Throwable Ex) {
+			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
+					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.CRITICAL), Ex);
+		}
 
 		return true;
 	}
@@ -736,15 +716,13 @@ public class TaskFactory {
 				o = createNewObject(param, sAttrVal, base, sAttrName);
 			}
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_CREATE_ATTR,
-					new Object[] { sAttrName, State.CRITICAL,
-							Doc.getNodeLocation(attr) }), Ex);
+			throw new TaskFactoryAttributeException(attr, m,
+					Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
+							sAttrName, State.FAILED), Ex);
 		} catch (Throwable Ex) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_CREATE_ATTR,
-					new Object[] { sAttrName, State.CRITICAL,
-							Doc.getNodeLocation(attr) }), Ex);
+			throw new TaskFactoryAttributeException(attr, m, Messages.bind(
+					Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
+					State.CRITICAL), Ex);
 		}
 
 		try {
@@ -755,15 +733,13 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
-			String desc = formatDescription(getDescription(m));
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_SET_ATTR, new Object[] { sAttrName,
-							State.FAILED, desc, Doc.getNodeLocation(attr) }),
+			throw new TaskFactoryAttributeException(attr, m, Messages.bind(
+					Messages.TaskFactoryEx_SET_ATTR, sAttrName, State.FAILED),
 					Ex.getCause());
 		} catch (Throwable Ex) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_SET_ATTR, new Object[] { sAttrName,
-							State.CRITICAL, Doc.getNodeLocation(attr) }), Ex);
+			throw new TaskFactoryAttributeException(attr, m,
+					Messages.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
+							State.CRITICAL), Ex);
 		}
 	}
 

@@ -114,20 +114,20 @@ public abstract class XPathExpander {
 	public static String expand(String sBase, Node context, PropertiesSet vars)
 			throws XPathExpressionSyntaxException {
 		int start = sBase.indexOf(DELIM_START);
+		int end = sBase.indexOf(DELIM_STOP);
 		if (start == -1) {
 			// Start Delimiter not found
-			if (sBase.indexOf(DELIM_STOP) == -1) {
+			if (end == -1) {
 				// Start Delimiter not found AND Stop Delimiter not found
 				return sBase;
 			} else {
 				// Start Delimiter not found AND Stop Delimiter found
 				throw new XPathExpressionSyntaxException(Messages.bind(
 						Messages.XPathExprSyntaxEx_START_DELIM_MISSING,
-						extractPart(sBase, sBase.indexOf(DELIM_STOP))));
+						extractPart(sBase, end)));
 			}
 		}
-		// Search for the Stop Delimiter
-		int end = sBase.indexOf(DELIM_STOP);
+		// Start Delimiter found
 		if (end == -1) {
 			// Start Delimiter found AND Stop Delimiter not found
 			throw new XPathExpressionSyntaxException(Messages.bind(
@@ -181,8 +181,7 @@ public abstract class XPathExpander {
 				return vars.get(sXPathExpr);
 			} else {
 				throw new XPathExpressionSyntaxException(Messages.bind(
-						Messages.XPathExprSyntaxEx_UNDEF_PROPERTY,
-						extractPart(sXPathExpr, 0)));
+						Messages.XPathExprSyntaxEx_UNDEF_PROPERTY, sXPathExpr));
 			}
 		} else {
 			if (context == null) {
