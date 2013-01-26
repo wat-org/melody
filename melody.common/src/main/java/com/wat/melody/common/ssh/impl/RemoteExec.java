@@ -58,14 +58,14 @@ class RemoteExec {
 					Thread.sleep(500);
 				} catch (InterruptedException Ex) {
 					if (iex == null) {
-						log.info(Messages.SessionExecMsg_GRACEFULL_SHUTDOWN);
+						log.info(Messages.ExecMsg_GRACEFULL_SHUTDOWN);
 						iex = new InterruptedException(
-								Messages.SessionExecEx_EXEC_INTERRUPTED);
+								Messages.ExecEx_INTERRUPTED);
 						iex.initCause(Ex);
 					} else {
-						log.warn(Messages.SessionExecMsg_FORCE_SHUTDOWN);
+						log.warn(Messages.ExecMsg_FORCE_SHUTDOWN);
 						iex = new InterruptedException(
-								Messages.SessionExecEx_EXEC_INTERRUPTED);
+								Messages.ExecEx_INTERRUPTED);
 						iex.initCause(Ex);
 						throw iex;
 					}

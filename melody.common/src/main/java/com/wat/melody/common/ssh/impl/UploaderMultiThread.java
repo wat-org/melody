@@ -56,7 +56,8 @@ class UploaderMultiThread {
 			return;
 		}
 		try {
-			log.debug(Messages.bind(Messages.UploadMsg_START, getSession()));
+			log.debug(Messages.bind(Messages.UploadMsg_START, getSession()
+					.getConnectionDatas()));
 			setThreadGroup(new ThreadGroup(Thread.currentThread().getName()
 					+ ">uploader"));
 			getThreadGroup().setDaemon(true);

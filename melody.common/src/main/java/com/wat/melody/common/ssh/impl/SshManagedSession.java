@@ -97,11 +97,10 @@ public class SshManagedSession implements ISshSession {
 			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
 			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX_USER_FAIL,
-					_session, getUserDatas().getLogin()));
+					getUserDatas().getLogin()));
 			connectAsMasterUserAndDeployKey();
 			openUserSession();
-			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX_USER_OK,
-					_session));
+			log.trace(Messages.SshMgmtCnxMsg_CNX_USER_OK);
 		}
 	}
 
@@ -136,9 +135,7 @@ public class SshManagedSession implements ISshSession {
 	private void openSession(ISshUserDatas sshUserDatas)
 			throws SshSessionException, InterruptedException {
 		_session.setUserDatas(sshUserDatas);
-		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX, _session));
 		_session.connect();
-		log.trace(Messages.SshMgmtCnxMsg_CNX_OK);
 	}
 
 	private void openUserSession() throws SshSessionException,
@@ -169,8 +166,8 @@ public class SshManagedSession implements ISshSession {
 			openMasterSession();
 			deployKey();
 		} catch (SshSessionException Ex) {
-			throw new SshSessionException(Messages.bind(
-					Messages.SshMgmtCnxEx_GENERIC_FAIL, _session), Ex);
+			throw new SshSessionException(Messages.SshMgmtCnxEx_GENERIC_FAIL,
+					Ex);
 		} finally {
 			disconnect();
 		}

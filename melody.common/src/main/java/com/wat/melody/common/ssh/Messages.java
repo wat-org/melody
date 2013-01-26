@@ -10,9 +10,8 @@ public class Messages extends NLS {
 	public static String KnownHostsEx_INVALID_CONTENT;
 
 	public static String SessionEx_FAILED_TO_CONNECT;
-	public static String SessionExecEx_EXEC_INTERRUPTED;
-	public static String SessionExecMsg_GRACEFULL_SHUTDOWN;
-	public static String SessionExecMsg_FORCE_SHUTDOWN;
+	public static String SessionMsg_CNX;
+	public static String SessionMsg_CNX_OK;
 
 	public static String UploadEx_FAILED;
 	public static String UploadEx_UNMANAGED;
@@ -34,6 +33,10 @@ public class Messages extends NLS {
 	public static String UploadEx_CHGRP;
 	public static String UploadEx_PUT;
 
+	public static String ExecEx_INTERRUPTED;
+	public static String ExecMsg_GRACEFULL_SHUTDOWN;
+	public static String ExecMsg_FORCE_SHUTDOWN;
+
 	public static String SshMgmtCnxEx_GENERIC_FAIL;
 	public static String SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS;
 	public static String SshMgmtCnxEx_DEPLOY_INTERRUPTED;
@@ -52,8 +55,6 @@ public class Messages extends NLS {
 	public static String SshMgmtCnxMsg_OPENED;
 	public static String SshMgmtCnxMsg_DEPLOYING;
 	public static String SshMgmtCnxMsg_DEPLOYED;
-	public static String SshMgmtCnxMsg_CNX;
-	public static String SshMgmtCnxMsg_CNX_OK;
 	public static String SshMgmtCnxMsg_CNX_USER_OK;
 
 	static {
