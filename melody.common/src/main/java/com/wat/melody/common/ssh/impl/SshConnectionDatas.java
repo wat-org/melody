@@ -16,6 +16,12 @@ public class SshConnectionDatas implements ISshConnectionDatas {
 	private Boolean mbTrust = false;
 
 	@Override
+	public String toString() {
+		return "{ host:" + getHost() + ", port:" + getPort() + ", trusted:"
+				+ getTrust() + " }";
+	}
+
+	@Override
 	public Host getHost() {
 		return moHost;
 	}

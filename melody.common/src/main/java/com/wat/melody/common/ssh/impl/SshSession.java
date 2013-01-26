@@ -3,6 +3,9 @@ package com.wat.melody.common.ssh.impl;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -28,6 +31,8 @@ import com.wat.melody.common.ssh.types.SimpleResource;
  * 
  */
 public class SshSession implements ISshSession {
+
+	private static Log log = LogFactory.getLog(SshSession.class);
 
 	private static JSch JSCH = new JSch();
 
@@ -105,11 +110,14 @@ public class SshSession implements ISshSession {
 		if (isConnected()) {
 			return;
 		}
+		log.trace(Messages.bind(Messages.SessionMsg_CNX, getConnectionDatas(),
+				getUserDatas()));
 		applyDatas();
 		applySessionConfiguration();
 		_connect();
 		// Change the name of the thread so that the log is more clear
 		_session.getConnectThread().setName(Thread.currentThread().getName());
+		log.trace(Messages.SessionMsg_CNX_OK);
 	}
 
 	@Override
@@ -137,12 +145,6 @@ public class SshSession implements ISshSession {
 	public void upload(List<SimpleResource> r, int maxPar, TemplatingHandler th)
 			throws SshSessionException, InterruptedException {
 		new UploaderMultiThread(this, r, maxPar, th).upload();
-	}
-
-	@Override
-	public String toString() {
-		return "{ host:" + getHost() + ", port:" + getPort() + ", login:"
-				+ getLogin() + " }";
 	}
 
 	@Override
@@ -280,7 +282,8 @@ public class SshSession implements ISshSession {
 			_session.connect(cnxTimeout);
 		} catch (JSchException Ex) {
 			String msg;
-			msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT, this);
+			msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT,
+					getConnectionDatas(), getUserDatas());
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'
 				// => dedicated exception on credentials errors

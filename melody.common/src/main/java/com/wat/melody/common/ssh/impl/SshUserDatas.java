@@ -1,5 +1,7 @@
 package com.wat.melody.common.ssh.impl;
 
+import java.io.File;
+
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.ssh.ISshUserDatas;
@@ -18,9 +20,18 @@ public class SshUserDatas implements ISshUserDatas {
 
 	@Override
 	public String toString() {
-		return "{ user:" + getLogin() + ", password:" + getPassword()
-				+ ", keypair repo:" + getKeyPairRepository() + ", keypairname:"
-				+ getKeyPairName() + " }";
+		return "{ user:"
+				+ getLogin()
+				+ (getPassword() != null ? ", password:" + getPassword() : "")
+				+ (getKeyPairPath() != null ? ", keypair:" + getKeyPairPath()
+						: "") + " }";
+	}
+
+	private File getKeyPairPath() {
+		if (getKeyPairName() == null || getKeyPairRepository() == null) {
+			return null;
+		}
+		return getKeyPairRepository().getPrivateKeyFile(getKeyPairName());
 	}
 
 	@Override
