@@ -277,6 +277,10 @@ public class ProcessorManagerLoader {
 						cmdLine[firstArg]));
 			}
 
+			if (getProcessorManager().getSequenceDescriptor().getFileFullPath() == null) {
+				throw new CommandLineParsingException(Messages.CmdEx_MISSING_SD);
+			}
+
 			return getProcessorManager();
 		} catch (CommandLineParsingException Ex) {
 			throw new CommandLineParsingException(Messages.CmdEx_GENERIC_PARSE,

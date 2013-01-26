@@ -415,28 +415,18 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	/**
 	 * <p>
-	 * Perform Configuration Directives validation.
+	 * Throws a {@link ProcessorManagerConfigurationException} if this object is
+	 * not correctly configured.
 	 * </p>
-	 * 
 	 * <p>
-	 * <i> * Throws a {@link ProcessorManagerConfigurationException} if this
-	 * object is not correctly configured. <BR/>
-	 * * Should be called after one or more Configuration Directives have been
-	 * updated (using public setters), in order to validate all Configuration
-	 * Directives are correctly filled. </i>
+	 * Should be called after one or more member's update, in order to validate
+	 * this object is correctly configured.
 	 * </p>
 	 * 
 	 * @throws ProcessorManagerConfigurationException
 	 *             if the Working Folder Path is not set.
 	 * @throws ProcessorManagerConfigurationException
-	 *             if the Plug-In Configuration Folder Path is not set.
-	 * @throws ProcessorManagerConfigurationException
-	 *             if the Resources Descriptor is not set.
-	 * @throws ProcessorManagerConfigurationException
 	 *             if the Sequence Descriptor is not set.
-	 * @throws ProcessorManagerConfigurationException
-	 *             if option 'Listing' and 'Run Dry Mode' are both enable.
-	 * 
 	 */
 	private void validateConfigurationDirectives()
 			throws ProcessorManagerConfigurationException {
