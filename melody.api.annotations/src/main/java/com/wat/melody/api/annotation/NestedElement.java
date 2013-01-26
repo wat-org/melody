@@ -27,6 +27,6 @@ public @interface NestedElement {
 	 * Specifies the description of the attribute.
 	 * </p>
 	 */
-	String decription() default "";
+	String description() default "";
 
 }
