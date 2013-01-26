@@ -13,6 +13,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.plugin.echo.exception.EchoException;
 
@@ -67,7 +68,7 @@ public class Echo implements ITask {
 	public Echo() {
 		initContext();
 		setMessage("");
-		setFile(null);
+		initFile();
 		setAppend(false);
 		setCreateParentDir(false);
 		setSeverity(null);
@@ -77,8 +78,30 @@ public class Echo implements ITask {
 		moContext = null;
 	}
 
+	private void initFile() {
+		moFile = null;
+	}
+
 	@Override
 	public void validate() throws EchoException {
+		if (getFile() != null && getFile().getParentFile().exists() == false) {
+			if (getCreateParentDir() == true) {
+				if (!getFile().getParentFile().mkdirs()) {
+					throw new RuntimeException(Messages.bind(
+							Messages.EchoEx_FAILED_TO_CRAETE_PARENT_DIR,
+							getFile().getPath()));
+				}
+			} else {
+				try {
+					FS.validateDirExists(getFile().getParentFile().toString());
+				} catch (IllegalDirectoryException Ex) {
+					throw new EchoException(Messages.bind(
+							Messages.EchoEx_PARENT_DIR_NOT_EXISTS,
+							new Object[] { getFile().getPath(), ECHO,
+									CREATE_PARENT_DIR_ATTR }), Ex);
+				}
+			}
+		}
 	}
 
 	/**
@@ -107,25 +130,6 @@ public class Echo implements ITask {
 	public void doProcessing() throws EchoException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (getFile() != null && getFile().getParentFile().exists() == false) {
-			if (getCreateParentDir() == true) {
-				if (!getFile().getParentFile().mkdirs()) {
-					throw new RuntimeException(Messages.bind(
-							Messages.EchoEx_FAILED_TO_CRAETE_PARENT_DIR,
-							getFile().getPath()));
-				}
-			} else {
-				try {
-					FS.validateDirExists(getFile().getParentFile()
-							.toString());
-				} catch (IllegalDirectoryException Ex) {
-					throw new EchoException(Messages.bind(
-							Messages.EchoEx_PARENT_DIR_NOT_EXISTS,
-							new Object[] { getFile().getPath(), ECHO,
-									CREATE_PARENT_DIR_ATTR }), Ex);
-				}
-			}
-		}
 		String logMsg = ECHO + " message:'" + getMessage() + "', location:";
 		if (getFile() != null) {
 			log(getSeverity(), logMsg + getFile());
@@ -211,7 +215,9 @@ public class Echo implements ITask {
 	}
 
 	@Attribute(name = FILE_ATTR)
-	public File setFile(File f) {
+	public File setFile(File f) throws IllegalFileException,
+			IllegalDirectoryException {
+		FS.validateFilePath(f.getPath());
 		File previous = getFile();
 		moFile = f;
 		return previous;
