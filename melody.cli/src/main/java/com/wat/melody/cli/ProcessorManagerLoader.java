@@ -686,7 +686,7 @@ public class ProcessorManagerLoader {
 			loadBatchMode(oProps);
 			loadPreserveTmpFileMode(oProps);
 			loadRunDryMode(oProps);
-			loadSequenceDescriptorFilePath(oProps);
+			loadSequenceDescriptor(oProps);
 			loadOrderNames(oProps);
 			loadProperties(oProps);
 			loadResourcesFilters(oProps);
@@ -716,7 +716,7 @@ public class ProcessorManagerLoader {
 				if (vtsd.length() == 0) {
 					continue;
 				}
-				delcareLoggingVariableToSubstitute(oProps, vtsd);
+				loadLoggingVariableToSubstitute(oProps, vtsd);
 			}
 		} catch (ConfigurationLoadingException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -725,7 +725,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void delcareLoggingVariableToSubstitute(PropertiesSet oProps,
+	private void loadLoggingVariableToSubstitute(PropertiesSet oProps,
 			String vtsd) throws ConfigurationLoadingException {
 		if (!oProps.containsKey(vtsd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -877,7 +877,7 @@ public class ProcessorManagerLoader {
 				if (rdd.length() == 0) {
 					continue;
 				}
-				delcareResourcesDescriptorFilePath(oProps, rdd);
+				loadResourcesDescriptor(oProps, rdd);
 			}
 		} catch (ConfigurationLoadingException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -886,8 +886,8 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void delcareResourcesDescriptorFilePath(PropertiesSet oProps,
-			String rdd) throws ConfigurationLoadingException, IOException {
+	private void loadResourcesDescriptor(PropertiesSet oProps, String rdd)
+			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(rdd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, rdd));
@@ -970,7 +970,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadSequenceDescriptorFilePath(PropertiesSet oProps)
+	private void loadSequenceDescriptor(PropertiesSet oProps)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(SEQUENCE_DESCRIPTOR_FILE_PATH)) {
 			return;
