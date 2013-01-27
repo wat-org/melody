@@ -6,6 +6,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.w3c.dom.NamedNodeMap;
@@ -27,6 +29,7 @@ import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryAttributeException;
 import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.api.exception.TaskFactoryNestedElementException;
+import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.xpathextensions.XPathExpander;
@@ -716,7 +719,7 @@ public class TaskFactory {
 				o = createNewFile(param, sAttrVal);
 			}
 			if (o == null) {
-				o = createNewObject(param, sAttrVal, base, sAttrName);
+				o = createNewObject(param, sAttrVal);
 			}
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryAttributeException(attr, m,
@@ -831,63 +834,41 @@ public class TaskFactory {
 				Arrays.asList(param.getEnumConstants())));
 	}
 
-	private Object createNewFile(Class<?> param, String sAttrVal) {
-		if (!heritsClass(param, File.class)) {
+	private Object createNewFile(Class<?> param, String sAttrVal)
+			throws TaskFactoryException {
+		if (!(param == Path.class) && !heritsClass(param, File.class)
+				&& !implementsInterface(param, IFileBased.class)) {
 			return null;
 		}
-		/*
-		 * TODO : isn't there a bug ? when the object to create is not a file,
-		 * but a child of a File...
-		 */
-		File item = new File(sAttrVal);
-		if (item.isAbsolute()) {
-			return item;
+		// make an absolute path, relative to the sequence descriptor basedir
+		if (!new File(sAttrVal).isAbsolute()) {
+			File sBaseDir = getProcessorManager().getSequenceDescriptor()
+					.getBaseDir();
+			try {
+				sAttrVal = new File(sBaseDir, sAttrVal).getCanonicalPath();
+			} catch (IOException Ex) {
+				throw new RuntimeException("IO error while get the Canonical "
+						+ "Path of '" + sAttrVal + "'.", Ex);
+			}
 		}
-		File sBaseDir = getProcessorManager().getSequenceDescriptor()
-				.getBaseDir();
-		if (sBaseDir == null) {
-			throw new RuntimeException("Unexpected error while verifying the "
-					+ "Sequence Descriptor's basedir. "
-					+ "Because the Sequence Descriptor's basedir have been "
-					+ "previously initialized, such error cannot happened. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.");
+		if (param == Path.class) {
+			return Paths.get(sAttrVal);
 		}
-		try {
-			return new File(sBaseDir, sAttrVal).getCanonicalFile();
-		} catch (IOException Ex) {
-			throw new RuntimeException("IO error while get the Canonical "
-					+ "File of '" + sAttrVal + "'.", Ex);
-		}
+		return createNewObject(param, sAttrVal);
 	}
 
-	private Object createNewObject(Class<?> param, String sAttrVal,
-			Object base, String sAttrName) throws TaskFactoryException {
-		Object o = null;
-		Constructor<?> ctor = null;
+	private Object createNewObject(Class<?> param, String sAttrVal)
+			throws TaskFactoryException {
 		try {
-			ctor = param.getConstructor(String.class);
-		} catch (NoSuchMethodException Ex) {
+			return param.getConstructor(String.class).newInstance(sAttrVal);
+		} catch (NoSuchMethodException | InstantiationException
+				| IllegalAccessException Ex) {
 			throw new TaskFactoryException(Messages.bind(
 					Messages.TaskFactoryEx_NO_CONSTRUCTOR_MATCH,
 					param.getCanonicalName()));
-		}
-		if (!Modifier.isPublic(ctor.getModifiers())) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_NO_CONSTRUCTOR_MATCH,
-					param.getCanonicalName()));
-		}
-		try {
-			o = ctor.newInstance(sAttrVal);
-		} catch (InstantiationException | IllegalAccessException Ex) {
-			throw new RuntimeException("Unexpected error while creating an "
-					+ "attribute setter's parameter by reflection. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
 			throw new TaskFactoryException(Ex.getCause());
 		}
-		return o;
 	}
 
 }
