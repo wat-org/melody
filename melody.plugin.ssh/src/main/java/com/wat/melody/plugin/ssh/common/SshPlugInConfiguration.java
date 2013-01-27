@@ -395,7 +395,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	public File setKeyPairRepo(String val)
+	public KeyPairRepository setKeyPairRepo(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

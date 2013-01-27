@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
@@ -26,50 +27,15 @@ import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
  * The keyPair Name is unique in the whole Repository. A
  * {@link KeyPairRepository} only holds the privateKey of each KeyPair. The
  * PublicKey and the FingerPrint of each KeyPair can be computed from the
- * PrivateKey, using {@link KeyPairHelper}.
+ * PrivateKey using this object's methods.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class KeyPairRepository extends File {
+public class KeyPairRepository implements IFileBased {
 
-	private static final long serialVersionUID = 7188192370067564134L;
-
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(String parent, String child)
-			throws KeyPairRepositoryException {
-		super(parent, child);
-		try {
-			FS.validateDirExists(this.getPath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_INVALID_REPO_PATH, this.getPath()),
-					Ex);
-		}
-	}
-
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(File parent, String child)
-			throws KeyPairRepositoryException {
-		this(parent.getPath(), child);
-	}
+	private File _f;
 
 	/**
 	 * 
@@ -81,7 +47,13 @@ public class KeyPairRepository extends File {
 	 *             if the given path is <code>null</code>.
 	 */
 	public KeyPairRepository(String sPath) throws KeyPairRepositoryException {
-		this((String) null, sPath);
+		_f = new File(sPath);
+		try {
+			FS.validateDirExists(_f.getPath());
+		} catch (IllegalDirectoryException Ex) {
+			throw new KeyPairRepositoryException(Messages.bind(
+					Messages.KeyPairRepoEx_INVALID_REPO_PATH, _f.getPath()), Ex);
+		}
 	}
 
 	/**
@@ -143,20 +115,19 @@ public class KeyPairRepository extends File {
 	 * 
 	 * @return the created
 	 * 
-	 * @throws IllegalArgumentException
-	 *             if a KeyPair with the same name already exists in this
-	 *             KeyPairRepository.
 	 * @throws IOException
 	 *             if an IO error occurred while creating the KeyPair in the
 	 *             repository.
+	 * @throws IllegalArgumentException
+	 *             if a KeyPair with the same name already exists in this
+	 *             KeyPairRepository.
 	 */
 	public KeyPair createKeyPair(KeyPairName keyPairName, int size,
 			String sPassphrase) throws IOException {
 		if (containsKeyPair(keyPairName)) {
-			throw new IllegalArgumentException(keyPairName
-					+ ": KeyPair Name already exists. "
-					+ "Cannot create this KeyPair KeyPair Repository '"
-					+ getPath() + "'.");
+			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
+					+ "already exists. Cannot create this KeyPair into the "
+					+ "KeyPair Repository '" + _f.getPath() + "'.");
 		}
 		KeyPairGenerator keyGen = null;
 		try {
@@ -179,21 +150,21 @@ public class KeyPairRepository extends File {
 	 * 
 	 * @return
 	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given KeyPair's PrivateKey file is not a valid file.
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair's doesn't exists in this
+	 *             KeyPairRepository.
 	 */
-	public String getPrivateKey(KeyPairName keyPairName)
-			throws KeyPairRepositoryException, IOException {
+	public String getPrivateKey(KeyPairName keyPairName) throws IOException {
 		try {
-			Path path = getPrivateKeyPath(keyPairName);
-			return new String(Files.readAllBytes(path));
+			return new String(
+					Files.readAllBytes(getPrivateKeyPath(keyPairName)));
 		} catch (FileNotFoundException Ex) {
-			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_PRIVATE_KEY_NOT_FOUND, keyPairName,
-					getPath()), Ex);
+			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
+					+ "doesn't exists. Cannot retreive this KeyPair into the "
+					+ "KeyPair Repository '" + _f.getPath() + "'.");
 		}
 	}
 
@@ -203,7 +174,7 @@ public class KeyPairRepository extends File {
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ ".");
 		}
-		return Paths.get(getPath().toString(), keyPairName.getValue());
+		return Paths.get(_f.getPath().toString(), keyPairName.getValue());
 	}
 
 	public File getPrivateKeyFile(KeyPairName keyPairName) {
@@ -212,19 +183,19 @@ public class KeyPairRepository extends File {
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ ".");
 		}
-		return new File(getPath(), keyPairName.getValue());
+		return new File(_f.getPath(), keyPairName.getValue());
 	}
 
 	public KeyPair getKeyPair(KeyPairName keyPairName, String passphrase)
 			throws IOException {
-		if (!containsKeyPair(keyPairName)) {
-			throw new IllegalArgumentException(keyPairName
-					+ ": KeyPair Name doens't exists. "
-					+ "Cannot get this KeyPair in the KeyPair Repository '"
-					+ getPath() + "'.");
+		try {
+			return KeyPairHelper.readOpenSslPEMPrivateKey(
+					getPrivateKeyPath(keyPairName), passphrase);
+		} catch (FileNotFoundException Ex) {
+			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
+					+ "doesn't exists. Cannot retreive this KeyPair into the "
+					+ "KeyPair Repository '" + _f.getPath() + "'.");
 		}
-		return KeyPairHelper.readOpenSslPEMPrivateKey(
-				getPrivateKeyPath(keyPairName), passphrase);
 	}
 
 	public String getPublicKeyInOpenSshFormat(KeyPairName keyPairName,
