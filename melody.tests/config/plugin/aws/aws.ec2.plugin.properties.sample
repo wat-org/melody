@@ -15,12 +15,10 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.ec2.common.Aws
 #####################
 
 ### the AWS EC2 access key
-# replace it with your AWS Acces Key
-accessKey=AZERTYUIOP1234567890
+accessKey=<replace me with your AWS Acces Key>
 
 ### the AWS EC2 access key
-# replace it with your AWS Secret Key
-secretKey=+AZERTYUIOPMLKJHGFDSQWXCVBNA+1234567890+
+secretKey=<replace it with your AWS Secret Key>
 
 
 #####################
