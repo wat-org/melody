@@ -2,6 +2,11 @@ package com.wat.melody.api.exception;
 
 import com.wat.melody.common.ex.MelodyException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class ProcessorManagerFactoryException extends MelodyException {
 
 	private static final long serialVersionUID = -5014191251258746878L;

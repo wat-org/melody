@@ -2,6 +2,11 @@ package com.wat.melody.common.network.exception;
 
 import com.wat.melody.common.ex.MelodyException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class IllegalAccessException extends MelodyException {
 
 	private static final long serialVersionUID = -3214321446579432249L;
@@ -12,6 +17,10 @@ public class IllegalAccessException extends MelodyException {
 
 	public IllegalAccessException(String msg) {
 		super(msg);
+	}
+
+	public IllegalAccessException(Throwable cause) {
+		super(cause);
 	}
 
 	public IllegalAccessException(String msg, Throwable cause) {

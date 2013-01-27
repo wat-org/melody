@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
+import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITopLevelTask;
@@ -28,7 +29,6 @@ import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.api.exception.TaskFactoryNestedElementException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
@@ -372,13 +372,14 @@ public class TaskFactory {
 	 *             if the given {@link Node} is doesn't represent a valid
 	 *             {@link ITask}.
 	 */
-	private Class<ITask> findTaskClass(Node n) throws TaskFactoryException {
+	private Class<? extends ITask> findTaskClass(Node n)
+			throws TaskFactoryException {
 		String sSimpleName = n.getNodeName();
-		if (!getRegisteredTasks().containsRegisteredTaskClass(sSimpleName)) {
+		if (!getRegisteredTasks().contains(sSimpleName)) {
 			throw new TaskFactoryException(Messages.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
 		}
-		return getRegisteredTasks().getRegisteredTaskClass(sSimpleName);
+		return getRegisteredTasks().get(sSimpleName);
 	}
 
 	/**
@@ -428,7 +429,8 @@ public class TaskFactory {
 	 *             if a the given {@link Node} is not an XML Element.
 	 * 
 	 */
-	public ITask newTask(Node n, PropertiesSet ps) throws TaskFactoryException {
+	public synchronized ITask newTask(Node n, PropertiesSet ps)
+			throws TaskFactoryException {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node (an "
@@ -444,11 +446,11 @@ public class TaskFactory {
 					+ ": Not accepted. " + "Must be a valid XML Elment node.");
 		}
 
-		Class<?> c = findTaskClass(n);
+		Class<? extends ITask> c = findTaskClass(n);
 		validateTaskHierarchy(c, n.getParentNode());
 		ITask t = null;
 		try {
-			t = (ITask) c.newInstance();
+			t = c.newInstance();
 		} catch (InstantiationException | IllegalAccessException Ex) {
 			throw new RuntimeException("Unexpected error while creating a "
 					+ "Task by reflection. "
@@ -459,12 +461,9 @@ public class TaskFactory {
 		}
 		// Duplicate the PropertiesSet, so the Task can work with its own
 		// PropertiesSet
-		// Doesn't apply to the Property Nested Element
-		/*
-		 * TODO : create an interface IPropertyModifier instead of comparing to
-		 * Property.class
-		 */
-		PropertiesSet ownPs = c == Property.class ? ps : ps.copy();
+		// Doesn't apply to ITask which implements IShareProperties
+		PropertiesSet ownPs = implementsInterface(c, IShareProperties.class) ? ps
+				: ps.copy();
 		try {
 			t.setContext(new TaskContext(n, ownPs, getProcessorManager()));
 		} catch (TaskException Ex) {
@@ -836,7 +835,10 @@ public class TaskFactory {
 		if (!heritsClass(param, File.class)) {
 			return null;
 		}
-
+		/*
+		 * TODO : isn't there a bug ? when the object to create is not a file,
+		 * but a child of a File...
+		 */
 		File item = new File(sAttrVal);
 		if (item.isAbsolute()) {
 			return item;

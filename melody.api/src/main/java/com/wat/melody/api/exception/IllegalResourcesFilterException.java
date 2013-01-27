@@ -2,6 +2,11 @@ package com.wat.melody.api.exception;
 
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class IllegalResourcesFilterException extends IllegalFilterException {
 
 	private static final long serialVersionUID = -2498706541654205817L;

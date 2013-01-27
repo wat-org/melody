@@ -19,6 +19,10 @@ public class IllegalGroupIDException extends MelodyException {
 		super(msg);
 	}
 
+	public IllegalGroupIDException(Throwable cause) {
+		super(cause);
+	}
+
 	public IllegalGroupIDException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

@@ -15,8 +15,6 @@ import com.wat.melody.common.ex.Util;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

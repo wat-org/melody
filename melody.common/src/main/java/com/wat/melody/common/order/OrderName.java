@@ -3,8 +3,6 @@ package com.wat.melody.common.order;
 import com.wat.melody.common.order.exception.IllegalOrderNameException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

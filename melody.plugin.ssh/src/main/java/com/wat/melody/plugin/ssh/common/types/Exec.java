@@ -6,6 +6,11 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class Exec {
 
 	/**

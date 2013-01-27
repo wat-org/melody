@@ -1,6 +1,8 @@
 package com.wat.melody.cli;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.FactoryConfigurationError;
 
@@ -37,9 +39,9 @@ import com.wat.melody.common.properties.exception.IllegalPropertiesSetFileFormat
 
 /**
  * <p>
- * This class is especially designed to create and initialize an
- * {@link IProcessorManager} with Configuration Directives found in a Global
- * Configuration File and/or with Options found in a Command Line.
+ * Create and initialize an {@link IProcessorManager} with Configuration
+ * Directives found in a Global Configuration File and/or with Options found in
+ * a Command Line.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -78,34 +80,34 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Create a new {@link ProcessorManagerLoader} object, which can create and
-	 * initialize a {@link IProcessorManager} object with either Configuration
-	 * Directives found in Global Configuration File (call
-	 * {@link #loadGlobalConfigurationFile(String)}) and/or with Options found
-	 * in a Command Line (call {@link #parseCommandLine(String[])}.
+	 * Create a new {@link ProcessorManagerLoader} object.
 	 * </p>
-	 * 
-	 * @param pm
-	 *            is the <code>ProcessorManager</code> object whose members will
-	 *            be set.
-	 * 
 	 */
 	public ProcessorManagerLoader() {
 	}
 
 	/**
 	 * <p>
-	 * Get the inner <code>IProcessorManager</code> instance (see
-	 * {@link #ProcessorManagerLoader(IProcessorManager)}).
+	 * Get the inner {@link IProcessorManager} object.
 	 * </p>
 	 * 
-	 * @return the previous <code>IProcessorManager</code> object.
-	 * 
+	 * @return the inner {@link IProcessorManager} object.
 	 */
 	public IProcessorManager getProcessorManager() {
 		return moProcessorManager;
 	}
 
+	/**
+	 * <p>
+	 * Set the inner {@link IProcessorManager} object to the given
+	 * {@link IProcessorManager}.
+	 * </p>
+	 * 
+	 * @return the previous inner {@link IProcessorManager} object.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link IProcessorManager} is <code>null</code>.
+	 */
 	private IProcessorManager setProcessorManager(IProcessorManager pm) {
 		if (pm == null) {
 			throw new IllegalArgumentException("null: Not accepted."
@@ -118,7 +120,7 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Initialize the inner <code>IProcessorManager</code> object with the
+	 * Initialize the inner {@link IProcessorManager} object with the
 	 * Configuration Directives found in the Global Configuration File and with
 	 * the Options found in the Command Line.
 	 * </p>
@@ -141,39 +143,53 @@ public class ProcessorManagerLoader {
 	 * <li><code>-C < Global Configuration File Path  ></code></li> Load the
 	 * specified Global Configuration File (see
 	 * {@link #loadGlobalConfigurationFile(String)} ;</BR>
+	 * 
 	 * <li><code>-q</code></li> Decrease the log threshold (see
 	 * {@link IProcessorManager#decreaseLogThreshold()} ;</BR>
+	 * 
 	 * <li><code>-v</code></li> Increase the log threshold (see
 	 * {@link IProcessorManager#increaseLogThreshold()} ;</BR>
+	 * 
 	 * <li><code>-E < Resources Descriptor File Path ></code></li> Set the path
 	 * of the Resources Descriptor with the given value (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#load(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#add(String)}) ;</BR>
+	 * 
 	 * <li><code>-f < Sequence Descriptor File Path ></code></li> Set the path
 	 * of the Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
+	 * 
 	 * <li><code>-F < Filter ></code></li> Add the given Filter to the Resources
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#addFilter(String)}) ;</BR>
+	 * 
 	 * <li><code>-T < Filter ></code></li> Add the given Filter to the Target
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#addTargetsFilter(String)}) ;</BR>
+	 * 
 	 * <li><code>-o < Order ></code></li> Add the given Order to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addOrder(String)}) ;</BR>
+	 * 
 	 * <li><code>-B</code></li> Enable 'Batch Mode' (see
 	 * {@link IProcessorManager#enableBatchMode()}) ;</BR>
+	 * 
 	 * <li><code>-b</code></li> Disable 'Batch Mode' (see
 	 * {@link IProcessorManager#disableBatchMode()}) ;</BR>
+	 * 
 	 * <li><code>-P</code></li> Enable 'Preserve Temporary Files Mode' (see
 	 * {@link IProcessorManager#enablePreserveTemporaryFilesMode()}) ;</BR>
+	 * 
 	 * <li><code>-p</code></li> Disable 'Preserve Temporary Files Mode' (see
 	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
+	 * 
 	 * <li><code>-D</code></li> Enable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#enableRunDryMode()}) ;</BR>
+	 * 
 	 * <li><code>-d</code></li> Disable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#disableRunDryMode()}) ;</BR>
+	 * 
 	 * <li><code>-V < Property ></code></li> Add the given Property to the
 	 * Sequence Descriptor (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
@@ -200,7 +216,7 @@ public class ProcessorManagerLoader {
 	 *             contains a malformed Unicode escape sequence.
 	 * @throws ConfigurationLoadingException
 	 *             if the Global Configuration File Path points to a file which
-	 *             is not a valid GlobalConfiguration File (e.g. mandatory
+	 *             is not a valid Global Configuration File (e.g. mandatory
 	 *             Configuration Directives are missing, or a Configuration
 	 *             Directives's value refers to a non-existent file, or a
 	 *             Configuration Directives's value is not valid, ...).
@@ -277,6 +293,7 @@ public class ProcessorManagerLoader {
 						cmdLine[firstArg]));
 			}
 
+			// ensure a sequence descriptor have beenF loaded
 			if (getProcessorManager().getSequenceDescriptor().getFileFullPath() == null) {
 				throw new CommandLineParsingException(Messages.CmdEx_MISSING_SD);
 			}
@@ -287,6 +304,8 @@ public class ProcessorManagerLoader {
 					Ex);
 		}
 	}
+	
+	private Pattern C_OPTION_FINDER = Pattern.compile("^-(\\w*)C\\w*$");
 
 	/**
 	 * <p>
@@ -314,13 +333,15 @@ public class ProcessorManagerLoader {
 		// Begin at position 1 because the parameter at position 0 is the
 		// Default Global Configuration File Path
 		for (int i = 1; i < cmdLine.length; i++) {
-			if (cmdLine[i].matches("^-\\w*C$")) {
+			Matcher match = C_OPTION_FINDER.matcher(cmdLine[i]);
+			if (match.matches()) {
 				if (sUserDefinedGCFilePath != null) {
 					throw new CommandLineParsingException(
 							Messages.CmdEx_MULTIPLE_GLOBAL_CONF_FILE_ERROR);
 				}
+				i += match.group(1).length()+1;
 				try {
-					if (cmdLine[++i].equals("--")) {
+					if (cmdLine[i].equals("--")) {
 						throw new CommandLineParsingException(Messages.bind(
 								Messages.CmdEx_MISSING_OPTION_VALUE, 'C'));
 					}
@@ -336,8 +357,8 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Initialize the inner <code>ProcessorManager</code> instance's members
-	 * with the Options found in the Command Line.
+	 * Initialize the inner {@link IProcessorManager}'s members with the Options
+	 * found in the Command Line.
 	 * </p>
 	 * 
 	 * @param cmdLine
@@ -351,7 +372,7 @@ public class ProcessorManagerLoader {
 	 *             value is missing, or a Option's value is not valid, ...).
 	 * @throws IOException
 	 *             if an IO error occurred while reading a file mentioned in a
-	 *             Configuration Directive.
+	 *             Command Line Option.
 	 */
 	private int parseOptions(String[] cmdLine)
 			throws CommandLineParsingException, IOException {
@@ -579,62 +600,77 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Initialize the inner <code>IProcessorManager</code> instance's members
-	 * with the Configuration Directives found in the Global Configuration File.
+	 * Initialize the inner {@link IProcessorManager}'s members with the
+	 * Configuration Directives found in the Global Configuration File.
 	 * </p>
 	 * <p>
 	 * The Global Configuration File must be a properties set, as defined in by
-	 * the {@link ConfigurationFile} class.
+	 * the {@link PropertiesSet} class.
 	 * </p>
 	 * <p>
 	 * Global Configuration File's available Configuration Directives are :
 	 * <ul>
-	 * <li><code>archivedLogsFolderPath</code></li> Set the
-	 * archivedLogsFolderPath with the given value (see
-	 * {@link #setArchivedLogsFolderPath(String)}) ;</BR>
-	 * <li><code>logsFolderPath</code></li> Set the logsFolderPath with the
-	 * given value (see {@link #setLogsFolderPath(String)}) ;</BR>
-	 * <li><code>workingFolderPath</code><BR>
-	 * Set the Working Folder Path to the given value (see
+	 * <li><code>processorManagerCanonicalClassName</code></li> Defines the
+	 * {@link IProcessorManager} implementation to use ;</BR>
+	 * 
+	 * <li><code>tasks.directives</code></li> Defines the canonical class name
+	 * of all {@link ITask} implementation to use ;</BR>
+	 * 
+	 * <li><code>plugin.configuration.directives</code></li> Defines the path of
+	 * the Plug-In configuration file to load ;</BR>
+	 * 
+	 * <li><code>workingFolderPath</code></li> Set the Working Folder Path to
+	 * the given value (see
 	 * {@link IProcessorManager#setWorkingFolderPath(String)}) ;</BR>
-	 * <li><code>pluginConfigurationFolderPath</code></li> Set the PlugIn
-	 * Configuration Folder Path to the given value (see
-	 * {@link IProcessorManager#setPluginConfigurationFolderPath(String)})
-	 * ;</BR>
+	 * 
 	 * <li><code>maxSimultaneousStep</code></li> Set the maximum number of
 	 * parallel worker (see
 	 * {@link IProcessorManager#setMaxSimultaneousStep(int)}) ;</BR>
+	 * 
 	 * <li><code>hardKillTimeout</code></li> Set the maximum amount of seconds a
 	 * worker will be waited before killed (see
 	 * {@link IProcessorManager#setHardKillTimeout(int)}) ;</BR>
-	 * <li><code>logThreshold</code></li> Set the log threshold to the given
-	 * value (see {@link IProcessorManager#setLogThreshold(LogThreshold)})
-	 * ;</BR>
-	 * <li><code>resourcesDescriptorFilePath</code></li> Set the path of the
-	 * Resources Descriptor with the given value (see
+	 * 
+	 * <li><code>loggingConfigurationFile</code></li> Set the path of the log4j
+	 * configuration file ;</BR>
+	 * 
+	 * <li><code>loggingVariablesToSubstitute</code></li> Set the name of log4j
+	 * properties to add to system properties, so that they can be substitute in
+	 * the log4j configuration file ;</BR>
+	 * 
+	 * <li><code>resourcesDescriptors</code></li> add the given resource
+	 * descriptors to the Resource Descriptor (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#load(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#add(String)}) ;</BR>
+	 * 
 	 * <li><code>batchMode</code></li> Enable/disable 'Batch Mode' (see
 	 * {@link IProcessorManager#disableBatchMode()} ;</BR>
+	 * 
 	 * <li><code>preserveTemporaryFilesMode</code></li> Enable/disable 'Preserve
 	 * Temporary Files Mode' (see
 	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
+	 * 
 	 * <li><code>runDryMode</code></li> Enable/disable 'Run Dry Mode' (see
 	 * {@link IProcessorManager#disableRunDryMode()} ;</BR>
+	 * 
 	 * <li><code>sequenceDescriptorFilePath</code></li> Set the path of the
 	 * Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
-	 * <li><code>order</code></li> Add the given order to the Sequence
+	 * 
+	 * <li><code>orders</code></li> Add the given orders to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#addOrder(String)}) ;</BR>
+	 * {@link ISequenceDescriptor#addOrders(String)}) ;</BR>
+	 * 
 	 * <li><code>properties</code></li> Add the given properties to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
 	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</BR>
+	 * 
 	 * <li><code>resourcesFilters</code></li> Add the given filters to the
 	 * Resources Descriptor (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#setFilter(String)}) ;</BR>
+	 * 
 	 * <li><code>targetFilters</code></li> Add the given filters to the Target
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
 	 * {@link IResourcesDescriptor#setTargetFilter(String)}) ;</BR>
@@ -1205,7 +1241,7 @@ public class ProcessorManagerLoader {
 		 * respect ITask specification. Should only happened during Task
 		 * Development. No need to catch/re-throw.
 		 */
-		rts.registerTaskClass(c);
+		rts.put(c);
 	}
 
 	private void loadAllPlugInsConfiguration(PropertiesSet oProps)
@@ -1233,8 +1269,8 @@ public class ProcessorManagerLoader {
 		String pcf = loadPlugInConfigurationDirective(oProps, pcd);
 		PropertiesSet pcps = loadPlugInConfigurationFile(oProps, pcd, pcf);
 		String pcc = findPlugInConfigurationClassName(oProps, pcd, pcps);
-		Class<IPlugInConfiguration> c = convertPlugInConfigurationClass(pcps,
-				pcc);
+		Class<? extends IPlugInConfiguration> c = convertPlugInConfigurationClass(
+				pcps, pcc);
 		IPlugInConfiguration pc = instanciatePlugInConfiguration(pcps, c);
 		registerPlugInConfiguration(pc);
 	}
@@ -1292,7 +1328,7 @@ public class ProcessorManagerLoader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class<IPlugInConfiguration> convertPlugInConfigurationClass(
+	private Class<? extends IPlugInConfiguration> convertPlugInConfigurationClass(
 			PropertiesSet pcps, String pcc)
 			throws ConfigurationLoadingException {
 		Class<?> c = null;
@@ -1310,9 +1346,9 @@ public class ProcessorManagerLoader {
 							pcps.getFilePath(), pcc,
 							Ex.getMessage().replaceAll("/", ".") }));
 		}
-		Class<IPlugInConfiguration> cc = null;
+		Class<? extends IPlugInConfiguration> cc = null;
 		try {
-			cc = (Class<IPlugInConfiguration>) c;
+			cc = (Class<? extends IPlugInConfiguration>) c;
 		} catch (ClassCastException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CC_CONF_DIRECTIVE,
@@ -1320,7 +1356,7 @@ public class ProcessorManagerLoader {
 							pcps.getFilePath(), pcc }));
 		}
 		IProcessorManager pm = getProcessorManager();
-		if (pm.getPluginConfigurations().containsKey(cc)) {
+		if (pm.getPluginConfigurations().contains(cc)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
 					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
@@ -1330,11 +1366,11 @@ public class ProcessorManagerLoader {
 	}
 
 	private IPlugInConfiguration instanciatePlugInConfiguration(
-			PropertiesSet pcps, Class<IPlugInConfiguration> c)
+			PropertiesSet pcps, Class<? extends IPlugInConfiguration> c)
 			throws ConfigurationLoadingException {
 		IPlugInConfiguration pc = null;
 		try {
-			pc = (IPlugInConfiguration) c.newInstance();
+			pc = c.newInstance();
 		} catch (InstantiationException | IllegalAccessException Ex) {
 			throw new ConfigurationLoadingException(
 					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
@@ -1355,7 +1391,7 @@ public class ProcessorManagerLoader {
 
 	private void registerPlugInConfiguration(IPlugInConfiguration pc) {
 		IProcessorManager pm = getProcessorManager();
-		pm.getPluginConfigurations().put(pc.getClass(), pc);
+		pm.getPluginConfigurations().put(pc);
 	}
 
 	/**

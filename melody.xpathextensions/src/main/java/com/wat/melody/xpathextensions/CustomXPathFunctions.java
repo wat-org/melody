@@ -6,6 +6,11 @@ import javax.xml.namespace.NamespaceContext;
 
 import com.wat.melody.common.xml.Doc;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class CustomXPathFunctions {
 
 	public static final String NAMESPACE = "melody";

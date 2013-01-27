@@ -59,9 +59,9 @@
 	<target name="Cmd_UC06">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./config/melody.properties" />
-			<arg value="-Co" />
-			<arg value="./tests/order/mc.properties" />
+			<arg value="-oC" />
 			<arg value="invalid_order" />
+			<arg value="./tests/order/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

@@ -2,6 +2,11 @@ package com.wat.melody.common.network;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class FwRulesDecomposed extends ArrayList<FwRuleDecomposed> {
 
 	private static final long serialVersionUID = 2765454358787998895L;

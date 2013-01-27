@@ -2,6 +2,11 @@ package com.wat.melody.common.network;
 
 import com.wat.melody.common.network.exception.IllegalInterfaceException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class Interface {
 
 	public static final String PATTERN = ".*";

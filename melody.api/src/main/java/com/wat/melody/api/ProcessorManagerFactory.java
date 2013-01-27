@@ -4,12 +4,16 @@ import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 
 /**
  * <p>
- * Creates {@link IProcessorManager} objects.
+ * This factory have the capacity to create new {@link IProcessorManager}.
  * </p>
- * 
+ * <p>
+ * The concrete implementation of the {@link IProcessorManager} this factory
+ * will create is defined in the system property
+ * {@link #PROCESSOR_MANAGER_IMPL_KEY}.
+ * </p>
  * <p>
  * The system property {@link #PROCESSOR_MANAGER_IMPL_KEY} must be equal to the
- * canonical class name of a {@link IProcessorManager} implementation. Use
+ * canonical class name of an {@link IProcessorManager} implementation. Use
  * {@link System#setProperty(String, String)} to set such property.
  * </p>
  * 
@@ -22,11 +26,40 @@ public class ProcessorManagerFactory {
 
 	private Class<IProcessorManager> moPMClass;
 
+	/**
+	 * <p>
+	 * Create a new {@link ProcessorManagerFactory}, which have the capacity to
+	 * create new {@link IProcessorManager}.
+	 * </p>
+	 * <p>
+	 * The concrete implementation of the {@link IProcessorManager} this factory
+	 * will create is defined in the system property
+	 * {@link #PROCESSOR_MANAGER_IMPL_KEY}.
+	 * </p>
+	 * <p>
+	 * The system property {@link #PROCESSOR_MANAGER_IMPL_KEY} must be equal to
+	 * the canonical class name of an {@link IProcessorManager} implementation.
+	 * Use {@link System#setProperty(String, String)} to set such property.
+	 * </p>
+	 * 
+	 * @return a new {@link ProcessorManagerFactory}.
+	 * 
+	 * @throws ProcessorManagerFactoryException
+	 *             if the given implementation canonical class name is not a
+	 *             valid {@link IProcessorManager}.
+	 */
 	public static ProcessorManagerFactory newInstance()
 			throws ProcessorManagerFactoryException {
 		return new ProcessorManagerFactory();
 	}
 
+	/**
+	 * <p>
+	 * Create a new {@link IProcessorManager}.
+	 * </p>
+	 * 
+	 * @return a new {@link IProcessorManager}.
+	 */
 	public IProcessorManager newProcessorManager() {
 		try {
 			return moPMClass.newInstance();

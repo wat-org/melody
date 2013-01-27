@@ -20,8 +20,6 @@ import com.wat.melody.common.order.OrderName;
 import com.wat.melody.core.nativeplugin.order.exception.OrderException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

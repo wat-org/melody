@@ -41,11 +41,11 @@ public interface IResourcesDescriptor {
 
 	/**
 	 * <p>
-	 * Get the {@link DUNID} of the given{@link Node}.
+	 * Get the {@link DUNID} of the given {@link Node}.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is a {@link Node} of the Resources Descriptor.
+	 *            is a {@link Node} owned by this object.
 	 * 
 	 * @return the {@link DUNID} of the given {@link Node}.
 	 * 
@@ -72,7 +72,7 @@ public interface IResourcesDescriptor {
 	 *         <code>null</code> otherwise.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link DUNID} is <code>null</code>.
 	 */
 	public Node getNode(DUNID melodyID);
 
@@ -81,13 +81,13 @@ public interface IResourcesDescriptor {
 	 */
 	/**
 	 * <p>
-	 * Get the attribute's value of the requested {@link Node}.
+	 * Get the requested attribute's value of the requested {@link Node}.
 	 * </p>
 	 * 
 	 * @param sOwnerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
 	 * @param sAttrName
-	 *            is the name of the attribute.
+	 *            is the name of the requested attribute.
 	 * 
 	 * @return a {@link String}, which contains the value of the requested
 	 *         {@link Node}'s attribute, or <code>null</code> if this object

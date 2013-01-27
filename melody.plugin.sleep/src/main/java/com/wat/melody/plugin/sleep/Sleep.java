@@ -6,8 +6,6 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.plugin.sleep.exception.SleepException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

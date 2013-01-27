@@ -1,21 +1,41 @@
 package com.wat.melody.api.annotation;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 @Documented
-@Retention(RUNTIME)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface NestedElement {
 
+	/**
+	 * <p>
+	 * Specifies the name of the nested element.
+	 * </p>
+	 */
 	String name();
 
+	/**
+	 * <p>
+	 * If <code>true</code> and if the nested element is not declared, an error
+	 * will be generated.
+	 * </p>
+	 */
 	boolean mandatory() default false;
 
+	/**
+	 * <p>
+	 * Specifies the type of the nested element.
+	 * </p>
+	 */
 	Type type() default Type.ADD;
 
 	public static enum Type {

@@ -5,7 +5,7 @@ import com.wat.melody.common.network.exception.IllegalIpAddressException;
 /**
  * 
  * @author Guillaume Cornet
- *
+ * 
  */
 public class IpAddressV4 {
 

@@ -17,7 +17,7 @@ import com.wat.melody.common.properties.PropertiesSet;
 
 /**
  * <p>
- * Contains contextual method and datas an {@link ITask} will need during
+ * Contains contextual method and datas an {@link ITask} will need during its
  * processing.
  * </p>
  * 
@@ -123,10 +123,8 @@ public interface ITaskContext {
 
 	/**
 	 * <p>
-	 * Create an {@link ITask} object based on the given node. Process the given
-	 * {@link ITask}. The {@link PropertiesSet} associated to this object will
-	 * be used during variable's expansion.
-	 * </p>
+	 * Create an {@link ITask} object based on the given {@link Node} and
+	 * processes it.
 	 * </p>
 	 * <p>
 	 * <i> * Generate an event {@link TaskCreatedEvent} as soon as the task is
@@ -139,24 +137,25 @@ public interface ITaskContext {
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the Task (in its native Node format) to create and process.
+	 *            is a Task (in its native {@link Node} format) to create and
+	 *            process.
 	 * 
 	 * @throws TaskException
 	 *             if an error occurred while creating the {@link ITask} (e.g.
 	 *             expansion failure, mandatory attribute not provided,
-	 *             attribute value rejected, ..) while processing the
-	 *             {@link ITask}.
+	 *             attribute value rejected, ..) while creating or processing
+	 *             the {@link ITask}.
 	 * @throws InterruptedException
-	 *             if the {@link ITask}'s processing was interrupted. Means the
-	 *             caller must cleanly stop processing as soon as possible.
+	 *             if the {@link ITask}'s processing have been interrupted.
+	 *             Means the caller must cleanly stop processing as soon as
+	 *             possible.
 	 */
 	public void processTask(Node n) throws TaskException, InterruptedException;
 
 	/**
 	 * <p>
-	 * Create an {@link ITask} object based on the given node. Process the given
-	 * {@link ITask}.
-	 * </p>
+	 * Create an {@link ITask} object based on the given {@link Node} and
+	 * processes it.
 	 * </p>
 	 * <p>
 	 * <i> * Generate an event {@link TaskCreatedEvent} as soon as the task is
@@ -169,7 +168,8 @@ public interface ITaskContext {
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the Task (in its native Node format) to create and process.
+	 *            is a Task (in its native {@link Node} format) to create and
+	 *            process.
 	 * @param ps
 	 *            is a specific set of variables which will be used during
 	 *            variable's expansion.
@@ -177,11 +177,12 @@ public interface ITaskContext {
 	 * @throws TaskException
 	 *             if an error occurred while creating the {@link ITask} (e.g.
 	 *             expansion failure, mandatory attribute not provided,
-	 *             attribute value rejected, ..) while processing the
-	 *             {@link ITask}.
+	 *             attribute value rejected, ..) while creating or processing
+	 *             the {@link ITask}.
 	 * @throws InterruptedException
-	 *             if the {@link ITask}'s processing was interrupted. Means the
-	 *             caller must cleanly stop processing as soon as possible.
+	 *             if the {@link ITask}'s processing have been interrupted.
+	 *             Means the caller must cleanly stop processing as soon as
+	 *             possible.
 	 */
 	public void processTask(Node n, PropertiesSet ps) throws TaskException,
 			InterruptedException;
@@ -189,9 +190,8 @@ public interface ITaskContext {
 	/**
 	 * <p>
 	 * Duplicate the {@link IProcessorManager} associate to this object into a
-	 * new sub-{@link IProcessorManager}, which have the capacity to process its
-	 * own {@link ISequenceDescriptor}, with its own {@link OrderNameSet} and
-	 * its own {@link PropertiesSet}.
+	 * new sub-{@link IProcessorManager}, which have the capacity to process
+	 * specific {@link OrderNameSet} in its own {@link ISequenceDescriptor}.
 	 * </p>
 	 * 
 	 * @return the duplicated {@link IProcessorManager}.

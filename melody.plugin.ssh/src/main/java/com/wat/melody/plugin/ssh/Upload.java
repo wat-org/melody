@@ -25,6 +25,11 @@ import com.wat.melody.plugin.ssh.common.AbstractSshConnectionManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class Upload extends AbstractSshConnectionManagedOperation implements
 		TemplatingHandler {
 

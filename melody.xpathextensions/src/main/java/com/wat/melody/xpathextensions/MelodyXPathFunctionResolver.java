@@ -4,6 +4,11 @@ import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionResolver;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 
 	static final QName f_getHeritedAttributeValue = new QName(

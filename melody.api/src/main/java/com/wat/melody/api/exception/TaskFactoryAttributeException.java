@@ -7,6 +7,11 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.xml.Doc;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class TaskFactoryAttributeException extends TaskFactoryException {
 
 	private static final long serialVersionUID = -1384841123110684061L;

@@ -3,12 +3,11 @@ package com.wat.melody.api.event;
 import java.util.Date;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
+ * 
  */
-public class AbstractEvent {
+public abstract class AbstractEvent {
 	private Date moDate;
 
 	protected AbstractEvent() {

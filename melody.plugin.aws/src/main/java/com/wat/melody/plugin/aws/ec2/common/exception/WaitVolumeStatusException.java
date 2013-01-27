@@ -3,6 +3,11 @@ package com.wat.melody.plugin.aws.ec2.common.exception;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.plugin.aws.ec2.common.VolumeState;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class WaitVolumeStatusException extends AwsException {
 
 	private static final long serialVersionUID = 4897604537494850805L;

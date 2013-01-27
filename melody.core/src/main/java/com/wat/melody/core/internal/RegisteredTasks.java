@@ -18,23 +18,23 @@ import com.wat.melody.core.nativeplugin.setEDAttrValue.SetEDAttrValue;
  * @author Guillaume Cornet
  * 
  */
-public class RegisteredTasks extends Hashtable<String, Class<ITask>> implements
-		IRegisteredTasks {
+public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
+		implements IRegisteredTasks {
 
 	private static final long serialVersionUID = 3001756548734600804L;
 
 	/**
 	 * <p>
-	 * Tests if the given subject class is a valid {#link {@link ITask}.
+	 * Tests if the given subject {@link Class} is a valid {@link ITask}.
 	 * </p>
 	 * 
 	 * @param c
-	 *            is the subject class.
+	 *            is the subject {@link Class} to test.
 	 * 
-	 * @return <code>true</code> if the given subject class is a valid {#link
+	 * @return <code>true</code> if the given subject {@link Class} is a valid
 	 *         {@link ITask}, or <code>false</code> if not.
 	 */
-	public static boolean isValidTask(Class<ITask> c) {
+	public static boolean isValidTask(Class<? extends ITask> c) {
 		if (!Modifier.isPublic(c.getModifiers())
 				|| Modifier.isAbstract(c.getModifiers())) {
 			return false;
@@ -52,111 +52,50 @@ public class RegisteredTasks extends Hashtable<String, Class<ITask>> implements
 
 	/**
 	 * <p>
-	 * This new object contain all native Task Java Classes : {@link Sequence},
-	 * {@link Order}, {@link Call}, {@link Foreach}.
+	 * Contain all native Task Java Classes : {@link Sequence}, {@link Order},
+	 * {@link Call}, {@link Foreach}, {@link Property}, {@link SetEDAttrValue}.
 	 * </p>
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public RegisteredTasks() {
-		registerTaskClass((Class<ITask>[]) new Class<?>[] { Sequence.class,
-				Order.class, Call.class, Foreach.class, SetEDAttrValue.class,
-				Property.class });
+		put(Sequence.class);
+		put(Order.class);
+		put(Call.class);
+		put(Foreach.class);
+		put(Property.class);
+		put(SetEDAttrValue.class);
 	}
 
-	/**
-	 * <p>
-	 * Registers all the given Task Java Classes.
-	 * </p>
-	 * 
-	 * @param cs
-	 *            is the Task Java Classes to register.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Task Java Classes to register or if one of the
-	 *             Task Java Class to register is <code>null</code>.
-	 */
-	public void registerTaskClass(Class<ITask>[] cs) {
-		if (cs == null) {
-			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid Class<ITask>[].");
-		}
-		for (Class<ITask> c : cs) {
-			registerTaskClass(c);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Registers the given Task Java Class.
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the Task Java Class to register.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Task Java Class to register is <code>null</code>
-	 *             .
-	 */
 	@Override
-	public Class<ITask> registerTaskClass(Class<ITask> c) {
+	public Class<? extends ITask> put(Class<? extends ITask> c) {
 		if (c == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid Class<ITask>.");
+					+ "Must be a valid " + Class.class.getCanonicalName() + "<"
+					+ ITask.class.getCanonicalName() + ">.");
 		}
 		if (!isValidTask(c)) {
 			throw new RuntimeException("The given Task Java Class is not a "
 					+ "valid ITask. This class is either not public, abstract "
 					+ "or it as no 0-arg constructor. ");
 		}
-		return put(c.getSimpleName().toLowerCase(), c);
+		return super.put(c.getSimpleName().toLowerCase(), c);
 	}
 
-	/**
-	 * <p>
-	 * Get the Task Java Class whose name match the given Name.
-	 * </p>
-	 * 
-	 * @param taskName
-	 *            is the name of the Task Java Class to find.
-	 * 
-	 * @return the Task Java Class whose name match the given Name, or
-	 *         <code>null</code> if no Task Java Class have been registered with
-	 *         such Name.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Name is <code>null</code> .
-	 */
 	@Override
-	public Class<ITask> getRegisteredTaskClass(String taskName) {
+	public Class<? extends ITask> get(String taskName) {
 		if (taskName == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
 					+ "Must be a valid String (a Task Name).");
 		}
-		return get(taskName.toLowerCase());
+		return super.get(taskName.toLowerCase());
 	}
 
-	/**
-	 * <p>
-	 * Test weather the Task Java Class whose name match the given Name have
-	 * been registered.
-	 * </p>
-	 * 
-	 * @param taskName
-	 *            is the name of the Task Java Class to find.
-	 * 
-	 * @return <code>true</code> if a Task Java Class whose name match the given
-	 *         Name have been registered, <code>false</code> otherwise.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Name is <code>null</code> .
-	 */
 	@Override
-	public boolean containsRegisteredTaskClass(String taskName) {
+	public boolean contains(String taskName) {
 		if (taskName == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
 					+ "Must be a valid String (a Task Name).");
 		}
-		return containsKey(taskName.toLowerCase());
+		return super.containsKey(taskName.toLowerCase());
 	}
 }

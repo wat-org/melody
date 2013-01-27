@@ -20,8 +20,6 @@ import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.plugin.ssh.common.types.Exec;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -169,7 +167,11 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 		}
 	}
 
-	@NestedElement(name = DECLARE_NE, type = Type.ADD, description="The '"+DECLARE_NE+"' nested element of the '"+SSH+"' Task allow to declare a bash variable and to assign it a value.")
+	@NestedElement(name = DECLARE_NE, type = Type.ADD, description = "The '"
+			+ DECLARE_NE
+			+ "' nested element of the '"
+			+ SSH
+			+ "' Task allow to declare a bash variable and to assign it a value.")
 	public void addDeclareVariable(Property p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
