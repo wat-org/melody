@@ -63,9 +63,11 @@
 				<exclude name="pom.xml" />
 				<exclude name="build*.bat" />
 				<exclude name="config/**/*.properties" />
+				<exclude name="config/plugin/ssh/.ssh/**" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name=".version_info" />
+				<include name="config/plugin/ssh/.ssh/known_hosts" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}" mode="740">
 				<include name="**/*.sh" />
