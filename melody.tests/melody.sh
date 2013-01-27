@@ -1,5 +1,9 @@
 #!/bin/sh
 
+######## license / author
+# license : GPL
+# author : Guillaume Cornet
+
 ######## variables definition
 # Get the basedir of the called script
 homedir="$(dirname $0)"
@@ -29,7 +33,8 @@ myecho() {
 	return 0
 }
 
-# Concatenate in a single string the name of all jar files found in the given folder and subfolders.
+#################
+# Concatenate in a single string the name of all jar files found in the given folder and sub-folders.
 # The returned string is the Java ClassPath
 addJarToClasspath() {
 # $1 : the folder to find JAR inside
@@ -56,7 +61,8 @@ addJarToClasspath() {
 	return 0
 }
 
-# Main
+#################
+# Main method
 main() {
 	# Verify java cmd accessibility
 	which java 1>/dev/null 2>&1 || {
@@ -83,5 +89,7 @@ main() {
 	return 0
 }
 
+#################
+# fire !
 main "$@"
 exit $?
