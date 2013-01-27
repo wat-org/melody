@@ -2,6 +2,11 @@ package com.wat.melody.xpathextensions.common.exception;
 
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class XPathExpressionSyntaxException extends ExpressionSyntaxException {
 
 	private static final long serialVersionUID = -6987403216007303202L;

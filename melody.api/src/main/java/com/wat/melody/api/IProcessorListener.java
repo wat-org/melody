@@ -11,10 +11,9 @@ import com.wat.melody.api.event.TaskFinishedEvent;
 import com.wat.melody.api.event.TaskStartedEvent;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
+ * 
  */
 public interface IProcessorListener {
 

@@ -6,8 +6,6 @@ import com.wat.melody.common.order.exception.IllegalOrderNameException;
 import com.wat.melody.common.order.exception.IllegalOrderNameSetException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

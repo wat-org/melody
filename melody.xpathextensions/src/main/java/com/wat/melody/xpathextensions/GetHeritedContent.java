@@ -17,6 +17,9 @@ import com.wat.melody.xpath.XPathHelper;
  * to the given node and to the given node parents (via
  * {@link CustomXPathFunctions#HERIT_ATTR} XML attribute).
  * </p>
+ * 
+ * @author Guillaume Cornet
+ * 
  */
 public final class GetHeritedContent implements XPathFunction {
 

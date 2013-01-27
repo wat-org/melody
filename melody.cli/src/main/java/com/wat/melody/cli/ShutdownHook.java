@@ -4,7 +4,7 @@ import com.wat.melody.api.IProcessorManager;
 
 /**
  * <p>
- * Stop the associated <code>IProcessorManager</code> on JVM termination.
+ * Stop the associated {@link IProcessorManager} on JVM termination.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -17,15 +17,15 @@ public class ShutdownHook extends Thread {
 
 	/**
 	 * <p>
-	 * Create a new <code>ShutdownHook</code>, which will, on JVM termination,
-	 * properly stop the given <code>IProcessorManager</code> and wait for the
-	 * given <code>Thread</code> to end.
+	 * Create a new {@link ShutdownHook}, which will, on JVM termination,
+	 * properly stop the given {@link IProcessorManager} and wait for the given
+	 * {@link Thread} to end.
 	 * </p>
 	 * 
 	 * @param pm
-	 *            is the <code>IProcessorManager</code> to stop.
+	 *            is the {@link IProcessorManager} to stop.
 	 * @param t
-	 *            is the Launcher Thread to wait.
+	 *            is the Launcher {@link Thread} to wait.
 	 */
 	public ShutdownHook(IProcessorManager pm, Thread t) {
 		setProcessorManager(pm);
@@ -39,8 +39,8 @@ public class ShutdownHook extends Thread {
 	 * trapped, ...).
 	 * </p>
 	 * <p>
-	 * <i> * Will stop the associated <code>IProcessorManager</code> and wait
-	 * for the processing to be done. <BR/>
+	 * <i> * Will stop the associated {@link IProcessorManager} and wait for the
+	 * processing to be done. <BR/>
 	 * * Will stop the launcher thread to wait for its end. <BR/>
 	 * </i>
 	 * </p>

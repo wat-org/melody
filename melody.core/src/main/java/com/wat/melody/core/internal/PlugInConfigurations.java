@@ -5,6 +5,11 @@ import java.util.HashMap;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IPlugInConfigurations;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class PlugInConfigurations extends
 		HashMap<Class<? extends IPlugInConfiguration>, IPlugInConfiguration>
 		implements IPlugInConfigurations {
@@ -16,18 +21,33 @@ public class PlugInConfigurations extends
 	}
 
 	@Override
-	public IPlugInConfiguration get(Class<? extends IPlugInConfiguration> key) {
-		return super.get(key);
+	public IPlugInConfiguration put(IPlugInConfiguration conf) {
+		if (conf == null) {
+			throw new IllegalArgumentException("null: Not Accepted. "
+					+ "Must be a valid "
+					+ IPlugInConfiguration.class.getCanonicalName() + ".");
+		}
+		return super.put(conf.getClass(), conf);
 	}
 
 	@Override
-	public boolean containsKey(Class<? extends IPlugInConfiguration> key) {
-		return super.containsKey(key);
+	public IPlugInConfiguration get(Class<? extends IPlugInConfiguration> name) {
+		if (name == null) {
+			throw new IllegalArgumentException("null: Not Accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + "<"
+					+ IPlugInConfiguration.class.getCanonicalName() + ">.");
+		}
+		return super.get(name);
 	}
 
 	@Override
-	public IPlugInConfiguration put(Class<? extends IPlugInConfiguration> key,
-			IPlugInConfiguration value) {
-		return super.put(key, value);
+	public boolean contains(Class<? extends IPlugInConfiguration> name) {
+		if (name == null) {
+			throw new IllegalArgumentException("null: Not Accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + "<"
+					+ IPlugInConfiguration.class.getCanonicalName() + ">.");
+		}
+		return super.containsKey(name);
 	}
+
 }

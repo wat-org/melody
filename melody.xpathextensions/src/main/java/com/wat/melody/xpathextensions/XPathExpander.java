@@ -17,6 +17,11 @@ import com.wat.melody.common.xml.Doc;
 import com.wat.melody.xpathextensions.common.Messages;
 import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class XPathExpander {
 
 	static {

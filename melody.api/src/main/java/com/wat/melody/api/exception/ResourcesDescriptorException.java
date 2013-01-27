@@ -5,6 +5,11 @@ import org.w3c.dom.Node;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.xml.Doc;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class ResourcesDescriptorException extends MelodyException {
 
 	private static final long serialVersionUID = -2498745678654205817L;
@@ -21,14 +26,14 @@ public class ResourcesDescriptorException extends MelodyException {
 		setErrorNode(errorNode);
 	}
 
-	public ResourcesDescriptorException(Node errorNode, String msg,
-			Throwable cause) {
-		super(msg, cause);
+	public ResourcesDescriptorException(Node errorNode, Throwable cause) {
+		super(cause);
 		setErrorNode(errorNode);
 	}
 
-	public ResourcesDescriptorException(Node errorNode, Throwable cause) {
-		super(cause);
+	public ResourcesDescriptorException(Node errorNode, String msg,
+			Throwable cause) {
+		super(msg, cause);
 		setErrorNode(errorNode);
 	}
 

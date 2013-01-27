@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.files.exception.IllegalTarGzException;
+import com.wat.melody.common.files.exception.IllegalXMLFileException;
 
 /**
  * 
@@ -63,9 +64,6 @@ public abstract class FS {
 					+ "Must be a valid String (a Directory Path).");
 		}
 
-		/*
-		 * TODO : use the java.nio instead
-		 */
 		File item = new File(sPath);
 		if (item.isFile()) {
 			throw new IllegalDirectoryException(Messages.bind(
@@ -236,6 +234,15 @@ public abstract class FS {
 					Messages.FileEx_CANT_WRITE, item));
 		}
 		validateDirPath(item.getParent());
+	}
+
+	public static boolean validateXMLfile(String sPath)
+			throws IllegalFileException, IllegalXMLFileException {
+		validateFileExists(sPath);
+		/*
+		 * TODO : test wether the given file is a valid XML file or not.
+		 */
+		return true;
 	}
 
 	/**

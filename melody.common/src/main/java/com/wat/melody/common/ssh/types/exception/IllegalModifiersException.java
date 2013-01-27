@@ -19,6 +19,10 @@ public class IllegalModifiersException extends MelodyException {
 		super(msg);
 	}
 
+	public IllegalModifiersException(Throwable cause) {
+		super(cause);
+	}
+
 	public IllegalModifiersException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

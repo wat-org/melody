@@ -1,5 +1,10 @@
 package com.wat.melody.common.ex;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class MelodyException extends Exception {
 
 	private static final long serialVersionUID = -1184066155132415814L;

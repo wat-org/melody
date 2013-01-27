@@ -7,6 +7,11 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.common.xml.Doc;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class TaskFactoryNestedElementException extends TaskFactoryException {
 
 	private static final long serialVersionUID = -2384841123110684061L;

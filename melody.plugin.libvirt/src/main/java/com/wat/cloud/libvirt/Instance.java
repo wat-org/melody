@@ -5,6 +5,11 @@ import org.libvirt.LibvirtException;
 
 import com.wat.melody.cloud.instance.InstanceType;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class Instance {
 
 	private Domain moDomain;

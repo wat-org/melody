@@ -10,6 +10,11 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class GetManagementNetworkHost implements XPathFunction {
 
 	public static final String NAME = "getManagementNetworkHost";

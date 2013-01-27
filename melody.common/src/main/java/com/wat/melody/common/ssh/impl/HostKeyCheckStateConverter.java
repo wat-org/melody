@@ -3,6 +3,11 @@ package com.wat.melody.common.ssh.impl;
 import com.jcraft.jsch.HostKeyRepository;
 import com.wat.melody.common.ssh.types.HostKeyCheckState;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class HostKeyCheckStateConverter {
 
 	public static HostKeyCheckState convert(int jschHostKeyCheckState) {

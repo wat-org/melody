@@ -3,8 +3,6 @@ package com.wat.melody.core.nativeplugin.foreach.exception;
 import com.wat.melody.api.exception.TaskException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 

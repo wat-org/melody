@@ -8,8 +8,8 @@ import com.wat.melody.common.files.exception.IllegalDirectoryException;
 
 /**
  * <p>
- * This interface is specially designed to start, pause, resume and stop the
- * processing, as describe in a Sequence Descriptor.
+ * This interface is specially designed to configure, start, pause, resume and
+ * stop the processing described in a Sequence Descriptor.
  * </p>
  * 
  * <p>

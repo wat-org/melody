@@ -1,5 +1,10 @@
 package com.wat.melody.plugin.aws.ec2.common.exception;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class IllegalVolumeAttachmentStateException extends AwsException {
 
 	private static final long serialVersionUID = -112345389964589949L;

@@ -8,6 +8,11 @@ import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class DeleteMachine extends AbstractMachineOperation {
 
 	private static Log log = LogFactory.getLog(DeleteMachine.class);

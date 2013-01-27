@@ -18,8 +18,6 @@ import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.plugin.echo.exception.EchoException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -132,7 +130,7 @@ public class Echo implements ITask {
 
 		String logMsg = ECHO + " message:'" + getMessage() + "', location:";
 		if (getFile() != null) {
-			log(getSeverity(), logMsg + getFile());
+			log.debug(logMsg + getFile());
 			FileWriter fw = null;
 			try {
 				try {
@@ -214,7 +212,11 @@ public class Echo implements ITask {
 		return moFile;
 	}
 
-	@Attribute(name = FILE_ATTR, description="The '"+FILE_ATTR+"' attribute of the '"+ECHO+"' Task defines the file where the message will be written.\nIf this attribute is not specified, the message will be displayed in the standard output.")
+	@Attribute(name = FILE_ATTR, description = "The '"
+			+ FILE_ATTR
+			+ "' attribute of the '"
+			+ ECHO
+			+ "' Task defines the file where the message will be written.\nIf this attribute is not specified, the message will be displayed in the standard output.")
 	public File setFile(File f) throws IllegalFileException,
 			IllegalDirectoryException {
 		FS.validateFilePath(f.getPath());

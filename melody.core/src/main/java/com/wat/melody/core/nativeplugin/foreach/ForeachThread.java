@@ -4,14 +4,14 @@ import java.lang.Thread.State;
 
 import org.w3c.dom.Node;
 
+import com.wat.melody.api.ITask;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.properties.PropertiesSet;
 
 /**
  * <p>
- * Process all inner-<code>Task</code> defined in the given <code>Foreach</code>
- * Task.
+ * Process all {@link ITask} defined in the given {@link Foreach}.
  * </p>
  * 
  * @author Guillaume Cornet

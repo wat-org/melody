@@ -20,10 +20,19 @@ import com.wat.melody.common.xml.exception.IllegalDocException;
 /**
  * <p>
  * A Sequence Descriptor contains the processing instructions the
- * {@link IProcessorManager} will proceed; Only registered {@link OrderName}
- * will be proceed; All relative path defined in the processing instructions are
- * resolved against the baseDir; Registered {@link Property} will be used for
- * the processing instructions expansion.
+ * {@link IProcessorManager} will process.
+ * </p>
+ * <p>
+ * Only registered {@link OrderName} will be proceed.
+ * </p>
+ * <p>
+ * All relative path defined in the processing instructions are resolved against
+ * this object baseDir. If not specified,the default basedir is the directory
+ * where this file is located.
+ * </p>
+ * <p>
+ * Registered {@link Property} will be used for the processing instructions
+ * expansion.
  * </p>
  * 
  * @author Guillaume Cornet

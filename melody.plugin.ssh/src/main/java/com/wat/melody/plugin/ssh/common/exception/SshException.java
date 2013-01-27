@@ -3,8 +3,6 @@ package com.wat.melody.plugin.ssh.common.exception;
 import com.wat.melody.api.exception.TaskException;
 
 /**
- * <p>
- * </p>
  * 
  * @author Guillaume Cornet
  * 
