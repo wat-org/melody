@@ -30,6 +30,12 @@ public abstract class FS {
 			.getProperty("file.separator");
 
 	/**
+	 * Is equal to System.getProperty("java.io.tmpdir")
+	 */
+	public static final String SYSTEM_TEMP_DIR = System
+			.getProperty("java.io.tmpdir");
+
+	/**
 	 * <p>
 	 * Raise an error if the given path is not an existing readable/writable
 	 * directory.
