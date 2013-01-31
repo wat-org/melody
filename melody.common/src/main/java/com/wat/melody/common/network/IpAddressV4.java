@@ -19,23 +19,22 @@ public class IpAddressV4 {
 	 * Convert the given <code>String</code> to an {@link IpAddressV4} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>A'.'B'.'C'.'D</code>. <BR/>
-	 * * The A, B, C and D Part must be a positive integer < 256. <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>Input <code>String</code> must respect the following pattern :
+	 * <code>A'.'B'.'C'.'D</code> ;</li>
+	 * <li>The A, B, C and D Part must be a positive integer < 256 ;</li>
+	 * </ul>
 	 * 
 	 * @param sIpAddress
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return an <code>IpAddress</code> object, whose equal to the given input
+	 * @return an {@link IpAddressV4} object, whose equal to the given input
 	 *         <code>String</code>.
 	 * 
 	 * 
 	 * @throws IllegalIpAddressException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>IpAddress</code>.
+	 *             {@link IpAddressV4}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */

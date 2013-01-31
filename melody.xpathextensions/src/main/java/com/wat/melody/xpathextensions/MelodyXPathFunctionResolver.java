@@ -29,6 +29,9 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 	static final QName f_getManagementNetworkMethod = new QName(
 			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkMethod.NAME);
 
+	static final QName f_getNetworkDevicByNamee = new QName(
+			CustomXPathFunctions.NAMESPACE_URI, GetNetworkDeviceByName.NAME);
+
 	/*
 	 * TODO : find a way to add custom XPath Function via configuration file
 	 */
@@ -46,6 +49,8 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 			return new GetManagementNetworkPort();
 		} else if (qName.equals(f_getManagementNetworkMethod) && arity == 1) {
 			return new GetManagementNetworkMethod();
+		} else if (qName.equals(f_getNetworkDevicByNamee) && arity == 2) {
+			return new GetNetworkDeviceByName();
 		}
 		return null;
 	}

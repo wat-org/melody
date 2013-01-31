@@ -12,6 +12,24 @@ import com.wat.melody.common.network.exception.IllegalHostException;
  */
 public class Host {
 
+	/**
+	 * <p>
+	 * Convert the given <code>String</code> to an {@link Host} object.
+	 * </p>
+	 * 
+	 * @param sHost
+	 *            is the given <code>String</code> to convert.
+	 * 
+	 * @return an {@link Host} object, whose equal to the given input
+	 *         <code>String</code>.
+	 * 
+	 * @throws IllegalHostException
+	 *             if the given input <code>String</code> is not a valid
+	 *             {@link Host} (e.g. : is neither an ipv4, nor an ipv6, nor an
+	 *             hostname, nor a full qualified domain name).
+	 * @throws IllegalArgumentException
+	 *             if the given input <code>String</code> is <code>null</code>.
+	 */
 	public static Host parseString(String sHost) throws IllegalHostException {
 		return new Host(sHost);
 	}

@@ -973,6 +973,43 @@ public abstract class NetworkManagementHelper {
 
 	/**
 	 * <p>
+	 * Return the Network Device {@link Node} of each Instance {@link Node} of
+	 * the given list, whose Device Name match the given name.
+	 * </p>
+	 * 
+	 * @param instanceNodes
+	 *            is a {@link List} of Instance {@link Node}.
+	 * @param netDevName
+	 *            is the requested network device name.
+	 * 
+	 * @return The Network Device {@link Node} of each given Instance
+	 *         {@link Node}, whose "device" XML Attribute's content is equal to
+	 *         the given name.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link List} of Instance {@link Node} is
+	 *             <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if any Network Devices Selector (found in the Network Device
+	 *             Management {@link Node} of the instance) is not a valid XPath
+	 *             Expression.
+	 */
+	public static List<Node> findNetworkDeviceNodeByName(
+			List<Node> instanceNodes, String netDevName)
+			throws ResourcesDescriptorException {
+		if (instanceNodes == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid List of Instance Node.");
+		}
+		List<Node> hl = new ArrayList<Node>();
+		for (Node instanceNode : instanceNodes) {
+			hl.add(findNetworkDeviceNodeByName(instanceNode, netDevName));
+		}
+		return hl;
+	}
+
+	/**
+	 * <p>
 	 * Return the Network Device {@link Node} of the given Instance {@link Node}
 	 * whose Device Name match the given name.
 	 * </p>
@@ -990,9 +1027,10 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Network Devices Selector (found in the Network Device
-	 *             Management {@link Node}) is not a valid XPath Expression.
+	 *             Management {@link Node} of the given instance) is not a valid
+	 *             XPath Expression.
 	 */
-	public static Node findNetworkDeviceByName(Node instanceNode,
+	public static Node findNetworkDeviceNodeByName(Node instanceNode,
 			String netDevName) throws ResourcesDescriptorException {
 		String sAllNetDevSelector = findNetworkDevicesSelector(instanceNode);
 		String sNetDevSelector = "." + sAllNetDevSelector + "[@device='"

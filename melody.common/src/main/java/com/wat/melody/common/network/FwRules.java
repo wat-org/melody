@@ -21,7 +21,7 @@ public class FwRules extends ArrayList<FwRule> {
 	 * {@link FwRuleDecomposed}.
 	 * </p>
 	 * 
-	 * @return a Collection of {@link FwRuleDecomposed}.
+	 * @return a Collection of {@link FwRuleDecomposed}..
 	 */
 	public FwRulesDecomposed decompose() {
 		FwRulesDecomposed fws = new FwRulesDecomposed();

@@ -155,12 +155,12 @@ class UploaderMultiThread {
 
 		if (isCritical()) {
 			throw new UploaderException(Messages.bind(
-					Messages.UploadEx_UNMANAGED, getSession()),
-					buildUploadTrace());
+					Messages.UploadEx_UNMANAGED, getSession()
+							.getConnectionDatas()), buildUploadTrace());
 		} else if (isFailed()) {
 			throw new UploaderException(Messages.bind(
-					Messages.UploadEx_MANAGED, getSession()),
-					buildUploadTrace());
+					Messages.UploadEx_MANAGED, getSession()
+							.getConnectionDatas()), buildUploadTrace());
 		} else if (isInterrupted()) {
 			InterruptedException e = new InterruptedException(
 					Messages.UploadEx_INTERRUPTED);
