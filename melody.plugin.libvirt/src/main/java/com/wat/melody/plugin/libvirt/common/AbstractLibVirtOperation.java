@@ -302,7 +302,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	protected DUNID getNetworkDeviceDUNID(NetworkDevice nd)
 			throws LibVirtException {
 		try {
-			Node netDevNode = NetworkManagementHelper.findNetworkDeviceByName(
+			Node netDevNode = NetworkManagementHelper.findNetworkDeviceNodeByName(
 					getTargetNode(), nd.getDeviceName());
 			return getED().getMelodyID(netDevNode);
 		} catch (ResourcesDescriptorException Ex) {

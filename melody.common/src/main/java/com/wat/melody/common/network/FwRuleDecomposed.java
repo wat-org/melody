@@ -146,7 +146,8 @@ public class FwRuleDecomposed {
 	public Interface setFromInterface(Interface inter) {
 		if (inter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Interface.");
+					+ "Must be a valid " + Interface.class.getCanonicalName()
+					+ ".");
 		}
 		Interface previous = getFromInterface();
 		moFromInterface = inter;
@@ -160,7 +161,8 @@ public class FwRuleDecomposed {
 	public Interface setToInterface(Interface inter) {
 		if (inter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Interface.");
+					+ "Must be a valid " + Interface.class.getCanonicalName()
+					+ ".");
 		}
 		Interface previous = getToInterface();
 		moToInterface = inter;
@@ -172,6 +174,11 @@ public class FwRuleDecomposed {
 	}
 
 	public IpRange setFromIpRange(IpRange ipRange) {
+		if (ipRange == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + IpRange.class.getCanonicalName()
+					+ ".");
+		}
 		IpRange previous = getFromIpRange();
 		moFromIpRange = ipRange;
 		return previous;
@@ -182,6 +189,11 @@ public class FwRuleDecomposed {
 	}
 
 	public IpRange setToIpRange(IpRange ipRange) {
+		if (ipRange == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + IpRange.class.getCanonicalName()
+					+ ".");
+		}
 		IpRange previous = getToIpRange();
 		moToIpRange = ipRange;
 		return previous;
@@ -194,7 +206,8 @@ public class FwRuleDecomposed {
 	public PortRange setPortRange(PortRange portRange) {
 		if (portRange == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PortRange.");
+					+ "Must be a valid " + PortRange.class.getCanonicalName()
+					+ ".");
 		}
 		PortRange previous = getPortRange();
 		moPortRange = portRange;
@@ -206,6 +219,11 @@ public class FwRuleDecomposed {
 	}
 
 	public Protocol setProtocol(Protocol protocol) {
+		if (protocol == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Protocol.class.getCanonicalName()
+					+ ".");
+		}
 		Protocol previous = getProtocol();
 		this.meProtocol = protocol;
 		return previous;
@@ -218,7 +236,8 @@ public class FwRuleDecomposed {
 	public Access setAccess(Access access) {
 		if (access == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Access.");
+					+ "Must be a valid " + Access.class.getCanonicalName()
+					+ ".");
 		}
 		Access previous = getAccess();
 		this.moAccess = access;

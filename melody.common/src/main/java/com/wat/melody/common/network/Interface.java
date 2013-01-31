@@ -17,22 +17,21 @@ public class Interface {
 	 * Convert the given <code>String</code> to an {@link Interface} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * TODO. <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>Input <code>String</code> must respect the following pattern : TODO ;
+	 * </li>
+	 * </ul>
 	 * 
 	 * @param sInterface
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return an <code>Interface</code> object, whose equal to the given input
+	 * @return an {@link Interface} object, whose equal to the given input
 	 *         <code>String</code>.
 	 * 
 	 * 
 	 * @throws IllegalInterfaceException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>Interface</code>.
+	 *             {@link Interface}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */

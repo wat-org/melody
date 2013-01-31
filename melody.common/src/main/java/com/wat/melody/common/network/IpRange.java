@@ -18,24 +18,25 @@ public class IpRange {
 	 * Convert the given <code>String</code> to an {@link IpRange} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>IpAddress('/'CIDR)?</code>. <BR/>
-	 * * The A, B, C and D Part must be a positive integer < 256. <BR/>
-	 * * The CIDR Part must be a positive integer < 32 and is not mandatory. <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>Input <code>String</code> must respect the following pattern :
+	 * <code>IpAddress('/'CIDR)?</code> ;</li>
+	 * <li>The IpAddress must be a valid {@link IpAddressV4}, as described in
+	 * {@link IpAddressV4#parseString(String)} ;</li>
+	 * <li>The CIDR Part must be a positive integer >0 and < 32 and is not
+	 * mandatory ;</li>
+	 * </ul>
 	 * 
 	 * @param sIpRange
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return an <code>IpRange</code> object, whose equal to the given input
+	 * @return an {@link IpRange} object, whose equal to the given input
 	 *         <code>String</code>.
 	 * 
 	 * 
 	 * @throws IllegalIpRangeException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>IpRange</code>.
+	 *             {@link IpRange}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */

@@ -131,6 +131,21 @@ public class FwRule {
 				+ getProtocols() + ", access: " + getAccess() + " }";
 	}
 
+	/**
+	 * <p>
+	 * Decompose this object into an equivalent collection of
+	 * {@link FwRuleDecomposed} objects.
+	 * </p>
+	 * 
+	 * <p>
+	 * More formally, this object's 'from' {@link ipRanges}, 'to'
+	 * {@link ipRanges}, and {@link Protocols} are decomposed into the
+	 * corresponding {@link FwRuleDecomposed} objects, which contains 'from'
+	 * {@link ipRange}, 'to' {@link ipRange}, and {@link Protocol}.
+	 * </p>
+	 * 
+	 * @return an equivalent collection of {@link FwRuleDecomposed} objects.
+	 */
 	public FwRulesDecomposed decompose() {
 		FwRulesDecomposed fws = new FwRulesDecomposed();
 		Interface F = getFromInterface();
@@ -145,6 +160,9 @@ public class FwRule {
 				}
 			}
 		}
+		/*
+		 * should call {@link FwRulesDecomposed#simplify()} here
+		 */
 		return fws;
 	}
 
@@ -155,7 +173,8 @@ public class FwRule {
 	public Interface setFromInterface(Interface inter) {
 		if (inter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Interface.");
+					+ "Must be a valid " + Interface.class.getCanonicalName()
+					+ ".");
 		}
 		Interface previous = getFromInterface();
 		moFromInterface = inter;
@@ -169,7 +188,8 @@ public class FwRule {
 	public Interface setToInterface(Interface inter) {
 		if (inter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Interface.");
+					+ "Must be a valid " + Interface.class.getCanonicalName()
+					+ ".");
 		}
 		Interface previous = getToInterface();
 		moToInterface = inter;
@@ -183,7 +203,8 @@ public class FwRule {
 	public IpRanges setFromIpRanges(IpRanges ipRanges) {
 		if (ipRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid IpRanges.");
+					+ "Must be a valid " + IpRanges.class.getCanonicalName()
+					+ ".");
 		}
 		IpRanges previous = getFromIpRanges();
 		moFromIpRanges = ipRanges;
@@ -197,7 +218,8 @@ public class FwRule {
 	public IpRanges setToIpRanges(IpRanges ipRanges) {
 		if (ipRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid IpRanges.");
+					+ "Must be a valid " + IpRanges.class.getCanonicalName()
+					+ ".");
 		}
 		IpRanges previous = getToIpRanges();
 		moToIpRanges = ipRanges;
@@ -211,7 +233,8 @@ public class FwRule {
 	public PortRanges setPortRanges(PortRanges portRanges) {
 		if (portRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PortRanges.");
+					+ "Must be a valid " + PortRanges.class.getCanonicalName()
+					+ ".");
 		}
 		PortRanges previous = getPortRanges();
 		moPortRanges = portRanges;
@@ -225,7 +248,8 @@ public class FwRule {
 	public Protocols setProtocols(Protocols protocols) {
 		if (protocols == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Protocols.");
+					+ "Must be a valid " + Protocols.class.getCanonicalName()
+					+ ".");
 		}
 		Protocols previous = getProtocols();
 		this.moProtocols = protocols;
@@ -239,7 +263,8 @@ public class FwRule {
 	public Access setAccess(Access access) {
 		if (access == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Access.");
+					+ "Must be a valid " + Access.class.getCanonicalName()
+					+ ".");
 		}
 		Access previous = getAccess();
 		this.moAccess = access;
