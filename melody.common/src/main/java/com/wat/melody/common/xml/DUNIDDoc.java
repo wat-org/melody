@@ -315,6 +315,7 @@ public class DUNIDDoc extends Doc {
 	}
 
 	private int miIndex;
+	private boolean mbHasChanged;
 
 	public DUNIDDoc() {
 		this(0);
@@ -323,6 +324,7 @@ public class DUNIDDoc extends Doc {
 	public DUNIDDoc(int index) {
 		super();
 		setIndex(index);
+		setHasChanged(false);
 	}
 
 	public int getIndex() {
@@ -337,6 +339,20 @@ public class DUNIDDoc extends Doc {
 		int previous = getIndex();
 		miIndex = index;
 		return previous;
+	}
+
+	private boolean hasChanged() {
+		return mbHasChanged;
+	}
+
+	private boolean setHasChanged(boolean hasChanged) {
+		boolean previous = hasChanged();
+		mbHasChanged = hasChanged;
+		return previous;
+	}
+
+	private void markHasChanged() {
+		mbHasChanged = true;
 	}
 
 	@Override
@@ -356,6 +372,9 @@ public class DUNIDDoc extends Doc {
 	}
 
 	public synchronized void store(String sPath) {
+		if (!hasChanged()) {
+			return;
+		}
 		Document doc = (Document) getDocument().cloneNode(true);
 		NodeList nl = findDUNIDs(doc);
 		for (int i = 0; i < nl.getLength(); i++) {
@@ -442,8 +461,12 @@ public class DUNIDDoc extends Doc {
 	 */
 	public synchronized String setAttributeValue(DUNID ownerNodeDUNID,
 			String sAttrName, String sAttrValue) throws NoSuchDUNIDException {
-		return setAttributeValue(getDocument(), ownerNodeDUNID, sAttrName,
-				sAttrValue);
+		String previous = setAttributeValue(getDocument(), ownerNodeDUNID,
+				sAttrName, sAttrValue);
+		if (previous == null || !sAttrValue.equals(previous)) {
+			markHasChanged();
+		}
+		return previous;
 	}
 
 	/**
@@ -471,7 +494,12 @@ public class DUNIDDoc extends Doc {
 	 */
 	public synchronized String removeAttribute(DUNID ownerNodeDUNID,
 			String sAttrName) throws NoSuchDUNIDException {
-		return removeAttribute(getDocument(), ownerNodeDUNID, sAttrName);
+		String previous = removeAttribute(getDocument(), ownerNodeDUNID,
+				sAttrName);
+		if (previous != null) {
+			markHasChanged();
+		}
+		return previous;
 	}
 
 }
