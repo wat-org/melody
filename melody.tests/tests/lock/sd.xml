@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<sequence default="do">
+
+	<order name="do">
+		<call orders="do1,do2" />
+	</order>
+
+	<order name="do1">
+
+		<foreach items="//instance" itemName="srv">
+			<synchronize maxpar="1">
+				<echo message="§[srv]§" />
+				<sleep millis="2000" />
+			</synchronize>
+		</foreach>
+
+	</order>
+
+	<order name="do2">
+
+		<foreach items="//instance" itemName="srv">
+			<synchronize maxpar="1">
+				<echo message="§[srv]§" />
+				<sleep millis="2000" />
+			</synchronize>
+		</foreach>
+
+	</order>
+
+</sequence>

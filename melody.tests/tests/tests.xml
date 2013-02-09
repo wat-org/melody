@@ -266,6 +266,13 @@
 		</java>
 	</target>
 
+	<target name="Lock">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./tests/lock/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
 	<target name="all" depends="Call_UC0,Call_UC1,Foreach_UC0,Param_UC0,Param_UC1,Param_UC2" />
 
 </project>
