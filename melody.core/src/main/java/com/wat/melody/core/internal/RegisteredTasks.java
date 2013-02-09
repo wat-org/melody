@@ -12,6 +12,7 @@ import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.core.nativeplugin.sequence.Sequence;
 import com.wat.melody.core.nativeplugin.setEDAttrValue.SetEDAttrValue;
+import com.wat.melody.core.nativeplugin.synchronize.Synchronize;
 
 /**
  * 
@@ -62,6 +63,7 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 		put(Order.class);
 		put(Call.class);
 		put(Foreach.class);
+		put(Synchronize.class);
 		put(Property.class);
 		put(SetEDAttrValue.class);
 	}
