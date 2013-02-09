@@ -1,9 +1,11 @@
 package com.wat.melody.plugin.sleep;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.plugin.sleep.exception.SleepException;
 
 /**
  * 
@@ -11,6 +13,8 @@ import com.wat.melody.plugin.sleep.exception.SleepException;
  * 
  */
 public class Sleep implements ITask {
+
+	private static Log log = LogFactory.getLog(Sleep.class);
 
 	/**
 	 * The 'sleep' XML element used in the Sequence Descriptor
@@ -23,19 +27,15 @@ public class Sleep implements ITask {
 	public static final String MILLIS_ATTR = "millis";
 
 	private ITaskContext moContext;
-	private long miMillis;
+	private SleepTimeout moTimeout;
 
 	public Sleep() {
 		initContext();
-		initMillis();
+		setTimeout(SleepTimeout.DEFAULT_VALUE);
 	}
 
 	private void initContext() {
 		moContext = null;
-	}
-
-	private void initMillis() {
-		miMillis = 1000;
 	}
 
 	@Override
@@ -52,7 +52,9 @@ public class Sleep implements ITask {
 	@Override
 	public void doProcessing() throws InterruptedException {
 		getContext().handleProcessorStateUpdates();
-		Thread.sleep(getMillis());
+		log.debug(Messages.bind(Messages.SleepMsg_INFO, getTimeout()
+				.getTimeoutInMillis()));
+		Thread.sleep(getTimeout().getTimeoutInMillis());
 	}
 
 	@Override
@@ -69,17 +71,18 @@ public class Sleep implements ITask {
 		moContext = p;
 	}
 
-	private long getMillis() {
-		return miMillis;
+	private SleepTimeout getTimeout() {
+		return moTimeout;
 	}
 
 	@Attribute(name = MILLIS_ATTR)
-	public long setMillis(long v) throws SleepException {
-		if (v <= 0) {
-			throw new SleepException(Messages.bind(
-					Messages.SleepEx_INVALID_MILLIS_ATTR, v));
+	public SleepTimeout setTimeout(SleepTimeout v) {
+		if (v == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ SleepTimeout.class.getCanonicalName() + ".");
 		}
-		return miMillis = v;
+		return moTimeout = v;
 	}
 
 }

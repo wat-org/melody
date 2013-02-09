@@ -6,7 +6,8 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.sleep.messages";
 
-	public static String SleepEx_INVALID_MILLIS_ATTR;
+	public static String SleepTimeoutEx_INVALID;
+	public static String SleepMsg_INFO;
 
 	static {
 		// initialize resource bundle
