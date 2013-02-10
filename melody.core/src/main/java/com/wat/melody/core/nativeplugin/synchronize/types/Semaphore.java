@@ -5,11 +5,11 @@ package com.wat.melody.core.nativeplugin.synchronize.types;
  * @author Guillaume Cornet
  * 
  */
-public class LockDatas {
+public class Semaphore {
 
 	private int _runningJobs;
 
-	public LockDatas() {
+	public Semaphore() {
 		_runningJobs = 0;
 	}
 

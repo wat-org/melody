@@ -13,6 +13,11 @@ public abstract class Messages extends NLS {
 	public static String MaxParEx_NOT_A_NUMBER;
 	public static String MaxParEx_NEGATIVE;
 
+	public static String LockMgmtMsg_BEGIN_WAIT;
+	public static String LockMgmtMsg_END_WAIT;
+	public static String LockMgmtMsg_BEGIN_JOB;
+	public static String LockMgmtMsg_END_JOB;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

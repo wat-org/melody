@@ -3,12 +3,15 @@ package com.wat.melody.core.nativeplugin.synchronize;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.core.nativeplugin.synchronize.exception.IllegalLockIdException;
-import com.wat.melody.core.nativeplugin.synchronize.types.LockDatas;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockScope;
 import com.wat.melody.core.nativeplugin.synchronize.types.MaxPar;
+import com.wat.melody.core.nativeplugin.synchronize.types.Semaphore;
 
 /**
  * 
@@ -17,7 +20,9 @@ import com.wat.melody.core.nativeplugin.synchronize.types.MaxPar;
  */
 public abstract class LockManager {
 
-	private static Map<LockId, LockDatas> lockTableStates = new HashMap<LockId, LockDatas>();
+	private static Log log = LogFactory.getLog(LockManager.class);
+
+	private static Map<LockId, Semaphore> lockTableStates = new HashMap<LockId, Semaphore>();
 
 	/**
 	 * <p>
@@ -67,27 +72,31 @@ public abstract class LockManager {
 			maxPar = MaxPar.SEQUENTIAL;
 		}
 
-		LockId realLockId = getRealLockId(scope, lockId);
-		LockDatas lockDatas = getLockDatas(realLockId);
-		while (true) {
-			synchronized (lockDatas) {
-				if (lockDatas.getRunningJobsCount() < maxPar.getValue()) {
-					lockDatas.increaseRunningJobsCount();
-					break;
-				}
+		LockId semaphoreId = getSemaphoreId(scope, lockId);
+		Semaphore semaphore = getSemaphore(semaphoreId);
+		synchronized (semaphore) {
+			while (semaphore.getRunningJobsCount() >= maxPar.getValue()) {
+				log.trace(Messages.bind(Messages.LockMgmtMsg_BEGIN_WAIT,
+						semaphoreId));
+				semaphore.wait();
+				log.trace(Messages.LockMgmtMsg_END_WAIT);
 			}
-			Thread.sleep(100);
+			semaphore.increaseRunningJobsCount();
 		}
+
 		try {
+			log.trace(Messages.LockMgmtMsg_BEGIN_JOB);
 			cb.doRun();
 		} finally {
-			synchronized (lockDatas) {
-				lockDatas.decreaseRunningJobsCount();
+			log.trace(Messages.bind(Messages.LockMgmtMsg_END_JOB, semaphoreId));
+			synchronized (semaphore) {
+				semaphore.decreaseRunningJobsCount();
+				semaphore.notify();
 			}
 		}
 	}
 
-	private static LockId getRealLockId(LockScope scope, LockId lockId) {
+	private static LockId getSemaphoreId(LockScope scope, LockId lockId) {
 		String scopeId = null;
 		switch (scope) {
 		case CURRENT:
@@ -117,10 +126,10 @@ public abstract class LockManager {
 		}
 	}
 
-	private static synchronized LockDatas getLockDatas(LockId realLockId) {
-		LockDatas currentlyRunning = lockTableStates.get(realLockId);
+	private static synchronized Semaphore getSemaphore(LockId realLockId) {
+		Semaphore currentlyRunning = lockTableStates.get(realLockId);
 		if (currentlyRunning == null) {
-			currentlyRunning = new LockDatas();
+			currentlyRunning = new Semaphore();
 			lockTableStates.put(realLockId, currentlyRunning);
 		}
 		return currentlyRunning;
