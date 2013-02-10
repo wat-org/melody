@@ -184,7 +184,7 @@ public class NewMachine extends AbstractMachineOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getSshPluginConf().getKeyPairRepo());
+			setKeyPairRepository(getSshConfiguration().getKeyPairRepo());
 		}
 		// Validate everything is provided.
 		if (getInstanceType() == null) {
@@ -229,7 +229,7 @@ public class NewMachine extends AbstractMachineOperation {
 		// Enable the given KeyPair.
 		try {
 			enableKeyPair(getKeyPairRepository(), getKeyPairName(),
-					getSshPluginConf().getKeyPairSize(), getPassphrase());
+					getSshConfiguration().getKeyPairSize(), getPassphrase());
 		} catch (IOException Ex) {
 			throw new AwsException(Ex);
 		}

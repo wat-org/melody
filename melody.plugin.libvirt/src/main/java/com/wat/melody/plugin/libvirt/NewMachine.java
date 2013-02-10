@@ -148,7 +148,7 @@ public class NewMachine extends AbstractMachineOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getSshPluginConf().getKeyPairRepo());
+			setKeyPairRepository(getSshConfiguration().getKeyPairRepo());
 		}
 		// Validate everything is provided.
 		if (getInstanceType() == null) {

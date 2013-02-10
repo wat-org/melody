@@ -16,6 +16,7 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.xml.DUNID;
@@ -32,7 +33,8 @@ import com.wat.melody.xpath.XPathHelper;
  * @author Guillaume Cornet
  * 
  */
-abstract public class AbstractAwsOperation implements ITask {
+abstract public class AbstractAwsOperation implements ITask,
+		NetworkManagerFactoryConfigurationCallback {
 
 	/**
 	 * The 'region' XML attribute
@@ -372,7 +374,8 @@ abstract public class AbstractAwsOperation implements ITask {
 		return previous;
 	}
 
-	protected SshPlugInConfiguration getSshPluginConf() {
+	@Override
+	public SshPlugInConfiguration getSshConfiguration() {
 		return moSshPluginConf;
 	}
 
@@ -381,7 +384,7 @@ abstract public class AbstractAwsOperation implements ITask {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Configuration.");
 		}
-		SshPlugInConfiguration previous = getSshPluginConf();
+		SshPlugInConfiguration previous = getSshConfiguration();
 		moSshPluginConf = p;
 		return previous;
 	}

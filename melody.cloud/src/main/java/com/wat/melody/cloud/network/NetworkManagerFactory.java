@@ -3,10 +3,8 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
-import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 
 /**
  * 
@@ -15,13 +13,10 @@ import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
  */
 public abstract class NetworkManagerFactory {
 
-	/*
-	 * TODO : remove all reference to Ssh Plug-In, not so easy ...
-	 */
-	public static NetworkManager createNetworkManager(ITaskContext context,
-			Node instanceNode) throws ResourcesDescriptorException,
-			NetworkManagementException {
-		if (context == null) {
+	public static NetworkManager createNetworkManager(
+			NetworkManagerFactoryConfigurationCallback confCB, Node instanceNode)
+			throws ResourcesDescriptorException, NetworkManagementException {
+		if (confCB == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ITaskContext.class.getCanonicalName() + ".");
@@ -36,14 +31,8 @@ public abstract class NetworkManagerFactory {
 
 		switch (mm) {
 		case SSH:
-			SshPlugInConfiguration sshPlugInConf = null;
-			try {
-				sshPlugInConf = SshPlugInConfiguration.get(context
-						.getProcessorManager());
-			} catch (PlugInConfigurationException Ex) {
-				throw new NetworkManagementException(Ex);
-			}
-			return new SshNetworkManager(instanceNode, sshPlugInConf);
+			return new SshNetworkManager(instanceNode,
+					confCB.getSshConfiguration());
 		case WINRM:
 			return new WinRmNetworkManager(instanceNode);
 		default:

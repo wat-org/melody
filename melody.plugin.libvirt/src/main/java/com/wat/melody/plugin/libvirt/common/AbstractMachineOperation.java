@@ -89,7 +89,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 
 		NetworkManager mh = null;
 		try {
-			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+			mh = NetworkManagerFactory.createNetworkManager(this,
 					getTargetNode());
 		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new LibVirtException(Ex);
@@ -132,7 +132,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 
 		NetworkManager mh = null;
 		try {
-			mh = NetworkManagerFactory.createNetworkManager(getContext(),
+			mh = NetworkManagerFactory.createNetworkManager(this,
 					getTargetNode());
 		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
 			throw new LibVirtException(Ex);
