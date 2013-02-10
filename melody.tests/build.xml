@@ -1,4 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
 <project name="melody_build" basedir="." default="30_packageProject" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
 	<property name="organization.name" value="wat-org" />
