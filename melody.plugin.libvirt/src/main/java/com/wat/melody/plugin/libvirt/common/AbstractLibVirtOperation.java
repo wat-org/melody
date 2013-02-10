@@ -23,6 +23,7 @@ import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
+import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
@@ -36,7 +37,8 @@ import com.wat.melody.xpath.XPathHelper;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractLibVirtOperation implements ITask {
+public abstract class AbstractLibVirtOperation implements ITask,
+		NetworkManagerFactoryConfigurationCallback {
 
 	/**
 	 * The 'region' XML attribute
@@ -302,8 +304,9 @@ public abstract class AbstractLibVirtOperation implements ITask {
 	protected DUNID getNetworkDeviceDUNID(NetworkDevice nd)
 			throws LibVirtException {
 		try {
-			Node netDevNode = NetworkManagementHelper.findNetworkDeviceNodeByName(
-					getTargetNode(), nd.getDeviceName());
+			Node netDevNode = NetworkManagementHelper
+					.findNetworkDeviceNodeByName(getTargetNode(),
+							nd.getDeviceName());
 			return getED().getMelodyID(netDevNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -374,7 +377,8 @@ public abstract class AbstractLibVirtOperation implements ITask {
 		return previous;
 	}
 
-	protected SshPlugInConfiguration getSshPluginConf() {
+	@Override
+	public SshPlugInConfiguration getSshConfiguration() {
 		return moSshPluginConf;
 	}
 
@@ -383,7 +387,7 @@ public abstract class AbstractLibVirtOperation implements ITask {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Configuration.");
 		}
-		SshPlugInConfiguration previous = getSshPluginConf();
+		SshPlugInConfiguration previous = getSshConfiguration();
 		moSshPluginConf = p;
 		return previous;
 	}

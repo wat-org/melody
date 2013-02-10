@@ -28,11 +28,11 @@ public class SshNetworkManager implements NetworkManager {
 	private static Log log = LogFactory.getLog(SshNetworkManager.class);
 
 	private SshManagementNetworkDatas moManagementDatas;
-	private ISshSessionConfiguration moContext;
+	private ISshSessionConfiguration moConfiguration;
 
-	public SshNetworkManager(Node instanceNode, ISshSessionConfiguration context)
+	public SshNetworkManager(Node instanceNode, ISshSessionConfiguration sc)
 			throws ResourcesDescriptorException {
-		setConfiguration(context);
+		setConfiguration(sc);
 		setManagementDatas(new SshManagementNetworkDatas(instanceNode));
 	}
 
@@ -50,16 +50,16 @@ public class SshNetworkManager implements NetworkManager {
 	}
 
 	public ISshSessionConfiguration getConfiguration() {
-		return moContext;
+		return moConfiguration;
 	}
 
-	private void setConfiguration(ISshSessionConfiguration conf) {
-		if (conf == null) {
+	private void setConfiguration(ISshSessionConfiguration sc) {
+		if (sc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
 		}
-		moContext = conf;
+		moConfiguration = sc;
 	}
 
 	@Override
