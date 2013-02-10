@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
@@ -162,10 +163,8 @@ class UploaderMultiThread {
 					Messages.UploadEx_MANAGED, getSession()
 							.getConnectionDatas()), buildUploadTrace());
 		} else if (isInterrupted()) {
-			InterruptedException e = new InterruptedException(
-					Messages.UploadEx_INTERRUPTED);
-			e.initCause(buildUploadTrace());
-			throw e;
+			throw new MelodyInterruptedException(Messages.UploadEx_INTERRUPTED,
+					buildUploadTrace());
 		}
 	}
 

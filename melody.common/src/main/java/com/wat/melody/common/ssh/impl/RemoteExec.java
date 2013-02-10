@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.ssh.Messages;
 
@@ -59,15 +60,12 @@ class RemoteExec {
 				} catch (InterruptedException Ex) {
 					if (iex == null) {
 						log.info(Messages.ExecMsg_GRACEFULL_SHUTDOWN);
-						iex = new InterruptedException(
-								Messages.ExecEx_INTERRUPTED);
-						iex.initCause(Ex);
+						iex = new MelodyInterruptedException(
+								Messages.ExecEx_INTERRUPTED, Ex);
 					} else {
 						log.warn(Messages.ExecMsg_FORCE_SHUTDOWN);
-						iex = new InterruptedException(
-								Messages.ExecEx_INTERRUPTED);
-						iex.initCause(Ex);
-						throw iex;
+						throw new MelodyInterruptedException(
+								Messages.ExecEx_INTERRUPTED, Ex);
 					}
 				}
 			}

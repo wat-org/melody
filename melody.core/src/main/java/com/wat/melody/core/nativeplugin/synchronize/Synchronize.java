@@ -11,6 +11,7 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.core.nativeplugin.synchronize.exception.SynchronizeException;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockScope;
@@ -95,9 +96,8 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 				getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
-			InterruptedException e = new InterruptedException("Interrupted");
-			e.initCause(Ex);
-			throw e;
+			throw new MelodyInterruptedException("Synchronize task have been "
+					+ "interrupted.", Ex);
 		} catch (TaskException Ex) {
 			throw new SynchronizeException(Ex);
 		}
