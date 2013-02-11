@@ -65,14 +65,26 @@ public class NewMachine extends AbstractMachineOperation {
 	private KeyPairRepository moKeyPairRepository;
 	private KeyPairName msKeyPairName;
 	private String msPassphrase;
+	private String msSecurityGroupName;
+	private String msSecurityGroupDescription;
 
 	public NewMachine() {
 		super();
+		initSecurityGroupDescription();
+		initSecurityGroupName();
 		initPassphrase();
 		initKeyPairName();
 		initKeyPairRepository();
 		initImageId();
 		initInstanceType();
+	}
+
+	private void initSecurityGroupDescription() {
+		msSecurityGroupDescription = "Melody security group";
+	}
+
+	private void initSecurityGroupName() {
+		msSecurityGroupName = "MelodySg" + "_" + System.currentTimeMillis();
 	}
 
 	private void initPassphrase() {
@@ -199,7 +211,9 @@ public class NewMachine extends AbstractMachineOperation {
 				enableNetworkManagement();
 			}
 		} else {
-			newInstance(getInstanceType(), getImageId(), getKeyPairName());
+			newInstance(getInstanceType(), getImageId(),
+					getSecurityGroupName(), getSecurityGroupDescription(),
+					getKeyPairName());
 			setInstanceRelatedInfosToED(getInstance());
 			enableNetworkManagement();
 		}
@@ -280,6 +294,14 @@ public class NewMachine extends AbstractMachineOperation {
 		KeyPairRepository previous = getKeyPairRepository();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
+	}
+
+	public String getSecurityGroupName() {
+		return msSecurityGroupName;
+	}
+
+	public String getSecurityGroupDescription() {
+		return msSecurityGroupDescription;
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.wat.melody.plugin.libvirt.common;
 
+import java.util.List;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.libvirt.Connect;
@@ -171,10 +173,11 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
 	}
 
-	public void newInstance(InstanceType type, String sImageId,
-			KeyPairName keyPairName) throws LibVirtException {
+	public void newInstance(InstanceType type, String sImageId, String sSGName,
+			String sSGDesc, KeyPairName keyPairName) throws LibVirtException {
+		LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
 		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,
-				keyPairName);
+				sSGName, keyPairName);
 		if (i == null) {
 			throw new LibVirtException(Messages.bind(Messages.NewEx_FAILED,
 					new Object[] { getRegion(), sImageId, type, keyPairName,
@@ -185,8 +188,10 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	public void deleteInstance() {
+		List<String> sgs = getInstance().getSecurityGroups();
 		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
 		setInstanceID(null);
+		LibVirtCloud.deleteSecurityGroups(getConnect(), sgs);
 	}
 
 	public DiskDeviceList getInstanceDiskDevices(Instance i) {

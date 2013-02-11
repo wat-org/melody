@@ -258,9 +258,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void deleteInstance() throws AwsException, InterruptedException {
-		Instance i = getInstance();
-		String sgname = i.getSecurityGroups().get(0).getGroupName();
-
+		String sgname = getInstance().getSecurityGroups().get(0).getGroupName();
 		if (!Common.deleteAwsInstance(getEc2(), getAwsInstanceID(),
 				getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
@@ -269,9 +267,6 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 		setAwsInstanceID(null);
-		if (sgname == null || sgname.length() == 0) {
-			return;
-		}
 		Common.deleteSecurityGroup(getEc2(), sgname);
 	}
 
