@@ -1100,8 +1100,7 @@ public class Common {
 					+ "Must be a valid AmazonEC2.");
 		}
 		if (sSGName == null || sSGName.trim().length() == 0) {
-			throw new IllegalArgumentException(sSGName + ": Not accepted. "
-					+ "Must be a String (an AWS Security Group name).");
+			return;
 		}
 
 		DeleteSecurityGroupRequest dsgreq = new DeleteSecurityGroupRequest();

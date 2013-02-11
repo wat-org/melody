@@ -97,12 +97,22 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceID()));
+		/*
+		 * TODO : open port 22 on the network management device
+		 * 
+		 * mh.getManagementDatas() should have a method 'getNode()' which
+		 * contains the network management device node.
+		 */
 		try {
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (NetworkManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceID(), getTargetNodeLocation()), Ex);
+		} finally {
+			/*
+			 * TODO : close port 22
+			 */
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
 				getInstanceID()));

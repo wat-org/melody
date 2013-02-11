@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +18,7 @@ import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
+import org.libvirt.NetworkFilter;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
 import org.w3c.dom.Attr;
@@ -581,6 +583,9 @@ public abstract class LibVirtCloud {
 						+ "' detached on Domain '" + d.getName() + "'.");
 				// release the @mac
 				unregisterMacAddress(sMacAddr);
+				/*
+				 * TODO remove network filter
+				 */
 			}
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException | XPathExpressionException Ex) {
@@ -625,6 +630,9 @@ public abstract class LibVirtCloud {
 						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
 				log.debug("Network Device '" + netDev.getDeviceName()
 						+ "' attached on Domain '" + d.getName() + "'.");
+				/*
+				 * TODO create network filter
+				 */
 			}
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException Ex) {
@@ -693,10 +701,6 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	private static String generateUniqDomainUUID() {
-		return UUID.randomUUID().toString();
-	}
-
 	private static synchronized String generateUniqMacAddress() {
 		NodeList nlFreeMacAddrPool = null;
 		try {
@@ -740,7 +744,7 @@ public abstract class LibVirtCloud {
 		log.debug("Mac Address '" + sMacAddr + "' released.");
 	}
 
-	private static Doc getDomainXMLDesc(Domain domain) {
+	protected static Doc getDomainXMLDesc(Domain domain) {
 		if (domain == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Domain.class.getCanonicalName()
@@ -810,6 +814,15 @@ public abstract class LibVirtCloud {
 			throw new RuntimeException("Hard coded xpath expression is not "
 					+ "valid. Check the source code.", Ex);
 		}
+	}
+
+	public static boolean networkFilterExists(Connect cnx, String sSGName)
+			throws LibvirtException {
+		if (sSGName == null) {
+			return false;
+		}
+		String[] names = cnx.listNetworkFilters();
+		return Arrays.asList(names).contains(sSGName);
 	}
 
 	public static Domain getDomain(Connect cnx, String sInstanceId) {
@@ -895,38 +908,100 @@ public abstract class LibVirtCloud {
 		return cs == InstanceState.PENDING || cs == InstanceState.RUNNING;
 	}
 
+	private static String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='§[vmName]§-§[eth]§-nwfilter' chain='root'>"
+			+ "<filterref filter='§[sgName]§'/>"
+			+ "<filterref filter='clean-traffic'/>"
+			+ "<rule action='accept' direction='out' priority='500'>"
+			+ "<all state='NEW'/>"
+			+ "</rule>"
+			+ "<rule action='accept' direction='out' priority='500'>"
+			+ "<all state='ESTABLISHED,RELATED'/>"
+			+ "</rule>"
+			+ "<rule action='accept' direction='in' priority='500'>"
+			+ "<all state='ESTABLISHED'/>"
+			+ "</rule>"
+			+ "<rule action='drop' direction='inout' priority='500'>"
+			+ "<all/>" + "</rule>" + "</filter>";
+
+	public static void createSecurityGroup(Connect cnx, String sSGName,
+			String sSGDesc) {
+		// Create a network filter for the network device
+		try {
+			if (networkFilterExists(cnx, sSGName)) {
+				throw new RuntimeException(sSGName + ": network filter "
+						+ "already exists.");
+			}
+			/*
+			 * TODO : remove accept NEW tcp when tests done
+			 */
+			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sSGName
+					+ "' chain='root'>"
+					+ "<rule action='accept' direction='in' priority='500'>"
+					+ "<tcp state='NEW'/>" + "</rule>"
+					+ "</filter>";
+			log.trace("Creating Network Filter '" + sSGName + "' ...");
+			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
+			log.debug("Network Filter '" + sSGName + "' created.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static void deleteSecurityGroups(Connect cnx, List<String> sgs) {
+		try {
+			for (String sg : sgs) {
+				if (!networkFilterExists(cnx, sg)) {
+					continue;
+				}
+				log.trace("Deleting Network Filter '" + sg + "' ...");
+				NetworkFilter nf = cnx.networkFilterLookupByName(sg);
+				nf.undefine();
+				log.debug("Network Filter '" + sg + "' deleted.");
+			}
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
 	private static String LOCK_UNIQ_DOMAIN = "";
 	private static String LOCK_CLONE_DISK = "";
 
 	public static Instance newInstance(Connect cnx, InstanceType type,
-			String sImageId, KeyPairName keyPairName) {
+			String sImageId, String sSGName, KeyPairName keyPairName) {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());
 		}
+
 		/*
 		 * TODO : should be asynchronous.
 		 * 
 		 * Should handle a PENDING state.
 		 */
 		try {
-
 			if (!imageIdExists(sImageId)) {
 				throw new RuntimeException(sImageId + ": No such image.");
+			}
+			if (!networkFilterExists(cnx, sSGName)) {
+				throw new RuntimeException(sSGName + ": No such network "
+						+ "filter.");
 			}
 
 			Path ddt = getImageDomainDescriptor(sImageId);
 			PropertiesSet ps = new PropertiesSet();
 			Domain domain = null;
-			String sInstanceId = generateUniqDomainName(cnx);
+			String sInstanceId = null;
+			// Defines domain
 			synchronized (LOCK_UNIQ_DOMAIN) {
-				// so that the UniqDomainName is consistent
+				// this block is sync because the sInstanceId must be consistent
+				sInstanceId = generateUniqDomainName(cnx);
 				try {
 					ps.put(new Property("vmName", sInstanceId));
-					ps.put(new Property("uuid", generateUniqDomainUUID()));
 					ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
 					ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
 					ps.put(new Property("ram", String.valueOf(getRAM(type))));
+					ps.put(new Property("sgName", sSGName));
+					ps.put(new Property("eth", "eth0"));
 				} catch (IllegalPropertyException Ex) {
 					throw new RuntimeException(Ex);
 				}
@@ -947,9 +1022,18 @@ public abstract class LibVirtCloud {
 					throw new RuntimeException(Ex);
 				}
 			}
-			log.debug("Domain '" + ps.getProperty("vmName").getValue()
-					+ "' created.");
+			log.debug("Domain '" + sInstanceId + "' created.");
 
+			// Create a network filter for the network device
+			log.trace("Creating Network Filter '" + sInstanceId
+					+ "-eth0-nwfilter' for Domain '" + sInstanceId + "' ...");
+			cnx.networkFilterDefineXML(XPathExpander.expand(
+					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
+			log.debug("Network Filter '" + sInstanceId
+					+ "-eth0-nwfilter' created for Domain '" + sInstanceId
+					+ "'.");
+
+			// Create disk devices
 			NodeList nl = null;
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
@@ -983,6 +1067,7 @@ public abstract class LibVirtCloud {
 						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
+			// Starts domain
 			log.trace("Starting Domain '" + sInstanceId + "' ...");
 			domain.create();
 			log.debug("Domain '" + sInstanceId + "' started.");
@@ -1017,12 +1102,24 @@ public abstract class LibVirtCloud {
 				domain.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
-			// release network devices
-			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']"
-					+ "/mac/@address");
+			// release network devices and network Ffilters
+			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				// release the @mac
-				unregisterMacAddress(nl.item(i).getNodeValue());
+				// Release the @mac
+				String mac = Doc.evaluateAsString("./mac/@address", nl.item(i));
+				unregisterMacAddress(mac);
+				// Destroy the network filter
+				String filter = Doc.evaluateAsString("./filterref/@filter",
+						nl.item(i));
+				if (!networkFilterExists(cnx, filter)) {
+					continue;
+				}
+				log.trace("Deleting Network Filter '" + filter
+						+ "' for Domain '" + sInstanceId + "' ...");
+				NetworkFilter nf = cnx.networkFilterLookupByName(filter);
+				nf.undefine();
+				log.debug("Filter '" + filter + "' deleted for Domain '"
+						+ sInstanceId + "'.");
 			}
 			// destroy disks
 			nl = doc.evaluateAsNodeList("/domain/devices/disk[@device='disk']"

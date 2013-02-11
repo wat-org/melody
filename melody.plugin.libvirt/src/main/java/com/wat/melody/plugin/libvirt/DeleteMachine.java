@@ -3,6 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -57,6 +58,8 @@ public class DeleteMachine extends AbstractMachineOperation {
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
+			LibVirtCloud.deleteSecurityGroups(getConnect(), getInstance()
+					.getSecurityGroups());
 		} else {
 			disableNetworkManagement();
 			deleteInstance();
