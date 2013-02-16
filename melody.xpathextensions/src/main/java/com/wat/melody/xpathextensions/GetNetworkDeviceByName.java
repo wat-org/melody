@@ -27,26 +27,33 @@ public class GetNetworkDeviceByName implements XPathFunction {
 			return null;
 		}
 		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
-			throw new IllegalArgumentException(arg0.getClass()
-					.getCanonicalName()
-					+ ": Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE
-					+ ":"
-					+ NAME
-					+ "() expects a Node as first argument.");
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
+					+ NAME + "() expects a Node or a List<Node> as first "
+					+ "argument.");
 		}
-		if (arg1 == null || !(arg1 instanceof String)) {
-			throw new IllegalArgumentException("null: Not accepted. "
+		String arg1val = null;
+		if (arg1 == null) {
+			throw new XPathFunctionException("null: Not accepted. "
 					+ CustomXPathFunctions.NAMESPACE + ":" + NAME
-					+ "() expects a non-null String as second argument.");
+					+ "() expects a non-null second argument.");
+		}
+		if (arg1 instanceof Node) {
+			arg1val = ((Node) arg1).getNodeValue();
+		} else if (arg1 instanceof String) {
+			arg1val = (String) arg1;
+		} else {
+			throw new XPathFunctionException("null: Not accepted. "
+					+ CustomXPathFunctions.NAMESPACE + ":" + NAME
+					+ "() expects a String or a Node as second argument.");
 		}
 		try {
 			if (arg0 instanceof Node) {
 				return NetworkManagementHelper.findNetworkDeviceNodeByName(
-						(Node) arg0, (String) arg1);
+						(Node) arg0, arg1val);
 			} else {
 				return NetworkManagementHelper.findNetworkDeviceNodeByName(
-						(List<Node>) arg0, (String) arg1);
+						(List<Node>) arg0, arg1val);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

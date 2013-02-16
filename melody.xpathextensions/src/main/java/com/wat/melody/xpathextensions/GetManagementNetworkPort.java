@@ -26,13 +26,9 @@ public class GetManagementNetworkPort implements XPathFunction {
 			return null;
 		}
 		if (!(arg0 instanceof Node)) {
-			throw new IllegalArgumentException(arg0.getClass()
-					.getCanonicalName()
-					+ ": Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE
-					+ ":"
-					+ NAME
-					+ "() expects a Node " + "argument.");
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
+					+ NAME + "() expects a Node as first argument.");
 		}
 		try {
 			return NetworkManagementHelper
