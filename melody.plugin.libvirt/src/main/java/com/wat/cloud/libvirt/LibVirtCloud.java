@@ -910,7 +910,8 @@ public abstract class LibVirtCloud {
 
 	private static String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='§[vmName]§-§[eth]§-nwfilter' chain='root'>"
 			+ "<filterref filter='§[sgName]§'/>"
-			+ "<filterref filter='clean-traffic'/>"
+			// TODO : this will drop packets sent to eth1 and reply sent by eth0
+			// + "<filterref filter='clean-traffic'/>"
 			+ "<rule action='accept' direction='out' priority='500'>"
 			+ "<all state='NEW'/>"
 			+ "</rule>"
@@ -932,13 +933,12 @@ public abstract class LibVirtCloud {
 						+ "already exists.");
 			}
 			/*
-			 * TODO : remove accept NEW tcp when tests done
+			 * TODO : remove 'all accept NEW' when done
 			 */
 			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sSGName
 					+ "' chain='root'>"
 					+ "<rule action='accept' direction='in' priority='500'>"
-					+ "<tcp state='NEW'/>" + "</rule>"
-					+ "</filter>";
+					+ "<all state='NEW'/>" + "</rule>" + "</filter>";
 			log.trace("Creating Network Filter '" + sSGName + "' ...");
 			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
 			log.debug("Network Filter '" + sSGName + "' created.");
