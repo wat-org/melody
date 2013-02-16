@@ -26,13 +26,10 @@ public class GetManagementNetworkHost implements XPathFunction {
 			return null;
 		}
 		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
-			throw new IllegalArgumentException(arg0.getClass()
-					.getCanonicalName()
-					+ ": Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE
-					+ ":"
-					+ NAME
-					+ "() expects a Node or a List<Node> argument.");
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
+					+ NAME + "() expects a Node or a List<Node> as first "
+					+ "argument.");
 		}
 		try {
 			if (arg0 instanceof Node) {

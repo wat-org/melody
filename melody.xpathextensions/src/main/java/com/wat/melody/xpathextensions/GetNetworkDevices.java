@@ -19,20 +19,16 @@ public class GetNetworkDevices implements XPathFunction {
 
 	public static final String NAME = "getNetworkDevices";
 
-	@SuppressWarnings({ "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
 		if (arg0 == null) {
 			return null;
 		}
 		if (!(arg0 instanceof Node)) {
-			throw new IllegalArgumentException(arg0.getClass()
-					.getCanonicalName()
-					+ ": Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE
-					+ ":"
-					+ NAME
-					+ "() expects a Node as first argument.");
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
+					+ NAME + "() expects a Node as first argument.");
 		}
 		try {
 			return NetworkManagementHelper.findNetworkDevices((Node) arg0);

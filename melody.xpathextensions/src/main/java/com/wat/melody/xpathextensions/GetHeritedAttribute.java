@@ -32,18 +32,14 @@ public final class GetHeritedAttribute implements XPathFunction {
 			return null;
 		}
 		if (!(arg0 instanceof Node)) {
-			throw new IllegalArgumentException(arg0.getClass()
-					.getCanonicalName()
-					+ ": Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE
-					+ ":"
-					+ NAME
-					+ "() expects a Node argument.");
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
+					+ NAME + "() expects a Node as first argument.");
 		}
 		if (arg1 == null || !(arg1 instanceof String)) {
-			throw new IllegalArgumentException("null: Not accepted. "
+			throw new XPathFunctionException("null: Not accepted. "
 					+ CustomXPathFunctions.NAMESPACE + ":" + NAME
-					+ "() expects a non-null String " + "argument.");
+					+ "() expects a non-null String as second argument.");
 		}
 		try {
 			return XPathHelper.getHeritedAttributeValue((Node) arg0,
