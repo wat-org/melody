@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><environment>
+
+	<fwrules>
+		<in access="allow" from="all" name="SSH" ports="22" protocols="tcp"/>
+	</fwrules>
+	
+	<models>
+		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+			<network-management enable="true" method="ssh" port="22"/>
+			<disk-management diskDevicesSelector="//disk"/>
+			<fwrules>
+				<in>
+					<fwrule access="allow" device="eth0" from="all" ports="8080" protocols="tcp"/>
+					<fwrule access="allow" device="eth0" from="10.10.0.0/16" ports="678" protocols="tcp,udp"/>
+					<fwrule device="eth0" herit="./environment/fwrules/in[@name='SSH']"/>
+				</in>
+			</fwrules>
+			<disks>
+				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>
+			</disks>
+		</model>
+	</models>
+	
+	<instances>
+		
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
+			<network>
+				<interface device="eth0"/>
+			</network>
+		</instance>
+		
+<!--
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" instanceId="i-49c5f2df" name="srv02">
+			<network>
+				<interface device="eth0"/>
+			</network>
+		</instance>		
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
+			<network>
+				<interface device="eth0" ip="" fqdn="" />
+				<interface device="eth1" ip="" fqdn="" />
+			</network>
+		</instance>		
+-->
+	</instances>
+	
+</environment>

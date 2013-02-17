@@ -1,20 +1,12 @@
 package com.wat.cloud.libvirt;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.xpath.XPathExpressionException;
+import java.util.Map;
 
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
-import org.libvirt.NetworkFilter;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.NetworkDevice;
-import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.xml.Doc;
 
 /**
  * 
@@ -88,46 +80,12 @@ public class Instance {
 		moDomain = d;
 	}
 
-	public List<String> getSecurityGroups() {
-		List<String> result = new ArrayList<String>();
-		NodeList nl = null;
-		try {
-			Doc doc = LibVirtCloud.getDomainXMLDesc(getDomain());
-			nl = doc.evaluateAsNodeList("/domain/devices/interface"
-					+ "[@type='network']/filterref/@filter");
-			for (int i = 0; i < nl.getLength(); i++) {
-				String filterref = nl.item(i).getNodeValue();
-				NetworkFilter nf = getDomain().getConnect()
-						.networkFilterLookupByName(filterref);
-				Doc filter = new Doc();
-				filter.loadFromXML(nf.getXMLDesc());
-				result.add(filter.evaluateAsString("//filterref[1]/@filter"));
-			}
-		} catch (MelodyException | XPathExpressionException | LibvirtException
-				| IOException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		return result;
+	public Map<NetworkDevice, String> getSecurityGroups() {
+		return LibVirtCloud.getInstanceSecurityGroups(this);
 	}
 
 	public String getSecurityGroup(NetworkDevice netDev) {
-		if (netDev == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ NetworkDevice.class.getCanonicalName() + ".");
-		}
-		try {
-			String filter = getInstanceId() + "-" + netDev.getDeviceName()
-					+ "-nwfilter";
-			NetworkFilter nf = getDomain().getConnect()
-					.networkFilterLookupByName(filter);
-			Doc doc = new Doc();
-			doc.loadFromXML(nf.getXMLDesc());
-			return doc.evaluateAsString("//filterref[1]/@filter");
-		} catch (MelodyException | XPathExpressionException | LibvirtException
-				| IOException Ex) {
-			throw new RuntimeException(Ex);
-		}
+		return LibVirtCloud.getInstanceSecurityGroup(this, netDev);
 	}
 
 }

@@ -1,6 +1,6 @@
 package com.wat.melody.plugin.libvirt.common;
 
-import java.util.List;
+import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -27,6 +27,7 @@ import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
@@ -190,7 +191,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	public void deleteInstance() {
-		List<String> sgs = getInstance().getSecurityGroups();
+		Map<NetworkDevice, String> sgs = getInstance().getSecurityGroups();
 		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
 		setInstanceID(null);
 		LibVirtCloud.deleteSecurityGroups(getConnect(), sgs);
@@ -226,7 +227,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	protected void detachNetworkDevices(Instance i,
 			NetworkDeviceList netDevivesToRemove, long detachTimeout)
-			throws LibVirtException, InterruptedException {
+			throws InterruptedException {
 		for (NetworkDevice netDev : netDevivesToRemove) {
 			String sSGName = i.getSecurityGroup(netDev);
 			LibVirtCloud.detachNetworkDevice(i, netDev);
@@ -236,13 +237,32 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	protected void attachNetworkDevices(Instance i,
 			NetworkDeviceList netDevivesToAdd, long attachTimeout)
-			throws LibVirtException, InterruptedException {
+			throws InterruptedException {
 		for (NetworkDevice netDev : netDevivesToAdd) {
 			String sSGName = newSecurityGroupName();
 			String sSGDesc = getSecurityGroupDescription();
 			LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
 			LibVirtCloud.attachNetworkDevice(i, netDev, sSGName);
 		}
+	}
+
+	public FwRulesDecomposed getInstanceFireWallRules(Instance i) {
+		return LibVirtCloud.getInstanceFireWallRules(i);
+	}
+
+	protected void revokeFireWallRules(Instance i, FwRulesDecomposed toRevoke) {
+		/*
+		 * TODO : decompose rules for each device (e.g. don't want device='all')
+		 */
+		LibVirtCloud.revokeFireWallRules(i, toRevoke);
+	}
+
+	protected void authorizeFireWallRules(Instance i,
+			FwRulesDecomposed toAutorize) {
+		/*
+		 * TODO : decompose rules for each device (e.g. don't want device='all')
+		 */
+		LibVirtCloud.authorizeFireWallRules(i, toAutorize);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)

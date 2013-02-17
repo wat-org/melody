@@ -72,6 +72,14 @@ public class IpRange {
 		return msValue;
 	}
 
+	public String getIp() {
+		return msValue.split("/")[0];
+	}
+
+	public String getMask() {
+		return msValue.split("/")[1];
+	}
+
 	public String setValue(String sIpRange) throws IllegalIpRangeException {
 		String previous = getValue();
 		if (sIpRange == null) {

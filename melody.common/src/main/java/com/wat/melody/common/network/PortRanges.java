@@ -65,19 +65,19 @@ public class PortRanges extends ArrayList<PortRange> {
 			portRange = portRange.trim();
 			if (portRange.length() == 0) {
 				throw new IllegalPortRangesException(Messages.bind(
-						Messages.PortRanges_EMPTY_PORT_RANGE, sPortRanges));
+						Messages.PortRangesEx_EMPTY_PORT_RANGE, sPortRanges));
 			}
 			try {
 				add(PortRange.parseString(portRange));
 			} catch (IllegalPortRangeException Ex) {
 				throw new IllegalPortRangesException(Messages.bind(
-						Messages.PortRanges_INVALID_PORT_RANGE, sPortRanges),
+						Messages.PortRangesEx_INVALID_PORT_RANGE, sPortRanges),
 						Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalPortRangesException(Messages.bind(
-					Messages.PortRanges_EMPTY, sPortRanges));
+					Messages.PortRangesEx_EMPTY, sPortRanges));
 		}
 	}
 

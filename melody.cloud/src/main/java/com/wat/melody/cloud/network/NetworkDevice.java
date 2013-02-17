@@ -11,10 +11,20 @@ public class NetworkDevice {
 
 	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";
 
+	public static NetworkDevice parseString(String sInterface)
+			throws IllegalNetworkDeviceException {
+		return new NetworkDevice(sInterface);
+	}
+
 	private String msDeviceName;
 
 	public NetworkDevice() {
 		initDeviceName();
+	}
+
+	public NetworkDevice(String sDeviceName)
+			throws IllegalNetworkDeviceException {
+		setDeviceName(sDeviceName);
 	}
 
 	private void initDeviceName() {
@@ -67,11 +77,11 @@ public class NetworkDevice {
 		}
 		if (sDeviceName.trim().length() == 0) {
 			throw new IllegalNetworkDeviceException(Messages.bind(
-					Messages.NetworkEx_EMPTY_DEVICE_NAME, sDeviceName));
+					Messages.NetworkDeviceNameEx_EMPTY, sDeviceName));
 		}
 		if (!sDeviceName.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
 			throw new IllegalNetworkDeviceException(Messages.bind(
-					Messages.NetworkEx_INVALID_DEVICE_NAME, sDeviceName,
+					Messages.NetworkDeviceNameEx_INVALID, sDeviceName,
 					NETWORK_DEVICE_NAME_PATTERN));
 		}
 		String previous = getDeviceName();

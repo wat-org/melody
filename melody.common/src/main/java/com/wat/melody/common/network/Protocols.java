@@ -25,19 +25,19 @@ public class Protocols extends ArrayList<Protocol> {
 	 * <i> * Input <code>String</code> must respect the following pattern :
 	 * <code>Protocol(','Protocol)*</code>. <BR/>
 	 * * Protocol must be a valid {@link Protocol} (see
-	 * {@link Protocols#parseString(String)}). <BR/>
+	 * {@link Protocol#parseString(String)}). <BR/>
 	 * </i>
 	 * </p>
 	 * 
 	 * @param sProtocols
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return a <code>Protocols</code> object, whose equal to the given input
+	 * @return a {@link Protocols} object, whose equal to the given input
 	 *         <code>String</code>.
 	 * 
 	 * @throws IllegalProtocolsException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>Protocols</code>.
+	 *             {@link Protocols}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */

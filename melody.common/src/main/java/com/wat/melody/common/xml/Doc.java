@@ -3,10 +3,12 @@ package com.wat.melody.common.xml;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -180,12 +182,13 @@ public class Doc {
 	 * </p>
 	 * 
 	 * @param oDoc
-	 *            is the <code>Document</code> to store on disk.
+	 *            is the {@link Document} to store on disk.
 	 * @param sPath
-	 *            is the path where the <code>Document</code> will be stored.
+	 *            is the path where the {@link Document} will be stored.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given <code>Document</code> is <code>null</code>, or
-	 *             if the given path is <code>null</code>.
+	 *             if the given {@link Document} is <code>null</code>, or if the
+	 *             given path is <code>null</code>.
 	 */
 	public synchronized static void store(Document oDoc, String sPath) {
 		if (sPath == null) {
@@ -208,6 +211,41 @@ public class Doc {
 		} catch (TransformerException Ex) {
 			throw new RuntimeException("Error while saving XML document "
 					+ "to '" + sPath + "'.", Ex);
+		}
+	}
+
+	/**
+	 * <p>
+	 * Dump the given Document into a <code>String</code>.
+	 * </p>
+	 * 
+	 * @param oDoc
+	 *            is the {@link Document} to dump.
+	 * 
+	 * @return a <code>String</code>, which is the String representation of the
+	 *         given {@link Document}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <code>null</code>.
+	 */
+	public static String dump(Document oDoc) {
+		if (oDoc == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Document.");
+		}
+		try {
+			StringWriter sw = new StringWriter();
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,
+					"yes");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.transform(new DOMSource(oDoc), new StreamResult(sw));
+			return sw.toString();
+		} catch (TransformerException Ex) {
+			throw new RuntimeException("Error while dumping XML document.", Ex);
 		}
 	}
 
@@ -277,6 +315,10 @@ public class Doc {
 	public Doc() {
 		initFileFullPath();
 		initDocument();
+	}
+
+	public String dump() {
+		return dump(getDocument());
 	}
 
 	private String initFileFullPath() {

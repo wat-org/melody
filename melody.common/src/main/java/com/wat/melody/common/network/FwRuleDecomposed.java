@@ -11,8 +11,7 @@ import com.wat.melody.common.network.exception.IllegalPortRangeException;
  */
 public class FwRuleDecomposed {
 
-	private Interface moFromInterface;
-	private Interface moToInterface;
+	private Interface moInterface;
 	private IpRange moFromIpRange;
 	private IpRange moToIpRange;
 	private PortRange moPortRange;
@@ -20,8 +19,7 @@ public class FwRuleDecomposed {
 	private Access moAccess;
 
 	public FwRuleDecomposed() {
-		initFromInterface();
-		initToInterface();
+		initInterface();
 		initFromIpRange();
 		initToIpRange();
 		initPortRange();
@@ -29,11 +27,10 @@ public class FwRuleDecomposed {
 		initAccess();
 	}
 
-	public FwRuleDecomposed(Interface fromInterface, Interface toInterface,
-			IpRange fromIpRange, IpRange toIoRange, PortRange portRange,
-			Protocol protocol, Access access) {
-		setFromInterface(fromInterface);
-		setToInterface(toInterface);
+	public FwRuleDecomposed(Interface inter, IpRange fromIpRange,
+			IpRange toIoRange, PortRange portRange, Protocol protocol,
+			Access access) {
+		setInterface(inter);
 		setFromIpRange(fromIpRange);
 		setToIpRange(toIoRange);
 		setPortRange(portRange);
@@ -41,25 +38,12 @@ public class FwRuleDecomposed {
 		setAccess(access);
 	}
 
-	public void initFromInterface() {
+	public void initInterface() {
 		try {
-			moFromInterface = Interface.parseString(Interface.ALL);
+			moInterface = Interface.parseString(Interface.ALL);
 		} catch (IllegalInterfaceException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
-					+ "the FromInterface with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	public void initToInterface() {
-		try {
-			moToInterface = Interface.parseString(Interface.ALL);
-		} catch (IllegalInterfaceException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the ToInterface with its default value. "
+					+ "the Interface with its default value. "
 					+ "Because this default value initialization is "
 					+ "hardcoded, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -116,17 +100,27 @@ public class FwRuleDecomposed {
 
 	@Override
 	public String toString() {
-		return "{ " + "from: " + getFromIpRange() + ", to: " + getToIpRange()
-				+ ", port: " + getPortRange() + ", protocol: " + getProtocol()
-				+ ", access: " + getAccess() + " }";
+		return "{ " + "dev: " + getInterface() + ", from: " + getFromIpRange()
+				+ ", to: " + getToIpRange() + ", port: " + getPortRange()
+				+ ", protocol: " + getProtocol() + ", access: " + getAccess()
+				+ " }";
 	}
 
-	public boolean equals(FwRuleDecomposed fw) {
-		return fw.getProtocol().equals(getProtocol())
-				&& fw.getPortRange().equals(getPortRange())
-				&& fw.getFromIpRange().equals(getFromIpRange())
-				&& fw.getToIpRange().equals(getToIpRange())
-				&& fw.getAccess().equals(getAccess());
+	@Override
+	public boolean equals(Object anObject) {
+		if (this == anObject) {
+			return true;
+		}
+		if (anObject instanceof FwRuleDecomposed) {
+			FwRuleDecomposed rule = (FwRuleDecomposed) anObject;
+			return rule.getProtocol().equals(getProtocol())
+					&& rule.getPortRange().equals(getPortRange())
+					&& rule.getFromIpRange().equals(getFromIpRange())
+					&& rule.getToIpRange().equals(getToIpRange())
+					&& rule.getAccess().equals(getAccess())
+					&& rule.getInterface().equals(getInterface());
+		}
+		return false;
 	}
 
 	public boolean equals(String fromIpRange, String toIpRange, int fromPort,
@@ -139,33 +133,18 @@ public class FwRuleDecomposed {
 				&& access.equalsIgnoreCase(getAccess().getValue());
 	}
 
-	public Interface getFromInterface() {
-		return moFromInterface;
+	public Interface getInterface() {
+		return moInterface;
 	}
 
-	public Interface setFromInterface(Interface inter) {
+	public Interface setInterface(Interface inter) {
 		if (inter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Interface.class.getCanonicalName()
 					+ ".");
 		}
-		Interface previous = getFromInterface();
-		moFromInterface = inter;
-		return previous;
-	}
-
-	public Interface getToInterface() {
-		return moToInterface;
-	}
-
-	public Interface setToInterface(Interface inter) {
-		if (inter == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Interface.class.getCanonicalName()
-					+ ".");
-		}
-		Interface previous = getToInterface();
-		moToInterface = inter;
+		Interface previous = getInterface();
+		moInterface = inter;
 		return previous;
 	}
 

@@ -15,6 +15,7 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.firewall.FwRuleLoader;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRuleDecomposed;
@@ -22,7 +23,6 @@ import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
-import com.wat.melody.plugin.aws.ec2.common.FwRuleLoader;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpath.XPathHelper;
@@ -43,6 +43,10 @@ public class IngressMachine extends AbstractAwsOperation {
 
 	/**
 	 * The 'FwRulesXprSuffix' XML attribute
+	 */
+	/*
+	 * TODO : remove this attribute; use FireWallManagementHelper
+	 * .findFireWallRulesSelector
 	 */
 	public static final String FWRULES_XPR_SUFFIX_ATTR = "FwRulesXprSuffix";
 
@@ -100,6 +104,10 @@ public class IngressMachine extends AbstractAwsOperation {
 			setInstanceRelatedInfosToED(i);
 		}
 
+		/*
+		 * TODO : refactor (see
+		 * com.wat.melody.plugin.libvirt.IngressMachine.java)
+		 */
 		String sgname = i.getSecurityGroups().get(0).getGroupName();
 		List<IpPermission> ap = Common.describeSecurityGroupRules(getEc2(),
 				sgname);
