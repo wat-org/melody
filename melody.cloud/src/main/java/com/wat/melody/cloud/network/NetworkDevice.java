@@ -23,7 +23,7 @@ public class NetworkDevice {
 
 	@Override
 	public String toString() {
-		return "{ " + "device:" + getDeviceName() + " }";
+		return "{ " + "name:" + getDeviceName() + " }";
 	}
 
 	@Override
