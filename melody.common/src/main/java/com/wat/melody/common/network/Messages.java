@@ -12,6 +12,10 @@ public class Messages extends NLS {
 	public static String InterfaceEx_EMPTY;
 	public static String InterfaceEx_INVALID;
 
+	public static String InterfacesEx_EMPTY_INTERFACE;
+	public static String InterfacesEx_INVALID_INTERFACE;
+	public static String InterfacesEx_EMPTY;
+
 	public static String HostEx_EMPTY;
 	public static String HostEx_INVALID;
 
@@ -36,9 +40,9 @@ public class Messages extends NLS {
 	public static String PortRangeEx_MISSING_FROM_TO_PART;
 	public static String PortRangeEx_ILLOGIC_RANGE;
 
-	public static String PortRanges_EMPTY_PORT_RANGE;
-	public static String PortRanges_INVALID_PORT_RANGE;
-	public static String PortRanges_EMPTY;
+	public static String PortRangesEx_EMPTY_PORT_RANGE;
+	public static String PortRangesEx_INVALID_PORT_RANGE;
+	public static String PortRangesEx_EMPTY;
 
 	public static String ProtocolEx_EMPTY;
 	public static String ProtocolEx_INVALID;

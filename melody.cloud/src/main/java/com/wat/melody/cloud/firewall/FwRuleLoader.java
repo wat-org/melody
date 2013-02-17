@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.firewall;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -9,10 +9,12 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.FwRule;
 import com.wat.melody.common.network.FwRules;
+import com.wat.melody.common.network.Interfaces;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.Protocols;
 import com.wat.melody.common.network.exception.IllegalAccessException;
+import com.wat.melody.common.network.exception.IllegalInterfacesException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
@@ -24,6 +26,11 @@ import com.wat.melody.xpath.XPathHelper;
  * 
  */
 public class FwRuleLoader {
+
+	/**
+	 * The 'device' XML attribute of a FwRule Node
+	 */
+	public static final String DEVICE_ATTR = "device";
 
 	/**
 	 * The 'from' XML attribute of a FwRule Node
@@ -80,6 +87,32 @@ public class FwRuleLoader {
 		try {
 			fw.setFromIpRanges(IpRanges.parseString(v));
 		} catch (IllegalIpRangesException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		return true;
+	}
+
+	private boolean loadDevices(Node n, FwRule fw)
+			throws ResourcesDescriptorException {
+		Node attr = XPathHelper.getHeritedAttribute(n, DEVICE_ATTR);
+		if (attr == null) {
+			return false;
+		}
+		String v = attr.getNodeValue();
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			v = getTC().expand(v);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			fw.setInterfaces(Interfaces.parseString(v));
+		} catch (IllegalInterfacesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		return true;
@@ -202,10 +235,10 @@ public class FwRuleLoader {
 			if (!loadFrom(n, fw)) {
 				continue;
 			}
+			loadDevices(n, fw);
 			loadPorts(n, fw);
 			loadProtocols(n, fw);
 			loadAccess(n, fw);
-
 			fwrs.add(fw);
 		}
 		return fwrs;

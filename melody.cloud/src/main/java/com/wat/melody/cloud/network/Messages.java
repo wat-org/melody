@@ -9,8 +9,8 @@ public class Messages extends NLS {
 	public static String NetMgmtMethodEx_EMPTY;
 	public static String NetMgmtMethodEx_INVALID;
 
-	public static String NetworkEx_EMPTY_DEVICE_NAME;
-	public static String NetworkEx_INVALID_DEVICE_NAME;
+	public static String NetworkDeviceNameEx_EMPTY;
+	public static String NetworkDeviceNameEx_INVALID;
 
 	public static String NetworkListEx_DEVICE_ALREADY_DEFINE;
 

@@ -15,6 +15,10 @@ public class FwRulesDecomposed extends ArrayList<FwRuleDecomposed> {
 		super();
 	}
 
+	public FwRulesDecomposed(FwRulesDecomposed rl) {
+		super(rl);
+	}
+
 	/**
 	 * <p>
 	 * Remove the {@link FwRuleDecomposed}'s doublon this object may contains.

@@ -17,11 +17,6 @@ public class Interface {
 	 * Convert the given <code>String</code> to an {@link Interface} object.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>Input <code>String</code> must respect the following pattern : TODO ;
-	 * </li>
-	 * </ul>
-	 * 
 	 * @param sInterface
 	 *            is the given <code>String</code> to convert.
 	 * 
@@ -80,7 +75,7 @@ public class Interface {
 		} else if (sInterface.equalsIgnoreCase("all")) {
 			msValue = ALL;
 			return previous;
-		} else if (sInterface.matches("^" + PATTERN + "$")) {
+		} else if (!sInterface.matches("^" + PATTERN + "$")) {
 			throw new IllegalInterfaceException(Messages.bind(
 					Messages.InterfaceEx_INVALID, sInterface, PATTERN));
 		}

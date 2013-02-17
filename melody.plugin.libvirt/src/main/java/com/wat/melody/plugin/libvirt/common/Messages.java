@@ -47,6 +47,11 @@ public class Messages extends NLS {
 	public static String UpdateNetDevMsg_NETWORK_DEVICES_RESUME;
 	public static String UpdateNetDevMsg_GENERIC_WARN;
 
+	public static String IngressEx_INVALID_DISK_DEVICES_SELECTOR;
+	public static String IngressMsg_NO_INSTANCE;
+	public static String IngressMsg_FWRULES_RESUME;
+	public static String IngressMsg_GENERIC_WARN;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
