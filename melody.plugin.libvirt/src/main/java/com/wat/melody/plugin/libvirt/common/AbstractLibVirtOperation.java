@@ -173,8 +173,10 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
 	}
 
-	public void newInstance(InstanceType type, String sImageId, String sSGName,
-			String sSGDesc, KeyPairName keyPairName) throws LibVirtException {
+	public void newInstance(InstanceType type, String sImageId,
+			KeyPairName keyPairName) throws LibVirtException {
+		String sSGName = newSecurityGroupName();
+		String sSGDesc = getSecurityGroupDescription();
 		LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
 		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,
 				sSGName, keyPairName);
@@ -225,13 +227,22 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	protected void detachNetworkDevices(Instance i,
 			NetworkDeviceList netDevivesToRemove, long detachTimeout)
 			throws LibVirtException, InterruptedException {
-		LibVirtCloud.detachNetworkDevices(i, netDevivesToRemove);
+		for (NetworkDevice netDev : netDevivesToRemove) {
+			String sSGName = i.getSecurityGroup(netDev);
+			LibVirtCloud.detachNetworkDevice(i, netDev);
+			LibVirtCloud.deleteSecurityGroup(getConnect(), sSGName);
+		}
 	}
 
 	protected void attachNetworkDevices(Instance i,
 			NetworkDeviceList netDevivesToAdd, long attachTimeout)
 			throws LibVirtException, InterruptedException {
-		LibVirtCloud.attachNetworkDevices(i, netDevivesToAdd);
+		for (NetworkDevice netDev : netDevivesToAdd) {
+			String sSGName = newSecurityGroupName();
+			String sSGDesc = getSecurityGroupDescription();
+			LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
+			LibVirtCloud.attachNetworkDevice(i, netDev, sSGName);
+		}
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)
@@ -549,6 +560,14 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		long previous = getTimeout();
 		mlTimeout = timeout;
 		return previous;
+	}
+
+	protected String getSecurityGroupDescription() {
+		return "Melody security group";
+	}
+
+	protected String newSecurityGroupName() {
+		return "MelodySg" + "_" + System.currentTimeMillis();
 	}
 
 }
