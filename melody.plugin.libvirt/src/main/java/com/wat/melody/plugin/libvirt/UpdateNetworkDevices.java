@@ -108,19 +108,19 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 		}
 
 		NetworkDeviceList nds = getInstanceNetworkDevices(i);
-		NetworkDeviceList disksToAdd = null;
-		NetworkDeviceList disksToRemove = null;
-		disksToAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(nds,
+		NetworkDeviceList toAdd = null;
+		NetworkDeviceList toRemove = null;
+		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(nds,
 				getNetworkDeviceList());
-		disksToRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(nds,
+		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(nds,
 				getNetworkDeviceList());
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
-				new Object[] { getInstanceID(), getNetworkDeviceList(),
-						disksToAdd, disksToRemove, getTargetNodeLocation() }));
+				new Object[] { getInstanceID(), getNetworkDeviceList(), toAdd,
+						toRemove, getTargetNodeLocation() }));
 
-		detachNetworkDevices(i, disksToRemove, getDetachTimeout());
-		attachNetworkDevices(i, disksToAdd, getAttachTimeout());
+		detachNetworkDevices(i, toRemove, getDetachTimeout());
+		attachNetworkDevices(i, toAdd, getAttachTimeout());
 
 		setInstanceRelatedInfosToED(i);
 	}

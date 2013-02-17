@@ -450,7 +450,8 @@ public abstract class LibVirtCloud {
 						+ "' has no Disk Device !");
 			}
 			int lastVol = 0;
-			Pattern p2 = Pattern.compile("^/.*/i-[a-zA-Z0-9]{8}-vol(.)[.]img$");
+			Pattern p2 = Pattern
+					.compile("^/.*/i-[a-zA-Z0-9]{8}-vol([0-9]+)[.]img$");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Matcher m = p2.matcher(nl.item(i).getNodeValue());
 				if (!m.matches()) {
@@ -536,104 +537,127 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static final String NETWORK_DEVICE_XML_SNIPPET = "<interface type='network'>"
+	public static final String DETACH_NETWORK_DEVICE_XML_SNIPPET = "<interface type='network'>"
 			+ "<mac address='§[vmMacAddr]§'/>"
 			+ "<source network='default'/>"
 			+ "</interface>";
 
-	public static void detachNetworkDevices(Instance i,
-			NetworkDeviceList netDevicesToRemove) {
+	public static void detachNetworkDevice(Instance i, NetworkDevice netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		detachNetworkDevices(i.getDomain(), netDevicesToRemove);
+		detachNetworkDevice(i.getDomain(), netDev);
 	}
 
-	public static void detachNetworkDevices(Domain d,
-			NetworkDeviceList netDevicesToRemove) {
-		if (netDevicesToRemove == null) {
+	public static void detachNetworkDevice(Domain d, NetworkDevice netDev) {
+		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDeviceList.class.getCanonicalName() + ".");
-		}
-		if (netDevicesToRemove.size() == 0) {
-			return;
+					+ NetworkDevice.class.getCanonicalName() + ".");
 		}
 
-		// preparation de la variabilisation du XML
-		PropertiesSet vars = new PropertiesSet();
 		try {
-			Doc ddoc = getDomainXMLDesc(d);
-			// pour chaque network device a supprimer
-			for (NetworkDevice netDev : netDevicesToRemove) {
-				log.trace("Detaching Network Device '" + netDev.getDeviceName()
-						+ "' on Domain '" + d.getName() + "' ...");
-				String sMacAddr = ddoc
-						.evaluateAsString("/domain/devices/interface[@type='network' and alias/@name='"
-								+ netDev.getDeviceName().replace("eth", "net")
-								+ "']/mac/@address");
-				vars.put(new Property("vmMacAddr", sMacAddr));
-				// detachement de la device
-				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
-				d.detachDeviceFlags(XPathExpander.expand(
-						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
-				log.debug("Network Device '" + netDev.getDeviceName()
-						+ "' detached on Domain '" + d.getName() + "'.");
-				// release the @mac
-				unregisterMacAddress(sMacAddr);
-				/*
-				 * TODO remove network filter
-				 */
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			String netDevName = netDev.getDeviceName();
+			Doc doc = getDomainXMLDesc(d);
+			Node n = doc.evaluateAsNode("/domain/devices/interface"
+					+ "[@type='network' and alias/@name='net"
+					+ netDevName.substring(3) + "']");
+			String mac = Doc.evaluateAsString("./mac/@address", n);
+			PropertiesSet vars = new PropertiesSet();
+			vars.put(new Property("vmMacAddr", mac));
+
+			// Detach the network device
+			log.trace("Detaching Network Device '" + netDevName
+					+ "' on Domain '" + sInstanceId + "' ...");
+			// detachement de la device
+			int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+			d.detachDeviceFlags(XPathExpander.expand(
+					DETACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+			log.debug("Network Device '" + netDevName
+					+ "' detached on Domain '" + sInstanceId + "'.");
+
+			// Destroy the network filter
+			String filter = Doc.evaluateAsString("./filterref/@filter", n);
+			if (networkFilterExists(cnx, filter)) {
+				log.trace("Deleting Network Filter '" + filter
+						+ "' for Domain '" + sInstanceId + "' ...");
+				NetworkFilter nf = cnx.networkFilterLookupByName(filter);
+				nf.undefine();
+				log.debug("Network Filter '" + filter
+						+ "' deleted for Domain '" + sInstanceId + "'.");
 			}
+
+			// Release the @mac
+			unregisterMacAddress(mac);
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	public static void attachNetworkDevices(Instance i,
-			NetworkDeviceList netDevicesToAdd) {
+	public static final String ATTACH_NETWORK_DEVICE_XML_SNIPPET = "<interface type='network'>"
+			+ "<mac address='§[vmMacAddr]§'/>"
+			+ "<model type='virtio'/>"
+			+ "<source network='default'/>"
+			+ "<filterref filter='§[vmName]§-§[eth]§-nwfilter'/>"
+			+ "</interface>";
+
+	public static void attachNetworkDevice(Instance i, NetworkDevice netDev,
+			String sSGName) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		attachNetworkDevices(i.getDomain(), netDevicesToAdd);
+		attachNetworkDevice(i.getDomain(), netDev, sSGName);
 	}
 
-	public static void attachNetworkDevices(Domain d,
-			NetworkDeviceList netDevicesToAdd) {
-		if (netDevicesToAdd == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ NetworkDeviceList.class.getCanonicalName() + ".");
-		}
-		if (netDevicesToAdd.size() == 0) {
+	public static void attachNetworkDevice(Domain d, NetworkDevice netDev,
+			String sSGName) {
+		if (netDev == null) {
 			return;
 		}
+		if (sSGName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName());
+		}
 
-		// preparation de la variabilisation du XML
-		PropertiesSet vars = new PropertiesSet();
 		try {
-			// pour chaque network device a ajouter
-			for (NetworkDevice netDev : netDevicesToAdd) {
-				vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
-				log.trace("Attaching Network Device '" + netDev.getDeviceName()
-						+ "' on Domain '" + d.getName()
-						+ "' ... MacAddress is '"
-						+ vars.getProperty("vmMacAddr").getValue() + "'.");
-				// attachement de la device
-				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
-				d.attachDeviceFlags(XPathExpander.expand(
-						NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
-				log.debug("Network Device '" + netDev.getDeviceName()
-						+ "' attached on Domain '" + d.getName() + "'.");
-				/*
-				 * TODO create network filter
-				 */
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			String netDevName = netDev.getDeviceName();
+			PropertiesSet vars = new PropertiesSet();
+			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
+			vars.put(new Property("vmName", sInstanceId));
+			vars.put(new Property("sgName", sSGName));
+			vars.put(new Property("eth", netDevName));
+
+			// Create a network filter for the network device
+			String filter = sInstanceId + "-" + netDevName + "-nwfilter";
+			if (!networkFilterExists(cnx, filter)) {
+				log.trace("Creating Network Filter '" + filter
+						+ "' (linked to Security Group '" + sSGName
+						+ "') for Domain '" + sInstanceId + "' ...");
+				cnx.networkFilterDefineXML(XPathExpander.expand(
+						DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, vars));
+				log.debug("Network Filter '" + filter
+						+ "' (linked to Security Group '" + sSGName
+						+ "') created for Domain '" + sInstanceId + "'.");
 			}
+
+			// Attach the network device
+			log.trace("Attaching Network Device '" + netDevName
+					+ "' on Domain '" + sInstanceId + "' ... MacAddress is '"
+					+ vars.getProperty("vmMacAddr").getValue() + "'.");
+			int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
+			d.attachDeviceFlags(XPathExpander.expand(
+					ATTACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+			log.debug("Network Device '" + netDevName
+					+ "' attached on Domain '" + sInstanceId + "'.");
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException Ex) {
 			throw new RuntimeException(Ex);
@@ -660,14 +684,13 @@ public abstract class LibVirtCloud {
 
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
-			String sMacAddr = ddoc
-					.evaluateAsString("/domain/devices/interface[@type='network' and alias/@name='"
-							+ netDev.getDeviceName().replace("eth", "net")
-							+ "']/mac/@address");
+			String mac = ddoc.evaluateAsString("/domain/devices/interface"
+					+ "[@type='network' and alias/@name='"
+					+ netDev.getDeviceName().substring(3) + "']/mac/@address");
 			NetworkDeviceDatas ndd = new NetworkDeviceDatas();
-			ndd.setMacAddress(sMacAddr);
-			ndd.setIP(getDomainIpAddress(sMacAddr));
-			ndd.setFQDN(getDomainDnsName(sMacAddr));
+			ndd.setMacAddress(mac);
+			ndd.setIP(getDomainIpAddress(mac));
+			ndd.setFQDN(getDomainDnsName(mac));
 			return ndd;
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
@@ -908,6 +931,49 @@ public abstract class LibVirtCloud {
 		return cs == InstanceState.PENDING || cs == InstanceState.RUNNING;
 	}
 
+	public static void createSecurityGroup(Connect cnx, String sSGName,
+			String sSGDesc) {
+		// Create a network filter for the network device
+		try {
+			if (networkFilterExists(cnx, sSGName)) {
+				throw new RuntimeException(sSGName + ": network filter "
+						+ "already exists.");
+			}
+			/*
+			 * TODO : remove 'all accept NEW' when done
+			 */
+			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sSGName
+					+ "' chain='root'>"
+					+ "<rule action='accept' direction='in' priority='500'>"
+					+ "<all state='NEW'/>" + "</rule>" + "</filter>";
+			log.trace("Creating Security Group '" + sSGName + "' ...");
+			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
+			log.debug("Security Group '" + sSGName + "' created.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static void deleteSecurityGroup(Connect cnx, String sSGName) {
+		try {
+			if (!networkFilterExists(cnx, sSGName)) {
+				return;
+			}
+			log.trace("Deleting Security Group '" + sSGName + "' ...");
+			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
+			nf.undefine();
+			log.debug("Security Group '" + sSGName + "' deleted.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static void deleteSecurityGroups(Connect cnx, List<String> sgs) {
+		for (String sg : sgs) {
+			deleteSecurityGroup(cnx, sg);
+		}
+	}
+
 	private static String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='§[vmName]§-§[eth]§-nwfilter' chain='root'>"
 			+ "<filterref filter='§[sgName]§'/>"
 			// TODO : this will drop packets sent to eth1 and reply sent by eth0
@@ -924,45 +990,6 @@ public abstract class LibVirtCloud {
 			+ "<rule action='drop' direction='inout' priority='500'>"
 			+ "<all/>" + "</rule>" + "</filter>";
 
-	public static void createSecurityGroup(Connect cnx, String sSGName,
-			String sSGDesc) {
-		// Create a network filter for the network device
-		try {
-			if (networkFilterExists(cnx, sSGName)) {
-				throw new RuntimeException(sSGName + ": network filter "
-						+ "already exists.");
-			}
-			/*
-			 * TODO : remove 'all accept NEW' when done
-			 */
-			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sSGName
-					+ "' chain='root'>"
-					+ "<rule action='accept' direction='in' priority='500'>"
-					+ "<all state='NEW'/>" + "</rule>" + "</filter>";
-			log.trace("Creating Network Filter '" + sSGName + "' ...");
-			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
-			log.debug("Network Filter '" + sSGName + "' created.");
-		} catch (LibvirtException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	public static void deleteSecurityGroups(Connect cnx, List<String> sgs) {
-		try {
-			for (String sg : sgs) {
-				if (!networkFilterExists(cnx, sg)) {
-					continue;
-				}
-				log.trace("Deleting Network Filter '" + sg + "' ...");
-				NetworkFilter nf = cnx.networkFilterLookupByName(sg);
-				nf.undefine();
-				log.debug("Network Filter '" + sg + "' deleted.");
-			}
-		} catch (LibvirtException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
 	private static String LOCK_UNIQ_DOMAIN = "";
 	private static String LOCK_CLONE_DISK = "";
 
@@ -971,6 +998,10 @@ public abstract class LibVirtCloud {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());
+		}
+		if (sSGName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName());
 		}
 
 		/*
@@ -1026,12 +1057,13 @@ public abstract class LibVirtCloud {
 
 			// Create a network filter for the network device
 			log.trace("Creating Network Filter '" + sInstanceId
-					+ "-eth0-nwfilter' for Domain '" + sInstanceId + "' ...");
+					+ "-eth0-nwfilter' (linked to Security Group '" + sSGName
+					+ "') for Domain '" + sInstanceId + "' ...");
 			cnx.networkFilterDefineXML(XPathExpander.expand(
 					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
 			log.debug("Network Filter '" + sInstanceId
-					+ "-eth0-nwfilter' created for Domain '" + sInstanceId
-					+ "'.");
+					+ "-eth0-nwfilter' (linked to Security Group '" + sSGName
+					+ "') created for Domain '" + sInstanceId + "'.");
 
 			// Create disk devices
 			NodeList nl = null;
@@ -1105,9 +1137,6 @@ public abstract class LibVirtCloud {
 			// release network devices and network Ffilters
 			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				// Release the @mac
-				String mac = Doc.evaluateAsString("./mac/@address", nl.item(i));
-				unregisterMacAddress(mac);
 				// Destroy the network filter
 				String filter = Doc.evaluateAsString("./filterref/@filter",
 						nl.item(i));
@@ -1118,8 +1147,11 @@ public abstract class LibVirtCloud {
 						+ "' for Domain '" + sInstanceId + "' ...");
 				NetworkFilter nf = cnx.networkFilterLookupByName(filter);
 				nf.undefine();
-				log.debug("Filter '" + filter + "' deleted for Domain '"
-						+ sInstanceId + "'.");
+				log.debug("Network Filter '" + filter
+						+ "' deleted for Domain '" + sInstanceId + "'.");
+				// Release the @mac
+				String mac = Doc.evaluateAsString("./mac/@address", nl.item(i));
+				unregisterMacAddress(mac);
 			}
 			// destroy disks
 			nl = doc.evaluateAsNodeList("/domain/devices/disk[@device='disk']"

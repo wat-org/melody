@@ -12,6 +12,7 @@ import org.libvirt.NetworkFilter;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.xml.Doc;
 
@@ -92,7 +93,8 @@ public class Instance {
 		NodeList nl = null;
 		try {
 			Doc doc = LibVirtCloud.getDomainXMLDesc(getDomain());
-			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']/filterref/@filter");
+			nl = doc.evaluateAsNodeList("/domain/devices/interface"
+					+ "[@type='network']/filterref/@filter");
 			for (int i = 0; i < nl.getLength(); i++) {
 				String filterref = nl.item(i).getNodeValue();
 				NetworkFilter nf = getDomain().getConnect()
@@ -107,4 +109,25 @@ public class Instance {
 		}
 		return result;
 	}
+
+	public String getSecurityGroup(NetworkDevice netDev) {
+		if (netDev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDevice.class.getCanonicalName() + ".");
+		}
+		try {
+			String filter = getInstanceId() + "-" + netDev.getDeviceName()
+					+ "-nwfilter";
+			NetworkFilter nf = getDomain().getConnect()
+					.networkFilterLookupByName(filter);
+			Doc doc = new Doc();
+			doc.loadFromXML(nf.getXMLDesc());
+			return doc.evaluateAsString("//filterref[1]/@filter");
+		} catch (MelodyException | XPathExpressionException | LibvirtException
+				| IOException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
 }
