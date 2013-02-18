@@ -167,7 +167,7 @@ public class IngressMachine extends AbstractAwsOperation {
 		}
 		for (IpPermission sgr : ap) {
 			for (String ip : sgr.getIpRanges()) {
-				if (fw.equals(ip, IpRange.ALL, sgr.getFromPort(),
+				if (fw.equals(ip, IpRange.ALL.getValue(), sgr.getFromPort(),
 						sgr.getToPort(), sgr.getIpProtocol(),
 						Access.ALLOW.toString())) {
 					sgr.getIpRanges().remove(ip);

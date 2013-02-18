@@ -9,8 +9,11 @@ import com.wat.melody.common.network.exception.IllegalPortException;
  */
 public class Port {
 
-	public static final int MIN = 1;
-	public static final int MAX = 65535;
+	private static final int _MIN = 1;
+	private static final int _MAX = 65535;
+
+	public static final Port MIN = createPort(_MIN);
+	public static final Port MAX = createPort(_MAX);
 	public static final Port SSH = createPort(22);
 	public static final Port HTTP = createPort(80);
 	public static final Port HTTPS = createPort(443);
@@ -87,12 +90,12 @@ public class Port {
 	}
 
 	public int setValue(int iPort) throws IllegalPortException {
-		if (iPort < MIN) {
-			throw new IllegalPortException(Messages.bind(
-					Messages.PortEx_TOO_LOW, new Object[] { iPort, MIN, MAX }));
-		} else if (iPort > MAX) {
-			throw new IllegalPortException(Messages.bind(
-					Messages.PortEx_TOO_HIGH, new Object[] { iPort, MIN, MAX }));
+		if (iPort < _MIN) {
+			throw new IllegalPortException(Messages.bind(Messages.PortEx_LOW,
+					new Object[] { iPort, _MIN, _MAX }));
+		} else if (iPort > _MAX) {
+			throw new IllegalPortException(Messages.bind(Messages.PortEx_HIGH,
+					new Object[] { iPort, _MIN, _MAX }));
 		}
 		int previous = getValue();
 		miValue = iPort;
@@ -113,9 +116,8 @@ public class Port {
 		try {
 			iPort = Integer.parseInt(sPort);
 		} catch (NumberFormatException Ex) {
-			throw new IllegalPortException(Messages.bind(
-					Messages.PortEx_NOT_A_NUMBER, new Object[] { sPort, MIN,
-							MAX }));
+			throw new IllegalPortException(Messages.bind(Messages.PortEx_NAN,
+					new Object[] { sPort, _MIN, _MAX }));
 		}
 		return setValue(iPort);
 	}

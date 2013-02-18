@@ -1,8 +1,6 @@
 package com.wat.melody.common.network;
 
 import com.wat.melody.common.network.exception.IllegalInterfacesException;
-import com.wat.melody.common.network.exception.IllegalIpRangesException;
-import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
 
 /**
@@ -53,42 +51,15 @@ public class FwRule {
 	}
 
 	public void initFromIpRanges() {
-		try {
-			moFromIpRanges = IpRanges.parseString(IpRange.ALL);
-		} catch (IllegalIpRangesException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the FromIpRanges with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+		moFromIpRanges = IpRanges.ALL;
 	}
 
 	public void initToIpRanges() {
-		try {
-			moToIpRanges = IpRanges.parseString(IpRange.ALL);
-		} catch (IllegalIpRangesException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the ToIpRanges with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+		moToIpRanges = IpRanges.ALL;
 	}
 
 	public void initPortRanges() {
-		try {
-			moPortRanges = PortRanges.parseString(PortRange.ALL);
-		} catch (IllegalPortRangesException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the PortRanges with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+		moPortRanges = PortRanges.ALL;
 	}
 
 	public void initProtocols() {

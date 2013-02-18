@@ -8,10 +8,24 @@ import com.wat.melody.common.network.exception.IllegalIpRangeException;
  * 
  */
 public class IpRange {
+
 	public static final String PATTERN = IpAddressV4.PATTERN
 			+ "/([12]?\\d|3[0-2])";
 
-	public static final String ALL = "0.0.0.0/0";
+	public static final IpRange ALL = createIpRange("0.0.0.0/0");
+
+	private static IpRange createIpRange(String sIpRange) {
+		try {
+			return new IpRange(sIpRange);
+		} catch (IllegalIpRangeException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "an IpRange with value '" + sIpRange + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	/**
 	 * <p>
@@ -91,7 +105,7 @@ public class IpRange {
 			throw new IllegalIpRangeException(Messages.bind(
 					Messages.IpRangeEx_EMPTY, sIpRange));
 		} else if (sIpRange.equalsIgnoreCase("all")) {
-			msValue = ALL;
+			msValue = ALL.getValue();
 			return previous;
 		} else if (sIpRange.matches("^" + IpAddressV4.PATTERN + "$")) {
 			sIpRange += "/32";

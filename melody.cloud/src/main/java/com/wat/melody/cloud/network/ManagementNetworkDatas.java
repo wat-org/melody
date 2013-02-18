@@ -20,6 +20,7 @@ public abstract class ManagementNetworkDatas {
 
 	private Host moHost;
 	private Port moPort;
+	private NetworkDeviceName moNetworkDeviceName;
 
 	/**
 	 * <p>
@@ -71,6 +72,8 @@ public abstract class ManagementNetworkDatas {
 			setHost(NetworkManagementHelper.getManagementNetworkHost(
 					instanceNode, mgmtNode));
 			setPort(NetworkManagementHelper.getManagementNetworkPort(mgmtNode));
+			setNetworkDeviceName(NetworkManagementHelper
+					.getManagementNetworkDeviceName(instanceNode, mgmtNode));
 			log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, this));
 		} catch (ResourcesDescriptorException Ex) {
 			log.warn(Messages.bind(Messages.NetMgmtMsg_FAILED, Doc
@@ -81,8 +84,9 @@ public abstract class ManagementNetworkDatas {
 
 	@Override
 	public String toString() {
-		return "{ method:" + getManagementNetworkMethod() + ", host:"
-				+ getHost() + ", port:" + getPort() + " }";
+		return "{ method:" + getManagementNetworkMethod() + ", device:"
+				+ getNetworkDeviceName() + ", host:" + getHost() + ", port:"
+				+ getPort() + " }";
 	}
 
 	abstract public ManagementNetworkMethod getManagementNetworkMethod();
@@ -112,6 +116,21 @@ public abstract class ManagementNetworkDatas {
 		}
 		Port previous = getPort();
 		moPort = p;
+		return previous;
+	}
+
+	public NetworkDeviceName getNetworkDeviceName() {
+		return moNetworkDeviceName;
+	}
+
+	private NetworkDeviceName setNetworkDeviceName(NetworkDeviceName netdev) {
+		if (netdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
+		NetworkDeviceName previous = getNetworkDeviceName();
+		moNetworkDeviceName = netdev;
 		return previous;
 	}
 

@@ -379,7 +379,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		toAdd.withFromPort(p.getValue());
 		toAdd.withToPort(p.getValue());
 		toAdd.withIpProtocol(Protocol.TCP.getValue());
-		toAdd.withIpRanges(IpRange.ALL);
+		toAdd.withIpRanges(IpRange.ALL.getValue());
 
 		boolean doNotRevoke = false;
 		AuthorizeSecurityGroupIngressRequest authreq = null;

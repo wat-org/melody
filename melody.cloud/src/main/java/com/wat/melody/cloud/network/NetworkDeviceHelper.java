@@ -7,16 +7,16 @@ package com.wat.melody.cloud.network;
  */
 public class NetworkDeviceHelper {
 
-	public static NetworkDeviceList computeNetworkDevicesToAdd(
-			NetworkDeviceList current, NetworkDeviceList target) {
-		NetworkDeviceList networkToAdd = new NetworkDeviceList(target);
+	public static NetworkDeviceNameList computeNetworkDevicesToAdd(
+			NetworkDeviceNameList current, NetworkDeviceNameList target) {
+		NetworkDeviceNameList networkToAdd = new NetworkDeviceNameList(target);
 		networkToAdd.removeAll(current);
 		return networkToAdd;
 	}
 
-	public static NetworkDeviceList computeNetworkDevicesToRemove(
-			NetworkDeviceList current, NetworkDeviceList target) {
-		NetworkDeviceList networkToRemove = new NetworkDeviceList(current);
+	public static NetworkDeviceNameList computeNetworkDevicesToRemove(
+			NetworkDeviceNameList current, NetworkDeviceNameList target) {
+		NetworkDeviceNameList networkToRemove = new NetworkDeviceNameList(current);
 		networkToRemove.removeAll(target);
 		return networkToRemove;
 	}

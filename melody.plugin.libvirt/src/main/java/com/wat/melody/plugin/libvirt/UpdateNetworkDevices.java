@@ -10,7 +10,7 @@ import com.wat.cloud.libvirt.Instance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
-import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.common.ex.Util;
@@ -43,7 +43,7 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private NetworkDeviceList maNetworkDeviceList;
+	private NetworkDeviceNameList maNetworkDeviceList;
 	private long mlDetachTimeout;
 	private long mlAttachTimeout;
 
@@ -107,9 +107,9 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 			return;
 		}
 
-		NetworkDeviceList nds = getInstanceNetworkDevices(i);
-		NetworkDeviceList toAdd = null;
-		NetworkDeviceList toRemove = null;
+		NetworkDeviceNameList nds = getInstanceNetworkDevices(i);
+		NetworkDeviceNameList toAdd = null;
+		NetworkDeviceNameList toRemove = null;
 		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(nds,
 				getNetworkDeviceList());
 		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(nds,
@@ -125,16 +125,16 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 		setInstanceRelatedInfosToED(i);
 	}
 
-	private NetworkDeviceList getNetworkDeviceList() {
+	private NetworkDeviceNameList getNetworkDeviceList() {
 		return maNetworkDeviceList;
 	}
 
-	private NetworkDeviceList setNetworkDeviceList(NetworkDeviceList fwrs) {
+	private NetworkDeviceNameList setNetworkDeviceList(NetworkDeviceNameList fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid NetworkDeviceList.");
 		}
-		NetworkDeviceList previous = getNetworkDeviceList();
+		NetworkDeviceNameList previous = getNetworkDeviceList();
 		maNetworkDeviceList = fwrs;
 		return previous;
 	}
