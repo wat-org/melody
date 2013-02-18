@@ -28,6 +28,11 @@ import com.wat.melody.xpath.XPathHelper;
 public class FwRuleLoader {
 
 	/**
+	 * The 'fwrule' XML Nested element of the Instance Node in the RD
+	 */
+	public static final String FIREWALL_RULE_NE = "fwrule";
+
+	/**
 	 * The 'device' XML attribute of a FwRule Node
 	 */
 	public static final String DEVICE_ATTR = "device";
