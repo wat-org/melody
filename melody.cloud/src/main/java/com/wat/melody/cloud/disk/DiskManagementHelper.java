@@ -33,33 +33,33 @@ public abstract class DiskManagementHelper {
 	 * XML attribute of the Disk Device Management Node, which contains the Disk
 	 * Device Nodes Selector
 	 */
-	public static final String DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE = "diskDevicesSelector";
+	public static final String DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "diskDevicesSelector";
 
 	/**
 	 * Default XPath Expression to select Disk Device Nodes in the RD, related
 	 * to an Instance Node
 	 */
-	public static final String DEFAULT_DISK_DEVICES_NODE_SELECTOR = "//"
+	public static final String DEFAULT_DISK_DEVICE_NODES_SELECTOR = "//"
 			+ DiskDevicesLoader.DISK_DEVICE_NE;
 
 	/**
 	 * <p>
-	 * Return the Disk Management {@link Node} related to the given Instance
-	 * {@link Node}.
+	 * Return the Disk Device Management {@link Node} related to the given
+	 * Instance {@link Node}.
 	 * </p>
 	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
 	 * @return <ul>
-	 *         <li>The Disk Management {@link Node} related to the given
-	 *         Instance {@link Node}, if one Disk Management {@link Node} is
-	 *         found ;</li>
-	 *         <li>The last Disk Management {@link Node} related to the given
-	 *         Instance {@link Node}, if multiple Disk Management {@link Node}
+	 *         <li>The Disk Device Management {@link Node} related to the given
+	 *         Instance {@link Node}, if one Disk Device Management {@link Node}
+	 *         is found ;</li>
+	 *         <li>The last Disk Device Management {@link Node} related to the
+	 *         given Instance {@link Node}, if multiple Disk Device Management
+	 *         {@link Node} were found ;</li>
+	 *         <li><code>null</code>, if no Disk Device Management {@link Node}
 	 *         were found ;</li>
-	 *         <li><code>null</code>, if no Disk Management {@link Node} were
-	 *         found ;</li>
 	 *         </ul>
 	 * 
 	 * @throws ResourcesDescriptorException
@@ -99,10 +99,10 @@ public abstract class DiskManagementHelper {
 		}
 		try {
 			return mgmtNode.getAttributes()
-					.getNamedItem(DISK_DEVICES_NODE_SELECTOR_ATTRIBUTE)
+					.getNamedItem(DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_DISK_DEVICES_NODE_SELECTOR;
+			return DEFAULT_DISK_DEVICE_NODES_SELECTOR;
 		}
 	}
 
