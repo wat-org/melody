@@ -30,9 +30,9 @@ public class Messages extends NLS {
 	public static String IpRangesEx_EMPTY;
 
 	public static String PortEx_EMPTY;
-	public static String PortEx_NOT_A_NUMBER;
-	public static String PortEx_TOO_LOW;
-	public static String PortEx_TOO_HIGH;
+	public static String PortEx_NAN;
+	public static String PortEx_LOW;
+	public static String PortEx_HIGH;
 
 	public static String PortRangeEx_EMPTY;
 	public static String PortRangeEx_INVALID_FROM_PART;

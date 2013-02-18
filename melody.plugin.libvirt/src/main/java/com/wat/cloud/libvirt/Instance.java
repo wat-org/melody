@@ -6,7 +6,7 @@ import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 
 import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 
 /**
  * 
@@ -80,11 +80,11 @@ public class Instance {
 		moDomain = d;
 	}
 
-	public Map<NetworkDevice, String> getSecurityGroups() {
+	public Map<NetworkDeviceName, String> getSecurityGroups() {
 		return LibVirtCloud.getInstanceSecurityGroups(this);
 	}
 
-	public String getSecurityGroup(NetworkDevice netDev) {
+	public String getSecurityGroup(NetworkDeviceName netDev) {
 		return LibVirtCloud.getInstanceSecurityGroup(this, netDev);
 	}
 

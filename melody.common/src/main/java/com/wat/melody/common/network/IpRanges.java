@@ -16,6 +16,21 @@ public class IpRanges extends ArrayList<IpRange> {
 
 	public static final String IP_RANGES_SEPARATOR = ",";
 
+	public static final IpRanges ALL = createIpRanges(IpRange.ALL);
+
+	private static IpRanges createIpRanges(IpRange... ipRanges) {
+		try {
+			return new IpRanges(ipRanges);
+		} catch (IllegalIpRangesException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "an IpRanges with value '" + ipRanges + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
 	/**
 	 * <p>
 	 * Convert the given <code>String</code> to an {@link IpRanges} object.
@@ -52,6 +67,11 @@ public class IpRanges extends ArrayList<IpRange> {
 		setIpRanges(sIpRanges);
 	}
 
+	public IpRanges(IpRange... ipRanges) throws IllegalIpRangesException {
+		super();
+		setIpRanges(ipRanges);
+	}
+
 	public void setIpRanges(String sIpRanges) throws IllegalIpRangesException {
 		if (sIpRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -75,6 +95,25 @@ public class IpRanges extends ArrayList<IpRange> {
 		if (size() == 0) {
 			throw new IllegalIpRangesException(Messages.bind(
 					Messages.IpRangesEx_EMPTY, sIpRanges));
+		}
+	}
+
+	public void setIpRanges(IpRange... portRanges)
+			throws IllegalIpRangesException {
+		clear();
+		if (portRanges == null) {
+			return;
+		}
+		for (IpRange ipRange : portRanges) {
+			if (ipRange == null) {
+				continue;
+			} else {
+				add(ipRange);
+			}
+		}
+		if (size() == 0) {
+			throw new IllegalIpRangesException(Messages.bind(
+					Messages.IpRangesEx_EMPTY, portRanges));
 		}
 	}
 

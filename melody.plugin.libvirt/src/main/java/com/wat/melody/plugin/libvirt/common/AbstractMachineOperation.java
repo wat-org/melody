@@ -3,12 +3,24 @@ package com.wat.melody.plugin.libvirt.common;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.wat.cloud.libvirt.Instance;
+import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.FwRuleDecomposed;
+import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.network.Interface;
+import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.Port;
+import com.wat.melody.common.network.PortRange;
+import com.wat.melody.common.network.Protocol;
+import com.wat.melody.common.network.exception.IllegalInterfaceException;
+import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
 /**
@@ -97,22 +109,40 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceID()));
-		/*
-		 * TODO : open port 22 on the network management device
-		 * 
-		 * mh.getManagementDatas() should have a method 'getNode()' which
-		 * contains the network management device node.
-		 */
+
+		Port p = mh.getManagementDatas().getPort();
+		FwRuleDecomposed rule = new FwRuleDecomposed();
 		try {
+			rule.setInterface(Interface.parseString(mh.getManagementDatas()
+					.getNetworkDeviceName().getValue()));
+			rule.setPortRange(new PortRange(p, p));
+		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
+			throw new RuntimeException("BUG ! Cannot happened !", Ex);
+		}
+		rule.setFromIpRange(IpRange.ALL);
+		rule.setProtocol(Protocol.TCP);
+		rule.setAccess(Access.ALLOW);
+
+		Instance i = getInstance();
+		FwRulesDecomposed currentRules = null;
+		currentRules = LibVirtCloud.getInstanceFireWallRules(i);
+		boolean alreadyOpen = currentRules.contains(rule);
+
+		FwRulesDecomposed rules = new FwRulesDecomposed();
+		rules.add(rule);
+		try {
+			if (!alreadyOpen) {
+				LibVirtCloud.authorizeFireWallRules(i, rules);
+			}
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (NetworkManagementException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceID(), getTargetNodeLocation()), Ex);
 		} finally {
-			/*
-			 * TODO : close port 22
-			 */
+			if (!alreadyOpen) {
+				LibVirtCloud.revokeFireWallRules(i, rules);
+			}
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
 				getInstanceID()));

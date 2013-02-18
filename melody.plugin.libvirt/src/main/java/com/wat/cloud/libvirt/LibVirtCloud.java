@@ -36,9 +36,9 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDeviceName;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.ex.MelodyException;
@@ -515,7 +515,7 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static NetworkDeviceList getInstanceNetworkDevices(Instance i) {
+	public static NetworkDeviceNameList getInstanceNetworkDevices(Instance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -524,9 +524,9 @@ public abstract class LibVirtCloud {
 		return getDomainNetworkDevices(i.getDomain());
 	}
 
-	public static NetworkDeviceList getDomainNetworkDevices(Domain domain) {
+	public static NetworkDeviceNameList getDomainNetworkDevices(Domain domain) {
 		try {
-			NetworkDeviceList ndl = new NetworkDeviceList();
+			NetworkDeviceNameList ndl = new NetworkDeviceNameList();
 			Doc ddoc = getDomainXMLDesc(domain);
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/interface[@type='network']");
@@ -534,7 +534,7 @@ public abstract class LibVirtCloud {
 				String devName = Doc.evaluateAsString("./alias/@name",
 						nl.item(i));
 				devName = "eth" + devName.substring(3);
-				NetworkDevice d = new NetworkDevice(devName);
+				NetworkDeviceName d = new NetworkDeviceName(devName);
 				ndl.addNetworkDevice(d);
 			}
 			if (ndl.size() == 0) {
@@ -554,7 +554,7 @@ public abstract class LibVirtCloud {
 			+ "<source network='default'/>"
 			+ "</interface>";
 
-	public static void detachNetworkDevice(Instance i, NetworkDevice netDev) {
+	public static void detachNetworkDevice(Instance i, NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -563,17 +563,17 @@ public abstract class LibVirtCloud {
 		detachNetworkDevice(i.getDomain(), netDev);
 	}
 
-	public static void detachNetworkDevice(Domain d, NetworkDevice netDev) {
+	public static void detachNetworkDevice(Domain d, NetworkDeviceName netDev) {
 		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDevice.class.getCanonicalName() + ".");
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 
 		try {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			String netDevName = netDev.getDeviceName();
+			String netDevName = netDev.getValue();
 			Doc doc = getDomainXMLDesc(d);
 			Node n = doc.evaluateAsNode("/domain/devices/interface"
 					+ "[@type='network' and alias/@name='net"
@@ -618,8 +618,8 @@ public abstract class LibVirtCloud {
 			+ "<filterref filter='§[vmName]§-§[eth]§-nwfilter'/>"
 			+ "</interface>";
 
-	public static void attachNetworkDevice(Instance i, NetworkDevice netDev,
-			String sSGName) {
+	public static void attachNetworkDevice(Instance i,
+			NetworkDeviceName netDev, String sSGName) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -628,7 +628,7 @@ public abstract class LibVirtCloud {
 		attachNetworkDevice(i.getDomain(), netDev, sSGName);
 	}
 
-	public static void attachNetworkDevice(Domain d, NetworkDevice netDev,
+	public static void attachNetworkDevice(Domain d, NetworkDeviceName netDev,
 			String sSGName) {
 		if (netDev == null) {
 			return;
@@ -641,7 +641,7 @@ public abstract class LibVirtCloud {
 		try {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			String netDevName = netDev.getDeviceName();
+			String netDevName = netDev.getValue();
 			PropertiesSet vars = new PropertiesSet();
 			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
 			vars.put(new Property("vmName", sInstanceId));
@@ -677,7 +677,7 @@ public abstract class LibVirtCloud {
 	}
 
 	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Instance i,
-			NetworkDevice netDev) {
+			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -687,18 +687,18 @@ public abstract class LibVirtCloud {
 	}
 
 	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Domain d,
-			NetworkDevice netDev) {
+			NetworkDeviceName netDev) {
 		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDevice.class.getCanonicalName() + ".");
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
 			String mac = ddoc.evaluateAsString("/domain/devices/interface"
 					+ "[@type='network' and alias/@name='net"
-					+ netDev.getDeviceName().substring(3) + "']/mac/@address");
+					+ netDev.getValue().substring(3) + "']/mac/@address");
 			NetworkDeviceDatas ndd = new NetworkDeviceDatas();
 			ndd.setMacAddress(mac);
 			ndd.setIP(getDomainIpAddress(mac));
@@ -720,8 +720,8 @@ public abstract class LibVirtCloud {
 
 	public static FwRulesDecomposed getDomainFireWallRules(Domain domain) {
 		FwRulesDecomposed res = new FwRulesDecomposed();
-		Map<NetworkDevice, String> sgs = getDomainSecurityGroups(domain);
-		for (NetworkDevice netDev : sgs.keySet()) {
+		Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(domain);
+		for (NetworkDeviceName netDev : sgs.keySet()) {
 			res.addAll(getFireWallRules(domain.getConnect(), netDev,
 					sgs.get(netDev)));
 		}
@@ -729,7 +729,7 @@ public abstract class LibVirtCloud {
 	}
 
 	public static FwRulesDecomposed getFireWallRules(Connect cnx,
-			NetworkDevice netDev, String sSGName) {
+			NetworkDeviceName netDev, String sSGName) {
 		FwRulesDecomposed res = new FwRulesDecomposed();
 		try {
 			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
@@ -741,7 +741,7 @@ public abstract class LibVirtCloud {
 				FwRuleDecomposed rule = new FwRuleDecomposed();
 
 				// Interface
-				Interface inter = Interface.parseString(netDev.getDeviceName());
+				Interface inter = Interface.parseString(netDev.getValue());
 				rule.setInterface(inter);
 
 				// Access
@@ -753,7 +753,11 @@ public abstract class LibVirtCloud {
 				}
 
 				/*
-				 * TODO : add a 'direction' (in/out) to FwRule
+				 * TODO : deal with 'direction' (in/out)
+				 */
+
+				/*
+				 * TODO : deal with 'ToIpRange'
 				 */
 
 				// Protocol
@@ -806,13 +810,13 @@ public abstract class LibVirtCloud {
 		try {
 			Connect cnx = d.getConnect();
 			Map<String, Doc> docs = new HashMap<String, Doc>();
-			Map<NetworkDevice, String> sgs = getDomainSecurityGroups(d);
-			for (NetworkDevice netDev : sgs.keySet()) {
+			Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(d);
+			for (NetworkDeviceName netDev : sgs.keySet()) {
 				Doc doc = new Doc();
 				NetworkFilter sg = cnx.networkFilterLookupByName(sgs
 						.get(netDev));
 				doc.loadFromXML(sg.getXMLDesc());
-				docs.put(netDev.getDeviceName(), doc);
+				docs.put(netDev.getValue(), doc);
 			}
 
 			for (FwRuleDecomposed rule : rules) {
@@ -826,6 +830,14 @@ public abstract class LibVirtCloud {
 					devToApply.add(docs.get(rule.getInterface().getValue()));
 				}
 				for (Doc doc : devToApply) {
+
+					/*
+					 * TODO : deal with 'direction' (in/out)
+					 */
+
+					/*
+					 * TODO : deal with 'ToIpRange'
+					 */
 					Node n = doc.evaluateAsNode("/filter/rule[ @action='"
 							+ (rule.getAccess() == Access.ALLOW ? "accept"
 									: "drop")
@@ -872,13 +884,13 @@ public abstract class LibVirtCloud {
 		try {
 			Connect cnx = d.getConnect();
 			Map<String, Doc> docs = new HashMap<String, Doc>();
-			Map<NetworkDevice, String> sgs = getDomainSecurityGroups(d);
-			for (NetworkDevice netDev : sgs.keySet()) {
+			Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(d);
+			for (NetworkDeviceName netDev : sgs.keySet()) {
 				Doc doc = new Doc();
 				NetworkFilter sg = cnx.networkFilterLookupByName(sgs
 						.get(netDev));
 				doc.loadFromXML(sg.getXMLDesc());
-				docs.put(netDev.getDeviceName(), doc);
+				docs.put(netDev.getValue(), doc);
 			}
 
 			for (FwRuleDecomposed rule : rules) {
@@ -895,6 +907,9 @@ public abstract class LibVirtCloud {
 					Node ndoc = doc.getDocument().getFirstChild();
 					Node nrule = doc.getDocument().createElement("rule");
 					ndoc.appendChild(nrule);
+					/*
+					 * TODO : deal with 'direction' (in/out)
+					 */
 					Doc.createAttribute("direction", "in", nrule);
 					Doc.createAttribute("priority", "500", nrule);
 					Doc.createAttribute("action",
@@ -913,6 +928,9 @@ public abstract class LibVirtCloud {
 							.getFromPort().toString(), nin);
 					Doc.createAttribute("dstportstart", rule.getPortRange()
 							.getToPort().toString(), nin);
+					/*
+					 * TODO : deal with 'ToIpRange'
+					 */
 				}
 			}
 
@@ -1163,7 +1181,7 @@ public abstract class LibVirtCloud {
 	}
 
 	public static String getInstanceSecurityGroup(Instance i,
-			NetworkDevice netDev) {
+			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -1172,15 +1190,15 @@ public abstract class LibVirtCloud {
 		return getDomainSecurityGroup(i.getDomain(), netDev);
 	}
 
-	public static String getDomainSecurityGroup(Domain d, NetworkDevice netDev) {
+	public static String getDomainSecurityGroup(Domain d,
+			NetworkDeviceName netDev) {
 		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDevice.class.getCanonicalName() + ".");
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 		try {
-			String filter = d.getName() + "-" + netDev.getDeviceName()
-					+ "-nwfilter";
+			String filter = d.getName() + "-" + netDev.getValue() + "-nwfilter";
 			if (!networkFilterExists(d.getConnect(), filter)) {
 				return null;
 			}
@@ -1194,7 +1212,7 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static Map<NetworkDevice, String> getInstanceSecurityGroups(
+	public static Map<NetworkDeviceName, String> getInstanceSecurityGroups(
 			Instance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -1204,8 +1222,9 @@ public abstract class LibVirtCloud {
 		return getDomainSecurityGroups(i.getDomain());
 	}
 
-	public static Map<NetworkDevice, String> getDomainSecurityGroups(Domain d) {
-		Map<NetworkDevice, String> result = new HashMap<NetworkDevice, String>();
+	public static Map<NetworkDeviceName, String> getDomainSecurityGroups(
+			Domain d) {
+		Map<NetworkDeviceName, String> result = new HashMap<NetworkDeviceName, String>();
 		NodeList nl = null;
 		try {
 			Doc doc = LibVirtCloud.getDomainXMLDesc(d);
@@ -1215,7 +1234,7 @@ public abstract class LibVirtCloud {
 				String devName = Doc.evaluateAsString("./alias/@name",
 						nl.item(i));
 				devName = "eth" + devName.substring(3);
-				NetworkDevice netDev = new NetworkDevice(devName);
+				NetworkDeviceName netDev = new NetworkDeviceName(devName);
 				String filterref = Doc.evaluateAsString("./filterref/@filter",
 						nl.item(i));
 				NetworkFilter nf = d.getConnect().networkFilterLookupByName(
@@ -1275,7 +1294,7 @@ public abstract class LibVirtCloud {
 	}
 
 	public static void deleteSecurityGroups(Connect cnx,
-			Map<NetworkDevice, String> sgs) {
+			Map<NetworkDeviceName, String> sgs) {
 		for (String sg : sgs.values()) {
 			deleteSecurityGroup(cnx, sg);
 		}

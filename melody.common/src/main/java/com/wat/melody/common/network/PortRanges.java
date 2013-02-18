@@ -16,6 +16,21 @@ public class PortRanges extends ArrayList<PortRange> {
 
 	public static final String PORT_RANGES_SEPARATOR = ",";
 
+	public static final PortRanges ALL = createPortRanges(PortRange.ALL);
+
+	private static PortRanges createPortRanges(PortRange... portRanges) {
+		try {
+			return new PortRanges(portRanges);
+		} catch (IllegalPortRangesException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a PortRange with value '" + portRanges + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
 	/**
 	 * <p>
 	 * Convert the given <code>String</code> to a {@link PortRanges} object.
@@ -52,9 +67,14 @@ public class PortRanges extends ArrayList<PortRange> {
 		setPortRanges(sPortRanges);
 	}
 
+	public PortRanges(PortRange... portRanges)
+			throws IllegalPortRangesException {
+		super();
+		setPortRanges(portRanges);
+	}
+
 	public void setPortRanges(String sPortRanges)
 			throws IllegalPortRangesException {
-		toString();
 		if (sPortRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
@@ -78,6 +98,25 @@ public class PortRanges extends ArrayList<PortRange> {
 		if (size() == 0) {
 			throw new IllegalPortRangesException(Messages.bind(
 					Messages.PortRangesEx_EMPTY, sPortRanges));
+		}
+	}
+
+	public void setPortRanges(PortRange... portRanges)
+			throws IllegalPortRangesException {
+		clear();
+		if (portRanges == null) {
+			return;
+		}
+		for (PortRange portRange : portRanges) {
+			if (portRange == null) {
+				continue;
+			} else {
+				add(portRange);
+			}
+		}
+		if (size() == 0) {
+			throw new IllegalPortRangesException(Messages.bind(
+					Messages.PortRangesEx_EMPTY, portRanges));
 		}
 	}
 

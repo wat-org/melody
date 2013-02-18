@@ -20,9 +20,9 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
@@ -191,7 +191,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	public void deleteInstance() {
-		Map<NetworkDevice, String> sgs = getInstance().getSecurityGroups();
+		Map<NetworkDeviceName, String> sgs = getInstance().getSecurityGroups();
 		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
 		setInstanceID(null);
 		LibVirtCloud.deleteSecurityGroups(getConnect(), sgs);
@@ -221,14 +221,14 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		 */
 	}
 
-	public NetworkDeviceList getInstanceNetworkDevices(Instance i) {
+	public NetworkDeviceNameList getInstanceNetworkDevices(Instance i) {
 		return LibVirtCloud.getInstanceNetworkDevices(i);
 	}
 
 	protected void detachNetworkDevices(Instance i,
-			NetworkDeviceList netDevivesToRemove, long detachTimeout)
+			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
 			throws InterruptedException {
-		for (NetworkDevice netDev : netDevivesToRemove) {
+		for (NetworkDeviceName netDev : netDevivesToRemove) {
 			String sSGName = i.getSecurityGroup(netDev);
 			LibVirtCloud.detachNetworkDevice(i, netDev);
 			LibVirtCloud.deleteSecurityGroup(getConnect(), sSGName);
@@ -236,9 +236,9 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	protected void attachNetworkDevices(Instance i,
-			NetworkDeviceList netDevivesToAdd, long attachTimeout)
+			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
 			throws InterruptedException {
-		for (NetworkDevice netDev : netDevivesToAdd) {
+		for (NetworkDeviceName netDev : netDevivesToAdd) {
 			String sSGName = newSecurityGroupName();
 			String sSGDesc = getSecurityGroupDescription();
 			LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
@@ -272,7 +272,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 					+ "Must be a valid Instance.");
 		}
 		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
-		for (NetworkDevice netDevice : getInstanceNetworkDevices(i)) {
+		for (NetworkDeviceName netDevice : getInstanceNetworkDevices(i)) {
 			NetworkDeviceDatas ndd = LibVirtCloud
 					.getInstanceNetworkDeviceDatas(i, netDevice);
 			DUNID dunid = getNetworkDeviceDUNID(netDevice);
@@ -309,7 +309,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		if (deleted == true) {
 			removeDataFromED(getMelodyID(), Common.INSTANCE_ID_ATTR);
 		}
-		NetworkDeviceList netDevices = null;
+		NetworkDeviceNameList netDevices = null;
 		try {
 			NodeList nl = NetworkManagementHelper
 					.findNetworkDevices(getTargetNode());
@@ -318,7 +318,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
-		for (NetworkDevice netDev : netDevices) {
+		for (NetworkDeviceName netDev : netDevices) {
 			DUNID dunid = getNetworkDeviceDUNID(netDev);
 			removeDataFromED(dunid, Common.IP_ATTR);
 			removeDataFromED(dunid, Common.FQDN_ATTR);
@@ -337,12 +337,12 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		}
 	}
 
-	protected DUNID getNetworkDeviceDUNID(NetworkDevice nd)
+	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
 			throws LibVirtException {
 		try {
 			Node netDevNode = NetworkManagementHelper
 					.findNetworkDeviceNodeByName(getTargetNode(),
-							nd.getDeviceName());
+							nd.getValue());
 			return getED().getMelodyID(netDevNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

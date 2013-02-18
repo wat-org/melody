@@ -7,33 +7,33 @@ import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
  * @author Guillaume Cornet
  * 
  */
-public class NetworkDevice {
+public class NetworkDeviceName {
 
 	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";
 
-	public static NetworkDevice parseString(String sInterface)
+	public static NetworkDeviceName parseString(String sInterface)
 			throws IllegalNetworkDeviceException {
-		return new NetworkDevice(sInterface);
+		return new NetworkDeviceName(sInterface);
 	}
 
-	private String msDeviceName;
+	private String msValue;
 
-	public NetworkDevice() {
-		initDeviceName();
+	public NetworkDeviceName() {
+		initValue();
 	}
 
-	public NetworkDevice(String sDeviceName)
+	public NetworkDeviceName(String sDeviceName)
 			throws IllegalNetworkDeviceException {
-		setDeviceName(sDeviceName);
+		setValue(sDeviceName);
 	}
 
-	private void initDeviceName() {
-		msDeviceName = null;
+	private void initValue() {
+		msValue = null;
 	}
 
 	@Override
 	public String toString() {
-		return "{ " + "name:" + getDeviceName() + " }";
+		return getValue();
 	}
 
 	@Override
@@ -41,15 +41,15 @@ public class NetworkDevice {
 		if (this == anObject) {
 			return true;
 		}
-		if (anObject instanceof NetworkDevice) {
-			NetworkDevice d = (NetworkDevice) anObject;
-			return getDeviceName().equals(d.getDeviceName());
+		if (anObject instanceof NetworkDeviceName) {
+			NetworkDeviceName d = (NetworkDeviceName) anObject;
+			return getValue().equals(d.getValue());
 		}
 		return false;
 	}
 
-	public String getDeviceName() {
-		return msDeviceName;
+	public String getValue() {
+		return msValue;
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class NetworkDevice {
 	 * @throws IllegalNetworkDeviceException
 	 *             if the given network device name is invalid.
 	 */
-	public String setDeviceName(String sDeviceName)
+	private String setValue(String sDeviceName)
 			throws IllegalNetworkDeviceException {
 		if (sDeviceName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -84,8 +84,8 @@ public class NetworkDevice {
 					Messages.NetworkDeviceNameEx_INVALID, sDeviceName,
 					NETWORK_DEVICE_NAME_PATTERN));
 		}
-		String previous = getDeviceName();
-		msDeviceName = sDeviceName;
+		String previous = getValue();
+		msValue = sDeviceName;
 		return previous;
 	}
 

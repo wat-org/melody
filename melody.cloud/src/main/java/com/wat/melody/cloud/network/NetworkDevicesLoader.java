@@ -35,7 +35,7 @@ public class NetworkDevicesLoader {
 		return moTC;
 	}
 
-	private void loadDevice(Node n, NetworkDevice nd)
+	private NetworkDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
 		if (attr == null) {
@@ -43,11 +43,8 @@ public class NetworkDevicesLoader {
 					Messages.NetworkLoadEx_MISSING_ATTR, DEVICE_ATTR));
 		}
 		String v = attr.getNodeValue();
-		if (v.length() == 0) {
-			return;
-		}
 		try {
-			nd.setDeviceName(v);
+			return NetworkDeviceName.parseString(v);
 		} catch (IllegalNetworkDeviceException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -56,7 +53,7 @@ public class NetworkDevicesLoader {
 	/**
 	 * <p>
 	 * Converts the given Network Device {@link Node}s into a
-	 * {@link NetworkDeviceList}.
+	 * {@link NetworkDeviceNameList}.
 	 * </p>
 	 * 
 	 * <p>
@@ -70,24 +67,22 @@ public class NetworkDevicesLoader {
 	 * @param nl
 	 *            a list of Network Device {@link Node}s.
 	 * 
-	 * @return a {@link NetworkDeviceList} object, which is a collection of
-	 *         {@link NetworkDevice} .
+	 * @return a {@link NetworkDeviceNameList} object, which is a collection of
+	 *         {@link NetworkDeviceName} .
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the conversion failed (ex : the content of a Network
 	 *             Device Node is not valid, multiple device declare with the
 	 *             same name).
 	 */
-	public NetworkDeviceList load(NodeList nl)
+	public NetworkDeviceNameList load(NodeList nl)
 			throws ResourcesDescriptorException {
-		NetworkDeviceList dl = new NetworkDeviceList();
+		NetworkDeviceNameList dl = new NetworkDeviceNameList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
-			NetworkDevice disk = new NetworkDevice();
-			loadDevice(n, disk);
-
+			NetworkDeviceName netDevName = loadDeviceName(n);
 			try {
-				dl.addNetworkDevice(disk);
+				dl.addNetworkDevice(netDevName);
 			} catch (IllegalNetworkDeviceListException Ex) {
 				throw new ResourcesDescriptorException(n, "This Network "
 						+ "Device Node description is not valid. Read message "

@@ -17,8 +17,12 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 	static final QName f_getHeritedContent = new QName(
 			CustomXPathFunctions.NAMESPACE_URI, GetHeritedContent.NAME);
 
-	static final QName f_getNetworkManagementInterface = new QName(
+	static final QName f_getManagementNetworkDevice = new QName(
 			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkDevice.NAME);
+
+	static final QName f_getManagementNetworkDeviceName = new QName(
+			CustomXPathFunctions.NAMESPACE_URI,
+			GetManagementNetworkDeviceName.NAME);
 
 	static final QName f_getManagementNetworkHost = new QName(
 			CustomXPathFunctions.NAMESPACE_URI, GetManagementNetworkHost.NAME);
@@ -44,7 +48,9 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 			return new GetHeritedAttribute();
 		} else if (qName.equals(f_getHeritedContent) && arity == 2) {
 			return new GetHeritedContent();
-		} else if (qName.equals(f_getNetworkManagementInterface) && arity == 1) {
+		} else if (qName.equals(f_getManagementNetworkDevice) && arity == 1) {
+			return new GetManagementNetworkDevice();
+		} else if (qName.equals(f_getManagementNetworkDeviceName) && arity == 1) {
 			return new GetManagementNetworkDevice();
 		} else if (qName.equals(f_getManagementNetworkHost) && arity == 1) {
 			return new GetManagementNetworkHost();
