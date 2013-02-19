@@ -115,7 +115,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		try {
 			rule.setInterface(Interface.parseString(mh.getManagementDatas()
 					.getNetworkDeviceName().getValue()));
-			rule.setPortRange(new PortRange(p, p));
+			rule.setToPortRange(new PortRange(p, p));
 		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
 			throw new RuntimeException("BUG ! Cannot happened !", Ex);
 		}

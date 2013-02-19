@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
 	<fwrules>
-		<in access="allow" from="all" name="SSH" ports="22" protocols="tcp"/>
+		<in access="allow" from-ips="all" name="SSH" to-ports="22" protocols="tcp"/>
 	</fwrules>
 	
 	<models>
@@ -10,7 +10,7 @@
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
 				<in>
-					<fwrule access="allow" from="all" ports="8080" protocols="tcp"/>
+					<fwrule access="allow" from-ips="all" to-ports="8080" protocols="tcp"/>
 					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
 				</in>
 			</fwrules>

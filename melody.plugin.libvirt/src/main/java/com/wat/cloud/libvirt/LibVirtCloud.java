@@ -46,6 +46,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Direction;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.Interface;
@@ -731,62 +732,74 @@ public abstract class LibVirtCloud {
 	public static FwRulesDecomposed getFireWallRules(Connect cnx,
 			NetworkDeviceName netDev, String sSGName) {
 		FwRulesDecomposed res = new FwRulesDecomposed();
+		Doc doc = new Doc();
+		NetworkFilter nf = null;
+		NodeList nl = null;
+		Node n = null;
+		FwRuleDecomposed rule = null;
+		Interface inter = null;
+		String sAccess;
+		String sDirection;
+		String sProtocol;
+		String sIp;
+		String sMask;
+		String start;
+		String end;
 		try {
-			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
-			Doc doc = new Doc();
+			nf = cnx.networkFilterLookupByName(sSGName);
 			doc.loadFromXML(nf.getXMLDesc());
-			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
+			nl = doc.evaluateAsNodeList("/filter/rule");
 			for (int i = 0; i < nl.getLength(); i++) {
-				Node n = nl.item(i);
-				FwRuleDecomposed rule = new FwRuleDecomposed();
+				n = nl.item(i);
+				rule = new FwRuleDecomposed();
 
 				// Interface
-				Interface inter = Interface.parseString(netDev.getValue());
+				inter = Interface.parseString(netDev.getValue());
 				rule.setInterface(inter);
 
-				// Access
-				String sAccess = Doc.evaluateAsString("./@action", n);
-				if (sAccess.equalsIgnoreCase("accept")) {
-					rule.setAccess(Access.ALLOW);
-				} else {
-					rule.setAccess(Access.DENY);
-				}
+				// From IP
+				sIp = Doc.evaluateAsString("./*/@srcipaddr", n);
+				sMask = Doc.evaluateAsString("./*/@srcipmask", n);
+				rule.setFromIpRange(IpRange.parseString(sIp + "/" + sMask));
 
-				/*
-				 * TODO : deal with 'direction' (in/out)
-				 */
+				// From Port
+				start = Doc.evaluateAsString("./*/@srcporstart", n);
+				end = Doc.evaluateAsString("./*/@srcportend", n);
+				rule.setFromPortRange(PortRange.parseString(start + "-" + end));
 
-				/*
-				 * TODO : deal with 'ToIpRange'
-				 */
+				// To IP
+				sIp = Doc.evaluateAsString("./*/@dstipaddr", n);
+				sMask = Doc.evaluateAsString("./*/@dstipmask", n);
+				rule.setToIpRange(IpRange.parseString(sIp + "/" + sMask));
+
+				// To Port
+				start = Doc.evaluateAsString("./*/@dstportstart", n);
+				end = Doc.evaluateAsString("./*/@dstportend", n);
+				rule.setToPortRange(PortRange.parseString(start + "-" + end));
 
 				// Protocol
-				String sProtocol = Doc.evaluateAsString("./node-name(*)", n);
+				sProtocol = Doc.evaluateAsString("./node-name(*)", n);
 				if (sProtocol.equalsIgnoreCase("tcp")) {
 					rule.setProtocol(Protocol.TCP);
 				} else {
 					rule.setProtocol(Protocol.UDP);
 				}
 
-				// IP From
-				String sIPfrom = Doc.evaluateAsString("./*/@srcipaddr", n);
-				if (sIPfrom == null || sIPfrom.length() == 0)
-					sIPfrom = "all";
-				String sMask = Doc.evaluateAsString("./*/@srcipmask", n);
-				if (sMask != null && sMask.length() != 0)
-					sMask = "/" + sMask;
-				rule.setFromIpRange(IpRange.parseString(sIPfrom + sMask));
-
-				// PortRange
-				String sPortStart = Doc
-						.evaluateAsString("./*/@dstportstart", n);
-				String sPortEnd = Doc.evaluateAsString("./*/@dstportend", n);
-				String sRange = sPortStart + "-" + sPortEnd;
-				if (sRange.equals("-")) {
-					sRange = "all";
+				// Direction
+				sDirection = Doc.evaluateAsString("./@direction", n);
+				if (sDirection.equalsIgnoreCase("in")) {
+					rule.setDirection(Direction.IN);
+				} else {
+					rule.setDirection(Direction.OUT);
 				}
-				PortRange portRange = PortRange.parseString(sRange);
-				rule.setPortRange(portRange);
+
+				// Access
+				sAccess = Doc.evaluateAsString("./@action", n);
+				if (sAccess.equalsIgnoreCase("accept")) {
+					rule.setAccess(Access.ALLOW);
+				} else {
+					rule.setAccess(Access.DENY);
+				}
 
 				res.add(rule);
 			}
@@ -831,35 +844,36 @@ public abstract class LibVirtCloud {
 				}
 				for (Doc doc : devToApply) {
 
-					/*
-					 * TODO : deal with 'direction' (in/out)
-					 */
-
-					/*
-					 * TODO : deal with 'ToIpRange'
-					 */
-					Node n = doc.evaluateAsNode("/filter/rule[ @action='"
+					Node n = doc.evaluateAsNode("/filter/rule[" + " @action='"
 							+ (rule.getAccess() == Access.ALLOW ? "accept"
 									: "drop")
+							+ "' and @direction='"
+							+ (rule.getDirection() == Direction.IN ? "in"
+									: "out")
 							+ "' and exists("
 							+ (rule.getProtocol() == Protocol.TCP ? "tcp"
-									: "udp") + "[@srcipaddr='"
+									: "udp") + "[" + "@srcipaddr='"
 							+ rule.getFromIpRange().getIp()
 							+ "' and @srcipmask='"
 							+ rule.getFromIpRange().getMask()
+							+ "' and @srcportstart='"
+							+ rule.getFromPortRange().getStartPort()
+							+ "' and @srcportend='"
+							+ rule.getFromPortRange().getEndPort()
+							+ "' and @dstipaddr='"
+							+ rule.getToIpRange().getIp()
+							+ "' and @dstipmask='"
+							+ rule.getToIpRange().getMask()
 							+ "' and @dstportstart='"
-							+ rule.getPortRange().getFromPort()
+							+ rule.getToPortRange().getStartPort()
 							+ "' and @dstportend='"
-							+ rule.getPortRange().getToPort() + "'])]");
+							+ rule.getToPortRange().getEndPort() + "'])]");
 					if (n != null) {
 						n.getParentNode().removeChild(n);
 					}
 				}
 			}
 
-			/*
-			 * TODO: find a way to not re-define filter not modified
-			 */
 			for (Doc doc : docs.values()) {
 				String dump = doc.dump();
 				cnx.networkFilterDefineXML(dump);
@@ -907,36 +921,41 @@ public abstract class LibVirtCloud {
 					Node ndoc = doc.getDocument().getFirstChild();
 					Node nrule = doc.getDocument().createElement("rule");
 					ndoc.appendChild(nrule);
-					/*
-					 * TODO : deal with 'direction' (in/out)
-					 */
-					Doc.createAttribute("direction", "in", nrule);
 					Doc.createAttribute("priority", "500", nrule);
 					Doc.createAttribute("action",
 							rule.getAccess() == Access.ALLOW ? "accept"
 									: "drop", nrule);
+					Doc.createAttribute("direction",
+							rule.getDirection() == Direction.IN ? "in" : "out",
+							nrule);
 
 					Node nin = doc.getDocument().createElement(
 							rule.getProtocol() == Protocol.TCP ? "tcp" : "udp");
 					nrule.appendChild(nin);
 					Doc.createAttribute("state", "NEW", nin);
+
 					Doc.createAttribute("srcipaddr", rule.getFromIpRange()
 							.getIp(), nin);
 					Doc.createAttribute("srcipmask", rule.getFromIpRange()
 							.getMask(), nin);
-					Doc.createAttribute("dstportstart", rule.getPortRange()
-							.getFromPort().toString(), nin);
-					Doc.createAttribute("dstportend", rule.getPortRange()
-							.getToPort().toString(), nin);
-					/*
-					 * TODO : deal with 'ToIpRange'
-					 */
+
+					Doc.createAttribute("srcportstart", rule.getFromPortRange()
+							.getStartPort().toString(), nin);
+					Doc.createAttribute("srcportend", rule.getFromPortRange()
+							.getEndPort().toString(), nin);
+
+					Doc.createAttribute("dstipaddr", rule.getToIpRange()
+							.getIp(), nin);
+					Doc.createAttribute("dstipmask", rule.getToIpRange()
+							.getMask(), nin);
+
+					Doc.createAttribute("dstportstart", rule.getToPortRange()
+							.getStartPort().toString(), nin);
+					Doc.createAttribute("dstportend", rule.getToPortRange()
+							.getEndPort().toString(), nin);
 				}
 			}
 
-			/*
-			 * TODO: find a way to not re-define filter not modified
-			 */
 			for (Doc doc : docs.values()) {
 				String dump = doc.dump();
 				cnx.networkFilterDefineXML(dump);
