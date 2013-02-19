@@ -53,7 +53,7 @@
 		
 		<call orders="update_disk_devices" />
 		<call orders="update_network_devices" />
-		<!-- call orders="ingress" /-->
+		<call orders="ingress"/>
 
  	</order>
 		
