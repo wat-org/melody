@@ -10,9 +10,9 @@
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
 				<in>
-					<fwrule access="allow" device-name="eth0" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
-					<fwrule access="allow" device-name="eth0" direction="in" from-ips="10.10.0.0/16" protocols="tcp" to-ports="678"/>
-					<fwrule device="eth0" herit="./environment/fwrules/in[@name='SSH']"/>
+					<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
+					<fwrule access="allow" direction="in" from-ips="10.10.0.0/16" protocols="tcp" to-ports="678"/>
+					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
 				</in>
 			</fwrules>
 			<disks>
