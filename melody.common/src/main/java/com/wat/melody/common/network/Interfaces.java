@@ -15,6 +15,21 @@ public class Interfaces extends ArrayList<Interface> {
 	private static final long serialVersionUID = -534567888987653292L;
 
 	public static final String INTERFACES_SEPARATOR = ",";
+	
+	public static final Interfaces ALL = createInterfaces(Interface.ALL);
+
+	private static Interfaces createInterfaces(Interface... interfaces) {
+		try {
+			return new Interfaces(interfaces);
+		} catch (IllegalInterfacesException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "an Interface with value '" + interfaces
+					+ "'. " + "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	/**
 	 * <p>
@@ -29,7 +44,7 @@ public class Interfaces extends ArrayList<Interface> {
 	 * </i>
 	 * </p>
 	 * 
-	 * @param sProtocols
+	 * @param sInterfaces
 	 *            is the given <code>String</code> to convert.
 	 * 
 	 * @return an {@link Interfaces} object, whose equal to the given input
@@ -41,65 +56,65 @@ public class Interfaces extends ArrayList<Interface> {
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */
-	public static Interfaces parseString(String sProtocols)
+	public static Interfaces parseString(String sInterfaces)
 			throws IllegalInterfacesException {
-		return new Interfaces(sProtocols);
+		return new Interfaces(sInterfaces);
 	}
 
-	public Interfaces(String sProtocols) throws IllegalInterfacesException {
+	public Interfaces(String sInterfaces) throws IllegalInterfacesException {
 		super();
-		setInterfaces(sProtocols);
+		setInterfaces(sInterfaces);
 	}
 
-	public Interfaces(Interface... protocols) throws IllegalInterfacesException {
+	public Interfaces(Interface... interfaces) throws IllegalInterfacesException {
 		super();
-		setInterfaces(protocols);
+		setInterfaces(interfaces);
 	}
 
-	public void setInterfaces(Interface... protocols)
+	public void setInterfaces(Interface... interfaces)
 			throws IllegalInterfacesException {
 		clear();
-		if (protocols == null) {
+		if (interfaces == null) {
 			return;
 		}
-		for (Interface protocol : protocols) {
-			if (protocol == null) {
+		for (Interface inter : interfaces) {
+			if (inter == null) {
 				continue;
 			} else {
-				add(protocol);
+				add(inter);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalInterfacesException(Messages.bind(
-					Messages.InterfacesEx_EMPTY, protocols));
+					Messages.InterfacesEx_EMPTY, interfaces));
 		}
 	}
 
-	public void setInterfaces(String sProtocols)
+	public void setInterfaces(String sInterfaces)
 			throws IllegalInterfacesException {
-		if (sProtocols == null) {
+		if (sInterfaces == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Interfaces.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String protocol : sProtocols.split(INTERFACES_SEPARATOR)) {
-			protocol = protocol.trim();
-			if (protocol.length() == 0) {
+		for (String inter : sInterfaces.split(INTERFACES_SEPARATOR)) {
+			inter = inter.trim();
+			if (inter.length() == 0) {
 				throw new IllegalInterfacesException(Messages.bind(
-						Messages.InterfacesEx_EMPTY_INTERFACE, sProtocols));
+						Messages.InterfacesEx_EMPTY_INTERFACE, sInterfaces));
 			}
 			try {
-				add(Interface.parseString(protocol));
+				add(Interface.parseString(inter));
 			} catch (IllegalInterfaceException Ex) {
 				throw new IllegalInterfacesException(Messages.bind(
-						Messages.InterfacesEx_INVALID_INTERFACE, sProtocols),
+						Messages.InterfacesEx_INVALID_INTERFACE, sInterfaces),
 						Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalInterfacesException(Messages.bind(
-					Messages.InterfacesEx_EMPTY, sProtocols));
+					Messages.InterfacesEx_EMPTY, sInterfaces));
 		}
 	}
 

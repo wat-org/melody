@@ -1,6 +1,5 @@
 package com.wat.melody.common.network;
 
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
 
 /**
  * 
@@ -37,16 +36,7 @@ public class FwRuleDecomposed {
 	}
 
 	public void initInterface() {
-		try {
-			moInterface = Interface.parseString(Interface.ALL);
-		} catch (IllegalInterfaceException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the Interface with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+		moInterface = Interface.ALL;
 	}
 
 	public void initFromIpRange() {

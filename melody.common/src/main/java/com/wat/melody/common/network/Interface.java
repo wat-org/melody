@@ -10,7 +10,23 @@ import com.wat.melody.common.network.exception.IllegalInterfaceException;
 public class Interface {
 
 	public static final String PATTERN = ".*";
-	public static final String ALL = "all";
+
+	public static final String _ALL = "all";
+	
+	public static final Interface ALL = createInterface("all");
+
+	private static Interface createInterface(String sInterface) {
+		try {
+			return new Interface(sInterface);
+		} catch (IllegalInterfaceException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "an Interface with value '" + sInterface
+					+ "'. " + "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	/**
 	 * <p>
@@ -72,8 +88,8 @@ public class Interface {
 		if (sInterface.trim().length() == 0) {
 			throw new IllegalInterfaceException(Messages.bind(
 					Messages.InterfaceEx_EMPTY, sInterface));
-		} else if (sInterface.equalsIgnoreCase("all")) {
-			msValue = ALL;
+		} else if (sInterface.equalsIgnoreCase(_ALL)) {
+			msValue = _ALL;
 			return previous;
 		} else if (!sInterface.matches("^" + PATTERN + "$")) {
 			throw new IllegalInterfaceException(Messages.bind(
