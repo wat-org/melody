@@ -6,7 +6,9 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Directions;
 import com.wat.melody.common.network.FwRule;
 import com.wat.melody.common.network.FwRules;
 import com.wat.melody.common.network.Interfaces;
@@ -14,6 +16,7 @@ import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.Protocols;
 import com.wat.melody.common.network.exception.IllegalAccessException;
+import com.wat.melody.common.network.exception.IllegalDirectionsException;
 import com.wat.melody.common.network.exception.IllegalInterfacesException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
@@ -28,32 +31,53 @@ import com.wat.melody.xpath.XPathHelper;
 public class FwRuleLoader {
 
 	/**
-	 * The 'fwrule' XML Nested element of the Instance Node in the RD
+	 * XML Nested element of an Instance Node, which contains the definition of
+	 * a FwRule.
 	 */
 	public static final String FIREWALL_RULE_NE = "fwrule";
 
 	/**
-	 * The 'device' XML attribute of a FwRule Node
+	 * XML attribute of a FwRule Node which define the name of the device to
+	 * attache the Fw Rule to.
 	 */
-	public static final String DEVICE_ATTR = "device";
+	public static final String DEVICES_NAME_ATTR = "devices-name";
 
 	/**
-	 * The 'from' XML attribute of a FwRule Node
+	 * XML attribute of a FwRule Node which define the source ips of the Fw
+	 * Rule.
 	 */
-	public static final String FROM_ATTR = "from";
+	public static final String FROM_IPS_ATTR = "from-ips";
 
 	/**
-	 * The 'ports' XML attribute of a FwRule Node
+	 * XML attribute of a FwRule Node which define the source ports of the Fw
+	 * Rule.
 	 */
-	public static final String PORTS_ATTR = "ports";
+	public static final String FROM_PORTS_ATTR = "from-ports";
 
 	/**
-	 * The 'protocols' XML attribute of a FwRule Node
+	 * XML attribute of a FwRule Node which define the destination ips of the Fw
+	 * Rule.
+	 */
+	public static final String TO_IPS_ATTR = "to-ips";
+
+	/**
+	 * XML attribute of a FwRule Node which define the destination ports of the
+	 * Fw Rule.
+	 */
+	public static final String TO_PORTS_ATTR = "to-ports";
+
+	/**
+	 * XML attribute of a FwRule Node which define the protocols of the Fw Rule.
 	 */
 	public static final String PROTOCOLS_ATTR = "protocols";
 
 	/**
-	 * The 'access' XML attribute of a FwRule Node
+	 * XML attribute of a FwRule Node which define the direction of the flow.
+	 */
+	public static final String DIRECTION_ATTR = "direction";
+
+	/**
+	 * XML attribute of a FwRule Node which define the action to perform.
 	 */
 	public static final String ACCESS_ATTR = "access";
 
@@ -71,9 +95,9 @@ public class FwRuleLoader {
 		return moTC;
 	}
 
-	private boolean loadFrom(Node n, FwRule fw)
+	private boolean loadFromIps(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, FROM_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, FROM_IPS_ATTR);
 		if (attr == null) {
 			return false;
 		}
@@ -97,9 +121,87 @@ public class FwRuleLoader {
 		return true;
 	}
 
+	private boolean loadFromPorts(Node n, FwRule fw)
+			throws ResourcesDescriptorException {
+		Node attr = XPathHelper.getHeritedAttribute(n, FROM_PORTS_ATTR);
+		if (attr == null) {
+			return false;
+		}
+		String v = attr.getNodeValue();
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			v = getTC().expand(v);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			fw.setFromPortRanges(PortRanges.parseString(v));
+		} catch (IllegalPortRangesException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		return true;
+	}
+
+	private boolean loadToIps(Node n, FwRule fw)
+			throws ResourcesDescriptorException {
+		Node attr = XPathHelper.getHeritedAttribute(n, TO_IPS_ATTR);
+		if (attr == null) {
+			return false;
+		}
+		String v = attr.getNodeValue();
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			v = getTC().expand(v);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			fw.setToIpRanges(IpRanges.parseString(v));
+		} catch (IllegalIpRangesException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		return true;
+	}
+
+	private boolean loadToPorts(Node n, FwRule fw)
+			throws ResourcesDescriptorException {
+		Node attr = XPathHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
+		if (attr == null) {
+			return false;
+		}
+		String v = attr.getNodeValue();
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			v = getTC().expand(v);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			fw.setToPortRanges(PortRanges.parseString(v));
+		} catch (IllegalPortRangesException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		return true;
+	}
+
 	private boolean loadDevices(Node n, FwRule fw)
 			throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, DEVICE_ATTR);
+		Node attr = XPathHelper.getHeritedAttribute(n, DEVICES_NAME_ATTR);
 		if (attr == null) {
 			return false;
 		}
@@ -118,32 +220,6 @@ public class FwRuleLoader {
 		try {
 			fw.setInterfaces(Interfaces.parseString(v));
 		} catch (IllegalInterfacesException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
-		return true;
-	}
-
-	private boolean loadPorts(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, PORTS_ATTR);
-		if (attr == null) {
-			return false;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return false;
-		}
-		try {
-			v = getTC().expand(v);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
-		if (v == null || v.length() == 0) {
-			return false;
-		}
-		try {
-			fw.setPortRanges(PortRanges.parseString(v));
-		} catch (IllegalPortRangesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		return true;
@@ -170,6 +246,32 @@ public class FwRuleLoader {
 		try {
 			fw.setProtocols(Protocols.parseString(v));
 		} catch (IllegalProtocolsException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		return true;
+	}
+
+	private boolean loadDirection(Node n, FwRule fw)
+			throws ResourcesDescriptorException {
+		Node attr = XPathHelper.getHeritedAttribute(n, DIRECTION_ATTR);
+		if (attr == null) {
+			return false;
+		}
+		String v = attr.getNodeValue();
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			v = getTC().expand(v);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return false;
+		}
+		try {
+			fw.setDirections(Directions.parseString(v));
+		} catch (IllegalDirectionsException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		return true;
@@ -209,9 +311,11 @@ public class FwRuleLoader {
 	 * <p>
 	 * <i>A FwRule <code>Node</code> must have the attributes :
 	 * <ul>
-	 * <li>from : which should contains {@link IpRanges} ;</li>
-	 * <li>to : which should contains {@link IpRanges} :</li>
-	 * <li>ports : which should contains {@link PortRanges} ;</li>
+	 * <li>device-name : which should contains {@link NetworkDeviceName} ;</li>
+	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
+	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
+	 * <li>to-ips : which should contains {@link IpRanges} :</li>
+	 * <li>to-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>protocols : which should contains {@link Protocols} ;</li>
 	 * <li>allow : which should contains {@link Access} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
@@ -237,12 +341,15 @@ public class FwRuleLoader {
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
 			FwRule fw = new FwRule();
-			if (!loadFrom(n, fw)) {
+			if (!loadFromIps(n, fw)) {
 				continue;
 			}
+			loadFromPorts(n, fw);
+			loadToIps(n, fw);
+			loadToPorts(n, fw);
 			loadDevices(n, fw);
-			loadPorts(n, fw);
 			loadProtocols(n, fw);
+			loadDirection(n, fw);
 			loadAccess(n, fw);
 			fwrs.add(fw);
 		}

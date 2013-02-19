@@ -11,28 +11,35 @@ public class FwRule {
 
 	private Interfaces moInterfaces;
 	private IpRanges moFromIpRanges;
+	private PortRanges moFromPortRanges;
 	private IpRanges moToIpRanges;
-	private PortRanges moPortRanges;
+	private PortRanges moToPortRanges;
 	private Protocols moProtocols;
-	private Access moAccess;
+	private Directions moDirections;
+	private Access meAccess;
 
 	public FwRule() {
 		initInterfaces();
 		initFromIpRanges();
+		initFromPortRanges();
 		initToIpRanges();
-		initPortRanges();
+		initToPortRanges();
 		initProtocols();
+		initDirections();
 		initAccess();
 	}
 
 	public FwRule(Interfaces interfaces, IpRanges fromIpRanges,
-			IpRanges toIoRanges, PortRanges portRanges, Protocols protocols,
-			Access access) {
+			PortRanges fromPortRanges, IpRanges toIoRanges,
+			PortRanges toPortRanges, Protocols protocols,
+			Directions directions, Access access) {
 		setInterfaces(interfaces);
 		setFromIpRanges(fromIpRanges);
+		setFromPortRanges(fromPortRanges);
 		setToIpRanges(toIoRanges);
-		setPortRanges(portRanges);
+		setToPortRanges(toPortRanges);
 		setProtocols(protocols);
+		setDirections(directions);
 		setAccess(access);
 	}
 
@@ -44,12 +51,16 @@ public class FwRule {
 		moFromIpRanges = IpRanges.ALL;
 	}
 
+	public void initFromPortRanges() {
+		moFromPortRanges = PortRanges.ALL;
+	}
+
 	public void initToIpRanges() {
 		moToIpRanges = IpRanges.ALL;
 	}
 
-	public void initPortRanges() {
-		moPortRanges = PortRanges.ALL;
+	public void initToPortRanges() {
+		moToPortRanges = PortRanges.ALL;
 	}
 
 	public void initProtocols() {
@@ -65,16 +76,22 @@ public class FwRule {
 		}
 	}
 
+	public void initDirections() {
+		moDirections = Directions.ALL;
+	}
+
 	public void initAccess() {
-		moAccess = Access.DENY;
+		meAccess = Access.DENY;
 	}
 
 	@Override
 	public String toString() {
-		return "{ devs:" + getInterfaces() + ",from: " + getFromIpRanges()
-				+ ", to: " + getToIpRanges() + ", ports: " + getPortRanges()
-				+ ", protocols: " + getProtocols() + ", access: " + getAccess()
-				+ " }";
+		return "{ devives-name:" + getInterfaces() + ",from-ips: "
+				+ getFromIpRanges() + ", from-ports: " + getFromPortRanges()
+				+ ", to-ips: " + getToIpRanges() + ", to-ports: "
+				+ getToPortRanges() + ", protocols: " + getProtocols()
+				+ ", directions: " + getDirections() + ", access: "
+				+ getAccess() + " }";
 	}
 
 	/**
@@ -96,11 +113,16 @@ public class FwRule {
 		FwRulesDecomposed fws = new FwRulesDecomposed();
 		Access a = getAccess();
 		for (Interface i : getInterfaces()) {
-			for (Protocol p : getProtocols()) {
-				for (PortRange r : getPortRanges()) {
-					for (IpRange t : getToIpRanges()) {
-						for (IpRange f : getFromIpRanges()) {
-							fws.add(new FwRuleDecomposed(i, f, t, r, p, a));
+			for (Direction d : getDirections()) {
+				for (Protocol p : getProtocols()) {
+					for (PortRange fp : getFromPortRanges()) {
+						for (IpRange fi : getFromIpRanges()) {
+							for (PortRange tp : getToPortRanges()) {
+								for (IpRange ti : getToIpRanges()) {
+									fws.add(new FwRuleDecomposed(i, fi, fp, ti,
+											tp, p, d, a));
+								}
+							}
 						}
 					}
 				}
@@ -142,6 +164,21 @@ public class FwRule {
 		return previous;
 	}
 
+	public PortRanges getFromPortRanges() {
+		return moFromPortRanges;
+	}
+
+	public PortRanges setFromPortRanges(PortRanges fromPortRanges) {
+		if (fromPortRanges == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + PortRanges.class.getCanonicalName()
+					+ ".");
+		}
+		PortRanges previous = getFromPortRanges();
+		moFromPortRanges = fromPortRanges;
+		return previous;
+	}
+
 	public IpRanges getToIpRanges() {
 		return moToIpRanges;
 	}
@@ -157,18 +194,18 @@ public class FwRule {
 		return previous;
 	}
 
-	public PortRanges getPortRanges() {
-		return moPortRanges;
+	public PortRanges getToPortRanges() {
+		return moToPortRanges;
 	}
 
-	public PortRanges setPortRanges(PortRanges portRanges) {
-		if (portRanges == null) {
+	public PortRanges setToPortRanges(PortRanges toPortRanges) {
+		if (toPortRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + PortRanges.class.getCanonicalName()
 					+ ".");
 		}
-		PortRanges previous = getPortRanges();
-		moPortRanges = portRanges;
+		PortRanges previous = getToPortRanges();
+		moToPortRanges = toPortRanges;
 		return previous;
 	}
 
@@ -187,8 +224,23 @@ public class FwRule {
 		return previous;
 	}
 
+	public Directions getDirections() {
+		return moDirections;
+	}
+
+	public Directions setDirections(Directions directions) {
+		if (directions == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Directions.class.getCanonicalName()
+					+ ".");
+		}
+		Directions previous = getDirections();
+		this.moDirections = directions;
+		return previous;
+	}
+
 	public Access getAccess() {
-		return moAccess;
+		return meAccess;
 	}
 
 	public Access setAccess(Access access) {
@@ -198,7 +250,7 @@ public class FwRule {
 					+ ".");
 		}
 		Access previous = getAccess();
-		this.moAccess = access;
+		this.meAccess = access;
 		return previous;
 	}
 

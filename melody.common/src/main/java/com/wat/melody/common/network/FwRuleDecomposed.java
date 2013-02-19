@@ -1,6 +1,5 @@
 package com.wat.melody.common.network;
 
-
 /**
  * 
  * @author Guillaume Cornet
@@ -10,28 +9,34 @@ public class FwRuleDecomposed {
 
 	private Interface moInterface;
 	private IpRange moFromIpRange;
+	private PortRange moFromPortRange;
 	private IpRange moToIpRange;
-	private PortRange moPortRange;
+	private PortRange moToPortRange;
 	private Protocol meProtocol;
-	private Access moAccess;
+	private Direction meDirection;
+	private Access meAccess;
 
 	public FwRuleDecomposed() {
 		initInterface();
 		initFromIpRange();
+		initFromPortRange();
 		initToIpRange();
-		initPortRange();
+		initToPortRange();
 		initProtocol();
+		initDirection();
 		initAccess();
 	}
 
 	public FwRuleDecomposed(Interface inter, IpRange fromIpRange,
-			IpRange toIoRange, PortRange portRange, Protocol protocol,
-			Access access) {
+			PortRange fromPortRange, IpRange toIoRange, PortRange toPortRange,
+			Protocol protocol, Direction direction, Access access) {
 		setInterface(inter);
 		setFromIpRange(fromIpRange);
+		setFromPortRange(fromPortRange);
 		setToIpRange(toIoRange);
-		setPortRange(portRange);
+		setToPortRange(toPortRange);
 		setProtocol(protocol);
+		setDirection(direction);
 		setAccess(access);
 	}
 
@@ -43,27 +48,37 @@ public class FwRuleDecomposed {
 		moFromIpRange = IpRange.ALL;
 	}
 
+	public void initFromPortRange() {
+		moFromPortRange = PortRange.ALL;
+	}
+
 	public void initToIpRange() {
 		moToIpRange = IpRange.ALL;
 	}
 
-	public void initPortRange() {
-		moPortRange = PortRange.ALL;
+	public void initToPortRange() {
+		moToPortRange = PortRange.ALL;
 	}
 
 	public void initProtocol() {
 		meProtocol = Protocol.TCP;
 	}
 
+	public void initDirection() {
+		meDirection = Direction.IN;
+	}
+
 	public void initAccess() {
-		moAccess = Access.DENY;
+		meAccess = Access.DENY;
 	}
 
 	@Override
 	public String toString() {
-		return "{ " + "dev: " + getInterface() + ", from: " + getFromIpRange()
-				+ ", to: " + getToIpRange() + ", port: " + getPortRange()
-				+ ", protocol: " + getProtocol() + ", access: " + getAccess()
+		return "{ " + "devive-name: " + getInterface() + ", from-ip: "
+				+ getFromIpRange() + ", from-port: " + getFromPortRange()
+				+ ", to-ip: " + getToIpRange() + ", to-port: "
+				+ getToPortRange() + ", protocol: " + getProtocol()
+				+ ", direction: " + getDirection() + ", access: " + getAccess()
 				+ " }";
 	}
 
@@ -74,21 +89,25 @@ public class FwRuleDecomposed {
 		}
 		if (anObject instanceof FwRuleDecomposed) {
 			FwRuleDecomposed rule = (FwRuleDecomposed) anObject;
-			return rule.getProtocol().equals(getProtocol())
-					&& rule.getPortRange().equals(getPortRange())
-					&& rule.getFromIpRange().equals(getFromIpRange())
+			return rule.getFromIpRange().equals(getFromIpRange())
+					&& rule.getToPortRange().equals(getToPortRange())
 					&& rule.getToIpRange().equals(getToIpRange())
-					&& rule.getAccess().equals(getAccess())
-					&& rule.getInterface().equals(getInterface());
+					&& rule.getProtocol().equals(getProtocol())
+					&& rule.getDirection().equals(getDirection())
+					&& rule.getAccess().equals(getAccess());
+			// rule.getInterface().equals(getInterface())
 		}
 		return false;
 	}
 
 	public boolean equals(String fromIpRange, String toIpRange, int fromPort,
 			int toPort, String protocol, String access) {
+		/*
+		 * TODO : remove this when AWS IngressMachine is ok
+		 */
 		return protocol.equalsIgnoreCase(getProtocol().getValue())
-				&& fromPort == getPortRange().getFromPort().getValue()
-				&& toPort == getPortRange().getToPort().getValue()
+				&& fromPort == getFromPortRange().getStartPort().getValue()
+				&& toPort == getFromPortRange().getEndPort().getValue()
 				&& fromIpRange.equals(getFromIpRange().getValue())
 				&& toIpRange.equals(getToIpRange().getValue())
 				&& access.equalsIgnoreCase(getAccess().getValue());
@@ -124,6 +143,21 @@ public class FwRuleDecomposed {
 		return previous;
 	}
 
+	public PortRange getFromPortRange() {
+		return moFromPortRange;
+	}
+
+	public PortRange setFromPortRange(PortRange fromPortRange) {
+		if (fromPortRange == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + PortRange.class.getCanonicalName()
+					+ ".");
+		}
+		PortRange previous = getFromPortRange();
+		moFromPortRange = fromPortRange;
+		return previous;
+	}
+
 	public IpRange getToIpRange() {
 		return moToIpRange;
 	}
@@ -139,18 +173,18 @@ public class FwRuleDecomposed {
 		return previous;
 	}
 
-	public PortRange getPortRange() {
-		return moPortRange;
+	public PortRange getToPortRange() {
+		return moToPortRange;
 	}
 
-	public PortRange setPortRange(PortRange portRange) {
-		if (portRange == null) {
+	public PortRange setToPortRange(PortRange toPortRange) {
+		if (toPortRange == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + PortRange.class.getCanonicalName()
 					+ ".");
 		}
-		PortRange previous = getPortRange();
-		moPortRange = portRange;
+		PortRange previous = getToPortRange();
+		moToPortRange = toPortRange;
 		return previous;
 	}
 
@@ -169,8 +203,23 @@ public class FwRuleDecomposed {
 		return previous;
 	}
 
+	public Direction getDirection() {
+		return meDirection;
+	}
+
+	public Direction setDirection(Direction direction) {
+		if (direction == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Direction.class.getCanonicalName()
+					+ ".");
+		}
+		Direction previous = getDirection();
+		this.meDirection = direction;
+		return previous;
+	}
+
 	public Access getAccess() {
-		return moAccess;
+		return meAccess;
 	}
 
 	public Access setAccess(Access access) {
@@ -180,7 +229,7 @@ public class FwRuleDecomposed {
 					+ ".");
 		}
 		Access previous = getAccess();
-		this.moAccess = access;
+		this.meAccess = access;
 		return previous;
 	}
 

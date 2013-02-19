@@ -203,8 +203,8 @@ public class IngressMachine extends AbstractAwsOperation {
 		}
 		IpPermission sgr = new IpPermission();
 		sgr.withIpProtocol(fwr.getProtocol().getValue().toLowerCase());
-		sgr.withFromPort(fwr.getPortRange().getFromPort().getValue());
-		sgr.withToPort(fwr.getPortRange().getToPort().getValue());
+		sgr.withFromPort(fwr.getFromPortRange().getStartPort().getValue());
+		sgr.withToPort(fwr.getFromPortRange().getEndPort().getValue());
 		sgr.withIpRanges(fwr.getFromIpRange().getValue());
 		return sgr;
 	}

@@ -47,13 +47,13 @@ public class PortRanges extends ArrayList<PortRange> {
 	 * @param sPortRanges
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return a <code>PortRanges</code> object, whose equal to the given input
+	 * @return a {@link PortRanges} object, whose equal to the given input
 	 *         <code>String</code>.
 	 * 
 	 * 
 	 * @throws IllegalPortRangesException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>PortRanges</code>.
+	 *             {@link PortRanges}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */

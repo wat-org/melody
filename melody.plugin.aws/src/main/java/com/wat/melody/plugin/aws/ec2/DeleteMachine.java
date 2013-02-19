@@ -59,6 +59,10 @@ public class DeleteMachine extends AbstractMachineOperation {
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
+			/*
+			 * TODO : remove everything which concerns security groups to the
+			 * underlying layer.
+			 */
 			Common.deleteSecurityGroup(getEc2(), getInstance()
 					.getSecurityGroups().get(0).getGroupName());
 		} else {
@@ -66,10 +70,6 @@ public class DeleteMachine extends AbstractMachineOperation {
 			deleteInstance();
 			removeInstanceRelatedInfosToED(true);
 		}
-		/*
-		 * TODO : when creating an instance, store the generated SG name into
-		 * the ED. When deleting an instance, delete the SG based on its name.
-		 */
 	}
 
 }

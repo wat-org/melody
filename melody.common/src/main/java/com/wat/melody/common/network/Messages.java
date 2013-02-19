@@ -9,6 +9,13 @@ public class Messages extends NLS {
 	public static String AccessEx_EMPTY;
 	public static String AccessEx_INVALID;
 
+	public static String DirectionEx_EMPTY;
+	public static String DirectionEx_INVALID;
+
+	public static String DirectionsEx_EMPTY_DIRECTION;
+	public static String DirectionsEx_INVALID_DIRECTION;
+	public static String DirectionsEx_EMPTY;
+
 	public static String InterfaceEx_EMPTY;
 	public static String InterfaceEx_INVALID;
 
@@ -35,9 +42,9 @@ public class Messages extends NLS {
 	public static String PortEx_HIGH;
 
 	public static String PortRangeEx_EMPTY;
-	public static String PortRangeEx_INVALID_FROM_PART;
-	public static String PortRangeEx_INVALID_TO_PART;
-	public static String PortRangeEx_MISSING_FROM_TO_PART;
+	public static String PortRangeEx_INVALID_START_PART;
+	public static String PortRangeEx_INVALID_END_PART;
+	public static String PortRangeEx_MISSING_START_TO_PART;
 	public static String PortRangeEx_ILLOGIC_RANGE;
 
 	public static String PortRangesEx_EMPTY_PORT_RANGE;
