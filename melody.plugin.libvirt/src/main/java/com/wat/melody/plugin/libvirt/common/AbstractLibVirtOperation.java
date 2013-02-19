@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.libvirt.common;
 
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -20,8 +21,8 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
@@ -341,8 +342,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 			throws LibVirtException {
 		try {
 			Node netDevNode = NetworkManagementHelper
-					.findNetworkDeviceNodeByName(getTargetNode(),
-							nd.getValue());
+					.findNetworkDeviceNodeByName(getTargetNode(), nd.getValue());
 			return getED().getMelodyID(netDevNode);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -587,7 +587,9 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	protected String newSecurityGroupName() {
-		return "MelodySg" + "_" + System.currentTimeMillis();
+		// This formula should produce a unique name
+		return "MelodySg" + "_" + System.currentTimeMillis() + "_"
+				+ UUID.randomUUID().toString().substring(0, 8);
 	}
 
 }

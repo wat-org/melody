@@ -779,8 +779,8 @@ public abstract class LibVirtCloud {
 
 				// PortRange
 				String sPortStart = Doc
-						.evaluateAsString("./*/@srcportstart", n);
-				String sPortEnd = Doc.evaluateAsString("./*/@dstportstart", n);
+						.evaluateAsString("./*/@dstportstart", n);
+				String sPortEnd = Doc.evaluateAsString("./*/@dstportend", n);
 				String sRange = sPortStart + "-" + sPortEnd;
 				if (sRange.equals("-")) {
 					sRange = "all";
@@ -847,9 +847,9 @@ public abstract class LibVirtCloud {
 							+ rule.getFromIpRange().getIp()
 							+ "' and @srcipmask='"
 							+ rule.getFromIpRange().getMask()
-							+ "' and @srcportstart='"
-							+ rule.getPortRange().getFromPort()
 							+ "' and @dstportstart='"
+							+ rule.getPortRange().getFromPort()
+							+ "' and @dstportend='"
 							+ rule.getPortRange().getToPort() + "'])]");
 					if (n != null) {
 						n.getParentNode().removeChild(n);
@@ -924,9 +924,9 @@ public abstract class LibVirtCloud {
 							.getIp(), nin);
 					Doc.createAttribute("srcipmask", rule.getFromIpRange()
 							.getMask(), nin);
-					Doc.createAttribute("srcportstart", rule.getPortRange()
-							.getFromPort().toString(), nin);
 					Doc.createAttribute("dstportstart", rule.getPortRange()
+							.getFromPort().toString(), nin);
+					Doc.createAttribute("dstportend", rule.getPortRange()
 							.getToPort().toString(), nin);
 					/*
 					 * TODO : deal with 'ToIpRange'
@@ -1259,18 +1259,8 @@ public abstract class LibVirtCloud {
 				throw new RuntimeException(sSGName + ": network filter "
 						+ "already exists.");
 			}
-			/*
-			 * TODO : remove 'accept tcp/udp state=NEW' when done
-			 */
-			String NETWORK_FILTER_XML_SNIPPET = "<filter name='"
-					+ sSGName
-					+ "' chain='root'>"
-					+ "<rule action='accept' direction='in' priority='500'>"
-					+ "<tcp srcipaddr='0.0.0.0' srcipmask='0' state='NEW' srcportstart='1' dstportstart='65535'/>"
-					+ "</rule>"
-					+ "<rule action='accept' direction='in' priority='500'>"
-					+ "<udp srcipaddr='0.0.0.0' srcipmask='0' state='NEW' srcportstart='1' dstportstart='65535'/>"
-					+ "</rule>" + "</filter>";
+			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sSGName
+					+ "' chain='root'>" + "</filter>";
 			log.trace("Creating Security Group '" + sSGName + "' ...");
 			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
 			log.debug("Security Group '" + sSGName + "' created.");
