@@ -3,9 +3,7 @@ package com.wat.cloud.libvirt;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -710,61 +708,51 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static FwRulesDecomposed getInstanceFireWallRules(Instance i) {
+	public static FwRulesDecomposed getInstanceFireWallRules(Instance i,
+			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		return getDomainFireWallRules(i.getDomain());
+		return getDomainFireWallRules(i.getDomain(), netDev);
 	}
 
-	public static FwRulesDecomposed getDomainFireWallRules(Domain domain) {
-		FwRulesDecomposed res = new FwRulesDecomposed();
-		Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(domain);
-		for (NetworkDeviceName netDev : sgs.keySet()) {
-			res.addAll(getFireWallRules(domain.getConnect(), netDev,
-					sgs.get(netDev)));
+	public static FwRulesDecomposed getDomainFireWallRules(Domain d,
+			NetworkDeviceName netdev) {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
 		}
-		return res;
-	}
-
-	public static FwRulesDecomposed getFireWallRules(Connect cnx,
-			NetworkDeviceName netDev, String sSGName) {
 		FwRulesDecomposed res = new FwRulesDecomposed();
-		Doc doc = new Doc();
-		NetworkFilter nf = null;
-		NodeList nl = null;
-		Node n = null;
-		FwRuleDecomposed rule = null;
-		Interface inter = null;
-		String sAccess;
-		String sDirection;
-		String sProtocol;
-		String sIp;
-		String sMask;
-		String start;
-		String end;
+		if (netdev == null) {
+			return res;
+		}
 		try {
-			nf = cnx.networkFilterLookupByName(sSGName);
+			Connect cnx = d.getConnect();
+			String sSGName = getDomainSecurityGroup(d, netdev);
+			Doc doc = new Doc();
+			Interface inter = Interface.parseString(netdev.getValue());
+			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
 			doc.loadFromXML(nf.getXMLDesc());
-			nl = doc.evaluateAsNodeList("/filter/rule");
+			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
+
 			for (int i = 0; i < nl.getLength(); i++) {
-				n = nl.item(i);
-				rule = new FwRuleDecomposed();
+				Node n = nl.item(i);
+				FwRuleDecomposed rule = new FwRuleDecomposed();
 
 				// Interface
-				inter = Interface.parseString(netDev.getValue());
 				rule.setInterface(inter);
 
 				// From IP
-				sIp = Doc.evaluateAsString("./*/@srcipaddr", n);
-				sMask = Doc.evaluateAsString("./*/@srcipmask", n);
+				String sIp = Doc.evaluateAsString("./*/@srcipaddr", n);
+				String sMask = Doc.evaluateAsString("./*/@srcipmask", n);
 				rule.setFromIpRange(IpRange.parseString(sIp + "/" + sMask));
 
 				// From Port
-				start = Doc.evaluateAsString("./*/@srcporstart", n);
-				end = Doc.evaluateAsString("./*/@srcportend", n);
+				String start = Doc.evaluateAsString("./*/@srcporstart", n);
+				String end = Doc.evaluateAsString("./*/@srcportend", n);
 				rule.setFromPortRange(PortRange.parseString(start + "-" + end));
 
 				// To IP
@@ -778,7 +766,7 @@ public abstract class LibVirtCloud {
 				rule.setToPortRange(PortRange.parseString(start + "-" + end));
 
 				// Protocol
-				sProtocol = Doc.evaluateAsString("./node-name(*)", n);
+				String sProtocol = Doc.evaluateAsString("./node-name(*)", n);
 				if (sProtocol.equalsIgnoreCase("tcp")) {
 					rule.setProtocol(Protocol.TCP);
 				} else {
@@ -786,7 +774,7 @@ public abstract class LibVirtCloud {
 				}
 
 				// Direction
-				sDirection = Doc.evaluateAsString("./@direction", n);
+				String sDirection = Doc.evaluateAsString("./@direction", n);
 				if (sDirection.equalsIgnoreCase("in")) {
 					rule.setDirection(Direction.IN);
 				} else {
@@ -794,7 +782,7 @@ public abstract class LibVirtCloud {
 				}
 
 				// Access
-				sAccess = Doc.evaluateAsString("./@action", n);
+				String sAccess = Doc.evaluateAsString("./@action", n);
 				if (sAccess.equalsIgnoreCase("accept")) {
 					rule.setAccess(Access.ALLOW);
 				} else {
@@ -810,74 +798,74 @@ public abstract class LibVirtCloud {
 		return res;
 	}
 
-	public static void revokeFireWallRules(Instance i, FwRulesDecomposed rules) {
+	public static void revokeFireWallRules(Instance i,
+			NetworkDeviceName netdev, FwRulesDecomposed rules) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		revokeFireWallRules(i.getDomain(), rules);
+		revokeFireWallRules(i.getDomain(), netdev, rules);
 	}
 
-	public static void revokeFireWallRules(Domain d, FwRulesDecomposed rules) {
+	public static void revokeFireWallRules(Domain d, NetworkDeviceName netdev,
+			FwRulesDecomposed rules) {
+		if (rules == null) {
+			return;
+		}
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+		if (netdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
 		try {
+			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			Map<String, Doc> docs = new HashMap<String, Doc>();
-			Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(d);
-			for (NetworkDeviceName netDev : sgs.keySet()) {
-				Doc doc = new Doc();
-				NetworkFilter sg = cnx.networkFilterLookupByName(sgs
-						.get(netDev));
-				doc.loadFromXML(sg.getXMLDesc());
-				docs.put(netDev.getValue(), doc);
-			}
+			String sSGName = getDomainSecurityGroup(d, netdev);
+			Doc doc = new Doc();
+			NetworkFilter sg = cnx.networkFilterLookupByName(sSGName);
+			doc.loadFromXML(sg.getXMLDesc());
 
 			for (FwRuleDecomposed rule : rules) {
-				Collection<Doc> devToApply = new ArrayList<Doc>();
-				if (rule.getInterface().equals(Interface.ALL)) {
-					devToApply = docs.values();
-				} else {
-					if (!docs.containsKey(rule.getInterface().getValue())) {
-						continue;
-					}
-					devToApply.add(docs.get(rule.getInterface().getValue()));
-				}
-				for (Doc doc : devToApply) {
-
-					Node n = doc.evaluateAsNode("/filter/rule[" + " @action='"
-							+ (rule.getAccess() == Access.ALLOW ? "accept"
-									: "drop")
-							+ "' and @direction='"
-							+ (rule.getDirection() == Direction.IN ? "in"
-									: "out")
-							+ "' and exists("
-							+ (rule.getProtocol() == Protocol.TCP ? "tcp"
-									: "udp") + "[" + "@srcipaddr='"
-							+ rule.getFromIpRange().getIp()
-							+ "' and @srcipmask='"
-							+ rule.getFromIpRange().getMask()
-							+ "' and @srcportstart='"
-							+ rule.getFromPortRange().getStartPort()
-							+ "' and @srcportend='"
-							+ rule.getFromPortRange().getEndPort()
-							+ "' and @dstipaddr='"
-							+ rule.getToIpRange().getIp()
-							+ "' and @dstipmask='"
-							+ rule.getToIpRange().getMask()
-							+ "' and @dstportstart='"
-							+ rule.getToPortRange().getStartPort()
-							+ "' and @dstportend='"
-							+ rule.getToPortRange().getEndPort() + "'])]");
-					if (n != null) {
-						n.getParentNode().removeChild(n);
-					}
+				Node n = doc
+						.evaluateAsNode("/filter/rule[" + " @action='"
+								+ (rule.getAccess() == Access.ALLOW ? "accept"
+										: "drop")
+								+ "' and @direction='"
+								+ (rule.getDirection() == Direction.IN ? "in"
+										: "out")
+								+ "' and exists("
+								+ (rule.getProtocol() == Protocol.TCP ? "tcp"
+										: "udp") + "[" + "@srcipaddr='"
+								+ rule.getFromIpRange().getIp()
+								+ "' and @srcipmask='"
+								+ rule.getFromIpRange().getMask()
+								+ "' and @srcportstart='"
+								+ rule.getFromPortRange().getStartPort()
+								+ "' and @srcportend='"
+								+ rule.getFromPortRange().getEndPort()
+								+ "' and @dstipaddr='"
+								+ rule.getToIpRange().getIp()
+								+ "' and @dstipmask='"
+								+ rule.getToIpRange().getMask()
+								+ "' and @dstportstart='"
+								+ rule.getToPortRange().getStartPort()
+								+ "' and @dstportend='"
+								+ rule.getToPortRange().getEndPort() + "'])]");
+				if (n != null) {
+					n.getParentNode().removeChild(n);
+					log.debug("Revoke on Domain '" + sInstanceId
+							+ "' the FireWall rule " + rule + ".");
 				}
 			}
 
-			for (Doc doc : docs.values()) {
-				String dump = doc.dump();
-				cnx.networkFilterDefineXML(dump);
-			}
+			String dump = doc.dump();
+			cnx.networkFilterDefineXML(dump);
 		} catch (LibvirtException | MelodyException | IOException
 				| XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
@@ -885,81 +873,80 @@ public abstract class LibVirtCloud {
 	}
 
 	public static void authorizeFireWallRules(Instance i,
-			FwRulesDecomposed rules) {
+			NetworkDeviceName netdev, FwRulesDecomposed rules) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
 					+ ".");
 		}
-		authorizeFireWallRules(i.getDomain(), rules);
+		authorizeFireWallRules(i.getDomain(), netdev, rules);
 	}
 
-	public static void authorizeFireWallRules(Domain d, FwRulesDecomposed rules) {
+	public static void authorizeFireWallRules(Domain d,
+			NetworkDeviceName netdev, FwRulesDecomposed rules) {
+		if (rules == null) {
+			return;
+		}
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+		if (netdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
 		try {
+			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			Map<String, Doc> docs = new HashMap<String, Doc>();
-			Map<NetworkDeviceName, String> sgs = getDomainSecurityGroups(d);
-			for (NetworkDeviceName netDev : sgs.keySet()) {
-				Doc doc = new Doc();
-				NetworkFilter sg = cnx.networkFilterLookupByName(sgs
-						.get(netDev));
-				doc.loadFromXML(sg.getXMLDesc());
-				docs.put(netDev.getValue(), doc);
-			}
+			String sSGName = getDomainSecurityGroup(d, netdev);
+			Doc doc = new Doc();
+			NetworkFilter sg = cnx.networkFilterLookupByName(sSGName);
+			doc.loadFromXML(sg.getXMLDesc());
 
 			for (FwRuleDecomposed rule : rules) {
-				Collection<Doc> devToApply = new ArrayList<Doc>();
-				if (rule.getInterface().equals(Interface.ALL)) {
-					devToApply = docs.values();
-				} else {
-					if (!docs.containsKey(rule.getInterface().getValue())) {
-						continue;
-					}
-					devToApply.add(docs.get(rule.getInterface().getValue()));
-				}
-				for (Doc doc : devToApply) {
-					Node ndoc = doc.getDocument().getFirstChild();
-					Node nrule = doc.getDocument().createElement("rule");
-					ndoc.appendChild(nrule);
-					Doc.createAttribute("priority", "500", nrule);
-					Doc.createAttribute("action",
-							rule.getAccess() == Access.ALLOW ? "accept"
-									: "drop", nrule);
-					Doc.createAttribute("direction",
-							rule.getDirection() == Direction.IN ? "in" : "out",
-							nrule);
+				Node nrule = doc.getDocument().createElement("rule");
+				Doc.createAttribute("priority", "500", nrule);
+				Doc.createAttribute("action",
+						rule.getAccess() == Access.ALLOW ? "accept" : "drop",
+						nrule);
+				Doc.createAttribute("direction",
+						rule.getDirection() == Direction.IN ? "in" : "out",
+						nrule);
 
-					Node nin = doc.getDocument().createElement(
-							rule.getProtocol() == Protocol.TCP ? "tcp" : "udp");
-					nrule.appendChild(nin);
-					Doc.createAttribute("state", "NEW", nin);
+				Node nin = doc.getDocument().createElement(
+						rule.getProtocol() == Protocol.TCP ? "tcp" : "udp");
+				nrule.appendChild(nin);
+				Doc.createAttribute("state", "NEW", nin);
 
-					Doc.createAttribute("srcipaddr", rule.getFromIpRange()
-							.getIp(), nin);
-					Doc.createAttribute("srcipmask", rule.getFromIpRange()
-							.getMask(), nin);
+				Doc.createAttribute("srcipaddr", rule.getFromIpRange().getIp(),
+						nin);
+				Doc.createAttribute("srcipmask", rule.getFromIpRange()
+						.getMask(), nin);
 
-					Doc.createAttribute("srcportstart", rule.getFromPortRange()
-							.getStartPort().toString(), nin);
-					Doc.createAttribute("srcportend", rule.getFromPortRange()
-							.getEndPort().toString(), nin);
+				Doc.createAttribute("srcportstart", rule.getFromPortRange()
+						.getStartPort().toString(), nin);
+				Doc.createAttribute("srcportend", rule.getFromPortRange()
+						.getEndPort().toString(), nin);
 
-					Doc.createAttribute("dstipaddr", rule.getToIpRange()
-							.getIp(), nin);
-					Doc.createAttribute("dstipmask", rule.getToIpRange()
-							.getMask(), nin);
+				Doc.createAttribute("dstipaddr", rule.getToIpRange().getIp(),
+						nin);
+				Doc.createAttribute("dstipmask", rule.getToIpRange().getMask(),
+						nin);
 
-					Doc.createAttribute("dstportstart", rule.getToPortRange()
-							.getStartPort().toString(), nin);
-					Doc.createAttribute("dstportend", rule.getToPortRange()
-							.getEndPort().toString(), nin);
-				}
+				Doc.createAttribute("dstportstart", rule.getToPortRange()
+						.getStartPort().toString(), nin);
+				Doc.createAttribute("dstportend", rule.getToPortRange()
+						.getEndPort().toString(), nin);
+
+				doc.getDocument().getFirstChild().appendChild(nrule);
+				log.debug("Authorize on Domain '" + sInstanceId
+						+ "' the FireWall rule " + rule + ".");
 			}
 
-			for (Doc doc : docs.values()) {
-				String dump = doc.dump();
-				cnx.networkFilterDefineXML(dump);
-			}
+			String dump = doc.dump();
+			cnx.networkFilterDefineXML(dump);
 		} catch (LibvirtException | MelodyException | IOException Ex) {
 			throw new RuntimeException(Ex);
 		}

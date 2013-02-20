@@ -73,6 +73,11 @@ public class PortRange {
 	}
 
 	@Override
+	public int hashCode() {
+		return getStartPort().hashCode() + getEndPort().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		if (getStartPort().getValue() == getEndPort().getValue()) {
 			return getStartPort().toString();

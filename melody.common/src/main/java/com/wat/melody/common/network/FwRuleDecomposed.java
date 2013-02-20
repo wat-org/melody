@@ -73,6 +73,12 @@ public class FwRuleDecomposed {
 	}
 
 	@Override
+	public int hashCode() {
+		return getInterface().hashCode() + getFromIpRange().hashCode()
+				+ getFromPortRange().hashCode() + getToIpRange().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return "{ " + "devive-name: " + getInterface() + ", from-ip: "
 				+ getFromIpRange() + ", from-port: " + getFromPortRange()

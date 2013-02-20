@@ -1,13 +1,13 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class FwRules extends ArrayList<FwRule> {
+public class FwRules extends LinkedHashSet<FwRule> {
 
 	private static final long serialVersionUID = 2186789098390749295L;
 

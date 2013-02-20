@@ -85,6 +85,12 @@ public class FwRule {
 	}
 
 	@Override
+	public int hashCode() {
+		return getInterfaces().hashCode() + getFromIpRanges().hashCode()
+				+ getFromPortRanges().hashCode() + getToIpRanges().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return "{ devives-name:" + getInterfaces() + ",from-ips: "
 				+ getFromIpRanges() + ", from-ports: " + getFromPortRanges()

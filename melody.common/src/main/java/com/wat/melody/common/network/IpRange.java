@@ -66,6 +66,11 @@ public class IpRange {
 	}
 
 	@Override
+	public int hashCode() {
+		return getValue().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return msValue;
 	}

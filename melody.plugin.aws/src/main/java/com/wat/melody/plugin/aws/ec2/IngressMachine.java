@@ -76,7 +76,7 @@ public class IngressMachine extends AbstractAwsOperation {
 			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
 					getFWRulesXprSuffix());
 			FwRuleLoader fwl = new FwRuleLoader(getContext());
-			setFwRules(fwl.load(nl).decompose().simplify());
+			setFwRules(fwl.load(nl).decompose());
 		} catch (XPathExpressionException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.IngressEx_INVALID_FWRULE_XPATH,

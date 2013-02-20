@@ -69,6 +69,11 @@ public class Port {
 	}
 
 	@Override
+	public int hashCode() {
+		return getValue();
+	}
+
+	@Override
 	public String toString() {
 		return String.valueOf(miValue);
 	}

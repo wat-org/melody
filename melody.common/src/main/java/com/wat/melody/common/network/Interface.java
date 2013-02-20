@@ -12,7 +12,7 @@ public class Interface {
 	public static final String PATTERN = ".*";
 
 	public static final String _ALL = "all";
-	
+
 	public static final Interface ALL = createInterface("all");
 
 	private static Interface createInterface(String sInterface) {
@@ -20,8 +20,8 @@ public class Interface {
 			return new Interface(sInterface);
 		} catch (IllegalInterfaceException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
-					+ "an Interface with value '" + sInterface
-					+ "'. " + "Because this default value initialization is "
+					+ "an Interface with value '" + sInterface + "'. "
+					+ "Because this default value initialization is "
 					+ "hardcoded, such error cannot happened. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
@@ -55,6 +55,11 @@ public class Interface {
 
 	public Interface(String sInterface) throws IllegalInterfaceException {
 		setValue(sInterface);
+	}
+
+	@Override
+	public int hashCode() {
+		return getValue().hashCode();
 	}
 
 	@Override

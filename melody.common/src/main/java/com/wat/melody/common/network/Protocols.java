@@ -1,6 +1,6 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 import com.wat.melody.common.network.exception.IllegalProtocolException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
@@ -10,7 +10,7 @@ import com.wat.melody.common.network.exception.IllegalProtocolsException;
  * @author Guillaume Cornet
  * 
  */
-public class Protocols extends ArrayList<Protocol> {
+public class Protocols extends LinkedHashSet<Protocol> {
 
 	private static final long serialVersionUID = -499090888987653292L;
 

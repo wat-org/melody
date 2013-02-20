@@ -1,6 +1,6 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
@@ -10,7 +10,7 @@ import com.wat.melody.common.network.exception.IllegalPortRangesException;
  * @author Guillaume Cornet
  * 
  */
-public class PortRanges extends ArrayList<PortRange> {
+public class PortRanges extends LinkedHashSet<PortRange> {
 
 	private static final long serialVersionUID = -4372918754817213193L;
 

@@ -1,6 +1,6 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 import com.wat.melody.common.network.exception.IllegalDirectionException;
 import com.wat.melody.common.network.exception.IllegalDirectionsException;
@@ -10,7 +10,7 @@ import com.wat.melody.common.network.exception.IllegalDirectionsException;
  * @author Guillaume Cornet
  * 
  */
-public class Directions extends ArrayList<Direction> {
+public class Directions extends LinkedHashSet<Direction> {
 
 	private static final long serialVersionUID = -354376569879565432L;
 
