@@ -1,6 +1,6 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 import com.wat.melody.common.network.exception.IllegalInterfaceException;
 import com.wat.melody.common.network.exception.IllegalInterfacesException;
@@ -10,12 +10,12 @@ import com.wat.melody.common.network.exception.IllegalInterfacesException;
  * @author Guillaume Cornet
  * 
  */
-public class Interfaces extends ArrayList<Interface> {
+public class Interfaces extends LinkedHashSet<Interface> {
 
 	private static final long serialVersionUID = -534567888987653292L;
 
 	public static final String INTERFACES_SEPARATOR = ",";
-	
+
 	public static final Interfaces ALL = createInterfaces(Interface.ALL);
 
 	private static Interfaces createInterfaces(Interface... interfaces) {
@@ -23,8 +23,8 @@ public class Interfaces extends ArrayList<Interface> {
 			return new Interfaces(interfaces);
 		} catch (IllegalInterfacesException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
-					+ "an Interface with value '" + interfaces
-					+ "'. " + "Because this default value initialization is "
+					+ "an Interface with value '" + interfaces + "'. "
+					+ "Because this default value initialization is "
 					+ "hardcoded, such error cannot happened. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
@@ -66,7 +66,8 @@ public class Interfaces extends ArrayList<Interface> {
 		setInterfaces(sInterfaces);
 	}
 
-	public Interfaces(Interface... interfaces) throws IllegalInterfacesException {
+	public Interfaces(Interface... interfaces)
+			throws IllegalInterfacesException {
 		super();
 		setInterfaces(interfaces);
 	}

@@ -247,23 +247,19 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		}
 	}
 
-	public FwRulesDecomposed getInstanceFireWallRules(Instance i) {
-		return LibVirtCloud.getInstanceFireWallRules(i);
+	public FwRulesDecomposed getInstanceFireWallRules(Instance i,
+			NetworkDeviceName netDev) {
+		return LibVirtCloud.getInstanceFireWallRules(i, netDev);
 	}
 
-	protected void revokeFireWallRules(Instance i, FwRulesDecomposed toRevoke) {
-		/*
-		 * TODO : decompose rules for each device (e.g. don't want device='all')
-		 */
-		LibVirtCloud.revokeFireWallRules(i, toRevoke);
+	protected void revokeFireWallRules(Instance i, NetworkDeviceName netdev,
+			FwRulesDecomposed toRevoke) {
+		LibVirtCloud.revokeFireWallRules(i, netdev, toRevoke);
 	}
 
-	protected void authorizeFireWallRules(Instance i,
+	protected void authorizeFireWallRules(Instance i, NetworkDeviceName netdev,
 			FwRulesDecomposed toAutorize) {
-		/*
-		 * TODO : decompose rules for each device (e.g. don't want device='all')
-		 */
-		LibVirtCloud.authorizeFireWallRules(i, toAutorize);
+		LibVirtCloud.authorizeFireWallRules(i, netdev, toAutorize);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i)

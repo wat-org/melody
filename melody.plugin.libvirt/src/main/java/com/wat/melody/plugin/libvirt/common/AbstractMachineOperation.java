@@ -7,6 +7,7 @@ import com.wat.cloud.libvirt.Instance;
 import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
@@ -110,11 +111,12 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceID()));
 
+		NetworkDeviceName netdev = mh.getManagementDatas()
+				.getNetworkDeviceName();
 		Port p = mh.getManagementDatas().getPort();
 		FwRuleDecomposed rule = new FwRuleDecomposed();
 		try {
-			rule.setInterface(Interface.parseString(mh.getManagementDatas()
-					.getNetworkDeviceName().getValue()));
+			rule.setInterface(Interface.parseString(netdev.getValue()));
 			rule.setToPortRange(new PortRange(p, p));
 		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
 			throw new RuntimeException("BUG ! Cannot happened !", Ex);
@@ -125,14 +127,14 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 
 		Instance i = getInstance();
 		FwRulesDecomposed currentRules = null;
-		currentRules = LibVirtCloud.getInstanceFireWallRules(i);
+		currentRules = LibVirtCloud.getInstanceFireWallRules(i, netdev);
 		boolean alreadyOpen = currentRules.contains(rule);
 
 		FwRulesDecomposed rules = new FwRulesDecomposed();
 		rules.add(rule);
 		try {
 			if (!alreadyOpen) {
-				LibVirtCloud.authorizeFireWallRules(i, rules);
+				LibVirtCloud.authorizeFireWallRules(i, netdev, rules);
 			}
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (NetworkManagementException Ex) {
@@ -141,7 +143,7 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 					getInstanceID(), getTargetNodeLocation()), Ex);
 		} finally {
 			if (!alreadyOpen) {
-				LibVirtCloud.revokeFireWallRules(i, rules);
+				LibVirtCloud.revokeFireWallRules(i, netdev, rules);
 			}
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,

@@ -1,6 +1,6 @@
 package com.wat.melody.common.network;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
@@ -10,7 +10,7 @@ import com.wat.melody.common.network.exception.IllegalIpRangesException;
  * @author Guillaume Cornet
  * 
  */
-public class IpRanges extends ArrayList<IpRange> {
+public class IpRanges extends LinkedHashSet<IpRange> {
 
 	private static final long serialVersionUID = -2798809865423798432L;
 
