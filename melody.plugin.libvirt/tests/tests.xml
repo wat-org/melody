@@ -48,11 +48,20 @@
 		</java>
 	</target>
 
-	<target name="libvirt_UC0_04_ingress">
+	<target name="libvirt_UC0_03_ingress">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="ingress" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="libvirt_UC0_04_update_disk_devices">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="update_disk_devices" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

@@ -3,7 +3,7 @@ package com.wat.melody.plugin.libvirt.common;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.cloud.libvirt.Instance;
+import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -125,9 +125,9 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		rule.setProtocol(Protocol.TCP);
 		rule.setAccess(Access.ALLOW);
 
-		Instance i = getInstance();
+		LibVirtInstance i = getInstance();
 		FwRulesDecomposed currentRules = null;
-		currentRules = LibVirtCloud.getInstanceFireWallRules(i, netdev);
+		currentRules = LibVirtCloud.getFireWallRules(i, netdev);
 		boolean alreadyOpen = currentRules.contains(rule);
 
 		FwRulesDecomposed rules = new FwRulesDecomposed();

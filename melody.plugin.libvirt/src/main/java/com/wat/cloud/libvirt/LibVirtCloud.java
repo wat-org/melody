@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -22,7 +19,6 @@ import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -296,16 +292,16 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static DiskDeviceList getInstanceDiskDevices(Instance i) {
+	public static DiskDeviceList getDiskDevices(LibVirtInstance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		return getDomainDiskDevices(i.getDomain());
+		return getDiskDevices(i.getDomain());
 	}
 
-	public static DiskDeviceList getDomainDiskDevices(Domain domain) {
+	public static DiskDeviceList getDiskDevices(Domain domain) {
 		try {
 			DiskDeviceList dl = new DiskDeviceList();
 			Doc ddoc = getDomainXMLDesc(domain);
@@ -343,34 +339,23 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static final String DEL_DISK_DEVICE_XML_SNIPPET = "<volume>"
-			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
-			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
-			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
-			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
-
 	public static final String DETACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<source file='§[volPath]§'/>"
-			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
+			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
 
-	public static void detachAndDeleteDiskDevices(Instance i,
+	public static void detachAndDeleteDiskDevices(LibVirtInstance i,
 			DiskDeviceList disksToRemove) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
 		detachAndDeleteDiskDevices(i.getDomain(), disksToRemove);
 	}
 
 	public static void detachAndDeleteDiskDevices(Domain d,
 			DiskDeviceList disksToRemove) {
-		if (disksToRemove == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ DiskDeviceList.class.getCanonicalName() + ".");
-		}
-		if (disksToRemove.size() == 0) {
+		if (disksToRemove == null || disksToRemove.size() == 0) {
 			return;
 		}
 
@@ -391,7 +376,7 @@ public abstract class LibVirtCloud {
 							+ "' has no disk device '" + deviceToRemove + "' !");
 				}
 				// variabilisation du detachement de la device
-				vars.put(new Property("targetDevice", deviceToRemove));
+				vars.put(new Property("device", deviceToRemove));
 				vars.put(new Property("volPath", volPath));
 				// detachement de la device
 				log.trace("Detaching Disk Device '" + disk.getDeviceName()
@@ -402,14 +387,7 @@ public abstract class LibVirtCloud {
 				log.trace("Disk Device '" + disk.getDeviceName()
 						+ "' detached on Domain '" + d.getName() + "'.");
 				// suppression du volume
-				StorageVol sv = d.getConnect().storageVolLookupByPath(volPath);
-				log.trace("Deleting Disk Device '" + disk.getDeviceName()
-						+ "' on domain '" + d.getName()
-						+ "' ... LibVirt Volume path is '" + sv.getPath()
-						+ "'.");
-				sv.delete(0);
-				log.debug("Disk Device '" + disk.getDeviceName()
-						+ "' deleted on Domain '" + d.getName() + "'.");
+				deleteDiskDevice(d, disk);
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
@@ -417,8 +395,42 @@ public abstract class LibVirtCloud {
 		}
 	}
 
+	private static void deleteDiskDevice(Domain d, DiskDevice disk) {
+		try {
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			// recuperation du storage pool
+			StoragePool sp = cnx.storagePoolLookupByName("default");
+			// search the path of the disk which match device to remove
+			StorageVol sv = sp.storageVolLookupByName(getVolumeName(d, disk));
+			String volPath = sv.getPath();
+			log.trace("Deleting Disk Device '" + disk.getDeviceName()
+					+ "' on domain '" + sInstanceId
+					+ "' ... LibVirt Volume path is '" + volPath + "'.");
+			sv.delete(0);
+			log.debug("Disk Device '" + disk.getDeviceName()
+					+ "' deleted on Domain '" + sInstanceId + "'.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static String getVolumeName(Domain d, DiskDevice disk) {
+		if (disk == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DiskDevice.class.getCanonicalName()
+					+ ".");
+		}
+		try {
+			String deviceToRemove = disk.getDeviceName().replace("/dev/", "");
+			return d.getName() + "-" + deviceToRemove + ".img";
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
 	public static final String NEW_DISK_DEVICE_XML_SNIPPET = "<volume>"
-			+ "<name>§[vmName]§-vol§[volNum]§.img</name>" + "<source>"
+			+ "<name>§[vmName]§-§[device]§.img</name>" + "<source>"
 			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
 			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
 			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
@@ -426,54 +438,25 @@ public abstract class LibVirtCloud {
 	public static final String ATTACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<driver name='qemu' type='raw' cache='none'/>"
 			+ "<source file='§[volPath]§'/>"
-			+ "<target dev='§[targetDevice]§' bus='virtio'/>" + "</disk>";
+			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
 
-	public static void createAndAttachDiskDevices(Instance i,
+	public static void createAndAttachDiskDevices(LibVirtInstance i,
 			DiskDeviceList disksToAdd) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
 		createAndAttachDiskDevices(i.getDomain(), disksToAdd);
 	}
 
 	public static void createAndAttachDiskDevices(Domain d,
 			DiskDeviceList disksToAdd) {
-		if (disksToAdd == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ DiskDeviceList.class.getCanonicalName() + ".");
-		}
-		if (disksToAdd.size() == 0) {
+		if (disksToAdd == null || disksToAdd.size() == 0) {
 			return;
 		}
 
 		try {
-			Doc ddoc = getDomainXMLDesc(d);
-			// Obtenir l'indice de volume le plus eleve
-			NodeList nl = ddoc
-					.evaluateAsNodeList("/domain/devices/disk[@device='disk']/source/@file");
-			if (nl.getLength() == 0) {
-				throw new RuntimeException("Domain '" + d.getName()
-						+ "' has no Disk Device !");
-			}
-			int lastVol = 0;
-			Pattern p2 = Pattern
-					.compile("^/.*/i-[a-zA-Z0-9]{8}-vol([0-9]+)[.]img$");
-			for (int i = 0; i < nl.getLength(); i++) {
-				Matcher m = p2.matcher(nl.item(i).getNodeValue());
-				if (!m.matches()) {
-					throw new RuntimeException("Domain '" + d.getName()
-							+ "' Disk Device Name '"
-							+ nl.item(i).getNodeValue()
-							+ "' doesn't match Disk Device Name pattern !");
-				}
-				int curVol = Integer.parseInt(m.group(1));
-				if (curVol > lastVol) {
-					lastVol = curVol;
-				}
-			}
 			// recuperation du storage pool
 			StoragePool sp = d.getConnect().storagePoolLookupByName("default");
 			// preparation de la variabilisation des template XML
@@ -483,7 +466,8 @@ public abstract class LibVirtCloud {
 			// pour chaque disque
 			for (DiskDevice disk : disksToAdd) {
 				// variabilisation de la creation du volume
-				vars.put(new Property("volNum", String.valueOf(++lastVol)));
+				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
+				vars.put(new Property("device", deviceToAdd));
 				vars.put(new Property("capacity", String.valueOf((long) disk
 						.getSize() * 1024 * 1024 * 1024)));
 				// creation du volume
@@ -496,8 +480,6 @@ public abstract class LibVirtCloud {
 						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 
 				// variabilisation de l'attachement du volume
-				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
-				vars.put(new Property("targetDevice", deviceToAdd));
 				vars.put(new Property("volPath", sv.getPath()));
 				// attachement de la device
 				log.trace("Attaching Disk Device '" + disk.getDeviceName()
@@ -509,30 +491,28 @@ public abstract class LibVirtCloud {
 						+ "' attached on Domain '" + d.getName() + "'.");
 			}
 		} catch (LibvirtException | IllegalPropertyException
-				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
+				| XPathExpressionSyntaxException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	public static NetworkDeviceNameList getInstanceNetworkDevices(Instance i) {
+	public static NetworkDeviceNameList getNetworkDevices(LibVirtInstance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		return getDomainNetworkDevices(i.getDomain());
+		return getNetworkDevices(i.getDomain());
 	}
 
-	public static NetworkDeviceNameList getDomainNetworkDevices(Domain domain) {
+	public static NetworkDeviceNameList getNetworkDevices(Domain domain) {
 		try {
 			NetworkDeviceNameList ndl = new NetworkDeviceNameList();
 			Doc ddoc = getDomainXMLDesc(domain);
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/interface[@type='network']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				String devName = Doc.evaluateAsString("./alias/@name",
-						nl.item(i));
-				devName = "eth" + devName.substring(3);
+				String devName = "eth" + i;
 				NetworkDeviceName d = new NetworkDeviceName(devName);
 				ndl.addNetworkDevice(d);
 			}
@@ -553,30 +533,32 @@ public abstract class LibVirtCloud {
 			+ "<source network='default'/>"
 			+ "</interface>";
 
-	public static void detachNetworkDevice(Instance i, NetworkDeviceName netDev) {
+	public static void detachNetworkDevice(LibVirtInstance i,
+			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
 		detachNetworkDevice(i.getDomain(), netDev);
 	}
 
-	public static void detachNetworkDevice(Domain d, NetworkDeviceName netDev) {
-		if (netDev == null) {
+	public static void detachNetworkDevice(Domain d, NetworkDeviceName netdev) {
+		if (netdev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 
 		try {
+			String sSGName = getSecurityGroup(d, netdev);
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			String netDevName = netDev.getValue();
+			String netDevName = netdev.getValue();
+			int eth = Integer.parseInt(netDevName.substring(3)) + 1;
 			Doc doc = getDomainXMLDesc(d);
 			Node n = doc.evaluateAsNode("/domain/devices/interface"
-					+ "[@type='network' and alias/@name='net"
-					+ netDevName.substring(3) + "']");
+					+ "[@type='network'][" + eth + "]");
 			String mac = Doc.evaluateAsString("./mac/@address", n);
 			PropertiesSet vars = new PropertiesSet();
 			vars.put(new Property("vmMacAddr", mac));
@@ -592,18 +574,13 @@ public abstract class LibVirtCloud {
 					+ "' detached on Domain '" + sInstanceId + "'.");
 
 			// Destroy the network filter
-			String filter = Doc.evaluateAsString("./filterref/@filter", n);
-			if (networkFilterExists(cnx, filter)) {
-				log.trace("Deleting Network Filter '" + filter
-						+ "' for Domain '" + sInstanceId + "' ...");
-				NetworkFilter nf = cnx.networkFilterLookupByName(filter);
-				nf.undefine();
-				log.debug("Network Filter '" + filter
-						+ "' deleted for Domain '" + sInstanceId + "'.");
-			}
+			deleteNetworkFilter(d, netdev);
 
 			// Release the @mac
 			unregisterMacAddress(mac);
+
+			// Delete the security group
+			deleteSecurityGroup(cnx, sSGName);
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
@@ -617,30 +594,31 @@ public abstract class LibVirtCloud {
 			+ "<filterref filter='§[vmName]§-§[eth]§-nwfilter'/>"
 			+ "</interface>";
 
-	public static void attachNetworkDevice(Instance i,
-			NetworkDeviceName netDev, String sSGName) {
+	public static void attachNetworkDevice(LibVirtInstance i,
+			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		attachNetworkDevice(i.getDomain(), netDev, sSGName);
+		attachNetworkDevice(i.getDomain(), netDev);
 	}
 
-	public static void attachNetworkDevice(Domain d, NetworkDeviceName netDev,
-			String sSGName) {
+	public static void attachNetworkDevice(Domain d, NetworkDeviceName netDev) {
 		if (netDev == null) {
 			return;
-		}
-		if (sSGName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName());
 		}
 
 		try {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 			String netDevName = netDev.getValue();
+			// Create a security group
+			String sSGName = newSecurityGroupName();
+			String sSGDesc = getSecurityGroupDescription();
+			LibVirtCloud.createSecurityGroup(cnx, sSGName, sSGDesc);
+
+			// Create a network filter for the network device
 			PropertiesSet vars = new PropertiesSet();
 			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
 			vars.put(new Property("vmName", sInstanceId));
@@ -648,17 +626,7 @@ public abstract class LibVirtCloud {
 			vars.put(new Property("eth", netDevName));
 
 			// Create a network filter for the network device
-			String filter = sInstanceId + "-" + netDevName + "-nwfilter";
-			if (!networkFilterExists(cnx, filter)) {
-				log.trace("Creating Network Filter '" + filter
-						+ "' (linked to Security Group '" + sSGName
-						+ "') for Domain '" + sInstanceId + "' ...");
-				cnx.networkFilterDefineXML(XPathExpander.expand(
-						DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, vars));
-				log.debug("Network Filter '" + filter
-						+ "' (linked to Security Group '" + sSGName
-						+ "') created for Domain '" + sInstanceId + "'.");
-			}
+			createNetworkFilter(d, vars);
 
 			// Attach the network device
 			log.trace("Attaching Network Device '" + netDevName
@@ -675,17 +643,17 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Instance i,
+	public static NetworkDeviceDatas getNetworkDeviceDatas(LibVirtInstance i,
 			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		return getInstanceNetworkDeviceDatas(i.getDomain(), netDev);
+		return getNetworkDeviceDatas(i.getDomain(), netDev);
 	}
 
-	public static NetworkDeviceDatas getInstanceNetworkDeviceDatas(Domain d,
+	public static NetworkDeviceDatas getNetworkDeviceDatas(Domain d,
 			NetworkDeviceName netDev) {
 		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -695,9 +663,9 @@ public abstract class LibVirtCloud {
 
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
+			int eth = Integer.parseInt(netDev.getValue().substring(3)) + 1;
 			String mac = ddoc.evaluateAsString("/domain/devices/interface"
-					+ "[@type='network' and alias/@name='net"
-					+ netDev.getValue().substring(3) + "']/mac/@address");
+					+ "[@type='network'][" + eth + "]/mac/@address");
 			NetworkDeviceDatas ndd = new NetworkDeviceDatas();
 			ndd.setMacAddress(mac);
 			ndd.setIP(getDomainIpAddress(mac));
@@ -708,17 +676,17 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static FwRulesDecomposed getInstanceFireWallRules(Instance i,
+	public static FwRulesDecomposed getFireWallRules(LibVirtInstance i,
 			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		return getDomainFireWallRules(i.getDomain(), netDev);
+		return getFireWallRules(i.getDomain(), netDev);
 	}
 
-	public static FwRulesDecomposed getDomainFireWallRules(Domain d,
+	public static FwRulesDecomposed getFireWallRules(Domain d,
 			NetworkDeviceName netdev) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -731,7 +699,7 @@ public abstract class LibVirtCloud {
 		}
 		try {
 			Connect cnx = d.getConnect();
-			String sSGName = getDomainSecurityGroup(d, netdev);
+			String sSGName = getSecurityGroup(d, netdev);
 			Doc doc = new Doc();
 			Interface inter = Interface.parseString(netdev.getValue());
 			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
@@ -798,19 +766,19 @@ public abstract class LibVirtCloud {
 		return res;
 	}
 
-	public static void revokeFireWallRules(Instance i,
+	public static void revokeFireWallRules(LibVirtInstance i,
 			NetworkDeviceName netdev, FwRulesDecomposed rules) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
 		revokeFireWallRules(i.getDomain(), netdev, rules);
 	}
 
 	public static void revokeFireWallRules(Domain d, NetworkDeviceName netdev,
 			FwRulesDecomposed rules) {
-		if (rules == null) {
+		if (rules == null || rules.size() == 0) {
 			return;
 		}
 		if (d == null) {
@@ -826,7 +794,7 @@ public abstract class LibVirtCloud {
 		try {
 			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			String sSGName = getDomainSecurityGroup(d, netdev);
+			String sSGName = getSecurityGroup(d, netdev);
 			Doc doc = new Doc();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sSGName);
 			doc.loadFromXML(sg.getXMLDesc());
@@ -872,19 +840,19 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static void authorizeFireWallRules(Instance i,
+	public static void authorizeFireWallRules(LibVirtInstance i,
 			NetworkDeviceName netdev, FwRulesDecomposed rules) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
 		authorizeFireWallRules(i.getDomain(), netdev, rules);
 	}
 
 	public static void authorizeFireWallRules(Domain d,
 			NetworkDeviceName netdev, FwRulesDecomposed rules) {
-		if (rules == null) {
+		if (rules == null || rules.size() == 0) {
 			return;
 		}
 		if (d == null) {
@@ -900,7 +868,7 @@ public abstract class LibVirtCloud {
 		try {
 			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			String sSGName = getDomainSecurityGroup(d, netdev);
+			String sSGName = getSecurityGroup(d, netdev);
 			Doc doc = new Doc();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sSGName);
 			doc.loadFromXML(sg.getXMLDesc());
@@ -1037,11 +1005,16 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	public static String getDomainMacAddress(Domain domain) {
+	public static String getDomainMacAddress(Domain domain,
+			NetworkDeviceName netdev) {
+		if (netdev == null) {
+			netdev = eth0;
+		}
+		int eth = Integer.parseInt(netdev.getValue().substring(3)) + 1;
 		try {
 			Doc doc = getDomainXMLDesc(domain);
-			return doc.evaluateAsString("//devices/interface[@type='network']"
-					+ "[1]/mac/@address");
+			return doc.evaluateAsString("//devices/interface[@type='network']["
+					+ eth + "]/mac/@address");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -1134,12 +1107,12 @@ public abstract class LibVirtCloud {
 		return Arrays.asList(names).contains(sInstanceId);
 	}
 
-	public static Instance getInstance(Connect cnx, String sInstanceId) {
+	public static LibVirtInstance getInstance(Connect cnx, String sInstanceId) {
 		Domain d = getDomain(cnx, sInstanceId);
 		if (d == null) {
 			return null;
 		}
-		return new Instance(d);
+		return new LibVirtInstance(d);
 	}
 
 	public static InstanceState getDomainState(Domain d) {
@@ -1186,25 +1159,82 @@ public abstract class LibVirtCloud {
 		return cs == InstanceState.PENDING || cs == InstanceState.RUNNING;
 	}
 
-	public static String getInstanceSecurityGroup(Instance i,
+	public static String getNetworkFilter(LibVirtInstance i,
 			NetworkDeviceName netDev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
 		}
-		return getDomainSecurityGroup(i.getDomain(), netDev);
+		return getNetworkFilter(i.getDomain(), netDev);
 	}
 
-	public static String getDomainSecurityGroup(Domain d,
-			NetworkDeviceName netDev) {
+	public static String getNetworkFilter(Domain d, NetworkDeviceName netDev) {
 		if (netDev == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 		try {
-			String filter = d.getName() + "-" + netDev.getValue() + "-nwfilter";
+			return d.getName() + "-" + netDev.getValue() + "-nwfilter";
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	private static void createNetworkFilter(Domain d, PropertiesSet ps) {
+		try {
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			String sSGName = ps.get("sgName");
+			String eth = ps.get("eth");
+			log.trace("Creating Network Filter '" + sInstanceId + "-" + eth
+					+ "-nwfilter' (linked to Security Group '" + sSGName
+					+ "') for Domain '" + sInstanceId + "' ...");
+			cnx.networkFilterDefineXML(XPathExpander.expand(
+					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
+			log.debug("Network Filter '" + sInstanceId + "-" + eth
+					+ "-nwfilter' (linked to Security Group '" + sSGName
+					+ "') created for Domain '" + sInstanceId + "'.");
+		} catch (LibvirtException | XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	private static void deleteNetworkFilter(Domain d, NetworkDeviceName netdev) {
+		try {
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			String filter = getNetworkFilter(d, netdev);
+			log.trace("Deleting Network Filter '" + filter + "' for Domain '"
+					+ sInstanceId + "' ...");
+			NetworkFilter nf = cnx.networkFilterLookupByName(filter);
+			nf.undefine();
+			log.debug("Network Filter '" + filter + "' deleted for Domain '"
+					+ sInstanceId + "'.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static String getSecurityGroup(LibVirtInstance i,
+			NetworkDeviceName netDev) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ LibVirtInstance.class.getCanonicalName() + ".");
+		}
+		return getSecurityGroup(i.getDomain(), netDev);
+	}
+
+	public static String getSecurityGroup(Domain d, NetworkDeviceName netDev) {
+		if (netDev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
+		try {
+			String filter = getNetworkFilter(d, netDev);
 			if (!networkFilterExists(d.getConnect(), filter)) {
 				return null;
 			}
@@ -1216,45 +1246,6 @@ public abstract class LibVirtCloud {
 				| IOException Ex) {
 			throw new RuntimeException(Ex);
 		}
-	}
-
-	public static Map<NetworkDeviceName, String> getInstanceSecurityGroups(
-			Instance i) {
-		if (i == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Instance.class.getCanonicalName()
-					+ ".");
-		}
-		return getDomainSecurityGroups(i.getDomain());
-	}
-
-	public static Map<NetworkDeviceName, String> getDomainSecurityGroups(
-			Domain d) {
-		Map<NetworkDeviceName, String> result = new HashMap<NetworkDeviceName, String>();
-		NodeList nl = null;
-		try {
-			Doc doc = LibVirtCloud.getDomainXMLDesc(d);
-			nl = doc.evaluateAsNodeList("/domain/devices/interface"
-					+ "[@type='network']");
-			for (int i = 0; i < nl.getLength(); i++) {
-				String devName = Doc.evaluateAsString("./alias/@name",
-						nl.item(i));
-				devName = "eth" + devName.substring(3);
-				NetworkDeviceName netDev = new NetworkDeviceName(devName);
-				String filterref = Doc.evaluateAsString("./filterref/@filter",
-						nl.item(i));
-				NetworkFilter nf = d.getConnect().networkFilterLookupByName(
-						filterref);
-				Doc filter = new Doc();
-				filter.loadFromXML(nf.getXMLDesc());
-				result.put(netDev,
-						filter.evaluateAsString("//filterref[1]/@filter"));
-			}
-		} catch (MelodyException | XPathExpressionException | LibvirtException
-				| IOException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		return result;
 	}
 
 	public static void createSecurityGroup(Connect cnx, String sSGName,
@@ -1296,9 +1287,19 @@ public abstract class LibVirtCloud {
 		}
 	}
 
+	private static String getSecurityGroupDescription() {
+		return "Melody security group";
+	}
+
+	private static String newSecurityGroupName() {
+		// This formula should produce a unique name
+		return "MelodySg" + "_" + System.currentTimeMillis() + "_"
+				+ UUID.randomUUID().toString().substring(0, 8);
+	}
+
 	private static String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='§[vmName]§-§[eth]§-nwfilter' chain='root'>"
 			+ "<filterref filter='§[sgName]§'/>"
-			// TODO : this will drop packets sent to eth1 and reply sent by eth0
+			// clean-traffic will drop packets sent on eth1 and reply on eth0
 			// + "<filterref filter='clean-traffic'/>"
 			+ "<rule action='accept' direction='out' priority='500'>"
 			+ "<all state='NEW'/>"
@@ -1314,16 +1315,21 @@ public abstract class LibVirtCloud {
 
 	private static String LOCK_UNIQ_DOMAIN = "";
 	private static String LOCK_CLONE_DISK = "";
+	private static NetworkDeviceName eth0 = createNetworkDeviceName("eth0");
 
-	public static Instance newInstance(Connect cnx, InstanceType type,
-			String sImageId, String sSGName, KeyPairName keyPairName) {
+	private static NetworkDeviceName createNetworkDeviceName(String n) {
+		try {
+			return NetworkDeviceName.parseString(n);
+		} catch (IllegalNetworkDeviceException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static LibVirtInstance newInstance(Connect cnx, InstanceType type,
+			String sImageId, KeyPairName keyPairName) {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());
-		}
-		if (sSGName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName());
 		}
 
 		/*
@@ -1335,10 +1341,11 @@ public abstract class LibVirtCloud {
 			if (!imageIdExists(sImageId)) {
 				throw new RuntimeException(sImageId + ": No such image.");
 			}
-			if (!networkFilterExists(cnx, sSGName)) {
-				throw new RuntimeException(sSGName + ": No such network "
-						+ "filter.");
-			}
+
+			// Create a dedicated security group
+			String sSGName = newSecurityGroupName();
+			String sSGDesc = getSecurityGroupDescription();
+			createSecurityGroup(cnx, sSGName, sSGDesc);
 
 			Path ddt = getImageDomainDescriptor(sImageId);
 			PropertiesSet ps = new PropertiesSet();
@@ -1348,49 +1355,29 @@ public abstract class LibVirtCloud {
 			synchronized (LOCK_UNIQ_DOMAIN) {
 				// this block is sync because the sInstanceId must be consistent
 				sInstanceId = generateUniqDomainName(cnx);
-				try {
-					ps.put(new Property("vmName", sInstanceId));
-					ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
-					ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
-					ps.put(new Property("ram", String.valueOf(getRAM(type))));
-					ps.put(new Property("sgName", sSGName));
-					ps.put(new Property("eth", "eth0"));
-				} catch (IllegalPropertyException Ex) {
-					throw new RuntimeException(Ex);
-				}
+				ps.put(new Property("vmName", sInstanceId));
+				ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
+				ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
+				ps.put(new Property("ram", String.valueOf(getRAM(type))));
+				ps.put(new Property("sgName", sSGName));
+				ps.put(new Property("eth", eth0.getValue()));
 				log.trace("Creating domain '" + sInstanceId
 						+ "' based on the template " + sImageId
 						+ " ... MacAddress is '"
 						+ ps.getProperty("vmMacAddr").getValue() + "'.");
-				try {
-					domain = cnx.domainDefineXML(XPathExpander.expand(ddt,
-							null, ps));
-				} catch (XPathExpressionSyntaxException Ex) {
-					throw new RuntimeException(ddt
-							+ ": template contains invalid syntax");
-				} catch (IOException e) {
-					throw new RuntimeException(ddt
-							+ ": IO error while expanding template");
-				} catch (IllegalFileException Ex) {
-					throw new RuntimeException(Ex);
-				}
+				domain = cnx.domainDefineXML(XPathExpander
+						.expand(ddt, null, ps));
 			}
 			log.debug("Domain '" + sInstanceId + "' created.");
 
 			// Create a network filter for the network device
-			log.trace("Creating Network Filter '" + sInstanceId
-					+ "-eth0-nwfilter' (linked to Security Group '" + sSGName
-					+ "') for Domain '" + sInstanceId + "' ...");
-			cnx.networkFilterDefineXML(XPathExpander.expand(
-					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
-			log.debug("Network Filter '" + sInstanceId
-					+ "-eth0-nwfilter' (linked to Security Group '" + sSGName
-					+ "') created for Domain '" + sInstanceId + "'.");
+			createNetworkFilter(domain, ps);
 
 			// Create disk devices
 			NodeList nl = null;
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
+			// recuperation du storage pool
 			StoragePool sp = cnx.storagePoolLookupByName("default");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node n = nl.item(i);
@@ -1425,9 +1412,9 @@ public abstract class LibVirtCloud {
 			log.trace("Starting Domain '" + sInstanceId + "' ...");
 			domain.create();
 			log.debug("Domain '" + sInstanceId + "' started.");
-			return new Instance(domain);
-		} catch (LibvirtException | XPathExpressionSyntaxException
-				| IllegalFileException | IOException | XPathExpressionException Ex) {
+			return new LibVirtInstance(domain);
+		} catch (LibvirtException | MelodyException | IOException
+				| XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -1443,12 +1430,11 @@ public abstract class LibVirtCloud {
 		 * Should shutdown (instead of destroy) the domain. Should handle a
 		 * SHUTTING_DOWN and a TERMINATED state.
 		 */
-		NodeList nl = null;
 		try {
 			// get Domain
 			Domain domain = getDomain(cnx, sInstanceId);
 			DomainState state = domain.getInfo().state;
-			Doc doc = getDomainXMLDesc(domain);
+
 			// destroy domain
 			if (state == DomainState.VIR_DOMAIN_RUNNING
 					|| state == DomainState.VIR_DOMAIN_PAUSED) {
@@ -1456,47 +1442,33 @@ public abstract class LibVirtCloud {
 				domain.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
-			// release network devices and network Ffilters
-			nl = doc.evaluateAsNodeList("/domain/devices/interface[@type='network']");
-			for (int i = 0; i < nl.getLength(); i++) {
+			// release network devices, network filters and security groups
+			NetworkDeviceNameList netdevs = getNetworkDevices(domain);
+			for (NetworkDeviceName netdev : netdevs) {
+				String sSGName = getSecurityGroup(domain, netdev);
+
 				// Destroy the network filter
-				String filter = Doc.evaluateAsString("./filterref/@filter",
-						nl.item(i));
-				if (!networkFilterExists(cnx, filter)) {
-					continue;
-				}
-				log.trace("Deleting Network Filter '" + filter
-						+ "' for Domain '" + sInstanceId + "' ...");
-				NetworkFilter nf = cnx.networkFilterLookupByName(filter);
-				nf.undefine();
-				log.debug("Network Filter '" + filter
-						+ "' deleted for Domain '" + sInstanceId + "'.");
+				deleteNetworkFilter(domain, netdev);
+
 				// Release the @mac
-				String mac = Doc.evaluateAsString("./mac/@address", nl.item(i));
+				String mac = getDomainMacAddress(domain, netdev);
 				unregisterMacAddress(mac);
+
+				// Destroy the security group
+				deleteSecurityGroup(cnx, sSGName);
 			}
-			// destroy disks
-			nl = doc.evaluateAsNodeList("/domain/devices/disk[@device='disk']"
-					+ "/source/@file");
-			for (int i = 0; i < nl.getLength(); i++) {
-				String sDiskDeviceName = "/dev/"
-						+ Doc.evaluateAsString("../target/@dev",
-								((Attr) nl.item(i)).getOwnerElement());
-				StorageVol sv = cnx.storageVolLookupByPath(nl.item(i)
-						.getNodeValue());
-				log.trace("Deleting Disk Device '" + sDiskDeviceName
-						+ "' for Domain '" + sInstanceId
-						+ "' ... LibVirt Volume path is '" + sv.getPath()
-						+ "'.");
-				sv.delete(0);
-				log.debug("Disk Device '" + sDiskDeviceName
-						+ "' deleted for Domain '" + sInstanceId + "'.");
+			// destroy disk devices
+			DiskDeviceList diskdevs = getDiskDevices(domain);
+			for (DiskDevice disk : diskdevs) {
+				// Destroy disk device
+				deleteDiskDevice(domain, disk);
 			}
 			// undefine domain
 			domain.undefine();
-		} catch (LibvirtException | XPathExpressionException Ex) {
+
+			// Delete security group
+		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
-
 }

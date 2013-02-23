@@ -7,6 +7,9 @@ package com.wat.melody.common.network;
  */
 public class FwRuleDecomposed {
 
+	/*
+	 * TODO : remove the device
+	 */
 	private Interface moInterface;
 	private IpRange moFromIpRange;
 	private PortRange moFromPortRange;
@@ -74,8 +77,8 @@ public class FwRuleDecomposed {
 
 	@Override
 	public int hashCode() {
-		return getInterface().hashCode() + getFromIpRange().hashCode()
-				+ getFromPortRange().hashCode() + getToIpRange().hashCode();
+		return getFromIpRange().hashCode() + getFromPortRange().hashCode()
+				+ getToIpRange().hashCode() + getToPortRange().hashCode();
 	}
 
 	@Override
@@ -100,8 +103,10 @@ public class FwRuleDecomposed {
 					&& rule.getToIpRange().equals(getToIpRange())
 					&& rule.getProtocol().equals(getProtocol())
 					&& rule.getDirection().equals(getDirection())
-					&& rule.getAccess().equals(getAccess());
-			// rule.getInterface().equals(getInterface())
+					&& rule.getAccess().equals(getAccess())
+					&& (rule.getInterface().equals(Interface.ALL)
+							|| getInterface().equals(Interface.ALL) || rule
+							.getInterface().equals(getInterface()));
 		}
 		return false;
 	}
