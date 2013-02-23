@@ -1,8 +1,5 @@
 package com.wat.melody.plugin.libvirt.common;
 
-import java.util.Map;
-import java.util.UUID;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import org.libvirt.Connect;
@@ -10,15 +7,14 @@ import org.libvirt.LibvirtException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.cloud.libvirt.Instance;
 import com.wat.cloud.libvirt.LibVirtCloud;
+import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
@@ -28,7 +24,6 @@ import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
@@ -159,7 +154,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
-	public Instance getInstance() {
+	public LibVirtInstance getInstance() {
 		return LibVirtCloud.getInstance(getConnect(), getInstanceID());
 	}
 
@@ -177,11 +172,8 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	public void newInstance(InstanceType type, String sImageId,
 			KeyPairName keyPairName) throws LibVirtException {
-		String sSGName = newSecurityGroupName();
-		String sSGDesc = getSecurityGroupDescription();
-		LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
-		Instance i = LibVirtCloud.newInstance(getConnect(), type, sImageId,
-				sSGName, keyPairName);
+		LibVirtInstance i = LibVirtCloud.newInstance(getConnect(), type,
+				sImageId, keyPairName);
 		if (i == null) {
 			throw new LibVirtException(Messages.bind(Messages.NewEx_FAILED,
 					new Object[] { getRegion(), sImageId, type, keyPairName,
@@ -192,86 +184,20 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	public void deleteInstance() {
-		Map<NetworkDeviceName, String> sgs = getInstance().getSecurityGroups();
 		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
 		setInstanceID(null);
-		LibVirtCloud.deleteSecurityGroups(getConnect(), sgs);
 	}
 
-	public DiskDeviceList getInstanceDiskDevices(Instance i) {
-		return LibVirtCloud.getInstanceDiskDevices(i);
-	}
-
-	protected void detachAndDeleteDiskDevices(Instance i,
-			DiskDeviceList disksToRemove, long detachTimeout)
-			throws LibVirtException, InterruptedException {
-		LibVirtCloud.detachAndDeleteDiskDevices(i, disksToRemove);
-	}
-
-	protected void createAndAttachDiskDevices(Instance i,
-			DiskDeviceList disksToAdd, long createTimeout, long attachTimeout)
-			throws LibVirtException, InterruptedException {
-		LibVirtCloud.createAndAttachDiskDevices(i, disksToAdd);
-	}
-
-	protected void updateDeleteOnTerminationFlag(Instance i,
-			DiskDeviceList diskList) {
-		/*
-		 * Not supported by LibVirt. Disk are always deleted on instance
-		 * termination.
-		 */
-	}
-
-	public NetworkDeviceNameList getInstanceNetworkDevices(Instance i) {
-		return LibVirtCloud.getInstanceNetworkDevices(i);
-	}
-
-	protected void detachNetworkDevices(Instance i,
-			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
-			throws InterruptedException {
-		for (NetworkDeviceName netDev : netDevivesToRemove) {
-			String sSGName = i.getSecurityGroup(netDev);
-			LibVirtCloud.detachNetworkDevice(i, netDev);
-			LibVirtCloud.deleteSecurityGroup(getConnect(), sSGName);
-		}
-	}
-
-	protected void attachNetworkDevices(Instance i,
-			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
-			throws InterruptedException {
-		for (NetworkDeviceName netDev : netDevivesToAdd) {
-			String sSGName = newSecurityGroupName();
-			String sSGDesc = getSecurityGroupDescription();
-			LibVirtCloud.createSecurityGroup(getConnect(), sSGName, sSGDesc);
-			LibVirtCloud.attachNetworkDevice(i, netDev, sSGName);
-		}
-	}
-
-	public FwRulesDecomposed getInstanceFireWallRules(Instance i,
-			NetworkDeviceName netDev) {
-		return LibVirtCloud.getInstanceFireWallRules(i, netDev);
-	}
-
-	protected void revokeFireWallRules(Instance i, NetworkDeviceName netdev,
-			FwRulesDecomposed toRevoke) {
-		LibVirtCloud.revokeFireWallRules(i, netdev, toRevoke);
-	}
-
-	protected void authorizeFireWallRules(Instance i, NetworkDeviceName netdev,
-			FwRulesDecomposed toAutorize) {
-		LibVirtCloud.authorizeFireWallRules(i, netdev, toAutorize);
-	}
-
-	protected void setInstanceRelatedInfosToED(Instance i)
+	protected void setInstanceRelatedInfosToED(LibVirtInstance i)
 			throws LibVirtException {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Instance.");
 		}
 		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
-		for (NetworkDeviceName netDevice : getInstanceNetworkDevices(i)) {
-			NetworkDeviceDatas ndd = LibVirtCloud
-					.getInstanceNetworkDeviceDatas(i, netDevice);
+		for (NetworkDeviceName netDevice : i.getNetworkDevices()) {
+			NetworkDeviceDatas ndd = LibVirtCloud.getNetworkDeviceDatas(i,
+					netDevice);
 			DUNID dunid = getNetworkDeviceDUNID(netDevice);
 			setDataToED(dunid, Common.IP_ATTR, ndd.getIP());
 			setDataToED(dunid, Common.FQDN_ATTR, ndd.getFQDN());
@@ -576,16 +502,6 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		long previous = getTimeout();
 		mlTimeout = timeout;
 		return previous;
-	}
-
-	protected String getSecurityGroupDescription() {
-		return "Melody security group";
-	}
-
-	protected String newSecurityGroupName() {
-		// This formula should produce a unique name
-		return "MelodySg" + "_" + System.currentTimeMillis() + "_"
-				+ UUID.randomUUID().toString().substring(0, 8);
 	}
 
 }

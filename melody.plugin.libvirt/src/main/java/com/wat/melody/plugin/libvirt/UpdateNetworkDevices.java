@@ -6,10 +6,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 
-import com.wat.cloud.libvirt.Instance;
+import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.NetworkDeviceHelper;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
@@ -94,7 +94,7 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		Instance i = getInstance();
+		LibVirtInstance i = getInstance();
 		if (i == null) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.UpdateNetDevMsg_NO_INSTANCE,
@@ -107,21 +107,14 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 			return;
 		}
 
-		NetworkDeviceNameList nds = getInstanceNetworkDevices(i);
-		NetworkDeviceNameList toAdd = null;
-		NetworkDeviceNameList toRemove = null;
-		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(nds,
-				getNetworkDeviceList());
-		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(nds,
-				getNetworkDeviceList());
-
-		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
-				new Object[] { getInstanceID(), getNetworkDeviceList(), toAdd,
-						toRemove, getTargetNodeLocation() }));
-
-		detachNetworkDevices(i, toRemove, getDetachTimeout());
-		attachNetworkDevices(i, toAdd, getAttachTimeout());
-
+		try {
+			i.updateNetworkDevices(getNetworkDeviceList(), getDetachTimeout(),
+					getAttachTimeout());
+		} catch (OperationException Ex) {
+			throw new LibVirtException(Messages.bind(
+					Messages.UpdateNetDevEx_GENERIC_FAIL,
+					getTargetNodeLocation()), Ex);
+		}
 		setInstanceRelatedInfosToED(i);
 	}
 
@@ -129,7 +122,8 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 		return maNetworkDeviceList;
 	}
 
-	private NetworkDeviceNameList setNetworkDeviceList(NetworkDeviceNameList fwrs) {
+	private NetworkDeviceNameList setNetworkDeviceList(
+			NetworkDeviceNameList fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid NetworkDeviceList.");

@@ -6,19 +6,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 
-import com.wat.cloud.libvirt.Instance;
+import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallManagementHelper;
-import com.wat.melody.cloud.firewall.FireWallRulesHelper;
 import com.wat.melody.cloud.firewall.FwRuleLoader;
-import com.wat.melody.cloud.network.NetworkDeviceName;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.ex.Util;
-import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.common.network.Interface;
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -70,7 +65,7 @@ public class IngressMachine extends AbstractLibVirtOperation implements ITask {
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		Instance i = getInstance();
+		LibVirtInstance i = getInstance();
 		if (i == null) {
 			LibVirtException Ex = new LibVirtException(Messages.bind(
 					Messages.IngressMsg_NO_INSTANCE,
@@ -81,53 +76,17 @@ public class IngressMachine extends AbstractLibVirtOperation implements ITask {
 					Messages.IngressMsg_GENERIC_WARN, Ex)));
 			removeInstanceRelatedInfosToED(true);
 			return;
+		} else {
+			setInstanceRelatedInfosToED(i);
 		}
 
-		NetworkDeviceNameList netdevs = getInstanceNetworkDevices(i);
-		for (NetworkDeviceName netdev : netdevs) {
-			FwRulesDecomposed currentrules = getInstanceFireWallRules(i, netdev);
-			FwRulesDecomposed newrules = getFwRules(netdev);
-			FwRulesDecomposed toAdd = FireWallRulesHelper
-					.computeFireWallRulesToAdd(currentrules, newrules);
-			FwRulesDecomposed toRemove = FireWallRulesHelper
-					.computeFireWallRulesToRemove(currentrules, newrules);
-
-			log.info(Messages.bind(Messages.IngressMsg_FWRULES_RESUME,
-					new Object[] { getInstanceID(), netdev, getFwRules(),
-							toAdd, toRemove, getTargetNodeLocation() }));
-
-			revokeFireWallRules(i, netdev, toRemove);
-			authorizeFireWallRules(i, netdev, toAdd);
-		}
-
-		setInstanceRelatedInfosToED(i);
-	}
-
-	private FwRulesDecomposed getFwRules(NetworkDeviceName netdev) {
-		Interface inter = null;
 		try {
-			inter = Interface.parseString(netdev.getValue());
-		} catch (IllegalInterfaceException Ex) {
-			throw new RuntimeException(Ex);
+			i.updateFireWallRules(getFwRules());
+		} catch (OperationException Ex) {
+			throw new LibVirtException(Messages.bind(
+					Messages.IngressEx_GENERIC_FAIL, getTargetNodeLocation()),
+					Ex);
 		}
-		FwRulesDecomposed rules = new FwRulesDecomposed();
-		for (FwRuleDecomposed rule : getFwRules()) {
-			if (rule.getInterface().getValue().equals(netdev.getValue())) {
-				rules.add(rule);
-			} else if (rule.getInterface().equals(Interface.ALL)) {
-				FwRuleDecomposed r = new FwRuleDecomposed();
-				r.setInterface(inter);
-				r.setFromIpRange(rule.getFromIpRange());
-				r.setFromPortRange(rule.getFromPortRange());
-				r.setToIpRange(rule.getToIpRange());
-				r.setToPortRange(rule.getToPortRange());
-				r.setProtocol(rule.getProtocol());
-				r.setDirection(rule.getDirection());
-				r.setAccess(rule.getAccess());
-				rules.add(r);
-			}
-		}
-		return rules;
 	}
 
 	private FwRulesDecomposed getFwRules() {
