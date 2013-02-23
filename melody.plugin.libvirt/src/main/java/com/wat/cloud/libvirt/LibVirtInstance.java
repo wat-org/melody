@@ -85,7 +85,7 @@ public class LibVirtInstance extends Instance {
 	}
 
 	@Override
-	public DiskDeviceList getInstanceDiskDevices() {
+	public DiskDeviceList getDiskDevices() {
 		return LibVirtCloud.getDiskDevices(this);
 	}
 
@@ -135,14 +135,14 @@ public class LibVirtInstance extends Instance {
 		return LibVirtCloud.getFireWallRules(this, netDev);
 	}
 
-	public void revokeFireWallRules(NetworkDeviceName netdev,
+	public void revokeFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toRevoke) throws OperationException {
-		LibVirtCloud.revokeFireWallRules(this, netdev, toRevoke);
+		LibVirtCloud.revokeFireWallRules(this, netDev, toRevoke);
 	}
 
-	public void authorizeFireWallRules(NetworkDeviceName netdev,
+	public void authorizeFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toAutorize) throws OperationException {
-		LibVirtCloud.authorizeFireWallRules(this, netdev, toAutorize);
+		LibVirtCloud.authorizeFireWallRules(this, netDev, toAutorize);
 	}
 
 }

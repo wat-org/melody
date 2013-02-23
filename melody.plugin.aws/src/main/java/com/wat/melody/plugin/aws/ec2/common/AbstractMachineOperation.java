@@ -8,26 +8,30 @@ import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.IpPermission;
-import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.ManagementNetworkMethod;
+import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.FwRuleDecomposed;
+import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.network.Interface;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
+import com.wat.melody.common.network.PortRange;
 import com.wat.melody.common.network.Protocol;
+import com.wat.melody.common.network.exception.IllegalInterfaceException;
+import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
-import com.wat.melody.plugin.aws.ec2.IngressMachine;
 import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
 import com.wat.melody.plugin.aws.ec2.StopMachine;
@@ -123,12 +127,8 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * Create and associate an Aws Security Group to the Aws Instance.
-	 * This Security Group is call the Melody Security Group and is used by
-	 * {@link IngressMachine} to manage Network access to the created Aws
-	 * Instance ; <BR/>
-	 * * Once created, set the Aws Instance ID of this object to the ID of the
-	 * created Aws Instance, so you can use {@link #getAwsInstanceID} to
+	 * <i> * Once created, set the Aws Instance ID of this object to the ID of
+	 * the created Aws Instance, so you can use {@link #getAwsInstanceID} to
 	 * retrieve it ; <BR/>
 	 * * Once created, store the Aws Instance ID into the
 	 * {@link Common#AWS_INSTANCE_ID_ATTR} XML Attribute of the Aws Instance
@@ -140,11 +140,6 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *            is the Aws Instance Type of the Aws Instance to create.
 	 * @param sImageId
 	 *            is the Aws Ami Id the Aws Instance will be created from.
-	 * @param sSGName
-	 *            if the name of the Security Group to create and associate to
-	 *            the Aws Instance to create.
-	 * @param sSGDesc
-	 *            is the description of the Security Group.
 	 * @param sAZ
 	 *            is the Aws Availability Zone the Aws Instance will be placed
 	 *            in.
@@ -160,12 +155,10 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * @throws InterruptedException
 	 *             if the wait is interrupted.
 	 */
-	protected void newInstance(InstanceType type, String sImageId,
-			String sSGName, String sSGDesc, String sAZ, KeyPairName keyPairName)
-			throws AwsException, InterruptedException {
-		Common.createSecurityGroup(getEc2(), sSGName, sSGDesc);
-		Instance i = Common.newAwsInstance(getEc2(), type, sImageId, sSGName,
-				sAZ, keyPairName);
+	protected void newInstance(InstanceType type, String sImageId, String sAZ,
+			KeyPairName keyPairName) throws AwsException, InterruptedException {
+		Instance i = Common.newAwsInstance(getEc2(), type, sImageId, sAZ,
+				keyPairName);
 		if (i == null) {
 			throw new AwsException(Messages.bind(Messages.NewEx_FAILED,
 					new Object[] { getRegion(), sImageId, type, keyPairName,
@@ -242,8 +235,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * Delete the Melody Security Group of the Aws Instance ; <BR/>
-	 * * Set the Aws Instance ID of this object to <code>null</code> ; <BR/>
+	 * <i> * Set the Aws Instance ID of this object to <code>null</code> ; <BR/>
 	 * </i>
 	 * </p>
 	 * 
@@ -258,16 +250,13 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void deleteInstance() throws AwsException, InterruptedException {
-		String sgname = getInstance().getSecurityGroups().get(0).getGroupName();
-		if (!Common.deleteAwsInstance(getEc2(), getAwsInstanceID(),
-				getTimeout())) {
+		if (!Common.deleteAwsInstance(getEc2(), getInstance(), getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
 					new Object[] { getAwsInstanceID(),
 							DeleteMachine.DELETE_MACHINE, getTimeout(),
 							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 		setAwsInstanceID(null);
-		Common.deleteSecurityGroup(getEc2(), sgname);
 	}
 
 	/**
@@ -373,39 +362,37 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
 				getAwsInstanceID()));
 
+		NetworkDeviceName netdev = mh.getManagementDatas()
+				.getNetworkDeviceName();
 		Port p = mh.getManagementDatas().getPort();
-		String sgname = getInstance().getSecurityGroups().get(0).getGroupName();
-		IpPermission toAdd = new IpPermission();
-		toAdd.withFromPort(p.getValue());
-		toAdd.withToPort(p.getValue());
-		toAdd.withIpProtocol(Protocol.TCP.getValue());
-		toAdd.withIpRanges(IpRange.ALL.getValue());
-
-		boolean doNotRevoke = false;
-		AuthorizeSecurityGroupIngressRequest authreq = null;
-		authreq = new AuthorizeSecurityGroupIngressRequest();
-		authreq = authreq.withGroupName(sgname).withIpPermissions(toAdd);
+		FwRuleDecomposed rule = new FwRuleDecomposed();
 		try {
-			getEc2().authorizeSecurityGroupIngress(authreq);
-		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode().indexOf("InvalidPermission.Duplicate") != -1) {
-				doNotRevoke = true;
-			}
+			rule.setInterface(Interface.parseString(netdev.getValue()));
+			rule.setToPortRange(new PortRange(p, p));
+		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
+			throw new RuntimeException("BUG ! Cannot happened !", Ex);
+		}
+		rule.setFromIpRange(IpRange.ALL);
+		rule.setProtocol(Protocol.TCP);
+		rule.setAccess(Access.ALLOW);
+
+		FwRulesDecomposed rules = new FwRulesDecomposed();
+		Instance i = getInstance();
+		FwRulesDecomposed currentRules = Common.getFireWallRules(getEc2(), i,
+				netdev);
+		if (!currentRules.contains(rule)) {
+			rules.add(rule);
 		}
 
 		try {
+			Common.authorizeFireWallRules(getEc2(), i, netdev, rules);
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (NetworkManagementException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getAwsInstanceID(), getTargetNodeLocation()), Ex);
 		} finally {
-			if (!doNotRevoke) {
-				RevokeSecurityGroupIngressRequest revreq = null;
-				revreq = new RevokeSecurityGroupIngressRequest();
-				revreq = revreq.withGroupName(sgname).withIpPermissions(toAdd);
-				getEc2().revokeSecurityGroupIngress(revreq);
-			}
+			Common.revokeFireWallRules(getEc2(), i, netdev, rules);
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
 				getAwsInstanceID()));

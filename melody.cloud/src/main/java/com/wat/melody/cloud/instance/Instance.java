@@ -21,7 +21,7 @@ public abstract class Instance {
 
 	public abstract String getInstanceId();
 
-	public abstract DiskDeviceList getInstanceDiskDevices();
+	public abstract DiskDeviceList getDiskDevices();
 
 	public abstract void detachAndDeleteDiskDevices(
 			DiskDeviceList disksToRemove, long detachTimeout)
@@ -36,7 +36,7 @@ public abstract class Instance {
 	public void updateDiskDevices(DiskDeviceList target, long detachTimeout,
 			long createTimeout, long attachTimeout) throws OperationException,
 			InterruptedException {
-		DiskDeviceList iDisks = getInstanceDiskDevices();
+		DiskDeviceList iDisks = getDiskDevices();
 		try {
 			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks, target);
 		} catch (DiskDeviceException Ex) {
@@ -89,10 +89,10 @@ public abstract class Instance {
 
 	public abstract FwRulesDecomposed getFireWallRules(NetworkDeviceName netDev);
 
-	public abstract void revokeFireWallRules(NetworkDeviceName netdev,
+	public abstract void revokeFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toRevoke) throws OperationException;
 
-	public abstract void authorizeFireWallRules(NetworkDeviceName netdev,
+	public abstract void authorizeFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toAutorize) throws OperationException;
 
 	public void updateFireWallRules(FwRulesDecomposed target)
@@ -116,10 +116,10 @@ public abstract class Instance {
 	}
 
 	private FwRulesDecomposed getFwRules(FwRulesDecomposed target,
-			NetworkDeviceName netdev) {
+			NetworkDeviceName netDev) {
 		FwRulesDecomposed rules = new FwRulesDecomposed();
 		for (FwRuleDecomposed rule : target) {
-			if (rule.getInterface().getValue().equals(netdev.getValue())
+			if (rule.getInterface().getValue().equals(netDev.getValue())
 					|| rule.getInterface().equals(Interface.ALL)) {
 				rules.add(rule);
 			}

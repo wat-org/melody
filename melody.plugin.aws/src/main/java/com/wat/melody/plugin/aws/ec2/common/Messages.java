@@ -93,9 +93,9 @@ public class Messages extends NLS {
 	public static String DeleteMsg_GENERIC_WARN;
 
 	public static String IngressEx_INVALID_FWRULE_XPATH;
+	public static String IngressEx_GENERIC_FAIL;
 	public static String IngressMsg_NO_INSTANCE;
-	public static String IngressMsg_DENY_NA;
-	public static String IngressMsg_FWRULES_DIGEST;
+	public static String IngressMsg_SKIP_FWRULE;
 	public static String IngressMsg_GENERIC_WARN;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
@@ -107,13 +107,12 @@ public class Messages extends NLS {
 	public static String ResizeMsg_NO_NEED;
 	public static String ResizeMsg_GENERIC_WARN;
 
-	public static String UpdateDiskDevEx_IMPOSSIBLE;
 	public static String UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR;
 	public static String UpdateDiskDevEx_DETACH;
 	public static String UpdateDiskDevEx_CREATE;
 	public static String UpdateDiskDevEx_ATTACH;
+	public static String UpdateDiskDevEx_GENERIC_FAIL;
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
-	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
 	public static String UpdateDiskDevMsg_GENERIC_WARN;
 
 	static {
