@@ -13,7 +13,6 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
@@ -23,8 +22,6 @@ import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.xpath.XPathHelper;
 
@@ -154,6 +151,11 @@ abstract public class AbstractAwsOperation implements ITask,
 		return Common.getInstance(getEc2(), getAwsInstanceID());
 	}
 
+	public AwsInstance getAwsInstance() {
+		Instance i = Common.getInstance(getEc2(), getAwsInstanceID());
+		return i == null ? null : new AwsInstance(getEc2(), i);
+	}
+
 	public InstanceState getInstanceState() {
 		return Common.getInstanceState(getEc2(), getAwsInstanceID());
 	}
@@ -180,50 +182,6 @@ abstract public class AbstractAwsOperation implements ITask,
 	protected boolean resizeInstance(InstanceType instanceType) {
 		return Common.resizeAwsInstance(getEc2(), getAwsInstanceID(),
 				instanceType);
-	}
-
-	protected DiskDeviceList getInstanceDiskDevices(Instance i) {
-		return Common.getInstanceDisks(getEc2(), i);
-	}
-
-	protected void detachAndDeleteDiskDevices(Instance i,
-			DiskDeviceList disksToRemove, long detachTimeout)
-			throws AwsException, InterruptedException {
-		try {
-			Common.detachAndDeleteDiskDevices(getEc2(), i, disksToRemove,
-					detachTimeout);
-		} catch (WaitVolumeStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_DETACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		}
-	}
-
-	protected void createAndAttachDiskDevices(Instance i,
-			DiskDeviceList diskList, long createTimeout, long attachTimeout)
-			throws AwsException, InterruptedException {
-		String sAZ = i.getPlacement().getAvailabilityZone();
-		try {
-			Common.createAndAttachDiskDevices(getEc2(), getAwsInstanceID(),
-					sAZ, diskList, createTimeout, attachTimeout);
-		} catch (WaitVolumeStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_CREATE,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		} catch (WaitVolumeAttachmentStatusException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_ATTACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
-		}
-	}
-
-	protected void updateDeleteOnTerminationFlag(Instance i,
-			DiskDeviceList diskList) {
-		Common.updateDeleteOnTerminationFlag(getEc2(), getAwsInstanceID(),
-				diskList);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i) {

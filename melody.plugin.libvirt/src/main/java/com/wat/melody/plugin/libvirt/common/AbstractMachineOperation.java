@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.cloud.libvirt.LibVirtInstance;
-import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
@@ -125,16 +125,18 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		rule.setProtocol(Protocol.TCP);
 		rule.setAccess(Access.ALLOW);
 
-		LibVirtInstance i = getInstance();
-		FwRulesDecomposed currentRules = null;
-		currentRules = LibVirtCloud.getFireWallRules(i, netdev);
-		boolean alreadyOpen = currentRules.contains(rule);
-
 		FwRulesDecomposed rules = new FwRulesDecomposed();
-		rules.add(rule);
+		LibVirtInstance i = getInstance();
+		FwRulesDecomposed currentRules = i.getFireWallRules(netdev);
+		if (!currentRules.contains(rule)) {
+			rules.add(rule);
+		}
+
 		try {
-			if (!alreadyOpen) {
-				LibVirtCloud.authorizeFireWallRules(i, netdev, rules);
+			try {
+				i.authorizeFireWallRules(netdev, rules);
+			} catch (OperationException Ex) {
+				throw new LibVirtException(Ex);
 			}
 			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
 		} catch (NetworkManagementException Ex) {
@@ -142,8 +144,10 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceID(), getTargetNodeLocation()), Ex);
 		} finally {
-			if (!alreadyOpen) {
-				LibVirtCloud.revokeFireWallRules(i, netdev, rules);
+			try {
+				i.revokeFireWallRules(netdev, rules);
+			} catch (OperationException Ex) {
+				throw new LibVirtException(Ex);
 			}
 		}
 		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,

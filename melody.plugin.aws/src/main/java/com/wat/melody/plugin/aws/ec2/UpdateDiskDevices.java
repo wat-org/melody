@@ -6,16 +6,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 
-import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskDeviceHelper;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.disk.DiskManagementHelper;
-import com.wat.melody.cloud.disk.exception.DiskDeviceException;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
+import com.wat.melody.plugin.aws.ec2.common.AwsInstance;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpath.XPathHelper;
@@ -102,7 +101,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		Instance i = getInstance();
+		AwsInstance i = getAwsInstance();
 		if (i == null) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.UpdateDiskDevMsg_NO_INSTANCE,
@@ -114,35 +113,17 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 			removeInstanceRelatedInfosToED(true);
 			return;
 		} else {
-			setInstanceRelatedInfosToED(i);
+			setInstanceRelatedInfosToED(i.getInstance());
 		}
 
-		DiskDeviceList iDisks = getInstanceDiskDevices(i);
 		try {
-			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks,
-					getDiskDeviceList());
-		} catch (DiskDeviceException Ex) {
+			i.updateDiskDevices(getDiskDeviceList(), getDetachTimeout(),
+					getCreateTimeout(), getAttachTimeout());
+		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_IMPOSSIBLE,
+					Messages.UpdateDiskDevEx_GENERIC_FAIL,
 					getTargetNodeLocation()), Ex);
 		}
-
-		DiskDeviceList disksToAdd = null;
-		DiskDeviceList disksToRemove = null;
-		disksToAdd = DiskDeviceHelper.computeDiskDevicesToAdd(iDisks,
-				getDiskDeviceList());
-		disksToRemove = DiskDeviceHelper.computeDiskDevicesToRemove(iDisks,
-				getDiskDeviceList());
-
-		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
-				new Object[] { getAwsInstanceID(), getDiskDeviceList(),
-						disksToAdd, disksToRemove, getTargetNodeLocation() }));
-
-		detachAndDeleteDiskDevices(i, disksToRemove, getDetachTimeout());
-		createAndAttachDiskDevices(i, disksToAdd, getCreateTimeout(),
-				getAttachTimeout());
-
-		updateDeleteOnTerminationFlag(i, getDiskDeviceList());
 	}
 
 	private DiskDeviceList getDiskDeviceList() {

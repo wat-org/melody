@@ -111,19 +111,6 @@ public class FwRuleDecomposed {
 		return false;
 	}
 
-	public boolean equals(String fromIpRange, String toIpRange, int fromPort,
-			int toPort, String protocol, String access) {
-		/*
-		 * TODO : remove this when AWS IngressMachine is ok
-		 */
-		return protocol.equalsIgnoreCase(getProtocol().getValue())
-				&& fromPort == getFromPortRange().getStartPort().getValue()
-				&& toPort == getFromPortRange().getEndPort().getValue()
-				&& fromIpRange.equals(getFromIpRange().getValue())
-				&& toIpRange.equals(getToIpRange().getValue())
-				&& access.equalsIgnoreCase(getAccess().getValue());
-	}
-
 	public Interface getInterface() {
 		return moInterface;
 	}

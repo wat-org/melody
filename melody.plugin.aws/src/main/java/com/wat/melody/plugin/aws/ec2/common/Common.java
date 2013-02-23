@@ -1,6 +1,8 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,6 +11,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.AttachVolumeRequest;
+import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
@@ -32,6 +35,7 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Placement;
+import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
@@ -46,7 +50,24 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.cloud.network.NetworkDeviceName;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Direction;
+import com.wat.melody.common.network.FwRuleDecomposed;
+import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.network.Interface;
+import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.PortRange;
+import com.wat.melody.common.network.Protocol;
+import com.wat.melody.common.network.exception.IllegalInterfaceException;
+import com.wat.melody.common.network.exception.IllegalIpRangeException;
+import com.wat.melody.common.network.exception.IllegalPortRangeException;
+import com.wat.melody.common.network.exception.IllegalProtocolException;
+import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -765,8 +786,6 @@ public class Common {
 	 *            is the instanceType.
 	 * @param sImageId
 	 *            is the AMI ID.
-	 * @param sSGName
-	 *            is an AWS Security Group Name.
 	 * @param sAZ
 	 *            if <code>null</code>, the default Availability Zone will be
 	 *            selected (e.g. AWS EC2 will select the default AZ).
@@ -784,11 +803,15 @@ public class Common {
 	 *             if ec2 is <code>null</code>.
 	 */
 	public static Instance newAwsInstance(AmazonEC2 ec2, InstanceType type,
-			String sImageId, String sSGName, String sAZ, KeyPairName keyPairName) {
+			String sImageId, String sAZ, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
+
+		String sSGName = newSecurityGroupName();
+		String sSGDesc = getSecurityGroupDescription();
+		createSecurityGroup(ec2, sSGName, sSGDesc);
 
 		RunInstancesRequest rireq = new RunInstancesRequest();
 		rireq.withInstanceType(type.toString());
@@ -805,6 +828,7 @@ public class Common {
 			return ec2.runInstances(rireq).getReservation().getInstances()
 					.get(0);
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
+			deleteSecurityGroup(ec2, sSGName);
 			return null;
 		}
 	}
@@ -910,8 +934,8 @@ public class Common {
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sAwsInstanceId
-	 *            is the requested Aws Instance Identifier.
+	 * @param i
+	 *            is the Aws Instance to delete.
 	 * @param timeout
 	 * 
 	 * @return <code>true</code> if the Aws Instance is successfully deleted
@@ -924,31 +948,36 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 * @throws IllegalArgumentException
-	 *             if sAwsInstanceId is <code>null</code> or an empty
-	 *             <code>String</code>.
+	 *             if i is <code>null</code>.
 	 * @throws InterruptedException
 	 *             if the operation is interrupted.
 	 */
-	public static boolean deleteAwsInstance(AmazonEC2 ec2,
-			String sAwsInstanceId, long timeout) throws InterruptedException {
+	public static boolean deleteAwsInstance(AmazonEC2 ec2, Instance i,
+			long timeout) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
-		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
-			throw new IllegalArgumentException(sAwsInstanceId
-					+ ": Not accepted. "
-					+ "Must be a String (an Aws Instance Id).");
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a " + Instance.class.getCanonicalName() + ".");
 		}
+		NetworkDeviceNameList netDevs = getNetworkDevices(ec2, i);
 
 		TerminateInstancesRequest tireq = null;
 		tireq = new TerminateInstancesRequest();
-		tireq.withInstanceIds(sAwsInstanceId);
+		tireq.withInstanceIds(i.getInstanceId());
 
 		ec2.terminateInstances(tireq);
 
-		return waitUntilInstanceStatusBecomes(ec2, sAwsInstanceId,
-				InstanceState.TERMINATED, timeout, 0);
+		try {
+			return waitUntilInstanceStatusBecomes(ec2, i.getInstanceId(),
+					InstanceState.TERMINATED, timeout, 0);
+		} finally {
+			for (NetworkDeviceName netDev : netDevs) {
+				deleteSecurityGroup(ec2, getSecurityGroup(ec2, i, netDev));
+			}
+		}
 	}
 
 	/**
@@ -1009,6 +1038,16 @@ public class Common {
 		return true;
 	}
 
+	private static String getSecurityGroupDescription() {
+		return "Melody security group";
+	}
+
+	private static String newSecurityGroupName() {
+		// This formula should produce a unique name
+		return "MelodySg" + "_" + System.currentTimeMillis() + "_"
+				+ UUID.randomUUID().toString().substring(0, 8);
+	}
+
 	/**
 	 * <p>
 	 * Create an AWS Security Group with the given name and description.
@@ -1036,7 +1075,7 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if sSGName is <code>null</code>.
 	 */
-	public static void createSecurityGroup(AmazonEC2 ec2, String sSGName,
+	private static void createSecurityGroup(AmazonEC2 ec2, String sSGName,
 			String sSGDesc) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -1094,12 +1133,12 @@ public class Common {
 	 *             if sSGName is <code>null</code> or an empty
 	 *             <code>String</code>.
 	 */
-	public static void deleteSecurityGroup(AmazonEC2 ec2, String sSGName) {
+	private static void deleteSecurityGroup(AmazonEC2 ec2, String sSGName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid AmazonEC2.");
 		}
-		if (sSGName == null || sSGName.trim().length() == 0) {
+		if (sSGName == null || sSGName.length() == 0) {
 			return;
 		}
 
@@ -1839,6 +1878,136 @@ public class Common {
 
 			ec2.modifyInstanceAttribute(miareq);
 		}
+	}
+
+	public static NetworkDeviceNameList getNetworkDevices(AmazonEC2 ec2,
+			Instance i) {
+		/*
+		 * TODO : write the real implementation
+		 */
+		NetworkDeviceNameList netDevs = new NetworkDeviceNameList();
+		NetworkDeviceName eth0 = null;
+		try {
+			eth0 = NetworkDeviceName.parseString("eth0");
+			netDevs.addNetworkDevice(eth0);
+		} catch (IllegalNetworkDeviceException
+				| IllegalNetworkDeviceListException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		return netDevs;
+	}
+
+	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
+			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
+			throws AwsException, InterruptedException {
+		/*
+		 * TODO : write the real implementation
+		 */
+		throw new AwsException("detachNetworkDevices : " + "not supported yet.");
+	}
+
+	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
+			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
+			throws AwsException, InterruptedException {
+		/*
+		 * TODO : write the real implementation
+		 */
+		throw new AwsException("attachNetworkDevices : " + "not supported yet.");
+	}
+
+	private static String getSecurityGroup(AmazonEC2 ec2, Instance i,
+			NetworkDeviceName netDev) {
+		/*
+		 * TODO : always get eth0
+		 */
+		return i.getSecurityGroups().get(0).getGroupName();
+	}
+
+	public static FwRulesDecomposed getFireWallRules(AmazonEC2 ec2, Instance i,
+			NetworkDeviceName netDev) {
+		String sgname = getSecurityGroup(ec2, i, netDev);
+		List<IpPermission> perms = Common.describeSecurityGroupRules(ec2,
+				sgname);
+		return convertIpPermissions(perms, netDev);
+	}
+
+	public static void revokeFireWallRules(AmazonEC2 ec2, Instance i,
+			NetworkDeviceName netDev, FwRulesDecomposed toRevoke) {
+		if (toRevoke == null || toRevoke.size() == 0) {
+			return;
+		}
+		String sgname = getSecurityGroup(ec2, i, netDev);
+		List<IpPermission> toRev = convertFwRules(toRevoke);
+		RevokeSecurityGroupIngressRequest revreq = null;
+		revreq = new RevokeSecurityGroupIngressRequest();
+		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
+		ec2.revokeSecurityGroupIngress(revreq);
+
+	}
+
+	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
+			NetworkDeviceName netDev, FwRulesDecomposed toAuthorize) {
+		if (toAuthorize == null || toAuthorize.size() == 0) {
+			return;
+		}
+		String sgname = getSecurityGroup(ec2, i, netDev);
+		List<IpPermission> toAuth = convertFwRules(toAuthorize);
+		AuthorizeSecurityGroupIngressRequest authreq = null;
+		authreq = new AuthorizeSecurityGroupIngressRequest();
+		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
+		ec2.authorizeSecurityGroupIngress(authreq);
+
+	}
+
+	private static FwRulesDecomposed convertIpPermissions(
+			List<IpPermission> perms, NetworkDeviceName netDev) {
+		Interface inter = null;
+		try {
+			inter = Interface.parseString(netDev.getValue());
+		} catch (IllegalInterfaceException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		FwRulesDecomposed rules = new FwRulesDecomposed();
+		for (IpPermission perm : perms) {
+			FwRuleDecomposed rule = new FwRuleDecomposed();
+			rule.setInterface(inter);
+			rule.setAccess(Access.ALLOW);
+			rule.setDirection(Direction.IN);
+			try {
+				rule.setProtocol(Protocol.parseString(perm.getIpProtocol()));
+				rule.setFromIpRange(IpRange.parseString(perm.getIpRanges().get(
+						0)));
+				rule.setFromPortRange(PortRange.parseString(perm.getFromPort()
+						+ "-" + perm.getToPort()));
+			} catch (IllegalProtocolException | IllegalIpRangeException
+					| IllegalPortRangeException Ex) {
+				throw new RuntimeException(Ex);
+			}
+		}
+		return rules;
+	}
+
+	private static List<IpPermission> convertFwRules(FwRulesDecomposed rules) {
+		List<IpPermission> perms = new ArrayList<IpPermission>();
+		for (FwRuleDecomposed rule : rules) {
+			if (rule.getDirection().equals(Direction.OUT)) {
+				log.info(Messages.bind(Messages.IngressMsg_SKIP_FWRULE, rule,
+						Direction.OUT));
+				continue;
+			}
+			if (rule.getAccess().equals(Access.DENY)) {
+				log.info(Messages.bind(Messages.IngressMsg_SKIP_FWRULE, rule,
+						Access.DENY));
+				continue;
+			}
+			IpPermission perm = new IpPermission();
+			perm.withIpProtocol(rule.getProtocol().getValue());
+			perm.withIpRanges(rule.getFromIpRange().getValue());
+			perm.withFromPort(rule.getFromPortRange().getStartPort().getValue());
+			perm.withToPort(rule.getFromPortRange().getEndPort().getValue());
+			perms.add(perm);
+		}
+		return perms;
 	}
 
 }

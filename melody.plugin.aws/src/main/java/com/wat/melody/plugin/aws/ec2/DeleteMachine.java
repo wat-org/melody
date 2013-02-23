@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
-import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 
@@ -59,12 +58,6 @@ public class DeleteMachine extends AbstractMachineOperation {
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
-			/*
-			 * TODO : remove everything which concerns security groups to the
-			 * underlying layer.
-			 */
-			Common.deleteSecurityGroup(getEc2(), getInstance()
-					.getSecurityGroups().get(0).getGroupName());
 		} else {
 			disableNetworkManagement();
 			deleteInstance();
