@@ -83,29 +83,29 @@ public class Common {
 	private static Log log = LogFactory.getLog(Common.class);
 
 	/**
-	 * The 'AWS_instance_ID' XML attribute of the Aws instance Node
+	 * The 'instanceId' XML attribute of the Aws instance Node
 	 */
-	public static final String AWS_INSTANCE_ID_ATTR = "AWS_instance_Id";
+	public static final String INSTANCE_ID_ATTR = "instanceId";
 
 	/**
-	 * The 'IP_priv' XML attribute of the Aws instance Node
+	 * The 'ip' XML attribute of the Aws instance Node
 	 */
-	public static final String IP_PRIV_ATTR = "IP_priv";
+	public static final String IP_ATTR = "ip";
 
 	/**
-	 * The 'FQDN_priv' XML attribute of the Aws Instance Node
+	 * The 'fqdn' XML attribute of the Aws Instance Node
 	 */
-	public static final String FQDN_PRIV_ATTR = "FQDN_priv";
+	public static final String FQDN_ATTR = "fqdn";
 
 	/**
-	 * The 'IP_pub' XML attribute of the Aws instance Node
+	 * The 'nat-ip' XML attribute of the Aws instance Node
 	 */
-	public static final String IP_PUB_ATTR = "IP_pub";
+	public static final String NAT_IP_ATTR = "nat-ip";
 
 	/**
-	 * The 'FQDN_pub' XML attribute of the Aws Instance Node
+	 * The 'nat-fqdn' XML attribute of the Aws Instance Node
 	 */
-	public static final String FQDN_PUB_ATTR = "FQDN_pub";
+	public static final String NAT_FQDN_ATTR = "nat-fqdn";
 
 	/**
 	 * The 'region' XML attribute of the Aws Instance Node
@@ -136,11 +136,6 @@ public class Common {
 	 * The 'passphrase' XML attribute of the Aws Instance Node
 	 */
 	public static final String PASSPHRASE_ATTR = "passphrase";
-
-	/**
-	 * The 'fwrule' XML Nested element of the Aws Instance Node
-	 */
-	public static final String FWRULE_NE = "fwrule";
 
 	/**
 	 * <p>
@@ -1090,7 +1085,9 @@ public class Common {
 		csgreq = new CreateSecurityGroupRequest(sSGName, sSGDesc);
 
 		try {
+			log.trace("Creating Security Group '" + sSGName + "' ...");
 			ec2.createSecurityGroup(csgreq);
+			log.debug("Security Group '" + sSGName + "' created.");
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
 				throw new RuntimeException("Unexpected error while creating "
@@ -1146,7 +1143,9 @@ public class Common {
 		dsgreq.withGroupName(sSGName);
 
 		try {
+			log.trace("Deleting Security Group '" + sSGName + "' ...");
 			ec2.deleteSecurityGroup(dsgreq);
+			log.debug("Security Group '" + sSGName + "' deleted.");
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return;
@@ -1883,7 +1882,8 @@ public class Common {
 	public static NetworkDeviceNameList getNetworkDevices(AmazonEC2 ec2,
 			Instance i) {
 		/*
-		 * TODO : write the real implementation
+		 * always reply [eth0], because,using Aws Ec2, only 1 network device can
+		 * be allocated.
 		 */
 		NetworkDeviceNameList netDevs = new NetworkDeviceNameList();
 		NetworkDeviceName eth0 = null;
@@ -1900,25 +1900,21 @@ public class Common {
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
 			throws AwsException, InterruptedException {
-		/*
-		 * TODO : write the real implementation
-		 */
-		throw new AwsException("detachNetworkDevices : " + "not supported yet.");
+		throw new AwsException("detachNetworkDevices "
+				+ "is not supported in AWS EC2");
 	}
 
 	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
 			throws AwsException, InterruptedException {
-		/*
-		 * TODO : write the real implementation
-		 */
-		throw new AwsException("attachNetworkDevices : " + "not supported yet.");
+		throw new AwsException("attachNetworkDevices "
+				+ "is not supported in AWS EC2");
 	}
 
 	private static String getSecurityGroup(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netDev) {
 		/*
-		 * TODO : always get eth0
+		 * always retrieve the security group associated to eth0.
 		 */
 		return i.getSecurityGroups().get(0).getGroupName();
 	}
@@ -1942,7 +1938,6 @@ public class Common {
 		revreq = new RevokeSecurityGroupIngressRequest();
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
-
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
@@ -1956,7 +1951,6 @@ public class Common {
 		authreq = new AuthorizeSecurityGroupIngressRequest();
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
-
 	}
 
 	private static FwRulesDecomposed convertIpPermissions(
@@ -1977,12 +1971,13 @@ public class Common {
 				rule.setProtocol(Protocol.parseString(perm.getIpProtocol()));
 				rule.setFromIpRange(IpRange.parseString(perm.getIpRanges().get(
 						0)));
-				rule.setFromPortRange(PortRange.parseString(perm.getFromPort()
+				rule.setToPortRange(PortRange.parseString(perm.getFromPort()
 						+ "-" + perm.getToPort()));
 			} catch (IllegalProtocolException | IllegalIpRangeException
 					| IllegalPortRangeException Ex) {
 				throw new RuntimeException(Ex);
 			}
+			rules.add(rule);
 		}
 		return rules;
 	}
@@ -2003,8 +1998,8 @@ public class Common {
 			IpPermission perm = new IpPermission();
 			perm.withIpProtocol(rule.getProtocol().getValue());
 			perm.withIpRanges(rule.getFromIpRange().getValue());
-			perm.withFromPort(rule.getFromPortRange().getStartPort().getValue());
-			perm.withToPort(rule.getFromPortRange().getEndPort().getValue());
+			perm.withFromPort(rule.getToPortRange().getStartPort().getValue());
+			perm.withToPort(rule.getToPortRange().getEndPort().getValue());
 			perms.add(perm);
 		}
 		return perms;

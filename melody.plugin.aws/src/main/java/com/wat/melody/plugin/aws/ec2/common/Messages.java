@@ -115,6 +115,11 @@ public class Messages extends NLS {
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevMsg_GENERIC_WARN;
 
+	public static String UpdateNetDevEx_INVALID_NETWORK_DEVICES_SELECTOR;
+	public static String UpdateNetDevEx_GENERIC_FAIL;
+	public static String UpdateNetDevMsg_NO_INSTANCE;
+	public static String UpdateNetDevMsg_GENERIC_WARN;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

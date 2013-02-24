@@ -6,25 +6,25 @@
 	<order name="ingress" >
 		<echo message="Updating FireWall rules ..." />
 
-		<foreach	items="./environment//instance[exists(@AWS_instance_Id)]"
+		<foreach	items="./environment//instance[exists(@instanceId)]"
 					itemName="srv" >
 			<ingressMachine	target="§[srv]§" />
-			<echo message="+ fwrules updated for instance '§[§[srv]§/@AWS_instance_Id]§'." />
+			<echo message="+ fwrules updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
 		<echo message="-- FireWall rules updated." />		
 	</order>
 
-	<order name="update_disks" >
-		<echo message="Updating disks ..." />
+	<order name="update_disk_devices" >
+		<echo message="Updating disk devices ..." />
 
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<updateDiskDevices	target="§[srv]§" />
-			<echo message="+ disks updated for instance '§[§[srv]§/@AWS_instance_Id]§'." />
+			<echo message="+ disk devices updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
-		<echo message="-- Disks updated." />		
+		<echo message="-- Disk devices updated." />		
 	</order>
 
 	<order name="create_env" >
@@ -33,14 +33,14 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<newMachine	target="§[srv]§" />
-			<echo message="+ instance '§[§[srv]§/@AWS_instance_Id]§' created (IP: §[§[srv]§/@IP_pub]§)." />
+			<echo message="+ instance '§[§[srv]§/@instanceId]§' created (IP: §[§[srv]§/@IP_pub]§)." />
 		</foreach>
 
 		<echo message="-- All instances created." />
 
-		<call orders="ingress" />
+		<call orders="update_disk_devices" />
+		<call orders="ingress"/>
 
-		<call orders="update_disks" />
 	</order>
 		
 	<order name="stop_env" >
@@ -49,7 +49,7 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<stopMachine	target="§[srv]§" />
-			<echo message="+ instance '§[§[srv]§/@AWS_instance_Id]§' stopped." />
+			<echo message="+ instance '§[§[srv]§/@instanceId]§' stopped." />
 		</foreach>
 
 		<echo message="-- All instances stopped." />
@@ -63,7 +63,7 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<resizeMachine	target="§[srv]§" instanceType="t1.micro" />
-			<echo message="+ instance '§[§[srv]§/@AWS_instance_Id]§' resized." />
+			<echo message="+ instance '§[§[srv]§/@instanceId]§' resized." />
 		</foreach>
 
 		<echo message="-- All instances resized." />
@@ -75,7 +75,7 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<startMachine	target="§[srv]§" />
-			<echo message="+ instance '§[§[srv]§/@AWS_instance_Id]§' started (IP: §[§[srv]§/@IP_pub]§)." />
+			<echo message="+ instance '§[§[srv]§/@instanceId]§' started (IP: §[§[srv]§/@IP_pub]§)." />
 		</foreach>
 
 		<echo message="-- All instances started." />
@@ -86,9 +86,9 @@
 	<order name="destroy_env" >
 		<echo message="Destroying instances ..." />
 
-		<foreach	items="./environment//instance[exists(@AWS_instance_Id)]"
+		<foreach	items="./environment//instance[exists(@instanceId)]"
 					itemName="srv" >
-			<property name="id" value="§[§[srv]§/@AWS_instance_Id]§" />
+			<property name="id" value="§[§[srv]§/@instanceId]§" />
 			<deleteMachine	target="§[srv]§" />
 			<echo message="+ instance '§[id]§' destroyed." />
 		</foreach>

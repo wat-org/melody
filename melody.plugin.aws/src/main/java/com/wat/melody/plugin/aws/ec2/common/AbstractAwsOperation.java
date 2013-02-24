@@ -15,9 +15,11 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.network.NetworkDeviceName;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.network.Host;
-import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
@@ -184,89 +186,88 @@ abstract public class AbstractAwsOperation implements ITask,
 				instanceType);
 	}
 
-	protected void setInstanceRelatedInfosToED(Instance i) {
+	protected void setInstanceRelatedInfosToED(Instance i) throws AwsException {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Instance.");
 		}
+		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
+		for (NetworkDeviceName netDevice : Common
+				.getNetworkDevices(getEc2(), i)) {
+			DUNID dunid = getNetworkDeviceDUNID(netDevice);
+			setDataToED(dunid, Common.IP_ATTR, i.getPrivateIpAddress());
+			setDataToED(dunid, Common.FQDN_ATTR, i.getPrivateDnsName());
+			setDataToED(dunid, Common.NAT_IP_ATTR, i.getPublicIpAddress());
+			setDataToED(dunid, Common.NAT_FQDN_ATTR, i.getPublicDnsName());
+		}
+	}
+
+	private void setDataToED(DUNID dunid, String sAttr, String sValue) {
+		if (dunid == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid DUNID.");
+		}
+		if (sAttr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (an XML Attribute Name).");
+		}
+		if (sValue == null || sValue.length() == 0) {
+			return;
+		}
 		try {
-			getED().setAttributeValue(getMelodyID(),
-					Common.AWS_INSTANCE_ID_ATTR, i.getInstanceId());
-			setInstancePrivIpToED(i.getPrivateIpAddress());
-			setInstancePubIpToED(i.getPublicIpAddress());
-			setInstancePrivFQDNToED(i.getPrivateDnsName());
-			setInstancePubFQDNToED(i.getPublicDnsName());
+			getED().setAttributeValue(dunid, sAttr, sValue);
 		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while retrieving a "
-					+ "node via its DUNID. " + "No node DUNID match "
-					+ getMelodyID() + ". "
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "node's attribute '" + sAttr + "' via its DUNID. "
+					+ "No node DUNID match " + dunid + ". "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		}
 	}
 
-	private void setInstancePrivIpToED(String sIpAddr)
-			throws NoSuchDUNIDException {
-		if (sIpAddr == null || sIpAddr.length() == 0) {
-			return;
+	protected void removeInstanceRelatedInfosToED(boolean deleted)
+			throws AwsException {
+		if (deleted == true) {
+			removeDataFromED(getMelodyID(), Common.INSTANCE_ID_ATTR);
 		}
+		NetworkDeviceNameList netDevices = null;
 		try {
-			Host.parseString(sIpAddr);
-		} catch (IllegalHostException Ex) {
-			throw new RuntimeException(Messages.bind("''{0}'': Not Accepted. "
-					+ "Failed to parse ''{1}'', which was given by "
-					+ "Aws Ec2.", sIpAddr, Common.IP_PRIV_ATTR), Ex);
+			NodeList nl = NetworkManagementHelper
+					.findNetworkDevices(getTargetNode());
+			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
+			netDevices = ndl.load(nl);
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
 		}
-		getED().setAttributeValue(getMelodyID(), Common.IP_PRIV_ATTR, sIpAddr);
+		for (NetworkDeviceName netDev : netDevices) {
+			DUNID dunid = getNetworkDeviceDUNID(netDev);
+			removeDataFromED(dunid, Common.IP_ATTR);
+			removeDataFromED(dunid, Common.FQDN_ATTR);
+			removeDataFromED(dunid, Common.NAT_IP_ATTR);
+			removeDataFromED(dunid, Common.NAT_FQDN_ATTR);
+		}
 	}
 
-	private void setInstancePubIpToED(String sIpAddr)
-			throws NoSuchDUNIDException {
-		if (sIpAddr == null || sIpAddr.length() == 0) {
-			return;
-		}
+	private void removeDataFromED(DUNID dunid, String sAttr) {
 		try {
-			Host.parseString(sIpAddr);
-		} catch (IllegalHostException Ex) {
-			throw new RuntimeException(Messages.bind("''{0}'': Not Accepted. "
-					+ "Failed to parse ''{1}'', which was given by "
-					+ "Aws Ec2.", sIpAddr, Common.IP_PUB_ATTR), Ex);
-		}
-		getED().setAttributeValue(getMelodyID(), Common.IP_PUB_ATTR, sIpAddr);
-	}
-
-	private void setInstancePrivFQDNToED(String sFQDN)
-			throws NoSuchDUNIDException {
-		if (sFQDN == null || sFQDN.length() == 0) {
-			return;
-		}
-		getED().setAttributeValue(getMelodyID(), Common.FQDN_PRIV_ATTR, sFQDN);
-	}
-
-	private void setInstancePubFQDNToED(String sFQDN)
-			throws NoSuchDUNIDException {
-		if (sFQDN == null || sFQDN.length() == 0) {
-			return;
-		}
-		getED().setAttributeValue(getMelodyID(), Common.FQDN_PUB_ATTR, sFQDN);
-	}
-
-	protected void removeInstanceRelatedInfosToED(boolean deleted) {
-		try {
-			if (deleted == true) {
-				getED().removeAttribute(getMelodyID(),
-						Common.AWS_INSTANCE_ID_ATTR);
-			}
-			getED().removeAttribute(getMelodyID(), Common.IP_PRIV_ATTR);
-			getED().removeAttribute(getMelodyID(), Common.FQDN_PRIV_ATTR);
-			getED().removeAttribute(getMelodyID(), Common.IP_PUB_ATTR);
-			getED().removeAttribute(getMelodyID(), Common.FQDN_PUB_ATTR);
+			getED().removeAttribute(dunid, sAttr);
 		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while removing a "
-					+ "node's attribute via the node DUNID. "
-					+ "No node DUNID match " + getMelodyID() + ". "
+			throw new RuntimeException("Unexpected error while removing the "
+					+ "node's attribute '" + sAttr + "' via the node DUNID. "
+					+ "No node DUNID match " + dunid + ". "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
+		}
+	}
+
+	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
+			throws AwsException {
+		try {
+			Node netDevNode = NetworkManagementHelper
+					.findNetworkDeviceNodeByName(getTargetNode(), nd.getValue());
+			return getED().getMelodyID(netDevNode);
+		} catch (ResourcesDescriptorException Ex) {
+			throw new AwsException(Ex);
 		}
 	}
 
@@ -374,7 +375,7 @@ abstract public class AbstractAwsOperation implements ITask,
 					+ "Must be a valid String (a MelodyID).");
 		}
 		setAwsInstanceID(getED().getAttributeValue(melodyID,
-				Common.AWS_INSTANCE_ID_ATTR));
+				Common.INSTANCE_ID_ATTR));
 		DUNID previous = getMelodyID();
 		msMelodyId = melodyID;
 		return previous;

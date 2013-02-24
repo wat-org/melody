@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
 	
 	<fwrules>
-		<in access="allow" from="all" name="SSH" ports="22" protocols="tcp"/>
-		<in access="allow" from="all" name="RDP" ports="3389" protocols="tcp"/>
+		<fwrule access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
+		<fwrule access="allow" direction="in" from-ips="all" name="RDP" protocols="tcp" to-ports="389"/>
 	</fwrules>
 
 	<models>
 	
-		<model imageId="ami-59d0e22d" instanceType="t1.micro" keyPairName="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
-			<network-management networkMgmtDeviceSelector="" networkMgmtDeviceAttribute="IP_priv" method="ssh" port="22"/>
+		<model imageId="ami-3c5f5748" instanceType="t1.micro" keyPairName="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
+			<network-management method="ssh" port="22" mgmtNetworkDeviceAttribute="nat-ip"/>
 			<fwrules>
 				<in>
-					<fwrule access="allow" from="all" ports="80-443" protocols="tcp"/>
+					<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="80-443"/>
 					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
 				</in>
 				<out>
-					<fwrule access="allow" ports="1421" protocols="tcp" to="§[string-join(//DB/instance/@IP_priv,',')]§"/>
+					<fwrule access="allow" direction="out" protocols="tcp" to-ips="§[string-join(melody:getManagementNetworkHost(//DB//instance),',')]§" to-ports="1421"/>
 				</out>
 			</fwrules>
 			<devices>
@@ -25,12 +25,12 @@
 			</devices>
 		</model>
 	
-		<model imageId="ami-59d0e22d" instanceType="t1.micro" keyPairName="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
-			<network-management networkMgmtDeviceSelector="" networkMgmtDeviceAttribute="IP_priv" method="ssh" port="22"/>
+		<model imageId="ami-3c5f5748" instanceType="t1.micro" keyPairName="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
+			<network-management method="ssh" port="22" mgmtNetworkDeviceAttribute="nat-ip"/>
 			<fwrules>
 				<in>
 					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
-					<fwrule access="allow" from="§[string-join(//WEB/instance/@IP_priv,',')]§" ports="1421" protocols="tcp"/>
+					<fwrule access="allow" direction="in" from-ips="§[string-join(melody:getManagementNetworkHost(//WEB//instance),',')]§" protocols="tcp" to-ports="1421"/>
 				</in>
 			</fwrules>
 			<devices>
@@ -47,15 +47,26 @@
 			<instance availabilityZone="a" herit="./environment/models/model[@name='model-WEB']" name="web-a01">
 				<fwrules>
 					<in>
-						<fwrule access="allow" from="all" ports="8080,8443" protocols="tcp"/>
+						<fwrule access="allow" direction="in" from-ips="all" to-ports="8080,8443" protocols="tcp"/>
 					</in>
 				</fwrules>
 				<devices>
 					<disk deleteOnTermination="true" device="/dev/sde" size="1 G"/>
 				</devices>
+				<network>
+					<interface device="eth0"/>
+				</network>
 			</instance>	
-			<instance availabilityZone="b" herit="./environment/models/model[@name='model-WEB']" name="web-b01"/>
-			<instance availabilityZone="c" herit="./environment/models/model[@name='model-WEB']" name="web-c01"/>
+			<instance availabilityZone="b" herit="./environment/models/model[@name='model-WEB']" name="web-b01">
+				<network>
+					<interface device="eth0"/>
+				</network>
+			</instance>	
+			<instance availabilityZone="c" herit="./environment/models/model[@name='model-WEB']" name="web-c01">
+				<network>
+					<interface device="eth0"/>
+				</network>
+			</instance>	
 		</WEB>
 		<DB>
 			<instance herit="./environment/models/model[@name='model-DB']" instanceType="m1.small" name="db-01"/>

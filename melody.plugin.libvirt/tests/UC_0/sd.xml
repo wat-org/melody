@@ -21,10 +21,10 @@
 		<foreach	items="./environment//instance"
 					itemName="srv" >
 			<updateDiskDevices	target="§[srv]§" />
-			<echo message="+ disks devices updated for instance '§[§[srv]§/@instanceId]§'." />
+			<echo message="+ disk devices updated for instance '§[§[srv]§/@instanceId]§'." />
 		</foreach>
 
-		<echo message="-- Disks devices updated." />		
+		<echo message="-- Disk devices updated." />		
 	</order>
 
 	<order name="update_network_devices" >

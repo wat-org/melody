@@ -47,21 +47,12 @@
 		</java>
 	</target>
 
-	<target name="UC0_05_update_disks">
+	<target name="UC0_05_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="update_disks" />
+			<arg value="update_disk_devices" />
 			<arg value="-v" />
-			<classpath refid="classpathElements" />
-		</java>
-	</target>
-
-	<target name="UC0_06_destroyenv">
-		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
-			<arg value="-o" />
-			<arg value="destroy_env" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -76,7 +67,16 @@
 		</java>
 	</target>
 
-	<target name="UC0_all" depends="UC0_01_createenv,UC0_02_stopenv,UC0_03_resize,UC0_04_startenv,UC0_05_update_disks,UC0_06_destroyenv" />
+	<target name="UC0_08_destroyenv">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_env" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_all" depends="UC0_01_createenv,UC0_02_stopenv,UC0_03_resize,UC0_04_startenv,UC0_05_update_disk_devices,UC0_08_destroyenv" />
 
 	<target name="UC1_01_createenv">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
@@ -114,21 +114,12 @@
 		</java>
 	</target>
 
-	<target name="UC1_05_update_disks">
+	<target name="UC1_05_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
-			<arg value="update_disks" />
+			<arg value="update_disk_devices" />
 			<arg value="-v" />
-			<classpath refid="classpathElements" />
-		</java>
-	</target>
-
-	<target name="UC1_06_destroyenv">
-		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
-			<arg value="-o" />
-			<arg value="destroy_env" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -143,6 +134,15 @@
 		</java>
 	</target>
 
-	<target name="UC1_all" depends="UC1_01_createenv,UC1_02_stopenv,UC1_03_resize,UC1_04_startenv,UC1_05_update_disks,UC1_06_destroyenv" />
+	<target name="UC1_08_destroyenv">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_env" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC1_all" depends="UC1_01_createenv,UC1_02_stopenv,UC1_03_resize,UC1_04_startenv,UC1_05_update_disk_devices,UC1_08_destroyenv" />
 
 </project>
