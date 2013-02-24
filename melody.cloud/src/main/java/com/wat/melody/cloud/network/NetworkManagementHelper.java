@@ -98,7 +98,7 @@ public abstract class NetworkManagementHelper {
 	 * XML attribute of the Network Device Management Node which select the Host
 	 * to manage.
 	 */
-	public static final String NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR = "mgmtDetworkDeviceAttribute";
+	public static final String NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR = "mgmtNetworkDeviceAttribute";
 
 	/**
 	 * Default XML attribute of the Network Device Management Node which select

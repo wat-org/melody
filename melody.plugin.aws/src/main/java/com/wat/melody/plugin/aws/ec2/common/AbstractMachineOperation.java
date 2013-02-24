@@ -131,7 +131,7 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * the created Aws Instance, so you can use {@link #getAwsInstanceID} to
 	 * retrieve it ; <BR/>
 	 * * Once created, store the Aws Instance ID into the
-	 * {@link Common#AWS_INSTANCE_ID_ATTR} XML Attribute of the Aws Instance
+	 * {@link Common#INSTANCE_ID_ATTR} XML Attribute of the Aws Instance
 	 * Node ; <BR/>
 	 * </i>
 	 * </p>

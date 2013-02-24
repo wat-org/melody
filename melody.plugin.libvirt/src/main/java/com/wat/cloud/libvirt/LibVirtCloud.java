@@ -616,7 +616,7 @@ public abstract class LibVirtCloud {
 			// Create a security group
 			String sSGName = newSecurityGroupName();
 			String sSGDesc = getSecurityGroupDescription();
-			LibVirtCloud.createSecurityGroup(cnx, sSGName, sSGDesc);
+			createSecurityGroup(cnx, sSGName, sSGDesc);
 
 			// Create a network filter for the network device
 			PropertiesSet vars = new PropertiesSet();
