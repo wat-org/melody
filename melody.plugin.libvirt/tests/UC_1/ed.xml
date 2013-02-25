@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
-	<fwrules>
-		<in access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
-	</fwrules>
+	<global-fwrules>
+		<fwrule access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
+	</global-fwrules>
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
 			<network-management enable="true" method="ssh" port="22"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
-				<in>
-					<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
-					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
-				</in>
+				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
+				<fwrule herit="./environment/global-fwrules/fwrule[@name='SSH']"/>
 			</fwrules>
 			<disks>
 				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>

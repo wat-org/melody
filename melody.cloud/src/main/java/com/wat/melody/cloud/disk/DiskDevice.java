@@ -12,8 +12,10 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
  */
 public class DiskDevice {
 
+	// TODO : create a DiskDeviceName
 	public static final String DISK_DEVICE_SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";
 
+	// TODO : create a DiskDeviceSize
 	public static final String DISK_DEVICE_NAME_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
 
 	private int miSize;
@@ -21,6 +23,11 @@ public class DiskDevice {
 	private boolean mbDeleteOnTermination;
 	private boolean mbRootDevice;
 
+	/*
+	 * TODO : remove this constructor.
+	 * 
+	 * Create a constructor DiskDeviceName, DiskDeviceSize, delete, root
+	 */
 	public DiskDevice() {
 		try {
 			setSize(1);

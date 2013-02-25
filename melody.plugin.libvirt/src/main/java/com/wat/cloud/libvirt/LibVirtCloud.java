@@ -693,77 +693,74 @@ public abstract class LibVirtCloud {
 					+ "Must be a valid " + Domain.class.getCanonicalName()
 					+ ".");
 		}
-		FwRulesDecomposed res = new FwRulesDecomposed();
+		FwRulesDecomposed rules = new FwRulesDecomposed();
 		if (netdev == null) {
-			return res;
+			return rules;
 		}
 		try {
 			Connect cnx = d.getConnect();
 			String sSGName = getSecurityGroup(d, netdev);
 			Doc doc = new Doc();
-			Interface inter = Interface.parseString(netdev.getValue());
 			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
 			doc.loadFromXML(nf.getXMLDesc());
 			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
-
+			Node n = null;
+			Interface inter = Interface.parseString(netdev.getValue());
+			IpRange fromIp = null;
+			IpRange toIp = null;
+			PortRange fromPorts = null;
+			PortRange toPorts = null;
+			Protocol proto = null;
+			Direction dir = null;
+			Access access = null;
 			for (int i = 0; i < nl.getLength(); i++) {
-				Node n = nl.item(i);
-				FwRuleDecomposed rule = new FwRuleDecomposed();
+				n = nl.item(i);
 
-				// Interface
-				rule.setInterface(inter);
-
-				// From IP
 				String sIp = Doc.evaluateAsString("./*/@srcipaddr", n);
 				String sMask = Doc.evaluateAsString("./*/@srcipmask", n);
-				rule.setFromIpRange(IpRange.parseString(sIp + "/" + sMask));
+				fromIp = IpRange.parseString(sIp + "/" + sMask);
 
-				// From Port
 				String start = Doc.evaluateAsString("./*/@srcporstart", n);
 				String end = Doc.evaluateAsString("./*/@srcportend", n);
-				rule.setFromPortRange(PortRange.parseString(start + "-" + end));
+				fromPorts = PortRange.parseString(start + "-" + end);
 
-				// To IP
 				sIp = Doc.evaluateAsString("./*/@dstipaddr", n);
 				sMask = Doc.evaluateAsString("./*/@dstipmask", n);
-				rule.setToIpRange(IpRange.parseString(sIp + "/" + sMask));
+				toIp = IpRange.parseString(sIp + "/" + sMask);
 
-				// To Port
 				start = Doc.evaluateAsString("./*/@dstportstart", n);
 				end = Doc.evaluateAsString("./*/@dstportend", n);
-				rule.setToPortRange(PortRange.parseString(start + "-" + end));
+				toPorts = PortRange.parseString(start + "-" + end);
 
-				// Protocol
 				String sProtocol = Doc.evaluateAsString("./node-name(*)", n);
 				if (sProtocol.equalsIgnoreCase("tcp")) {
-					rule.setProtocol(Protocol.TCP);
+					proto = Protocol.TCP;
 				} else {
-					rule.setProtocol(Protocol.UDP);
+					proto = Protocol.UDP;
 				}
 
-				// Direction
 				String sDirection = Doc.evaluateAsString("./@direction", n);
 				if (sDirection.equalsIgnoreCase("in")) {
-					rule.setDirection(Direction.IN);
+					dir = Direction.IN;
 				} else {
-					rule.setDirection(Direction.OUT);
+					dir = Direction.OUT;
 				}
 
-				// Access
 				String sAccess = Doc.evaluateAsString("./@action", n);
 				if (sAccess.equalsIgnoreCase("accept")) {
-					rule.setAccess(Access.ALLOW);
+					access = Access.ALLOW;
 				} else {
-					rule.setAccess(Access.DENY);
+					access = Access.DENY;
 				}
 
-				res.add(rule);
+				rules.add(new FwRuleDecomposed(inter, fromIp, fromPorts, toIp,
+						toPorts, proto, dir, access));
 			}
 		} catch (LibvirtException | MelodyException | IOException
 				| XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
-		return res;
+		return rules;
 	}
 
 	public static void revokeFireWallRules(LibVirtInstance i,
@@ -827,8 +824,8 @@ public abstract class LibVirtCloud {
 								+ rule.getToPortRange().getEndPort() + "'])]");
 				if (n != null) {
 					n.getParentNode().removeChild(n);
-					log.debug("Revoke on Domain '" + sInstanceId
-							+ "' the FireWall rule " + rule + ".");
+					log.debug("Domain '" + sInstanceId
+							+ "' revokes the FireWall rule " + rule + ".");
 				}
 			}
 
@@ -909,8 +906,8 @@ public abstract class LibVirtCloud {
 						.getEndPort().toString(), nin);
 
 				doc.getDocument().getFirstChild().appendChild(nrule);
-				log.debug("Authorize on Domain '" + sInstanceId
-						+ "' the FireWall rule " + rule + ".");
+				log.debug("Domain '" + sInstanceId
+						+ "' grants the FireWall rule " + rule + ".");
 			}
 
 			String dump = doc.dump();

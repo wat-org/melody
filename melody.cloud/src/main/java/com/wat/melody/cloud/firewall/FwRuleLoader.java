@@ -8,6 +8,7 @@ import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Direction;
 import com.wat.melody.common.network.Directions;
 import com.wat.melody.common.network.FwRule;
 import com.wat.melody.common.network.FwRules;
@@ -95,15 +96,14 @@ public class FwRuleLoader {
 		return moTC;
 	}
 
-	private boolean loadFromIps(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private IpRanges loadFromIps(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, FROM_IPS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -111,25 +111,24 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setFromIpRanges(IpRanges.parseString(v));
+			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadFromPorts(Node n, FwRule fw)
+	private PortRanges loadFromPorts(Node n)
 			throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, FROM_PORTS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -137,25 +136,23 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setFromPortRanges(PortRanges.parseString(v));
+			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadToIps(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private IpRanges loadToIps(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, TO_IPS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -163,25 +160,23 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setToIpRanges(IpRanges.parseString(v));
+			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadToPorts(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private PortRanges loadToPorts(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -189,25 +184,23 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setToPortRanges(PortRanges.parseString(v));
+			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadDevices(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private Interfaces loadDevices(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, DEVICES_NAME_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -215,25 +208,23 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setInterfaces(Interfaces.parseString(v));
+			return Interfaces.parseString(v);
 		} catch (IllegalInterfacesException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadProtocols(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private Protocols loadProtocols(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, PROTOCOLS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -241,25 +232,24 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setProtocols(Protocols.parseString(v));
+			return Protocols.parseString(v);
 		} catch (IllegalProtocolsException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadDirection(Node n, FwRule fw)
+	private Directions loadDirection(Node n)
 			throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, DIRECTION_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -267,25 +257,23 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setDirections(Directions.parseString(v));
+			return Directions.parseString(v);
 		} catch (IllegalDirectionsException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
-	private boolean loadAccess(Node n, FwRule fw)
-			throws ResourcesDescriptorException {
+	private Access loadAccess(Node n) throws ResourcesDescriptorException {
 		Node attr = XPathHelper.getHeritedAttribute(n, ACCESS_ATTR);
 		if (attr == null) {
-			return false;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
 			v = getTC().expand(v);
@@ -293,14 +281,13 @@ public class FwRuleLoader {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 		if (v == null || v.length() == 0) {
-			return false;
+			return null;
 		}
 		try {
-			fw.setAccess(Access.parseString(v));
+			return Access.parseString(v);
 		} catch (IllegalAccessException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
-		return true;
 	}
 
 	/**
@@ -338,20 +325,33 @@ public class FwRuleLoader {
 	 */
 	public FwRules load(NodeList nl) throws ResourcesDescriptorException {
 		FwRules fwrs = new FwRules();
+		Node n = null;
 		for (int i = 0; i < nl.getLength(); i++) {
-			Node n = nl.item(i);
-			FwRule fw = new FwRule();
-			if (!loadFromIps(n, fw)) {
-				continue;
+			n = nl.item(i);
+			Directions dirs = loadDirection(n);
+			IpRanges fromIps = loadFromIps(n);
+			IpRanges toIps = loadToIps(n);
+			if (fromIps == null && dirs.contains(Direction.IN)) {
+				if (dirs.contains(Direction.OUT)) {
+					dirs.remove(Direction.IN);
+				} else {
+					continue;
+				}
 			}
-			loadFromPorts(n, fw);
-			loadToIps(n, fw);
-			loadToPorts(n, fw);
-			loadDevices(n, fw);
-			loadProtocols(n, fw);
-			loadDirection(n, fw);
-			loadAccess(n, fw);
-			fwrs.add(fw);
+			if (toIps == null && dirs.contains(Direction.OUT)) {
+				if (dirs.contains(Direction.IN)) {
+					dirs.remove(Direction.OUT);
+				} else {
+					continue;
+				}
+			}
+			PortRanges fromPorts = loadFromPorts(n);
+			PortRanges toPorts = loadToPorts(n);
+			Interfaces inters = loadDevices(n);
+			Protocols protos = loadProtocols(n);
+			Access access = loadAccess(n);
+			fwrs.add(new FwRule(inters, fromIps, fromPorts, toIps, toPorts,
+					protos, dirs, access));
 		}
 		return fwrs;
 	}

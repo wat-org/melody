@@ -7,72 +7,38 @@ package com.wat.melody.common.network;
  */
 public class FwRuleDecomposed {
 
+	private static Interface DEFAULT_INTERFACE = Interface.ALL;
+	private static IpRange DEFAULT_FROM_IP_RANGE = IpRange.ALL;
+	private static PortRange DEFAULT_FROM_PORT_RANGE = PortRange.ALL;
+	private static IpRange DEFAULT_TO_IP_RANGE = IpRange.ALL;
+	private static PortRange DEFAULT_TO_PORT_RANGE = PortRange.ALL;
+	private static Protocol DEFAULT_PROTOCOL = Protocol.TCP;
+	private static Direction DEFAULT_DIRECTION = Direction.IN;
+	private static Access DEFAULT_ACCESS = Access.DENY;
+
 	/*
 	 * TODO : remove the device
 	 */
-	private Interface moInterface;
-	private IpRange moFromIpRange;
-	private PortRange moFromPortRange;
-	private IpRange moToIpRange;
-	private PortRange moToPortRange;
-	private Protocol meProtocol;
-	private Direction meDirection;
-	private Access meAccess;
-
-	public FwRuleDecomposed() {
-		initInterface();
-		initFromIpRange();
-		initFromPortRange();
-		initToIpRange();
-		initToPortRange();
-		initProtocol();
-		initDirection();
-		initAccess();
-	}
+	private Interface moInterface = DEFAULT_INTERFACE;
+	private IpRange moFromIpRange = DEFAULT_FROM_IP_RANGE;
+	private PortRange moFromPortRange = DEFAULT_FROM_PORT_RANGE;
+	private IpRange moToIpRange = DEFAULT_TO_IP_RANGE;
+	private PortRange moToPortRange = DEFAULT_TO_PORT_RANGE;
+	private Protocol meProtocol = DEFAULT_PROTOCOL;
+	private Direction meDirection = DEFAULT_DIRECTION;
+	private Access meAccess = DEFAULT_ACCESS;
 
 	public FwRuleDecomposed(Interface inter, IpRange fromIpRange,
-			PortRange fromPortRange, IpRange toIoRange, PortRange toPortRange,
+			PortRange fromPortRange, IpRange toIpRange, PortRange toPortRange,
 			Protocol protocol, Direction direction, Access access) {
 		setInterface(inter);
 		setFromIpRange(fromIpRange);
 		setFromPortRange(fromPortRange);
-		setToIpRange(toIoRange);
+		setToIpRange(toIpRange);
 		setToPortRange(toPortRange);
 		setProtocol(protocol);
 		setDirection(direction);
 		setAccess(access);
-	}
-
-	public void initInterface() {
-		moInterface = Interface.ALL;
-	}
-
-	public void initFromIpRange() {
-		moFromIpRange = IpRange.ALL;
-	}
-
-	public void initFromPortRange() {
-		moFromPortRange = PortRange.ALL;
-	}
-
-	public void initToIpRange() {
-		moToIpRange = IpRange.ALL;
-	}
-
-	public void initToPortRange() {
-		moToPortRange = PortRange.ALL;
-	}
-
-	public void initProtocol() {
-		meProtocol = Protocol.TCP;
-	}
-
-	public void initDirection() {
-		meDirection = Direction.IN;
-	}
-
-	public void initAccess() {
-		meAccess = Access.DENY;
 	}
 
 	@Override
@@ -117,9 +83,7 @@ public class FwRuleDecomposed {
 
 	public Interface setInterface(Interface inter) {
 		if (inter == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Interface.class.getCanonicalName()
-					+ ".");
+			inter = DEFAULT_INTERFACE;
 		}
 		Interface previous = getInterface();
 		moInterface = inter;
@@ -130,14 +94,12 @@ public class FwRuleDecomposed {
 		return moFromIpRange;
 	}
 
-	public IpRange setFromIpRange(IpRange ipRange) {
-		if (ipRange == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + IpRange.class.getCanonicalName()
-					+ ".");
+	public IpRange setFromIpRange(IpRange fromIpRange) {
+		if (fromIpRange == null) {
+			fromIpRange = DEFAULT_FROM_IP_RANGE;
 		}
 		IpRange previous = getFromIpRange();
-		moFromIpRange = ipRange;
+		moFromIpRange = fromIpRange;
 		return previous;
 	}
 
@@ -147,9 +109,7 @@ public class FwRuleDecomposed {
 
 	public PortRange setFromPortRange(PortRange fromPortRange) {
 		if (fromPortRange == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PortRange.class.getCanonicalName()
-					+ ".");
+			fromPortRange = DEFAULT_FROM_PORT_RANGE;
 		}
 		PortRange previous = getFromPortRange();
 		moFromPortRange = fromPortRange;
@@ -160,14 +120,12 @@ public class FwRuleDecomposed {
 		return moToIpRange;
 	}
 
-	public IpRange setToIpRange(IpRange ipRange) {
-		if (ipRange == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + IpRange.class.getCanonicalName()
-					+ ".");
+	public IpRange setToIpRange(IpRange toIpRange) {
+		if (toIpRange == null) {
+			toIpRange = DEFAULT_TO_IP_RANGE;
 		}
 		IpRange previous = getToIpRange();
-		moToIpRange = ipRange;
+		moToIpRange = toIpRange;
 		return previous;
 	}
 
@@ -177,9 +135,7 @@ public class FwRuleDecomposed {
 
 	public PortRange setToPortRange(PortRange toPortRange) {
 		if (toPortRange == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PortRange.class.getCanonicalName()
-					+ ".");
+			toPortRange = DEFAULT_TO_PORT_RANGE;
 		}
 		PortRange previous = getToPortRange();
 		moToPortRange = toPortRange;
@@ -192,9 +148,7 @@ public class FwRuleDecomposed {
 
 	public Protocol setProtocol(Protocol protocol) {
 		if (protocol == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Protocol.class.getCanonicalName()
-					+ ".");
+			protocol = DEFAULT_PROTOCOL;
 		}
 		Protocol previous = getProtocol();
 		this.meProtocol = protocol;
@@ -207,9 +161,7 @@ public class FwRuleDecomposed {
 
 	public Direction setDirection(Direction direction) {
 		if (direction == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Direction.class.getCanonicalName()
-					+ ".");
+			direction = DEFAULT_DIRECTION;
 		}
 		Direction previous = getDirection();
 		this.meDirection = direction;
@@ -222,9 +174,7 @@ public class FwRuleDecomposed {
 
 	public Access setAccess(Access access) {
 		if (access == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Access.class.getCanonicalName()
-					+ ".");
+			access = DEFAULT_ACCESS;
 		}
 		Access previous = getAccess();
 		this.meAccess = access;
