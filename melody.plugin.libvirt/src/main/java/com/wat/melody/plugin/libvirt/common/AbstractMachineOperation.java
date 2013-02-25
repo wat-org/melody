@@ -13,6 +13,7 @@ import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Direction;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.Interface;
@@ -114,17 +115,17 @@ public abstract class AbstractMachineOperation extends AbstractLibVirtOperation 
 		NetworkDeviceName netdev = mh.getManagementDatas()
 				.getNetworkDeviceName();
 		Port p = mh.getManagementDatas().getPort();
-		FwRuleDecomposed rule = new FwRuleDecomposed();
+		Interface inter = null;
+		PortRange toPorts = null;
 		try {
-			rule.setInterface(Interface.parseString(netdev.getValue()));
-			rule.setToPortRange(new PortRange(p, p));
+			inter = Interface.parseString(netdev.getValue());
+			toPorts = new PortRange(p, p);
 		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
 			throw new RuntimeException("BUG ! Cannot happened !", Ex);
 		}
-		rule.setFromIpRange(IpRange.ALL);
-		rule.setProtocol(Protocol.TCP);
-		rule.setAccess(Access.ALLOW);
-
+		FwRuleDecomposed rule = new FwRuleDecomposed(inter, IpRange.ALL,
+				PortRange.ALL, IpRange.ALL, toPorts, Protocol.TCP,
+				Direction.IN, Access.ALLOW);
 		FwRulesDecomposed rules = new FwRulesDecomposed();
 		LibVirtInstance i = getInstance();
 		FwRulesDecomposed currentRules = i.getFireWallRules(netdev);

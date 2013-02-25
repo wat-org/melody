@@ -16,6 +16,21 @@ public class Protocols extends LinkedHashSet<Protocol> {
 
 	public static final String PROTOCOLS_SEPARATOR = ",";
 
+	public static Protocols ALL = createProtocols(Protocol.TCP, Protocol.UDP);
+
+	private static Protocols createProtocols(Protocol... protocols) {
+		try {
+			return new Protocols(protocols);
+		} catch (IllegalProtocolsException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "the Protocols with its default value. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
 	/**
 	 * <p>
 	 * Convert the given <code>String</code> to a {@link Protocols} object.

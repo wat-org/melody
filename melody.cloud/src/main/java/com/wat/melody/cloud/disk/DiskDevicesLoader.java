@@ -143,6 +143,7 @@ public class DiskDevicesLoader {
 	 *             device declare with the same name).
 	 */
 	public DiskDeviceList load(NodeList nl) throws ResourcesDescriptorException {
+		// TODO : need refactor : see FwRuleLoader
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);

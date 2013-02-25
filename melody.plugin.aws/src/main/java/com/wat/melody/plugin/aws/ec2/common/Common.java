@@ -1962,22 +1962,21 @@ public class Common {
 			throw new RuntimeException(Ex);
 		}
 		FwRulesDecomposed rules = new FwRulesDecomposed();
+		IpRange fromIp = null;
+		PortRange toPorts = null;
+		Protocol proto = null;
 		for (IpPermission perm : perms) {
-			FwRuleDecomposed rule = new FwRuleDecomposed();
-			rule.setInterface(inter);
-			rule.setAccess(Access.ALLOW);
-			rule.setDirection(Direction.IN);
 			try {
-				rule.setProtocol(Protocol.parseString(perm.getIpProtocol()));
-				rule.setFromIpRange(IpRange.parseString(perm.getIpRanges().get(
-						0)));
-				rule.setToPortRange(PortRange.parseString(perm.getFromPort()
-						+ "-" + perm.getToPort()));
+				fromIp = IpRange.parseString(perm.getIpRanges().get(0));
+				toPorts = PortRange.parseString(perm.getFromPort() + "-"
+						+ perm.getToPort());
+				proto = Protocol.parseString(perm.getIpProtocol());
 			} catch (IllegalProtocolException | IllegalIpRangeException
 					| IllegalPortRangeException Ex) {
 				throw new RuntimeException(Ex);
 			}
-			rules.add(rule);
+			rules.add(new FwRuleDecomposed(inter, fromIp, PortRange.ALL,
+					IpRange.ALL, toPorts, proto, Direction.IN, Access.ALLOW));
 		}
 		return rules;
 	}

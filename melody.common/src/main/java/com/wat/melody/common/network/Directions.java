@@ -16,6 +16,8 @@ public class Directions extends LinkedHashSet<Direction> {
 
 	public static final String DIRECTIONS_SEPARATOR = ",";
 
+	private static final String _ALL = "all";
+
 	public static final Directions ALL = createDirections(Direction.IN,
 			Direction.OUT);
 
@@ -105,6 +107,11 @@ public class Directions extends LinkedHashSet<Direction> {
 			if (direction.length() == 0) {
 				throw new IllegalDirectionsException(Messages.bind(
 						Messages.DirectionsEx_EMPTY_DIRECTION, sDirections));
+			}
+			if (direction.equalsIgnoreCase(_ALL)) {
+				add(Direction.IN);
+				add(Direction.OUT);
+				continue;
 			}
 			try {
 				add(Direction.parseString(direction));

@@ -1,7 +1,5 @@
 package com.wat.melody.common.network;
 
-import com.wat.melody.common.network.exception.IllegalProtocolsException;
-
 /**
  * 
  * @author Guillaume Cornet
@@ -9,25 +7,23 @@ import com.wat.melody.common.network.exception.IllegalProtocolsException;
  */
 public class FwRule {
 
-	private Interfaces moInterfaces;
-	private IpRanges moFromIpRanges;
-	private PortRanges moFromPortRanges;
-	private IpRanges moToIpRanges;
-	private PortRanges moToPortRanges;
-	private Protocols moProtocols;
-	private Directions moDirections;
-	private Access meAccess;
+	private static Interfaces DEFAULT_INTERFACES = Interfaces.ALL;
+	private static IpRanges DEFAULT_FROM_IP_RANGES = IpRanges.ALL;
+	private static PortRanges DEFAULT_FROM_PORT_RANGES = PortRanges.ALL;
+	private static IpRanges DEFAULT_TO_IP_RANGES = IpRanges.ALL;
+	private static PortRanges DEFAULT_TO_PORT_RANGES = PortRanges.ALL;
+	private static Protocols DEFAULT_PROTOCOLS = Protocols.ALL;
+	private static Directions DEFAULT_DIRECTIONS = Directions.ALL;
+	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	public FwRule() {
-		initInterfaces();
-		initFromIpRanges();
-		initFromPortRanges();
-		initToIpRanges();
-		initToPortRanges();
-		initProtocols();
-		initDirections();
-		initAccess();
-	}
+	private Interfaces moInterfaces = DEFAULT_INTERFACES;
+	private IpRanges moFromIpRanges = DEFAULT_FROM_IP_RANGES;
+	private PortRanges moFromPortRanges = DEFAULT_FROM_PORT_RANGES;
+	private IpRanges moToIpRanges = DEFAULT_TO_IP_RANGES;
+	private PortRanges moToPortRanges = DEFAULT_TO_PORT_RANGES;
+	private Protocols moProtocols = DEFAULT_PROTOCOLS;
+	private Directions moDirections = DEFAULT_DIRECTIONS;
+	private Access meAccess = DEFAULT_ACCESS;
 
 	public FwRule(Interfaces interfaces, IpRanges fromIpRanges,
 			PortRanges fromPortRanges, IpRanges toIoRanges,
@@ -41,47 +37,6 @@ public class FwRule {
 		setProtocols(protocols);
 		setDirections(directions);
 		setAccess(access);
-	}
-
-	public void initInterfaces() {
-		moInterfaces = Interfaces.ALL;
-	}
-
-	public void initFromIpRanges() {
-		moFromIpRanges = IpRanges.ALL;
-	}
-
-	public void initFromPortRanges() {
-		moFromPortRanges = PortRanges.ALL;
-	}
-
-	public void initToIpRanges() {
-		moToIpRanges = IpRanges.ALL;
-	}
-
-	public void initToPortRanges() {
-		moToPortRanges = PortRanges.ALL;
-	}
-
-	public void initProtocols() {
-		try {
-			moProtocols = new Protocols(Protocol.TCP, Protocol.UDP);
-		} catch (IllegalProtocolsException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the Protocols with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	public void initDirections() {
-		moDirections = Directions.ALL;
-	}
-
-	public void initAccess() {
-		meAccess = Access.DENY;
 	}
 
 	@Override
@@ -146,9 +101,7 @@ public class FwRule {
 
 	public Interfaces setInterfaces(Interfaces inter) {
 		if (inter == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Interface.class.getCanonicalName()
-					+ ".");
+			inter = DEFAULT_INTERFACES;
 		}
 		Interfaces previous = getInterfaces();
 		moInterfaces = inter;
@@ -159,14 +112,12 @@ public class FwRule {
 		return moFromIpRanges;
 	}
 
-	public IpRanges setFromIpRanges(IpRanges ipRanges) {
-		if (ipRanges == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + IpRanges.class.getCanonicalName()
-					+ ".");
+	public IpRanges setFromIpRanges(IpRanges fromIpRanges) {
+		if (fromIpRanges == null) {
+			fromIpRanges = DEFAULT_FROM_IP_RANGES;
 		}
 		IpRanges previous = getFromIpRanges();
-		moFromIpRanges = ipRanges;
+		moFromIpRanges = fromIpRanges;
 		return previous;
 	}
 
@@ -176,9 +127,7 @@ public class FwRule {
 
 	public PortRanges setFromPortRanges(PortRanges fromPortRanges) {
 		if (fromPortRanges == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PortRanges.class.getCanonicalName()
-					+ ".");
+			fromPortRanges = DEFAULT_FROM_PORT_RANGES;
 		}
 		PortRanges previous = getFromPortRanges();
 		moFromPortRanges = fromPortRanges;
@@ -189,14 +138,12 @@ public class FwRule {
 		return moToIpRanges;
 	}
 
-	public IpRanges setToIpRanges(IpRanges ipRanges) {
-		if (ipRanges == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + IpRanges.class.getCanonicalName()
-					+ ".");
+	public IpRanges setToIpRanges(IpRanges toIpRanges) {
+		if (toIpRanges == null) {
+			toIpRanges = DEFAULT_TO_IP_RANGES;
 		}
 		IpRanges previous = getToIpRanges();
-		moToIpRanges = ipRanges;
+		moToIpRanges = toIpRanges;
 		return previous;
 	}
 
@@ -206,9 +153,7 @@ public class FwRule {
 
 	public PortRanges setToPortRanges(PortRanges toPortRanges) {
 		if (toPortRanges == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PortRanges.class.getCanonicalName()
-					+ ".");
+			toPortRanges = DEFAULT_TO_PORT_RANGES;
 		}
 		PortRanges previous = getToPortRanges();
 		moToPortRanges = toPortRanges;
@@ -221,9 +166,7 @@ public class FwRule {
 
 	public Protocols setProtocols(Protocols protocols) {
 		if (protocols == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Protocols.class.getCanonicalName()
-					+ ".");
+			protocols = DEFAULT_PROTOCOLS;
 		}
 		Protocols previous = getProtocols();
 		this.moProtocols = protocols;
@@ -236,9 +179,7 @@ public class FwRule {
 
 	public Directions setDirections(Directions directions) {
 		if (directions == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Directions.class.getCanonicalName()
-					+ ".");
+			directions = DEFAULT_DIRECTIONS;
 		}
 		Directions previous = getDirections();
 		this.moDirections = directions;
@@ -251,9 +192,7 @@ public class FwRule {
 
 	public Access setAccess(Access access) {
 		if (access == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Access.class.getCanonicalName()
-					+ ".");
+			access = DEFAULT_ACCESS;
 		}
 		Access previous = getAccess();
 		this.meAccess = access;

@@ -9,11 +9,9 @@
 			<network-management enable="true" method="ssh" port="22"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
-				<in>
-					<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
-					<fwrule access="allow" direction="in" from-ips="10.10.0.0/16" protocols="tcp" to-ports="678"/>
-					<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
-				</in>
+				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
+				<fwrule access="allow" direction="in" from-ips="10.10.0.0/16" protocols="tcp" to-ports="678"/>
+				<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
 			</fwrules>
 			<disks>
 				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>

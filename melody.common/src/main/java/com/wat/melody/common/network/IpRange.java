@@ -12,7 +12,9 @@ public class IpRange {
 	public static final String PATTERN = IpAddressV4.PATTERN
 			+ "/([12]?\\d|3[0-2])";
 
-	public static final IpRange ALL = createIpRange("0.0.0.0/0");
+	private static final String _ALL = "0.0.0.0/0";
+
+	public static final IpRange ALL = createIpRange(_ALL);
 
 	private static IpRange createIpRange(String sIpRange) {
 		try {
@@ -110,7 +112,7 @@ public class IpRange {
 			throw new IllegalIpRangeException(Messages.bind(
 					Messages.IpRangeEx_EMPTY, sIpRange));
 		} else if (sIpRange.equalsIgnoreCase("all")) {
-			msValue = ALL.getValue();
+			msValue = _ALL;
 			return previous;
 		} else if (sIpRange.matches("^" + IpAddressV4.PATTERN + "$")) {
 			sIpRange += "/32";

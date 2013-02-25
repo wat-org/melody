@@ -7,6 +7,8 @@ package com.wat.melody.cloud.network;
  */
 public class NetworkDeviceDatas {
 
+	// TODO : rename to NetworkDevice
+	// TODO : insert the NetworkDeviceName
 	private String msIP;
 	private String msFQDN;
 	private String msMacAddr;

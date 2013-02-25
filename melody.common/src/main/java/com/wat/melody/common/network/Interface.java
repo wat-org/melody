@@ -11,9 +11,9 @@ public class Interface {
 
 	public static final String PATTERN = ".*";
 
-	public static final String _ALL = "all";
+	private static final String _ALL = "all";
 
-	public static final Interface ALL = createInterface("all");
+	public static final Interface ALL = createInterface(_ALL);
 
 	private static Interface createInterface(String sInterface) {
 		try {

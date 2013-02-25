@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
 	
-	<fwrules>
+	<global-fwrules>
 		<fwrule access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
 		<fwrule access="allow" direction="in" from-ips="all" name="RDP" protocols="tcp" to-ports="389"/>
-	</fwrules>
+	</global-fwrules>
 
 	<instances>
 	
 		<instance imageId="ami-3c5f5748" instanceType="t1.micro" keyPairName="id_rsa_aws" name="web-01" region="eu-west-1">
 			<network-management method="ssh" mgmtNetworkDeviceAttribute="nat-ip" port="22"/>
 			<fwrules>
-				<in>
-					<fwrule herit="./environment/fwrules/fwrule[@name='SSH']"/>
-					<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="80-443"/>
-					<fwrule access="allow" direction="in" from-ips="" protocols="tcp" to-ports="5555"/>
-					<fwrule access="allow" direction="in" from-ips="§[string-join(melody:getManagementNetworkHost(//instance),',')]§" protocols="tcp" to-ports="1234-"/>
-				</in>
+				<fwrule herit="./environment/global-fwrules/fwrule[@name='SSH']"/>
+				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="80-443"/>
+				<fwrule access="allow" direction="in" from-ips="" protocols="tcp" to-ports="5555"/>
+				<fwrule access="allow" direction="in" from-ips="§[string-join(melody:getManagementNetworkHost(//instance),',')]§" protocols="tcp" to-ports="1234-"/>
 			</fwrules>
 			<network>
 				<interface device="eth0"/>
