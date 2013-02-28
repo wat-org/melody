@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.network;
 
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 
 /**
  * 
@@ -12,7 +12,7 @@ public class NetworkDeviceName {
 	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";
 
 	public static NetworkDeviceName parseString(String sInterface)
-			throws IllegalNetworkDeviceException {
+			throws IllegalNetworkDeviceNameException {
 		return new NetworkDeviceName(sInterface);
 	}
 
@@ -23,7 +23,7 @@ public class NetworkDeviceName {
 	}
 
 	public NetworkDeviceName(String sDeviceName)
-			throws IllegalNetworkDeviceException {
+			throws IllegalNetworkDeviceNameException {
 		setValue(sDeviceName);
 	}
 
@@ -66,21 +66,21 @@ public class NetworkDeviceName {
 	 * 
 	 * @return the network device name, before this operation.
 	 * 
-	 * @throws IllegalNetworkDeviceException
+	 * @throws IllegalNetworkDeviceNameException
 	 *             if the given network device name is invalid.
 	 */
 	private String setValue(String sDeviceName)
-			throws IllegalNetworkDeviceException {
+			throws IllegalNetworkDeviceNameException {
 		if (sDeviceName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a String (a linux Network Device name)");
 		}
 		if (sDeviceName.trim().length() == 0) {
-			throw new IllegalNetworkDeviceException(Messages.bind(
+			throw new IllegalNetworkDeviceNameException(Messages.bind(
 					Messages.NetworkDeviceNameEx_EMPTY, sDeviceName));
 		}
 		if (!sDeviceName.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
-			throw new IllegalNetworkDeviceException(Messages.bind(
+			throw new IllegalNetworkDeviceNameException(Messages.bind(
 					Messages.NetworkDeviceNameEx_INVALID, sDeviceName,
 					NETWORK_DEVICE_NAME_PATTERN));
 		}

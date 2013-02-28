@@ -5,8 +5,9 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 
 /**
  * 
@@ -16,27 +17,30 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 public class DiskDevicesLoader {
 
 	/**
-	 * The 'disk' XML Nested element of the Instance Node in the RD
+	 * XML Nested element of an Instance Node, which contains the definition of
+	 * a Disk Device.
 	 */
 	public static final String DISK_DEVICE_NE = "disk";
 
 	/**
-	 * The 'size' XML attribute of a Disk Node
-	 */
-	public static final String SIZE_ATTR = "size";
-
-	/**
-	 * The 'device' XML attribute of a Disk Node
+	 * XML attribute of a Disk Device Node, which define the name of the device.
 	 */
 	public static final String DEVICE_ATTR = "device";
 
 	/**
-	 * The 'deleteOnTermination' XML attribute of a Disk Node
+	 * XML attribute of a Disk Device Node, which define the size of the device.
+	 */
+	public static final String SIZE_ATTR = "size";
+
+	/**
+	 * XML attribute of a Disk Device Node, which indicate if the device should
+	 * be automatically deleted when the instance is deleted.
 	 */
 	public static final String DELETEONTERMINATION_ATTR = "deleteOnTermination";
 
 	/**
-	 * The 'rootDevice' XML attribute of a Disk Node
+	 * XML attribute of a Disk Device Node, which indicate if the device is the
+	 * root device.
 	 */
 	public static final String ROOTDEVICE_ATTR = "rootDevice";
 
@@ -55,7 +59,7 @@ public class DiskDevicesLoader {
 		return moTC;
 	}
 
-	private void loadDevice(Node n, DiskDevice disk)
+	private DiskDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
 		if (attr == null) {
@@ -64,54 +68,54 @@ public class DiskDevicesLoader {
 		}
 		String v = attr.getNodeValue();
 		if (v.length() == 0) {
-			return;
+			return null;
 		}
 		try {
-			disk.setDeviceName(v);
-		} catch (IllegalDiskDeviceException Ex) {
+			return DiskDeviceName.parseString(v);
+		} catch (IllegalDiskDeviceNameException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
-	private void loadGiga(Node n, DiskDevice disk)
+	private DiskDeviceSize loadDeviceSize(Node n)
 			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(SIZE_ATTR);
 		if (attr == null) {
-			return;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v.length() == 0) {
-			return;
+			return null;
 		}
 		try {
-			disk.setSize(v);
-		} catch (IllegalDiskDeviceException Ex) {
+			return DiskDeviceSize.parseString(v);
+		} catch (IllegalDiskDeviceSizeException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
-	private void loadDeleteOnTermination(Node n, DiskDevice disk) {
+	private Boolean loadDeleteOnTermination(Node n) {
 		Node attr = n.getAttributes().getNamedItem(DELETEONTERMINATION_ATTR);
 		if (attr == null) {
-			return;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v.length() == 0) {
-			return;
+			return null;
 		}
-		disk.setDeleteOnTermination(Boolean.parseBoolean(v));
+		return Boolean.parseBoolean(v);
 	}
 
-	private void loadRootDevice(Node n, DiskDevice disk) {
+	private Boolean loadRootDevice(Node n) {
 		Node attr = n.getAttributes().getNamedItem(ROOTDEVICE_ATTR);
 		if (attr == null) {
-			return;
+			return null;
 		}
 		String v = attr.getNodeValue();
 		if (v.length() == 0) {
-			return;
+			return null;
 		}
-		disk.setRootDevice(Boolean.parseBoolean(v));
+		return Boolean.parseBoolean(v);
 	}
 
 	/**
@@ -123,9 +127,9 @@ public class DiskDevicesLoader {
 	 * <p>
 	 * A Disk Device {@link Node} must have the attributes :
 	 * <ul>
-	 * <li>size : which should contains a SIZE in Go ;</li>
-	 * <li>device : which should contains a LINUX DEVICE NAME (ex: /dev/sda1,
-	 * /dev/vda) ;</li>
+	 * <li>device : which should contains a {@link DiskDeviceName} (ex:
+	 * /dev/sda1, /dev/vda) ;</li>
+	 * <li>size : which should contains a {@link DiskDeviceSize} ;</li>
 	 * <li>deleteOnTermination : which should contains true/false ;</li>
 	 * <li>rootDevice : which should contains true/false ;</li>
 	 * </ul>
@@ -143,18 +147,21 @@ public class DiskDevicesLoader {
 	 *             device declare with the same name).
 	 */
 	public DiskDeviceList load(NodeList nl) throws ResourcesDescriptorException {
-		// TODO : need refactor : see FwRuleLoader
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
-			DiskDevice disk = new DiskDevice();
-			loadDevice(n, disk);
-			loadGiga(n, disk);
-			loadDeleteOnTermination(n, disk);
-			loadRootDevice(n, disk);
+			DiskDeviceName devname = null;
+			DiskDeviceSize devsize = null;
+			Boolean delonterm = null;
+			Boolean isroot = null;
+			devname = loadDeviceName(n);
+			devsize = loadDeviceSize(n);
+			delonterm = loadDeleteOnTermination(n);
+			isroot = loadRootDevice(n);
 
 			try {
-				dl.addDiskDevice(disk);
+				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
+						isroot));
 			} catch (IllegalDiskDeviceListException Ex) {
 				throw new ResourcesDescriptorException(n, "This Disk device "
 						+ "Node description is not valid. Read message "

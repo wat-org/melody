@@ -36,9 +36,9 @@ public abstract class Instance {
 	public void updateDiskDevices(DiskDeviceList target, long detachTimeout,
 			long createTimeout, long attachTimeout) throws OperationException,
 			InterruptedException {
-		DiskDeviceList iDisks = getDiskDevices();
+		DiskDeviceList current = getDiskDevices();
 		try {
-			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(iDisks, target);
+			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(current, target);
 		} catch (DiskDeviceException Ex) {
 			throw new OperationException(Messages.UpdateDiskDevEx_IMPOSSIBLE,
 					Ex);
@@ -46,8 +46,8 @@ public abstract class Instance {
 
 		DiskDeviceList disksToAdd = null;
 		DiskDeviceList disksToRemove = null;
-		disksToAdd = DiskDeviceHelper.computeDiskDevicesToAdd(iDisks, target);
-		disksToRemove = DiskDeviceHelper.computeDiskDevicesToRemove(iDisks,
+		disksToAdd = DiskDeviceHelper.computeDiskDevicesToAdd(current, target);
+		disksToRemove = DiskDeviceHelper.computeDiskDevicesToRemove(current,
 				target);
 
 		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
@@ -73,11 +73,11 @@ public abstract class Instance {
 	public void updateNetworkDevices(NetworkDeviceNameList target,
 			long detachTimeout, long attachTimeout) throws OperationException,
 			InterruptedException {
-		NetworkDeviceNameList nds = getNetworkDevices();
+		NetworkDeviceNameList current = getNetworkDevices();
 		NetworkDeviceNameList toAdd = null;
 		NetworkDeviceNameList toRemove = null;
-		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(nds, target);
-		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(nds,
+		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(current, target);
+		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(current,
 				target);
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
@@ -99,15 +99,15 @@ public abstract class Instance {
 			throws OperationException {
 		NetworkDeviceNameList netdevs = getNetworkDevices();
 		for (NetworkDeviceName netdev : netdevs) {
-			FwRulesDecomposed currentrules = getFireWallRules(netdev);
-			FwRulesDecomposed newrules = getFwRules(target, netdev);
+			FwRulesDecomposed current = getFireWallRules(netdev);
+			FwRulesDecomposed devcurrent = getFwRules(target, netdev);
 			FwRulesDecomposed toAdd = FireWallRulesHelper
-					.computeFireWallRulesToAdd(currentrules, newrules);
+					.computeFireWallRulesToAdd(current, devcurrent);
 			FwRulesDecomposed toRemove = FireWallRulesHelper
-					.computeFireWallRulesToRemove(currentrules, newrules);
+					.computeFireWallRulesToRemove(current, devcurrent);
 
 			log.info(Messages.bind(Messages.IngressMsg_FWRULES_RESUME,
-					new Object[] { getInstanceId(), netdev, newrules, toAdd,
+					new Object[] { getInstanceId(), netdev, devcurrent, toAdd,
 							toRemove }));
 
 			revokeFireWallRules(netdev, toRemove);

@@ -38,47 +38,48 @@ public class FwRuleLoader {
 	public static final String FIREWALL_RULE_NE = "fwrule";
 
 	/**
-	 * XML attribute of a FwRule Node which define the name of the device to
+	 * XML attribute of a FwRule Node, which define the name of the device to
 	 * attache the Fw Rule to.
 	 */
 	public static final String DEVICES_NAME_ATTR = "devices-name";
 
 	/**
-	 * XML attribute of a FwRule Node which define the source ips of the Fw
+	 * XML attribute of a FwRule Node, which define the source ips of the Fw
 	 * Rule.
 	 */
 	public static final String FROM_IPS_ATTR = "from-ips";
 
 	/**
-	 * XML attribute of a FwRule Node which define the source ports of the Fw
+	 * XML attribute of a FwRule Node, which define the source ports of the Fw
 	 * Rule.
 	 */
 	public static final String FROM_PORTS_ATTR = "from-ports";
 
 	/**
-	 * XML attribute of a FwRule Node which define the destination ips of the Fw
-	 * Rule.
+	 * XML attribute of a FwRule Node, which define the destination ips of the
+	 * Fw Rule.
 	 */
 	public static final String TO_IPS_ATTR = "to-ips";
 
 	/**
-	 * XML attribute of a FwRule Node which define the destination ports of the
+	 * XML attribute of a FwRule Node, which define the destination ports of the
 	 * Fw Rule.
 	 */
 	public static final String TO_PORTS_ATTR = "to-ports";
 
 	/**
-	 * XML attribute of a FwRule Node which define the protocols of the Fw Rule.
+	 * XML attribute of a FwRule Node, which define the protocols of the Fw
+	 * Rule.
 	 */
 	public static final String PROTOCOLS_ATTR = "protocols";
 
 	/**
-	 * XML attribute of a FwRule Node which define the direction of the flow.
+	 * XML attribute of a FwRule Node, which define the direction of the flow.
 	 */
 	public static final String DIRECTION_ATTR = "direction";
 
 	/**
-	 * XML attribute of a FwRule Node which define the action to perform.
+	 * XML attribute of a FwRule Node, which define the action to perform.
 	 */
 	public static final String ACCESS_ATTR = "access";
 

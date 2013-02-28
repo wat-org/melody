@@ -32,20 +32,20 @@ public class DiskDeviceHelper {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
 					DiskDevicesLoader.DEVICE_ATTR, current.getRootDevice()
-							.getDeviceName()));
+							.getDiskDeviceName()));
 		}
 		if (target.getRootDevice() == null) {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
 					DiskDevicesLoader.ROOTDEVICE_ATTR, current.getRootDevice()
-							.getDeviceName()));
+							.getDiskDeviceName()));
 		}
 		if (!current.getRootDevice().equals(target.getRootDevice())) {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE, new Object[] {
 							DiskDevicesLoader.ROOTDEVICE_ATTR,
-							target.getRootDevice().getDeviceName(),
-							current.getRootDevice().getDeviceName() }));
+							target.getRootDevice().getDiskDeviceName(),
+							current.getRootDevice().getDiskDeviceName() }));
 		}
 	}
 

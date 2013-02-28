@@ -45,15 +45,18 @@ import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
+import com.wat.melody.cloud.disk.DiskDeviceName;
+import com.wat.melody.cloud.disk.DiskDeviceSize;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.network.Access;
 import com.wat.melody.common.network.Direction;
@@ -1285,17 +1288,20 @@ public class Common {
 		DiskDeviceList disks = new DiskDeviceList();
 		try {
 			for (Volume volume : volumes) {
-				DiskDevice disk = new DiskDevice();
-				disk.setSize(volume.getSize());
-				disk.setDeleteOnTermination(volume.getAttachments().get(0)
-						.getDeleteOnTermination());
-				disk.setDeviceName(volume.getAttachments().get(0).getDevice());
-				if (disk.getDeviceName().equals(i.getRootDeviceName())) {
-					disk.setRootDevice(true);
-				}
-				disks.addDiskDevice(disk);
+				DiskDeviceName devname = DiskDeviceName.parseString(volume
+						.getAttachments().get(0).getDevice());
+				DiskDeviceSize devsize = DiskDeviceSize.parseInt(volume
+						.getSize());
+				Boolean delonterm = volume.getAttachments().get(0)
+						.getDeleteOnTermination();
+				Boolean isroot = devname.getValue().equals(
+						i.getRootDeviceName());
+				disks.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
+						isroot));
 			}
-		} catch (IllegalDiskDeviceException | IllegalDiskDeviceListException Ex) {
+		} catch (IllegalDiskDeviceNameException
+				| IllegalDiskDeviceSizeException
+				| IllegalDiskDeviceListException Ex) {
 			throw new RuntimeException("Unexpected error while building "
 					+ "DiskList from Aws Instance Volumes List. "
 					+ "Because Aws Instance Volumes List is valid, such error "
@@ -1704,7 +1710,7 @@ public class Common {
 			// Detach volume
 			DetachVolumeRequest detvreq = new DetachVolumeRequest();
 			detvreq.withInstanceId(instance.getInstanceId());
-			detvreq.withDevice(disk.getDeviceName());
+			detvreq.withDevice(disk.getDiskDeviceName().getValue());
 			DetachVolumeResult detvres = null;
 			detvres = ec2.detachVolume(detvreq);
 			String volumeId = detvres.getAttachment().getVolumeId();
@@ -1808,7 +1814,7 @@ public class Common {
 			AttachVolumeRequest avreq = new AttachVolumeRequest();
 			avreq.withVolumeId(sVolId);
 			avreq.withInstanceId(sAwsInstanceId);
-			avreq.withDevice(disk.getDeviceName());
+			avreq.withDevice(disk.getDiskDeviceName().getValue());
 			ec2.attachVolume(avreq);
 			/*
 			 * TODO : bug : sometimes, the attachment is somehow "freezed", and
@@ -1867,7 +1873,7 @@ public class Common {
 
 			InstanceBlockDeviceMappingSpecification ibdms = null;
 			ibdms = new InstanceBlockDeviceMappingSpecification();
-			ibdms.withDeviceName(disk.getDeviceName());
+			ibdms.withDeviceName(disk.getDiskDeviceName().getValue());
 			ibdms.withEbs(eibds);
 
 			ModifyInstanceAttributeRequest miareq = null;
@@ -1890,8 +1896,8 @@ public class Common {
 		try {
 			eth0 = NetworkDeviceName.parseString("eth0");
 			netDevs.addNetworkDevice(eth0);
-		} catch (IllegalNetworkDeviceException
-				| IllegalNetworkDeviceListException Ex) {
+		} catch (IllegalNetworkDeviceNameException
+				| IllegalNetworkDeviceNameListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 		return netDevs;

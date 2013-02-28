@@ -10,7 +10,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalManagementMethodNetworkException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -80,7 +80,8 @@ public abstract class NetworkManagementHelper {
 	/**
 	 * Default XPath Expression to select Network Devices.
 	 */
-	public static final String DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR = "//interface";
+	public static final String DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR = "//"
+			+ NetworkDevicesLoader.INTERFACE_NE;
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -91,7 +92,8 @@ public abstract class NetworkManagementHelper {
 	/**
 	 * Default XPath Expression to select Network Device Management Node
 	 */
-	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA = "@device='eth0'";
+	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA = "@"
+			+ NetworkDevicesLoader.DEVICE_ATTR + "='eth0'";
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -1227,7 +1229,7 @@ public abstract class NetworkManagementHelper {
 			return NetworkDeviceName
 					.parseString(getManagementNetworkDeviceNameNode(
 							instanceNode, mgmtNode).getNodeValue());
-		} catch (IllegalNetworkDeviceException Ex) {
+		} catch (IllegalNetworkDeviceNameException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
 			String attr = NetworkDevicesLoader.DEVICE_ATTR;
