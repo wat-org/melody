@@ -199,6 +199,10 @@ public abstract class AbstractLibVirtOperation implements ITask,
 			NetworkDeviceDatas ndd = LibVirtCloud.getNetworkDeviceDatas(i,
 					netDevice);
 			DUNID dunid = getNetworkDeviceDUNID(netDevice);
+			if (dunid == null) {
+				// The instance node could have no such network device node
+				continue;
+			}
 			setDataToED(dunid, Common.IP_ATTR, ndd.getIP());
 			setDataToED(dunid, Common.FQDN_ATTR, ndd.getFQDN());
 		}
@@ -262,13 +266,14 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
 			throws LibVirtException {
+		Node netDevNode = null;
 		try {
-			Node netDevNode = NetworkManagementHelper
-					.findNetworkDeviceNodeByName(getTargetNode(), nd.getValue());
-			return getED().getMelodyID(netDevNode);
+			netDevNode = NetworkManagementHelper.findNetworkDeviceNodeByName(
+					getTargetNode(), nd.getValue());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
+		return netDevNode == null ? null : getED().getMelodyID(netDevNode);
 	}
 
 	@Override

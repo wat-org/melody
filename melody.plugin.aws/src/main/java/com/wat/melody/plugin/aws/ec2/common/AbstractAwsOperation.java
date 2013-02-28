@@ -195,6 +195,10 @@ abstract public class AbstractAwsOperation implements ITask,
 		for (NetworkDeviceName netDevice : Common
 				.getNetworkDevices(getEc2(), i)) {
 			DUNID dunid = getNetworkDeviceDUNID(netDevice);
+			if (dunid == null) {
+				// The instance node could have no such network device node
+				continue;
+			}
 			setDataToED(dunid, Common.IP_ATTR, i.getPrivateIpAddress());
 			setDataToED(dunid, Common.FQDN_ATTR, i.getPrivateDnsName());
 			setDataToED(dunid, Common.NAT_IP_ATTR, i.getPublicIpAddress());
@@ -262,13 +266,14 @@ abstract public class AbstractAwsOperation implements ITask,
 
 	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
 			throws AwsException {
+		Node netDevNode = null;
 		try {
-			Node netDevNode = NetworkManagementHelper
-					.findNetworkDeviceNodeByName(getTargetNode(), nd.getValue());
-			return getED().getMelodyID(netDevNode);
+			netDevNode = NetworkManagementHelper.findNetworkDeviceNodeByName(
+					getTargetNode(), nd.getValue());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
+		return netDevNode == null ? null : getED().getMelodyID(netDevNode);
 	}
 
 	@Override
@@ -283,7 +288,9 @@ abstract public class AbstractAwsOperation implements ITask,
 	 * {@link AwsPlugInConfiguration} and the Ssh Plug-In
 	 * {@link SshPlugInConfiguration}.
 	 * </p>
-	 * SshPlugInConfiguration is the {@link ITaskContext} to set.
+	 * 
+	 * @param p
+	 *            is the {@link ITaskContext} to set.
 	 * 
 	 * @throws AwsException
 	 *             if an error occurred while retrieving the Aws Plug-In
