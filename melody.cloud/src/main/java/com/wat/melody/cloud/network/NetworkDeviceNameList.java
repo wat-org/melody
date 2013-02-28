@@ -2,7 +2,7 @@ package com.wat.melody.cloud.network;
 
 import java.util.ArrayList;
 
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 
 /**
  * 
@@ -22,11 +22,11 @@ public class NetworkDeviceNameList extends ArrayList<NetworkDeviceName> {
 	}
 
 	public boolean addNetworkDevice(NetworkDeviceName nd)
-			throws IllegalNetworkDeviceListException {
+			throws IllegalNetworkDeviceNameListException {
 		for (NetworkDeviceName d : this) {
 			if (d.getValue().equals(nd.getValue())) {
 				// Detects duplicated deviceName declaration
-				throw new IllegalNetworkDeviceListException(Messages.bind(
+				throw new IllegalNetworkDeviceNameListException(Messages.bind(
 						Messages.NetworkListEx_DEVICE_ALREADY_DEFINE,
 						nd.getValue()));
 			}

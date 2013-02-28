@@ -1,10 +1,5 @@
 package com.wat.melody.cloud.disk;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
-
 /**
  * 
  * @author Guillaume Cornet
@@ -12,47 +7,28 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
  */
 public class DiskDevice {
 
-	// TODO : create a DiskDeviceName
-	public static final String DISK_DEVICE_SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])";
+	private static DiskDeviceSize DEFAULT_DISK_DEVICE_SIZE = DiskDeviceSize.SIZE_1G;
+	private static boolean DEFAULT_IS_ROOT_DEVICE = false;
+	private static boolean DEFAULT_DELETE_ON_TERMINATION = true;
 
-	// TODO : create a DiskDeviceSize
-	public static final String DISK_DEVICE_NAME_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
-
-	private int miSize;
-	private String msDeviceName;
+	private DiskDeviceSize moDiskDeviceSize;
+	private DiskDeviceName moDiskDeviceName;
 	private boolean mbDeleteOnTermination;
 	private boolean mbRootDevice;
 
-	/*
-	 * TODO : remove this constructor.
-	 * 
-	 * Create a constructor DiskDeviceName, DiskDeviceSize, delete, root
-	 */
-	public DiskDevice() {
-		try {
-			setSize(1);
-		} catch (IllegalDiskDeviceException Ex) {
-			throw new RuntimeException("Unexpected error while setting "
-					+ "the disk device size to 1 Go. "
-					+ "Because this value is hard coded, such error cannot "
-					+ "happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		}
-		initDeviceName();
-		setDeleteOnTermination(true);
-		setRootDevice(false);
-	}
-
-	private void initDeviceName() {
-		msDeviceName = null;
+	public DiskDevice(DiskDeviceName devname, DiskDeviceSize devsize,
+			Boolean delOnTermination, Boolean isRootDevice) {
+		setDiskDeviceName(devname);
+		setDiskDeviceSize(devsize);
+		setDeleteOnTermination(delOnTermination);
+		setRootDevice(isRootDevice);
 	}
 
 	@Override
 	public String toString() {
 		return "{ "
 				+ "device:"
-				+ getDeviceName()
+				+ getDiskDeviceName()
 				+ ", size:"
 				+ getSize()
 				+ " Go"
@@ -69,8 +45,8 @@ public class DiskDevice {
 		if (anObject instanceof DiskDevice) {
 			DiskDevice d = (DiskDevice) anObject;
 			return (isRootDevice() && d.isRootDevice())
-					|| (getSize() == d.getSize() && getDeviceName().equals(
-							d.getDeviceName()));
+					|| (getSize() == d.getSize() && getDiskDeviceName().equals(
+							d.getDiskDeviceName()));
 		}
 		return false;
 	}
@@ -80,80 +56,24 @@ public class DiskDevice {
 	 * @return the size, in Go, of this object.
 	 */
 	public int getSize() {
-		return miSize;
+		return moDiskDeviceSize.getSize();
 	}
 
-	/**
-	 * 
-	 * @param iSize
-	 *            is the size, in Go, to assign to this object.
-	 * 
-	 * @return the size, in Go, of this object before this call.
-	 * 
-	 * @throws IllegalDiskDeviceException
-	 *             if the given size is negative.
-	 */
-	public int setSize(int iSize) throws IllegalDiskDeviceException {
-		if (iSize <= 0) {
-			throw new IllegalDiskDeviceException(Messages.bind(
-					Messages.DiskEx_NEGATIVE_SIZE, iSize,
-					DISK_DEVICE_SIZE_PATTERN));
+	public DiskDeviceSize getDiskDeviceSize() {
+		return moDiskDeviceSize;
+	}
+
+	public DiskDeviceSize setDiskDeviceSize(DiskDeviceSize devsize) {
+		if (devsize == null) {
+			devsize = DEFAULT_DISK_DEVICE_SIZE;
 		}
-		int previous = getSize();
-		miSize = iSize;
+		DiskDeviceSize previous = getDiskDeviceSize();
+		moDiskDeviceSize = devsize;
 		return previous;
 	}
 
-	/**
-	 * <p>
-	 * Set the disk device size of this object.
-	 * </p>
-	 * <ul>
-	 * <li>The given disk device size should match the pattern
-	 * {@link #DISK_DEVICE_SIZE_PATTERN} ;</li>
-	 * </ul>
-	 * 
-	 * @param sDevice
-	 *            is the disk device size to assign to this object.
-	 * 
-	 * @return the disk device size, in Go, before this operation.
-	 * 
-	 * @throws IllegalDiskDeviceException
-	 *             if the given disk device size is invalid.
-	 */
-	public int setSize(String sSize) throws IllegalDiskDeviceException {
-		if (sSize == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a String (a linux Disk Device size)");
-		}
-		if (sSize.trim().length() == 0) {
-			throw new IllegalDiskDeviceException(Messages.bind(
-					Messages.DiskEx_EMPTY_SIZE, sSize));
-		}
-
-		Pattern p = Pattern.compile("^" + DISK_DEVICE_SIZE_PATTERN + "$");
-		Matcher matcher = p.matcher(sSize);
-		if (!matcher.matches()) {
-			throw new IllegalDiskDeviceException(Messages.bind(
-					Messages.DiskEx_INVALID_SIZE, sSize,
-					DISK_DEVICE_SIZE_PATTERN));
-		}
-
-		int iSize = Integer.parseInt(matcher.group(1));
-		switch (matcher.group(2).charAt(0)) {
-		case 't':
-		case 'T':
-			iSize *= 1024;
-			break;
-		case 'g':
-		case 'G':
-			break;
-		}
-		return setSize(iSize);
-	}
-
-	public String getDeviceName() {
-		return msDeviceName;
+	public DiskDeviceName getDiskDeviceName() {
+		return moDiskDeviceName;
 	}
 
 	/**
@@ -165,31 +85,19 @@ public class DiskDevice {
 	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
 	 * </ul>
 	 * 
-	 * @param sDeviceName
+	 * @param devname
 	 *            is the disk device name to assign to this object.
 	 * 
 	 * @return the disk device name, before this operation.
-	 * 
-	 * @throws IllegalDiskDeviceException
-	 *             if the given disk device name is invalid.
 	 */
-	public String setDeviceName(String sDeviceName)
-			throws IllegalDiskDeviceException {
-		if (sDeviceName == null) {
+	public DiskDeviceName setDiskDeviceName(DiskDeviceName devname) {
+		if (devname == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a String (a linux device name)");
+					+ "Must be a " + DiskDeviceName.class.getCanonicalName()
+					+ ".");
 		}
-		if (sDeviceName.trim().length() == 0) {
-			throw new IllegalDiskDeviceException(Messages.bind(
-					Messages.DiskEx_EMPTY_DEVICE_NAME, sDeviceName));
-		}
-		if (!sDeviceName.matches("^" + DISK_DEVICE_NAME_PATTERN + "$")) {
-			throw new IllegalDiskDeviceException(Messages.bind(
-					Messages.DiskEx_INVALID_DEVICE_NAME, sDeviceName,
-					DISK_DEVICE_NAME_PATTERN));
-		}
-		String previous = getDeviceName();
-		msDeviceName = sDeviceName;
+		DiskDeviceName previous = getDiskDeviceName();
+		moDiskDeviceName = devname;
 		return previous;
 	}
 
@@ -197,7 +105,10 @@ public class DiskDevice {
 		return mbDeleteOnTermination;
 	}
 
-	public boolean setDeleteOnTermination(boolean deleteOnTermination) {
+	public boolean setDeleteOnTermination(Boolean deleteOnTermination) {
+		if (deleteOnTermination == null) {
+			deleteOnTermination = DEFAULT_DELETE_ON_TERMINATION;
+		}
 		boolean previous = isDeletedOnTermination();
 		mbDeleteOnTermination = deleteOnTermination;
 		return previous;
@@ -207,9 +118,12 @@ public class DiskDevice {
 		return mbRootDevice;
 	}
 
-	public boolean setRootDevice(boolean rootDevice) {
+	public boolean setRootDevice(Boolean isRootDevice) {
+		if (isRootDevice == null) {
+			isRootDevice = DEFAULT_IS_ROOT_DEVICE;
+		}
 		boolean previous = isRootDevice();
-		mbRootDevice = rootDevice;
+		mbRootDevice = isRootDevice;
 		return previous;
 	}
 

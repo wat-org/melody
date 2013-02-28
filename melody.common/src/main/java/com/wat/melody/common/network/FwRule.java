@@ -89,9 +89,6 @@ public class FwRule {
 				}
 			}
 		}
-		/*
-		 * should call {@link FwRulesDecomposed#simplify()} here
-		 */
 		return fws;
 	}
 

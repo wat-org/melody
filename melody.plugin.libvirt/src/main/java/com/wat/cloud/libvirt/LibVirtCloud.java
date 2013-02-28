@@ -24,8 +24,11 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceException;
+import com.wat.melody.cloud.disk.DiskDeviceName;
+import com.wat.melody.cloud.disk.DiskDeviceSize;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
@@ -33,8 +36,8 @@ import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -308,19 +311,18 @@ public abstract class LibVirtCloud {
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				DiskDevice d = new DiskDevice();
 				String volPath = Doc.evaluateAsString("source/@file",
 						nl.item(i));
 				StorageVol sv = domain.getConnect().storageVolLookupByPath(
 						volPath);
-				d.setDeleteOnTermination(true);
-				d.setDeviceName("/dev/"
+				DiskDeviceName devname = DiskDeviceName.parseString("/dev/"
 						+ Doc.evaluateAsString("target/@dev", nl.item(i)));
-				d.setSize((int) (sv.getInfo().capacity / (1024 * 1024 * 1024)));
-				if (d.getDeviceName().equals("/dev/vda")) {
-					d.setRootDevice(true);
-				}
-				dl.addDiskDevice(d);
+				DiskDeviceSize devsize = DiskDeviceSize.parseInt((int) (sv
+						.getInfo().capacity / (1024 * 1024 * 1024)));
+				Boolean delonterm = true;
+				Boolean isroot = devname.getValue().equals("/dev/vda");
+				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
+						isroot));
 			}
 			if (dl.size() == 0) {
 				throw new RuntimeException("Failed to build Domain '"
@@ -333,8 +335,9 @@ public abstract class LibVirtCloud {
 						+ "' Disk Device List. No Root Disk Device found ");
 			}
 			return dl;
-		} catch (XPathExpressionException | IllegalDiskDeviceException
-				| LibvirtException | IllegalDiskDeviceListException Ex) {
+		} catch (XPathExpressionException | IllegalDiskDeviceSizeException
+				| LibvirtException | IllegalDiskDeviceNameException
+				| IllegalDiskDeviceListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -365,8 +368,8 @@ public abstract class LibVirtCloud {
 			Doc ddoc = getDomainXMLDesc(d);
 			// pour chaque disque a supprimer
 			for (DiskDevice disk : disksToRemove) {
-				String deviceToRemove = disk.getDeviceName().replace("/dev/",
-						"");
+				String deviceToRemove = disk.getDiskDeviceName().getValue()
+						.replace("/dev/", "");
 				// search the path of the disk which match device to remove
 				String volPath = ddoc
 						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
@@ -379,12 +382,12 @@ public abstract class LibVirtCloud {
 				vars.put(new Property("device", deviceToRemove));
 				vars.put(new Property("volPath", volPath));
 				// detachement de la device
-				log.trace("Detaching Disk Device '" + disk.getDeviceName()
+				log.trace("Detaching Disk Device '" + disk.getDiskDeviceName()
 						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
 						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
-				log.trace("Disk Device '" + disk.getDeviceName()
+				log.trace("Disk Device '" + disk.getDiskDeviceName()
 						+ "' detached on Domain '" + d.getName() + "'.");
 				// suppression du volume
 				deleteDiskDevice(d, disk);
@@ -404,11 +407,11 @@ public abstract class LibVirtCloud {
 			// search the path of the disk which match device to remove
 			StorageVol sv = sp.storageVolLookupByName(getVolumeName(d, disk));
 			String volPath = sv.getPath();
-			log.trace("Deleting Disk Device '" + disk.getDeviceName()
+			log.trace("Deleting Disk Device '" + disk.getDiskDeviceName()
 					+ "' on domain '" + sInstanceId
 					+ "' ... LibVirt Volume path is '" + volPath + "'.");
 			sv.delete(0);
-			log.debug("Disk Device '" + disk.getDeviceName()
+			log.debug("Disk Device '" + disk.getDiskDeviceName()
 					+ "' deleted on Domain '" + sInstanceId + "'.");
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
@@ -422,7 +425,8 @@ public abstract class LibVirtCloud {
 					+ ".");
 		}
 		try {
-			String deviceToRemove = disk.getDeviceName().replace("/dev/", "");
+			String deviceToRemove = disk.getDiskDeviceName().getValue()
+					.replace("/dev/", "");
 			return d.getName() + "-" + deviceToRemove + ".img";
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
@@ -466,28 +470,29 @@ public abstract class LibVirtCloud {
 			// pour chaque disque
 			for (DiskDevice disk : disksToAdd) {
 				// variabilisation de la creation du volume
-				String deviceToAdd = disk.getDeviceName().replace("/dev/", "");
+				String deviceToAdd = disk.getDiskDeviceName().getValue()
+						.replace("/dev/", "");
 				vars.put(new Property("device", deviceToAdd));
 				vars.put(new Property("capacity", String.valueOf((long) disk
 						.getSize() * 1024 * 1024 * 1024)));
 				// creation du volume
-				log.trace("Creating Disk Device '" + disk.getDeviceName()
+				log.trace("Creating Disk Device '" + disk.getDiskDeviceName()
 						+ "' for Domain '" + d.getName() + "' ...");
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
 						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
-				log.debug("Disk Device '" + disk.getDeviceName()
+				log.debug("Disk Device '" + disk.getDiskDeviceName()
 						+ "' created for Domain '" + d.getName()
 						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 
 				// variabilisation de l'attachement du volume
 				vars.put(new Property("volPath", sv.getPath()));
 				// attachement de la device
-				log.trace("Attaching Disk Device '" + disk.getDeviceName()
+				log.trace("Attaching Disk Device '" + disk.getDiskDeviceName()
 						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
 						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
-				log.debug("Disk Device '" + disk.getDeviceName()
+				log.debug("Disk Device '" + disk.getDiskDeviceName()
 						+ "' attached on Domain '" + d.getName() + "'.");
 			}
 		} catch (LibvirtException | IllegalPropertyException
@@ -522,8 +527,8 @@ public abstract class LibVirtCloud {
 						+ "' Network Device List. No Network Device found ");
 			}
 			return ndl;
-		} catch (XPathExpressionException | IllegalNetworkDeviceException
-				| LibvirtException | IllegalNetworkDeviceListException Ex) {
+		} catch (XPathExpressionException | IllegalNetworkDeviceNameException
+				| LibvirtException | IllegalNetworkDeviceNameListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -1317,7 +1322,7 @@ public abstract class LibVirtCloud {
 	private static NetworkDeviceName createNetworkDeviceName(String n) {
 		try {
 			return NetworkDeviceName.parseString(n);
-		} catch (IllegalNetworkDeviceException Ex) {
+		} catch (IllegalNetworkDeviceNameException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}

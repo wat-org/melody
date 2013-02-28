@@ -28,11 +28,11 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 	public boolean addDiskDevice(DiskDevice dd)
 			throws IllegalDiskDeviceListException {
 		for (DiskDevice d : this) {
-			if (d.getDeviceName().equals(dd.getDeviceName())) {
+			if (d.getDiskDeviceName().equals(dd.getDiskDeviceName())) {
 				// Detects duplicated deviceName declaration
 				throw new IllegalDiskDeviceListException(Messages.bind(
 						Messages.DiskListEx_DEVICE_ALREADY_DEFINE,
-						dd.getDeviceName()));
+						dd.getDiskDeviceName()));
 			}
 		}
 		if (dd.isRootDevice()) {
@@ -40,7 +40,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 				// Detects multiple RootDevice declaration
 				throw new IllegalDiskDeviceListException(Messages.bind(
 						Messages.DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE,
-						dd.getDeviceName()));
+						dd.getDiskDeviceName()));
 			}
 			setRootDevice(dd);
 		}
@@ -53,7 +53,8 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 
 	private DiskDevice setRootDevice(DiskDevice dd) {
 		if (dd != null && !dd.isRootDevice()) {
-			throw new IllegalArgumentException("device " + dd.getDeviceName()
+			throw new IllegalArgumentException("device "
+					+ dd.getDiskDeviceName()
 					+ " cannot be the root device because it's RootDevice "
 					+ "flag is false.");
 		}

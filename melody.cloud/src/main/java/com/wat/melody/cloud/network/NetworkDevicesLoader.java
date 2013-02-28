@@ -5,8 +5,8 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 
 /**
  * 
@@ -16,9 +16,18 @@ import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 public class NetworkDevicesLoader {
 
 	/**
-	 * The 'device' XML attribute of a Network Device Node
+	 * XML Nested element of an Instance Node, which contains the definition of
+	 * a Network Device.
+	 */
+	public static final String INTERFACE_NE = "interface";
+
+	/**
+	 * XML attribute of a Network Device Node, which define the name of the
+	 * device.
 	 */
 	public static final String DEVICE_ATTR = "device";
+
+	// TODO : put here ip, fqdn, nat-ip and nat-fqdn
 
 	private ITaskContext moTC;
 
@@ -45,7 +54,7 @@ public class NetworkDevicesLoader {
 		String v = attr.getNodeValue();
 		try {
 			return NetworkDeviceName.parseString(v);
-		} catch (IllegalNetworkDeviceException Ex) {
+		} catch (IllegalNetworkDeviceNameException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
@@ -83,7 +92,7 @@ public class NetworkDevicesLoader {
 			NetworkDeviceName netDevName = loadDeviceName(n);
 			try {
 				dl.addNetworkDevice(netDevName);
-			} catch (IllegalNetworkDeviceListException Ex) {
+			} catch (IllegalNetworkDeviceNameListException Ex) {
 				throw new ResourcesDescriptorException(n, "This Network "
 						+ "Device Node description is not valid. Read message "
 						+ "bellow to get more details about this issue.", Ex);

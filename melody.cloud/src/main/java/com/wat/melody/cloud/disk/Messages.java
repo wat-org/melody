@@ -6,12 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.disk.messages";
 
-	public static String DiskEx_EMPTY_SIZE;
-	public static String DiskEx_NEGATIVE_SIZE;
-	public static String DiskEx_INVALID_SIZE;
-	public static String DiskEx_EMPTY_DEVICE_NAME;
-	public static String DiskEx_INVALID_DEVICE_NAME;
-
 	public static String DiskListEx_DEVICE_ALREADY_DEFINE;
 	public static String DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE;
 
@@ -20,6 +14,13 @@ public class Messages extends NLS {
 	public static String DiskDefEx_EMPTY_DEVICE_LIST;
 	public static String DiskDefEx_UNDEF_ROOT_DEVICE;
 	public static String DiskDefEx_INCORRECT_ROOT_DEVICE;
+
+	public static String DiskDeviceSizeEx_EMPTY_SIZE;
+	public static String DiskDeviceSizeEx_NEGATIVE_SIZE;
+	public static String DiskDeviceSizeEx_INVALID_SIZE;
+
+	public static String DiskDeviceNameEx_EMPTY;
+	public static String DiskDeviceNameEx_INVALID;
 
 	static {
 		// initialize resource bundle
