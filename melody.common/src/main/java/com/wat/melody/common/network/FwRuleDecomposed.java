@@ -16,9 +16,6 @@ public class FwRuleDecomposed {
 	private static Direction DEFAULT_DIRECTION = Direction.IN;
 	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	/*
-	 * TODO : remove the device
-	 */
 	private Interface moInterface = DEFAULT_INTERFACE;
 	private IpRange moFromIpRange = DEFAULT_FROM_IP_RANGE;
 	private PortRange moFromPortRange = DEFAULT_FROM_PORT_RANGE;
