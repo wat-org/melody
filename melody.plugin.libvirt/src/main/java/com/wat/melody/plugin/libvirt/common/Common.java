@@ -13,21 +13,6 @@ public class Common {
 	public static final String INSTANCE_ID_ATTR = "instanceId";
 
 	/**
-	 * The 'ip' XML attribute of the LibVirt instance Node
-	 */
-	public static final String IP_ATTR = "ip";
-
-	/**
-	 * The 'fqdn' XML attribute of the LibVirt Instance Node
-	 */
-	public static final String FQDN_ATTR = "fqdn";
-
-	/**
-	 * The 'nat' XML attribute of the LibVirt instance Node
-	 */
-	public static final String NAT_ATTR = "nat";
-
-	/**
 	 * The 'region' XML attribute of the LibVirt Instance Node
 	 */
 	public static final String REGION_ATTR = "region";

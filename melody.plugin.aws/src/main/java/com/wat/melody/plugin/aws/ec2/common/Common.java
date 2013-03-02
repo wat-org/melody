@@ -91,26 +91,6 @@ public class Common {
 	public static final String INSTANCE_ID_ATTR = "instanceId";
 
 	/**
-	 * The 'ip' XML attribute of the Aws instance Node
-	 */
-	public static final String IP_ATTR = "ip";
-
-	/**
-	 * The 'fqdn' XML attribute of the Aws Instance Node
-	 */
-	public static final String FQDN_ATTR = "fqdn";
-
-	/**
-	 * The 'nat-ip' XML attribute of the Aws instance Node
-	 */
-	public static final String NAT_IP_ATTR = "nat-ip";
-
-	/**
-	 * The 'nat-fqdn' XML attribute of the Aws Instance Node
-	 */
-	public static final String NAT_FQDN_ATTR = "nat-fqdn";
-
-	/**
 	 * The 'region' XML attribute of the Aws Instance Node
 	 */
 	public static final String REGION_ATTR = "region";
@@ -1888,8 +1868,8 @@ public class Common {
 	public static NetworkDeviceNameList getNetworkDevices(AmazonEC2 ec2,
 			Instance i) {
 		/*
-		 * always reply [eth0], because,using Aws Ec2, only 1 network device can
-		 * be allocated.
+		 * always reply [eth0], because, using Aws Ec2, only 1 network device
+		 * can be allocated.
 		 */
 		NetworkDeviceNameList netDevs = new NetworkDeviceNameList();
 		NetworkDeviceName eth0 = null;
@@ -1901,6 +1881,17 @@ public class Common {
 			throw new RuntimeException(Ex);
 		}
 		return netDevs;
+	}
+
+	public static NetworkDeviceDatas getNetworkDeviceDatas(AmazonEC2 ec2,
+			Instance i, NetworkDeviceName netdev) {
+		/*
+		 * always get datas of eth0, because, using Aws Ec2, only eth0 is
+		 * available.
+		 */
+		return new NetworkDeviceDatas(i.getPrivateIpAddress(),
+				i.getPrivateDnsName(), i.getPublicIpAddress(),
+				i.getPublicDnsName());
 	}
 
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,

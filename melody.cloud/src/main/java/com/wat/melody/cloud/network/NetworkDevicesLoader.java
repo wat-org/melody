@@ -27,7 +27,29 @@ public class NetworkDevicesLoader {
 	 */
 	public static final String DEVICE_ATTR = "device";
 
-	// TODO : put here ip, fqdn, nat-ip and nat-fqdn
+	/**
+	 * XML attribute of a Network Device Node, which define the ip of the
+	 * device.
+	 */
+	public static final String IP_ATTR = "ip";
+
+	/**
+	 * XML attribute of a Network Device Node, which define the fqdn of the
+	 * device.
+	 */
+	public static final String FQDN_ATTR = "fqdn";
+
+	/**
+	 * XML attribute of a Network Device Node, which define the nat-ip of the
+	 * device.
+	 */
+	public static final String NAT_IP_ATTR = "ip";
+
+	/**
+	 * XML attribute of a Network Device Node, which define the nat-fqdn of the
+	 * device.
+	 */
+	public static final String NAT_FQDN_ATTR = "fqdn";
 
 	private ITaskContext moTC;
 

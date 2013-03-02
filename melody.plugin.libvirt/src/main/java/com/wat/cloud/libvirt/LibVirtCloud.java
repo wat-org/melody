@@ -33,7 +33,6 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;

@@ -137,7 +137,7 @@ abstract public class AbstractAwsOperation implements ITask,
 		setEc2(getPluginConf().getAmazonEC2(getRegion()));
 	}
 
-	public IResourcesDescriptor getED() {
+	public IResourcesDescriptor getRD() {
 		return getContext().getProcessorManager().getResourcesDescriptor();
 	}
 
@@ -191,22 +191,24 @@ abstract public class AbstractAwsOperation implements ITask,
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Instance.");
 		}
-		setDataToED(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
+		setDataToRD(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
 		for (NetworkDeviceName netDevice : Common
 				.getNetworkDevices(getEc2(), i)) {
-			DUNID dunid = getNetworkDeviceDUNID(netDevice);
-			if (dunid == null) {
+			DUNID d = getNetworkDeviceDUNID(netDevice);
+			NetworkDeviceDatas ndd = Common.getNetworkDeviceDatas(getEc2(), i,
+					netDevice);
+			if (d == null) {
 				// The instance node could have no such network device node
 				continue;
 			}
-			setDataToED(dunid, Common.IP_ATTR, i.getPrivateIpAddress());
-			setDataToED(dunid, Common.FQDN_ATTR, i.getPrivateDnsName());
-			setDataToED(dunid, Common.NAT_IP_ATTR, i.getPublicIpAddress());
-			setDataToED(dunid, Common.NAT_FQDN_ATTR, i.getPublicDnsName());
+			setDataToRD(d, NetworkDevicesLoader.IP_ATTR, ndd.getIP());
+			setDataToRD(d, NetworkDevicesLoader.FQDN_ATTR, ndd.getFQDN());
+			setDataToRD(d, NetworkDevicesLoader.NAT_IP_ATTR, ndd.getNatIP());
+			setDataToRD(d, NetworkDevicesLoader.NAT_FQDN_ATTR, ndd.getNatFQDN());
 		}
 	}
 
-	private void setDataToED(DUNID dunid, String sAttr, String sValue) {
+	private void setDataToRD(DUNID dunid, String sAttr, String sValue) {
 		if (dunid == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid DUNID.");
@@ -219,7 +221,7 @@ abstract public class AbstractAwsOperation implements ITask,
 			return;
 		}
 		try {
-			getED().setAttributeValue(dunid, sAttr, sValue);
+			getRD().setAttributeValue(dunid, sAttr, sValue);
 		} catch (NoSuchDUNIDException Ex) {
 			throw new RuntimeException("Unexpected error while setting the "
 					+ "node's attribute '" + sAttr + "' via its DUNID. "
@@ -232,7 +234,7 @@ abstract public class AbstractAwsOperation implements ITask,
 	protected void removeInstanceRelatedInfosToED(boolean deleted)
 			throws AwsException {
 		if (deleted == true) {
-			removeDataFromED(getMelodyID(), Common.INSTANCE_ID_ATTR);
+			removeDataFromRD(getMelodyID(), Common.INSTANCE_ID_ATTR);
 		}
 		NetworkDeviceNameList netDevices = null;
 		try {
@@ -244,17 +246,17 @@ abstract public class AbstractAwsOperation implements ITask,
 			throw new AwsException(Ex);
 		}
 		for (NetworkDeviceName netDev : netDevices) {
-			DUNID dunid = getNetworkDeviceDUNID(netDev);
-			removeDataFromED(dunid, Common.IP_ATTR);
-			removeDataFromED(dunid, Common.FQDN_ATTR);
-			removeDataFromED(dunid, Common.NAT_IP_ATTR);
-			removeDataFromED(dunid, Common.NAT_FQDN_ATTR);
+			DUNID d = getNetworkDeviceDUNID(netDev);
+			removeDataFromRD(d, NetworkDevicesLoader.IP_ATTR);
+			removeDataFromRD(d, NetworkDevicesLoader.FQDN_ATTR);
+			removeDataFromRD(d, NetworkDevicesLoader.NAT_IP_ATTR);
+			removeDataFromRD(d, NetworkDevicesLoader.NAT_FQDN_ATTR);
 		}
 	}
 
-	private void removeDataFromED(DUNID dunid, String sAttr) {
+	private void removeDataFromRD(DUNID dunid, String sAttr) {
 		try {
-			getED().removeAttribute(dunid, sAttr);
+			getRD().removeAttribute(dunid, sAttr);
 		} catch (NoSuchDUNIDException Ex) {
 			throw new RuntimeException("Unexpected error while removing the "
 					+ "node's attribute '" + sAttr + "' via the node DUNID. "
@@ -273,7 +275,7 @@ abstract public class AbstractAwsOperation implements ITask,
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
-		return netDevNode == null ? null : getED().getMelodyID(netDevNode);
+		return netDevNode == null ? null : getRD().getMelodyID(netDevNode);
 	}
 
 	@Override
@@ -381,7 +383,7 @@ abstract public class AbstractAwsOperation implements ITask,
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a MelodyID).");
 		}
-		setAwsInstanceID(getED().getAttributeValue(melodyID,
+		setAwsInstanceID(getRD().getAttributeValue(melodyID,
 				Common.INSTANCE_ID_ATTR));
 		DUNID previous = getMelodyID();
 		msMelodyId = melodyID;
@@ -457,7 +459,7 @@ abstract public class AbstractAwsOperation implements ITask,
 
 		NodeList nl = null;
 		try {
-			nl = getED().evaluateAsNodeList(target);
+			nl = getRD().evaluateAsNodeList(target);
 		} catch (XPathExpressionException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_XPATH, target));
@@ -478,7 +480,7 @@ abstract public class AbstractAwsOperation implements ITask,
 					target, Doc.parseInt(n.getNodeType())));
 		}
 		setTargetNode(n);
-		DUNID dunid = getED().getMelodyID(n);
+		DUNID dunid = getRD().getMelodyID(n);
 		try {
 			setMelodyID(dunid);
 		} catch (NoSuchDUNIDException Ex) {
