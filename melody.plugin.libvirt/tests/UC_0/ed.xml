@@ -24,6 +24,7 @@
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
 			<network>
 				<interface device="eth0"/>
+				<interface device="eth1"/>
 			</network>
 		</instance>
 		

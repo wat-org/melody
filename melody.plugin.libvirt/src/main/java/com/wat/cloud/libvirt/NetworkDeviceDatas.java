@@ -11,15 +11,17 @@ public class NetworkDeviceDatas {
 	private String msFQDN;
 	private String msMacAddr;
 
-	public NetworkDeviceDatas() {
-
+	public NetworkDeviceDatas(String ip, String fqdn, String mac) {
+		setIP(ip);
+		setFQDN(fqdn);
+		setMacAddress(mac);
 	}
 
 	public String getIP() {
 		return msIP;
 	}
 
-	public String setIP(String ip) {
+	private String setIP(String ip) {
 		String previous = getIP();
 		msIP = ip;
 		return previous;
@@ -29,7 +31,7 @@ public class NetworkDeviceDatas {
 		return msFQDN;
 	}
 
-	public String setFQDN(String fqdn) {
+	private String setFQDN(String fqdn) {
 		String previous = getFQDN();
 		msFQDN = fqdn;
 		return previous;
@@ -39,7 +41,7 @@ public class NetworkDeviceDatas {
 		return msMacAddr;
 	}
 
-	public String setMacAddress(String sMacAddress) {
+	private String setMacAddress(String sMacAddress) {
 		String previous = getMacAddress();
 		msMacAddr = sMacAddress;
 		return previous;
