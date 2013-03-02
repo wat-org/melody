@@ -51,7 +51,7 @@ public class MelodyXPathFunctionResolver implements XPathFunctionResolver {
 		} else if (qName.equals(f_getManagementNetworkDevice) && arity == 1) {
 			return new GetManagementNetworkDevice();
 		} else if (qName.equals(f_getManagementNetworkDeviceName) && arity == 1) {
-			return new GetManagementNetworkDevice();
+			return new GetManagementNetworkDeviceName();
 		} else if (qName.equals(f_getManagementNetworkHost) && arity == 1) {
 			return new GetManagementNetworkHost();
 		} else if (qName.equals(f_getManagementNetworkPort) && arity == 1) {
