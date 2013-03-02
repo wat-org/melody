@@ -367,8 +367,8 @@ public abstract class LibVirtCloud {
 			Doc ddoc = getDomainXMLDesc(d);
 			// pour chaque disque a supprimer
 			for (DiskDevice disk : disksToRemove) {
-				String deviceToRemove = disk.getDiskDeviceName().getValue()
-						.replace("/dev/", "");
+				String deviceToRemove = DiskDeviceNameConverter.convert(disk
+						.getDiskDeviceName());
 				// search the path of the disk which match device to remove
 				String volPath = ddoc
 						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
@@ -424,8 +424,8 @@ public abstract class LibVirtCloud {
 					+ ".");
 		}
 		try {
-			String deviceToRemove = disk.getDiskDeviceName().getValue()
-					.replace("/dev/", "");
+			String deviceToRemove = DiskDeviceNameConverter.convert(disk
+					.getDiskDeviceName());
 			return d.getName() + "-" + deviceToRemove + ".img";
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
@@ -469,8 +469,8 @@ public abstract class LibVirtCloud {
 			// pour chaque disque
 			for (DiskDevice disk : disksToAdd) {
 				// variabilisation de la creation du volume
-				String deviceToAdd = disk.getDiskDeviceName().getValue()
-						.replace("/dev/", "");
+				String deviceToAdd = DiskDeviceNameConverter.convert(disk
+						.getDiskDeviceName());
 				vars.put(new Property("device", deviceToAdd));
 				vars.put(new Property("capacity", String.valueOf((long) disk
 						.getSize() * 1024 * 1024 * 1024)));
@@ -559,10 +559,10 @@ public abstract class LibVirtCloud {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 			String netDevName = netdev.getValue();
-			int eth = Integer.parseInt(netDevName.substring(3)) + 1;
+			int ethindex = NetworkDeviceNameConverter.convert(netdev);
 			Doc doc = getDomainXMLDesc(d);
 			Node n = doc.evaluateAsNode("/domain/devices/interface"
-					+ "[@type='network'][" + eth + "]");
+					+ "[@type='network'][" + ethindex + "]");
 			String mac = Doc.evaluateAsString("./mac/@address", n);
 			PropertiesSet vars = new PropertiesSet();
 			vars.put(new Property("vmMacAddr", mac));
@@ -667,14 +667,11 @@ public abstract class LibVirtCloud {
 
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
-			int eth = Integer.parseInt(netDev.getValue().substring(3)) + 1;
+			int ethindex = NetworkDeviceNameConverter.convert(netDev);
 			String mac = ddoc.evaluateAsString("/domain/devices/interface"
-					+ "[@type='network'][" + eth + "]/mac/@address");
-			NetworkDeviceDatas ndd = new NetworkDeviceDatas();
-			ndd.setMacAddress(mac);
-			ndd.setIP(getDomainIpAddress(mac));
-			ndd.setFQDN(getDomainDnsName(mac));
-			return ndd;
+					+ "[@type='network'][" + ethindex + "]/mac/@address");
+			return new NetworkDeviceDatas(getDomainIpAddress(mac),
+					getDomainDnsName(mac), mac);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -1011,11 +1008,11 @@ public abstract class LibVirtCloud {
 		if (netdev == null) {
 			netdev = eth0;
 		}
-		int eth = Integer.parseInt(netdev.getValue().substring(3)) + 1;
+		int ethindex = NetworkDeviceNameConverter.convert(netdev);
 		try {
 			Doc doc = getDomainXMLDesc(domain);
 			return doc.evaluateAsString("//devices/interface[@type='network']["
-					+ eth + "]/mac/@address");
+					+ ethindex + "]/mac/@address");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
