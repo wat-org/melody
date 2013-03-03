@@ -230,18 +230,18 @@ public class NewMachine extends AbstractMachineOperation {
 
 		if (instanceLives()) {
 			AwsException Ex = new AwsException(Messages.bind(
-					Messages.NewMsg_LIVES, new Object[] { getAwsInstanceID(),
+					Messages.NewMsg_LIVES, new Object[] { getInstanceID(),
 							"LIVE", getTargetNodeLocation() }));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.NewMsg_GENERIC_WARN, Ex)));
-			setInstanceRelatedInfosToED(getInstance());
+			setInstanceRelatedInfosToED(getAwsInstance());
 			if (instanceRuns()) {
 				enableNetworkManagement();
 			}
 		} else {
 			newInstance(getInstanceType(), getImageId(),
 					getAvailabilityZoneFullName(), getKeyPairName());
-			setInstanceRelatedInfosToED(getInstance());
+			setInstanceRelatedInfosToED(getAwsInstance());
 			enableNetworkManagement();
 		}
 	}

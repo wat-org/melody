@@ -26,18 +26,6 @@ import com.wat.melody.xpath.XPathHelper;
 public abstract class NetworkManagementHelper {
 
 	/**
-	 * XML attribute in the SD, which indicate if the Network Device Management
-	 * feature should be used or not.
-	 */
-	public static final String ENABLE_NETWORK_MGNT_ATTR = "enableNetworkManagement";
-
-	/**
-	 * XML attribute in the SD, which indicate the timeout of the Network Device
-	 * Management feature operations.
-	 */
-	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = "enableNetworkManagementTimeout";
-
-	/**
 	 * XML Element in the RD, which contains Network Device Management datas of
 	 * the related Instance Node (more formally called the
 	 * "Network Device Management Node")
@@ -57,6 +45,12 @@ public abstract class NetworkManagementHelper {
 	 * related Instance.
 	 */
 	public static final String NETWORK_MGMT_ENABLE_ATTR = "enable";
+
+	/**
+	 * XML attribute in the SD, which indicate the timeout of the Network Device
+	 * Management feature operations.
+	 */
+	public static final String NETWORK_MGNT_ENABLE_TIMEOUT_ATTR = "enable-timeout";
 
 	/**
 	 * XML attribute of the Network Device Management Node, which indicate the

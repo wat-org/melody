@@ -59,8 +59,8 @@ public class IngressMachine extends AbstractAwsOperation {
 			setFwRules(fwl.load(nl).decompose());
 		} catch (XPathExpressionException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.IngressEx_INVALID_FWRULE_XPATH, fwRulesSelector),
-					Ex);
+					Messages.IngressEx_INVALID_DISK_DEVICES_SELECTOR,
+					fwRulesSelector), Ex);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -70,7 +70,7 @@ public class IngressMachine extends AbstractAwsOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		AwsInstance i = getAwsInstance();
+		AwsInstance i = getInstance();
 		if (i == null) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.IngressMsg_NO_INSTANCE,

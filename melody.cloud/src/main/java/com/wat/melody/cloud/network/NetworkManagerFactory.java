@@ -4,7 +4,6 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.exception.NetworkManagementException;
 
 /**
  * 
@@ -15,7 +14,7 @@ public abstract class NetworkManagerFactory {
 
 	public static NetworkManager createNetworkManager(
 			NetworkManagerFactoryConfigurationCallback confCB, Node instanceNode)
-			throws ResourcesDescriptorException, NetworkManagementException {
+			throws ResourcesDescriptorException {
 		if (confCB == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

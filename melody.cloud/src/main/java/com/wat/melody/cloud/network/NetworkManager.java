@@ -12,12 +12,10 @@ public interface NetworkManager {
 	public ManagementNetworkDatas getManagementDatas();
 
 	/**
-	 * @param timeout
-	 * 
 	 * @throws NetworkManagementException
 	 * @throws InterruptedException
 	 */
-	public void enableNetworkManagement(long timeout)
+	public void enableNetworkManagement()
 			throws NetworkManagementException, InterruptedException;
 
 	/**

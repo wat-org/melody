@@ -170,7 +170,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
 	}
 
-	public void newInstance(InstanceType type, String sImageId,
+	public LibVirtInstance newInstance(InstanceType type, String sImageId,
 			KeyPairName keyPairName) throws LibVirtException {
 		LibVirtInstance i = LibVirtCloud.newInstance(getConnect(), type,
 				sImageId, keyPairName);
@@ -181,6 +181,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		}
 		setInstanceID(i.getInstanceId());
 		setInstanceRelatedInfosToED(i);
+		return i;
 	}
 
 	public void deleteInstance() {

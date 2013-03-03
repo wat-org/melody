@@ -33,8 +33,8 @@ public class WinRmNetworkManager implements NetworkManager {
 	}
 
 	@Override
-	public void enableNetworkManagement(long timeout)
-			throws NetworkManagementException, InterruptedException {
+	public void enableNetworkManagement() throws NetworkManagementException,
+			InterruptedException {
 		throw new NetworkManagementException(
 				Messages.NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED);
 	}

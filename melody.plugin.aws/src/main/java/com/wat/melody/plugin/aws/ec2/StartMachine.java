@@ -32,7 +32,7 @@ public class StartMachine extends AbstractMachineOperation {
 		getContext().handleProcessorStateUpdates();
 
 		InstanceState is = getInstanceState();
-		if (getInstance() == null) {
+		if (getAwsInstance() == null) {
 			removeInstanceRelatedInfosToED(true);
 			throw new AwsException(Messages.bind(
 					Messages.StartEx_NO_INSTANCE,
@@ -42,41 +42,40 @@ public class StartMachine extends AbstractMachineOperation {
 							getTargetNodeLocation() }));
 		} else if (is == InstanceState.PENDING) {
 			AwsException Ex = new AwsException(Messages.bind(
-					Messages.StartMsg_PENDING, new Object[] {
-							getAwsInstanceID(), InstanceState.PENDING,
-							InstanceState.RUNNING, getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-					Messages.StartMsg_GENERIC_WARN, Ex)));
-			waitUntilInstanceStatusBecomes(InstanceState.RUNNING, getTimeout());
-			setInstanceRelatedInfosToED(getInstance());
-			enableNetworkManagement();
-		} else if (is == InstanceState.RUNNING) {
-			AwsException Ex = new AwsException(Messages.bind(
-					Messages.StartMsg_RUNNING, new Object[] {
-							getAwsInstanceID(), InstanceState.RUNNING,
+					Messages.StartMsg_PENDING, new Object[] { getInstanceID(),
+							InstanceState.PENDING, InstanceState.RUNNING,
 							getTargetNodeLocation() }));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StartMsg_GENERIC_WARN, Ex)));
-			setInstanceRelatedInfosToED(getInstance());
+			waitUntilInstanceStatusBecomes(InstanceState.RUNNING, getTimeout());
+			setInstanceRelatedInfosToED(getAwsInstance());
+			enableNetworkManagement();
+		} else if (is == InstanceState.RUNNING) {
+			AwsException Ex = new AwsException(Messages.bind(
+					Messages.StartMsg_RUNNING, new Object[] { getInstanceID(),
+							InstanceState.RUNNING, getTargetNodeLocation() }));
+			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
+					Messages.StartMsg_GENERIC_WARN, Ex)));
+			setInstanceRelatedInfosToED(getAwsInstance());
 			enableNetworkManagement();
 		} else if (is == InstanceState.STOPPING) {
 			AwsException Ex = new AwsException(Messages.bind(
-					Messages.StartMsg_STOPPING, new Object[] {
-							getAwsInstanceID(), InstanceState.STOPPING,
-							InstanceState.STOPPED, getTargetNodeLocation() }));
+					Messages.StartMsg_STOPPING, new Object[] { getInstanceID(),
+							InstanceState.STOPPING, InstanceState.STOPPED,
+							getTargetNodeLocation() }));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StartMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();
 			waitUntilInstanceStatusBecomes(InstanceState.STOPPED, getTimeout());
 			startInstance();
-			setInstanceRelatedInfosToED(getInstance());
+			setInstanceRelatedInfosToED(getAwsInstance());
 			enableNetworkManagement();
 		} else if (is == InstanceState.SHUTTING_DOWN) {
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 			throw new AwsException(Messages.bind(
 					Messages.StartEx_SHUTTING_DOWN, new Object[] {
-							getAwsInstanceID(), InstanceState.SHUTTING_DOWN,
+							getInstanceID(), InstanceState.SHUTTING_DOWN,
 							StartMachine.START_MACHINE, NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
@@ -84,14 +83,13 @@ public class StartMachine extends AbstractMachineOperation {
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(true);
 			throw new AwsException(Messages.bind(Messages.StartEx_TERMINATED,
-					new Object[] { getAwsInstanceID(),
-							InstanceState.TERMINATED,
+					new Object[] { getInstanceID(), InstanceState.TERMINATED,
 							StartMachine.START_MACHINE, NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
 		} else {
 			startInstance();
-			setInstanceRelatedInfosToED(getInstance());
+			setInstanceRelatedInfosToED(getAwsInstance());
 			enableNetworkManagement();
 		}
 	}

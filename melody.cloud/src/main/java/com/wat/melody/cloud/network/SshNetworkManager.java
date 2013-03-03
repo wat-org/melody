@@ -63,20 +63,21 @@ public class SshNetworkManager implements NetworkManager {
 	}
 
 	@Override
-	public void enableNetworkManagement(long timeout)
-			throws NetworkManagementException, InterruptedException {
+	public void enableNetworkManagement() throws NetworkManagementException,
+			InterruptedException {
 		disableNetworkManagement();
 		boolean result = false;
 		try {
 			result = addKnownHostsHost(getConfiguration(), getManagementDatas()
-					.getHost(), getManagementDatas().getPort(), timeout);
+					.getHost(), getManagementDatas().getPort(),
+					getManagementDatas().getEnablementTimeout());
 		} catch (SshSessionException Ex) {
 			throw new NetworkManagementException(Ex);
 		}
 		if (result == false) {
 			throw new NetworkManagementException(Messages.bind(
 					Messages.NetMgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
-					NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR));
+					NetworkManagementHelper.NETWORK_MGNT_ENABLE_TIMEOUT_ATTR));
 		}
 	}
 

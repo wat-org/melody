@@ -42,7 +42,7 @@ public class DeleteMachine extends AbstractMachineOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (getInstance() == null) {
+		if (getAwsInstance() == null) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
@@ -51,9 +51,8 @@ public class DeleteMachine extends AbstractMachineOperation {
 			removeInstanceRelatedInfosToED(true);
 		} else if (!instanceLives()) {
 			AwsException Ex = new AwsException(Messages.bind(
-					Messages.DeleteMsg_TERMINATED,
-					new Object[] { getAwsInstanceID(), "DEAD",
-							getTargetNodeLocation() }));
+					Messages.DeleteMsg_TERMINATED, new Object[] {
+							getInstanceID(), "DEAD", getTargetNodeLocation() }));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.DeleteMsg_GENERIC_WARN, Ex)));
 			disableNetworkManagement();

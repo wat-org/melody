@@ -3,35 +3,18 @@ package com.wat.melody.plugin.aws.ec2.common;
 import java.io.IOException;
 import java.security.KeyPair;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.Instance;
-import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.ManagementNetworkMethod;
-import com.wat.melody.cloud.network.NetworkDeviceName;
-import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
-import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
-import com.wat.melody.common.network.Access;
-import com.wat.melody.common.network.Direction;
-import com.wat.melody.common.network.FwRuleDecomposed;
-import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.common.network.Interface;
-import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.Port;
-import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.Protocol;
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
-import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.plugin.aws.ec2.DeleteMachine;
 import com.wat.melody.plugin.aws.ec2.NewMachine;
 import com.wat.melody.plugin.aws.ec2.StartMachine;
@@ -73,51 +56,8 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
  */
 public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 
-	private static Log log = LogFactory.getLog(AbstractMachineOperation.class);
-
-	/**
-	 * The 'enableNetworkManagement' XML attribute
-	 */
-	public static final String ENABLE_NETWORK_MGNT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_ATTR;
-
-	/**
-	 * The 'enableNetworkManagementTimeout' XML attribute
-	 */
-	public static final String ENABLE_NETWORK_MGNT_TIMEOUT_ATTR = NetworkManagementHelper.ENABLE_NETWORK_MGNT_TIMEOUT_ATTR;
-
-	private boolean mbEnableNetworkManagement;
-	private long mlEnableNetworkManagementTimeout;
-
 	public AbstractMachineOperation() {
 		super();
-		try {
-			setEnableNetworkManagementTimeout(300000);
-		} catch (AwsException Ex) {
-			throw new RuntimeException("Unexpected error while setting "
-					+ "the management timeout to '300000'. "
-					+ "Because this value is hard coded, such error "
-					+ "cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		}
-		setEnableNetworkManagement(true);
-	}
-
-	@Override
-	public void validate() throws AwsException {
-		super.validate();
-
-		// Network Management found in the RD override Network Management
-		// defined in the SD
-		try {
-			boolean isNetMgmtEnale = NetworkManagementHelper
-					.isManagementNetworkEnable(getTargetNode());
-			if (isNetMgmtEnale == false) {
-				setEnableNetworkManagement(false);
-			}
-		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
-		}
 	}
 
 	/**
@@ -156,8 +96,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 * @throws InterruptedException
 	 *             if the wait is interrupted.
 	 */
-	protected void newInstance(InstanceType type, String sImageId, String sAZ,
-			KeyPairName keyPairName) throws AwsException, InterruptedException {
+	protected AwsInstance newInstance(InstanceType type, String sImageId,
+			String sAZ, KeyPairName keyPairName) throws AwsException,
+			InterruptedException {
 		Instance i = Common.newAwsInstance(getEc2(), type, sImageId, sAZ,
 				keyPairName);
 		if (i == null) {
@@ -172,16 +113,17 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 				InstanceState.RUNNING, getTimeout(), 10000)) {
 			throw new AwsException(
 					Messages.bind(Messages.MachineEx_TIMEOUT,
-							new Object[] { getAwsInstanceID(),
+							new Object[] { getInstanceID(),
 									NewMachine.NEW_MACHINE, getTimeout(),
 									TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
+		return getInstance();
 	}
 
 	/**
 	 * <p>
-	 * Start the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
-	 * for the Aws Instance to reach the {@link InstanceState#RUNNING} state.
+	 * Start the Aws Instance defined by {@link #getInstanceID()}, and wait for
+	 * the Aws Instance to reach the {@link InstanceState#RUNNING} state.
 	 * </p>
 	 * 
 	 * @throws AwsException
@@ -195,19 +137,19 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void startInstance() throws AwsException, InterruptedException {
-		if (!Common
-				.startAwsInstance(getEc2(), getAwsInstanceID(), getTimeout())) {
-			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					new Object[] { getAwsInstanceID(),
-							StartMachine.START_MACHINE, getTimeout(),
-							TIMEOUT_ATTR, getTargetNodeLocation() }));
+		if (!Common.startAwsInstance(getEc2(), getInstanceID(), getTimeout())) {
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_TIMEOUT,
+							new Object[] { getInstanceID(),
+									StartMachine.START_MACHINE, getTimeout(),
+									TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 	}
 
 	/**
 	 * <p>
-	 * Stop the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
-	 * for the Aws Instance to reach the {@link InstanceState#STOPPED} state.
+	 * Stop the Aws Instance defined by {@link #getInstanceID()}, and wait for
+	 * the Aws Instance to reach the {@link InstanceState#STOPPED} state.
 	 * </p>
 	 * 
 	 * @throws AwsException
@@ -221,18 +163,19 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void stopInstance() throws AwsException, InterruptedException {
-		if (!Common.stopAwsInstance(getEc2(), getAwsInstanceID(), getTimeout())) {
-			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					new Object[] { getAwsInstanceID(),
-							StopMachine.STOP_MACHINE, getTimeout(),
-							TIMEOUT_ATTR, getTargetNodeLocation() }));
+		if (!Common.stopAwsInstance(getEc2(), getInstanceID(), getTimeout())) {
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_TIMEOUT,
+							new Object[] { getInstanceID(),
+									StopMachine.STOP_MACHINE, getTimeout(),
+									TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
 	}
 
 	/**
 	 * <p>
-	 * Delete the Aws Instance defined by {@link #getAwsInstanceID()}, and wait
-	 * for the Aws Instance to reach the {@link InstanceState#TERMINATED} state.
+	 * Delete the Aws Instance defined by {@link #getInstanceID()}, and wait for
+	 * the Aws Instance to reach the {@link InstanceState#TERMINATED} state.
 	 * </p>
 	 * 
 	 * <p>
@@ -251,9 +194,9 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 	 *             if the wait is interrupted.
 	 */
 	protected void deleteInstance() throws AwsException, InterruptedException {
-		if (!Common.deleteAwsInstance(getEc2(), getInstance(), getTimeout())) {
+		if (!Common.deleteAwsInstance(getEc2(), getAwsInstance(), getTimeout())) {
 			throw new AwsException(Messages.bind(Messages.MachineEx_TIMEOUT,
-					new Object[] { getAwsInstanceID(),
+					new Object[] { getInstanceID(),
 							DeleteMachine.DELETE_MACHINE, getTimeout(),
 							TIMEOUT_ATTR, getTargetNodeLocation() }));
 		}
@@ -330,143 +273,40 @@ public abstract class AbstractMachineOperation extends AbstractAwsOperation {
 		}
 	}
 
-	/**
-	 * <p>
-	 * Based on the underlying operating system of the Aws Instance defined by
-	 * {@link #getAwsInstanceID()}, will perform different actions to
-	 * facilitates the management of the Aws Instance :
-	 * <ul>
-	 * <li>If the operating system is Unix/Linux : will add the instance's
-	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
-	 * <li>If the operating system is Windows : will add the instance's
-	 * certificate in the local WinRM Plug-In repo ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @throws AwsException
-	 * @throws InterruptedException
-	 */
-	protected void enableNetworkManagement() throws AwsException,
+	public void enableNetworkManagement() throws AwsException,
 			InterruptedException {
-		if (getEnableNetworkManagement() == false) {
-			return;
-		}
-
 		NetworkManager mh = null;
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(this,
 					getTargetNode());
-		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
+		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
-
-		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_BEGIN,
-				getAwsInstanceID()));
-
-		NetworkDeviceName netdev = mh.getManagementDatas()
-				.getNetworkDeviceName();
-		Port p = mh.getManagementDatas().getPort();
-		Interface inter = null;
-		PortRange toPorts = null;
 		try {
-			inter = Interface.parseString(netdev.getValue());
-			toPorts = new PortRange(p, p);
-		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
-			throw new RuntimeException("BUG ! Cannot happened !", Ex);
-		}
-		FwRuleDecomposed rule = new FwRuleDecomposed(inter, IpRange.ALL,
-				PortRange.ALL, IpRange.ALL, toPorts, Protocol.TCP,
-				Direction.IN, Access.ALLOW);
-		FwRulesDecomposed rules = new FwRulesDecomposed();
-		Instance i = getInstance();
-		FwRulesDecomposed currentRules = Common.getFireWallRules(getEc2(), i,
-				netdev);
-		if (!currentRules.contains(rule)) {
-			rules.add(rule);
-		}
-
-		try {
-			Common.authorizeFireWallRules(getEc2(), i, netdev, rules);
-			mh.enableNetworkManagement(getEnableNetworkManagementTimeout());
-		} catch (NetworkManagementException Ex) {
+			getInstance().enableNetworkManagement(mh);
+		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_MANAGEMENT_ENABLE_FAILED,
-					getAwsInstanceID(), getTargetNodeLocation()), Ex);
-		} finally {
-			Common.revokeFireWallRules(getEc2(), i, netdev, rules);
+					Messages.MachineEx_ENABLE_MANAGEMENT_ERROR,
+					getTargetNodeLocation()), Ex);
 		}
-		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_ENABLE_SUCCESS,
-				getAwsInstanceID()));
 	}
 
-	/**
-	 * <p>
-	 * Based on the underlying operating system of the Aws Instance defined by
-	 * {@link #getAwsInstanceID()}, will perform different actions to
-	 * facilitates the management of the Aws Instance :
-	 * <ul>
-	 * <li>If the operating system is Unix/Linux : will remove the instance's
-	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
-	 * <li>If the operating system is Windows : will remove the instance's
-	 * certificate in the local WinRM Plug-In repo ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @throws AwsException
-	 * @throws InterruptedException
-	 */
-	protected void disableNetworkManagement() throws AwsException,
+	public void disableNetworkManagement() throws AwsException,
 			InterruptedException {
-		if (getEnableNetworkManagement() == false) {
-			return;
-		}
-
 		NetworkManager mh = null;
 		try {
 			mh = NetworkManagerFactory.createNetworkManager(this,
 					getTargetNode());
-		} catch (ResourcesDescriptorException | NetworkManagementException Ex) {
+		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
-
-		log.debug(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_BEGIN,
-				getAwsInstanceID()));
 		try {
-			mh.disableNetworkManagement();
-		} catch (NetworkManagementException Ex) {
+			getInstance().disableNetworkManagement(mh);
+		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_MANAGEMENT_DISABLE_FAILED,
-					getAwsInstanceID(), getTargetNodeLocation()), Ex);
+					Messages.MachineEx_DISABLE_MANAGEMENT_ERROR,
+					getTargetNodeLocation()), Ex);
 		}
-		log.info(Messages.bind(Messages.MachineMsg_MANAGEMENT_DISABLE_SUCCESS,
-				getAwsInstanceID()));
-	}
-
-	public boolean getEnableNetworkManagement() {
-		return mbEnableNetworkManagement;
-	}
-
-	@Attribute(name = ENABLE_NETWORK_MGNT_ATTR)
-	public boolean setEnableNetworkManagement(boolean enableManagement) {
-		boolean previous = getEnableNetworkManagement();
-		mbEnableNetworkManagement = enableManagement;
-		return previous;
-	}
-
-	public long getEnableNetworkManagementTimeout() {
-		return mlEnableNetworkManagementTimeout;
-	}
-
-	@Attribute(name = ENABLE_NETWORK_MGNT_TIMEOUT_ATTR)
-	public long setEnableNetworkManagementTimeout(long timeout)
-			throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getEnableNetworkManagementTimeout();
-		mlEnableNetworkManagementTimeout = timeout;
-		return previous;
 	}
 
 }
