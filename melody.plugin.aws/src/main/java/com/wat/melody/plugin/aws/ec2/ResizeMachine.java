@@ -89,7 +89,7 @@ public class ResizeMachine extends AbstractAwsOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		Instance i = getInstance();
+		Instance i = getAwsInstance();
 		if (i == null) {
 			removeInstanceRelatedInfosToED(true);
 			throw new AwsException(Messages.bind(
@@ -98,11 +98,11 @@ public class ResizeMachine extends AbstractAwsOperation {
 							NewMachine.NEW_MACHINE,
 							NewMachine.class.getPackage(),
 							getTargetNodeLocation() }));
-		} else if (Common.getInstanceState(getEc2(), getAwsInstanceID()) != InstanceState.STOPPED) {
+		} else if (Common.getInstanceState(getEc2(), getInstanceID()) != InstanceState.STOPPED) {
 			setInstanceRelatedInfosToED(i);
 			throw new AwsException(Messages.bind(
 					Messages.ResizeEx_NOT_STOPPED,
-					new Object[] { getAwsInstanceID(), InstanceState.STOPPED,
+					new Object[] { getInstanceID(), InstanceState.STOPPED,
 							ResizeMachine.RESIZE_MACHINE,
 							StopMachine.STOP_MACHINE,
 							StopMachine.class.getPackage(),
@@ -123,14 +123,14 @@ public class ResizeMachine extends AbstractAwsOperation {
 				if (!resizeInstance(getInstanceType())) {
 					throw new AwsException(
 							Messages.bind(Messages.ResizeEx_FAILED,
-									new Object[] { getAwsInstanceID(),
+									new Object[] { getInstanceID(),
 											currentType, getInstanceType(),
 											getTargetNodeLocation() }));
 				}
 			} else {
 				AwsException Ex = new AwsException(Messages.bind(
 						Messages.ResizeMsg_NO_NEED, new Object[] {
-								getAwsInstanceID(), getInstanceType(),
+								getInstanceID(), getInstanceType(),
 								getTargetNodeLocation() }));
 				log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 						Messages.ResizeMsg_GENERIC_WARN, Ex)));

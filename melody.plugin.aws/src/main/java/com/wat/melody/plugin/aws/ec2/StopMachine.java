@@ -31,7 +31,7 @@ public class StopMachine extends AbstractMachineOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (getInstance() == null) {
+		if (getAwsInstance() == null) {
 			disableNetworkManagement();
 			removeInstanceRelatedInfosToED(false);
 			throw new AwsException(Messages.bind(
@@ -43,7 +43,7 @@ public class StopMachine extends AbstractMachineOperation {
 		} else if (!instanceRuns()) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.StopMsg_ALREADY_STOPPED, new Object[] {
-							getAwsInstanceID(), InstanceState.STOPPED,
+							getInstanceID(), InstanceState.STOPPED,
 							getTargetNodeLocation() }));
 			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
 					Messages.StopMsg_GENERIC_WARN, Ex)));

@@ -13,13 +13,8 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_TARGET_ATTR_NO_NODE_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_MANY_NODES_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH;
-
-	public static String MachineEx_MANAGEMENT_ENABLE_FAILED;
-	public static String MachineEx_MANAGEMENT_DISABLE_FAILED;
-	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
-	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
-	public static String MachineMsg_MANAGEMENT_DISABLE_BEGIN;
-	public static String MachineMsg_MANAGEMENT_DISABLE_SUCCESS;
+	public static String MachineEx_ENABLE_MANAGEMENT_ERROR;
+	public static String MachineEx_DISABLE_MANAGEMENT_ERROR;
 
 	public static String NewEx_MISSING_IMAGEID_ATTR;
 	public static String NewEx_IMAGEID_ERROR;

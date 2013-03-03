@@ -18,9 +18,11 @@ public abstract class ManagementNetworkDatas {
 
 	private static Log log = LogFactory.getLog(SshManagementNetworkDatas.class);
 
+	private boolean mbIsManagementEnabled;
 	private Host moHost;
 	private Port moPort;
 	private NetworkDeviceName moNetworkDeviceName;
+	private long miEnablementTimeout;
 
 	/**
 	 * <p>
@@ -69,11 +71,18 @@ public abstract class ManagementNetworkDatas {
 		try {
 			Node mgmtNode = NetworkManagementHelper
 					.findNetworkManagementNode(instanceNode);
+			setIsManagementEnabled(NetworkManagementHelper
+					.getManagementNetworkEnable(mgmtNode));
 			setHost(NetworkManagementHelper.getManagementNetworkHost(
 					instanceNode, mgmtNode));
 			setPort(NetworkManagementHelper.getManagementNetworkPort(mgmtNode));
 			setNetworkDeviceName(NetworkManagementHelper
 					.getManagementNetworkDeviceName(instanceNode, mgmtNode));
+			/*
+			 * TODO : create a method in NetworkManagementHelper to get the
+			 * timeout
+			 */
+			setEnablementTimeout(180000);
 			log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, this));
 		} catch (ResourcesDescriptorException Ex) {
 			log.warn(Messages.bind(Messages.NetMgmtMsg_FAILED, Doc
@@ -86,10 +95,20 @@ public abstract class ManagementNetworkDatas {
 	public String toString() {
 		return "{ method:" + getManagementNetworkMethod() + ", device:"
 				+ getNetworkDeviceName() + ", host:" + getHost() + ", port:"
-				+ getPort() + " }";
+				+ getPort() + ", timeout:" + getEnablementTimeout() + " }";
 	}
 
 	abstract public ManagementNetworkMethod getManagementNetworkMethod();
+
+	public boolean isManagementEnabled() {
+		return mbIsManagementEnabled;
+	}
+
+	private boolean setIsManagementEnabled(boolean b) {
+		boolean previous = isManagementEnabled();
+		mbIsManagementEnabled = b;
+		return previous;
+	}
 
 	public Host getHost() {
 		return moHost;
@@ -131,6 +150,20 @@ public abstract class ManagementNetworkDatas {
 		}
 		NetworkDeviceName previous = getNetworkDeviceName();
 		moNetworkDeviceName = netdev;
+		return previous;
+	}
+
+	public long getEnablementTimeout() {
+		return miEnablementTimeout;
+	}
+
+	private long setEnablementTimeout(long timeout) {
+		if (timeout < 0) {
+			throw new IllegalArgumentException(timeout + ": Not accepted. "
+					+ "Must be a positive long or zero.");
+		}
+		long previous = getEnablementTimeout();
+		miEnablementTimeout = timeout;
 		return previous;
 	}
 

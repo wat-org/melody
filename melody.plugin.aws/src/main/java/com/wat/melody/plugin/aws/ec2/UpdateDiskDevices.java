@@ -101,7 +101,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		AwsInstance i = getAwsInstance();
+		AwsInstance i = getInstance();
 		if (i == null) {
 			AwsException Ex = new AwsException(Messages.bind(
 					Messages.UpdateDiskDevMsg_NO_INSTANCE,

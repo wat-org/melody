@@ -146,28 +146,28 @@ abstract public class AbstractAwsOperation implements ITask,
 	}
 
 	public boolean instanceExists() {
-		return Common.instanceExists(getEc2(), getAwsInstanceID());
+		return Common.instanceExists(getEc2(), getInstanceID());
 	}
 
-	public Instance getInstance() {
-		return Common.getInstance(getEc2(), getAwsInstanceID());
+	public Instance getAwsInstance() {
+		return Common.getInstance(getEc2(), getInstanceID());
 	}
 
-	public AwsInstance getAwsInstance() {
-		Instance i = Common.getInstance(getEc2(), getAwsInstanceID());
+	public AwsInstance getInstance() {
+		Instance i = Common.getInstance(getEc2(), getInstanceID());
 		return i == null ? null : new AwsInstance(getEc2(), i);
 	}
 
 	public InstanceState getInstanceState() {
-		return Common.getInstanceState(getEc2(), getAwsInstanceID());
+		return Common.getInstanceState(getEc2(), getInstanceID());
 	}
 
 	public boolean instanceLives() {
-		return Common.instanceLives(getEc2(), getAwsInstanceID());
+		return Common.instanceLives(getEc2(), getInstanceID());
 	}
 
 	public boolean instanceRuns() {
-		return Common.instanceRuns(getEc2(), getAwsInstanceID());
+		return Common.instanceRuns(getEc2(), getInstanceID());
 	}
 
 	protected boolean waitUntilInstanceStatusBecomes(InstanceState state,
@@ -177,13 +177,13 @@ abstract public class AbstractAwsOperation implements ITask,
 
 	protected boolean waitUntilInstanceStatusBecomes(InstanceState state,
 			long timeout, long sleepfirst) throws InterruptedException {
-		return Common.waitUntilInstanceStatusBecomes(getEc2(),
-				getAwsInstanceID(), state, timeout, sleepfirst);
+		return Common.waitUntilInstanceStatusBecomes(getEc2(), getInstanceID(),
+				state, timeout, sleepfirst);
 	}
 
 	protected boolean resizeInstance(InstanceType instanceType) {
-		return Common.resizeAwsInstance(getEc2(), getAwsInstanceID(),
-				instanceType);
+		return Common
+				.resizeAwsInstance(getEc2(), getInstanceID(), instanceType);
 	}
 
 	protected void setInstanceRelatedInfosToED(Instance i) throws AwsException {
@@ -411,13 +411,13 @@ abstract public class AbstractAwsOperation implements ITask,
 	 * @return the Aws Instance Id which is registered in the targeted Node (can
 	 *         be <code>null</code>).
 	 */
-	protected String getAwsInstanceID() {
+	protected String getInstanceID() {
 		return msAwsInstanceID;
 	}
 
 	protected String setAwsInstanceID(String awsInstanceID) {
 		// can be null, if no AWS instance have been created yet
-		String previous = getAwsInstanceID();
+		String previous = getInstanceID();
 		msAwsInstanceID = awsInstanceID;
 		return previous;
 	}

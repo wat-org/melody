@@ -47,21 +47,9 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_TARGET_ATTR_NO_NODE_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_MANY_NODES_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH;
-	public static String MachineEx_TOO_MANY_TAG_MGNT;
-	public static String MachineEx_NO_TAG_MGNT;
-	public static String MachineEx_INVALID_TAG_MGNT;
-	public static String MachineEx_INVLIAD_TAG_MGNT_WINRN_SUPPORT;
-	public static String MachineEx_TOO_MANY_TAG_MGNT_PORT;
-	public static String MachineEx_NO_TAG_MGNT_PORT;
-	public static String MachineEx_INVALID_TAG_MGNT_PORT;
-	public static String MachineEx_ENABLE_SSH_MGNT_TIMEOUT;
+	public static String MachineEx_ENABLE_MANAGEMENT_ERROR;
+	public static String MachineEx_DISABLE_MANAGEMENT_ERROR;
 	public static String MachineEx_TIMEOUT;
-	public static String MachineEx_MANAGEMENT_ENABLE_FAILED;
-	public static String MachineEx_MANAGEMENT_DISABLE_FAILED;
-	public static String MachineMsg_MANAGEMENT_ENABLE_BEGIN;
-	public static String MachineMsg_MANAGEMENT_ENABLE_SUCCESS;
-	public static String MachineMsg_MANAGEMENT_DISABLE_BEGIN;
-	public static String MachineMsg_MANAGEMENT_DISABLE_SUCCESS;
 
 	public static String NewEx_MISSING_IMAGEID_ATTR;
 	public static String NewEx_IMAGEID_ERROR;
@@ -92,7 +80,7 @@ public class Messages extends NLS {
 	public static String DeleteMsg_TERMINATED;
 	public static String DeleteMsg_GENERIC_WARN;
 
-	public static String IngressEx_INVALID_FWRULE_XPATH;
+	public static String IngressEx_INVALID_DISK_DEVICES_SELECTOR;
 	public static String IngressEx_GENERIC_FAIL;
 	public static String IngressMsg_NO_INSTANCE;
 	public static String IngressMsg_SKIP_FWRULE;

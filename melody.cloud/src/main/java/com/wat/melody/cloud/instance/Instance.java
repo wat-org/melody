@@ -11,9 +11,19 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkManager;
+import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.common.network.Access;
+import com.wat.melody.common.network.Direction;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.common.network.Interface;
+import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.Port;
+import com.wat.melody.common.network.PortRange;
+import com.wat.melody.common.network.Protocol;
+import com.wat.melody.common.network.exception.IllegalInterfaceException;
+import com.wat.melody.common.network.exception.IllegalPortRangeException;
 
 public abstract class Instance {
 
@@ -127,4 +137,107 @@ public abstract class Instance {
 		return rules;
 	}
 
+	/**
+	 * <p>
+	 * Based on the underlying operating system of this Instance, this method
+	 * will perform actions to facilitates the management of the Instance :
+	 * <ul>
+	 * <li>If the operating system is Unix/Linux : will add the instance's
+	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
+	 * <li>If the operating system is Windows : will add the instance's
+	 * certificate in the local WinRM Plug-In repo ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @throws OperationException
+	 * @throws InterruptedException
+	 */
+	public void enableNetworkManagement(NetworkManager mh)
+			throws OperationException, InterruptedException {
+		if (mh == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkManager.class.getCanonicalName() + ".");
+		}
+
+		if (!mh.getManagementDatas().isManagementEnabled()) {
+			return;
+		}
+
+		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
+				getInstanceId()));
+
+		NetworkDeviceName netdev = mh.getManagementDatas()
+				.getNetworkDeviceName();
+		Port p = mh.getManagementDatas().getPort();
+		Interface inter = null;
+		PortRange toPorts = null;
+		try {
+			inter = Interface.parseString(netdev.getValue());
+			toPorts = new PortRange(p, p);
+		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
+			throw new RuntimeException("BUG ! Cannot happened !", Ex);
+		}
+		FwRuleDecomposed rule = new FwRuleDecomposed(inter, IpRange.ALL,
+				PortRange.ALL, IpRange.ALL, toPorts, Protocol.TCP,
+				Direction.IN, Access.ALLOW);
+		FwRulesDecomposed rules = new FwRulesDecomposed();
+		FwRulesDecomposed currentRules = getFireWallRules(netdev);
+		if (!currentRules.contains(rule)) {
+			rules.add(rule);
+		}
+
+		authorizeFireWallRules(netdev, rules);
+		try {
+			mh.enableNetworkManagement();
+		} catch (NetworkManagementException Ex) {
+			throw new OperationException(Messages.bind(
+					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
+					getInstanceId()), Ex);
+		} finally {
+			revokeFireWallRules(netdev, rules);
+		}
+		log.info(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_SUCCESS,
+				getInstanceId()));
+	}
+
+	/**
+	 * <p>
+	 * Based on the underlying operating system of this Instance, this method
+	 * will perform actions to facilitates the management of the Instance :
+	 * <ul>
+	 * <li>If the operating system is Unix/Linux : will remove the instance's
+	 * HostKey from the Ssh Plug-In KnownHost file ;</li>
+	 * <li>If the operating system is Windows : will remove the instance's
+	 * certificate in the local WinRM Plug-In repo ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @throws OperationException
+	 * @throws InterruptedException
+	 */
+	public void disableNetworkManagement(NetworkManager mh)
+			throws OperationException, InterruptedException {
+		if (mh == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkManager.class.getCanonicalName() + ".");
+		}
+
+		if (!mh.getManagementDatas().isManagementEnabled()) {
+			return;
+		}
+
+		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
+				getInstanceId()));
+		try {
+			mh.disableNetworkManagement();
+		} catch (NetworkManagementException Ex) {
+			throw new OperationException(Messages.bind(
+					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
+					getInstanceId()), Ex);
+		}
+		log.info(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_SUCCESS,
+				getInstanceId()));
+	}
 }

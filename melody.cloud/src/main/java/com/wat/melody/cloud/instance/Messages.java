@@ -19,6 +19,13 @@ public class Messages extends NLS {
 
 	public static String IngressMsg_FWRULES_RESUME;
 
+	public static String InstanceEx_MANAGEMENT_ENABLE_FAILED;
+	public static String InstanceEx_MANAGEMENT_DISABLE_FAILED;
+	public static String InstanceMsg_MANAGEMENT_ENABLE_BEGIN;
+	public static String InstanceMsg_MANAGEMENT_ENABLE_SUCCESS;
+	public static String InstanceMsg_MANAGEMENT_DISABLE_BEGIN;
+	public static String InstanceMsg_MANAGEMENT_DISABLE_SUCCESS;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
