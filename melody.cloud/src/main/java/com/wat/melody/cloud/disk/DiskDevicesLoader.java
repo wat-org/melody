@@ -120,8 +120,8 @@ public class DiskDevicesLoader {
 
 	/**
 	 * <p>
-	 * Converts the given Disk Device {@link Node}s into a
-	 * {@link DiskDeviceList}.
+	 * Find the disk Device {@link Node}s of the given Instance {@link Node} and
+	 * convert it into a {@link DiskDeviceList}.
 	 * </p>
 	 * 
 	 * <p>
@@ -130,23 +130,29 @@ public class DiskDevicesLoader {
 	 * <li>device : which should contains a {@link DiskDeviceName} (ex:
 	 * /dev/sda1, /dev/vda) ;</li>
 	 * <li>size : which should contains a {@link DiskDeviceSize} ;</li>
-	 * <li>deleteOnTermination : which should contains true/false ;</li>
-	 * <li>rootDevice : which should contains true/false ;</li>
+	 * <li>deleteOnTermination : which should contains a Boolean ;</li>
+	 * <li>rootDevice : which should contains a Boolean ;</li>
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param nl
-	 *            a list of Disk Device {@link Node}s.
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
 	 * 
 	 * @return a {@link DiskDeviceList} object, which is a collection of
-	 *         {@link DiskDevice} .
+	 *         {@link DiskDevice}.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code> or is
+	 *             not an element {@link Node}.
 	 * @throws ResourcesDescriptorException
 	 *             if the conversion failed (ex : the content of a Disk Device
-	 *             Node is not valid, multiple root device are found, multiple
-	 *             device declare with the same name).
+	 *             {@link Node} is not valid, multiple root device are found,
+	 *             multiple device declare with the same name).
 	 */
-	public DiskDeviceList load(NodeList nl) throws ResourcesDescriptorException {
+	public DiskDeviceList load(Node instanceNode)
+			throws ResourcesDescriptorException {
+		NodeList nl = DiskManagementHelper.findDiskDevices(instanceNode);
+
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);

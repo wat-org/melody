@@ -27,7 +27,7 @@ public class NetworkDeviceNameList extends ArrayList<NetworkDeviceName> {
 			if (d.getValue().equals(nd.getValue())) {
 				// Detects duplicated deviceName declaration
 				throw new IllegalNetworkDeviceNameListException(Messages.bind(
-						Messages.NetworkListEx_DEVICE_ALREADY_DEFINE,
+						Messages.NetworkDeviceNameListEx_DEVICE_ALREADY_DEFINE,
 						nd.getValue()));
 			}
 		}

@@ -2,9 +2,7 @@ package com.wat.melody.cloud.network;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -30,10 +28,10 @@ public class SshNetworkManager implements NetworkManager {
 	private SshManagementNetworkDatas moManagementDatas;
 	private ISshSessionConfiguration moConfiguration;
 
-	public SshNetworkManager(Node instanceNode, ISshSessionConfiguration sc)
-			throws ResourcesDescriptorException {
+	public SshNetworkManager(SshManagementNetworkDatas datas,
+			ISshSessionConfiguration sc) {
 		setConfiguration(sc);
-		setManagementDatas(new SshManagementNetworkDatas(instanceNode));
+		setManagementDatas(datas);
 	}
 
 	public SshManagementNetworkDatas getManagementDatas() {
@@ -68,16 +66,17 @@ public class SshNetworkManager implements NetworkManager {
 		disableNetworkManagement();
 		boolean result = false;
 		try {
-			result = addKnownHostsHost(getConfiguration(), getManagementDatas()
-					.getHost(), getManagementDatas().getPort(),
-					getManagementDatas().getEnablementTimeout());
+			SshManagementNetworkDatas datas = getManagementDatas();
+			result = addKnownHostsHost(getConfiguration(), datas.getHost(),
+					datas.getPort(), datas.getEnablementTimeout()
+							.getTimeoutInMillis());
 		} catch (SshSessionException Ex) {
 			throw new NetworkManagementException(Ex);
 		}
 		if (result == false) {
 			throw new NetworkManagementException(Messages.bind(
 					Messages.NetMgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
-					NetworkManagementHelper.NETWORK_MGNT_ENABLE_TIMEOUT_ATTR));
+					ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR));
 		}
 	}
 

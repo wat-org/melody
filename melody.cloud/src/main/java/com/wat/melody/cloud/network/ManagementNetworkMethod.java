@@ -42,7 +42,7 @@ public enum ManagementNetworkMethod {
 		}
 		if (sMethod.trim().length() == 0) {
 			throw new IllegalManagementMethodNetworkException(Messages.bind(
-					Messages.NetMgmtMethodEx_EMPTY, sMethod));
+					Messages.MgmtNetworkMethodEx_EMPTY, sMethod));
 		}
 		for (ManagementNetworkMethod c : ManagementNetworkMethod.class
 				.getEnumConstants()) {
@@ -51,7 +51,7 @@ public enum ManagementNetworkMethod {
 			}
 		}
 		throw new IllegalManagementMethodNetworkException(Messages.bind(
-				Messages.NetMgmtMethodEx_INVALID, sMethod,
+				Messages.MgmtNetworkMethodEx_INVALID, sMethod,
 				Arrays.asList(ManagementNetworkMethod.values())));
 	}
 

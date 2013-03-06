@@ -1,23 +1,18 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
-import com.wat.melody.cloud.disk.DiskManagementHelper;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.AwsInstance;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpath.XPathHelper;
 
 /**
  * 
@@ -78,20 +73,10 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 	public void validate() throws AwsException {
 		super.validate();
 
-		// Find Disk Device Nodes Selector in the RD
-		String diskDevicesSelector = DiskManagementHelper
-				.findDiskDevicesSelector(getTargetNode());
-
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
-			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
-					diskDevicesSelector);
-			DiskDevicesLoader dl = new DiskDevicesLoader(getContext());
-			setDiskDeviceList(dl.load(nl));
-		} catch (XPathExpressionException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR,
-					diskDevicesSelector), Ex);
+			setDiskDeviceList(new DiskDevicesLoader(getContext())
+					.load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}

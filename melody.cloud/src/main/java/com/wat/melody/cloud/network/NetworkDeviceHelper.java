@@ -16,7 +16,8 @@ public class NetworkDeviceHelper {
 
 	public static NetworkDeviceNameList computeNetworkDevicesToRemove(
 			NetworkDeviceNameList current, NetworkDeviceNameList target) {
-		NetworkDeviceNameList networkToRemove = new NetworkDeviceNameList(current);
+		NetworkDeviceNameList networkToRemove = new NetworkDeviceNameList(
+				current);
 		networkToRemove.removeAll(target);
 		return networkToRemove;
 	}

@@ -30,10 +30,12 @@ public abstract class NetworkManagerFactory {
 
 		switch (mm) {
 		case SSH:
-			return new SshNetworkManager(instanceNode,
+			return new SshNetworkManager(
+					new SshManagementNetworkDatasLoader().load(instanceNode),
 					confCB.getSshConfiguration());
 		case WINRM:
-			return new WinRmNetworkManager(instanceNode);
+			return new WinRmNetworkManager(
+					new WinRmManagementNetworkDatasLoader().load(instanceNode));
 		default:
 			throw new RuntimeException("Unexpected error while branching "
 					+ "on an unknown management method '" + mm + "'. "

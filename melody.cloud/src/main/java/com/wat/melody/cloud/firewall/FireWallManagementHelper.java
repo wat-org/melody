@@ -40,7 +40,7 @@ public abstract class FireWallManagementHelper {
 	 * related to an Instance Node
 	 */
 	public static final String DEFAULT_FIREWALL_RULE_NODES_SELECTOR = "//"
-			+ FwRuleLoader.FIREWALL_RULE_NE;
+			+ FireWallRulesLoader.FIREWALL_RULE_NE;
 
 	/**
 	 * <p>
@@ -52,14 +52,14 @@ public abstract class FireWallManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * 
 	 * @return <ul>
-	 *         <li>The Disk Management {@link Node} related to the given
-	 *         Instance {@link Node}, if one Disk Management {@link Node} is
+	 *         <li>The FireWall Management {@link Node} related to the given
+	 *         Instance {@link Node}, if one FireWall Management {@link Node} is
 	 *         found ;</li>
-	 *         <li>The last Disk Management {@link Node} related to the given
-	 *         Instance {@link Node}, if multiple Disk Management {@link Node}
+	 *         <li>The last FireWall Management {@link Node} related to the
+	 *         given Instance {@link Node}, if multiple FireWall Management
+	 *         {@link Node} were found ;</li>
+	 *         <li><code>null</code>, if no FireWall Management {@link Node}
 	 *         were found ;</li>
-	 *         <li><code>null</code>, if no Disk Management {@link Node} were
-	 *         found ;</li>
 	 *         </ul>
 	 * 
 	 * @throws ResourcesDescriptorException
@@ -102,6 +102,40 @@ public abstract class FireWallManagementHelper {
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
 			return DEFAULT_FIREWALL_RULE_NODES_SELECTOR;
+		}
+	}
+
+	/**
+	 * <p>
+	 * Return the FireWall Rule {@link Node}s of the given Instance {@link Node}
+	 * .
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return The FireWall Rule {@link Node}s of the given Instance
+	 *         {@link Node}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the FireWall Rules Selector (found in the FireWall Rule
+	 *             Management {@link Node}) is not a valid XPath Expression.
+	 */
+	public static NodeList findFireWallRules(Node instanceNode)
+			throws ResourcesDescriptorException {
+		String sAllFWRulesSelector = findFireWallRulesSelector(instanceNode);
+		try {
+			return XPathHelper.getHeritedContent(instanceNode,
+					sAllFWRulesSelector);
+		} catch (XPathExpressionException Ex) {
+			Node mgmtNode = findFireWallManagementNode(instanceNode);
+			Node attr = mgmtNode.getAttributes().getNamedItem(
+					FIREWALL_RULE_NODES_SELECTOR_ATTRIBUTE);
+			throw new ResourcesDescriptorException(attr, Messages.bind(
+					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					sAllFWRulesSelector), Ex);
 		}
 	}
 

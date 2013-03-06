@@ -6,7 +6,7 @@
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
-			<network-management enable="true" method="ssh" port="22"/>
+			<network-management method="ssh"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
 				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>

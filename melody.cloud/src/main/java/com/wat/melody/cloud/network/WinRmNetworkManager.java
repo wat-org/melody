@@ -1,8 +1,5 @@
 package com.wat.melody.cloud.network;
 
-import org.w3c.dom.Node;
-
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 
 /**
@@ -14,9 +11,8 @@ public class WinRmNetworkManager implements NetworkManager {
 
 	private WinRmManagementNetworkDatas moManagementDatas;
 
-	public WinRmNetworkManager(Node instanceNode)
-			throws ResourcesDescriptorException {
-		setManagementDatas(new WinRmManagementNetworkDatas(instanceNode));
+	public WinRmNetworkManager(WinRmManagementNetworkDatas datas) {
+		setManagementDatas(datas);
 	}
 
 	public WinRmManagementNetworkDatas getManagementDatas() {

@@ -1,13 +1,8 @@
 package com.wat.melody.cloud.network;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Node;
-
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
  * 
@@ -16,86 +11,48 @@ import com.wat.melody.common.xml.Doc;
  */
 public abstract class ManagementNetworkDatas {
 
-	private static Log log = LogFactory.getLog(SshManagementNetworkDatas.class);
+	/**
+	 * the default timeout for management enablement operation.
+	 */
+	public static final ManagementNetworkEnableTimeout DEFAULT_ENABLE_TIMEOUT = createEnableTimeout(180000);
+
+	protected static ManagementNetworkEnableTimeout createEnableTimeout(
+			long iTimeout) {
+		try {
+			return new ManagementNetworkEnableTimeout(iTimeout);
+		} catch (IllegalTimeoutException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a ManagementNetworkEnableTimeout with value '"
+					+ iTimeout + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	private boolean mbIsManagementEnabled;
 	private Host moHost;
 	private Port moPort;
 	private NetworkDeviceName moNetworkDeviceName;
-	private long miEnablementTimeout;
+	private ManagementNetworkEnableTimeout miEnablementTimeout;
 
-	/**
-	 * <p>
-	 * Initialize this object with Network Management datas found in the given
-	 * Instance {@link Node}.
-	 * </p>
-	 * 
-	 * @param instanceNode
-	 *            is an Instance {@link Node}.
-	 * 
-	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
-	 *             if no Network Management {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Network Management Device Node Selector is
-	 *             not a valid XPath expression.
-	 * @throws ResourcesDescriptorException
-	 *             if no Management Network Device {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a attribute equal to the Instance's Network
-	 *             Management Device Attribute Selector.
-	 * @throws ResourcesDescriptorException
-	 *             if the found value is not a valid {@link Host}.
-	 * @throws ResourcesDescriptorException
-	 *             if no {@link NetworkManagementHelper#NETWORK_MGMT_PORT_ATTR}
-	 *             can be found in the Instance's Network Management
-	 *             {@link Node}.
-	 * @throws ResourcesDescriptorException
-	 *             if the value of the
-	 *             {@link NetworkManagementHelper#NETWORK_MGMT_PORT_ATTR} found
-	 *             in the Instance's Network Management {@link Node} is not a
-	 *             valid {@link Port}.
-	 */
-	public ManagementNetworkDatas(Node instanceNode)
-			throws ResourcesDescriptorException {
-		if (instanceNode == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
-		}
-
-		log.debug(Messages.bind(Messages.NetMgmtMsg_INTRO,
-				Doc.getNodeLocation(instanceNode).toFullString()));
-		try {
-			Node mgmtNode = NetworkManagementHelper
-					.findNetworkManagementNode(instanceNode);
-			setIsManagementEnabled(NetworkManagementHelper
-					.getManagementNetworkEnable(mgmtNode));
-			setHost(NetworkManagementHelper.getManagementNetworkHost(
-					instanceNode, mgmtNode));
-			setPort(NetworkManagementHelper.getManagementNetworkPort(mgmtNode));
-			setNetworkDeviceName(NetworkManagementHelper
-					.getManagementNetworkDeviceName(instanceNode, mgmtNode));
-			/*
-			 * TODO : create a method in NetworkManagementHelper to get the
-			 * timeout
-			 */
-			setEnablementTimeout(180000);
-			log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, this));
-		} catch (ResourcesDescriptorException Ex) {
-			log.warn(Messages.bind(Messages.NetMgmtMsg_FAILED, Doc
-					.getNodeLocation(instanceNode).toFullString()));
-			throw Ex;
-		}
+	public ManagementNetworkDatas(boolean enable,
+			ManagementNetworkEnableTimeout enableTimeout,
+			NetworkDeviceName netdev, Host host, Port port) {
+		setIsManagementEnabled(enable);
+		setEnablementTimeout(enableTimeout);
+		setNetworkDeviceName(netdev);
+		setHost(host);
+		setPort(port);
 	}
 
 	@Override
 	public String toString() {
-		return "{ method:" + getManagementNetworkMethod() + ", device:"
-				+ getNetworkDeviceName() + ", host:" + getHost() + ", port:"
-				+ getPort() + ", timeout:" + getEnablementTimeout() + " }";
+		return "method:" + getManagementNetworkMethod() + ", enable:"
+				+ isManagementEnabled() + ", device:" + getNetworkDeviceName()
+				+ ", host:" + getHost() + ", port:" + getPort() + ", timeout:"
+				+ getEnablementTimeout();
 	}
 
 	abstract public ManagementNetworkMethod getManagementNetworkMethod();
@@ -153,16 +110,13 @@ public abstract class ManagementNetworkDatas {
 		return previous;
 	}
 
-	public long getEnablementTimeout() {
+	public ManagementNetworkEnableTimeout getEnablementTimeout() {
 		return miEnablementTimeout;
 	}
 
-	private long setEnablementTimeout(long timeout) {
-		if (timeout < 0) {
-			throw new IllegalArgumentException(timeout + ": Not accepted. "
-					+ "Must be a positive long or zero.");
-		}
-		long previous = getEnablementTimeout();
+	private ManagementNetworkEnableTimeout setEnablementTimeout(
+			ManagementNetworkEnableTimeout timeout) {
+		ManagementNetworkEnableTimeout previous = getEnablementTimeout();
 		miEnablementTimeout = timeout;
 		return previous;
 	}
