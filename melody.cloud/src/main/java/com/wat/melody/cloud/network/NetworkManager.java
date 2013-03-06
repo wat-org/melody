@@ -15,8 +15,8 @@ public interface NetworkManager {
 	 * @throws NetworkManagementException
 	 * @throws InterruptedException
 	 */
-	public void enableNetworkManagement()
-			throws NetworkManagementException, InterruptedException;
+	public void enableNetworkManagement() throws NetworkManagementException,
+			InterruptedException;
 
 	/**
 	 * 

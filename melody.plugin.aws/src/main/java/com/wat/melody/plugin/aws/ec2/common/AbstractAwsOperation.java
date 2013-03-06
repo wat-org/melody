@@ -17,7 +17,7 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.xml.DUNID;
@@ -201,10 +201,11 @@ abstract public class AbstractAwsOperation implements ITask,
 				// The instance node could have no such network device node
 				continue;
 			}
-			setDataToRD(d, NetworkDevicesLoader.IP_ATTR, ndd.getIP());
-			setDataToRD(d, NetworkDevicesLoader.FQDN_ATTR, ndd.getFQDN());
-			setDataToRD(d, NetworkDevicesLoader.NAT_IP_ATTR, ndd.getNatIP());
-			setDataToRD(d, NetworkDevicesLoader.NAT_FQDN_ATTR, ndd.getNatFQDN());
+			setDataToRD(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
+			setDataToRD(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
+			setDataToRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR, ndd.getNatIP());
+			setDataToRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
+					ndd.getNatFQDN());
 		}
 	}
 
@@ -238,19 +239,17 @@ abstract public class AbstractAwsOperation implements ITask,
 		}
 		NetworkDeviceNameList netDevices = null;
 		try {
-			NodeList nl = NetworkManagementHelper
-					.findNetworkDevices(getTargetNode());
-			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
-			netDevices = ndl.load(nl);
+			netDevices = new NetworkDeviceNamesLoader(getContext())
+					.load(getTargetNode());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
 		for (NetworkDeviceName netDev : netDevices) {
 			DUNID d = getNetworkDeviceDUNID(netDev);
-			removeDataFromRD(d, NetworkDevicesLoader.IP_ATTR);
-			removeDataFromRD(d, NetworkDevicesLoader.FQDN_ATTR);
-			removeDataFromRD(d, NetworkDevicesLoader.NAT_IP_ATTR);
-			removeDataFromRD(d, NetworkDevicesLoader.NAT_FQDN_ATTR);
+			removeDataFromRD(d, NetworkDeviceNamesLoader.IP_ATTR);
+			removeDataFromRD(d, NetworkDeviceNamesLoader.FQDN_ATTR);
+			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR);
+			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR);
 		}
 	}
 

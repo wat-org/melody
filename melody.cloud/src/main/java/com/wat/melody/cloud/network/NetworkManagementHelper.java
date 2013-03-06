@@ -15,6 +15,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.xpath.XPathHelper;
 
@@ -40,32 +41,6 @@ public abstract class NetworkManagementHelper {
 			+ NETWORK_MGMT_NE;
 
 	/**
-	 * XML attribute of the Network Device Management Node, which indicate if
-	 * the Network Device Management feature should be used or not for the
-	 * related Instance.
-	 */
-	public static final String NETWORK_MGMT_ENABLE_ATTR = "enable";
-
-	/**
-	 * XML attribute in the SD, which indicate the timeout of the Network Device
-	 * Management feature operations.
-	 */
-	public static final String NETWORK_MGNT_ENABLE_TIMEOUT_ATTR = "enable-timeout";
-
-	/**
-	 * XML attribute of the Network Device Management Node, which indicate the
-	 * Network Device Management feature's Management Method to use for the
-	 * related Instance.
-	 */
-	public static final String NETWORK_MGMT_METHOD_ATTR = "method";
-
-	/**
-	 * XML attribute of the Network Device Management Node, which indicate the
-	 * Network Device Management feature's Port to use for the related Instance.
-	 */
-	public static final String NETWORK_MGMT_PORT_ATTR = "port";
-
-	/**
 	 * XML attribute of the Network Device Management Node, which contains the
 	 * XPath Expression to select Network Devices.
 	 */
@@ -75,7 +50,7 @@ public abstract class NetworkManagementHelper {
 	 * Default XPath Expression to select Network Devices.
 	 */
 	public static final String DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR = "//"
-			+ NetworkDevicesLoader.INTERFACE_NE;
+			+ NetworkDeviceNamesLoader.INTERFACE_NE;
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -87,7 +62,7 @@ public abstract class NetworkManagementHelper {
 	 * Default XPath Expression to select Network Device Management Node
 	 */
 	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA = "@"
-			+ NetworkDevicesLoader.DEVICE_ATTR + "='eth0'";
+			+ NetworkDeviceNamesLoader.DEVICE_ATTR + "='eth0'";
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -623,12 +598,17 @@ public abstract class NetworkManagementHelper {
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_PORT_ATTR} can be found in the
-	 *             given Instance's Network Device Management {@link Node}.
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#PORT_ATTR} attribute
+	 *             found in the given Network Device Management {@link Node} is
+	 *             not a valid {@link Port}.
 	 * @throws ResourcesDescriptorException
-	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTR} found in
-	 *             the given Instance's Network Device Management {@link Node}
-	 *             is not a valid {@link Port}.
+	 *             if the {@link ManagementNetworkDatasLoader#PORT_ATTR}
+	 *             attribute is not defined in the given Network Device
+	 *             Management {@link Node} and the given Network Device
+	 *             Management {@link Node} doesn't define a
+	 *             ManagementNetworkMethod (which is normaly used to define a
+	 *             default port).
 	 */
 	public static Port findManagementNetworkPort(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -647,25 +627,30 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Network Device Management {@link Node} is
 	 *             <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#PORT_ATTR} attribute
+	 *             found in the given Network Device Management {@link Node} is
+	 *             not a valid {@link Port}.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_PORT_ATTR} can be found in the
-	 *             given Network Device Management {@link Node}.
-	 * @throws ResourcesDescriptorException
-	 *             if the value of the {@link #NETWORK_MGMT_PORT_ATTR} found in
-	 *             the given Network Device Management {@link Node} is not a
-	 *             valid {@link Port}.
+	 *             if the {@link ManagementNetworkDatasLoader#PORT_ATTR}
+	 *             attribute is not defined in the given Network Device
+	 *             Management {@link Node} and the given Network Device
+	 *             Management {@link Node} doesn't define a
+	 *             ManagementNetworkMethod (which is normaly used to define a
+	 *             default port).
 	 */
 	public static Port getManagementNetworkPort(Node mgmtNode)
 			throws ResourcesDescriptorException {
+		Node n = getManagementNetworkPortNode(mgmtNode);
+		if (n == null) {
+			return getDefaultMamangementPort(mgmtNode);
+		}
 		try {
-			return Port.parseString(getManagementNetworkPortNode(mgmtNode)
-					.getNodeValue());
+			return Port.parseString(n.getNodeValue());
 		} catch (IllegalPortException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, NETWORK_MGMT_PORT_ATTR),
-					Ex);
+					Messages.NetMgmtEx_INVALID_ATTR,
+					ManagementNetworkDatasLoader.PORT_ATTR), Ex);
 		}
 	}
 
@@ -675,7 +660,8 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Instance's Network Device Management {@link Port} attribute
-	 *         as a {@link Node}.
+	 *         as a {@link Node}, or <code>null</code> if such attribute cannot
+	 *         be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -685,9 +671,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
-	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_PORT_ATTR} can be found in the
-	 *             given Instance's Network Device Management {@link Node}.
 	 */
 	public static Node findManagementNetworkPortNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -701,27 +684,67 @@ public abstract class NetworkManagementHelper {
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link Port} attribute as a
-	 *         {@link Node}.
+	 *         {@link Node}, or <code>null</code> if such attribute cannot be
+	 *         found.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Network Device Management {@link Node} is
+	 *             <code>null</code>.
+	 */
+	public static Node getManagementNetworkPortNode(Node mgmtNode) {
+		if (mgmtNode == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Network Device Management Node.");
+		}
+		return mgmtNode.getAttributes().getNamedItem(
+				ManagementNetworkDatasLoader.PORT_ATTR);
+	}
+
+	/**
+	 * <p>
+	 * Return the default management port, regarding the
+	 * {@link ManagementNetworkMethod}.
+	 * </p>
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Device Management {@link Node}.
+	 * 
+	 * @return the default management Port, regarding the
+	 *         {@link ManagementNetworkMethod}.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
 	 *             <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_PORT_ATTR} attribute can be found
-	 *             in the given Network Device Management {@link Node}.
+	 *             if the given Network Device Management {@link Node} doesn't
+	 *             define a ManagementNetworkMethod (which is normaly used to
+	 *             define a default port).
 	 */
-	public static Node getManagementNetworkPortNode(Node mgmtNode)
+	private static Port getDefaultMamangementPort(Node mgmtNode)
 			throws ResourcesDescriptorException {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Device Management Node.");
 		}
-		Node n = mgmtNode.getAttributes().getNamedItem(NETWORK_MGMT_PORT_ATTR);
-		if (n == null) {
+		ManagementNetworkMethod mm = null;
+		try {
+			mm = getManagementNetworkMethod(mgmtNode);
+			switch (mm) {
+			case SSH:
+				return SshManagementNetworkDatas.DEFAULT_PORT;
+			case WINRM:
+				return WinRmManagementNetworkDatas.DEFAULT_PORT;
+			default:
+				throw new RuntimeException("Unexpected error while branching "
+						+ "on an unknown management method '" + mm + "'. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.");
+			}
+		} catch (ResourcesDescriptorException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.NetMgmtEx_MISSING_ATTR, NETWORK_MGMT_PORT_ATTR));
+					Messages.NetMgmtEx_MISSING_ATTR,
+					ManagementNetworkDatasLoader.PORT_ATTR), Ex);
 		}
-		return n;
 	}
 
 	/**
@@ -741,12 +764,14 @@ public abstract class NetworkManagementHelper {
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_METHOD_ATTR} can be found in the
-	 *             given Instance's Network Device Management {@link Node}.
+	 *             if no {@link ManagementNetworkDatasLoader#METHOD_ATTR} can be
+	 *             found in the given Instance's Network Device Management
+	 *             {@link Node}.
 	 * @throws ResourcesDescriptorException
-	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTR} found
-	 *             in the given Instance's Network Device Management
-	 *             {@link Node} is not a valid {@link ManagementNetworkMethod}.
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#METHOD_ATTR} found in the
+	 *             given Instance's Network Device Management {@link Node} is
+	 *             not a valid {@link ManagementNetworkMethod}.
 	 */
 	public static ManagementNetworkMethod findManagementNetworkMethod(
 			Node instanceNode) throws ResourcesDescriptorException {
@@ -765,23 +790,28 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Network Device Management {@link Node} is
 	 *             <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_METHOD_ATTR} can be found in the
-	 *             given Network Device Management {@link Node}.
+	 *             if no {@link ManagementNetworkDatasLoader#METHOD_ATTR} can be
+	 *             found in the given Network Device Management {@link Node}.
 	 * @throws ResourcesDescriptorException
-	 *             if the value of the {@link #NETWORK_MGMT_METHOD_ATTR} found
-	 *             in the given Network Device Management {@link Node} is not a
-	 *             valid {@link ManagementNetworkMethod}.
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#METHOD_ATTR} found in the
+	 *             given Network Device Management {@link Node} is not a valid
+	 *             {@link ManagementNetworkMethod}.
 	 */
 	public static ManagementNetworkMethod getManagementNetworkMethod(
 			Node mgmtNode) throws ResourcesDescriptorException {
+		Node n = getManagementNetworkMethodNode(mgmtNode);
+		if (n == null) {
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.NetMgmtEx_MISSING_ATTR,
+					ManagementNetworkDatasLoader.METHOD_ATTR));
+		}
 		try {
-			return ManagementNetworkMethod
-					.parseString(getManagementNetworkMethodNode(mgmtNode)
-							.getNodeValue());
+			return ManagementNetworkMethod.parseString(n.getNodeValue());
 		} catch (IllegalManagementMethodNetworkException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, NETWORK_MGMT_METHOD_ATTR),
-					Ex);
+					Messages.NetMgmtEx_INVALID_ATTR,
+					ManagementNetworkDatasLoader.METHOD_ATTR), Ex);
 		}
 	}
 
@@ -791,7 +821,8 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link ManagementNetworkMethod}
-	 *         Attribute as a {@link Node}.
+	 *         Attribute as a {@link Node}, or <code>null</code> if such
+	 *         attribute cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -801,9 +832,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
-	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_METHOD_ATTR} can be found in the
-	 *             given Instance's Network Device Management {@link Node}.
 	 */
 	public static Node findManagementNetworkMethodNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -817,28 +845,20 @@ public abstract class NetworkManagementHelper {
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link ManagementNetworkMethod}
-	 *         Attribute as a {@link Node}.
+	 *         Attribute as a {@link Node}, or <code>null</code> if such
+	 *         attribute cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
 	 *             <code>null</code>.
-	 * @throws ResourcesDescriptorException
-	 *             if no {@link #NETWORK_MGMT_METHOD_ATTR} can be found in the
-	 *             given Network Device Management {@link Node}.
 	 */
-	public static Node getManagementNetworkMethodNode(Node mgmtNode)
-			throws ResourcesDescriptorException {
+	public static Node getManagementNetworkMethodNode(Node mgmtNode) {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Device Management Node.");
 		}
-		Node n = mgmtNode.getAttributes()
-				.getNamedItem(NETWORK_MGMT_METHOD_ATTR);
-		if (n == null) {
-			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
-					Messages.NetMgmtEx_MISSING_ATTR, NETWORK_MGMT_METHOD_ATTR));
-		}
-		return n;
+		return mgmtNode.getAttributes().getNamedItem(
+				ManagementNetworkDatasLoader.METHOD_ATTR);
 	}
 
 	/**
@@ -848,12 +868,12 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @return <ul>
 	 *         <li>The Instance's Network Device Management {@link Node}'s
-	 *         {@link #NETWORK_MGMT_ENABLE_ATTR} XML Attribute ;</li>
+	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
 	 *         <li><code>false</code> if the given Instance has no Network
 	 *         Management {@link Node} ;</li>
 	 *         <li><code>true</code> if the given Instance's Network Device
-	 *         Management {@link Node} has no {@link #NETWORK_MGMT_ENABLE_ATTR}
-	 *         XML Attribute ;</li>
+	 *         Management {@link Node} has no
+	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
 	 *         </ul>
 	 * 
 	 * @throws IllegalArgumentException
@@ -877,19 +897,23 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @return <ul>
 	 *         <li>The Network Device Management {@link Node}'s
-	 *         {@link #NETWORK_MGMT_ENABLE_ATTR} XML Attribute ;</li>
-	 *         <li><code>true</code> if the given Network Device Management
+	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
+	 *         <li><code>false</code> if the given Network Device Management
 	 *         {@link Node} is <code>null</code> ;</li>
 	 *         <li><code>true</code> if the given Network Device Management
-	 *         {@link Node} has no {@link #NETWORK_MGMT_ENABLE_ATTR} XML
-	 *         Attribute ;</li>
+	 *         {@link Node} has no
+	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
 	 *         </ul>
 	 */
 	public static boolean getManagementNetworkEnable(Node mgmtNode) {
+		if (mgmtNode == null) {
+			return false;
+		}
 		String sEnable = null;
+		String attr = ManagementNetworkDatasLoader.ENABLE_ATTR;
 		try {
-			sEnable = mgmtNode.getAttributes()
-					.getNamedItem(NETWORK_MGMT_ENABLE_ATTR).getNodeValue();
+			sEnable = mgmtNode.getAttributes().getNamedItem(attr)
+					.getNodeValue();
 		} catch (NullPointerException Ex) {
 			return true;
 		}
@@ -1226,7 +1250,7 @@ public abstract class NetworkManagementHelper {
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
-			String attr = NetworkDevicesLoader.DEVICE_ATTR;
+			String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
@@ -1330,7 +1354,7 @@ public abstract class NetworkManagementHelper {
 	public static Node getManagementNetworkDeviceNameNode(Node instanceNode,
 			Node mgmtNode) throws ResourcesDescriptorException {
 		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
-		String attr = NetworkDevicesLoader.DEVICE_ATTR;
+		String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
 		Node n = netNode.getAttributes().getNamedItem(attr);
 		if (n == null) {
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
@@ -1338,6 +1362,156 @@ public abstract class NetworkManagementHelper {
 					attr));
 		}
 		return n;
+	}
+
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return the Instance's Network Device Management
+	 *         {@link ManagementNetworkEnableTimeout}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Instance's Network Device Management {@link Node} can
+	 *             be found.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#ENABLE_TIMEOUT_ATTR}
+	 *             found in the given Instance's Network Device Management
+	 *             {@link Node} is not a valid
+	 *             {@link ManagementNetworkEnableTimeout}.
+	 */
+	public static ManagementNetworkEnableTimeout findManagementNetworkEnableTimeout(
+			Node instanceNode) throws ResourcesDescriptorException {
+		Node mgmtNode = null;
+		try {
+			mgmtNode = findNetworkManagementNode(instanceNode);
+		} catch (ResourcesDescriptorException Ex) {
+			return getDefaultManagementEnableTimeout(mgmtNode);
+		}
+		return getManagementNetworkEnableTimeout(mgmtNode);
+	}
+
+	/**
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Device Management {@link Node}.
+	 * 
+	 * @return the Network Device Management
+	 *         {@link ManagementNetworkEnableTimeout}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Network Device Management {@link Node} is
+	 *             <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the given Network Device Management {@link Node} is
+	 *             <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the value of the
+	 *             {@link ManagementNetworkDatasLoader#ENABLE_TIMEOUT_ATTR}
+	 *             found in the given Network Device Management {@link Node} is
+	 *             not a valid {@link ManagementNetworkEnableTimeout}.
+	 */
+	public static ManagementNetworkEnableTimeout getManagementNetworkEnableTimeout(
+			Node mgmtNode) throws ResourcesDescriptorException {
+		Node n = getManagementNetworkEnableTimeoutNode(mgmtNode);
+		if (n == null) {
+			return getDefaultManagementEnableTimeout(mgmtNode);
+		}
+		try {
+			return ManagementNetworkEnableTimeout.parseString(n.getNodeValue());
+		} catch (IllegalTimeoutException Ex) {
+			String attr = ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR;
+			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
+					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
+		}
+	}
+
+	/**
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return the Instance's Network Device Management enable-timeout attribute
+	 *         as a {@link Node}, or <code>null</code> if no enable-timeout
+	 *         attribute can be found.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the given Instance {@link Node} is not valid (ex :
+	 *             contains invalid HERIT_ATTR).
+	 * @throws ResourcesDescriptorException
+	 *             if no Instance's Network Device Management {@link Node} can
+	 *             be found.
+	 */
+	public static Node findManagementNetworkEnableTimeoutNode(Node instanceNode)
+			throws ResourcesDescriptorException {
+		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		return getManagementNetworkEnableTimeoutNode(mgmtNode);
+	}
+
+	/**
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Device Management {@link Node}.
+	 * 
+	 * @return the Network Device Management enable-timeout attribute as a
+	 *         {@link Node}, or <code>null</code> if no enable-timeout attribute
+	 *         can be found.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Network Device Management {@link Node} is
+	 *             <code>null</code>.
+	 */
+	public static Node getManagementNetworkEnableTimeoutNode(Node mgmtNode) {
+		if (mgmtNode == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Network Device Management Node.");
+		}
+		String attr = ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR;
+		return mgmtNode.getAttributes().getNamedItem(attr);
+	}
+
+	/**
+	 * <p>
+	 * Return the default {@link ManagementNetworkEnableTimeout} of the given
+	 * Instance's Network Device Management {@link Node}, regarding the given
+	 * Instance's {@link ManagementNetworkMethod}.
+	 * </p>
+	 * 
+	 * @param mgmtNode
+	 *            is a Network Device Management {@link Node}.
+	 * 
+	 * @return the default {@link ManagementNetworkEnableTimeout} of the given
+	 *         Instance's Network Device Management {@link Node}, regarding the
+	 *         given Instance's {@link ManagementNetworkMethod}.
+	 */
+	private static ManagementNetworkEnableTimeout getDefaultManagementEnableTimeout(
+			Node mgmtNode) {
+		ManagementNetworkMethod mm = null;
+		try {
+			mm = getManagementNetworkMethod(mgmtNode);
+			switch (mm) {
+			case SSH:
+				return SshManagementNetworkDatas.DEFAULT_ENABLE_TIMEOUT;
+			case WINRM:
+				return WinRmManagementNetworkDatas.DEFAULT_ENABLE_TIMEOUT;
+			default:
+				throw new RuntimeException("Unexpected error while branching "
+						+ "on an unknown management method '" + mm + "'. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.");
+			}
+		} catch (ResourcesDescriptorException Ex) {
+			return ManagementNetworkDatas.DEFAULT_ENABLE_TIMEOUT;
+		}
 	}
 
 }

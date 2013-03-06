@@ -13,7 +13,7 @@ import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListExcept
  * @author Guillaume Cornet
  * 
  */
-public class NetworkDevicesLoader {
+public class NetworkDeviceNamesLoader {
 
 	/**
 	 * XML Nested element of an Instance Node, which contains the definition of
@@ -53,7 +53,7 @@ public class NetworkDevicesLoader {
 
 	private ITaskContext moTC;
 
-	public NetworkDevicesLoader(ITaskContext tc) {
+	public NetworkDeviceNamesLoader(ITaskContext tc) {
 		if (tc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -71,7 +71,7 @@ public class NetworkDevicesLoader {
 		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
 		if (attr == null) {
 			throw new ResourcesDescriptorException(n, Messages.bind(
-					Messages.NetworkLoadEx_MISSING_ATTR, DEVICE_ATTR));
+					Messages.NetworkDeviceEx_MISSING_ATTR, DEVICE_ATTR));
 		}
 		String v = attr.getNodeValue();
 		try {
@@ -83,31 +83,35 @@ public class NetworkDevicesLoader {
 
 	/**
 	 * <p>
-	 * Converts the given Network Device {@link Node}s into a
-	 * {@link NetworkDeviceNameList}.
+	 * Find the Network Device {@link Node}s of the given Instance {@link Node}
+	 * and convert it into a {@link NetworkDeviceNameList}.
 	 * </p>
 	 * 
 	 * <p>
 	 * A Network Device {@link Node} must have the attributes : <BR/>
 	 * <ul>
-	 * <li>device : which should contains a LINUX DEVICE NAME (ex : eth0, eth4)
-	 * ;</li>
+	 * <li>device : which must contains a {@link NetworkDeviceName} ;</li>
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param nl
-	 *            a list of Network Device {@link Node}s.
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
 	 * 
 	 * @return a {@link NetworkDeviceNameList} object, which is a collection of
-	 *         {@link NetworkDeviceName} .
+	 *         {@link NetworkDeviceName}.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code> or is
+	 *             not an element {@link Node}.
 	 * @throws ResourcesDescriptorException
 	 *             if the conversion failed (ex : the content of a Network
-	 *             Device Node is not valid, multiple device declare with the
-	 *             same name).
+	 *             Device {@link Node} is not valid, multiple Network Device
+	 *             Name declare with the same name).
 	 */
-	public NetworkDeviceNameList load(NodeList nl)
+	public NetworkDeviceNameList load(Node instanceNode)
 			throws ResourcesDescriptorException {
+		NodeList nl = NetworkManagementHelper.findNetworkDevices(instanceNode);
+
 		NetworkDeviceNameList dl = new NetworkDeviceNameList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);

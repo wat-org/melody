@@ -22,6 +22,8 @@ public class Messages extends NLS {
 	public static String DiskDeviceNameEx_EMPTY;
 	public static String DiskDeviceNameEx_INVALID;
 
+	public static String DiskMgmtEx_INVALID_DISK_DEVICES_SELECTOR;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

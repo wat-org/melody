@@ -1,20 +1,15 @@
 package com.wat.melody.plugin.libvirt;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
 
 import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.NetworkDevicesLoader;
-import com.wat.melody.cloud.network.NetworkManagementHelper;
+import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
 import com.wat.melody.common.ex.Util;
-import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -71,20 +66,10 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public void validate() throws LibVirtException {
 		super.validate();
 
-		// Find Disk Nodes Selector in the RD
-		String networkDevicesSelector = NetworkManagementHelper
-				.findNetworkDevicesSelector(getTargetNode());
-
 		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
-			NodeList nl = Doc.evaluateAsNodeList("." + networkDevicesSelector,
-					getTargetNode());
-			NetworkDevicesLoader ndl = new NetworkDevicesLoader(getContext());
-			setNetworkDeviceList(ndl.load(nl));
-		} catch (XPathExpressionException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.UpdateNetDevEx_INVALID_NETWORK_DEVICES_SELECTOR,
-					networkDevicesSelector), Ex);
+			setNetworkDeviceList(new NetworkDeviceNamesLoader(getContext())
+					.load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}

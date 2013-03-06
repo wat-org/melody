@@ -6,15 +6,15 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.network.messages";
 
-	public static String NetMgmtMethodEx_EMPTY;
-	public static String NetMgmtMethodEx_INVALID;
+	public static String MgmtNetworkMethodEx_EMPTY;
+	public static String MgmtNetworkMethodEx_INVALID;
 
 	public static String NetworkDeviceNameEx_EMPTY;
 	public static String NetworkDeviceNameEx_INVALID;
 
-	public static String NetworkListEx_DEVICE_ALREADY_DEFINE;
+	public static String NetworkDeviceNameListEx_DEVICE_ALREADY_DEFINE;
 
-	public static String NetworkLoadEx_MISSING_ATTR;
+	public static String NetworkDeviceEx_MISSING_ATTR;
 
 	public static String NetMgmtMsg_INTRO;
 	public static String NetMgmtMsg_RESUME;
@@ -25,6 +25,7 @@ public class Messages extends NLS {
 
 	public static String NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED;
 
+	public static String MgmtNetworkEnableTimeoutEx_INVALID;
 	public static String NetMgmtEx_NO_MGMT_NODE;
 	public static String NetMgmtEx_MISSING_ATTR;
 	public static String NetMgmtEx_INVALID_ATTR;

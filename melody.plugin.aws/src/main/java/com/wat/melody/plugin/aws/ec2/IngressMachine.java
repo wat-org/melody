@@ -1,14 +1,10 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.firewall.FireWallManagementHelper;
-import com.wat.melody.cloud.firewall.FwRuleLoader;
+import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.network.FwRulesDecomposed;
@@ -16,7 +12,6 @@ import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
 import com.wat.melody.plugin.aws.ec2.common.AwsInstance;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpath.XPathHelper;
 
 /**
  * 
@@ -47,20 +42,10 @@ public class IngressMachine extends AbstractAwsOperation {
 	public void validate() throws AwsException {
 		super.validate();
 
-		// Find FwRule Nodes Selector in the RD
-		String fwRulesSelector = FireWallManagementHelper
-				.findFireWallRulesSelector(getTargetNode());
-
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			NodeList nl = XPathHelper.getHeritedContent(getTargetNode(),
-					fwRulesSelector);
-			FwRuleLoader fwl = new FwRuleLoader(getContext());
-			setFwRules(fwl.load(nl).decompose());
-		} catch (XPathExpressionException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.IngressEx_INVALID_DISK_DEVICES_SELECTOR,
-					fwRulesSelector), Ex);
+			setFwRules(new FireWallRulesLoader(getContext()).load(
+					getTargetNode()).decompose());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}

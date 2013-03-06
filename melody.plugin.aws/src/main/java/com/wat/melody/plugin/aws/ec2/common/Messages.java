@@ -80,7 +80,6 @@ public class Messages extends NLS {
 	public static String DeleteMsg_TERMINATED;
 	public static String DeleteMsg_GENERIC_WARN;
 
-	public static String IngressEx_INVALID_DISK_DEVICES_SELECTOR;
 	public static String IngressEx_GENERIC_FAIL;
 	public static String IngressMsg_NO_INSTANCE;
 	public static String IngressMsg_SKIP_FWRULE;
@@ -95,18 +94,12 @@ public class Messages extends NLS {
 	public static String ResizeMsg_NO_NEED;
 	public static String ResizeMsg_GENERIC_WARN;
 
-	public static String UpdateDiskDevEx_INVALID_DISK_DEVICES_SELECTOR;
 	public static String UpdateDiskDevEx_DETACH;
 	public static String UpdateDiskDevEx_CREATE;
 	public static String UpdateDiskDevEx_ATTACH;
 	public static String UpdateDiskDevEx_GENERIC_FAIL;
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevMsg_GENERIC_WARN;
-
-	public static String UpdateNetDevEx_INVALID_NETWORK_DEVICES_SELECTOR;
-	public static String UpdateNetDevEx_GENERIC_FAIL;
-	public static String UpdateNetDevMsg_NO_INSTANCE;
-	public static String UpdateNetDevMsg_GENERIC_WARN;
 
 	static {
 		// initialize resource bundle

@@ -106,4 +106,36 @@ public abstract class DiskManagementHelper {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Return the Disk Device {@link Node}s of the given Instance {@link Node}.
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return The Disk Device {@link Node}s of the given Instance {@link Node}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <code>null</code>.
+	 * @throws ResourcesDescriptorException
+	 *             if the disk Devices Selector (found in the Disk Device
+	 *             Management {@link Node}) is not a valid XPath Expression.
+	 */
+	public static NodeList findDiskDevices(Node instanceNode)
+			throws ResourcesDescriptorException {
+		String sAllDiskDevSelector = findDiskDevicesSelector(instanceNode);
+		try {
+			return XPathHelper.getHeritedContent(instanceNode,
+					sAllDiskDevSelector);
+		} catch (XPathExpressionException Ex) {
+			Node mgmtNode = findDiskManagementNode(instanceNode);
+			Node attr = mgmtNode.getAttributes().getNamedItem(
+					DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
+			throw new ResourcesDescriptorException(attr, Messages.bind(
+					Messages.DiskMgmtEx_INVALID_DISK_DEVICES_SELECTOR,
+					sAllDiskDevSelector), Ex);
+		}
+	}
+
 }
