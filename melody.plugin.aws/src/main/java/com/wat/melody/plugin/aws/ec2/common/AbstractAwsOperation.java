@@ -239,8 +239,7 @@ abstract public class AbstractAwsOperation implements ITask,
 		}
 		NetworkDeviceNameList netDevices = null;
 		try {
-			netDevices = new NetworkDeviceNamesLoader(getContext())
-					.load(getTargetNode());
+			netDevices = new NetworkDeviceNamesLoader().load(getTargetNode());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}

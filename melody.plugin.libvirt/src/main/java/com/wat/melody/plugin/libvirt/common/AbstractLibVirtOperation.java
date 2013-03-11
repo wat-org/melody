@@ -239,8 +239,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		}
 		NetworkDeviceNameList netDevices = null;
 		try {
-			netDevices = new NetworkDeviceNamesLoader(getContext())
-					.load(getTargetNode());
+			netDevices = new NetworkDeviceNamesLoader().load(getTargetNode());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}

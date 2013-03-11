@@ -1,4 +1,4 @@
-package com.wat.melody.xpathextensions.common;
+package com.wat.melody.xpathextensions;
 
 import org.eclipse.osgi.util.NLS;
 

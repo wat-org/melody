@@ -75,8 +75,7 @@ public class UpdateDiskDevices extends AbstractAwsOperation {
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
-			setDiskDeviceList(new DiskDevicesLoader(getContext())
-					.load(getTargetNode()));
+			setDiskDeviceList(new DiskDevicesLoader().load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}

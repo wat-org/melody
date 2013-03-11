@@ -69,6 +69,13 @@ public abstract class XPathHelper {
 	/*
 	 * TODO : expand the resulting value, regarding the value of the third
 	 * boolean arg
+	 * 
+	 * How to expand ? use XPathExpander.expand(String, node, null)
+	 * 
+	 * But XPathExpander is not visible here (circular ref xpathextension <->
+	 * cloud)
+	 * 
+	 * And XPathExpander will contains soon a CustomXPathFunctions param.
 	 */
 	public static String getHeritedAttributeValue(Node n, String sAttrName)
 			throws ResourcesDescriptorException {

@@ -68,7 +68,7 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 
 		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
-			setNetworkDeviceList(new NetworkDeviceNamesLoader(getContext())
+			setNetworkDeviceList(new NetworkDeviceNamesLoader()
 					.load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

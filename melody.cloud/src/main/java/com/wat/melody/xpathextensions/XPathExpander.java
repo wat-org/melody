@@ -14,8 +14,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.xpathextensions.common.Messages;
-import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
+import com.wat.melody.xpathextensions.exception.XPathExpressionSyntaxException;
 
 /**
  * 
@@ -180,7 +179,7 @@ public abstract class XPathExpander {
 			if (vars == null) {
 				throw new RuntimeException("Cannot expand the property '"
 						+ sXPathExpr
-						+ "'because no PropertiesSet have been provided.");
+						+ "' because no PropertiesSet have been provided.");
 			}
 			if (vars.containsKey(sXPathExpr)) {
 				return vars.get(sXPathExpr);
@@ -192,7 +191,7 @@ public abstract class XPathExpander {
 			if (context == null) {
 				throw new RuntimeException("Cannot expand the expression '"
 						+ sXPathExpr
-						+ "'because no Context have been provided.");
+						+ "' because no Context have been provided.");
 			}
 			try {
 				return Doc.evaluateAsString(sXPathExpr, context);

@@ -75,8 +75,7 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
-			setDiskDeviceList(new DiskDevicesLoader(getContext())
-					.load(getTargetNode()));
+			setDiskDeviceList(new DiskDevicesLoader().load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}

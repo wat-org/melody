@@ -3,11 +3,12 @@ package com.wat.melody.cloud.disk;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * 
@@ -44,19 +45,7 @@ public class DiskDevicesLoader {
 	 */
 	public static final String ROOTDEVICE_ATTR = "rootDevice";
 
-	private ITaskContext moTC;
-
-	public DiskDevicesLoader(ITaskContext tc) {
-		if (tc == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ ITaskContext.class.getCanonicalName() + ".");
-		}
-		moTC = tc;
-	}
-
-	protected ITaskContext getTC() {
-		return moTC;
+	public DiskDevicesLoader() {
 	}
 
 	private DiskDeviceName loadDeviceName(Node n)
@@ -67,7 +56,13 @@ public class DiskDevicesLoader {
 					Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
 		}
 		String v = attr.getNodeValue();
-		if (v.length() == 0) {
+		try {
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
@@ -84,7 +79,13 @@ public class DiskDevicesLoader {
 			return null;
 		}
 		String v = attr.getNodeValue();
-		if (v.length() == 0) {
+		try {
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
@@ -94,25 +95,38 @@ public class DiskDevicesLoader {
 		}
 	}
 
-	private Boolean loadDeleteOnTermination(Node n) {
+	private Boolean loadDeleteOnTermination(Node n)
+			throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(DELETEONTERMINATION_ATTR);
 		if (attr == null) {
 			return null;
 		}
 		String v = attr.getNodeValue();
-		if (v.length() == 0) {
+		try {
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
 			return null;
 		}
 		return Boolean.parseBoolean(v);
 	}
 
-	private Boolean loadRootDevice(Node n) {
+	private Boolean loadRootDevice(Node n) throws ResourcesDescriptorException {
 		Node attr = n.getAttributes().getNamedItem(ROOTDEVICE_ATTR);
 		if (attr == null) {
 			return null;
 		}
 		String v = attr.getNodeValue();
-		if (v.length() == 0) {
+		try {
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
 			return null;
 		}
 		return Boolean.parseBoolean(v);

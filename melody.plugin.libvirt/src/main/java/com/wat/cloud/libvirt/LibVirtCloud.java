@@ -55,7 +55,7 @@ import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
 import com.wat.melody.xpathextensions.XPathExpander;
-import com.wat.melody.xpathextensions.common.exception.XPathExpressionSyntaxException;
+import com.wat.melody.xpathextensions.exception.XPathExpressionSyntaxException;
 
 /**
  * <p>

@@ -3,10 +3,11 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * 
@@ -51,19 +52,7 @@ public class NetworkDeviceNamesLoader {
 	 */
 	public static final String NAT_FQDN_ATTR = "fqdn";
 
-	private ITaskContext moTC;
-
-	public NetworkDeviceNamesLoader(ITaskContext tc) {
-		if (tc == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ ITaskContext.class.getCanonicalName() + ".");
-		}
-		moTC = tc;
-	}
-
-	protected ITaskContext getTC() {
-		return moTC;
+	public NetworkDeviceNamesLoader() {
 	}
 
 	private NetworkDeviceName loadDeviceName(Node n)
@@ -74,6 +63,15 @@ public class NetworkDeviceNamesLoader {
 					Messages.NetworkDeviceEx_MISSING_ATTR, DEVICE_ATTR));
 		}
 		String v = attr.getNodeValue();
+		try {
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+		if (v == null || v.length() == 0) {
+			return null;
+		}
 		try {
 			return NetworkDeviceName.parseString(v);
 		} catch (IllegalNetworkDeviceNameException Ex) {

@@ -3,7 +3,6 @@ package com.wat.melody.cloud.firewall;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceName;
@@ -23,6 +22,7 @@ import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
 import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * 
@@ -83,18 +83,7 @@ public class FireWallRulesLoader {
 	 */
 	public static final String ACCESS_ATTR = "access";
 
-	private ITaskContext moTC;
-
-	public FireWallRulesLoader(ITaskContext tc) {
-		if (tc == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moTC = tc;
-	}
-
-	protected ITaskContext getTC() {
-		return moTC;
+	public FireWallRulesLoader() {
 	}
 
 	private IpRanges loadFromIps(Node n) throws ResourcesDescriptorException {
@@ -107,7 +96,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -132,7 +122,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -156,7 +147,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -180,7 +172,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -204,7 +197,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -228,7 +222,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -253,7 +248,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
@@ -277,7 +273,8 @@ public class FireWallRulesLoader {
 			return null;
 		}
 		try {
-			v = getTC().expand(v);
+			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
+					null);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new ResourcesDescriptorException(attr, Ex);
 		}

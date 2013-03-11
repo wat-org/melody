@@ -44,8 +44,8 @@ public class IngressMachine extends AbstractLibVirtOperation implements ITask {
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			setFwRules(new FireWallRulesLoader(getContext()).load(
-					getTargetNode()).decompose());
+			setFwRules(new FireWallRulesLoader().load(getTargetNode())
+					.decompose());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
