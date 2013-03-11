@@ -100,6 +100,11 @@ public class NewMachine extends AbstractMachineOperation {
 		super.validate();
 
 		try {
+			/*
+			 * TODO : create an InstanceDatasLoader and put all this inside.
+			 * 
+			 * Also create an InstanceHelper and remove all task attribute.
+			 */
 			Node n = getTargetNode();
 			String v = null;
 

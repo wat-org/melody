@@ -15,7 +15,7 @@ import com.wat.melody.xpath.XPathHelper;
  * <p>
  * XPath custom function, which evaluate the given XPath expression, relatively
  * to the given node and to the given node parents (via
- * {@link CustomXPathFunctions#HERIT_ATTR} XML attribute).
+ * {@link XPathHelper#HERIT_ATTR} XML attribute).
  * </p>
  * 
  * @author Guillaume Cornet

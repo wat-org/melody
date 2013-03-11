@@ -8,8 +8,10 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * 
@@ -66,21 +68,27 @@ public abstract class XPathHelper {
 				.getFirstChild());
 	}
 
-	/*
-	 * TODO : expand the resulting value, regarding the value of the third
-	 * boolean arg
-	 * 
-	 * How to expand ? use XPathExpander.expand(String, node, null)
-	 * 
-	 * But XPathExpander is not visible here (circular ref xpathextension <->
-	 * cloud)
-	 * 
-	 * And XPathExpander will contains soon a CustomXPathFunctions param.
-	 */
+	public static String getHeritedAttributeValue(Node n, String sAttrName,
+			boolean expand) throws ResourcesDescriptorException {
+		Node attr = getHeritedAttribute(n, sAttrName);
+		if (attr == null) {
+			return null;
+		}
+		String v = attr.getNodeValue();
+		if (!expand || v == null) {
+			return v;
+		}
+		try {
+			return XPathExpander.expand(v,
+					n.getOwnerDocument().getFirstChild(), null);
+		} catch (ExpressionSyntaxException Ex) {
+			throw new ResourcesDescriptorException(attr, Ex);
+		}
+	}
+
 	public static String getHeritedAttributeValue(Node n, String sAttrName)
 			throws ResourcesDescriptorException {
-		Node attr = getHeritedAttribute(n, sAttrName);
-		return attr == null ? null : attr.getNodeValue();
+		return getHeritedAttributeValue(n, sAttrName, true);
 	}
 
 	public static Node getHeritedAttribute(Node n, String sAttrName)

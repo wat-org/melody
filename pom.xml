@@ -14,13 +14,12 @@
 		<module>melody.api.annotations</module>
 		<module>melody.common</module>
 		<module>melody.api</module>
-		<module>melody.xpathextensions</module>
+		<module>melody.cloud</module>
 		<module>melody.core</module>
 		<module>melody.cli</module>
 		<module>melody.plugin.echo</module>
 		<module>melody.plugin.sleep</module>
 		<module>melody.plugin.ssh</module>
-		<module>melody.cloud</module>
 		<module>melody.plugin.aws</module>
 		<module>melody.plugin.libvirt</module>
 	</modules>

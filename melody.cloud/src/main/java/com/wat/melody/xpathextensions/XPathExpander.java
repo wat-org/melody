@@ -117,6 +117,9 @@ public abstract class XPathExpander {
 	 */
 	public static String expand(String sBase, Node context, PropertiesSet vars)
 			throws XPathExpressionSyntaxException {
+		if (sBase == null) {
+			return null;
+		}
 		int start = sBase.indexOf(DELIM_START);
 		int end = sBase.indexOf(DELIM_STOP);
 		if (start == -1) {
