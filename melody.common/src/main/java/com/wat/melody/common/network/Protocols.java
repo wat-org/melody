@@ -16,6 +16,8 @@ public class Protocols extends LinkedHashSet<Protocol> {
 
 	public static final String PROTOCOLS_SEPARATOR = ",";
 
+	private static final String _ALL = "all";
+
 	public static Protocols ALL = createProtocols(Protocol.TCP, Protocol.UDP);
 
 	private static Protocols createProtocols(Protocol... protocols) {
@@ -103,6 +105,11 @@ public class Protocols extends LinkedHashSet<Protocol> {
 			if (protocol.length() == 0) {
 				throw new IllegalProtocolsException(Messages.bind(
 						Messages.ProtocolsEx_EMPTY_PROTOCOL, sProtocols));
+			}
+			if (protocol.equalsIgnoreCase(_ALL)) {
+				add(Protocol.TCP);
+				add(Protocol.UDP);
+				continue;
 			}
 			try {
 				add(Protocol.parseString(protocol));

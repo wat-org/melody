@@ -16,18 +16,13 @@ public class ResourcesDescriptorException extends MelodyException {
 
 	private Node moErrorNode = null;
 
-	public ResourcesDescriptorException(Node errorNode) {
-		super();
-		setErrorNode(errorNode);
-	}
-
 	public ResourcesDescriptorException(Node errorNode, String msg) {
 		super(msg);
 		setErrorNode(errorNode);
 	}
 
 	public ResourcesDescriptorException(Node errorNode, Throwable cause) {
-		super(cause);
+		super(cause.getMessage(), cause != null ? cause.getCause() : null);
 		setErrorNode(errorNode);
 	}
 

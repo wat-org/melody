@@ -53,7 +53,7 @@ class KnownHostsAdapter implements HostKeyRepository {
 
 	@Override
 	public String getKnownHostsRepositoryID() {
-		throw new RuntimeException("not implemented.");
+		return null;
 	}
 
 	@Override
