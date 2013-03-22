@@ -108,7 +108,8 @@ public class NetworkDeviceNamesLoader {
 	 */
 	public NetworkDeviceNameList load(Node instanceNode)
 			throws ResourcesDescriptorException {
-		NodeList nl = NetworkManagementHelper.findNetworkDevices(instanceNode);
+		NodeList nl = NetworkManagementHelper.findNetworkDeviceNodeByName(
+				instanceNode, null);
 
 		NetworkDeviceNameList dl = new NetworkDeviceNameList();
 		for (int i = 0; i < nl.getLength(); i++) {

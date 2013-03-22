@@ -22,7 +22,11 @@ public class GetNetworkDeviceByName implements XPathFunction {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
-		Object arg1 = list.get(1);
+		// accepts one or two args
+		Object arg1 = null;
+		if (list.size() > 1) {
+			arg1 = list.get(1);
+		}
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
@@ -34,18 +38,17 @@ public class GetNetworkDeviceByName implements XPathFunction {
 		}
 		String arg1val = null;
 		if (arg1 == null) {
-			throw new XPathFunctionException("null: Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE + ":" + NAME
-					+ "() expects a non-null second argument.");
-		}
-		if (arg1 instanceof Node) {
-			arg1val = ((Node) arg1).getNodeValue();
-		} else if (arg1 instanceof String) {
-			arg1val = (String) arg1;
+			arg1val = null;
 		} else {
-			throw new XPathFunctionException("null: Not accepted. "
-					+ CustomXPathFunctions.NAMESPACE + ":" + NAME
-					+ "() expects a String or a Node as second argument.");
+			if (arg1 instanceof Node) {
+				arg1val = ((Node) arg1).getNodeValue();
+			} else if (arg1 instanceof String) {
+				arg1val = (String) arg1;
+			} else {
+				throw new XPathFunctionException("null: Not accepted. "
+						+ CustomXPathFunctions.NAMESPACE + ":" + NAME
+						+ "() expects a String or a Node as second argument.");
+			}
 		}
 		try {
 			if (arg0 instanceof Node) {

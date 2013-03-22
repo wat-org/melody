@@ -738,7 +738,7 @@ public abstract class LibVirtCloud {
 					proto = Protocol.TCP;
 				} else {
 					proto = Protocol.UDP;
-				}
+				}// TODO : handle ICMP
 
 				String sDirection = Doc.evaluateAsString("./@direction", n);
 				if (sDirection.equalsIgnoreCase("in")) {
@@ -798,6 +798,7 @@ public abstract class LibVirtCloud {
 			doc.loadFromXML(sg.getXMLDesc());
 
 			for (FwRuleDecomposed rule : rules) {
+			// TODO : handle ICMP
 				Node n = doc
 						.evaluateAsNode("/filter/rule[" + " @action='"
 								+ (rule.getAccess() == Access.ALLOW ? "accept"
@@ -872,6 +873,7 @@ public abstract class LibVirtCloud {
 			doc.loadFromXML(sg.getXMLDesc());
 
 			for (FwRuleDecomposed rule : rules) {
+				// TODO : handle ICMP
 				Node nrule = doc.getDocument().createElement("rule");
 				Doc.createAttribute("priority", "500", nrule);
 				Doc.createAttribute("action",

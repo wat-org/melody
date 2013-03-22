@@ -4,7 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 
-	private static final String BUNDLE_NAME = "com.wat.melody.xpathextensions.common.messages";
+	private static final String BUNDLE_NAME = "com.wat.melody.xpathextensions.messages";
 
 	public static String XPathExprSyntaxEx_UNDEF_PROPERTY;
 	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR;

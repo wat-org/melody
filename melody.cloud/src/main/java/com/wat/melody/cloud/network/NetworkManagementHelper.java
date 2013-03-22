@@ -952,13 +952,7 @@ public abstract class NetworkManagementHelper {
 			// raised when Network Device Management datas are invalid.
 			// in this situation, we will use default values
 		}
-		try {
-			return mgmtNode.getAttributes()
-					.getNamedItem(NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE)
-					.getNodeValue();
-		} catch (NullPointerException Ex) {
-			return DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR;
-		}
+		return getNetworkDevicesSelector(mgmtNode);
 	}
 
 	/**
@@ -1025,7 +1019,10 @@ public abstract class NetworkManagementHelper {
 		}
 		List<Node> hl = new ArrayList<Node>();
 		for (Node instanceNode : instanceNodes) {
-			hl.add(findNetworkDeviceNodeByName(instanceNode, netDevName));
+			NodeList nl = findNetworkDeviceNodeByName(instanceNode, netDevName);
+			for (int i = 0; i < nl.getLength(); i++) {
+				hl.add(nl.item(i));
+			}
 		}
 		return hl;
 	}
@@ -1033,7 +1030,7 @@ public abstract class NetworkManagementHelper {
 	/**
 	 * <p>
 	 * Return the Network Device {@link Node} of the given Instance {@link Node}
-	 * whose Device Name match the given name.
+	 * whose Device Name match the given network device name.
 	 * </p>
 	 * 
 	 * @param instanceNode
@@ -1043,7 +1040,9 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @return The Network Device {@link Node} of the given Instance
 	 *         {@link Node}, whose "device" XML Attribute's content is equal to
-	 *         the given name.
+	 *         the given network device name, or all Network Device {@link Node}
+	 *         s of the given Instance {@link Node} if the given network device
+	 *         name is null.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -1052,21 +1051,16 @@ public abstract class NetworkManagementHelper {
 	 *             Management {@link Node} of the given instance) is not a valid
 	 *             XPath Expression.
 	 */
-	public static Node findNetworkDeviceNodeByName(Node instanceNode,
+	public static NodeList findNetworkDeviceNodeByName(Node instanceNode,
 			String netDevName) throws ResourcesDescriptorException {
-		String sAllNetDevSelector = findNetworkDevicesSelector(instanceNode);
-		String sNetDevSelector = "." + sAllNetDevSelector + "[@device='"
-				+ netDevName + "']";
+		Node mgmtNode = null;
 		try {
-			return Doc.evaluateAsNode(sNetDevSelector, instanceNode);
-		} catch (XPathExpressionException Ex) {
-			Node mgmtNode = findNetworkManagementNode(instanceNode);
-			Node attr = mgmtNode.getAttributes().getNamedItem(
-					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
-					Messages.NetMgmtEx_INVALID_NETWORK_DEVICES_SELECTOR,
-					sAllNetDevSelector), Ex);
+			mgmtNode = findNetworkManagementNode(instanceNode);
+		} catch (ResourcesDescriptorException Ex) {
+			// raised when Network Device Management datas are invalid.
+			// in this situation, we will use default values
 		}
+		return getNetworkDeviceNodeByName(instanceNode, mgmtNode, netDevName);
 	}
 
 	/**
@@ -1093,48 +1087,19 @@ public abstract class NetworkManagementHelper {
 	 *             if the Network Devices Selector (found in the Network Device
 	 *             Management {@link Node}) is not a valid XPath Expression.
 	 */
-	public static Node getNetworkDeviceByName(Node instanceNode, Node mgmtNode,
-			String netDevName) throws ResourcesDescriptorException {
-		String sAllNetDevSelector = getNetworkDevicesSelector(mgmtNode);
-		String sNetDevSelector = "." + sAllNetDevSelector + "[@device='"
-				+ netDevName + "']";
-		try {
-			return Doc.evaluateAsNode(sNetDevSelector, instanceNode);
-		} catch (XPathExpressionException Ex) {
-			Node attr = mgmtNode.getAttributes().getNamedItem(
-					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
-					Messages.NetMgmtEx_INVALID_NETWORK_DEVICES_SELECTOR,
-					sAllNetDevSelector), Ex);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Return the Network Device {@link Node}s of the given Instance
-	 * {@link Node}.
-	 * </p>
-	 * 
-	 * @param instanceNode
-	 *            is an Instance {@link Node}.
-	 * 
-	 * @return The Network Device {@link Node}s of the given Instance
-	 *         {@link Node}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
-	 * @throws ResourcesDescriptorException
-	 *             if the Network Devices Selector (found in the Network Device
-	 *             Management {@link Node}) is not a valid XPath Expression.
-	 */
-	public static NodeList findNetworkDevices(Node instanceNode)
+	public static NodeList getNetworkDeviceNodeByName(Node instanceNode,
+			Node mgmtNode, String netDevName)
 			throws ResourcesDescriptorException {
-		String sAllNetDevSelector = "."
-				+ findNetworkDevicesSelector(instanceNode);
+		if (instanceNode == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Instance Node.");
+		}
+		String sAllNetDevSelector = getNetworkDevicesSelector(mgmtNode);
+		String sNetDevSelector = "." + sAllNetDevSelector
+				+ (netDevName == null ? "" : "[@device='" + netDevName + "']");
 		try {
-			return Doc.evaluateAsNodeList(sAllNetDevSelector, instanceNode);
+			return Doc.evaluateAsNodeList(sNetDevSelector, instanceNode);
 		} catch (XPathExpressionException Ex) {
-			Node mgmtNode = findNetworkManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(

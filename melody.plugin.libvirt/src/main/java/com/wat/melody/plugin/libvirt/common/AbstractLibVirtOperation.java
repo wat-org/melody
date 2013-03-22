@@ -264,13 +264,15 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
 			throws LibVirtException {
-		Node netDevNode = null;
+		NodeList netDevs = null;
 		try {
-			netDevNode = NetworkManagementHelper.findNetworkDeviceNodeByName(
+			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
 					getTargetNode(), nd.getValue());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
+		Node netDevNode = netDevs == null || netDevs.getLength() == 0 ? null
+				: netDevs.item(0);
 		return netDevNode == null ? null : getRD().getMelodyID(netDevNode);
 	}
 
