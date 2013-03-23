@@ -37,6 +37,17 @@ public interface IResourcesDescriptor {
 			IllegalFileException, IllegalTargetFilterException,
 			IllegalResourcesFilterException, IOException;
 
+	/**
+	 * <p>
+	 * Remove the given xml file to the resources managed by this object.
+	 * </p>
+	 * 
+	 * @return <tt>true</tt> it the given file was found and successfully
+	 *         removed, or <tt>false</tt> in any other case.
+	 */
+	public boolean remove(String sPath) throws IllegalTargetFilterException,
+			IllegalResourcesFilterException;
+
 	public void store();
 
 	/**
@@ -169,6 +180,21 @@ public interface IResourcesDescriptor {
 	public Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException;
 
+	/**
+	 * <p>
+	 * Returns all {@link Node}s whose match the given XPath Expression from all
+	 * eligible targets.
+	 * </p>
+	 * 
+	 * @param xpath
+	 *            is the XPath Expression to evaluate.
+	 * 
+	 * @return all {@link Node}s whose match the given XPath Expression from all
+	 *         eligible targets.
+	 * 
+	 * @throws XPathExpressionException
+	 *             if the given XPath Expression is not valid.
+	 */
 	public List<Node> evaluateTargets(String xpath)
 			throws XPathExpressionException;
 

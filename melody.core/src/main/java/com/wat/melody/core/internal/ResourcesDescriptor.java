@@ -32,9 +32,6 @@ import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 public class ResourcesDescriptor extends FilteredDoc implements
 		IResourcesDescriptor {
 
-	/*
-	 * TODO : XQuery doesn't support 'order by' and 'where'....
-	 */
 	private TargetDescriptor moTargetDescriptor;
 	private List<DUNIDDoc> moDUNIDDocList;
 
@@ -61,7 +58,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		getOriginalDocument().appendChild(root);
 		// Add it an DUNIND XML attribute
 		createAttribute(DUNID_ATTR, new DUNID(0).toString(), root);
-		// The Current Document is a clone of the Orginal Document
+		// The Current Document is a clone of the Original Document
 		setDocument(cloneOriginalDocument());
 		// Build a new TargetDescriptor
 		setTargetDescriptor(new TargetDescriptor());
@@ -137,7 +134,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	public List<Node> evaluateTargets(String xpath)
 			throws XPathExpressionException {
 		List<Node> targets = new ArrayList<Node>();
+		// Evaluate expression in the current document
 		NodeList nl = evaluateAsNodeList(xpath);
+		// Search for resulting nodes in the eligible targets
 		for (int i = 0; i < nl.getLength(); i++) {
 			if (getTargetDescriptor().getNode(getDUNID(nl.item(i))) != null) {
 				targets.add(nl.item(i));
@@ -167,17 +166,19 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public void add(String sPath) throws IllegalDocException,
+	public synchronized void add(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalTargetFilterException,
 			IllegalResourcesFilterException, IOException {
-		// TODO : implement a remove method
 		try {
+			// Add in the list
 			DUNIDDoc d = new DUNIDDoc(getNextDUNIDDocIndex());
 			d.load(sPath);
 			getDUNIDDocList().add(d);
+			// Add the content
 			Node n = getOriginalDocument().importNode(
 					d.getDocument().getFirstChild(), true);
 			getOriginalDocument().getFirstChild().appendChild(n);
+			// Rebuild
 			setDocument(cloneOriginalDocument());
 			applyFilters();
 		} catch (IllegalFilterException Ex) {
@@ -192,11 +193,48 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
+		// Update targetDesc
 		getTargetDescriptor().load(this);
 	}
 
 	@Override
-	public void store() {
+	public synchronized boolean remove(String sPath)
+			throws IllegalResourcesFilterException,
+			IllegalTargetFilterException {
+		if (sPath == null) {
+			return false;
+		}
+		int i = -1;
+		// Search the doc in the list
+		while (++i < getDUNIDDocList().size()) {
+			DUNIDDoc d = getDUNIDDocList().get(i);
+			if (d.getFileFullPath().equals(sPath)) {
+				break;
+			}
+		}
+		if (i > getDUNIDDocList().size()) {
+			// Not found
+			return false;
+		}
+		// Remove from list
+		getDUNIDDocList().remove(i);
+		// Remove the content
+		Node base = getOriginalDocument().getFirstChild();
+		base.removeChild(base.getChildNodes().item(i));
+		// Rebuild
+		setDocument(cloneOriginalDocument());
+		try {
+			applyFilters();
+		} catch (IllegalFilterException Ex) {
+			throw new IllegalResourcesFilterException(Ex);
+		}
+		// Update targetDesc
+		getTargetDescriptor().load(this);
+		return true;
+	}
+
+	@Override
+	public synchronized void store() {
 		for (DUNIDDoc d : getDUNIDDocList()) {
 			d.store();
 		}
@@ -250,7 +288,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public String removeFilter(int i) {
+	public synchronized String removeFilter(int i) {
 		String sRemovedFilter = super.removeFilter(i);
 		try {
 			getTargetDescriptor().load(this);
@@ -266,7 +304,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public void clearFilters() {
+	public synchronized void clearFilters() {
 		super.clearFilters();
 		try {
 			getTargetDescriptor().load(this);
@@ -281,7 +319,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public String setFilter(int i, Filter filter)
+	public synchronized String setFilter(int i, Filter filter)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		String sRemovedFilter;
@@ -295,7 +333,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public void setFilters(FilterSet filters)
+	public synchronized void setFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		try {
@@ -307,7 +345,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public void addFilter(Filter filter)
+	public synchronized void addFilter(Filter filter)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		try {
@@ -319,7 +357,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public void addFilters(FilterSet filters)
+	public synchronized void addFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		try {
@@ -330,56 +368,48 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		getTargetDescriptor().load(this);
 	}
 
-	public int countTargetsFilters() {
+	@Override
+	public synchronized int countTargetsFilters() {
 		return getTargetDescriptor().countFilters();
 	}
 
-	public String getTargetsFilter(int i) {
+	@Override
+	public synchronized String getTargetsFilter(int i) {
 		return getTargetDescriptor().getFilter(i);
 	}
 
-	public String removeTargetsFilter(int i) {
+	@Override
+	public synchronized String removeTargetsFilter(int i) {
 		return getTargetDescriptor().removeFilter(i);
 	}
 
-	public void clearTargetsFilters() {
+	@Override
+	public synchronized void clearTargetsFilters() {
 		getTargetDescriptor().clearFilters();
 	}
 
-	public String setTargetsFilter(int i, Filter filter)
+	@Override
+	public synchronized String setTargetsFilter(int i, Filter filter)
 			throws IllegalTargetFilterException {
-		try {
-			return getTargetDescriptor().setFilter(i, filter);
-		} catch (IllegalFilterException Ex) {
-			throw new IllegalTargetFilterException(Ex);
-		}
+		return getTargetDescriptor().setFilter(i, filter);
 	}
 
-	public void setTargetsFilters(FilterSet filters)
+	@Override
+	public synchronized void setTargetsFilters(FilterSet filters)
 			throws IllegalTargetFilterException {
-		try {
-			getTargetDescriptor().setFilters(filters);
-		} catch (IllegalFilterException Ex) {
-			throw new IllegalTargetFilterException(Ex);
-		}
+		getTargetDescriptor().setFilters(filters);
 	}
 
-	public void addTargetsFilter(Filter filter)
+	@Override
+	public synchronized void addTargetsFilter(Filter filter)
 			throws IllegalTargetFilterException {
-		try {
-			getTargetDescriptor().addFilter(filter);
-		} catch (IllegalFilterException Ex) {
-			throw new IllegalTargetFilterException(Ex);
-		}
+		getTargetDescriptor().addFilter(filter);
 	}
 
-	public void addTargetsFilters(FilterSet filters)
+	@Override
+	public synchronized void addTargetsFilters(FilterSet filters)
 			throws IllegalTargetFilterException {
-		try {
-			getTargetDescriptor().addFilters(filters);
-		} catch (IllegalFilterException Ex) {
-			throw new IllegalTargetFilterException(Ex);
-		}
+		getTargetDescriptor().addFilters(filters);
 	}
 
 }

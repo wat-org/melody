@@ -277,6 +277,9 @@ public class FilteredDoc extends DUNIDDoc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Filter.");
 		}
+		/*
+		 * TODO deal with HERIT_ATTR
+		 */
 		NodeList nl;
 		try {
 			nl = evaluateAsNodeList(filter.getValue());

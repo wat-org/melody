@@ -6,6 +6,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.IllegalTargetFilterException;
+import com.wat.melody.common.filter.Filter;
+import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.xml.FilteredDoc;
 
@@ -41,6 +43,45 @@ public class TargetDescriptor extends FilteredDoc {
 	public synchronized Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException {
 		return evaluateAsNode(sXPathExpr, getDocument().getFirstChild());
+	}
+
+	@Override
+	public String setFilter(int i, Filter filter)
+			throws IllegalTargetFilterException {
+		try {
+			return super.setFilter(i, filter);
+		} catch (IllegalFilterException Ex) {
+			throw new IllegalTargetFilterException(Ex);
+		}
+	}
+
+	@Override
+	public void setFilters(FilterSet filters)
+			throws IllegalTargetFilterException {
+		try {
+			super.setFilters(filters);
+		} catch (IllegalFilterException Ex) {
+			throw new IllegalTargetFilterException(Ex);
+		}
+	}
+
+	@Override
+	public void addFilter(Filter filter) throws IllegalTargetFilterException {
+		try {
+			super.addFilter(filter);
+		} catch (IllegalFilterException Ex) {
+			throw new IllegalTargetFilterException(Ex);
+		}
+	}
+
+	@Override
+	public void addFilters(FilterSet filters)
+			throws IllegalTargetFilterException {
+		try {
+			super.addFilters(filters);
+		} catch (IllegalFilterException Ex) {
+			throw new IllegalTargetFilterException(Ex);
+		}
 	}
 
 }

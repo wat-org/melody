@@ -35,6 +35,13 @@ public class NewMachine extends AbstractMachineOperation {
 	 */
 	public static final String NEW_MACHINE = "NewMachine";
 
+	/*
+	 * TODO : remove all these task attribute, and do a InstanceLoader into
+	 * package 'cloud'
+	 */
+	/*
+	 * TODO : create XPathFunciton to query for instance attributes
+	 */
 	/**
 	 * The 'instanceType' XML attribute
 	 */

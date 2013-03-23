@@ -41,6 +41,10 @@ public class Doc {
 	private static DocumentBuilder moBuilder;
 	private static XPath moXPath;
 
+	/*
+	 * TODO : XQuery doesn't support 'order by' and 'where'....
+	 */
+
 	static {
 		// Specify we want the 'saxon XPath 2.0 resolver'
 		System.setProperty("javax.xml.transform.TransformerFactory",
