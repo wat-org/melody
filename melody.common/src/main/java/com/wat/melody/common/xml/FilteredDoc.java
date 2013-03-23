@@ -23,31 +23,87 @@ import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
  */
 public class FilteredDoc extends DUNIDDoc {
 
-	private static Node importNodeIntoFilteredDocument(Document doc,
-			Node srcNode, boolean deep) {
-		if (srcNode == null) {
+	/**
+	 * XML attribute of an XML Element, which reference an other XML Element.
+	 */
+	public static final String HERIT_ATTR = "herit";
+
+	private static Node importNodeIntoFilteredDocument(Document dest,
+			Node toImport, boolean importChilds) {
+		if (toImport == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be valid Node.");
 		}
-		if (doc == null) {
+		if (toImport.getNodeType() != Node.ELEMENT_NODE) {
+			throw new IllegalArgumentException(toImport.getNodeName()
+					+ ": Not accepted. " + "Must be valid Element Node.");
+		}
+		if (dest == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Document.");
 		}
 
-		Node oDestNode = getNode(doc, getDUNID(srcNode));
-		if (oDestNode != null) {
-			return oDestNode;
+		Node imported = getNode(dest, getDUNID(toImport));
+		if (imported != null) {
+			return imported;
 		}
 
-		Node oDestNodeParent = doc;
-		if (srcNode.getParentNode().getParentNode() != null) {
-			oDestNodeParent = importNodeIntoFilteredDocument(doc,
-					srcNode.getParentNode(), false);
+		Node destParent = dest;
+		if (toImport.getParentNode().getParentNode() != null) {
+			destParent = importNodeIntoFilteredDocument(dest,
+					toImport.getParentNode(), false);
 		}
-		oDestNode = doc.importNode(srcNode, deep);
-		oDestNodeParent.appendChild(oDestNode);
+		imported = cloneNodesAndChilds(dest, toImport, importChilds);
+		destParent.appendChild(imported);
 
-		return oDestNode;
+		return imported;
+	}
+
+	private static Node cloneNodesAndChilds(Document dest, Node toClone,
+			boolean cloneChilds) {
+		importHerit(dest, toClone);
+
+		Node copy = dest.importNode(toClone, false);
+		if (cloneChilds) {
+			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
+				Node child = toClone.getChildNodes().item(i);
+				copy.appendChild(cloneNodesAndChilds(dest, child, true));
+			}
+		}
+		return copy;
+	}
+
+	private static void importHerit(Document dest, Node toClone) {
+		if (toClone.getNodeType() != Node.ELEMENT_NODE) {
+			return;
+		}
+		Node herit = toClone.getAttributes().getNamedItem(HERIT_ATTR);
+		if (herit == null) {
+			return;
+		}
+		String xpath = herit.getNodeValue();
+		NodeList nl = null;
+		try {
+			nl = Doc.evaluateAsNodeList(xpath, toClone.getOwnerDocument()
+					.getFirstChild());
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException("Unexecpted error while evaluating "
+					+ "herited attribute's xpath expression. "
+					+ "Because all herited attributes have already been "
+					+ "validated, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
+		if (nl.getLength() == 0 || nl.getLength() > 1) {
+			throw new RuntimeException("Unexecpted error while parsing "
+					+ "herited attribute. " + nl.getLength()
+					+ " target were found! "
+					+ "Because all herited attributes have already been "
+					+ "validated, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
+		importNodeIntoFilteredDocument(dest, nl.item(0), true);
 	}
 
 	private Document moOriginalDOM;
@@ -129,12 +185,12 @@ public class FilteredDoc extends DUNIDDoc {
 	 * <p>
 	 * Load this object based on the given {@link DUNIDDoc}.
 	 * </p>
-	 * <p>
-	 * <i> * Will also apply filters. <BR/>
-	 * * Further modification of this object doesn't affect the given
-	 * {@link DUNIDDoc} ; <BR/>
-	 * </i>
-	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Will also apply filters ;</li>
+	 * <li>Further modification of this object doesn't affect the given
+	 * {@link DUNIDDoc} ;</li>
+	 * </ul>
 	 * 
 	 * @param doc
 	 * 
@@ -147,17 +203,80 @@ public class FilteredDoc extends DUNIDDoc {
 		applyFilters();
 	}
 
-	public synchronized void store() {
-		store(getFileFullPath());
+	/**
+	 * <p>
+	 * Load the given XML content into this object.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Will also apply filters ;</li>
+	 * </ul>
+	 * 
+	 * @param doc
+	 * 
+	 * @throws IllegalFilterException
+	 *             if a filter is not valid or doesn't match any nodes.
+	 * @throws IllegalDocException
+	 *             {@inheritDoc}
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 */
+	public synchronized void loadFromXML(String xml)
+			throws IllegalDocException, IllegalFilterException, IOException {
+		try {
+			super.loadFromXML(xml);
+		} catch (MelodyException Ex) {
+			throw new RuntimeException("Unexecpted error while loading "
+					+ "a FilteredDoc. "
+					+ "Because MelodyException cannot be raise by the "
+					+ "underlying Doc, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+		setOriginalDocument((Document) getDocument().cloneNode(true));
+		applyFilters();
 	}
 
+	/**
+	 * <p>
+	 * Raise an exception if one or more XML Element have an invalid
+	 * {@link #HERIT_ATTR} XML Attribute. {@link #HERIT_ATTR} XML Attribute is a
+	 * reserved attribute, which allow to define node heritage.
+	 * </p>
+	 * 
+	 * @throws FilteredDocException
+	 *             one or more XML Element have an invalid {@link #HERIT_ATTR}
+	 *             XML Attribute (match no nodes, match multiple node, doesn't
+	 *             contains a valid xpath expression, circular ref).
+	 */
+	@Override
+	protected synchronized void validateContent() throws IllegalDocException {
+		super.validateContent();
+		/*
+		 * TODO : validate all herit attr.
+		 * 
+		 * Should also refactor cloud.XPathHelper, which contains a duplicated
+		 * logic.
+		 */
+	}
+
+	/**
+	 * <p>
+	 * Store this object at the given location.
+	 * </p>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             is the given location is <tt>null</tt>.
+	 */
 	public synchronized void store(String sPath) {
-		Document doc = (Document) getOriginalDocument().cloneNode(true);
-		NodeList nl = findDUNIDs(doc);
-		for (int i = 0; i < nl.getLength(); i++) {
-			nl.item(i).getAttributes().removeNamedItem(DUNID_ATTR);
+		if (sPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String.");
 		}
-		super.store(doc, sPath);
+		Document memory = getDocument();
+		setDocument(getOriginalDocument());
+		super.store(sPath);
+		setDocument(memory);
 	}
 
 	private synchronized FilterSet getFilters() {
@@ -277,9 +396,7 @@ public class FilteredDoc extends DUNIDDoc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Filter.");
 		}
-		/*
-		 * TODO deal with HERIT_ATTR
-		 */
+
 		NodeList nl;
 		try {
 			nl = evaluateAsNodeList(filter.getValue());
@@ -292,10 +409,12 @@ public class FilteredDoc extends DUNIDDoc {
 			throw new IllegalFilterException(Messages.bind(
 					Messages.FilteredDocEx_TOO_RSTRICTIVE, filter.getValue()));
 		}
+
 		Document oFilteredDoc = newDocument();
 		for (int i = 0; i < nl.getLength(); i++) {
 			importNodeIntoFilteredDocument(oFilteredDoc, nl.item(i), true);
 		}
+
 		setDocument(oFilteredDoc);
 	}
 

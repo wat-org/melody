@@ -11,6 +11,7 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.FilteredDoc;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
@@ -20,11 +21,14 @@ import com.wat.melody.xpathextensions.XPathExpander;
  */
 public abstract class XPathHelper {
 
-	/**
-	 * The 'herit' XML attribute of an XML Element in the Resources Descriptor
+	/*
+	 * TODO : put this in FilteredDoc ?
 	 */
-	public static final String HERIT_ATTR = "herit";
 
+	/*
+	 * TODO : since FilteredDoc perform the validation of the HERIT_ATTR, this
+	 * code can be simplified
+	 */
 	public static NodeList getHeritedContent(Node n, String sXPathExpr)
 			throws XPathExpressionException, ResourcesDescriptorException {
 		String refNodesXpr = Doc.getXPathPosition(n);
@@ -32,7 +36,7 @@ public abstract class XPathHelper {
 		List<Node> circle = new ArrayList<Node>();
 		circle.add(n);
 		while (true) {
-			Node a = n.getAttributes().getNamedItem(HERIT_ATTR);
+			Node a = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
 			if (a == null) {
 				break;
 			}
@@ -104,7 +108,7 @@ public abstract class XPathHelper {
 		if (a != null) {
 			return a;
 		}
-		a = n.getAttributes().getNamedItem(HERIT_ATTR);
+		a = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
 		if (a == null) {
 			return null;
 		}

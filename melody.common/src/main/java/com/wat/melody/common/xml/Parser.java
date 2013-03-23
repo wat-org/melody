@@ -75,7 +75,12 @@ public abstract class Parser {
 	 * </ul>
 	 * </p>
 	 * 
+	 * @throws IOException
+	 *             {@inheritDoc}
 	 * @throws SAXException
+	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             if the given File is <tt>null</tt>.
 	 */
 	public static Document parse(final File file) throws IOException,
 			SAXException {
@@ -86,9 +91,8 @@ public abstract class Parser {
 		InputStream is = null;
 		try {
 			is = new FileInputStream(file);
-			// track the file which was parsed
 			Document doc = parse(new InputSource(is));
-			trackSource(doc, file);
+			trackSource(doc, file.toString());
 			return doc;
 		} finally {
 			if (is != null) {
@@ -113,17 +117,24 @@ public abstract class Parser {
 	 * </ul>
 	 * </p>
 	 * 
+	 * @throws IOException
+	 *             {@inheritDoc}
 	 * @throws SAXException
+	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             if the given String is <tt>null</tt>.
 	 */
-	public static Document parse(final String content) throws IOException,
+	public static Document parse(final String xml) throws IOException,
 			SAXException {
+		if (xml == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String.");
+		}
 		StringReader sr = null;
 		try {
-			sr = new StringReader(content);
-			// track the content which was parsed
+			sr = new StringReader(xml);
 			Document doc = parse(new InputSource(sr));
-			doc.setUserData(SOURCE, "input string",
-					Parser.GenericCloneUserDataHandler);
+			trackSource(doc, "input string");
 			return doc;
 		} finally {
 			if (sr != null) {
@@ -132,6 +143,17 @@ public abstract class Parser {
 		}
 	}
 
+	/**
+	 * 
+	 * @param is
+	 * 
+	 * @return
+	 * 
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 * @throws SAXException
+	 *             {@inheritDoc}
+	 */
 	private static Document parse(final InputSource is) throws IOException,
 			SAXException {
 		MySAXHandler handler = new MySAXHandler();
@@ -140,10 +162,10 @@ public abstract class Parser {
 		return handler.getDocument();
 	}
 
-	private static void trackSource(Document doc, File file) {
+	private static void trackSource(Document doc, String location) {
 		Node n = doc.getFirstChild();
 		if (n != null) {
-			n.setUserData(SOURCE, file.toString(), GenericCloneUserDataHandler);
+			n.setUserData(SOURCE, location, GenericCloneUserDataHandler);
 		}
 	}
 

@@ -109,6 +109,10 @@ public class DUNIDDoc extends Doc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
+		if (n.getNodeType() != Node.ELEMENT_NODE) {
+			throw new IllegalArgumentException(n.getNodeName()
+					+ ": Not accepted. " + "Must be valid Element Node.");
+		}
 		Node a = n.getAttributes().getNamedItem(DUNID_ATTR);
 		if (a == null) {
 			throw new RuntimeException("Unexpected error while retrieving the "
@@ -355,6 +359,17 @@ public class DUNIDDoc extends Doc {
 		mbHasChanged = true;
 	}
 
+	/**
+	 * <p>
+	 * Raise an exception if one or more XML Element have a {@link #DUNID_ATTR}
+	 * XML Attribute. {@link #DUNID_ATTR} XML Attribute is a reserved attribute,
+	 * necessary for internal usage.
+	 * </p>
+	 * 
+	 * @throws DUNIDDocException
+	 *             if one or more XML Element have a {@link #DUNID_ATTR} XML
+	 *             Attribute.
+	 */
 	@Override
 	protected synchronized void validateContent() throws IllegalDocException {
 		super.validateContent();
@@ -367,10 +382,28 @@ public class DUNIDDoc extends Doc {
 		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());
 	}
 
+	/**
+	 * <p>
+	 * Store this object at the location that was used to load it.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Will remove all added {link #DUNID_ATTR} XML Attributes ;</li>
+	 * </ul>
+	 */
 	public synchronized void store() {
 		store(getFileFullPath());
 	}
 
+	/**
+	 * <p>
+	 * Store this object at the given location.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Will remove all added {link #DUNID_ATTR} XML Attributes ;</li>
+	 * </ul>
+	 */
 	public synchronized void store(String sPath) {
 		if (!hasChanged()) {
 			return;

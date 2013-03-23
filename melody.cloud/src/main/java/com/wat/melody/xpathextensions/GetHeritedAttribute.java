@@ -8,13 +8,14 @@ import javax.xml.xpath.XPathFunctionException;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.common.xml.FilteredDoc;
 import com.wat.melody.xpath.XPathHelper;
 
 /**
  * <p>
  * XPath custom function, which return the value of the requested attribute,
  * from the given node or from the given node parents (via
- * {@link XPathHelper#HERIT_ATTR} XML attribute).
+ * {@link FilteredDoc#HERIT_ATTR} XML attribute).
  * </p>
  * 
  * @author Guillaume Cornet

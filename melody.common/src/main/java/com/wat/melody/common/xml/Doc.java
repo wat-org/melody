@@ -65,11 +65,27 @@ public class Doc {
 		return moBuilder;
 	}
 
+	/**
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 * @throws SAXException
+	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
+	 */
 	protected static Document parse(File sPath) throws SAXException,
 			IOException {
 		return Parser.parse(sPath);
 	}
 
+	/**
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 * @throws SAXException
+	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
+	 */
 	protected static Document parse(String content) throws SAXException,
 			IOException {
 		return Parser.parse(content);
@@ -260,11 +276,13 @@ public class Doc {
 	 * 
 	 * @param n
 	 *            is the node
+	 * 
 	 * @return an XPath expression which can be used to query the given
 	 *         <code>Node</code>.
+	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <code>Node</code> is <code>null</code> or is not
-	 *             an element <code>Node</code>.
+	 *             an Element <code>Node</code>.
 	 */
 	public synchronized static String getXPathPosition(Node n) {
 		if (n == null) {
@@ -340,6 +358,7 @@ public class Doc {
 	 * 
 	 * @param sPath
 	 *            is the path of the file to load.
+	 * 
 	 * @throws IllegalFileException
 	 *             if the given path doesn't point to a valid file (e.g. the
 	 *             file doesn't exists, the path is a directory, ...).
@@ -348,6 +367,8 @@ public class Doc {
 	 *             valid.
 	 * @throws IOException
 	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
 	 */
 	public void load(String sPath) throws MelodyException, IllegalDocException,
 			IllegalFileException, IOException {
@@ -370,36 +391,20 @@ public class Doc {
 
 	/**
 	 * <p>
-	 * Load the given XML content into this object.
+	 * Duplicates the given {@link Doc} into this object.
 	 * </p>
 	 * 
-	 * @param content
-	 *            is an XML String.
-	 * @throws IllegalDocException
-	 *             if the content of the file pointed by the given path is not
-	 *             valid.
-	 * @throws IOException
-	 *             {@inheritDoc}
+	 * <ul>
+	 * <li>Further modification of this object doesn't affect the given
+	 * {@link Doc} ;</li>
+	 * </ul>
+	 * 
+	 * @param doc
+	 *            is the {@link Doc} to duplicate.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Doc} is <tt>null</tt>.
 	 */
-	public void loadFromXML(String content) throws MelodyException,
-			IllegalDocException, IOException {
-		try {
-			setDocument(parse(content));
-		} catch (SAXParseException Ex) {
-			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX_AT,
-					new Object[] { "inline content", Ex.getLineNumber(),
-							Ex.getColumnNumber() }), Ex);
-		} catch (SAXException Ex) {
-			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX, "inline content"), Ex);
-		} catch (CharConversionException Ex) {
-			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_DATA, "inline content"), Ex);
-		}
-		validateContent();
-	}
-
 	public void load(Doc doc) {
 		if (doc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -420,6 +425,40 @@ public class Doc {
 					+ "removed, ...).", Ex);
 		}
 		setDocument((Document) doc.getDocument().cloneNode(true));
+	}
+
+	/**
+	 * <p>
+	 * Load the given XML content into this object.
+	 * </p>
+	 * 
+	 * @param content
+	 *            is an XML String.
+	 * 
+	 * @throws IllegalDocException
+	 *             if the given XML content is not valid.
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
+	 */
+	public void loadFromXML(String content) throws MelodyException,
+			IllegalDocException, IOException {
+		try {
+			setDocument(parse(content));
+		} catch (SAXParseException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX_AT,
+					new Object[] { "inline content", Ex.getLineNumber(),
+							Ex.getColumnNumber() }), Ex);
+		} catch (SAXException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX, "inline content"), Ex);
+		} catch (CharConversionException Ex) {
+			throw new IllegalDocException(Messages.bind(
+					Messages.DocEx_INVALID_XML_DATA, "inline content"), Ex);
+		}
+		validateContent();
 	}
 
 	/**
