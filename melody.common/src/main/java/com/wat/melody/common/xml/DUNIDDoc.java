@@ -374,8 +374,9 @@ public class DUNIDDoc extends Doc {
 	protected synchronized void validateContent() throws IllegalDocException {
 		super.validateContent();
 
-		if (findDUNIDs(getDocument()).getLength() != 0) {
-			throw new DUNIDDocException(Messages.bind(
+		NodeList nl = findDUNIDs(getDocument());
+		if (nl.getLength() != 0) {
+			throw new DUNIDDocException(nl.item(0), Messages.bind(
 					Messages.DUNIDDocEx_FOUND_DUNID_ATTR, getFileFullPath()));
 		}
 

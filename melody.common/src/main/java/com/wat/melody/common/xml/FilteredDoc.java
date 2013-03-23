@@ -1,6 +1,8 @@
 package com.wat.melody.common.xml;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -13,6 +15,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.xml.exception.FilteredDocException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 
@@ -27,6 +30,31 @@ public class FilteredDoc extends DUNIDDoc {
 	 * XML attribute of an XML Element, which reference an other XML Element.
 	 */
 	public static final String HERIT_ATTR = "herit";
+
+	/**
+	 * <p>
+	 * Find all {@link Node}s which contains an {@link #HERIT_ATTR} XML
+	 * attribute in the given {@link Document}.
+	 * </p>
+	 * 
+	 * @param doc
+	 *            is the {@link Document} to search in.
+	 * 
+	 * @return a {@link NodeList}, where each item is a {@link Node} which
+	 *         contains an {@link #HERIT_ATTR} XML attribute.
+	 */
+	public static NodeList findNodeWithHeritAttr(Document doc) {
+		try {
+			return evaluateAsNodeList("//*[ exists(@" + HERIT_ATTR + ") ]", doc);
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException("Unexecpted error while evaluating "
+					+ "an XPath Expression. "
+					+ "Since the XPath expression to evaluate is hard coded, "
+					+ "such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	private static Node importNodeIntoFilteredDocument(Document dest,
 			Node toImport, boolean importChilds) {
@@ -248,16 +276,69 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             one or more XML Element have an invalid {@link #HERIT_ATTR}
 	 *             XML Attribute (match no nodes, match multiple node, doesn't
 	 *             contains a valid xpath expression, circular ref).
+	 * @throws IllegalDocException
+	 *             {@inheritDoc}
 	 */
 	@Override
-	protected synchronized void validateContent() throws IllegalDocException {
+	protected synchronized void validateContent() throws IllegalDocException,
+			FilteredDocException {
 		super.validateContent();
-		/*
-		 * TODO : validate all herit attr.
-		 * 
-		 * Should also refactor cloud.XPathHelper, which contains a duplicated
-		 * logic.
-		 */
+		validateHeritAttrs();
+	}
+
+	protected void validateHeritAttrs() throws FilteredDocException {
+		NodeList nl = findNodeWithHeritAttr(getDocument());
+		if (nl.getLength() == 0) {
+			return;
+		}
+
+		for (int i = 0; i < nl.getLength(); i++) {
+			validateHeritAttr(nl.item(i));
+		}
+	}
+
+	private static void validateHeritAttr(Node n) throws FilteredDocException {
+		List<Node> circle = new ArrayList<Node>();
+		circle.add(n);
+		validateHeritAttr(n, circle);
+	}
+
+	private static void validateHeritAttr(Node n, List<Node> circle)
+			throws FilteredDocException {
+		Node a = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
+		if (a == null) {
+			return;
+		}
+		String sXPathXpr = a.getNodeValue();
+		if (sXPathXpr == null || sXPathXpr.length() == 0) {
+			return;
+		}
+		NodeList nl = null;
+		try {
+			nl = Doc.evaluateAsNodeList(sXPathXpr, n.getOwnerDocument()
+					.getFirstChild());
+		} catch (XPathExpressionException Ex) {
+			throw new FilteredDocException(a,
+					Messages.bind(
+							Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH,
+							sXPathXpr), Ex);
+		}
+		if (nl.getLength() > 1) {
+			throw new FilteredDocException(a, Messages.bind(
+					Messages.FilteredDocEx_INVALID_HERIT_ATTR_MANYNODEMATCH,
+					sXPathXpr));
+		} else if (nl.getLength() == 0) {
+			throw new FilteredDocException(a, Messages.bind(
+					Messages.FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH,
+					sXPathXpr));
+		}
+		if (circle.contains(nl.item(0))) {
+			throw new FilteredDocException(a, Messages.bind(
+					Messages.FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF,
+					sXPathXpr, Doc.getNodeLocation(nl.item(0)).toFullString()));
+		}
+		circle.add(nl.item(0));
+		validateHeritAttr(nl.item(0), circle);
 	}
 
 	/**

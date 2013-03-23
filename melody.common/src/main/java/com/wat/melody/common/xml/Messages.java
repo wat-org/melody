@@ -19,6 +19,10 @@ public class Messages extends NLS {
 
 	public static String FilteredDocEx_INCORRECT_XPATH;
 	public static String FilteredDocEx_TOO_RSTRICTIVE;
+	public static String FilteredDocEx_INVALID_HERIT_ATTR_XPATH;
+	public static String FilteredDocEx_INVALID_HERIT_ATTR_MANYNODEMATCH;
+	public static String FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH;
+	public static String FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF;
 
 	static {
 		// initialize resource bundle

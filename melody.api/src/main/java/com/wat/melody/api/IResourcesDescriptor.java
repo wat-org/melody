@@ -32,6 +32,20 @@ public interface IResourcesDescriptor {
 	 * <p>
 	 * Add the given xml file to the resources managed by this object.
 	 * </p>
+	 * 
+	 * @throws IllegalFileException
+	 *             if a the given xml file is not a valid file.
+	 * @throws IllegalDocException
+	 *             if the resources are not valid (ex : dunid_attr already
+	 *             present, herit_attr linkage err).
+	 * @throws IllegalResourcesFilterException
+	 *             if a filter is not valid (no nodes match, invalid XPath
+	 *             Expression).
+	 * @throws IllegalTargetFilterException
+	 *             if a target filter is not valid (no nodes match, invalid
+	 *             XPath Expression).
+	 * @throws IOException
+	 *             if I/O error occurred.
 	 */
 	public void add(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalTargetFilterException,
@@ -44,9 +58,19 @@ public interface IResourcesDescriptor {
 	 * 
 	 * @return <tt>true</tt> it the given file was found and successfully
 	 *         removed, or <tt>false</tt> in any other case.
+	 * 
+	 * @throws IllegalDocException
+	 *             if, once the given file remove, the resulting resources are
+	 *             not valid (ex : herit_attr linkage err).
+	 * @throws IllegalResourcesFilterException
+	 *             if, once the given file remove, a filter is no more valid
+	 *             (e.g. no nodes match).
+	 * @throws IllegalTargetFilterException
+	 *             if, once the given file remove, a target filter is no more
+	 *             valid (e.g. no nodes match).
 	 */
-	public boolean remove(String sPath) throws IllegalTargetFilterException,
-			IllegalResourcesFilterException;
+	public boolean remove(String sPath) throws IllegalDocException,
+			IllegalTargetFilterException, IllegalResourcesFilterException;
 
 	public void store();
 

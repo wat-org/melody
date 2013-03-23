@@ -2,52 +2,34 @@ package com.wat.melody.api.exception;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class ResourcesDescriptorException extends MelodyException {
+public class ResourcesDescriptorException extends NodeRelatedException {
 
 	private static final long serialVersionUID = -2498745678654205817L;
 
-	private Node moErrorNode = null;
-
 	public ResourcesDescriptorException(Node errorNode, String msg) {
-		super(msg);
-		setErrorNode(errorNode);
+		super(errorNode, msg);
 	}
 
 	public ResourcesDescriptorException(Node errorNode, Throwable cause) {
-		super(cause.getMessage(), cause != null ? cause.getCause() : null);
-		setErrorNode(errorNode);
+		super(errorNode, cause);
 	}
 
 	public ResourcesDescriptorException(Node errorNode, String msg,
 			Throwable cause) {
-		super(msg, cause);
-		setErrorNode(errorNode);
-	}
-
-	public Node getErrorNode() {
-		return moErrorNode;
-	}
-
-	private void setErrorNode(Node errorNode) {
-		if (errorNode == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
-		}
-		moErrorNode = errorNode;
+		super(errorNode, msg, cause);
 	}
 
 	@Override
-	public String getMessage() {
-		return "[" + Doc.getNodeLocation(getErrorNode()).toFullString() + "] "
-				+ super.getMessage();
+	public String getErrorNodeLocationAsString() {
+		return Doc.getNodeLocation(getErrorNode()).toFullString();
 	}
 
 }

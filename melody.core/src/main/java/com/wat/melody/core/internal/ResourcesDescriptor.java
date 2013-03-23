@@ -180,6 +180,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			getOriginalDocument().getFirstChild().appendChild(n);
 			// Rebuild
 			setDocument(cloneOriginalDocument());
+			validateHeritAttrs();
 			applyFilters();
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
@@ -199,7 +200,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	@Override
 	public synchronized boolean remove(String sPath)
-			throws IllegalResourcesFilterException,
+			throws IllegalDocException, IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		if (sPath == null) {
 			return false;
@@ -221,10 +222,13 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// Remove the content
 		Node base = getOriginalDocument().getFirstChild();
 		base.removeChild(base.getChildNodes().item(i));
-		// Rebuild
-		setDocument(cloneOriginalDocument());
 		try {
+			// Rebuild
+			setDocument(cloneOriginalDocument());
+			validateHeritAttrs();
 			applyFilters();
+		} catch (IllegalDocException Ex) {
+			throw Ex;
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
