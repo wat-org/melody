@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+	<order name="install_packages" >
+		<echo message="Installing packages ..." />
+
+		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+					itemName="srv" >
+			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+			
+			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/package')"
+						itemName="pkg"
+						maxpar="1">
+				<property name="pkgname" value="§[§[pkg]§/@name]§" />
+				<property name="pkgarch" value="§[§[pkg]§/@arch]§" />
+				<property name="pkgopt" value="§[§[pkg]§/@options]§" />
+				<property name="pkgrepo" value="§[§[pkg]§/@repo]§" />
+				<property name="pkgrepo" value="§[if (string-length('§[pkgrepo]§')!=0) then '--enablerepo=§[pkgrepo]§' else '']§" />
+						
+				<ssh description="[install_pkg:§[pkgname]§.§[pkgarch]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+					<exec command="rpm -q §[pkgname]§.§[pkgarch]§ || yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§" />
+				</ssh>
+	
+				<echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instanceId]§'." />
+			</foreach>
+			
+			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/group')"
+						itemName="grp"
+						maxpar="1">
+				<property name="grpname" value="§[§[grp]§/@name]§" />
+				<property name="grpopt" value="§[§[grp]§/@options]§" />
+				<property name="grprepo" value="§[§[grp]§/@repo]§" />
+				<property name="grprepo" value="§[if (string-length('§[grprepo]§')!=0) then '--enablerepo=§[grprepo]§' else '']§" />
+						
+				<ssh description="[install_grp:§[grpname]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+					<exec command="yum groupinstall §[grpopt]§ §[grprepo]§ -y '§[grpname]§'" />
+				</ssh>
+	
+				<echo message="+ Package Group '§[grpname]§' successfully installed on server '§[§[srv]§/@instanceId]§'." />
+			</foreach>
+		</foreach>
+
+		<echo message="-- All packages successfully installed." />
+ 	</order>
+
+</sequence>

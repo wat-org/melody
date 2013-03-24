@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+	<order name="deploy_epel_repo" >
+		<echo message="Deploying EPEL repository..." />
+
+		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/packages/*[@repo=&quot;epel&quot;]'))) ]"
+					itemName="srv" >
+			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+		
+			<ssh description="[deploy_epel_repo:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+				<exec command="rpm -q epel-release &amp;&amp; exit 0"/>
+				 <!-- option 'nosignature' will suppress the message 'warning: /var/tmp/rpm-tmp.9SKcuI: Header V3 DSA/SHA1 Signature, key ID 217521f6: NOKEY' displayed by this command -->
+				<exec command="rpm -Uvh --nosignature http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm || exit 1" />
+				 <!-- this command will suppress the message 'Warning: RPMDB altered outside of yum.' when running next yum command -->
+				<exec command="yum clean all" />
+ 			</ssh>
+ 			
+			<echo message="+ EPEL repository successfully deployed on server '§[§[srv]§/@instanceId]§'." />
+		</foreach>
+		
+		<echo message="-- EPEL repository successfully deployed." />
+ 	</order>
+
+</sequence>

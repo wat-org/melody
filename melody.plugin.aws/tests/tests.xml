@@ -9,22 +9,22 @@
 		</fileset>
 	</path>
 
-	<target name="UC0_01_createenv">
+	<!-- USE CASE 00 -->
+
+	<target name="UC0_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="create_env" />
-			<arg value="-v" />
+			<arg value="create_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="UC0_02_stopenv">
+	<target name="UC0_02_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="stop_env" />
-			<arg value="-v" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -52,17 +52,24 @@
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_disk_devices" />
-			<arg value="-v" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="UC0_07_ingress">
+	<target name="UC0_06_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="ingress" />
-			<arg value="-v" />
+			<arg value="update_network_devices" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_07_update_firewall">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="update_firewall" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -76,18 +83,21 @@
 		</java>
 	</target>
 
-	<target name="UC0_all" depends="UC0_01_createenv,UC0_02_stopenv,UC0_03_resize,UC0_04_startenv,UC0_05_update_disk_devices,UC0_08_destroyenv" />
+	<target name="UC0_all" depends="UC0_01_create_env, UC0_05_update_disk_devices, UC0_06_update_network_devices, UC0_07_update_firewall, UC0_08_destroyenv" />
 
-	<target name="UC1_01_createenv">
+
+	<!-- USE CASE 01 -->
+
+	<target name="UC1_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
-			<arg value="create_env" />
+			<arg value="create_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="UC1_02_stopenv">
+	<target name="UC1_02_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
@@ -119,17 +129,24 @@
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_disk_devices" />
-			<arg value="-v" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="UC1_07_ingress">
+	<target name="UC1_06_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
-			<arg value="ingress" />
-			<arg value="-v" />
+			<arg value="update_network_devices" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC1_07_update_firewall">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
+			<arg value="-o" />
+			<arg value="update_firewall" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -143,6 +160,6 @@
 		</java>
 	</target>
 
-	<target name="UC1_all" depends="UC1_01_createenv,UC1_02_stopenv,UC1_03_resize,UC1_04_startenv,UC1_05_update_disk_devices,UC1_08_destroyenv" />
+	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroyenv" />
 
 </project>

@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+	<order name="start_services" >
+		<echo message="Starting services ..." />
+
+		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+					itemName="srv" >
+			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+			
+			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;on&quot;]')"
+						itemName="service"
+						maxpar="1">
+				<property name="servicename" value="§[§[service]§/@name]§" />
+						
+				<ssh description="[start_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+					<exec command="service §[servicename]§ restart" />
+					<exec command="chkconfig §[servicename]§ on" />
+				</ssh>
+	
+				<echo message="+ Service '§[servicename]§' successfully started on server '§[§[srv]§/@instanceId]§'." />
+			</foreach>
+		</foreach>
+
+		<echo message="-- Services successfully started." />
+ 	</order>
+
+	<order name="stop_services" >
+		<echo message="Stopping services ..." />
+
+		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+					itemName="srv" >
+			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+			
+			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;off&quot;]')"
+						itemName="service"
+						maxpar="1">
+				<property name="servicename" value="§[§[service]§/@name]§" />
+						
+				<ssh description="[stop_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+					<exec command="service §[servicename]§ stop" />
+					<exec command="chkconfig §[servicename]§ off" />
+				</ssh>
+	
+				<echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instanceId]§'." />
+			</foreach>
+		</foreach>
+
+		<echo message="-- Services successfully stopped." />
+ 	</order>
+ 	
+ 	<order name="enable_services" >
+ 		<call orders="stop_services, start_services" />
+ 	</order>	
+
+</sequence>
