@@ -17,7 +17,7 @@ import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.common.xml.FilteredDocHelper;
 
 /**
  * 
@@ -99,9 +99,6 @@ public abstract class NetworkManagementHelper {
 	 *             if the given {@link List} of Instance {@link Node} is
 	 *             <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if any Instance {@link Node} is not valid (ex : contains
-	 *             invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
 	 *             if any Instance {@link Node} has no Network Device Management
 	 *             {@link Node}.
 	 */
@@ -139,16 +136,13 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
 	 *             if no Network Device Management {@link Node} can be found.
 	 */
 	public static Node findNetworkManagementNode(Node instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
-			nl = XPathHelper.getHeritedContent(instanceNode,
+			nl = FilteredDocHelper.getHeritedContent(instanceNode,
 					NETWORK_MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
@@ -592,9 +586,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 * @throws ResourcesDescriptorException
@@ -665,9 +656,6 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
-	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -758,9 +746,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 * @throws ResourcesDescriptorException
@@ -827,9 +812,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 */
@@ -879,8 +861,7 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 */
-	public static boolean isManagementNetworkEnable(Node instanceNode)
-			throws ResourcesDescriptorException {
+	public static boolean isManagementNetworkEnable(Node instanceNode) {
 		Node mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
@@ -1340,12 +1321,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
 	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
-	 * @throws ResourcesDescriptorException
-	 *             if no Instance's Network Device Management {@link Node} can
-	 *             be found.
-	 * @throws ResourcesDescriptorException
 	 *             if the value of the
 	 *             {@link ManagementNetworkDatasLoader#ENABLE_TIMEOUT_ATTR}
 	 *             found in the given Instance's Network Device Management
@@ -1372,9 +1347,6 @@ public abstract class NetworkManagementHelper {
 	 *         {@link ManagementNetworkEnableTimeout}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
-	 * @throws ResourcesDescriptorException
 	 *             if the given Network Device Management {@link Node} is
 	 *             <code>null</code>.
 	 * @throws ResourcesDescriptorException
@@ -1409,9 +1381,6 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
-	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -1460,6 +1429,9 @@ public abstract class NetworkManagementHelper {
 	 */
 	private static ManagementNetworkEnableTimeout getDefaultManagementEnableTimeout(
 			Node mgmtNode) {
+		if (mgmtNode == null) {
+			return ManagementNetworkDatas.DEFAULT_ENABLE_TIMEOUT;
+		}
 		ManagementNetworkMethod mm = null;
 		try {
 			mm = getManagementNetworkMethod(mgmtNode);

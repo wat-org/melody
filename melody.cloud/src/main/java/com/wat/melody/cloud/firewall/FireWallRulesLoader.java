@@ -3,7 +3,6 @@ package com.wat.melody.cloud.firewall;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.network.Access;
@@ -21,7 +20,7 @@ import com.wat.melody.common.network.exception.IllegalInterfacesException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
-import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
@@ -87,203 +86,112 @@ public class FireWallRulesLoader {
 	}
 
 	private IpRanges loadFromIps(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, FROM_IPS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+					FROM_PORTS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private PortRanges loadFromPorts(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, FROM_PORTS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+					FROM_PORTS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private IpRanges loadToIps(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, TO_IPS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, TO_IPS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private PortRanges loadToPorts(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, TO_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private Interfaces loadDevices(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, DEVICES_NAME_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Interfaces.parseString(v);
 		} catch (IllegalInterfacesException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+					DEVICES_NAME_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private Protocols loadProtocols(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, PROTOCOLS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, PROTOCOLS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Protocols.parseString(v);
 		} catch (IllegalProtocolsException Ex) {
+			Node attr = FilteredDocHelper
+					.getHeritedAttribute(n, PROTOCOLS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private Directions loadDirection(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, DIRECTION_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, DIRECTION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Directions.parseString(v);
 		} catch (IllegalDirectionsException Ex) {
+			Node attr = FilteredDocHelper
+					.getHeritedAttribute(n, DIRECTION_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private Access loadAccess(Node n) throws ResourcesDescriptorException {
-		Node attr = XPathHelper.getHeritedAttribute(n, ACCESS_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, ACCESS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Access.parseString(v);
 		} catch (IllegalAccessException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, ACCESS_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}

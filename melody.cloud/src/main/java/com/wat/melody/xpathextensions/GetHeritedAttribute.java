@@ -9,7 +9,6 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDoc;
-import com.wat.melody.xpath.XPathHelper;
 
 /**
  * <p>
@@ -43,7 +42,7 @@ public final class GetHeritedAttribute implements XPathFunction {
 					+ "() expects a non-null String as second argument.");
 		}
 		try {
-			return XPathHelper.getHeritedAttributeValue((Node) arg0,
+			return XPathExpander.getHeritedAttributeValue((Node) arg0,
 					(String) arg1);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

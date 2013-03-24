@@ -6,7 +6,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.common.xml.FilteredDocHelper;
 
 /**
  * 
@@ -61,16 +61,11 @@ public abstract class FireWallManagementHelper {
 	 *         <li><code>null</code>, if no FireWall Management {@link Node}
 	 *         were found ;</li>
 	 *         </ul>
-	 * 
-	 * @throws ResourcesDescriptorException
-	 *             if the given Instance {@link Node} is not valid (ex :
-	 *             contains invalid HERIT_ATTR).
 	 */
-	public static Node findFireWallManagementNode(Node instanceNode)
-			throws ResourcesDescriptorException {
+	public static Node findFireWallManagementNode(Node instanceNode) {
 		NodeList nl = null;
 		try {
-			nl = XPathHelper.getHeritedContent(instanceNode,
+			nl = FilteredDocHelper.getHeritedContent(instanceNode,
 					FIREWALL_MGMT_NODE_SELECTOR);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
@@ -89,13 +84,7 @@ public abstract class FireWallManagementHelper {
 	}
 
 	public static String findFireWallRulesSelector(Node instanceNode) {
-		Node mgmtNode = null;
-		try {
-			mgmtNode = findFireWallManagementNode(instanceNode);
-		} catch (ResourcesDescriptorException Ex) {
-			// raised when Network Device Management datas are invalid.
-			// in this situation, we will use default values
-		}
+		Node mgmtNode = findFireWallManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
 					.getNamedItem(FIREWALL_RULE_NODES_SELECTOR_ATTRIBUTE)
@@ -127,7 +116,7 @@ public abstract class FireWallManagementHelper {
 			throws ResourcesDescriptorException {
 		String sAllFWRulesSelector = findFireWallRulesSelector(instanceNode);
 		try {
-			return XPathHelper.getHeritedContent(instanceNode,
+			return FilteredDocHelper.getHeritedContent(instanceNode,
 					sAllFWRulesSelector);
 		} catch (XPathExpressionException Ex) {
 			Node mgmtNode = findFireWallManagementNode(instanceNode);

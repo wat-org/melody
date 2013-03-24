@@ -19,7 +19,7 @@ import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
  * 
@@ -119,7 +119,7 @@ public class NewMachine extends AbstractMachineOperation {
 			Node n = getTargetNode();
 			String v = null;
 
-			v = XPathHelper.getHeritedAttributeValue(n,
+			v = XPathExpander.getHeritedAttributeValue(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
 				if (v != null) {
@@ -131,7 +131,7 @@ public class NewMachine extends AbstractMachineOperation {
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
+			v = XPathExpander.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
 			try {
 				if (v != null) {
 					setImageId(v);
@@ -142,7 +142,7 @@ public class NewMachine extends AbstractMachineOperation {
 						getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n,
+			v = XPathExpander.getHeritedAttributeValue(n,
 					Common.AVAILABILITYZONE_ATTR);
 			try {
 				if (v != null) {
@@ -155,7 +155,7 @@ public class NewMachine extends AbstractMachineOperation {
 						Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n,
+			v = XPathExpander.getHeritedAttributeValue(n,
 					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
@@ -167,7 +167,8 @@ public class NewMachine extends AbstractMachineOperation {
 						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n, Common.PASSPHRASE_ATTR);
+			v = XPathExpander.getHeritedAttributeValue(n,
+					Common.PASSPHRASE_ATTR);
 			if (v != null) {
 				setPassphrase(v);
 			}

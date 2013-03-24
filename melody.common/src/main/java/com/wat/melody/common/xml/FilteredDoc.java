@@ -1,8 +1,6 @@
 package com.wat.melody.common.xml;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -31,32 +29,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 */
 	public static final String HERIT_ATTR = "herit";
 
-	/**
-	 * <p>
-	 * Find all {@link Node}s which contains an {@link #HERIT_ATTR} XML
-	 * attribute in the given {@link Document}.
-	 * </p>
-	 * 
-	 * @param doc
-	 *            is the {@link Document} to search in.
-	 * 
-	 * @return a {@link NodeList}, where each item is a {@link Node} which
-	 *         contains an {@link #HERIT_ATTR} XML attribute.
-	 */
-	public static NodeList findNodeWithHeritAttr(Document doc) {
-		try {
-			return evaluateAsNodeList("//*[ exists(@" + HERIT_ATTR + ") ]", doc);
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexecpted error while evaluating "
-					+ "an XPath Expression. "
-					+ "Since the XPath expression to evaluate is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	private static Node importNodeIntoFilteredDocument(Document dest,
+	protected static Node importNodeIntoFilteredDocument(Document dest,
 			Node toImport, boolean importChilds) {
 		if (toImport == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -89,7 +62,7 @@ public class FilteredDoc extends DUNIDDoc {
 
 	private static Node cloneNodesAndChilds(Document dest, Node toClone,
 			boolean cloneChilds) {
-		importHerit(dest, toClone);
+		FilteredDocHelper.importHeritedParentNode(dest, toClone);
 
 		Node copy = dest.importNode(toClone, false);
 		if (cloneChilds) {
@@ -99,39 +72,6 @@ public class FilteredDoc extends DUNIDDoc {
 			}
 		}
 		return copy;
-	}
-
-	private static void importHerit(Document dest, Node toClone) {
-		if (toClone.getNodeType() != Node.ELEMENT_NODE) {
-			return;
-		}
-		Node herit = toClone.getAttributes().getNamedItem(HERIT_ATTR);
-		if (herit == null) {
-			return;
-		}
-		String xpath = herit.getNodeValue();
-		NodeList nl = null;
-		try {
-			nl = Doc.evaluateAsNodeList(xpath, toClone.getOwnerDocument()
-					.getFirstChild());
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexecpted error while evaluating "
-					+ "herited attribute's xpath expression. "
-					+ "Because all herited attributes have already been "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
-		if (nl.getLength() == 0 || nl.getLength() > 1) {
-			throw new RuntimeException("Unexecpted error while parsing "
-					+ "herited attribute. " + nl.getLength()
-					+ " target were found! "
-					+ "Because all herited attributes have already been "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
-		importNodeIntoFilteredDocument(dest, nl.item(0), true);
 	}
 
 	private Document moOriginalDOM;
@@ -287,58 +227,7 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	protected void validateHeritAttrs() throws FilteredDocException {
-		NodeList nl = findNodeWithHeritAttr(getDocument());
-		if (nl.getLength() == 0) {
-			return;
-		}
-
-		for (int i = 0; i < nl.getLength(); i++) {
-			validateHeritAttr(nl.item(i));
-		}
-	}
-
-	private static void validateHeritAttr(Node n) throws FilteredDocException {
-		List<Node> circle = new ArrayList<Node>();
-		circle.add(n);
-		validateHeritAttr(n, circle);
-	}
-
-	private static void validateHeritAttr(Node n, List<Node> circle)
-			throws FilteredDocException {
-		Node a = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
-		if (a == null) {
-			return;
-		}
-		String sXPathXpr = a.getNodeValue();
-		if (sXPathXpr == null || sXPathXpr.length() == 0) {
-			return;
-		}
-		NodeList nl = null;
-		try {
-			nl = Doc.evaluateAsNodeList(sXPathXpr, n.getOwnerDocument()
-					.getFirstChild());
-		} catch (XPathExpressionException Ex) {
-			throw new FilteredDocException(a,
-					Messages.bind(
-							Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH,
-							sXPathXpr), Ex);
-		}
-		if (nl.getLength() > 1) {
-			throw new FilteredDocException(a, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_MANYNODEMATCH,
-					sXPathXpr));
-		} else if (nl.getLength() == 0) {
-			throw new FilteredDocException(a, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH,
-					sXPathXpr));
-		}
-		if (circle.contains(nl.item(0))) {
-			throw new FilteredDocException(a, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF,
-					sXPathXpr, Doc.getNodeLocation(nl.item(0)).toFullString()));
-		}
-		circle.add(nl.item(0));
-		validateHeritAttr(nl.item(0), circle);
+		FilteredDocHelper.validateParentHeritedNodes(getDocument());
 	}
 
 	/**

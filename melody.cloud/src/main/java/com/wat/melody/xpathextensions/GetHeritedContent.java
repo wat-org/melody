@@ -8,9 +8,8 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDoc;
-import com.wat.melody.xpath.XPathHelper;
+import com.wat.melody.common.xml.FilteredDocHelper;
 
 /**
  * <p>
@@ -44,8 +43,9 @@ public final class GetHeritedContent implements XPathFunction {
 					+ "() expects a non-null String as second argument.");
 		}
 		try {
-			return XPathHelper.getHeritedContent((Node) arg0, (String) arg1);
-		} catch (ResourcesDescriptorException | XPathExpressionException Ex) {
+			return FilteredDocHelper.getHeritedContent((Node) arg0,
+					(String) arg1);
+		} catch (XPathExpressionException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
 	}

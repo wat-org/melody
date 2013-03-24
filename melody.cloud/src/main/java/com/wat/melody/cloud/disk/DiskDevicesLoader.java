@@ -3,11 +3,11 @@ package com.wat.melody.cloud.disk;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.xpathextensions.XPathExpander;
 
 /**
@@ -50,64 +50,36 @@ public class DiskDevicesLoader {
 
 	private DiskDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
-		if (attr == null) {
-			throw new ResourcesDescriptorException(n, Messages.bind(
-					Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
-		}
-		String v = attr.getNodeValue();
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, DEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return DiskDeviceName.parseString(v);
 		} catch (IllegalDiskDeviceNameException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, DEVICE_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private DiskDeviceSize loadDeviceSize(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = n.getAttributes().getNamedItem(SIZE_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, SIZE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return DiskDeviceSize.parseString(v);
 		} catch (IllegalDiskDeviceSizeException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, SIZE_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
 
 	private Boolean loadDeleteOnTermination(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = n.getAttributes().getNamedItem(DELETEONTERMINATION_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n,
+				DELETEONTERMINATION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -115,17 +87,7 @@ public class DiskDevicesLoader {
 	}
 
 	private Boolean loadRootDevice(Node n) throws ResourcesDescriptorException {
-		Node attr = n.getAttributes().getNamedItem(ROOTDEVICE_ATTR);
-		if (attr == null) {
-			return null;
-		}
-		String v = attr.getNodeValue();
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathExpander.getHeritedAttributeValue(n, ROOTDEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -175,6 +137,10 @@ public class DiskDevicesLoader {
 			Boolean delonterm = null;
 			Boolean isroot = null;
 			devname = loadDeviceName(n);
+			if (devname == null) {
+				throw new ResourcesDescriptorException(n, Messages.bind(
+						Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
+			}
 			devsize = loadDeviceSize(n);
 			delonterm = loadDeleteOnTermination(n);
 			isroot = loadRootDevice(n);
