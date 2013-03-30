@@ -46,6 +46,7 @@ public abstract class InstanceStateConverter {
 			return InstanceState.STOPPING;
 		case VIR_DOMAIN_SHUTOFF:
 			return InstanceState.STOPPED;
+		default:
 		}
 		/*
 		 * TODO : créer un state PENDING, qui correspond au moment ou
@@ -56,8 +57,8 @@ public abstract class InstanceStateConverter {
 		 * libVitCloud dé-provisionne le Domain
 		 */
 		throw new IllegalInstanceStateException(Messages.bind(
-				com.wat.melody.cloud.instance.Messages.InstanceStateEx_INVALID, iState,
-				Arrays.asList(DomainInfo.DomainState.values())));
+				com.wat.melody.cloud.instance.Messages.InstanceStateEx_INVALID,
+				iState, Arrays.asList(DomainInfo.DomainState.values())));
 	}
 
 }

@@ -148,6 +148,9 @@ public class LoggerOutputStream extends OutputStream {
 		msg = msg.replaceAll("\\033\\[0;[0-9]+m", "");
 		msg = getPrefix() + " " + msg;
 		switch (getLevel()) {
+		case ALL:
+			log.trace(msg);
+			break;
 		case TRACE:
 			log.trace(msg);
 			break;
@@ -165,6 +168,8 @@ public class LoggerOutputStream extends OutputStream {
 			break;
 		case FATAL:
 			log.fatal(msg);
+			break;
+		case OFF:
 			break;
 		}
 	}
