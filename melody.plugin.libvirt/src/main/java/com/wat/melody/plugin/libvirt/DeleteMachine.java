@@ -1,10 +1,7 @@
 package com.wat.melody.plugin.libvirt;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.wat.melody.common.ex.Util;
-import com.wat.melody.plugin.libvirt.common.AbstractMachineOperation;
+import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
@@ -13,9 +10,7 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
-public class DeleteMachine extends AbstractMachineOperation {
-
-	private static Log log = LogFactory.getLog(DeleteMachine.class);
+public class DeleteMachine extends AbstractOperation {
 
 	/**
 	 * The 'DeleteMachine' XML element
@@ -42,25 +37,12 @@ public class DeleteMachine extends AbstractMachineOperation {
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (getInstance() == null) {
-			LibVirtException Ex = new LibVirtException(Messages.bind(
-					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
-			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
-					Messages.DeleteMsg_GENERIC_WARN, Ex)));
-			disableNetworkManagement();
-			removeInstanceRelatedInfosToED(true);
-		} else if (!instanceLives()) {
-			LibVirtException Ex = new LibVirtException(Messages.bind(
-					Messages.DeleteMsg_TERMINATED, new Object[] {
-							getInstanceID(), "DEAD", getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
-					Messages.DeleteMsg_GENERIC_WARN, Ex)));
-			disableNetworkManagement();
-			removeInstanceRelatedInfosToED(true);
-		} else {
-			disableNetworkManagement();
-			deleteInstance();
-			removeInstanceRelatedInfosToED(true);
+		try {
+			getInstance().ensureInstanceIsDestroyed(getTimeout());
+		} catch (OperationException Ex) {
+			throw new LibVirtException(Messages.bind(
+					Messages.DestroyEx_GENERIC_FAIL, getTargetNodeLocation()),
+					Ex);
 		}
 	}
 

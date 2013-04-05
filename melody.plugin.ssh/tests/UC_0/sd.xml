@@ -5,7 +5,7 @@
 
 	<order name="main">
 
-		<foreach	items="//instance[exists(@instanceId)]"
+		<foreach	items="//instance[exists(@instance-id)]"
 					itemName="svr">
 					
 			<property name="IP" value="§[melody:getManagementNetworkHost(§[svr]§)]§"/>

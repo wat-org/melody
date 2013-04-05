@@ -285,8 +285,8 @@ public abstract class XPathExpander {
 			throw new IllegalArgumentException(relLeft + ": Not accepted. "
 					+ "Must be a positive integer.");
 		}
-		String left = "\n.....\n";
-		String right = "\n.....\n";
+		String left = "..... truncated datas .....\n";
+		String right = "\n...........................";
 		int absLeft = near - relLeft;
 		int absRight = near + relRight;
 		if (absLeft > sMsg.length()) {
@@ -295,17 +295,17 @@ public abstract class XPathExpander {
 		}
 		if (absLeft <= 0) {
 			absLeft = 0;
-			left = "\n-----\n";
+			left = "----- full datas ----\n";
 			absRight = relLeft + relRight;
 		}
 		if (absRight >= sMsg.length()) {
 			absRight = sMsg.length();
-			right = "\n-----\n";
+			right = "\n---------------------";
 			absLeft = sMsg.length() - (relLeft + relRight);
 		}
 		if (absLeft <= 0) {
 			absLeft = 0;
-			left = "\n-----\n";
+			left = "----- full datas ----\n";
 		}
 
 		return left + sMsg.substring(absLeft, absRight).trim() + right;

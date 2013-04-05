@@ -53,6 +53,8 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
@@ -70,7 +72,6 @@ import com.wat.melody.common.network.exception.IllegalInterfaceException;
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
 import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.common.network.exception.IllegalProtocolException;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -84,11 +85,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 public class Common {
 
 	private static Log log = LogFactory.getLog(Common.class);
-
-	/**
-	 * The 'instanceId' XML attribute of the Aws instance Node
-	 */
-	public static final String INSTANCE_ID_ATTR = "instanceId";
 
 	/**
 	 * The 'region' XML attribute of the Aws Instance Node
@@ -652,6 +648,24 @@ public class Common {
 		return cs == InstanceState.PENDING || cs == InstanceState.RUNNING;
 	}
 
+	public static InstanceType getInstanceType(Instance i) {
+		if (i == null) {
+			return null;
+		}
+		String sType = i.getInstanceType();
+		try {
+			return InstanceType.parseString(sType);
+		} catch (IllegalInstanceTypeException Ex) {
+			throw new RuntimeException("Unexpected error while parsing "
+					+ "the InstanceType '" + sType + "'. "
+					+ "Because this value have just been retreive from "
+					+ "AWS, such error cannot happened. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
+		}
+
+	}
+
 	/**
 	 * <p>
 	 * Wait until an Aws Instance reaches the given state.
@@ -770,8 +784,8 @@ public class Common {
 	 * @param keyPairName
 	 *            is the AWS Key Pair Name to attach to the new instance.
 	 * 
-	 * @return an {@link Instance} which represents the newly created Aws
-	 *         Instance if the operation succeed, <code>null</code> otherwise.
+	 * @return a String which represents the newly created Aws Instance Id if
+	 *         the operation succeed.
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.
@@ -780,7 +794,7 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static Instance newAwsInstance(AmazonEC2 ec2, InstanceType type,
+	public static String newAwsInstance(AmazonEC2 ec2, InstanceType type,
 			String sImageId, String sAZ, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -804,10 +818,11 @@ public class Common {
 
 		try {
 			return ec2.runInstances(rireq).getReservation().getInstances()
-					.get(0);
+					.get(0).getInstanceId();
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
 			deleteSecurityGroup(ec2, sSGName);
-			return null;
+			throw new RuntimeException("Fail to retrieve new Aws Instance "
+					+ "details (Aws Instance may be created).");
 		}
 	}
 
@@ -1889,23 +1904,21 @@ public class Common {
 		 * always get datas of eth0, because, using Aws Ec2, only eth0 is
 		 * available.
 		 */
-		return new NetworkDeviceDatas(i.getPrivateIpAddress(),
+		return new NetworkDeviceDatas(null, i.getPrivateIpAddress(),
 				i.getPrivateDnsName(), i.getPublicIpAddress(),
 				i.getPublicDnsName());
 	}
 
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
-			throws AwsException, InterruptedException {
-		throw new AwsException("detachNetworkDevices "
-				+ "is not supported in AWS EC2");
+			throws InterruptedException {
+		// TODO : log warn
 	}
 
 	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
-			throws AwsException, InterruptedException {
-		throw new AwsException("attachNetworkDevices "
-				+ "is not supported in AWS EC2");
+			throws InterruptedException {
+		// TODO : log warn
 	}
 
 	private static String getSecurityGroup(AmazonEC2 ec2, Instance i,
@@ -1935,6 +1948,7 @@ public class Common {
 		revreq = new RevokeSecurityGroupIngressRequest();
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
+		// TODO : log each authorizeFireWallRules
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
@@ -1948,6 +1962,7 @@ public class Common {
 		authreq = new AuthorizeSecurityGroupIngressRequest();
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
+		// TODO : log each authorizeFireWallRules
 	}
 
 	private static FwRulesDecomposed convertIpPermissions(
@@ -1982,13 +1997,13 @@ public class Common {
 		List<IpPermission> perms = new ArrayList<IpPermission>();
 		for (FwRuleDecomposed rule : rules) {
 			if (rule.getDirection().equals(Direction.OUT)) {
-				log.info(Messages.bind(Messages.IngressMsg_SKIP_FWRULE, rule,
-						Direction.OUT));
+				log.info(Messages.bind(Messages.UpdateFireWallMsg_SKIP_FWRULE,
+						rule, Direction.OUT));
 				continue;
 			}
 			if (rule.getAccess().equals(Access.DENY)) {
-				log.info(Messages.bind(Messages.IngressMsg_SKIP_FWRULE, rule,
-						Access.DENY));
+				log.info(Messages.bind(Messages.UpdateFireWallMsg_SKIP_FWRULE,
+						rule, Access.DENY));
 				continue;
 			}
 			IpPermission perm = new IpPermission();

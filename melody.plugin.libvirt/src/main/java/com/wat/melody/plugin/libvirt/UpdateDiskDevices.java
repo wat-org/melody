@@ -1,16 +1,11 @@
 package com.wat.melody.plugin.libvirt;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.ex.Util;
-import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
+import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
@@ -19,9 +14,7 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
-public class UpdateDiskDevices extends AbstractLibVirtOperation {
-
-	private static Log log = LogFactory.getLog(UpdateDiskDevices.class);
+public class UpdateDiskDevices extends AbstractOperation {
 
 	/**
 	 * The 'UpdateDiskDevices' XML element
@@ -85,24 +78,10 @@ public class UpdateDiskDevices extends AbstractLibVirtOperation {
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		LibVirtInstance i = getInstance();
-		if (i == null) {
-			LibVirtException Ex = new LibVirtException(Messages.bind(
-					Messages.UpdateDiskDevMsg_NO_INSTANCE,
-					new Object[] { NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage(),
-							getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
-					Messages.UpdateDiskDevMsg_GENERIC_WARN, Ex)));
-			removeInstanceRelatedInfosToED(true);
-			return;
-		} else {
-			setInstanceRelatedInfosToED(i);
-		}
-
 		try {
-			i.updateDiskDevices(getDiskDeviceList(), getDetachTimeout(),
-					getCreateTimeout(), getAttachTimeout());
+			getInstance().ensureInstanceDiskDevicesAreUpToDate(
+					getDiskDeviceList(), getCreateTimeout(),
+					getAttachTimeout(), getDetachTimeout());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.UpdateDiskDevEx_GENERIC_FAIL,

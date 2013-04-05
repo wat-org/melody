@@ -1,16 +1,11 @@
 package com.wat.melody.plugin.libvirt;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.wat.cloud.libvirt.LibVirtInstance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
-import com.wat.melody.common.ex.Util;
-import com.wat.melody.plugin.libvirt.common.AbstractLibVirtOperation;
+import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
@@ -19,9 +14,7 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
-public class UpdateNetworkDevices extends AbstractLibVirtOperation {
-
-	private static Log log = LogFactory.getLog(UpdateNetworkDevices.class);
+public class UpdateNetworkDevices extends AbstractOperation {
 
 	/**
 	 * The 'UpdateNetworkDevices' XML element
@@ -79,28 +72,15 @@ public class UpdateNetworkDevices extends AbstractLibVirtOperation {
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		LibVirtInstance i = getInstance();
-		if (i == null) {
-			LibVirtException Ex = new LibVirtException(Messages.bind(
-					Messages.UpdateNetDevMsg_NO_INSTANCE,
-					new Object[] { NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage(),
-							getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new LibVirtException(
-					Messages.UpdateNetDevMsg_GENERIC_WARN, Ex)));
-			removeInstanceRelatedInfosToED(true);
-			return;
-		}
-
 		try {
-			i.updateNetworkDevices(getNetworkDeviceList(), getDetachTimeout(),
+			getInstance().ensureInstanceNetworkDevicesAreUpToDate(
+					getNetworkDeviceList(), getDetachTimeout(),
 					getAttachTimeout());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.UpdateNetDevEx_GENERIC_FAIL,
 					getTargetNodeLocation()), Ex);
 		}
-		setInstanceRelatedInfosToED(i);
 	}
 
 	private NetworkDeviceNameList getNetworkDeviceList() {

@@ -1,28 +1,31 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
+import java.io.IOException;
+import java.security.KeyPair;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.InstanceController;
+import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
+import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
+import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.network.NetworkDeviceName;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.xml.DUNID;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.xpathextensions.XPathExpander;
@@ -32,7 +35,7 @@ import com.wat.melody.xpathextensions.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-abstract public class AbstractAwsOperation implements ITask,
+abstract public class AbstractOperation implements ITask,
 		NetworkManagerFactoryConfigurationCallback {
 
 	/**
@@ -54,20 +57,20 @@ abstract public class AbstractAwsOperation implements ITask,
 	private AwsPlugInConfiguration moPluginConf;
 	private SshPlugInConfiguration moSshPluginConf;
 	private AmazonEC2 moEC2;
-	private String msAwsInstanceID;
+	private InstanceController moInstance;
+	private String msInstanceId;
 	private Node moTargetNode;
-	private DUNID msMelodyId;
 	private String msRegion;
 	private String msTarget;
 	private long mlTimeout;
 
-	public AbstractAwsOperation() {
+	public AbstractOperation() {
 		initContext();
 		initPluginConf();
 		initEC2();
-		initMelodyId();
+		initInstance();
 		initTargetNode();
-		initAwsInstanceId();
+		initInstanceId();
 		initRegion();
 		initTimeout();
 	}
@@ -84,16 +87,16 @@ abstract public class AbstractAwsOperation implements ITask,
 		moEC2 = null;
 	}
 
-	private void initMelodyId() {
-		msMelodyId = null;
+	private void initInstance() {
+		moInstance = null;
 	}
 
 	private void initTargetNode() {
 		moTargetNode = null;
 	}
 
-	private void initAwsInstanceId() {
-		msAwsInstanceID = null;
+	private void initInstanceId() {
+		msInstanceId = null;
 	}
 
 	private void initRegion() {
@@ -135,6 +138,95 @@ abstract public class AbstractAwsOperation implements ITask,
 
 		// Initialize AmazonEC2 for the current region
 		setEc2(getPluginConf().getAmazonEC2(getRegion()));
+
+		setInstance(createInstance());
+	}
+
+	public InstanceController createInstance() throws AwsException {
+		try {
+			InstanceController instance = new AwsInstanceController(getEc2(),
+					getInstanceId());
+			instance = new InstanceControllerWithRelatedNode(instance, getRD(),
+					getTargetNode());
+			if (NetworkManagementHelper
+					.isManagementNetworkEnable(getTargetNode())) {
+				instance = new InstanceControllerWithNetworkManagement(
+						instance, this, getTargetNode());
+			}
+			return instance;
+		} catch (OperationException Ex) {
+			throw new AwsException(Ex);
+		}
+	}
+
+	/**
+	 * <p>
+	 * Enable the given KeyPair in Aws. More formally, this will :
+	 * <ul>
+	 * <li>Create a new {@link KeyPair} and store it in the given local
+	 * {@link KeyPairRepository} in openSSH RSA format if the {@link KeyPair}
+	 * can not be found the given local {@link KeyPairRepository} ;</li>
+	 * <li>Import the public part of the given {@link KeyPair} in the Aws Region
+	 * defined by {@link #getRegion()} if the {@link KeyPair} exists in the
+	 * given local {@link KeyPairRepository} and doesn't exists in the given Aws
+	 * Region ;</li>
+	 * <li>Compare the public part of the given {@link KeyPair} with the public
+	 * part of the Aws {@link com.amazonaws.services.ec2.model.KeyPair} if the
+	 * {@link KeyPair} exists in the given local {@link KeyPairRepository} and
+	 * also exists in the given Aws Region, and will throw an
+	 * {@link AwsException} if they doesn't match ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param keyPairRepo
+	 *            is the {@link KeyPairRepository}.
+	 * @param keyPairName
+	 *            is the name of the {@link KeyPair} to enable.
+	 * @param iKeySize
+	 *            is the size of the {@link KeyPair} to create (only apply if
+	 *            the local {@link KeyPairRepository} doesn't contains the key
+	 *            pair).
+	 * @param sPassphrase
+	 *            is the passphrase to associate to the {@link KeyPair} to
+	 *            create (only apply if the local {@link KeyPairRepository}
+	 *            doesn't contains the key pair).
+	 * 
+	 * @throws AwsException
+	 *             if the {@link KeyPair} found in the local
+	 *             {@link KeyPairRepository} is corrupted (ex : not a valid
+	 *             OpenSSH RSA KeyPair) or if the {@link KeyPair} found in the
+	 *             local {@link KeyPairRepository} is not equal to the Aws
+	 *             {@link com.amazonaws.services.ec2.model.KeyPair}.
+	 * @throws IOException
+	 *             if an I/O error occurred while reading/storing the
+	 *             {@link KeyPair} in the local {@link KeyPairRepository}.
+	 */
+	protected synchronized void enableKeyPair(KeyPairRepository keyPairRepo,
+			KeyPairName keyPairName, int iKeySize, String sPassphrase)
+			throws AwsException, IOException {
+		// Create KeyPair in the KeyPair Repository
+		KeyPair kp = null;
+		if (!keyPairRepo.containsKeyPair(keyPairName)) {
+			kp = keyPairRepo.createKeyPair(keyPairName, iKeySize, sPassphrase);
+		} else {
+			kp = keyPairRepo.getKeyPair(keyPairName, sPassphrase);
+		}
+
+		// Create KeyPair in Aws
+		if (Common.keyPairExists(getEc2(), keyPairName) == true) {
+			String fingerprint = KeyPairRepository.getFingerprint(kp);
+			if (Common.keyPairCompare(getEc2(), keyPairName, fingerprint) == false) {
+				/*
+				 * TODO : externalize error message
+				 */
+				throw new AwsException("Aws KeyPair and Local KeyPair doesn't "
+						+ "match.");
+			}
+		} else {
+			String pubkey = KeyPairRepository.getPublicKeyInOpenSshFormat(kp,
+					"Generated by Melody");
+			Common.importKeyPair(getEc2(), keyPairName, pubkey);
+		}
 	}
 
 	public IResourcesDescriptor getRD() {
@@ -145,137 +237,9 @@ abstract public class AbstractAwsOperation implements ITask,
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
-	public boolean instanceExists() {
-		return Common.instanceExists(getEc2(), getInstanceID());
-	}
-
-	public Instance getAwsInstance() {
-		return Common.getInstance(getEc2(), getInstanceID());
-	}
-
-	public AwsInstance getInstance() {
-		Instance i = Common.getInstance(getEc2(), getInstanceID());
-		return i == null ? null : new AwsInstance(getEc2(), i);
-	}
-
-	public InstanceState getInstanceState() {
-		return Common.getInstanceState(getEc2(), getInstanceID());
-	}
-
-	public boolean instanceLives() {
-		return Common.instanceLives(getEc2(), getInstanceID());
-	}
-
-	public boolean instanceRuns() {
-		return Common.instanceRuns(getEc2(), getInstanceID());
-	}
-
-	protected boolean waitUntilInstanceStatusBecomes(InstanceState state,
-			long timeout) throws InterruptedException {
-		return waitUntilInstanceStatusBecomes(state, timeout, 0);
-	}
-
-	protected boolean waitUntilInstanceStatusBecomes(InstanceState state,
-			long timeout, long sleepfirst) throws InterruptedException {
-		return Common.waitUntilInstanceStatusBecomes(getEc2(), getInstanceID(),
-				state, timeout, sleepfirst);
-	}
-
 	protected boolean resizeInstance(InstanceType instanceType) {
 		return Common
-				.resizeAwsInstance(getEc2(), getInstanceID(), instanceType);
-	}
-
-	protected void setInstanceRelatedInfosToED(Instance i) throws AwsException {
-		if (i == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Instance.");
-		}
-		setDataToRD(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
-		for (NetworkDeviceName netDevice : Common
-				.getNetworkDevices(getEc2(), i)) {
-			DUNID d = getNetworkDeviceDUNID(netDevice);
-			NetworkDeviceDatas ndd = Common.getNetworkDeviceDatas(getEc2(), i,
-					netDevice);
-			if (d == null) {
-				// The instance node could have no such network device node
-				continue;
-			}
-			setDataToRD(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
-			setDataToRD(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
-			setDataToRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR, ndd.getNatIP());
-			setDataToRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
-					ndd.getNatFQDN());
-		}
-	}
-
-	private void setDataToRD(DUNID dunid, String sAttr, String sValue) {
-		if (dunid == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DUNID.");
-		}
-		if (sAttr == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an XML Attribute Name).");
-		}
-		if (sValue == null || sValue.length() == 0) {
-			return;
-		}
-		try {
-			getRD().setAttributeValue(dunid, sAttr, sValue);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "node's attribute '" + sAttr + "' via its DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-	}
-
-	protected void removeInstanceRelatedInfosToED(boolean deleted)
-			throws AwsException {
-		if (deleted == true) {
-			removeDataFromRD(getMelodyID(), Common.INSTANCE_ID_ATTR);
-		}
-		NetworkDeviceNameList netDevices = null;
-		try {
-			netDevices = new NetworkDeviceNamesLoader().load(getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
-		}
-		for (NetworkDeviceName netDev : netDevices) {
-			DUNID d = getNetworkDeviceDUNID(netDev);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.IP_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.FQDN_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR);
-		}
-	}
-
-	private void removeDataFromRD(DUNID dunid, String sAttr) {
-		try {
-			getRD().removeAttribute(dunid, sAttr);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while removing the "
-					+ "node's attribute '" + sAttr + "' via the node DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-	}
-
-	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
-			throws AwsException {
-		NodeList netDevs = null;
-		try {
-			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
-					getTargetNode(), nd.getValue());
-		} catch (ResourcesDescriptorException Ex) {
-			throw new AwsException(Ex);
-		}
-		Node netDevNode = netDevs == null || netDevs.getLength() == 0 ? null
-				: netDevs.item(0);
-		return netDevNode == null ? null : getRD().getMelodyID(netDevNode);
+				.resizeAwsInstance(getEc2(), getInstanceId(), instanceType);
 	}
 
 	@Override
@@ -371,22 +335,18 @@ abstract public class AbstractAwsOperation implements ITask,
 		return previous;
 	}
 
-	/**
-	 * @return the {@link DUNID} of the targeted {@link Node}.
-	 */
-	public DUNID getMelodyID() {
-		return msMelodyId;
+	public InstanceController getInstance() {
+		return moInstance;
 	}
 
-	private DUNID setMelodyID(DUNID melodyID) throws NoSuchDUNIDException {
-		if (melodyID == null) {
+	public InstanceController setInstance(InstanceController instance) {
+		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a MelodyID).");
+					+ "Must be a valid "
+					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		setAwsInstanceID(getRD().getAttributeValue(melodyID,
-				Common.INSTANCE_ID_ATTR));
-		DUNID previous = getMelodyID();
-		msMelodyId = melodyID;
+		InstanceController previous = getInstance();
+		moInstance = instance;
 		return previous;
 	}
 
@@ -411,14 +371,14 @@ abstract public class AbstractAwsOperation implements ITask,
 	 * @return the Aws Instance Id which is registered in the targeted Node (can
 	 *         be <code>null</code>).
 	 */
-	protected String getInstanceID() {
-		return msAwsInstanceID;
+	protected String getInstanceId() {
+		return msInstanceId;
 	}
 
-	protected String setAwsInstanceID(String awsInstanceID) {
+	protected String setInstanceId(String instanceID) {
 		// can be null, if no AWS instance have been created yet
-		String previous = getInstanceID();
-		msAwsInstanceID = awsInstanceID;
+		String previous = getInstanceId();
+		msInstanceId = instanceID;
 		return previous;
 	}
 
@@ -480,19 +440,11 @@ abstract public class AbstractAwsOperation implements ITask,
 					target, Doc.parseInt(n.getNodeType())));
 		}
 		setTargetNode(n);
-		DUNID dunid = getRD().getMelodyID(n);
 		try {
-			setMelodyID(dunid);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while manipulating "
-					+ "the MelodyID of the element node which "
-					+ "position is '" + getTarget() + "'. " + "The MelodyID '"
-					+ dunid + "' doesn't seems to be valid. "
-					+ "Since the MelodyID have been automatically added to "
-					+ "all element node by the Melody's Engine, such error "
-					+ "can't happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+			setInstanceId(n.getAttributes()
+					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)
+					.getNodeValue());
+		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();
 		msTarget = target;

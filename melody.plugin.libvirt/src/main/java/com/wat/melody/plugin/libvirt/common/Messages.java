@@ -23,25 +23,20 @@ public class Messages extends NLS {
 	public static String NewEx_INSTANCETYPE_ERROR;
 	public static String NewEx_MISSING_KEYPAIR_NAME_ATTR;
 	public static String NewEx_KEYPAIR_NAME_ERROR;
-	public static String NewEx_FAILED;
-	public static String NewMsg_LIVES;
-	public static String NewMsg_GENERIC_WARN;
 
-	public static String DeleteMsg_NO_INSTANCE;
-	public static String DeleteMsg_TERMINATED;
-	public static String DeleteMsg_GENERIC_WARN;
+	public static String CreateEx_GENERIC_FAIL;
+
+	public static String DestroyEx_GENERIC_FAIL;
+
+	public static String StartEx_GENERIC_FAIL;
+
+	public static String StopEx_GENERIC_FAIL;
 
 	public static String UpdateDiskDevEx_GENERIC_FAIL;
-	public static String UpdateDiskDevMsg_NO_INSTANCE;
-	public static String UpdateDiskDevMsg_GENERIC_WARN;
 
 	public static String UpdateNetDevEx_GENERIC_FAIL;
-	public static String UpdateNetDevMsg_NO_INSTANCE;
-	public static String UpdateNetDevMsg_GENERIC_WARN;
 
-	public static String IngressEx_GENERIC_FAIL;
-	public static String IngressMsg_NO_INSTANCE;
-	public static String IngressMsg_GENERIC_WARN;
+	public static String UpdateFireWallEx_GENERIC_FAIL;
 
 	static {
 		// initialize resource bundle

@@ -890,15 +890,13 @@ public abstract class NetworkManagementHelper {
 		if (mgmtNode == null) {
 			return false;
 		}
-		String sEnable = null;
 		String attr = ManagementNetworkDatasLoader.ENABLE_ATTR;
 		try {
-			sEnable = mgmtNode.getAttributes().getNamedItem(attr)
-					.getNodeValue();
+			return Boolean.parseBoolean(mgmtNode.getAttributes()
+					.getNamedItem(attr).getNodeValue());
 		} catch (NullPointerException Ex) {
 			return true;
 		}
-		return Boolean.parseBoolean(sEnable);
 	}
 
 	/**

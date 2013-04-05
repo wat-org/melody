@@ -29,15 +29,15 @@
 		</instance>
 		
 <!--
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" instanceId="i-49c5f2df" name="srv02">
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">
 			<network>
 				<interface device="eth0"/>
 			</network>
 		</instance>		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
 			<network>
-				<interface device="eth0" ip="" fqdn="" />
-				<interface device="eth1" ip="" fqdn="" />
+				<interface device="eth0" />
+				<interface device="eth4" />
 			</network>
 		</instance>		
 -->

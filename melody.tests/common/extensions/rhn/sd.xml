@@ -8,13 +8,22 @@
 
 		<property name="RHN_ACTIVATIONKEY" value="§[./environment/rhn/activationkey/text()]§" />
 	
-		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+
+			<property name="hwinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-hardware-infos') ]§" />
+			<property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
+			<property name="pkginfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-packages-infos') ]§" />
+			<property name="pkginfos" value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§" />
+			<property name="virtinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-virtualization-infos') ]§" />
+			<property name="virtinfos" value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§" />
+			<property name="rhnsd" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/start-rhnsd') ]§" />
+			<property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 			
 			<ssh description="[rhn_reg:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
-				<exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force" />
+				<exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
 			</ssh>
 
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/rhn-channels/channel')"
@@ -24,10 +33,10 @@
 				<ssh description="[rhn_channel:§[channel_name]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
 					<exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p §[RHN_PASSWORD]§" />
 				</ssh>
-				<echo message="+ server '§[§[srv]§/@instanceId]§' additionnally subscribed to §[channel_name]§." />
+				<echo message="+ server '§[§[srv]§/@instance-id]§' additionnally subscribed to §[channel_name]§." />
 			</foreach>
 
-			<echo message="+ server '§[§[srv]§/@instanceId]§' successfully registered in RHN." />
+			<echo message="+ server '§[§[srv]§/@instance-id]§' successfully registered in RHN." />
 		</foreach>
 
 		<echo message="-- Servers successfully registered on RHN." />
@@ -40,7 +49,7 @@
 		<property name="RHN_LOGIN" value="§[./environment/rhn/login/text()]§" />
 		<property name="RHN_PASSWORD" value="§[./environment/rhn/password/text()]§" />
 	
-		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
@@ -52,7 +61,7 @@
 				<exec command="rm -vf /etc/sysconfig/rhn/systemid" />
 			</ssh>
 			
-			<echo message="+ server '§[§[srv]§/@instanceId]§' successfully unregistered in RHN." />
+			<echo message="+ server '§[§[srv]§/@instance-id]§' successfully unregistered in RHN." />
 		</foreach>
 
 		<echo message="-- Servers successfully unregistered on RHN." />

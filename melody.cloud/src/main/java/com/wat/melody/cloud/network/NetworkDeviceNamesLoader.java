@@ -44,13 +44,13 @@ public class NetworkDeviceNamesLoader {
 	 * XML attribute of a Network Device Node, which define the nat-ip of the
 	 * device.
 	 */
-	public static final String NAT_IP_ATTR = "ip";
+	public static final String NAT_IP_ATTR = "nat-ip";
 
 	/**
 	 * XML attribute of a Network Device Node, which define the nat-fqdn of the
 	 * device.
 	 */
-	public static final String NAT_FQDN_ATTR = "fqdn";
+	public static final String NAT_FQDN_ATTR = "nat-fqdn";
 
 	public NetworkDeviceNamesLoader() {
 	}

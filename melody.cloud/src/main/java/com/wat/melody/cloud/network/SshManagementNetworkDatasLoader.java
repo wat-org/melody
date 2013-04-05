@@ -37,7 +37,7 @@ public class SshManagementNetworkDatasLoader extends
 		SshManagementNetworkDatas datas = new SshManagementNetworkDatas(enable,
 				enableTimeout, netdev, host, port);
 
-		log.info(Messages.bind(Messages.NetMgmtMsg_RESUME, datas));
+		log.debug(Messages.bind(Messages.NetMgmtMsg_RESUME, datas));
 
 		return datas;
 	}

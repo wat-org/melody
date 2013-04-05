@@ -7,32 +7,31 @@
 	
 	
 	<order name="create_all_vm" >
-		<echo message="§[melody.extensions.vm.path]§"/>
-		<call	orders="create_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="create_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="stop_all_vm" >
-		<call	orders="stop_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="stop_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="start_all_vm" >
-		<call	orders="start_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="start_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="destroy_all_vm" >
-		<call	orders="destroy_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="destroy_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="update_disk_devices" >
-		<call	orders="update_disk_devices" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="update_disk_devices" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="update_network_devices" >
-		<call	orders="update_network_devices" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="update_network_devices" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	<order name="update_firewall" >
-		<call	orders="update_firewall" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+		<call orders="update_firewall" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
 	

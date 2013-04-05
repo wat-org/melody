@@ -6,7 +6,7 @@
 	<order name="install_packages" >
 		<echo message="Installing packages ..." />
 
-		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
@@ -24,7 +24,7 @@
 					<exec command="rpm -q §[pkgname]§.§[pkgarch]§ || yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§" />
 				</ssh>
 	
-				<echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instanceId]§'." />
+				<echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
 			</foreach>
 			
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/group')"
@@ -39,7 +39,7 @@
 					<exec command="yum groupinstall §[grpopt]§ §[grprepo]§ -y '§[grpname]§'" />
 				</ssh>
 	
-				<echo message="+ Package Group '§[grpname]§' successfully installed on server '§[§[srv]§/@instanceId]§'." />
+				<echo message="+ Package Group '§[grpname]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
 			</foreach>
 		</foreach>
 

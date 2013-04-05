@@ -60,30 +60,21 @@ public class Messages extends NLS {
 	public static String NewEx_INVALID_AVAILABILITYZONE_ATTR;
 	public static String NewEx_MISSING_KEYPAIR_NAME_ATTR;
 	public static String NewEx_KEYPAIR_NAME_ERROR;
-	public static String NewEx_FAILED;
-	public static String NewMsg_LIVES;
-	public static String NewMsg_GENERIC_WARN;
 
-	public static String StartEx_NO_INSTANCE;
-	public static String StartEx_SHUTTING_DOWN;
-	public static String StartEx_TERMINATED;
-	public static String StartMsg_PENDING;
-	public static String StartMsg_RUNNING;
-	public static String StartMsg_STOPPING;
-	public static String StartMsg_GENERIC_WARN;
+	public static String CreateEx_TIMEOUT;
+	public static String CreateEx_GENERIC_FAIL;
 
-	public static String StopEx_NO_INSTANCE;
-	public static String StopMsg_ALREADY_STOPPED;
-	public static String StopMsg_GENERIC_WARN;
+	public static String DestroyEx_TIMEOUT;
+	public static String DestroyEx_GENERIC_FAIL;
 
-	public static String DeleteMsg_NO_INSTANCE;
-	public static String DeleteMsg_TERMINATED;
-	public static String DeleteMsg_GENERIC_WARN;
+	public static String StartEx_TIMEOUT;
+	public static String StartEx_GENERIC_FAIL;
 
-	public static String IngressEx_GENERIC_FAIL;
-	public static String IngressMsg_NO_INSTANCE;
-	public static String IngressMsg_SKIP_FWRULE;
-	public static String IngressMsg_GENERIC_WARN;
+	public static String StopEx_TIMEOUT;
+	public static String StopEx_GENERIC_FAIL;
+
+	public static String UpdateFireWallMsg_SKIP_FWRULE;
+	public static String UpdateFireWallEx_GENERIC_FAIL;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
 	public static String ResizeEx_INSTANCETYPE_ERROR;
@@ -98,8 +89,8 @@ public class Messages extends NLS {
 	public static String UpdateDiskDevEx_CREATE;
 	public static String UpdateDiskDevEx_ATTACH;
 	public static String UpdateDiskDevEx_GENERIC_FAIL;
-	public static String UpdateDiskDevMsg_NO_INSTANCE;
-	public static String UpdateDiskDevMsg_GENERIC_WARN;
+
+	public static String UpdateNetDevEx_GENERIC_FAIL;
 
 	static {
 		// initialize resource bundle

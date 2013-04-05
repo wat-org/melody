@@ -8,11 +8,6 @@ package com.wat.melody.plugin.libvirt.common;
 public class Common {
 
 	/**
-	 * The 'instanceID' XML attribute of the LibVirt instance Node
-	 */
-	public static final String INSTANCE_ID_ATTR = "instanceId";
-
-	/**
 	 * The 'region' XML attribute of the LibVirt Instance Node
 	 */
 	public static final String REGION_ATTR = "region";

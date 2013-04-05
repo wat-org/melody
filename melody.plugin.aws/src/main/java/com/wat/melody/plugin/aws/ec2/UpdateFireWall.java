@@ -1,15 +1,10 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
-import com.wat.melody.plugin.aws.ec2.common.AwsInstance;
+import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 
@@ -18,18 +13,16 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
  * @author Guillaume Cornet
  * 
  */
-public class IngressMachine extends AbstractAwsOperation {
-
-	private static Log log = LogFactory.getLog(IngressMachine.class);
+public class UpdateFireWall extends AbstractOperation {
 
 	/**
-	 * The 'IngressMachine' XML element
+	 * The 'UpdateFireWall' XML element
 	 */
-	public static final String INGRESS_MACHINE = "IngressMachine";
+	public static final String UPDATE_FIREWALL = "UpdateFireWall";
 
 	private FwRulesDecomposed maFwRules;
 
-	public IngressMachine() {
+	public UpdateFireWall() {
 		super();
 		initFwRules();
 	}
@@ -55,27 +48,12 @@ public class IngressMachine extends AbstractAwsOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		AwsInstance i = getInstance();
-		if (i == null) {
-			AwsException Ex = new AwsException(Messages.bind(
-					Messages.IngressMsg_NO_INSTANCE,
-					new Object[] { NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage(),
-							getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-					Messages.IngressMsg_GENERIC_WARN, Ex)));
-			removeInstanceRelatedInfosToED(true);
-			return;
-		} else {
-			setInstanceRelatedInfosToED(i.getInstance());
-		}
-
 		try {
-			i.updateFireWallRules(getFwRules());
+			getInstance().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.IngressEx_GENERIC_FAIL, getTargetNodeLocation()),
-					Ex);
+					Messages.UpdateFireWallEx_GENERIC_FAIL,
+					getTargetNodeLocation()), Ex);
 		}
 	}
 

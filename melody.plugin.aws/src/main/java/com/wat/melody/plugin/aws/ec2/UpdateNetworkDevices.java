@@ -2,9 +2,9 @@ package com.wat.melody.plugin.aws.ec2;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -14,12 +14,12 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
  * @author Guillaume Cornet
  * 
  */
-public class UpdateDiskDevices extends AbstractOperation {
+public class UpdateNetworkDevices extends AbstractOperation {
 
 	/**
-	 * The 'UpdateDiskDevices' XML element
+	 * The 'UpdateNetworkDevices' XML element
 	 */
-	public static final String UPDATE_DISK_DEVICES = "UpdateDiskDevices";
+	public static final String UPDATE_NETWORK_DEVICES = "UpdateNetworkDevices";
 
 	/**
 	 * The 'detachTimeout' XML attribute
@@ -27,26 +27,19 @@ public class UpdateDiskDevices extends AbstractOperation {
 	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
 
 	/**
-	 * The 'createTimeout' XML attribute
-	 */
-	public static final String CREATE_TIMEOUT_ATTR = "createTimeout";
-
-	/**
 	 * The 'attachTimeout' XML attribute
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private DiskDeviceList maDiskDeviceList;
+	private NetworkDeviceNameList maNetworkDeviceList;
 	private long mlDetachTimeout;
-	private long mlCreateTimeout;
 	private long mlAttachTimeout;
 
-	public UpdateDiskDevices() {
+	public UpdateNetworkDevices() {
 		super();
-		initDiskDeviceList();
+		initNetworkDeviceList();
 		try {
 			setDetachTimeout(getTimeout());
-			setCreateTimeout(getTimeout());
 			setAttachTimeout(getTimeout());
 		} catch (AwsException Ex) {
 			throw new RuntimeException("Unexpected error while setting "
@@ -58,17 +51,18 @@ public class UpdateDiskDevices extends AbstractOperation {
 		}
 	}
 
-	private void initDiskDeviceList() {
-		maDiskDeviceList = null;
+	private void initNetworkDeviceList() {
+		maNetworkDeviceList = null;
 	}
 
 	@Override
 	public void validate() throws AwsException {
 		super.validate();
 
-		// Build a DiskDeviceList with Disk Device Nodes found in the RD
+		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
-			setDiskDeviceList(new DiskDevicesLoader().load(getTargetNode()));
+			setNetworkDeviceList(new NetworkDeviceNamesLoader()
+					.load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -79,28 +73,28 @@ public class UpdateDiskDevices extends AbstractOperation {
 		getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceDiskDevicesAreUpToDate(
-					getDiskDeviceList(), getCreateTimeout(),
-					getAttachTimeout(), getDetachTimeout());
+			getInstance().ensureInstanceNetworkDevicesAreUpToDate(
+					getNetworkDeviceList(), getDetachTimeout(),
+					getAttachTimeout());
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_GENERIC_FAIL,
+					Messages.UpdateNetDevEx_GENERIC_FAIL,
 					getTargetNodeLocation()), Ex);
 		}
 	}
 
-	private DiskDeviceList getDiskDeviceList() {
-		return maDiskDeviceList;
+	private NetworkDeviceNameList getNetworkDeviceList() {
+		return maNetworkDeviceList;
 	}
 
-	private DiskDeviceList setDiskDeviceList(DiskDeviceList dd) {
-		if (dd == null) {
+	private NetworkDeviceNameList setNetworkDeviceList(
+			NetworkDeviceNameList fwrs) {
+		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ DiskDeviceList.class.getCanonicalName() + ".");
+					+ "Must be a valid NetworkDeviceList.");
 		}
-		DiskDeviceList previous = getDiskDeviceList();
-		maDiskDeviceList = dd;
+		NetworkDeviceNameList previous = getNetworkDeviceList();
+		maNetworkDeviceList = fwrs;
 		return previous;
 	}
 
@@ -116,21 +110,6 @@ public class UpdateDiskDevices extends AbstractOperation {
 		}
 		long previous = getDetachTimeout();
 		mlDetachTimeout = timeout;
-		return previous;
-	}
-
-	public long getCreateTimeout() {
-		return mlCreateTimeout;
-	}
-
-	@Attribute(name = CREATE_TIMEOUT_ATTR)
-	public long setCreateTimeout(long timeout) throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getCreateTimeout();
-		mlCreateTimeout = timeout;
 		return previous;
 	}
 

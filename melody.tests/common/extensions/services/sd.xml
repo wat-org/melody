@@ -6,7 +6,7 @@
 	<order name="start_services" >
 		<echo message="Starting services ..." />
 
-		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
@@ -21,7 +21,7 @@
 					<exec command="chkconfig §[servicename]§ on" />
 				</ssh>
 	
-				<echo message="+ Service '§[servicename]§' successfully started on server '§[§[srv]§/@instanceId]§'." />
+				<echo message="+ Service '§[servicename]§' successfully started on server '§[§[srv]§/@instance-id]§'." />
 			</foreach>
 		</foreach>
 
@@ -31,7 +31,7 @@
 	<order name="stop_services" >
 		<echo message="Stopping services ..." />
 
-		<foreach	items="./environment//instance[ exists(@instanceId) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
+		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
@@ -46,7 +46,7 @@
 					<exec command="chkconfig §[servicename]§ off" />
 				</ssh>
 	
-				<echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instanceId]§'." />
+				<echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instance-id]§'." />
 			</foreach>
 		</foreach>
 

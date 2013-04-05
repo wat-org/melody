@@ -3,19 +3,17 @@ package com.wat.melody.plugin.aws.ec2;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
-import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
+import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -26,9 +24,7 @@ import com.wat.melody.xpathextensions.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-public class NewMachine extends AbstractMachineOperation {
-
-	private static Log log = LogFactory.getLog(NewMachine.class);
+public class NewMachine extends AbstractOperation {
 
 	/**
 	 * The 'NewMachine' XML element
@@ -234,21 +230,16 @@ public class NewMachine extends AbstractMachineOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (instanceLives()) {
-			AwsException Ex = new AwsException(Messages.bind(
-					Messages.NewMsg_LIVES, new Object[] { getInstanceID(),
-							"LIVE", getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-					Messages.NewMsg_GENERIC_WARN, Ex)));
-			setInstanceRelatedInfosToED(getAwsInstance());
-			if (instanceRuns()) {
-				enableNetworkManagement();
-			}
-		} else {
-			newInstance(getInstanceType(), getImageId(),
-					getAvailabilityZoneFullName(), getKeyPairName());
-			setInstanceRelatedInfosToED(getAwsInstance());
-			enableNetworkManagement();
+		try {
+			getInstance().ensureInstanceIsCreated(getInstanceType(),
+					getAvailabilityZoneFullName(), getImageId(),
+					getKeyPairName(), getTimeout());
+		} catch (OperationException e) {
+			throw new AwsException(Messages.bind(
+					Messages.CreateEx_GENERIC_FAIL, new Object[] { getRegion(),
+							getImageId(), getInstanceType(), getKeyPairName(),
+							getAvailabilityZoneFullName(),
+							getTargetNodeLocation() }));
 		}
 	}
 

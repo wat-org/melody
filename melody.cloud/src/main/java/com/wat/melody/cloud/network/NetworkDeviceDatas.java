@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.cloud.network;
 
 /**
  * 
@@ -7,24 +7,36 @@ package com.wat.melody.plugin.aws.ec2.common;
  */
 public class NetworkDeviceDatas {
 
+	private String msMac;
 	private String msIP;
 	private String msFQDN;
 	private String msNatIP;
 	private String msNatFQDN;
 
-	public NetworkDeviceDatas(String ip, String fqdn, String natip,
+	public NetworkDeviceDatas(String mac, String ip, String fqdn, String natip,
 			String natfqdn) {
-		setIP(ip);
+		setMac(mac);
+		setIp(ip);
 		setFQDN(fqdn);
-		setNatIP(natip);
+		setNatIp(natip);
 		setNatFQDN(natfqdn);
+	}
+
+	public String getMac() {
+		return msMac;
+	}
+
+	private String setMac(String mac) {
+		String previous = getMac();
+		msMac = mac;
+		return previous;
 	}
 
 	public String getIP() {
 		return msIP;
 	}
 
-	private String setIP(String ip) {
+	private String setIp(String ip) {
 		String previous = getIP();
 		msIP = ip;
 		return previous;
@@ -44,7 +56,7 @@ public class NetworkDeviceDatas {
 		return msNatIP;
 	}
 
-	private String setNatIP(String ip) {
+	private String setNatIp(String ip) {
 		String previous = getNatIP();
 		msNatIP = ip;
 		return previous;

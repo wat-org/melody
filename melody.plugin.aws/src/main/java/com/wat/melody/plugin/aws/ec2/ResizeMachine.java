@@ -2,17 +2,11 @@ package com.wat.melody.plugin.aws.ec2;
 
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.amazonaws.services.ec2.model.Instance;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.common.ex.Util;
-import com.wat.melody.plugin.aws.ec2.common.AbstractAwsOperation;
+import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -23,9 +17,9 @@ import com.wat.melody.xpathextensions.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-public class ResizeMachine extends AbstractAwsOperation {
+public class ResizeMachine extends AbstractOperation {
 
-	private static Log log = LogFactory.getLog(ResizeMachine.class);
+//	private static Log log = LogFactory.getLog(ResizeMachine.class);
 
 	/**
 	 * The 'ResizeMachine' XML element
@@ -88,55 +82,50 @@ public class ResizeMachine extends AbstractAwsOperation {
 	@Override
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
+		
+		/*
+		 * TODO : implement resize.
+		 */
+		throw new RuntimeException("Not implemented yet");
 
-		Instance i = getAwsInstance();
-		if (i == null) {
-			removeInstanceRelatedInfosToED(true);
-			throw new AwsException(Messages.bind(
-					Messages.ResizeEx_NO_INSTANCE,
-					new Object[] { ResizeMachine.RESIZE_MACHINE,
-							NewMachine.NEW_MACHINE,
-							NewMachine.class.getPackage(),
-							getTargetNodeLocation() }));
-		} else if (Common.getInstanceState(getEc2(), getInstanceID()) != InstanceState.STOPPED) {
-			setInstanceRelatedInfosToED(i);
-			throw new AwsException(Messages.bind(
-					Messages.ResizeEx_NOT_STOPPED,
-					new Object[] { getInstanceID(), InstanceState.STOPPED,
-							ResizeMachine.RESIZE_MACHINE,
-							StopMachine.STOP_MACHINE,
-							StopMachine.class.getPackage(),
-							getTargetNodeLocation() }));
-		} else {
-			InstanceType currentType = null;
-			try {
-				currentType = InstanceType.parseString(i.getInstanceType());
-			} catch (IllegalInstanceTypeException Ex) {
-				throw new RuntimeException("Unexpected error while parsing "
-						+ "the InstanceType '" + i.getInstanceType() + "'. "
-						+ "Because this value have just been retreive from "
-						+ "AWS, such error cannot happened. "
-						+ "Source code has certainly been modified and a bug "
-						+ "have been introduced.", Ex);
-			}
-			if (currentType != getInstanceType()) {
-				if (!resizeInstance(getInstanceType())) {
-					throw new AwsException(
-							Messages.bind(Messages.ResizeEx_FAILED,
-									new Object[] { getInstanceID(),
-											currentType, getInstanceType(),
-											getTargetNodeLocation() }));
-				}
-			} else {
-				AwsException Ex = new AwsException(Messages.bind(
-						Messages.ResizeMsg_NO_NEED, new Object[] {
-								getInstanceID(), getInstanceType(),
-								getTargetNodeLocation() }));
-				log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-						Messages.ResizeMsg_GENERIC_WARN, Ex)));
-			}
-			setInstanceRelatedInfosToED(i);
-		}
+//		Instance i = getInstance();
+//		if (i == null) {
+//			removeInstanceRelatedInfosToED(true);
+//			throw new AwsException(Messages.bind(
+//					Messages.ResizeEx_NO_INSTANCE,
+//					new Object[] { ResizeMachine.RESIZE_MACHINE,
+//							NewMachine.NEW_MACHINE,
+//							NewMachine.class.getPackage(),
+//							getTargetNodeLocation() }));
+//		} else if (Common.getInstanceState(getEc2(), getInstanceID()) != InstanceState.STOPPED) {
+//			setInstanceRelatedInfosToED(i);
+//			throw new AwsException(Messages.bind(
+//					Messages.ResizeEx_NOT_STOPPED,
+//					new Object[] { getInstanceID(), InstanceState.STOPPED,
+//							ResizeMachine.RESIZE_MACHINE,
+//							StopMachine.STOP_MACHINE,
+//							StopMachine.class.getPackage(),
+//							getTargetNodeLocation() }));
+//		} else {
+//			InstanceType currentType = i.getInstanceType();
+//			if (currentType != getInstanceType()) {
+//				if (!resizeInstance(getInstanceType())) {
+//					throw new AwsException(
+//							Messages.bind(Messages.ResizeEx_FAILED,
+//									new Object[] { getInstanceID(),
+//											currentType, getInstanceType(),
+//											getTargetNodeLocation() }));
+//				}
+//			} else {
+//				AwsException Ex = new AwsException(Messages.bind(
+//						Messages.ResizeMsg_NO_NEED, new Object[] {
+//								getInstanceID(), getInstanceType(),
+//								getTargetNodeLocation() }));
+//				log.warn(Util.getUserFriendlyStackTrace(new AwsException(
+//						Messages.ResizeMsg_GENERIC_WARN, Ex)));
+//			}
+//			setInstanceRelatedInfosToED(i);
+//		}
 	}
 
 	public InstanceType getInstanceType() {

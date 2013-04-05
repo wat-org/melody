@@ -1,10 +1,7 @@
 package com.wat.melody.plugin.aws.ec2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.wat.melody.common.ex.Util;
-import com.wat.melody.plugin.aws.ec2.common.AbstractMachineOperation;
+import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 
@@ -13,9 +10,7 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
  * @author Guillaume Cornet
  * 
  */
-public class DeleteMachine extends AbstractMachineOperation {
-
-	private static Log log = LogFactory.getLog(DeleteMachine.class);
+public class DeleteMachine extends AbstractOperation {
 
 	/**
 	 * The 'DeleteMachine' XML element
@@ -42,25 +37,12 @@ public class DeleteMachine extends AbstractMachineOperation {
 	public void doProcessing() throws AwsException, InterruptedException {
 		getContext().handleProcessorStateUpdates();
 
-		if (getAwsInstance() == null) {
-			AwsException Ex = new AwsException(Messages.bind(
-					Messages.DeleteMsg_NO_INSTANCE, getTargetNodeLocation()));
-			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-					Messages.DeleteMsg_GENERIC_WARN, Ex)));
-			disableNetworkManagement();
-			removeInstanceRelatedInfosToED(true);
-		} else if (!instanceLives()) {
-			AwsException Ex = new AwsException(Messages.bind(
-					Messages.DeleteMsg_TERMINATED, new Object[] {
-							getInstanceID(), "DEAD", getTargetNodeLocation() }));
-			log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-					Messages.DeleteMsg_GENERIC_WARN, Ex)));
-			disableNetworkManagement();
-			removeInstanceRelatedInfosToED(true);
-		} else {
-			disableNetworkManagement();
-			deleteInstance();
-			removeInstanceRelatedInfosToED(true);
+		try {
+			getInstance().ensureInstanceIsDestroyed(getTimeout());
+		} catch (OperationException Ex) {
+			throw new AwsException(Messages.bind(
+					Messages.DestroyEx_GENERIC_FAIL, getTargetNodeLocation()),
+					Ex);
 		}
 	}
 

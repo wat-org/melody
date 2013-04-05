@@ -7,26 +7,20 @@ import org.libvirt.LibvirtException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.cloud.libvirt.LibVirtCloud;
-import com.wat.cloud.libvirt.LibVirtInstance;
-import com.wat.cloud.libvirt.NetworkDeviceDatas;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.instance.InstanceState;
-import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.network.NetworkDeviceName;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
+import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
+import com.wat.melody.cloud.instance.InstanceController;
+import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
+import com.wat.melody.cloud.instance.InstanceDatasLoader;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.xpathextensions.XPathExpander;
@@ -36,7 +30,7 @@ import com.wat.melody.xpathextensions.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractLibVirtOperation implements ITask,
+public abstract class AbstractOperation implements ITask,
 		NetworkManagerFactoryConfigurationCallback {
 
 	/**
@@ -58,18 +52,18 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	private LibVirtPlugInConfiguration moPluginConf;
 	private SshPlugInConfiguration moSshPluginConf;
 	private Connect moConnect;
-	private String msInstanceID;
+	private InstanceController moInstance;
+	private String msInstanceId;
 	private Node moTargetNode;
-	private DUNID msMelodyId;
 	private String msRegion;
 	private String msTarget;
 	private long mlTimeout;
 
-	public AbstractLibVirtOperation() {
+	public AbstractOperation() {
 		initContext();
 		initPluginConf();
 		initCnx();
-		initMelodyId();
+		initInstance();
 		initTargetNode();
 		initInstanceId();
 		initRegion();
@@ -88,8 +82,8 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		moConnect = null;
 	}
 
-	private void initMelodyId() {
-		msMelodyId = null;
+	private void initInstance() {
+		moInstance = null;
 	}
 
 	private void initTargetNode() {
@@ -97,7 +91,7 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	}
 
 	private void initInstanceId() {
-		msInstanceID = null;
+		msInstanceId = null;
 	}
 
 	private void initRegion() {
@@ -144,6 +138,25 @@ public abstract class AbstractLibVirtOperation implements ITask,
 		} catch (LibvirtException Ex) {
 			throw new LibVirtException(Ex);
 		}
+
+		setInstance(createInstance());
+	}
+
+	public InstanceController createInstance() throws LibVirtException {
+		try {
+			InstanceController instance = new LibVirtInstanceController(
+					getConnect(), getInstanceId());
+			instance = new InstanceControllerWithRelatedNode(instance, getRD(),
+					getTargetNode());
+			if (NetworkManagementHelper
+					.isManagementNetworkEnable(getTargetNode())) {
+				instance = new InstanceControllerWithNetworkManagement(instance,
+						this, getTargetNode());
+			}
+			return instance;
+		} catch (OperationException Ex) {
+			throw new LibVirtException(Ex);
+		}
 	}
 
 	public IResourcesDescriptor getRD() {
@@ -152,128 +165,6 @@ public abstract class AbstractLibVirtOperation implements ITask,
 
 	public String getTargetNodeLocation() {
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
-	}
-
-	public LibVirtInstance getInstance() {
-		return LibVirtCloud.getInstance(getConnect(), getInstanceID());
-	}
-
-	public InstanceState getInstanceState() {
-		return LibVirtCloud.getInstanceState(getConnect(), getInstanceID());
-	}
-
-	public boolean instanceLives() {
-		return LibVirtCloud.instanceLives(getConnect(), getInstanceID());
-	}
-
-	public boolean instanceRuns() {
-		return LibVirtCloud.instanceRuns(getConnect(), getInstanceID());
-	}
-
-	public LibVirtInstance newInstance(InstanceType type, String sImageId,
-			KeyPairName keyPairName) throws LibVirtException {
-		LibVirtInstance i = LibVirtCloud.newInstance(getConnect(), type,
-				sImageId, keyPairName);
-		if (i == null) {
-			throw new LibVirtException(Messages.bind(Messages.NewEx_FAILED,
-					new Object[] { getRegion(), sImageId, type, keyPairName,
-							getTargetNodeLocation() }));
-		}
-		setInstanceID(i.getInstanceId());
-		setInstanceRelatedInfosToED(i);
-		return i;
-	}
-
-	public void deleteInstance() {
-		LibVirtCloud.deleteInstance(getConnect(), getInstanceID());
-		setInstanceID(null);
-	}
-
-	protected void setInstanceRelatedInfosToED(LibVirtInstance i)
-			throws LibVirtException {
-		if (i == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Instance.");
-		}
-		setDataToRD(getMelodyID(), Common.INSTANCE_ID_ATTR, i.getInstanceId());
-		for (NetworkDeviceName netDevice : i.getNetworkDevices()) {
-			NetworkDeviceDatas ndd = LibVirtCloud.getNetworkDeviceDatas(i,
-					netDevice);
-			DUNID d = getNetworkDeviceDUNID(netDevice);
-			if (d == null) {
-				// The instance node could have no such network device node
-				continue;
-			}
-			setDataToRD(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
-			setDataToRD(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
-		}
-	}
-
-	private void setDataToRD(DUNID dunid, String sAttr, String sValue) {
-		if (dunid == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DUNID.");
-		}
-		if (sAttr == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an XML Attribute Name).");
-		}
-		if (sValue == null || sValue.length() == 0) {
-			return;
-		}
-		try {
-			getRD().setAttributeValue(dunid, sAttr, sValue);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "node's attribute '" + sAttr + "' via its DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-	}
-
-	protected void removeInstanceRelatedInfosToED(boolean deleted)
-			throws LibVirtException {
-		if (deleted == true) {
-			removeDataFromRD(getMelodyID(), Common.INSTANCE_ID_ATTR);
-		}
-		NetworkDeviceNameList netDevices = null;
-		try {
-			netDevices = new NetworkDeviceNamesLoader().load(getTargetNode());
-		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Ex);
-		}
-		for (NetworkDeviceName netDev : netDevices) {
-			DUNID d = getNetworkDeviceDUNID(netDev);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.IP_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.FQDN_ATTR);
-		}
-	}
-
-	private void removeDataFromRD(DUNID dunid, String sAttr) {
-		try {
-			getRD().removeAttribute(dunid, sAttr);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while removing the "
-					+ "node's attribute '" + sAttr + "' via the node DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
-	}
-
-	protected DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
-			throws LibVirtException {
-		NodeList netDevs = null;
-		try {
-			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
-					getTargetNode(), nd.getValue());
-		} catch (ResourcesDescriptorException Ex) {
-			throw new LibVirtException(Ex);
-		}
-		Node netDevNode = netDevs == null || netDevs.getLength() == 0 ? null
-				: netDevs.item(0);
-		return netDevNode == null ? null : getRD().getMelodyID(netDevNode);
 	}
 
 	@Override
@@ -362,29 +253,26 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	private Connect setConnect(Connect cnx) {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Connect.");
+					+ "Must be a valid " + Connect.class.getCanonicalName()
+					+ ".");
 		}
 		Connect previous = getConnect();
 		moConnect = cnx;
 		return previous;
 	}
 
-	/**
-	 * @return the {@link DUNID} of the targeted {@link Node}.
-	 */
-	public DUNID getMelodyID() {
-		return msMelodyId;
+	public InstanceController getInstance() {
+		return moInstance;
 	}
 
-	private DUNID setMelodyID(DUNID melodyID) throws NoSuchDUNIDException {
-		if (melodyID == null) {
+	public InstanceController setInstance(InstanceController instance) {
+		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a MelodyID).");
+					+ "Must be a valid "
+					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		setInstanceID(getRD().getAttributeValue(melodyID,
-				Common.INSTANCE_ID_ATTR));
-		DUNID previous = getMelodyID();
-		msMelodyId = melodyID;
+		InstanceController previous = getInstance();
+		moInstance = instance;
 		return previous;
 	}
 
@@ -409,14 +297,14 @@ public abstract class AbstractLibVirtOperation implements ITask,
 	 * @return the Instance Id which is registered in the targeted Node (can be
 	 *         <code>null</code>).
 	 */
-	protected String getInstanceID() {
-		return msInstanceID;
+	protected String getInstanceId() {
+		return msInstanceId;
 	}
 
-	protected String setInstanceID(String sInstanceID) {
+	protected String setInstanceId(String sInstanceID) {
 		// can be null, if no Instance have been created yet
-		String previous = getInstanceID();
-		msInstanceID = sInstanceID;
+		String previous = getInstanceId();
+		msInstanceId = sInstanceID;
 		return previous;
 	}
 
@@ -475,19 +363,11 @@ public abstract class AbstractLibVirtOperation implements ITask,
 					target, Doc.parseInt(n.getNodeType())));
 		}
 		setTargetNode(n);
-		DUNID dunid = getRD().getMelodyID(n);
 		try {
-			setMelodyID(dunid);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while manipulating "
-					+ "the MelodyID of the element node which "
-					+ "position is '" + getTarget() + "'. " + "The MelodyID '"
-					+ dunid + "' doesn't seems to be valid. "
-					+ "Since the MelodyID have been automatically added to "
-					+ "all element node by the Melody's Engine, such error "
-					+ "can't happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+			setInstanceId(n.getAttributes()
+					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)
+					.getNodeValue());
+		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();
 		msTarget = target;
