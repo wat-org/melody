@@ -14,6 +14,10 @@
 		<call orders="stop_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>
 	
+	<order name="resize_all_vm" >
+		<call orders="resize_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
+	</order>
+	
 	<order name="start_all_vm" >
 		<call orders="start_all_vm" sequenceDescriptor="§[melody.extensions.vm.path]§"/>
 	</order>

@@ -3,6 +3,83 @@
 
 <sequence basedir="." >
 
+	<order name="create_all_vm" >
+		<echo message="Creating virtual machines ..." />
+
+		<foreach	items="./environment//instance"
+					itemName="srv" >
+			<newMachine	target="§[srv]§" />
+			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created (IP: §[adm_ip]§)." />
+		</foreach>
+
+		<echo message="-- Virtual machines created." />
+
+		<call orders="update_disk_devices" />
+		<call orders="update_network_devices" />
+		<call orders="update_firewall"/>
+
+ 	</order>
+
+	<order name="destroy_all_vm" >
+		<echo message="Destroying virtual machines ..." />
+
+		<foreach	items="./environment//instance[exists(@instance-id)]"
+					itemName="srv" >
+			<property name="id" value="§[§[srv]§/@instance-id]§" />
+			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<deleteMachine	target="§[srv]§" />
+			<echo message="+ virtual machine '§[id]§' destroyed (IP: §[adm_ip]§)." />
+		</foreach>
+
+		<echo message="-- Virtual machines destroyed." />
+
+		<call orders="update_firewall"/>
+	</order>
+
+	<order name="start_all_vm" >
+		<echo message="Starting virtual machines ..." />
+
+		<foreach	items="./environment//instance[exists(@instance-id)]"
+					itemName="srv" >
+			<startMachine	target="§[srv]§" />
+			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' started (IP: §[adm_ip]§)." />
+		</foreach>
+
+		<echo message="-- Virtual machines started." />
+
+		<call orders="update_firewall"/>
+	</order>
+		
+	<order name="stop_all_vm" >
+		<echo message="Stopping virtual machines ..." />
+
+		<foreach	items="./environment//instance[exists(@instance-id)]"
+					itemName="srv" >
+			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<stopMachine	target="§[srv]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped (IP: §[adm_ip]§)." />
+		</foreach>
+
+		<echo message="-- Virtual machines stopped." />
+
+		<call orders="update_firewall"/>
+	</order>
+	
+	<order name="resize_all_vm" >
+		<echo message="Resing virtual machines ..." />
+
+		<foreach	items="./environment//instance[exists(@instance-id)]"
+					itemName="srv" >
+			<resizeMachine	target="§[srv]§" instanceType="m1.small" />
+			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized (IP: §[adm_ip]§)." />
+		</foreach>
+
+		<echo message="-- Virtual machines resized." />
+	</order>
+
 	<order name="update_disk_devices" >
 		<echo message="Updating disk devices ..." />
 
@@ -40,83 +117,6 @@
 		</foreach>
 
 		<echo message="-- FireWall rules updated." />		
-	</order>
-
-	<order name="create_all_vm" >
-		<echo message="Creating virtual machines ..." />
-
-		<foreach	items="./environment//instance"
-					itemName="srv" >
-			<newMachine	target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created (IP: §[adm_ip]§)." />
-		</foreach>
-
-		<echo message="-- Virtual machines created." />
-
-		<call orders="update_disk_devices" />
-		<call orders="update_network_devices" />
-		<call orders="update_firewall"/>
-
- 	</order>
-
-	<order name="destroy_all_vm" >
-		<echo message="Destroying virtual machines ..." />
-
-		<foreach	items="./environment//instance[exists(@instance-id)]"
-					itemName="srv" >
-			<property name="id" value="§[§[srv]§/@instance-id]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<deleteMachine	target="§[srv]§" />
-			<echo message="+ virtual machine '§[id]§' destroyed (IP: §[adm_ip]§)." />
-		</foreach>
-
-		<echo message="-- Virtual machines destroyed." />
-
-		<call orders="update_firewall"/>
-	</order>
-		
-	<order name="stop_all_vm" >
-		<echo message="Stopping virtual machines ..." />
-
-		<foreach	items="./environment//instance[exists(@instance-id)]"
-					itemName="srv" >
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<stopMachine	target="§[srv]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped (IP: §[adm_ip]§)." />
-		</foreach>
-
-		<echo message="-- Virtual machines stopped." />
-
-		<call orders="update_firewall"/>
-	</order>
-	
-	<order name="resize_all_vm" >
-		<echo message="Resing virtual machines ..." />
-
-		<foreach	items="./environment//instance[exists(@instance-id)]"
-					itemName="srv" >
-			<resizeMachine	target="§[srv]§" instanceType="m1.small" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized (IP: §[adm_ip]§)." />
-		</foreach>
-
-		<echo message="-- Virtual machines resized." />
-	</order>
-
-	<order name="start_all_vm" >
-		<echo message="Starting virtual machines ..." />
-
-		<foreach	items="./environment//instance[exists(@instance-id)]"
-					itemName="srv" >
-			<startMachine	target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' started (IP: §[adm_ip]§)." />
-		</foreach>
-
-		<echo message="-- Virtual machines started." />
-
-		<call orders="update_firewall"/>
 	</order>
 
 </sequence>

@@ -1,6 +1,7 @@
 package com.wat.melody.core.nativeplugin.foreach;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -11,7 +12,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.ex.MelodyConsolidatedException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
@@ -61,7 +62,7 @@ public class Foreach implements ITask, ITaskContainer {
 	private short miState;
 	private ThreadGroup moThreadGroup;
 	private List<ForeachThread> maThreadsList;
-	private List<Throwable> maExceptionsList;
+	private MelodyConsolidatedException moExceptionsSet;
 
 	public Foreach() {
 		// Initialize members
@@ -77,7 +78,8 @@ public class Foreach implements ITask, ITaskContainer {
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
-		setExceptionsList(new ArrayList<Throwable>());
+		setExceptionsSet(new MelodyConsolidatedException(
+				new LinkedHashSet<Throwable>()));
 	}
 
 	private void initContext() {
@@ -167,7 +169,7 @@ public class Foreach implements ITask, ITaskContainer {
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsList().add(Ex);
+				getExceptionsSet().addCause(Ex);
 				markState(CRITICAL);
 			} finally {
 				// If an error occurred while starting thread, some thread may
@@ -292,49 +294,18 @@ public class Foreach implements ITask, ITaskContainer {
 		for (ForeachThread ft : getThreadsList()) {
 			markState(ft.getFinalState());
 			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
-				getExceptionsList().add(ft.getFinalError());
+				getExceptionsSet().addCause(ft.getFinalError());
 			}
 		}
 
 		if (isCritical()) {
-			throw new ForeachException(buildForeachTrace());
+			throw new ForeachException(getExceptionsSet());
 		} else if (isFailed()) {
-			throw new ForeachException(buildForeachTrace());
+			throw new ForeachException(getExceptionsSet());
 		} else if (isInterrupted()) {
 			throw new InterruptedException(Messages.bind(
 					Messages.ForeachEx_INTERRUPTED, FOREACH));
 		}
-	}
-
-	/**
-	 * <p>
-	 * Build an exception which message represents all errors raised during this
-	 * object processing.
-	 * </p>
-	 * 
-	 * @return an an exception which message represents all errors raised during
-	 *         this object processing.
-	 */
-	/*
-	 * TODO : create a ForeachConsolidatedException, which will contains this
-	 * logic
-	 */
-	private ForeachException buildForeachTrace() {
-		if (getExceptionsList().size() == 0) {
-			return null;
-		} else if (getExceptionsList().size() == 1) {
-			return new ForeachException(getExceptionsList().get(0));
-		}
-		String err = "";
-		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Util.NEW_LINE
-					+ "Error "
-					+ (i + 1)
-					+ " : "
-					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
-		}
-		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
-		return new ForeachException(err);
 	}
 
 	@Override
@@ -544,17 +515,20 @@ public class Foreach implements ITask, ITaskContainer {
 	 * @return the list of exceptions that append during the processing of this
 	 *         object.
 	 */
-	private List<Throwable> getExceptionsList() {
-		return maExceptionsList;
+	private MelodyConsolidatedException getExceptionsSet() {
+		return moExceptionsSet;
 	}
 
-	private List<Throwable> setExceptionsList(List<Throwable> at) {
-		if (at == null) {
+	private MelodyConsolidatedException setExceptionsSet(
+			MelodyConsolidatedException cex) {
+		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Throwable>.");
+					+ "Must be a valid "
+					+ MelodyConsolidatedException.class.getCanonicalName()
+					+ ".");
 		}
-		List<Throwable> previous = getExceptionsList();
-		maExceptionsList = at;
+		MelodyConsolidatedException previous = getExceptionsSet();
+		moExceptionsSet = cex;
 		return previous;
 	}
 

@@ -24,7 +24,7 @@
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="stop_env" />
+			<arg value="stop_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -33,16 +33,16 @@
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="resize_env" />
+			<arg value="resize_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
-	<target name="UC0_04_startenv">
+	<target name="UC0_04_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="start_env" />
+			<arg value="start_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -115,7 +115,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_04_startenv">
+	<target name="UC1_04_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />

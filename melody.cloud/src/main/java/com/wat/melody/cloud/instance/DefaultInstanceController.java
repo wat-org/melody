@@ -11,7 +11,6 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.network.FwRuleDecomposed;
 import com.wat.melody.common.network.FwRulesDecomposed;
@@ -61,9 +60,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			String imageId, KeyPairName keyPairName, long createTimeout)
 			throws OperationException, InterruptedException {
 		if (instanceLives()) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.CreateMsg_LIVES, getInstanceId(),
-							"LIVE"))));
+			log.warn(Messages.bind(Messages.CreateMsg_LIVES, getInstanceId(),
+					"LIVE"));
 		} else {
 			String instanceId = createInstance(type, site, imageId,
 					keyPairName, createTimeout);
@@ -81,12 +79,10 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public void ensureInstanceIsDestroyed(long destroyTimeout)
 			throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.DestroyMsg_NO_INSTANCE)));
+			log.warn(Messages.DestroyMsg_NO_INSTANCE);
 		} else if (!instanceLives()) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.DestroyMsg_TERMINATED,
-							getInstanceId(), "DEAD"))));
+			log.warn(Messages.bind(Messages.DestroyMsg_TERMINATED,
+					getInstanceId(), "DEAD"));
 		} else {
 			destroyInstance(destroyTimeout);
 			fireInstanceStopped();
@@ -104,10 +100,9 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StartEx_NO_INSTANCE);
 		} else if (is == InstanceState.PENDING) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.StartMsg_PENDING, new Object[] {
-							getInstanceId(), InstanceState.PENDING,
-							InstanceState.RUNNING }))));
+			log.warn(Messages.bind(Messages.StartMsg_PENDING, new Object[] {
+					getInstanceId(), InstanceState.PENDING,
+					InstanceState.RUNNING }));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.RUNNING,
 					startTimeout)) {
 				throw new OperationException(Messages.bind(
@@ -117,14 +112,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStarted();
 		} else if (is == InstanceState.RUNNING) {
 			fireInstanceStarted();
-			log.info(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.StartMsg_RUNNING, getInstanceId(),
-							InstanceState.RUNNING))));
+			log.info(Messages.bind(Messages.StartMsg_RUNNING, getInstanceId(),
+					InstanceState.RUNNING));
 		} else if (is == InstanceState.STOPPING) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
-							getInstanceId(), InstanceState.STOPPING,
-							InstanceState.STOPPED }))));
+			log.warn(Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
+					getInstanceId(), InstanceState.STOPPING,
+					InstanceState.STOPPED }));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.STOPPED,
 					startTimeout)) {
 				throw new OperationException(Messages.bind(
@@ -160,9 +153,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throw new OperationException(Messages.StopEx_NO_INSTANCE);
 		} else if (!instanceRuns()) {
 			fireInstanceStopped();
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
-							getInstanceId(), InstanceState.STOPPED))));
+			log.warn(Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
+					getInstanceId(), InstanceState.STOPPED));
 		} else {
 			fireInstanceStopped();
 			stopInstance(stopTimeout);
@@ -186,8 +178,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			long attachTimeout, long detachTimeout) throws OperationException,
 			InterruptedException {
 		if (!isInstanceDefined()) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.UpdateDiskDevMsg_NO_INSTANCE)));
+			log.warn(Messages.UpdateDiskDevMsg_NO_INSTANCE);
 		} else {
 			updateInstanceDiskDevices(diskDeviceList, createTimeout,
 					attachTimeout, detachTimeout);
@@ -238,8 +229,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			long detachTimeout) throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
 			fireInstanceStopped();
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.UpdateNetDevMsg_NO_INSTANCE)));
+			log.warn(Messages.UpdateNetDevMsg_NO_INSTANCE);
 		} else {
 			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
 					detachTimeout);
@@ -276,8 +266,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public void ensureInstanceFireWallRulesAreUpToDate(
 			FwRulesDecomposed fireWallRules) throws OperationException {
 		if (!isInstanceDefined()) {
-			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
-					Messages.UpdateFireWallMsg_NO_INSTANCE)));
+			log.warn(Messages.UpdateFireWallMsg_NO_INSTANCE);
 		} else {
 			updateInstanceFireWallRules(fireWallRules);
 		}

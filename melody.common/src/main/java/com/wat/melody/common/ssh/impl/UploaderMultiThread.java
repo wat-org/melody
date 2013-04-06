@@ -1,14 +1,15 @@
 package com.wat.melody.common.ssh.impl;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.wat.melody.common.ex.MelodyConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.types.SimpleResource;
@@ -37,7 +38,7 @@ class UploaderMultiThread {
 	private short miState;
 	private ThreadGroup moThreadGroup;
 	private List<UploaderThread> maThreadsList;
-	private List<Throwable> maExceptionsList;
+	private MelodyConsolidatedException moExceptionsSet;
 
 	protected UploaderMultiThread(SshSession session, List<SimpleResource> r,
 			int maxPar, TemplatingHandler th) {
@@ -49,7 +50,8 @@ class UploaderMultiThread {
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<UploaderThread>());
-		setExceptionsList(new ArrayList<Throwable>());
+		setExceptionsSet(new MelodyConsolidatedException(
+				new LinkedHashSet<Throwable>()));
 	}
 
 	protected void upload() throws UploaderException, InterruptedException {
@@ -68,7 +70,7 @@ class UploaderMultiThread {
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsList().add(Ex);
+				getExceptionsSet().addCause(Ex);
 				markState(CRITICAL);
 			} finally {
 				// If an error occurred while starting thread, some thread may
@@ -92,7 +94,7 @@ class UploaderMultiThread {
 			UploaderException e = new UploaderException(Messages.bind(
 					Messages.UploadEx_FAILED, r), Ex);
 			markState(UploaderMultiThread.FAILED);
-			getExceptionsList().add(e);
+			getExceptionsSet().addCause(e);
 		}
 	}
 
@@ -138,50 +140,34 @@ class UploaderMultiThread {
 					log.info(Messages.UploadMsg_GRACEFUL_SHUTDOWN);
 				}
 				markState(INTERRUPTED);
-				getExceptionsList().add(Ex);
+				getExceptionsSet().addCause(Ex);
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
 				+ "for " + UploaderMultiThread.class.getCanonicalName()
-				+ " to finish.", buildUploadTrace());
+				+ " to finish.", getExceptionsSet());
 	}
 
 	private void quit() throws UploaderException, InterruptedException {
 		for (UploaderThread ft : getThreadsList()) {
 			markState(ft.getFinalState());
 			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
-				getExceptionsList().add(ft.getFinalError());
+				getExceptionsSet().addCause(ft.getFinalError());
 			}
 		}
 
 		if (isCritical()) {
 			throw new UploaderException(Messages.bind(
 					Messages.UploadEx_UNMANAGED, getSession()
-							.getConnectionDatas()), buildUploadTrace());
+							.getConnectionDatas()), getExceptionsSet());
 		} else if (isFailed()) {
 			throw new UploaderException(Messages.bind(
 					Messages.UploadEx_MANAGED, getSession()
-							.getConnectionDatas()), buildUploadTrace());
+							.getConnectionDatas()), getExceptionsSet());
 		} else if (isInterrupted()) {
 			throw new MelodyInterruptedException(Messages.UploadEx_INTERRUPTED,
-					buildUploadTrace());
+					getExceptionsSet());
 		}
-	}
-
-	private UploaderException buildUploadTrace() {
-		if (getExceptionsList().size() == 0) {
-			return null;
-		}
-		String err = "";
-		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Util.NEW_LINE
-					+ "Error "
-					+ (i + 1)
-					+ " : "
-					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
-		}
-		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
-		return new UploaderException(err);
 	}
 
 	protected short markState(short state) {
@@ -280,18 +266,20 @@ class UploaderMultiThread {
 		return previous;
 	}
 
-	protected List<Throwable> getExceptionsList() {
-		return maExceptionsList;
+	private MelodyConsolidatedException getExceptionsSet() {
+		return moExceptionsSet;
 	}
 
-	private List<Throwable> setExceptionsList(List<Throwable> at) {
-		if (at == null) {
+	private MelodyConsolidatedException setExceptionsSet(
+			MelodyConsolidatedException cex) {
+		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Throwable>.");
+					+ "Must be a valid "
+					+ MelodyConsolidatedException.class.getCanonicalName()
+					+ ".");
 		}
-		List<Throwable> previous = getExceptionsList();
-		maExceptionsList = at;
+		MelodyConsolidatedException previous = getExceptionsSet();
+		moExceptionsSet = cex;
 		return previous;
 	}
-
 }

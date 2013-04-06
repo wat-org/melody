@@ -17,17 +17,16 @@ public abstract class Util {
 
 	/**
 	 * <p>
-	 * Return the stack trace of the given <code>Throwable</code> object as a
-	 * <code>String</code>.
+	 * Return the stack trace of the given {@link Throwable} object as a
+	 * <tt>String</tt>.
 	 * </p>
 	 * 
 	 * @param Ex
-	 *            is the <code>Throwable</code> object.
+	 *            is the {@link Throwable} object.
 	 * 
-	 * @return a <code>String</code> which represent the stack trace of the
-	 *         given <code>Throwable</code> object. or an empty
-	 *         <code>String</code> if the given input <code>Throwable</code>
-	 *         object is <code>null</code>.
+	 * @return a <tt>String</tt> which represent the stack trace of the given
+	 *         {@link Throwable} object. or an empty <tt>String</tt> if the
+	 *         given input {@link Throwable} object is <tt>null</tt>.
 	 * 
 	 */
 	public static String getStackTrace(Throwable Ex) {

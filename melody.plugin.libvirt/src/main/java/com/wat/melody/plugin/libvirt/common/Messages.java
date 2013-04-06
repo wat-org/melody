@@ -32,6 +32,15 @@ public class Messages extends NLS {
 
 	public static String StopEx_GENERIC_FAIL;
 
+	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
+	public static String ResizeEx_INSTANCETYPE_ERROR;
+	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
+	public static String ResizeEx_NO_INSTANCE;
+	public static String ResizeEx_NOT_STOPPED;
+	public static String ResizeEx_FAILED;
+	public static String ResizeMsg_NO_NEED;
+	public static String ResizeMsg_GENERIC_WARN;
+
 	public static String UpdateDiskDevEx_GENERIC_FAIL;
 
 	public static String UpdateNetDevEx_GENERIC_FAIL;

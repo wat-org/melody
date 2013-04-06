@@ -78,8 +78,6 @@ public class Messages extends NLS {
 	public static String StopEx_TIMEOUT;
 	public static String StopEx_GENERIC_FAIL;
 
-	public static String UpdateFireWallEx_GENERIC_FAIL;
-
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
 	public static String ResizeEx_INSTANCETYPE_ERROR;
 	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
@@ -95,6 +93,8 @@ public class Messages extends NLS {
 	public static String UpdateDiskDevEx_GENERIC_FAIL;
 
 	public static String UpdateNetDevEx_GENERIC_FAIL;
+
+	public static String UpdateFireWallEx_GENERIC_FAIL;
 
 	static {
 		// initialize resource bundle

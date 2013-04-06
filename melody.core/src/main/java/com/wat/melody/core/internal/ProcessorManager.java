@@ -763,7 +763,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		try {
 			if (isPreserveTemporaryFilesModeEnable()) {
 				log.debug("Temporary resources not cleaned "
-						+ "('Preserve Temporary Files Mode' is enabled).");
+						+ "(because 'Preserve Temporary Files Mode' is enabled).");
 				return;
 			}
 			if (getWorkingFolderPath() != null) {
@@ -784,17 +784,17 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					null);
 			return t;
 		} catch (TaskFactoryException Ex) {
+			Object[] args = new Object[] { n.getNodeName().toLowerCase(),
+					State.FAILED, Doc.getNodeLocation(n) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_INIT_FINAL_STATE,
-					new Object[] { n.getNodeName().toLowerCase(), State.FAILED,
-							Doc.getNodeLocation(n) }), Ex);
+					Messages.TaskEx_INIT_FINAL_STATE, args), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.FAILED, e);
 			throw e;
 		} catch (Throwable Ex) {
+			Object[] args = new Object[] { n.getNodeName().toLowerCase(),
+					State.CRITICAL, Doc.getNodeLocation(n) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_INIT_FINAL_STATE,
-					new Object[] { n.getNodeName().toLowerCase(),
-							State.CRITICAL, Doc.getNodeLocation(n) }), Ex);
+					Messages.TaskEx_INIT_FINAL_STATE, args), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.CRITICAL,
 					e);
 			throw e;
@@ -808,24 +808,21 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			task.doProcessing();
 			fireTaskFinishedEvent(task, State.SUCCESS, null);
 		} catch (InterruptedException Ex) {
+			Object[] args = new Object[] {
+					task.getClass().getSimpleName().toLowerCase(),
+					State.INTERRUPTED,
+					Doc.getNodeLocation(task.getContext().getNode()) };
 			InterruptedException e = new InterruptedException(Messages.bind(
-					Messages.TaskEx_PROCESS_FINAL_STATE,
-					new Object[] {
-							task.getClass().getSimpleName().toLowerCase(),
-							State.INTERRUPTED,
-							Doc.getNodeLocation(task.getContext().getNode()) }));
+					Messages.TaskEx_PROCESS_FINAL_STATE, args));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);
 			throw e;
 		} catch (TaskException Ex) {
-			TaskException e = new TaskException(
-					Messages.bind(
-							Messages.TaskEx_PROCESS_FINAL_STATE,
-							new Object[] {
-									task.getClass().getSimpleName()
-											.toLowerCase(),
-									State.FAILED,
-									Doc.getNodeLocation(task.getContext()
-											.getNode()) }), Ex);
+			Object[] args = new Object[] {
+					task.getClass().getSimpleName().toLowerCase(),
+					State.FAILED,
+					Doc.getNodeLocation(task.getContext().getNode()) };
+			TaskException e = new TaskException(Messages.bind(
+					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
 			fireTaskFinishedEvent(task, State.FAILED, e);
 			if (Ex instanceof SequenceException) {
 				throw Ex;
@@ -833,15 +830,12 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				throw e;
 			}
 		} catch (Throwable Ex) {
-			TaskException e = new TaskException(
-					Messages.bind(
-							Messages.TaskEx_PROCESS_FINAL_STATE,
-							new Object[] {
-									task.getClass().getSimpleName()
-											.toLowerCase(),
-									State.CRITICAL,
-									Doc.getNodeLocation(task.getContext()
-											.getNode()) }), Ex);
+			Object[] args = new Object[] {
+					task.getClass().getSimpleName().toLowerCase(),
+					State.CRITICAL,
+					Doc.getNodeLocation(task.getContext().getNode()) };
+			TaskException e = new TaskException(Messages.bind(
+					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
 		}

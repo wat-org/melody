@@ -2,6 +2,7 @@ package com.wat.melody.core.nativeplugin.call;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.wat.melody.api.IProcessorManager;
@@ -10,8 +11,8 @@ import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
+import com.wat.melody.common.ex.MelodyConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 
 /**
@@ -41,7 +42,7 @@ public class Call extends Ref implements ITask {
 
 	private short miState;
 	private ThreadGroup moThreadGroup;
-	private List<Throwable> maExceptionsList;
+	private MelodyConsolidatedException moExceptionsSet;
 
 	/**
 	 * <p>
@@ -56,7 +57,8 @@ public class Call extends Ref implements ITask {
 		setCallRefs(new ArrayList<Ref>());
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setExceptionsList(new ArrayList<Throwable>());
+		setExceptionsSet(new MelodyConsolidatedException(
+				new LinkedHashSet<Throwable>()));
 	}
 
 	private void initContext() {
@@ -174,7 +176,7 @@ public class Call extends Ref implements ITask {
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsList().add(Ex);
+				getExceptionsSet().addCause(Ex);
 				markState(FAILED);
 			} finally {
 				// Even if an error occurred while creating and starting thread,
@@ -295,52 +297,22 @@ public class Call extends Ref implements ITask {
 			} else if (ex instanceof InterruptedException) {
 				markState(INTERRUPTED);
 			} else if (ex instanceof MelodyException) {
-				getExceptionsList().add(ex);
+				getExceptionsSet().addCause(ex);
 				markState(FAILED);
 			} else {
-				getExceptionsList().add(ex);
+				getExceptionsSet().addCause(ex);
 				markState(CRITICAL);
 			}
 		}
 
 		if (isCritical()) {
-			throw new CallException(buildCallExceptionTrace());
+			throw new CallException(getExceptionsSet());
 		} else if (isFailed()) {
-			throw new CallException(buildCallExceptionTrace());
+			throw new CallException(getExceptionsSet());
 		} else if (isInterrupted()) {
 			throw new InterruptedException(Messages.bind(
 					Messages.CallEx_INTERRUPTED, CALL));
 		}
-	}
-
-	/**
-	 * <p>
-	 * Build an exception which message represents all errors raised during this
-	 * object processing.
-	 * </p>
-	 * 
-	 * @return an exception which message represents all errors raised during
-	 *         this object processing.
-	 */
-	/*
-	 * TODO : create a CallConsolidatedException, which will contains this logic
-	 */
-	private CallException buildCallExceptionTrace() {
-		if (getExceptionsList().size() == 0) {
-			return null;
-		} else if (getExceptionsList().size() == 1) {
-			return new CallException(getExceptionsList().get(0));
-		}
-		String err = "";
-		for (int i = 0; i < getExceptionsList().size(); i++) {
-			err += Util.NEW_LINE
-					+ "Error "
-					+ (i + 1)
-					+ " : "
-					+ Util.getUserFriendlyStackTrace(getExceptionsList().get(i));
-		}
-		err = err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "   ");
-		return new CallException(err);
 	}
 
 	@Override
@@ -391,17 +363,20 @@ public class Call extends Ref implements ITask {
 	 * @return the list of exceptions that append during the processing of this
 	 *         object.
 	 */
-	private List<Throwable> getExceptionsList() {
-		return maExceptionsList;
+	private MelodyConsolidatedException getExceptionsSet() {
+		return moExceptionsSet;
 	}
 
-	private List<Throwable> setExceptionsList(List<Throwable> th) {
-		if (th == null) {
+	private MelodyConsolidatedException setExceptionsSet(
+			MelodyConsolidatedException cex) {
+		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Throwable>.");
+					+ "Must be a valid "
+					+ MelodyConsolidatedException.class.getCanonicalName()
+					+ ".");
 		}
-		List<Throwable> previous = getExceptionsList();
-		maExceptionsList = th;
+		MelodyConsolidatedException previous = getExceptionsSet();
+		moExceptionsSet = cex;
 		return previous;
 	}
 
