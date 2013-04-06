@@ -685,7 +685,7 @@ public class Common {
 	 *            is the state to reach.
 	 * @param timeout
 	 *            is the maximal amount of time to wait for the requested Aws
-	 *            Instance to reach the given state.
+	 *            Instance to reach the given state, in millis.
 	 * @param sleepfirst
 	 *            is an extra initial amount of time to wait.
 	 * 
@@ -748,13 +748,14 @@ public class Common {
 			if (left < 0) {
 				log.warn(Messages.bind(
 						Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_FAILED,
-						new Object[] { sAwsInstanceId, state, timeout }));
+						new Object[] { sAwsInstanceId, state, timeout / 1000 }));
 				return false;
 			}
 		}
 		log.info(Messages.bind(
 				Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_SUCCEED,
-				new Object[] { sAwsInstanceId, state, timeout }));
+				new Object[] { sAwsInstanceId, state,
+						System.currentTimeMillis() - start }));
 		return true;
 	}
 

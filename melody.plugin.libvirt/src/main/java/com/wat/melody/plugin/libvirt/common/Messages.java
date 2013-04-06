@@ -28,8 +28,10 @@ public class Messages extends NLS {
 
 	public static String DestroyEx_GENERIC_FAIL;
 
+	public static String StartEx_TIMEOUT;
 	public static String StartEx_GENERIC_FAIL;
 
+	public static String StopEx_TIMEOUT;
 	public static String StopEx_GENERIC_FAIL;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;

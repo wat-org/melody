@@ -82,13 +82,19 @@ public class LibVirtInstanceController extends DefaultInstanceController
 	@Override
 	public void startInstance(long startTimeout) throws OperationException,
 			InterruptedException {
-		LibVirtCloud.startInstance(this.getInstance());
+		if (!LibVirtCloud.startInstance(this.getInstance(), startTimeout)) {
+			throw new OperationException(Messages.bind(
+					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
+		}
 	}
 
 	@Override
 	public void stopInstance(long stopTimeout) throws OperationException,
 			InterruptedException {
-		LibVirtCloud.stopInstance(this.getInstance());
+		if (!LibVirtCloud.stopInstance(this.getInstance(), stopTimeout)) {
+			throw new OperationException(Messages.bind(Messages.StopEx_TIMEOUT,
+					getInstanceId(), stopTimeout));
+		}
 	}
 
 	@Override

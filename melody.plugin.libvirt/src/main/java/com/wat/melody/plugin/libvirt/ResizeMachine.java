@@ -85,6 +85,10 @@ public class ResizeMachine extends AbstractOperation {
 		
 		/*
 		 * TODO : implement resize.
+		 * 
+		 * Even if CPU HotPlug is possible with libvirt and RHEL 6, the resize
+		 * feature will requiere the instance to be stopped. (because CPU UnPlug
+		 * is not possible, and because Memory HotPlug and UnPlug is a fake)
 		 */
 		throw new RuntimeException("Not implemented yet");
 

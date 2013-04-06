@@ -1107,9 +1107,9 @@ public abstract class LibVirtCloud {
 	 *            is the state to reach.
 	 * @param timeout
 	 *            is the maximal amount of time to wait for the requested
-	 *            Instance to reach the given state.
+	 *            Instance to reach the given state, in millis.
 	 * @param sleepfirst
-	 *            is an extra initial amount of time to wait.
+	 *            is an extra initial amount of time to wait, in millis.
 	 * 
 	 * @return <code>true</code> if the requested Instance reaches the given
 	 *         state before the given timeout expires, <code>false</code>
@@ -1153,7 +1153,10 @@ public abstract class LibVirtCloud {
 		long left;
 
 		Thread.sleep(sleepfirst);
-		while (getInstanceState(cnx, sInstanceId) != state) {
+		InstanceState is = null;
+		while ((is = getInstanceState(cnx, sInstanceId)) != state) {
+			log.debug("Domain for Instance '" + sInstanceId + "' to become '"
+					+ state + "'. Currently '" + is + "'.");
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
@@ -1161,12 +1164,32 @@ public abstract class LibVirtCloud {
 			left = timeout - (System.currentTimeMillis() - start);
 			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
 			if (left < 0) {
+				log.warn("Domain '" + sInstanceId + "' is still not '" + state
+						+ "' after " + timeout + " seconds.");
 				return false;
 			}
 		}
+		log.info("Domain '" + sInstanceId + "' reaches the state '" + state
+				+ "' in " + (System.currentTimeMillis() - start) / 1000
+				+ " seconds.");
 		return true;
 	}
 
+	/*
+	 * A dedicated Network Filter is associated to each network device of each
+	 * Domain. The Network filter name is
+	 * '<instance-id>-<device-name>-nwfilter'.
+	 * 
+	 * This Network Filter is the placeholder of 'common' firewall rules (e.g.
+	 * which apply to all network device).
+	 * 
+	 * The first element of the Network Filter must be a filterref, which points
+	 * to the Security Group of the network device.
+	 * 
+	 * A security Group is the placeholder of firewall rules which are specific
+	 * to the network device. The Security Group name is 'MelodySg_<13 ramdon
+	 * number>_<8 random digit>'.
+	 */
 	public static String getNetworkFilter(Domain d, NetworkDeviceName netdev) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -1449,54 +1472,87 @@ public abstract class LibVirtCloud {
 		 * SHUTTING_DOWN and a TERMINATED state.
 		 */
 		try {
-			// get Domain
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 			DomainState state = d.getInfo().state;
-
-			// destroy domain
+			// Destroy domain
 			if (state == DomainState.VIR_DOMAIN_RUNNING
 					|| state == DomainState.VIR_DOMAIN_PAUSED) {
 				log.trace("Destroying Domain '" + sInstanceId + "' ...");
 				d.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
-			// release network devices, network filters and security groups
+			// Release network devices
 			NetworkDeviceNameList netdevs = getNetworkDevices(d);
 			for (NetworkDeviceName netdev : netdevs) {
 				String sSGName = getSecurityGroup(d, netdev);
-
 				// Destroy the network filter
 				deleteNetworkFilter(d, netdev);
-
 				// Release the @mac
 				String mac = getDomainMacAddress(d, netdev);
 				unregisterMacAddress(mac);
-
 				// Destroy the security group
 				deleteSecurityGroup(cnx, sSGName);
 			}
-			// destroy disk devices
+			// Destroy disk devices
 			DiskDeviceList diskdevs = getDiskDevices(d);
 			for (DiskDevice disk : diskdevs) {
 				// Destroy disk device
 				deleteDiskDevice(d, disk);
 			}
-			// undefine domain
+			// Undefine domain
 			d.undefine();
-
-			// Delete security group
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	public static void startInstance(Domain d) {
-		// TODO : implements start instance
+	public static boolean startInstance(Domain d, long startTimeout)
+			throws InterruptedException {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+		try {
+			String sInstanceId = d.getName();
+			// Start domain
+			log.trace("Starting Domain '" + sInstanceId + "' ...");
+			d.create();
+			// Wait for the Domain to start
+			if (!waitUntilInstanceStatusBecomes(d.getConnect(), sInstanceId,
+					InstanceState.RUNNING, startTimeout, 5000)) {
+				return false;
+			}
+			log.debug("Domain '" + sInstanceId + "' started.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		return true;
 	}
 
-	public static void stopInstance(Domain d) {
-		// TODO : implements stop instance
+	public static boolean stopInstance(Domain d, long stopTimeout)
+			throws InterruptedException {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+		try {
+			// Stop Domain
+			String sInstanceId = d.getName();
+			log.trace("Stopping Domain '" + sInstanceId + "' ...");
+			d.shutdown();
+			// Wait for the Domain to stop
+			if (!waitUntilInstanceStatusBecomes(d.getConnect(), sInstanceId,
+					InstanceState.STOPPED, stopTimeout, 5000)) {
+				return false;
+			}
+			log.debug("Domain '" + sInstanceId + "' stopped.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		return true;
 	}
 
 }
