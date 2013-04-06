@@ -220,21 +220,25 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	}
 
 	@Override
-	public void onInstanceIdChanged() throws OperationException {
-		if (getInstanceId() != null) {
-			setDataToRD(getRelatedNodeDunid(),
-					InstanceDatasLoader.INSTANCE_ID_ATTR, getInstanceId());
-		} else {
-			removeDataFromRD(getRelatedNodeDunid(),
-					InstanceDatasLoader.INSTANCE_ID_ATTR);
-		}
-		fireInstanceIdChanged();
+	public void onInstanceCreated() throws OperationException,
+			InterruptedException {
+		setDataToRD(getRelatedNodeDunid(),
+				InstanceDatasLoader.INSTANCE_ID_ATTR, getInstanceId());
+		fireInstanceCreated();
 	}
 
 	@Override
-	public void onInvalidateInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException {
-		fireInvalidateInstanceNetworkDevicesDatas();
+	public void onInstanceDestroyed() throws OperationException,
+			InterruptedException {
+		fireInstanceDestroyed();
+		removeDataFromRD(getRelatedNodeDunid(),
+				InstanceDatasLoader.INSTANCE_ID_ATTR);
+	}
+
+	@Override
+	public void onInstanceStopped() throws OperationException,
+			InterruptedException {
+		fireInstanceStopped();
 		NetworkDeviceNameList netDevices = null;
 		try {
 			netDevices = new NetworkDeviceNamesLoader().load(getRelatedNode());
@@ -251,8 +255,8 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	}
 
 	@Override
-	public void onAssignInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException {
+	public void onInstanceStarted() throws OperationException,
+			InterruptedException {
 		for (NetworkDeviceName netDevice : getInstanceNetworkDevices()) {
 			DUNID d = getNetworkDeviceDUNID(netDevice);
 			if (d == null) {
@@ -266,7 +270,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 			setDataToRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
 					ndd.getNatFQDN());
 		}
-		fireAssignInstanceNetworkDevicesDatas();
+		fireInstanceStarted();
 	}
 
 	protected void setDataToRD(DUNID dunid, String sAttr, String sValue) {

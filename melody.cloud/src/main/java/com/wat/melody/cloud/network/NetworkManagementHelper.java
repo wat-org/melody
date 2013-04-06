@@ -456,6 +456,12 @@ public abstract class NetworkManagementHelper {
 		try {
 			return Host.parseString(getManagementNetworkHostNode(instanceNode,
 					mgmtNode).getNodeValue());
+		} catch (NullPointerException Ex) {
+			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+					mgmtNode);
+			String attr = getManagementNetworkDeviceAttributeSelector(mgmtNode);
+			throw new ResourcesDescriptorException(netNode, Messages.bind(
+					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalHostException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
@@ -483,10 +489,6 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found in
 	 *             at least one Instance.
-	 * @throws ResourcesDescriptorException
-	 *             if the Management Network Device {@link Node} of one Instance
-	 *             doesn't have a attribute equal to the Network Device
-	 *             Management Device Attribute Selector.
 	 */
 	public static List<Node> findManagementNetworkHostNode(
 			List<Node> instanceNodes) throws ResourcesDescriptorException {
@@ -503,7 +505,10 @@ public abstract class NetworkManagementHelper {
 				// raised when Network Device Management datas are invalid.
 				// in this situation, we will use default values
 			}
-			hl.add(getManagementNetworkHostNode(instanceNode, mgmtNode));
+			Node n = getManagementNetworkHostNode(instanceNode, mgmtNode);
+			if (n != null) {
+				hl.add(n);
+			}
 		}
 		return hl;
 	}
@@ -514,7 +519,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * 
 	 * @return the Instance's Management Network Device's {@link Host}
-	 *         {@link Node}.
+	 *         {@link Node}, or <tt>null</tt> if the given Instance doesn't have
+	 *         one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -523,10 +529,6 @@ public abstract class NetworkManagementHelper {
 	 *             valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a attribute equal to the Instance's Management
-	 *             Network Device Attribute Selector.
 	 */
 	public static Node findManagementNetworkHostNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -551,29 +553,20 @@ public abstract class NetworkManagementHelper {
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device {@link Host}
-	 *         {@link Node}.
+	 *         {@link Node}, or <tt>null</tt> if the given Instance doesn't have
+	 *         one.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a attribute equal to the Instance's Management
-	 *             Network Device Attribute Selector.
 	 */
 	public static Node getManagementNetworkHostNode(Node instanceNode,
 			Node mgmtNode) throws ResourcesDescriptorException {
 		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
 		String attr = getManagementNetworkDeviceAttributeSelector(mgmtNode);
-		Node n = netNode.getAttributes().getNamedItem(attr);
-		if (n == null) {
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_ATTRIBUTE,
-					attr));
-		}
-		return n;
+		return netNode.getAttributes().getNamedItem(attr);
 	}
 
 	/**
@@ -632,12 +625,11 @@ public abstract class NetworkManagementHelper {
 	 */
 	public static Port getManagementNetworkPort(Node mgmtNode)
 			throws ResourcesDescriptorException {
-		Node n = getManagementNetworkPortNode(mgmtNode);
-		if (n == null) {
-			return getDefaultMamangementPort(mgmtNode);
-		}
 		try {
-			return Port.parseString(n.getNodeValue());
+			return Port.parseString(getManagementNetworkPortNode(mgmtNode)
+					.getNodeValue());
+		} catch (NullPointerException Ex) {
+			return getDefaultMamangementPort(mgmtNode);
 		} catch (IllegalPortException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR,
@@ -651,8 +643,7 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Instance's Network Device Management {@link Port} attribute
-	 *         as a {@link Node}, or <code>null</code> if such attribute cannot
-	 *         be found.
+	 *         as a {@link Node}, or <code>null</code> if it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -785,14 +776,14 @@ public abstract class NetworkManagementHelper {
 	 */
 	public static ManagementNetworkMethod getManagementNetworkMethod(
 			Node mgmtNode) throws ResourcesDescriptorException {
-		Node n = getManagementNetworkMethodNode(mgmtNode);
-		if (n == null) {
+		try {
+			return ManagementNetworkMethod
+					.parseString(getManagementNetworkMethodNode(mgmtNode)
+							.getNodeValue());
+		} catch (NullPointerException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
 					Messages.NetMgmtEx_MISSING_ATTR,
 					ManagementNetworkDatasLoader.METHOD_ATTR));
-		}
-		try {
-			return ManagementNetworkMethod.parseString(n.getNodeValue());
 		} catch (IllegalManagementMethodNetworkException Ex) {
 			throw new ResourcesDescriptorException(mgmtNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR,
@@ -805,9 +796,9 @@ public abstract class NetworkManagementHelper {
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
-	 * @return the Network Device Management {@link ManagementNetworkMethod}
-	 *         Attribute as a {@link Node}, or <code>null</code> if such
-	 *         attribute cannot be found.
+	 * @return the Instance's Network Device Management
+	 *         {@link ManagementNetworkMethod} attribute as a {@link Node}, or
+	 *         <code>null</code> it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -1191,6 +1182,12 @@ public abstract class NetworkManagementHelper {
 			return NetworkDeviceName
 					.parseString(getManagementNetworkDeviceNameNode(
 							instanceNode, mgmtNode).getNodeValue());
+		} catch (NullPointerException Ex) {
+			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+					mgmtNode);
+			String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
+			throw new ResourcesDescriptorException(netNode, Messages.bind(
+					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
@@ -1211,16 +1208,13 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code>.
+	 *             <code>null</code> or contains <tt>null</tt> elements.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of one Instance is
 	 *             not a valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found in
 	 *             at least one Instance.
-	 * @throws ResourcesDescriptorException
-	 *             if the Management Network Device {@link Node} of one Instance
-	 *             doesn't have a 'device' attribute.
 	 */
 	public static List<Node> findManagementNetworkDeviceNameNode(
 			List<Node> instanceNodes) throws ResourcesDescriptorException {
@@ -1237,7 +1231,10 @@ public abstract class NetworkManagementHelper {
 				// raised when Network Device Management datas are invalid.
 				// in this situation, we will use default values
 			}
-			hl.add(getManagementNetworkDeviceNameNode(instanceNode, mgmtNode));
+			Node n = getManagementNetworkDeviceNameNode(instanceNode, mgmtNode);
+			if (n != null) {
+				hl.add(n);
+			}
 		}
 		return hl;
 	}
@@ -1248,7 +1245,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * 
 	 * @return the Instance's Management Network Device's
-	 *         {@link NetworkDeviceName} {@link Node}.
+	 *         {@link NetworkDeviceName} {@link Node}, or <tt>null</tt> if it
+	 *         doens't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code>.
@@ -1257,9 +1255,6 @@ public abstract class NetworkManagementHelper {
 	 *             valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a 'device' attribute.
 	 */
 	public static Node findManagementNetworkDeviceNameNode(Node instanceNode)
 			throws ResourcesDescriptorException {
@@ -1284,28 +1279,20 @@ public abstract class NetworkManagementHelper {
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device
-	 *         {@link NetworkDeviceName} {@link Node}.
+	 *         {@link NetworkDeviceName} {@link Node}, or <tt>null</tt> if it
+	 *         doens't have one.
 	 * 
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
-	 * @throws ResourcesDescriptorException
-	 *             if the Instance's Management Network Device {@link Node}
-	 *             doesn't have a 'device' attribute.
 	 */
 	public static Node getManagementNetworkDeviceNameNode(Node instanceNode,
 			Node mgmtNode) throws ResourcesDescriptorException {
 		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
 		String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
-		Node n = netNode.getAttributes().getNamedItem(attr);
-		if (n == null) {
-			throw new ResourcesDescriptorException(netNode, Messages.bind(
-					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_ATTRIBUTE,
-					attr));
-		}
-		return n;
+		return netNode.getAttributes().getNamedItem(attr);
 	}
 
 	/**

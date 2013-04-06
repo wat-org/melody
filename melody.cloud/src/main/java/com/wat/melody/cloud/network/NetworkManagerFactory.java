@@ -13,8 +13,7 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 public abstract class NetworkManagerFactory {
 
 	public static NetworkManager createNetworkManager(
-			NetworkManagerFactoryConfigurationCallback confCB, Node instanceNode)
-			throws ResourcesDescriptorException {
+			NetworkManagerFactoryConfigurationCallback confCB, Node instanceNode) {
 		if (confCB == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -24,23 +23,27 @@ public abstract class NetworkManagerFactory {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
-
-		ManagementNetworkMethod mm = NetworkManagementHelper
-				.findManagementNetworkMethod(instanceNode);
-
-		switch (mm) {
-		case SSH:
-			return new SshNetworkManager(
-					new SshManagementNetworkDatasLoader().load(instanceNode),
-					confCB.getSshConfiguration());
-		case WINRM:
-			return new WinRmNetworkManager(
-					new WinRmManagementNetworkDatasLoader().load(instanceNode));
-		default:
-			throw new RuntimeException("Unexpected error while branching "
-					+ "on an unknown management method '" + mm + "'. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.");
+		try {
+			ManagementNetworkMethod mm = NetworkManagementHelper
+					.findManagementNetworkMethod(instanceNode);
+			switch (mm) {
+			case SSH:
+				return new SshNetworkManager(
+						new SshManagementNetworkDatasLoader()
+								.load(instanceNode),
+						confCB.getSshConfiguration());
+			case WINRM:
+				return new WinRmNetworkManager(
+						new WinRmManagementNetworkDatasLoader()
+								.load(instanceNode));
+			default:
+				throw new RuntimeException("Unexpected error while branching "
+						+ "on an unknown management method '" + mm + "'. "
+						+ "Source code has certainly been modified and a "
+						+ "bug have been introduced.");
+			}
+		} catch (ResourcesDescriptorException Ex) {
+			return new NullNetworkManager();
 		}
 	}
 

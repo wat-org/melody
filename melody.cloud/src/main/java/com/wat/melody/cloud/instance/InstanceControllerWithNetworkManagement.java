@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
@@ -223,22 +222,29 @@ public class InstanceControllerWithNetworkManagement extends
 	}
 
 	@Override
-	public void onInstanceIdChanged() throws OperationException {
-		fireInstanceIdChanged();
+	public void onInstanceCreated() throws OperationException,
+			InterruptedException {
+		fireInstanceCreated();
 	}
 
 	@Override
-	public void onInvalidateInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException {
+	public void onInstanceDestroyed() throws OperationException,
+			InterruptedException {
+		fireInstanceDestroyed();
+	}
+
+	@Override
+	public void onInstanceStopped() throws OperationException,
+			InterruptedException {
 		disableNetworkManagement();
-		fireInvalidateInstanceNetworkDevicesDatas();
+		fireInstanceStopped();
 	}
 
 	@Override
-	public void onAssignInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException {
+	public void onInstanceStarted() throws OperationException,
+			InterruptedException {
 		enableNetworkManagement();
-		fireAssignInstanceNetworkDevicesDatas();
+		fireInstanceStarted();
 	}
 
 	/**
@@ -326,14 +332,10 @@ public class InstanceControllerWithNetworkManagement extends
 				getInstanceId()));
 	}
 
-	private NetworkManager getNetworkManager() throws OperationException {
-		try {
-			return NetworkManagerFactory.createNetworkManager(
-					getNetworkManagerFactoryConfigurationCallback(),
-					getRelatedNode());
-		} catch (ResourcesDescriptorException Ex) {
-			throw new OperationException(Ex);
-		}
+	private NetworkManager getNetworkManager() {
+		return NetworkManagerFactory.createNetworkManager(
+				getNetworkManagerFactoryConfigurationCallback(),
+				getRelatedNode());
 	}
 
 }

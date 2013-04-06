@@ -21,6 +21,8 @@ public class Messages extends NLS {
 	public static String StartMsg_RUNNING;
 	public static String StartMsg_STOPPING;
 	public static String StartEx_NO_INSTANCE;
+	public static String StartEx_WAIT_TO_START_TIMEOUT;
+	public static String StartEx_WAIT_TO_RESTART_TIMEOUT;
 	public static String StartEx_SHUTTING_DOWN;
 	public static String StartEx_TERMINATED;
 

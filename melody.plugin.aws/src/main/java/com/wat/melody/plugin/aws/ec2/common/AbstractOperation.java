@@ -201,7 +201,10 @@ abstract public class AbstractOperation implements ITask,
 	 *             if an I/O error occurred while reading/storing the
 	 *             {@link KeyPair} in the local {@link KeyPairRepository}.
 	 */
-	protected synchronized void enableKeyPair(KeyPairRepository keyPairRepo,
+	/*
+	 * TODO : put this in AwsInstanceController
+	 */
+	public synchronized void enableKeyPair(KeyPairRepository keyPairRepo,
 			KeyPairName keyPairName, int iKeySize, String sPassphrase)
 			throws AwsException, IOException {
 		// Create KeyPair in the KeyPair Repository

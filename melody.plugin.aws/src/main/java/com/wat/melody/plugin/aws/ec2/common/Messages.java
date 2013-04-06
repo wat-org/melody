@@ -38,6 +38,11 @@ public class Messages extends NLS {
 	public static String CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE;
 	public static String CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_FAILED;
 	public static String CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_SUCCEED;
+	public static String CommonMsg_AUTHORIZE_FWRULE;
+	public static String CommonMsg_REVOKE_FWRULE;
+	public static String CommonMsg_SKIP_FWRULE;
+	public static String CommonMsg_ATTACH_NOTWORK_DEVICE_NOT_SUPPORTED;
+	public static String CommonMsg_DETACH_NOTWORK_DEVICE_NOT_SUPPORTED;
 
 	public static String MachineEx_MISSING_REGION_ATTR;
 	public static String MachineEx_REGION_ERROR;
@@ -73,7 +78,6 @@ public class Messages extends NLS {
 	public static String StopEx_TIMEOUT;
 	public static String StopEx_GENERIC_FAIL;
 
-	public static String UpdateFireWallMsg_SKIP_FWRULE;
 	public static String UpdateFireWallEx_GENERIC_FAIL;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;

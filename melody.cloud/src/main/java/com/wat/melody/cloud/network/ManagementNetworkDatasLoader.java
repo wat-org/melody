@@ -8,6 +8,11 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class ManagementNetworkDatasLoader {
 
 	protected static Log log = LogFactory

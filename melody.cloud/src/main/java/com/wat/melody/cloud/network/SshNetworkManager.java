@@ -17,6 +17,15 @@ import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.ssh.impl.SshUserDatas;
 
 /**
+ * <p>
+ * This implementation of the {@link NetworkManager} will :
+ * <ul>
+ * <li>On enablement : add the ip/fqdn of the target system in the known_host
+ * file ;</li>
+ * <li>On disablement : remove the ip/fqdn of the target system in the
+ * known_host file ;</li>
+ * </ul>
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -64,9 +73,9 @@ public class SshNetworkManager implements NetworkManager {
 	public void enableNetworkManagement() throws NetworkManagementException,
 			InterruptedException {
 		disableNetworkManagement();
+		SshManagementNetworkDatas datas = getManagementDatas();
 		boolean result = false;
 		try {
-			SshManagementNetworkDatas datas = getManagementDatas();
 			result = addKnownHostsHost(getConfiguration(), datas.getHost(),
 					datas.getPort(), datas.getEnablementTimeout()
 							.getTimeoutInMillis());
@@ -75,9 +84,11 @@ public class SshNetworkManager implements NetworkManager {
 		}
 		if (result == false) {
 			throw new NetworkManagementException(Messages.bind(
-					Messages.NetMgmtEx_SSH_MGMT_ENABLE_TIMEOUT,
+					Messages.SshNetMgrEx_ENABLEMENT_TIMEOUT,
 					ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR));
 		}
+		log.debug(Messages.bind(Messages.SshNetMgrMsg_ENABLEMENT_DONE, datas
+				.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 	public static boolean addKnownHostsHost(ISshSessionConfiguration sc,
@@ -123,8 +134,7 @@ public class SshNetworkManager implements NetworkManager {
 					session.disconnect();
 				}
 			}
-			log.debug(Messages.bind(
-					Messages.NetMgmtMsg_SSH_WAIT_FOR_MGMT_ENABLE,
+			log.debug(Messages.bind(Messages.SshNetMgrMsg_WAIT_FOR_ENABLEMENT,
 					host.getAddress(), port.getValue()));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
@@ -143,8 +153,10 @@ public class SshNetworkManager implements NetworkManager {
 
 	@Override
 	public void disableNetworkManagement() throws NetworkManagementException {
-		getConfiguration().getKnownHosts().remove(
-				getManagementDatas().getHost());
+		SshManagementNetworkDatas datas = getManagementDatas();
+		getConfiguration().getKnownHosts().remove(datas.getHost());
+		log.debug(Messages.bind(Messages.SshNetMgrMsg_DISABLEMENT_DONE, datas
+				.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 }

@@ -955,7 +955,7 @@ public class Common {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a " + Instance.class.getCanonicalName() + ".");
 		}
-		NetworkDeviceNameList netDevs = getNetworkDevices(ec2, i);
+		NetworkDeviceNameList netdevs = getNetworkDevices(ec2, i);
 
 		TerminateInstancesRequest tireq = null;
 		tireq = new TerminateInstancesRequest();
@@ -967,8 +967,8 @@ public class Common {
 			return waitUntilInstanceStatusBecomes(ec2, i.getInstanceId(),
 					InstanceState.TERMINATED, timeout, 0);
 		} finally {
-			for (NetworkDeviceName netDev : netDevs) {
-				deleteSecurityGroup(ec2, getSecurityGroup(ec2, i, netDev));
+			for (NetworkDeviceName netdev : netdevs) {
+				deleteSecurityGroup(ec2, getSecurityGroup(ec2, i, netdev));
 			}
 		}
 	}
@@ -1886,16 +1886,16 @@ public class Common {
 		 * always reply [eth0], because, using Aws Ec2, only 1 network device
 		 * can be allocated.
 		 */
-		NetworkDeviceNameList netDevs = new NetworkDeviceNameList();
+		NetworkDeviceNameList netdevs = new NetworkDeviceNameList();
 		NetworkDeviceName eth0 = null;
 		try {
 			eth0 = NetworkDeviceName.parseString("eth0");
-			netDevs.addNetworkDevice(eth0);
+			netdevs.addNetworkDevice(eth0);
 		} catch (IllegalNetworkDeviceNameException
 				| IllegalNetworkDeviceNameListException Ex) {
 			throw new RuntimeException(Ex);
 		}
-		return netDevs;
+		return netdevs;
 	}
 
 	public static NetworkDeviceDatas getNetworkDeviceDatas(AmazonEC2 ec2,
@@ -1910,19 +1910,27 @@ public class Common {
 	}
 
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
-			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
+			NetworkDeviceNameList toRemove, long detachTimeout)
 			throws InterruptedException {
-		// TODO : log warn
+		for (NetworkDeviceName netdev : toRemove) {
+			log.info(Messages.bind(
+					Messages.CommonMsg_DETACH_NOTWORK_DEVICE_NOT_SUPPORTED,
+					i.getImageId(), netdev));
+		}
 	}
 
 	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
-			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
+			NetworkDeviceNameList toAdd, long attachTimeout)
 			throws InterruptedException {
-		// TODO : log warn
+		for (NetworkDeviceName netdev : toAdd) {
+			log.info(Messages.bind(
+					Messages.CommonMsg_ATTACH_NOTWORK_DEVICE_NOT_SUPPORTED,
+					i.getImageId(), netdev));
+		}
 	}
 
 	private static String getSecurityGroup(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netDev) {
+			NetworkDeviceName netdev) {
 		/*
 		 * always retrieve the security group associated to eth0.
 		 */
@@ -1930,46 +1938,52 @@ public class Common {
 	}
 
 	public static FwRulesDecomposed getFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netDev) {
-		String sgname = getSecurityGroup(ec2, i, netDev);
+			NetworkDeviceName netdev) {
+		String sgname = getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> perms = Common.describeSecurityGroupRules(ec2,
 				sgname);
-		return convertIpPermissions(perms, netDev);
+		return convertIpPermissions(perms, netdev);
 	}
 
 	public static void revokeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netDev, FwRulesDecomposed toRevoke) {
+			NetworkDeviceName netdev, FwRulesDecomposed toRevoke) {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
-		String sgname = getSecurityGroup(ec2, i, netDev);
+		String sgname = getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> toRev = convertFwRules(toRevoke);
 		RevokeSecurityGroupIngressRequest revreq = null;
 		revreq = new RevokeSecurityGroupIngressRequest();
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
-		// TODO : log each authorizeFireWallRules
+		for (FwRuleDecomposed rule : toRevoke) {
+			log.info(Messages.bind(Messages.CommonMsg_REVOKE_FWRULE,
+					new Object[] { i.getImageId(), netdev, rule }));
+		}
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netDev, FwRulesDecomposed toAuthorize) {
+			NetworkDeviceName netdev, FwRulesDecomposed toAuthorize) {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
-		String sgname = getSecurityGroup(ec2, i, netDev);
+		String sgname = getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
 		AuthorizeSecurityGroupIngressRequest authreq = null;
 		authreq = new AuthorizeSecurityGroupIngressRequest();
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
-		// TODO : log each authorizeFireWallRules
+		for (FwRuleDecomposed rule : toAuthorize) {
+			log.info(Messages.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
+					new Object[] { i.getImageId(), netdev, rule }));
+		}
 	}
 
 	private static FwRulesDecomposed convertIpPermissions(
-			List<IpPermission> perms, NetworkDeviceName netDev) {
+			List<IpPermission> perms, NetworkDeviceName netdev) {
 		Interface inter = null;
 		try {
-			inter = Interface.parseString(netDev.getValue());
+			inter = Interface.parseString(netdev.getValue());
 		} catch (IllegalInterfaceException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -1997,13 +2011,13 @@ public class Common {
 		List<IpPermission> perms = new ArrayList<IpPermission>();
 		for (FwRuleDecomposed rule : rules) {
 			if (rule.getDirection().equals(Direction.OUT)) {
-				log.info(Messages.bind(Messages.UpdateFireWallMsg_SKIP_FWRULE,
-						rule, Direction.OUT));
+				log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+						Direction.OUT));
 				continue;
 			}
 			if (rule.getAccess().equals(Access.DENY)) {
-				log.info(Messages.bind(Messages.UpdateFireWallMsg_SKIP_FWRULE,
-						rule, Access.DENY));
+				log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+						Access.DENY));
 				continue;
 			}
 			IpPermission perm = new IpPermission();

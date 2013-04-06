@@ -32,11 +32,6 @@ public class GetManagementNetworkHost implements XPathFunction {
 					+ "argument.");
 		}
 		try {
-			/*
-			 * TODO : this method shouldn't throw an Exception when Management
-			 * Network Device Node of the instance >don't have any 'ip'
-			 * attribute
-			 */
 			if (arg0 instanceof Node) {
 				return NetworkManagementHelper
 						.findManagementNetworkHostNode((Node) arg0);

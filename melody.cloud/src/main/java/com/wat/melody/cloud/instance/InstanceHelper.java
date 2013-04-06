@@ -7,4 +7,8 @@ package com.wat.melody.cloud.instance;
  */
 public class InstanceHelper {
 
+	/*
+	 * TODO create methods to retrieve instace-id, instance-type, keypair,...
+	 */
+
 }

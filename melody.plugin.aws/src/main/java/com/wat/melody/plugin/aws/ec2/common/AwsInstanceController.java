@@ -71,7 +71,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			throws OperationException, InterruptedException {
 		String instanceId = Common.newAwsInstance(getConnection(), type,
 				imageId, site, keyPairName);
-		// Immediatly assgin the instanceId
+		// Immediately assign the instanceId
 		setInstanceId(instanceId);
 		if (!Common.waitUntilInstanceStatusBecomes(getConnection(), instanceId,
 				InstanceState.RUNNING, createTimeout, 10000)) {

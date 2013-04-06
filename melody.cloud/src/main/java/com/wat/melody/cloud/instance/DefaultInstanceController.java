@@ -48,7 +48,6 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	protected String setInstanceId(String instance) throws OperationException {
 		String previous = getInstanceId();
 		_instanceId = instance;
-		fireInstanceIdChanged();
 		return previous;
 	}
 
@@ -70,7 +69,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 					keyPairName, createTimeout);
 			setInstanceId(instanceId);
 		}
-		fireAssignInstanceNetworkDevicesDatas();
+		fireInstanceCreated();
+		fireInstanceStarted();
 	}
 
 	public abstract String createInstance(InstanceType type, String site,
@@ -89,7 +89,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 							getInstanceId(), "DEAD"))));
 		} else {
 			destroyInstance(destroyTimeout);
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
+			fireInstanceDestroyed();
 			setInstanceId(null);
 		}
 	}
@@ -109,11 +110,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 							InstanceState.RUNNING }))));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.RUNNING,
 					startTimeout)) {
-				// TODO : throw timeout
+				throw new OperationException(Messages.bind(
+						Messages.StartEx_WAIT_TO_START_TIMEOUT,
+						getInstanceId(), startTimeout));
 			}
-			fireAssignInstanceNetworkDevicesDatas();
+			fireInstanceStarted();
 		} else if (is == InstanceState.RUNNING) {
-			fireAssignInstanceNetworkDevicesDatas();
+			fireInstanceStarted();
 			log.info(Util.getUserFriendlyStackTrace(new OperationException(
 					Messages.bind(Messages.StartMsg_RUNNING, getInstanceId(),
 							InstanceState.RUNNING))));
@@ -122,26 +125,29 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 					Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
 							getInstanceId(), InstanceState.STOPPING,
 							InstanceState.STOPPED }))));
-			fireInvalidateInstanceNetworkDevicesDatas();
 			if (!waitUntilInstanceStatusBecomes(InstanceState.STOPPED,
 					startTimeout)) {
-				// TODO : throw timeout
+				throw new OperationException(Messages.bind(
+						Messages.StartEx_WAIT_TO_RESTART_TIMEOUT,
+						getInstanceId(), startTimeout));
 			}
+			fireInstanceStopped();
 			startInstance(startTimeout);
-			fireAssignInstanceNetworkDevicesDatas();
+			fireInstanceStarted();
 		} else if (is == InstanceState.SHUTTING_DOWN) {
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
 			throw new OperationException(Messages.bind(
 					Messages.StartEx_SHUTTING_DOWN, getInstanceId(),
 					InstanceState.SHUTTING_DOWN));
 		} else if (is == InstanceState.TERMINATED) {
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
+			fireInstanceDestroyed();
 			throw new OperationException(Messages.bind(
 					Messages.StartEx_TERMINATED, getInstanceId(),
 					InstanceState.TERMINATED));
 		} else {
 			startInstance(startTimeout);
-			fireAssignInstanceNetworkDevicesDatas();
+			fireInstanceStarted();
 		}
 	}
 
@@ -153,12 +159,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StopEx_NO_INSTANCE);
 		} else if (!instanceRuns()) {
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
 			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
 					Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
 							getInstanceId(), InstanceState.STOPPED))));
 		} else {
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
 			stopInstance(stopTimeout);
 		}
 	}
@@ -231,13 +237,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			NetworkDeviceNameList networkDeviceList, long attachTimeout,
 			long detachTimeout) throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
-			fireInvalidateInstanceNetworkDevicesDatas();
+			fireInstanceStopped();
 			log.warn(Util.getUserFriendlyStackTrace(new OperationException(
 					Messages.UpdateNetDevMsg_NO_INSTANCE)));
 		} else {
 			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
 					detachTimeout);
-			fireAssignInstanceNetworkDevicesDatas();
+			fireInstanceStarted();
 		}
 	}
 
@@ -282,15 +288,15 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		NetworkDeviceNameList netdevs = getInstanceNetworkDevices();
 		for (NetworkDeviceName netdev : netdevs) {
 			FwRulesDecomposed current = getInstanceFireWallRules(netdev);
-			FwRulesDecomposed devcurrent = getInstanceFireWallRules(target,
+			FwRulesDecomposed expected = getExpectedFireWallRules(target,
 					netdev);
 			FwRulesDecomposed toAdd = FireWallRulesHelper
-					.computeFireWallRulesToAdd(current, devcurrent);
+					.computeFireWallRulesToAdd(current, expected);
 			FwRulesDecomposed toRemove = FireWallRulesHelper
-					.computeFireWallRulesToRemove(current, devcurrent);
+					.computeFireWallRulesToRemove(current, expected);
 
 			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
-					new Object[] { getInstanceId(), netdev, devcurrent, toAdd,
+					new Object[] { getInstanceId(), netdev, expected, toAdd,
 							toRemove }));
 
 			revokeInstanceFireWallRules(netdev, toRemove);
@@ -298,7 +304,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		}
 	}
 
-	private FwRulesDecomposed getInstanceFireWallRules(
+	private FwRulesDecomposed getExpectedFireWallRules(
 			FwRulesDecomposed target, NetworkDeviceName netDev) {
 		FwRulesDecomposed rules = new FwRulesDecomposed();
 		for (FwRuleDecomposed rule : target) {

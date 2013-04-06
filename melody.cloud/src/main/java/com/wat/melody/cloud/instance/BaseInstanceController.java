@@ -53,23 +53,35 @@ abstract class BaseInstanceController implements InstanceController {
 		getListeners().remove(listener);
 	}
 
-	protected void fireInstanceIdChanged() throws OperationException {
-		for (InstanceControllerListener listener : getListeners()) {
-			listener.onInstanceIdChanged();
-		}
-	}
-
-	protected void fireInvalidateInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException {
-		for (InstanceControllerListener listener : getListeners()) {
-			listener.onInvalidateInstanceNetworkDevicesDatas();
-		}
-	}
-
-	protected void fireAssignInstanceNetworkDevicesDatas() throws OperationException,
+	protected void fireInstanceCreated() throws OperationException,
 			InterruptedException {
 		for (InstanceControllerListener listener : getListeners()) {
-			listener.onAssignInstanceNetworkDevicesDatas();
+			// TODO : consolidate errors and loop next
+			listener.onInstanceCreated();
+		}
+	}
+
+	protected void fireInstanceDestroyed() throws OperationException,
+			InterruptedException {
+		for (InstanceControllerListener listener : getListeners()) {
+			// TODO : consolidate errors and loop next
+			listener.onInstanceDestroyed();
+		}
+	}
+
+	protected void fireInstanceStarted() throws OperationException,
+			InterruptedException {
+		for (InstanceControllerListener listener : getListeners()) {
+			// TODO : consolidate errors and loop next
+			listener.onInstanceStarted();
+		}
+	}
+
+	protected void fireInstanceStopped() throws OperationException,
+			InterruptedException {
+		for (InstanceControllerListener listener : getListeners()) {
+			// TODO : consolidate errors and loop next
+			listener.onInstanceStopped();
 		}
 	}
 

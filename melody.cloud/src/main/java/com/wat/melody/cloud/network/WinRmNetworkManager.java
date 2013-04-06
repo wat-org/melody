@@ -3,6 +3,13 @@ package com.wat.melody.cloud.network;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 
 /**
+ * <p>
+ * This implementation of the {@link NetworkManager} will :
+ * <ul>
+ * <li>On enablement : ?? ;</li>
+ * <li>On disablement : ?? ;</li>
+ * </ul>
+ * </p>
  * 
  * @author Guillaume Cornet
  * 

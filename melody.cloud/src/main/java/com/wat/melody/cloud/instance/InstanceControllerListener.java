@@ -9,12 +9,16 @@ import com.wat.melody.cloud.instance.exception.OperationException;
  */
 public interface InstanceControllerListener {
 
-	public void onInstanceIdChanged() throws OperationException;
+	public void onInstanceCreated() throws OperationException,
+			InterruptedException;
 
-	public void onInvalidateInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException;
+	public void onInstanceDestroyed() throws OperationException,
+			InterruptedException;
 
-	public void onAssignInstanceNetworkDevicesDatas()
-			throws OperationException, InterruptedException;
+	public void onInstanceStopped() throws OperationException,
+			InterruptedException;
+
+	public void onInstanceStarted() throws OperationException,
+			InterruptedException;
 
 }
