@@ -1,13 +1,11 @@
 package com.wat.melody.common.files.exception;
 
-import com.wat.melody.common.ex.MelodyException;
-
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class IllegalTarGzException extends MelodyException {
+public class IllegalTarGzException extends IllegalFileException {
 
 	private static final long serialVersionUID = -1986465413587462515L;
 
