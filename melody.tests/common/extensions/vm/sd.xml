@@ -28,8 +28,9 @@
 					itemName="srv" >
 			<property name="id" value="§[§[srv]§/@instance-id]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<deleteMachine	target="§[srv]§" />
-			<echo message="+ virtual machine '§[id]§' destroyed (IP: §[adm_ip]§)." />
+			<echo message="+ virtual machine '§[id]§' destroyed§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Virtual machines destroyed." />
@@ -58,8 +59,9 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					itemName="srv" >
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<stopMachine	target="§[srv]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped (IP: §[adm_ip]§)." />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Virtual machines stopped." />
@@ -74,7 +76,8 @@
 					itemName="srv" >
 			<resizeMachine	target="§[srv]§" instanceType="m1.small" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized (IP: §[adm_ip]§)." />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Virtual machines resized." />
@@ -87,7 +90,8 @@
 					itemName="srv" >
 			<updateDiskDevices	target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ disk devices updated for virtual machine '§[§[srv]§/@instance-id]§' (IP: §[adm_ip]§)." />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' disk devices updated§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Disk devices updated." />		
@@ -100,7 +104,8 @@
 					itemName="srv" >
 			<updateNetworkDevices	target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ Network devices updated for virtual machine '§[§[srv]§/@instance-id]§' (IP: §[adm_ip]§)." />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' network devices updated§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Network devices updated." />		
@@ -113,7 +118,8 @@
 					itemName="srv" >
 			<updateFireWall	target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ FireWall rules updated for virtual machine '§[§[srv]§/@instance-id]§' (IP: §[adm_ip]§)." />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' fireWall rules updated§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- FireWall rules updated." />		
