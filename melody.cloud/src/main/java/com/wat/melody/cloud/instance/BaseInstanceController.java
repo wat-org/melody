@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.common.ex.MelodyConsolidatedException;
 
 /**
  * 
@@ -55,33 +56,61 @@ abstract class BaseInstanceController implements InstanceController {
 
 	protected void fireInstanceCreated() throws OperationException,
 			InterruptedException {
+		MelodyConsolidatedException cex = new MelodyConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
-			// TODO : consolidate errors and loop next
-			listener.onInstanceCreated();
+			try {
+				listener.onInstanceCreated();
+			} catch (OperationException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw new OperationException(cex);
 		}
 	}
 
 	protected void fireInstanceDestroyed() throws OperationException,
 			InterruptedException {
+		MelodyConsolidatedException cex = new MelodyConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
-			// TODO : consolidate errors and loop next
-			listener.onInstanceDestroyed();
+			try {
+				listener.onInstanceDestroyed();
+			} catch (OperationException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw new OperationException(cex);
 		}
 	}
 
 	protected void fireInstanceStarted() throws OperationException,
 			InterruptedException {
+		MelodyConsolidatedException cex = new MelodyConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
-			// TODO : consolidate errors and loop next
-			listener.onInstanceStarted();
+			try {
+				listener.onInstanceStarted();
+			} catch (OperationException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw new OperationException(cex);
 		}
 	}
 
 	protected void fireInstanceStopped() throws OperationException,
 			InterruptedException {
+		MelodyConsolidatedException cex = new MelodyConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
-			// TODO : consolidate errors and loop next
-			listener.onInstanceStopped();
+			try {
+				listener.onInstanceStopped();
+			} catch (OperationException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw new OperationException(cex);
 		}
 	}
 

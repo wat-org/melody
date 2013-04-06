@@ -2,7 +2,6 @@ package com.wat.melody.core.nativeplugin.call;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.wat.melody.api.IProcessorManager;
@@ -57,8 +56,7 @@ public class Call extends Ref implements ITask {
 		setCallRefs(new ArrayList<Ref>());
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setExceptionsSet(new MelodyConsolidatedException(
-				new LinkedHashSet<Throwable>()));
+		setExceptionsSet(new MelodyConsolidatedException());
 	}
 
 	private void initContext() {

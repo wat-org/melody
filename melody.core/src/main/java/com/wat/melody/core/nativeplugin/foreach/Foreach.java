@@ -1,7 +1,6 @@
 package com.wat.melody.core.nativeplugin.foreach;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -78,8 +77,7 @@ public class Foreach implements ITask, ITaskContainer {
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
-		setExceptionsSet(new MelodyConsolidatedException(
-				new LinkedHashSet<Throwable>()));
+		setExceptionsSet(new MelodyConsolidatedException());
 	}
 
 	private void initContext() {

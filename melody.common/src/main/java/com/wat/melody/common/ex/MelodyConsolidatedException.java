@@ -1,6 +1,7 @@
 package com.wat.melody.common.ex;
 
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -13,6 +14,11 @@ public class MelodyConsolidatedException extends MelodyException {
 	private static final long serialVersionUID = -8976543243258798614L;
 
 	private Set<Throwable> _causes;
+
+	public MelodyConsolidatedException() {
+		super((String) null);
+		setCauses(new LinkedHashSet<Throwable>());
+	}
 
 	public MelodyConsolidatedException(Set<Throwable> causes) {
 		super((String) null);
@@ -36,6 +42,10 @@ public class MelodyConsolidatedException extends MelodyException {
 		Set<Throwable> previous = getCauses();
 		_causes = causes;
 		return previous;
+	}
+
+	public int countCauses() {
+		return getCauses().size();
 	}
 
 	public void addCause(Throwable ex) {

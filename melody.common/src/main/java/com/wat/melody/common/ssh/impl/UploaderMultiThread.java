@@ -1,7 +1,6 @@
 package com.wat.melody.common.ssh.impl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -50,8 +49,7 @@ class UploaderMultiThread {
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<UploaderThread>());
-		setExceptionsSet(new MelodyConsolidatedException(
-				new LinkedHashSet<Throwable>()));
+		setExceptionsSet(new MelodyConsolidatedException());
 	}
 
 	protected void upload() throws UploaderException, InterruptedException {
