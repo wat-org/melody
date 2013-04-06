@@ -322,6 +322,9 @@ public class Call extends Ref implements ITask {
 	 * @return an exception which message represents all errors raised during
 	 *         this object processing.
 	 */
+	/*
+	 * TODO : create a CallConsolidatedException, which will contains this logic
+	 */
 	private CallException buildCallExceptionTrace() {
 		if (getExceptionsList().size() == 0) {
 			return null;

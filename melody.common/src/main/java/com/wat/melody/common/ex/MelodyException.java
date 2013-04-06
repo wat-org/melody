@@ -7,6 +7,9 @@ package com.wat.melody.common.ex;
  */
 public class MelodyException extends Exception {
 
+	/*
+	 * TODO : change it to an interface
+	 */
 	private static final long serialVersionUID = -1184066155132415814L;
 
 	public MelodyException() {

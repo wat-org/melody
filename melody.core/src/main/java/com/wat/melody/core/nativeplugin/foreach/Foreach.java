@@ -315,6 +315,10 @@ public class Foreach implements ITask, ITaskContainer {
 	 * @return an an exception which message represents all errors raised during
 	 *         this object processing.
 	 */
+	/*
+	 * TODO : create a ForeachConsolidatedException, which will contains this
+	 * logic
+	 */
 	private ForeachException buildForeachTrace() {
 		if (getExceptionsList().size() == 0) {
 			return null;
