@@ -25,7 +25,7 @@ public class Common {
 	/**
 	 * The 'keyName' XML attribute of the LibVirt Instance Node
 	 */
-	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
+	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
 	/**
 	 * The 'passphrase' XML attribute of the LibVirt Instance Node

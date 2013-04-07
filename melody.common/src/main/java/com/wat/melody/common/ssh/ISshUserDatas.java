@@ -1,7 +1,7 @@
 package com.wat.melody.common.ssh;
 
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 
 /**
  * 
@@ -25,14 +25,14 @@ public interface ISshUserDatas {
 	 */
 	public String setPassword(String sPassword);
 
-	public KeyPairRepository getKeyPairRepository();
+	public KeyPairRepositoryPath getKeyPairRepositoryPath();
 
 	/**
 	 * Can be null, when the connection to remote system should be done without
 	 * any keypair.
 	 */
-	public KeyPairRepository setKeyPairRepository(
-			KeyPairRepository keyPairRepository);
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath keyPairRepositoryPath);
 
 	public KeyPairName getKeyPairName();
 

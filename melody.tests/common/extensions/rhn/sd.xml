@@ -11,7 +11,7 @@
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
 
 			<property name="hwinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-hardware-infos') ]§" />
 			<property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
@@ -22,7 +22,7 @@
 			<property name="rhnsd" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/start-rhnsd') ]§" />
 			<property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 			
-			<ssh description="[rhn_reg:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+			<ssh description="[rhn_reg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
 				<exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
 			</ssh>
 
@@ -30,7 +30,7 @@
 						itemName="channel" >
 				<property name="channel_name" value="§[§[channel]§/@name]§" />
 					
-				<ssh description="[rhn_channel:§[channel_name]§:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+				<ssh description="[rhn_channel:§[channel_name]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
 					<exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p §[RHN_PASSWORD]§" />
 				</ssh>
 				<echo message="+ server '§[§[srv]§/@instance-id]§' additionnally subscribed to §[channel_name]§." />
@@ -52,9 +52,9 @@
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					itemName="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keyPairName') ]§" />
+			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
 			
-			<ssh description="[rhn_unreg:§[IP]§]" host="§[IP]§" login="root" keyPairName="§[kp]§" >
+			<ssh description="[rhn_unreg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
 				<exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
 				<declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
 				<exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot;" />

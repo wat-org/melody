@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.instance;
 
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 
 /**
  * 
@@ -10,26 +10,26 @@ import com.wat.melody.common.keypair.KeyPairRepository;
  */
 public class InstanceDatas {
 
-	private String msRegion;
-	private InstanceType msInstanceType;
-	private String msImageId;
-	private KeyPairRepository moKeyPairRepository;
-	private KeyPairName msKeyPairName;
-	private String msPassphrase;
-	private String msSite;
-	private Long mlCreateTimeout;
-	private Long mlDeleteTimeout;
-	private Long mlStartTimeout;
-	private Long mlStopTimeout;
+	private String _region;
+	private InstanceType _instanceType;
+	private String _imageId;
+	private KeyPairRepositoryPath _keyPairRepositoryPath;
+	private KeyPairName _keyPairName;
+	private String _passphrase;
+	private String _site;
+	private Long _createTimeout;
+	private Long _deleteTimeout;
+	private Long _startTimeout;
+	private Long _stopTimeout;
 
 	public InstanceDatas(String region, InstanceType type, String imageId,
-			KeyPairRepository kpr, KeyPairName kpn, String passphrase,
+			KeyPairRepositoryPath kprp, KeyPairName kpn, String passphrase,
 			String site, Long createTimeout, Long deleteTimeout,
 			Long startTimeout, Long stopTimeout) {
 		setRegion(region);
 		setInstanceType(type);
 		setImageId(imageId);
-		setKeyPairRepository(kpr);
+		setKeyPairRepositoryPath(kprp);
 		setKeyPairName(kpn);
 		setPassphrase(passphrase);
 		setSite(site);
@@ -40,113 +40,113 @@ public class InstanceDatas {
 	}
 
 	public String getRegion() {
-		return msRegion;
+		return _region;
 	}
 
 	private String setRegion(String region) {
 		String previous = getRegion();
-		msRegion = region;
+		_region = region;
 		return previous;
 	}
 
 	public InstanceType getInstanceType() {
-		return msInstanceType;
+		return _instanceType;
 	}
 
 	private InstanceType setInstanceType(InstanceType instanceType) {
 		InstanceType previous = getInstanceType();
-		msInstanceType = instanceType;
+		_instanceType = instanceType;
 		return previous;
 	}
 
 	public String getImageId() {
-		return msImageId;
+		return _imageId;
 	}
 
 	private String setImageId(String imageId) {
 		String previous = getImageId();
-		msImageId = imageId;
+		_imageId = imageId;
 		return previous;
 	}
 
-	public KeyPairRepository getKeyPairRepository() {
-		return moKeyPairRepository;
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
+		return _keyPairRepositoryPath;
 	}
 
-	private KeyPairRepository setKeyPairRepository(
-			KeyPairRepository keyPairRepository) {
-		KeyPairRepository previous = getKeyPairRepository();
-		moKeyPairRepository = keyPairRepository;
+	private KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath keyPairRepository) {
+		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
+		_keyPairRepositoryPath = keyPairRepository;
 		return previous;
 	}
 
 	public KeyPairName getKeyPairName() {
-		return msKeyPairName;
+		return _keyPairName;
 	}
 
 	private KeyPairName setKeyPairName(KeyPairName keyPairName) {
 		KeyPairName previous = getKeyPairName();
-		msKeyPairName = keyPairName;
+		_keyPairName = keyPairName;
 		return previous;
 	}
 
 	public String getPassphrase() {
-		return msPassphrase;
+		return _passphrase;
 	}
 
 	private String setPassphrase(String passphrase) {
 		String previous = getPassphrase();
-		msPassphrase = passphrase;
+		_passphrase = passphrase;
 		return previous;
 	}
 
 	public String getSite() {
-		return msSite;
+		return _site;
 	}
 
 	private String setSite(String site) {
 		String previous = getSite();
-		msSite = site;
+		_site = site;
 		return previous;
 	}
 
 	public Long getCreateTimeout() {
-		return mlCreateTimeout;
+		return _createTimeout;
 	}
 
 	private Long setCreateTimeout(Long timeout) {
 		Long previous = getCreateTimeout();
-		mlCreateTimeout = timeout;
+		_createTimeout = timeout;
 		return previous;
 	}
 
 	public Long getDeleteTimeout() {
-		return mlDeleteTimeout;
+		return _deleteTimeout;
 	}
 
 	private Long setDeleteTimeout(Long timeout) {
 		Long previous = getDeleteTimeout();
-		mlDeleteTimeout = timeout;
+		_deleteTimeout = timeout;
 		return previous;
 	}
 
 	public Long getStartTimeout() {
-		return mlStartTimeout;
+		return _startTimeout;
 	}
 
 	private Long setStartTimeout(Long timeout) {
 		Long previous = getStartTimeout();
-		mlStartTimeout = timeout;
+		_startTimeout = timeout;
 		return previous;
 	}
 
 	public Long getStopTimeout() {
-		return mlStopTimeout;
+		return _stopTimeout;
 	}
 
 	private Long setStopTimeout(Long timeout) {
 		Long previous = getStopTimeout();
-		mlStopTimeout = timeout;
+		_stopTimeout = timeout;
 		return previous;
 	}
 

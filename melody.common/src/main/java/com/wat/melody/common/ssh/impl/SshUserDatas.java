@@ -1,9 +1,8 @@
 package com.wat.melody.common.ssh.impl;
 
-import java.io.File;
-
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.ssh.ISshUserDatas;
 
 /**
@@ -15,7 +14,7 @@ public class SshUserDatas implements ISshUserDatas {
 
 	private String msLogin;
 	private String msPassword;
-	private KeyPairRepository moKeyPairRepository;
+	private KeyPairRepositoryPath moKeyPairRepository;
 	private KeyPairName moKeyPairName;
 
 	@Override
@@ -27,11 +26,12 @@ public class SshUserDatas implements ISshUserDatas {
 						: "") + " }";
 	}
 
-	private File getKeyPairPath() {
-		if (getKeyPairName() == null || getKeyPairRepository() == null) {
+	private String getKeyPairPath() {
+		if (getKeyPairName() == null || getKeyPairRepositoryPath() == null) {
 			return null;
 		}
-		return getKeyPairRepository().getPrivateKeyFile(getKeyPairName());
+		return KeyPairRepository.getKeyPairRepository(getKeyPairRepositoryPath())
+				.getPrivateKeyFile(getKeyPairName()).getPath();
 	}
 
 	@Override
@@ -67,14 +67,14 @@ public class SshUserDatas implements ISshUserDatas {
 	}
 
 	@Override
-	public KeyPairRepository getKeyPairRepository() {
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
 		return moKeyPairRepository;
 	}
 
 	@Override
-	public KeyPairRepository setKeyPairRepository(
-			KeyPairRepository keyPairRepository) {
-		KeyPairRepository previous = getKeyPairRepository();
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath keyPairRepository) {
+		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
 	}

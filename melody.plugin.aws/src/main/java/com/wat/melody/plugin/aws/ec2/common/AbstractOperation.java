@@ -25,6 +25,7 @@ import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
@@ -178,7 +179,7 @@ abstract public class AbstractOperation implements ITask,
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param keyPairRepo
+	 * @param kprp
 	 *            is the {@link KeyPairRepository}.
 	 * @param keyPairName
 	 *            is the name of the {@link KeyPair} to enable.
@@ -204,15 +205,16 @@ abstract public class AbstractOperation implements ITask,
 	/*
 	 * TODO : put this in AwsInstanceController
 	 */
-	public synchronized void enableKeyPair(KeyPairRepository keyPairRepo,
+	public synchronized void enableKeyPair(KeyPairRepositoryPath kprp,
 			KeyPairName keyPairName, int iKeySize, String sPassphrase)
 			throws AwsException, IOException {
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		// Create KeyPair in the KeyPair Repository
 		KeyPair kp = null;
-		if (!keyPairRepo.containsKeyPair(keyPairName)) {
-			kp = keyPairRepo.createKeyPair(keyPairName, iKeySize, sPassphrase);
+		if (!kpr.containsKeyPair(keyPairName)) {
+			kp = kpr.createKeyPair(keyPairName, iKeySize, sPassphrase);
 		} else {
-			kp = keyPairRepo.getKeyPair(keyPairName, sPassphrase);
+			kp = kpr.getKeyPair(keyPairName, sPassphrase);
 		}
 
 		// Create KeyPair in Aws

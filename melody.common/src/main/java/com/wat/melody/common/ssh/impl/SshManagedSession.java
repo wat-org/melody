@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
@@ -212,8 +213,9 @@ public class SshManagedSession implements ISshSession {
 
 	private String getKey() throws SshSessionException {
 		ISshUserDatas usrDatas = getUserDatas();
-		KeyPairRepository kpr = usrDatas.getKeyPairRepository();
+		KeyPairRepositoryPath kprp = usrDatas.getKeyPairRepositoryPath();
 		KeyPairName kpn = usrDatas.getKeyPairName();
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		String kpp = usrDatas.getPassword();
 		String key = null;
 		try {

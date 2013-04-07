@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.impl.SshManagedSession;
@@ -96,8 +97,9 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		}
 
 		// Verify that the Management User Credentials are defined
-		if (getManagementKeyPairRepository() == null) {
-			setManagementKeyPairRepository(getPluginConf().getKeyPairRepo());
+		if (getManagementKeyPairRepositoryPath() == null) {
+			setManagementKeyPairRepositoryPath(getPluginConf()
+					.getKeyPairRepositoryPath());
 		}
 		if (getManagementKeyPairName() == null) {
 			setManagementKeyPairName(getPluginConf().getManagementKeyPairName());
@@ -120,7 +122,8 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		if (getManagementKeyPairName() == null) {
 			return;
 		}
-		KeyPairRepository kpr = getManagementKeyPairRepository();
+		KeyPairRepositoryPath kprp = getManagementKeyPairRepositoryPath();
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		if (!kpr.containsKeyPair(getManagementKeyPairName())) {
 			try {
 				kpr.createKeyPair(getManagementKeyPairName(), getPluginConf()
@@ -166,14 +169,15 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		return getMgmtUserDatas().setPassword(mgmtPass);
 	}
 
-	public KeyPairRepository getManagementKeyPairRepository() {
-		return getMgmtUserDatas().getKeyPairRepository();
+	public KeyPairRepositoryPath getManagementKeyPairRepositoryPath() {
+		return getMgmtUserDatas().getKeyPairRepositoryPath();
 	}
 
 	@Attribute(name = MGMT_MASTER_REPO_ATTR)
-	public KeyPairRepository setManagementKeyPairRepository(
-			KeyPairRepository mgmtKeyPairRepository) {
-		return getMgmtUserDatas().setKeyPairRepository(mgmtKeyPairRepository);
+	public KeyPairRepositoryPath setManagementKeyPairRepositoryPath(
+			KeyPairRepositoryPath mgmtKeyPairRepository) {
+		return getMgmtUserDatas().setKeyPairRepositoryPath(
+				mgmtKeyPairRepository);
 	}
 
 	public KeyPairName getManagementKeyPairName() {

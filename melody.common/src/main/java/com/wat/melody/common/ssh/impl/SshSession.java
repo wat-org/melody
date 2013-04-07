@@ -14,6 +14,7 @@ import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
@@ -169,17 +170,20 @@ public class SshSession implements ISshSession {
 		return getUserDatas().getPassword();
 	}
 
-	protected KeyPairRepository getKeyPairRepository() {
-		return getUserDatas().getKeyPairRepository();
+	protected KeyPairRepositoryPath getKeyPairRepository() {
+		return getUserDatas().getKeyPairRepositoryPath();
 	}
 
 	protected KeyPairName getKeyPairName() {
 		return getUserDatas().getKeyPairName();
 	}
 
-	protected String getKeyPairPath() {
-		return getKeyPairRepository().getPrivateKeyFile(getKeyPairName())
-				.toString();
+	private String getKeyPairPath() {
+		if (getKeyPairName() == null || getKeyPairRepository() == null) {
+			return null;
+		}
+		return KeyPairRepository.getKeyPairRepository(getKeyPairRepository())
+				.getPrivateKeyFile(getKeyPairName()).getPath();
 	}
 
 	private void applyDatas() {
@@ -198,7 +202,7 @@ public class SshSession implements ISshSession {
 		_session.setUserInfo(new JSchUserInfoAdapter(getUserDatas(),
 				getConnectionDatas()));
 
-		if (getKeyPairName() == null) {
+		if (getKeyPairName() == null || getKeyPairRepository() == null) {
 			return;
 		}
 		LocalIdentityRepository ir = new LocalIdentityRepository(JSCH);

@@ -10,16 +10,22 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
-import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
 
 /**
  * <p>
- * A {@link KeyPairRepository} is a directory where Ssh KeyPairs are stored.
+ * A {@link KeyPairRepository} helps to create, store and destroy
+ * {@link KeyPair}.
+ * </p>
+ * 
+ * <p>
+ * A {@link KeyPairRepository} is a directory where the private key of Ssh
+ * KeyPairs are stored, with encryption if specified.
  * </p>
  * 
  * <p>
@@ -30,56 +36,46 @@ import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
  * PrivateKey using this object's methods.
  * </p>
  * 
+ * <p>
+ * Manipulation on different {@link KeyPairRepository} objects which point to
+ * the same directory can be synchronized using the method
+ * {@link KeyPairRepository#lockKeyPairRepository(KeyPairRepository)}.
+ * </p>
+ * 
  * @author Guillaume Cornet
  * 
  */
 public class KeyPairRepository implements IFileBased {
 
-	private File _f;
+	private static Map<KeyPairRepositoryPath, KeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, KeyPairRepository>();
 
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(String sPath) throws KeyPairRepositoryException {
-		_f = new File(sPath);
-		try {
-			FS.validateDirExists(_f.getPath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new KeyPairRepositoryException(Messages.bind(
-					Messages.KeyPairRepoEx_INVALID_REPO_PATH, _f.getPath()), Ex);
+	public static KeyPairRepository getKeyPairRepository(
+			KeyPairRepositoryPath keyPairRepositoryPath) {
+		if (keyPairRepositoryPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ KeyPairRepositoryPath.class.getCanonicalName() + ".");
 		}
+		if (REGISTERED_REPOS.containsKey(keyPairRepositoryPath)) {
+			return REGISTERED_REPOS.get(keyPairRepositoryPath);
+		}
+		KeyPairRepository kpr = new KeyPairRepository(keyPairRepositoryPath);
+		REGISTERED_REPOS.put(keyPairRepositoryPath, kpr);
+		return kpr;
 	}
 
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(File path) throws KeyPairRepositoryException {
-		this(path.toString());
+	public static String getPublicKeyInOpenSshFormat(KeyPair kp, String sComment) {
+		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
 	}
 
-	/**
-	 * 
-	 * @param path
-	 * 
-	 * @throws KeyPairRepositoryException
-	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
-	 */
-	public KeyPairRepository(Path path) throws KeyPairRepositoryException {
-		this(path.toString());
+	public static String getFingerprint(KeyPair kp) {
+		return KeyPairHelper.generateFingerprint(kp);
+	}
+
+	private KeyPairRepositoryPath _f;
+
+	private KeyPairRepository(KeyPairRepositoryPath keyPairRepositoryPath) {
+		_f = keyPairRepositoryPath;
 	}
 
 	/**
@@ -92,7 +88,7 @@ public class KeyPairRepository implements IFileBased {
 	 * @return <code>true</code> if the given KeyPair exists in the Repository,
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean containsKeyPair(KeyPairName keyPairName) {
+	public synchronized boolean containsKeyPair(KeyPairName keyPairName) {
 		try {
 			FS.validateFileExists(getPrivateKeyFile(keyPairName).getPath());
 		} catch (IllegalFileException Ex) {
@@ -103,7 +99,7 @@ public class KeyPairRepository implements IFileBased {
 
 	/**
 	 * <p>
-	 * Create a RSA KeyPair in this Repository.
+	 * Create a RSA {@link KeyPair}, and store it in this Repository.
 	 * </p>
 	 * 
 	 * @param keyPairName
@@ -113,29 +109,31 @@ public class KeyPairRepository implements IFileBased {
 	 * @param sPassphrase
 	 *            is the passphrase of the key to create.
 	 * 
-	 * @return the created
+	 * @return a new RSA {@link KeyPair}, which is now stored in this
+	 *         Repository.
 	 * 
 	 * @throws IOException
-	 *             if an IO error occurred while creating the KeyPair in the
-	 *             repository.
+	 *             if an IO error occurred while storing the {@link KeyPair} in
+	 *             this Repository.
 	 * @throws IllegalArgumentException
-	 *             if a KeyPair with the same name already exists in this
-	 *             KeyPairRepository.
+	 *             if a {@link KeyPair} with the same Name already exists in
+	 *             this Repository.
 	 */
-	public KeyPair createKeyPair(KeyPairName keyPairName, int size,
-			String sPassphrase) throws IOException {
+	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
+			int size, String sPassphrase) throws IOException {
 		if (containsKeyPair(keyPairName)) {
-			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
-					+ "already exists. Cannot create this KeyPair into the "
-					+ "KeyPair Repository '" + _f.getPath() + "'.");
+			throw new IllegalArgumentException(keyPairName + ": KeyPair "
+					+ "Name already exists. "
+					+ "Cannot create this KeyPair into the KeyPair "
+					+ "Repository '" + _f + "'.");
 		}
 		KeyPairGenerator keyGen = null;
 		try {
 			keyGen = KeyPairGenerator.getInstance("RSA");
 		} catch (NoSuchAlgorithmException Ex) {
 			throw new RuntimeException("RSA algorithm doesn't exists ! "
-					+ "Source code have been modified and a bug introduced.",
-					Ex);
+					+ "Source code have been modified and a bug "
+					+ "introduced.", Ex);
 		}
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
@@ -145,10 +143,35 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
+	 * <p>
+	 * Destroy a RSA KeyPair in this Repository.
+	 * </p>
 	 * 
 	 * @param keyPairName
+	 *            is the name of the key to create.
+	 */
+	public synchronized void destroyKeyPair(KeyPairName keyPairName) {
+		if (containsKeyPair(keyPairName)) {
+			getPrivateKeyFile(keyPairName).delete();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Returns the private key of the {@link KeyPair} which match the given Name
+	 * in OpenSshFormat.
+	 * </p>
 	 * 
-	 * @return
+	 * <p>
+	 * If the given key was stored with encryption, the returned data will not
+	 * be decrypted.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            is Name of the desired {@link KeyPair}.
+	 * 
+	 * @return the private key of the KeyPair which match the given Name in
+	 *         OpenSshFormat.
 	 * 
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
@@ -164,7 +187,7 @@ public class KeyPairRepository implements IFileBased {
 		} catch (FileNotFoundException Ex) {
 			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
 					+ "doesn't exists. Cannot retreive this KeyPair into the "
-					+ "KeyPair Repository '" + _f.getPath() + "'.");
+					+ "KeyPair Repository '" + _f + "'.");
 		}
 	}
 
@@ -174,7 +197,7 @@ public class KeyPairRepository implements IFileBased {
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ ".");
 		}
-		return Paths.get(_f.getPath().toString(), keyPairName.getValue());
+		return Paths.get(_f.getPath(), keyPairName.getValue());
 	}
 
 	public File getPrivateKeyFile(KeyPairName keyPairName) {
@@ -186,6 +209,30 @@ public class KeyPairRepository implements IFileBased {
 		return new File(_f.getPath(), keyPairName.getValue());
 	}
 
+	/**
+	 * <p>
+	 * Returns the {@link KeyPair} which match the given Name.
+	 * </p>
+	 * 
+	 * <p>
+	 * If the given key was stored with encryption, the returned {@link KeyPair}
+	 * will be decrypted.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            is Name of the desired {@link KeyPair}.
+	 * @param passphrase
+	 *            is the password that was used to encrypt the key.
+	 * 
+	 * @return the {@link KeyPair} which match the given Name.
+	 * 
+	 * @throws IOException
+	 *             if an IO error occurred while reading the given KeyPair's
+	 *             PrivateKey file.
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair's doesn't exists in this
+	 *             KeyPairRepository.
+	 */
 	public KeyPair getKeyPair(KeyPairName keyPairName, String passphrase)
 			throws IOException {
 		try {
@@ -193,29 +240,68 @@ public class KeyPairRepository implements IFileBased {
 					getPrivateKeyPath(keyPairName), passphrase);
 		} catch (FileNotFoundException Ex) {
 			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
-					+ "doesn't exists. Cannot retreive this KeyPair into the "
-					+ "KeyPair Repository '" + _f.getPath() + "'.");
+					+ "doesn't exists. Cannot retreive such KeyPair into the "
+					+ "KeyPair Repository '" + _f + "'.");
 		}
 	}
 
+	/**
+	 * <p>
+	 * Returns the public key of the {@link KeyPair} which match the given Name,
+	 * in OpenSshFormat.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            is Name of the desired {@link KeyPair}.
+	 * @param passphrase
+	 *            is the password that was used to encrypt the key.
+	 * 
+	 * @return the public key of the {@link KeyPair} which match the given Name,
+	 *         in OpenSshFormat.
+	 * 
+	 * @throws IOException
+	 *             if an IO error occurred while reading the given KeyPair's
+	 *             PrivateKey file.
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair's doesn't exists in this
+	 *             KeyPairRepository.
+	 */
 	public String getPublicKeyInOpenSshFormat(KeyPairName keyPairName,
 			String passphrase, String sComment) throws IOException {
 		KeyPair kp = getKeyPair(keyPairName, passphrase);
-		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
+		return getPublicKeyInOpenSshFormat(kp, sComment);
 	}
 
+	/**
+	 * <p>
+	 * Returns the fingerprint of the {@link KeyPair} which match the given
+	 * Name.
+	 * </p>
+	 * 
+	 * <p>
+	 * The fingerprint is generated from raw keypair datas, which is not equal
+	 * to a fingerprint generated from OpenSshFormat datas.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            is Name of the desired {@link KeyPair}.
+	 * @param passphrase
+	 *            is the password that was used to encrypt the key.
+	 * 
+	 * @return the public key of the {@link KeyPair} which match the given Name,
+	 *         in OpenSshFormat.
+	 * 
+	 * @throws IOException
+	 *             if an IO error occurred while reading the given KeyPair's
+	 *             PrivateKey file.
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair's doesn't exists in this
+	 *             KeyPairRepository.
+	 */
 	public String getFingerprint(KeyPairName keyPairName, String passphrase)
 			throws IOException {
 		KeyPair kp = getKeyPair(keyPairName, passphrase);
-		return KeyPairHelper.generateFingerprint(kp);
-	}
-
-	public static String getPublicKeyInOpenSshFormat(KeyPair kp, String sComment) {
-		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
-	}
-
-	public static String getFingerprint(KeyPair kp) {
-		return KeyPairHelper.generateFingerprint(kp);
+		return getFingerprint(kp);
 	}
 
 }

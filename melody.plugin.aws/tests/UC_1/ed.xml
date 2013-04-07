@@ -7,7 +7,7 @@
 
 	<models>
 	
-		<model imageId="ami-3c5f5748" instanceType="t1.micro" keyPairName="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
+		<model imageId="ami-3c5f5748" instanceType="t1.micro" keypair-name="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
 			<network-management method="ssh" port="22" mgmtNetworkDeviceAttribute="nat-ip"/>
 			<fwrules>
 				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="80-443"/>
@@ -21,7 +21,7 @@
 			</devices>
 		</model>
 	
-		<model imageId="ami-3c5f5748" instanceType="t1.micro" keyPairName="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
+		<model imageId="ami-3c5f5748" instanceType="t1.micro" keypair-name="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
 			<network-management method="ssh" port="22" mgmtNetworkDeviceAttribute="nat-ip"/>
 			<fwrules>
 				<fwrule herit="./environment/global-fwrules/fwrule[@name='SSH']"/>

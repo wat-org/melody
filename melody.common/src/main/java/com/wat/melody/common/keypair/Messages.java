@@ -9,7 +9,8 @@ public class Messages extends NLS {
 	public static String KeyPairNameEx_EMPTY;
 	public static String KeyPairNameEx_INVALID;
 
-	public static String KeyPairRepoEx_INVALID_REPO_PATH;
+	public static String KeyPairRepoPathEx_INVALID_REPO_PATH;
+	public static String KeyPairRepoPathEx_FAILED_TO_CREATE_REPO_PATH;
 
 	static {
 		// initialize resource bundle

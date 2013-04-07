@@ -11,7 +11,7 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
@@ -49,7 +49,7 @@ public class NewMachine extends AbstractOperation {
 	/**
 	 * The 'keyPairName' XML attribute
 	 */
-	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
+	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
 	/**
 	 * The 'passphrase' XML attribute
@@ -59,11 +59,11 @@ public class NewMachine extends AbstractOperation {
 	/**
 	 * The 'keyRepository' XML attribute
 	 */
-	public static final String KEYPAIR_REPO_ATTR = "keyPairRepository";
+	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
 	private InstanceType msInstanceType;
 	private String msImageId;
-	private KeyPairRepository moKeyPairRepository;
+	private KeyPairRepositoryPath moKeyPairRepository;
 	private KeyPairName moKeyPairName;
 	private String msPassphrase;
 	private String msAvailabilityZone;
@@ -173,8 +173,8 @@ public class NewMachine extends AbstractOperation {
 		}
 
 		// Get the default KeyPair Repository, if not provided.
-		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getSshConfiguration().getKeyPairRepo());
+		if (getKeyPairRepositoryPath() == null) {
+			setKeyPairRepositoryPath(getSshConfiguration().getKeyPairRepositoryPath());
 		}
 		// Validate everything is provided.
 		if (getInstanceType() == null) {
@@ -218,7 +218,7 @@ public class NewMachine extends AbstractOperation {
 		}
 		// Enable the given KeyPair.
 		try {
-			enableKeyPair(getKeyPairRepository(), getKeyPairName(),
+			enableKeyPair(getKeyPairRepositoryPath(), getKeyPairName(),
 					getSshConfiguration().getKeyPairSize(), getPassphrase());
 		} catch (IOException Ex) {
 			throw new AwsException(Ex);
@@ -326,18 +326,18 @@ public class NewMachine extends AbstractOperation {
 		return previous;
 	}
 
-	public KeyPairRepository getKeyPairRepository() {
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
 		return moKeyPairRepository;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public KeyPairRepository setKeyPairRepository(
-			KeyPairRepository keyPairRepository) {
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath keyPairRepository) {
 		if (keyPairRepository == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid File (a Key Repository Path).");
 		}
-		KeyPairRepository previous = getKeyPairRepository();
+		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
 		moKeyPairRepository = keyPairRepository;
 		return previous;
 	}

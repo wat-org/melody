@@ -5,7 +5,7 @@
 	</global-fwrules>
 	
 	<models>
-		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keyPairName="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
 			<network-management enable="true" method="ssh" port="22"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>

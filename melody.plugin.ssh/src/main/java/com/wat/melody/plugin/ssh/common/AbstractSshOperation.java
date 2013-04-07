@@ -8,6 +8,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -64,14 +65,14 @@ public abstract class AbstractSshOperation implements ITask {
 	 * XML attribute in the SD which define the path of the keypair repository
 	 * which contains the keypair used to connect to the remote system.
 	 */
-	public static final String KEYPAIR_REPO_ATTR = "keyPairRepository";
+	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
 	/**
 	 * XML attribute in the SD which define the name of the keypair to use to
 	 * connect to the remote system; The keypair will be found/created in the
 	 * keypair repositoy.
 	 */
-	public static final String KEYPAIR_NAME_ATTR = "keyPairName";
+	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
 	private ITaskContext moContext;
 	private SshPlugInConfiguration moPluginConf;
@@ -124,9 +125,10 @@ public abstract class AbstractSshOperation implements ITask {
 			return;
 		}
 		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getPluginConf().getKeyPairRepo());
+			setKeyPairRepository(getPluginConf().getKeyPairRepositoryPath());
 		}
-		KeyPairRepository kpr = getKeyPairRepository();
+		KeyPairRepositoryPath kprp = getKeyPairRepository();
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		if (!kpr.containsKeyPair(getKeyPairName())) {
 			try {
 				kpr.createKeyPair(getKeyPairName(), getPluginConf()
@@ -298,14 +300,14 @@ public abstract class AbstractSshOperation implements ITask {
 		return getUserDatas().setPassword(sPassword);
 	}
 
-	public KeyPairRepository getKeyPairRepository() {
-		return getUserDatas().getKeyPairRepository();
+	public KeyPairRepositoryPath getKeyPairRepository() {
+		return getUserDatas().getKeyPairRepositoryPath();
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public KeyPairRepository setKeyPairRepository(
-			KeyPairRepository keyPairRepository) {
-		return getUserDatas().setKeyPairRepository(keyPairRepository);
+	public KeyPairRepositoryPath setKeyPairRepository(
+			KeyPairRepositoryPath keyPairRepository) {
+		return getUserDatas().setKeyPairRepositoryPath(keyPairRepository);
 	}
 
 	public KeyPairName getKeyPairName() {

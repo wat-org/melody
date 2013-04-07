@@ -5,7 +5,7 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -124,14 +124,14 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private KeyPairRepository loadKeyPairRepository(Node n)
+	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Node n)
 			throws ResourcesDescriptorException {
 		String v = XPathExpander.getHeritedAttributeValue(n, KEYPAIR_REPO_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
-			return new KeyPairRepository(v);
+			return new KeyPairRepositoryPath(v);
 		} catch (KeyPairRepositoryException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_REPO_ATTR);
@@ -234,7 +234,7 @@ public class InstanceDatasLoader {
 		String region = loadRegion(instanceNode);
 		InstanceType type = loadInstanceType(instanceNode);
 		String imageId = loadImageId(instanceNode);
-		KeyPairRepository kpr = loadKeyPairRepository(instanceNode);
+		KeyPairRepositoryPath kprp = loadKeyPairRepositoryPath(instanceNode);
 		KeyPairName kpn = loadKeyPairName(instanceNode);
 		String passphrase = loadPassphrase(instanceNode);
 		String site = loadSite(instanceNode);
@@ -242,7 +242,7 @@ public class InstanceDatasLoader {
 		Long deleteTimeout = loadDeleteTimeout(instanceNode);
 		Long startTimeout = loadStartTimeout(instanceNode);
 		Long stopTimeout = loadStopTimeout(instanceNode);
-		return new InstanceDatas(region, type, imageId, kpr, kpn, passphrase,
+		return new InstanceDatas(region, type, imageId, kprp, kpn, passphrase,
 				site, createTimeout, deleteTimeout, startTimeout, stopTimeout);
 	}
 

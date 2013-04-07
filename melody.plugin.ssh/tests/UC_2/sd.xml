@@ -13,7 +13,7 @@
 		
 		<echo message="Executing command on 'IP:§[IP]§' ..." />
 
-		<ssh description="[test_script:§[IP]§]" host="§[IP]§" keyPairName="id_rsa_aws" login="jboss" trust="y">
+		<ssh description="[test_script:§[IP]§]" host="§[IP]§" keypair-name="id_rsa_aws" login="jboss" trust="y">
 			<declare name="var1" value="&quot;§[property1]§&quot;"/>
 			<exec file="./scripts/include1.sh"/>
 			<exec file="./scripts/include2.sh" template="y"/>

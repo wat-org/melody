@@ -6,7 +6,7 @@ import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
 import com.wat.melody.common.network.Host;
@@ -77,7 +77,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	public static final String MGMT_PASSWORD = "ssh.management.master.pass";
 
 	private String msConfigurationFilePath;
-	private KeyPairRepository moKeyPairRepo;
+	private KeyPairRepositoryPath moKeyPairRepo;
 	private int miKeyPairSize = 2048;
 	private ISshSessionConfiguration moSshSessionConfiguration;
 	private Boolean mbMgmtEnable = true;
@@ -152,7 +152,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			return;
 		}
 		try {
-			setKeyPairRepo(ps.get(KEYPAIR_REPO));
+			setKeyPairRepositoryPath(ps.get(KEYPAIR_REPO));
 		} catch (SshPlugInConfigurationException Ex) {
 			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KEYPAIR_REPO), Ex);
@@ -358,44 +358,46 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		if (getKnownHosts() == null) {
 			setKnownHosts(DEFAULT_KNOWNHOSTS);
 		}
-		if (getKeyPairRepo() == null) {
-			setKeyPairRepo(DEFAULT_KEYPAIR_REPO);
+		if (getKeyPairRepositoryPath() == null) {
+			setKeyPairRepositoryPath(DEFAULT_KEYPAIR_REPO);
 		}
 	}
 
-	public KeyPairRepository getKeyPairRepo() {
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
 		return moKeyPairRepo;
 	}
 
-	public KeyPairRepository setKeyPairRepo(KeyPairRepository keyPairRepo) {
-		if (keyPairRepo == null) {
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath keyPairRepoPath) {
+		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Directory (a KeyPair Repo path).");
 		}
-		KeyPairRepository previous = getKeyPairRepo();
-		moKeyPairRepo = keyPairRepo;
+		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
+		moKeyPairRepo = keyPairRepoPath;
 		return previous;
 	}
 
-	public KeyPairRepository setKeyPairRepo(File keyPairRepo)
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(File keyPairRepoPath)
 			throws SshPlugInConfigurationException {
-		if (keyPairRepo == null) {
+		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Directory (a KeyPair Repo path).");
 		}
-		if (!keyPairRepo.isAbsolute()) {
+		if (!keyPairRepoPath.isAbsolute()) {
 			// Resolve from this configuration File's parent location
-			keyPairRepo = new File(new File(getFilePath()).getParent(),
-					keyPairRepo.getPath());
+			keyPairRepoPath = new File(new File(getFilePath()).getParent(),
+					keyPairRepoPath.getPath());
 		}
 		try {
-			return setKeyPairRepo(new KeyPairRepository(keyPairRepo));
+			return setKeyPairRepositoryPath(new KeyPairRepositoryPath(
+					keyPairRepoPath));
 		} catch (KeyPairRepositoryException Ex) {
 			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
-	public KeyPairRepository setKeyPairRepo(String val)
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -405,7 +407,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throw new SshPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
-		return setKeyPairRepo(new File(val));
+		return setKeyPairRepositoryPath(new File(val));
 	}
 
 	public int getKeyPairSize() {
