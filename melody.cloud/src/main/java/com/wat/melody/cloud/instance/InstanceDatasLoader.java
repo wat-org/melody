@@ -7,7 +7,7 @@ import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
-import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
+import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.xpathextensions.XPathExpander;
 
@@ -132,7 +132,7 @@ public class InstanceDatasLoader {
 		}
 		try {
 			return new KeyPairRepositoryPath(v);
-		} catch (KeyPairRepositoryException Ex) {
+		} catch (KeyPairRepositoryPathException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_REPO_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);

@@ -7,23 +7,23 @@ import com.wat.melody.common.ex.MelodyException;
  * @author Guillaume Cornet
  * 
  */
-public class KeyPairRepositoryException extends MelodyException {
+public class KeyPairRepositoryPathException extends MelodyException {
 
 	private static final long serialVersionUID = -2133590963141244905L;
 
-	public KeyPairRepositoryException() {
+	public KeyPairRepositoryPathException() {
 		super();
 	}
 
-	public KeyPairRepositoryException(String msg) {
+	public KeyPairRepositoryPathException(String msg) {
 		super(msg);
 	}
 
-	public KeyPairRepositoryException(Throwable cause) {
+	public KeyPairRepositoryPathException(Throwable cause) {
 		super(cause);
 	}
 
-	public KeyPairRepositoryException(String msg, Throwable cause) {
+	public KeyPairRepositoryPathException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

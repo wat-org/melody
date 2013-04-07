@@ -8,7 +8,7 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
-import com.wat.melody.common.keypair.exception.KeyPairRepositoryException;
+import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -392,7 +392,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setKeyPairRepositoryPath(new KeyPairRepositoryPath(
 					keyPairRepoPath));
-		} catch (KeyPairRepositoryException Ex) {
+		} catch (KeyPairRepositoryPathException Ex) {
 			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
