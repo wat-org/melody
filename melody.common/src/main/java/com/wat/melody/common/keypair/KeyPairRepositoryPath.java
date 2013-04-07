@@ -8,6 +8,11 @@ import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public class KeyPairRepositoryPath implements IFileBased {
 
 	private String _path;
@@ -18,7 +23,7 @@ public class KeyPairRepositoryPath implements IFileBased {
 	 * 
 	 * @throws KeyPairRepositoryPathException
 	 *             if the given path is not a valid KeyPairRepository path.
-	 * @throws NullPointerException
+	 * @throws IllegalArgumentException
 	 *             if the given path is <code>null</code>.
 	 */
 	public KeyPairRepositoryPath(String sPath)
@@ -34,8 +39,7 @@ public class KeyPairRepositoryPath implements IFileBased {
 		File f = new File(_path);
 		if (!f.exists() && !f.mkdirs()) {
 			throw new KeyPairRepositoryPathException(Messages.bind(
-					Messages.KeyPairRepoPathEx_FAILED_TO_CREATE_REPO_PATH,
-					_path));
+					Messages.KeyPairRepoPathEx_FAILED_TO_CREATE_REPO, _path));
 		}
 	}
 

@@ -6,8 +6,10 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.ssh.messages";
 
-	public static String KnownHostsEx_INVALID_PATH;
 	public static String KnownHostsEx_INVALID_CONTENT;
+
+	public static String KnownHostsRepoPathEx_INVALID_REPO_PATH;
+	public static String KnownHostsRepoPathEx_FAILED_TO_CREATE_REPO;
 
 	public static String SessionEx_FAILED_TO_CONNECT;
 	public static String SessionMsg_CNX;

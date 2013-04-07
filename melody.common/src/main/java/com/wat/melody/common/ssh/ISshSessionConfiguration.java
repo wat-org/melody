@@ -18,9 +18,9 @@ import com.wat.melody.common.timeout.Timeout;
  */
 public interface ISshSessionConfiguration {
 
-	public IKnownHosts getKnownHosts();
+	public IKnownHostsRepository getKnownHosts();
 
-	public IKnownHosts setKnownHosts(IKnownHosts knownHosts);
+	public IKnownHostsRepository setKnownHosts(IKnownHostsRepository knownHosts);
 
 	public CompressionLevel getCompressionLevel();
 

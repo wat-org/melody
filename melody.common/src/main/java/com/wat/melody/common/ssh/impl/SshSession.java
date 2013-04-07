@@ -10,8 +10,10 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.JSchExceptionInterrupted;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
@@ -107,7 +109,7 @@ public class SshSession implements ISshSession {
 	 */
 	@Override
 	public synchronized void connect() throws SshSessionException,
-			InvalidCredentialException {
+			InvalidCredentialException, InterruptedException {
 		if (isConnected()) {
 			return;
 		}
@@ -276,7 +278,7 @@ public class SshSession implements ISshSession {
 	}
 
 	private void _connect() throws SshSessionException,
-			InvalidCredentialException {
+			InvalidCredentialException, InterruptedException {
 		int cnxTimeout = 0;
 		if (getSessionConfiguration() != null) {
 			cnxTimeout = (int) getSessionConfiguration().getConnectionTimeout()
@@ -284,6 +286,8 @@ public class SshSession implements ISshSession {
 		}
 		try {
 			_session.connect(cnxTimeout);
+		} catch (JSchExceptionInterrupted Ex) {
+			throw new MelodyInterruptedException(Ex);
 		} catch (JSchException Ex) {
 			String msg;
 			msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT,

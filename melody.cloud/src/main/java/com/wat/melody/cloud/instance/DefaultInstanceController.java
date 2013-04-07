@@ -68,7 +68,10 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			setInstanceId(instanceId);
 		}
 		fireInstanceCreated();
-		fireInstanceStarted();
+		if (instanceRuns()) {
+			// will apply network updates performed in listeners
+			fireInstanceStarted();
+		}
 	}
 
 	public abstract String createInstance(InstanceType type, String site,
@@ -233,7 +236,10 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		} else {
 			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
 					detachTimeout);
-			fireInstanceStarted();
+			if (instanceRuns()) {
+				// will apply network updates performed in listeners
+				fireInstanceStarted();
+			}
 		}
 	}
 

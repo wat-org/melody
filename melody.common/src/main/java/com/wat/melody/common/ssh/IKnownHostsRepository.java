@@ -10,7 +10,7 @@ import com.wat.melody.common.ssh.types.HostKeyCheckState;
  * @author Guillaume Cornet
  * 
  */
-public interface IKnownHosts {
+public interface IKnownHostsRepository {
 
 	public List<IHostKey> getAll();
 

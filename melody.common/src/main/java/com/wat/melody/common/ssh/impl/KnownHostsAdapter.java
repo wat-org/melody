@@ -6,7 +6,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.UserInfo;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.exception.IllegalHostException;
-import com.wat.melody.common.ssh.IKnownHosts;
+import com.wat.melody.common.ssh.IKnownHostsRepository;
 
 /**
  * 
@@ -15,13 +15,13 @@ import com.wat.melody.common.ssh.IKnownHosts;
  */
 class KnownHostsAdapter implements HostKeyRepository {
 
-	private IKnownHosts _kh;
+	private IKnownHostsRepository _kh;
 
-	protected KnownHostsAdapter(IKnownHosts kh) {
+	protected KnownHostsAdapter(IKnownHostsRepository kh) {
 		if (kh == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ KnownHostsFile.class.getCanonicalName() + ".");
+					+ KnownHostsRepository.class.getCanonicalName() + ".");
 		}
 		_kh = kh;
 	}

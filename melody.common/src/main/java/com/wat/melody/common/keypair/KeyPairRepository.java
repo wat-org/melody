@@ -37,9 +37,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
  * </p>
  * 
  * <p>
- * Manipulation on different {@link KeyPairRepository} objects which point to
- * the same directory can be synchronized using the method
- * {@link KeyPairRepository#lockKeyPairRepository(KeyPairRepository)}.
+ * A {@link KeyPairRepository} is thread safe.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -49,7 +47,7 @@ public class KeyPairRepository implements IFileBased {
 
 	private static Map<KeyPairRepositoryPath, KeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, KeyPairRepository>();
 
-	public static KeyPairRepository getKeyPairRepository(
+	public synchronized static KeyPairRepository getKeyPairRepository(
 			KeyPairRepositoryPath keyPairRepositoryPath) {
 		if (keyPairRepositoryPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

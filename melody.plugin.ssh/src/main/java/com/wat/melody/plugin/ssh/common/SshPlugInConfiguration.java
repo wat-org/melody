@@ -14,10 +14,12 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.properties.PropertiesSet;
-import com.wat.melody.common.ssh.IKnownHosts;
+import com.wat.melody.common.ssh.IKnownHostsRepository;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.exception.KnownHostsException;
-import com.wat.melody.common.ssh.impl.KnownHostsFile;
+import com.wat.melody.common.ssh.exception.KnownHostsRepositoryPathException;
+import com.wat.melody.common.ssh.impl.KnownHostsRepository;
+import com.wat.melody.common.ssh.impl.KnownHostsRepositoryPath;
 import com.wat.melody.common.ssh.impl.SshSessionConfiguration;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
@@ -444,16 +446,27 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	public IKnownHosts getKnownHosts() {
+	public IKnownHostsRepository getKnownHosts() {
 		return getSshSessionConfiguration().getKnownHosts();
 	}
 
-	public IKnownHosts setKnownHosts(IKnownHosts knownHosts) {
+	public IKnownHostsRepository setKnownHosts(IKnownHostsRepository knownHosts) {
 		return getSshSessionConfiguration().setKnownHosts(knownHosts);
 
 	}
 
-	public IKnownHosts setKnownHosts(File knownHosts)
+	public IKnownHostsRepository setKnownHosts(
+			KnownHostsRepositoryPath keyPairRepoPath)
+			throws KnownHostsException {
+		if (keyPairRepoPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Directory (a KeyPair Repo path).");
+		}
+		return setKnownHosts(KnownHostsRepository
+				.getKnownHostsRepository(keyPairRepoPath));
+	}
+
+	public IKnownHostsRepository setKnownHosts(File knownHosts)
 			throws SshPlugInConfigurationException {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -465,14 +478,15 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 					knownHosts.getPath());
 		}
 		try {
-			return setKnownHosts(new KnownHostsFile(knownHosts.getPath()));
-		} catch (KnownHostsException Ex) {
+			return setKnownHosts(new KnownHostsRepositoryPath(
+					knownHosts.getPath()));
+		} catch (KnownHostsRepositoryPathException | KnownHostsException Ex) {
 			throw new SshPlugInConfigurationException(Messages.bind(
 					Messages.ConfEx_INVALID_KNOWNHOSTS, knownHosts), Ex);
 		}
 	}
 
-	public IKnownHosts setKnownHosts(String val)
+	public IKnownHostsRepository setKnownHosts(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

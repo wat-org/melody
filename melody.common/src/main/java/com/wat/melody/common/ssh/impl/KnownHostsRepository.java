@@ -1,50 +1,76 @@
 package com.wat.melody.common.ssh.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KnownHosts;
 import com.jcraft.jsch.UserInfo;
-import com.wat.melody.common.files.FS;
-import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.ssh.IHostKey;
-import com.wat.melody.common.ssh.IKnownHosts;
+import com.wat.melody.common.ssh.IKnownHostsRepository;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.KnownHostsException;
 import com.wat.melody.common.ssh.types.HostKeyCheckState;
 
 /**
+ * <p>
+ * A {@link KnownHostsRepository} stores remote systems host key.
+ * </p>
+ * 
+ * <p>
+ * A {@link KnownHostsRepository} is a file where each line contains the ip/fqdn
+ * of the remote system and its corresponding host key.
+ * </p>
+ * 
+ * <p>
+ * A {@link KnownHostsRepository} is thread safe.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class KnownHostsFile implements IKnownHosts {
+public class KnownHostsRepository implements IKnownHostsRepository {
+
+	private static Map<KnownHostsRepositoryPath, KnownHostsRepository> REGISTERED_REPOS = new HashMap<KnownHostsRepositoryPath, KnownHostsRepository>();
+
+	public synchronized static KnownHostsRepository getKnownHostsRepository(
+			KnownHostsRepositoryPath knownHostsRepositoryPath)
+			throws KnownHostsException {
+		if (knownHostsRepositoryPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ KnownHostsRepositoryPath.class.getCanonicalName() + ".");
+		}
+		if (REGISTERED_REPOS.containsKey(knownHostsRepositoryPath)) {
+			return REGISTERED_REPOS.get(knownHostsRepositoryPath);
+		}
+		KnownHostsRepository kpr = new KnownHostsRepository(
+				knownHostsRepositoryPath);
+		REGISTERED_REPOS.put(knownHostsRepositoryPath, kpr);
+		return kpr;
+	}
 
 	private HostKeyRepository _kh;
 
-	public KnownHostsFile(String path) throws KnownHostsException {
-		try {
-			FS.validateFileExists(path);
-		} catch (IllegalFileException Ex) {
-			throw new KnownHostsException(Messages.bind(
-					Messages.KnownHostsEx_INVALID_PATH, path), Ex);
-		}
+	private KnownHostsRepository(KnownHostsRepositoryPath khrp)
+			throws KnownHostsException {
 		try {
 			KnownHosts kh = new KnownHosts();
-			kh.setKnownHosts(path);
+			kh.setKnownHosts(khrp.getPath());
 			_kh = kh;
 		} catch (JSchException Ex) {
 			throw new KnownHostsException(Messages.bind(
-					Messages.KnownHostsEx_INVALID_CONTENT, path), Ex);
+					Messages.KnownHostsEx_INVALID_CONTENT, khrp), Ex);
 		}
 	}
 
 	@Override
-	public List<IHostKey> getAll() {
+	public synchronized List<IHostKey> getAll() {
 		HostKey[] hks = _kh.getHostKey();
 		List<IHostKey> res = new ArrayList<IHostKey>();
 		for (HostKey hk : hks) {
@@ -54,29 +80,41 @@ public class KnownHostsFile implements IKnownHosts {
 	}
 
 	@Override
-	public IHostKey get(Host host) {
-		HostKey hk = null;
+	public synchronized IHostKey get(Host host) {
+		if (host == null) {
+			return null;
+		}
 		HostKey[] hks = _kh.getHostKey(host.getAddress(), null);
 		if (hks != null && hks.length > 0) {
-			hk = hks[0];
-		} else if (isHostNameDefined(host)) {
-			hks = _kh.getHostKey(host.getName(), null);
-			if (hks != null && hks.length > 0) {
-				hk = hks[0];
-			}
+			return new HostKeyAdapter(hks[0]);
 		}
-		return hk != null ? new HostKeyAdapter(hk) : null;
+		if (!isHostNameDefined(host)) {
+			return null;
+		}
+		hks = _kh.getHostKey(host.getName(), null);
+		if (hks != null && hks.length > 0) {
+			return new HostKeyAdapter(hks[0]);
+		}
+		return null;
 	}
 
 	@Override
-	public HostKeyCheckState check(IHostKey hk) {
+	public synchronized HostKeyCheckState check(IHostKey hk) {
+		if (hk == null || hk.getHost() == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must ve ba valid " + IHostKey.class.getCanonicalName()
+					+ ".");
+		}
 		int state = _kh.check(hk.getHost().getAddress(), hk.getBytes());
 		return HostKeyCheckStateConverter.convert(state);
 
 	}
 
 	@Override
-	public void add(IHostKey hk) {
+	public synchronized void add(IHostKey hk) {
+		if (hk == null || hk.getHost() == null) {
+			return;
+		}
 		add(hk.getHost().getAddress(), hk.getBytes());
 		if (isHostNameDefined(hk.getHost())) {
 			add(hk.getHost().getName(), hk.getBytes());
@@ -84,7 +122,10 @@ public class KnownHostsFile implements IKnownHosts {
 	}
 
 	@Override
-	public void remove(Host host) {
+	public synchronized void remove(Host host) {
+		if (host == null) {
+			return;
+		}
 		_kh.remove(host.getAddress(), null);
 		if (isHostNameDefined(host)) {
 			_kh.remove(host.getName(), null);
