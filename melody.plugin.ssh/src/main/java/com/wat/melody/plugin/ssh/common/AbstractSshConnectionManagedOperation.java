@@ -125,21 +125,17 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		}
 		KeyPairRepositoryPath kprp = getManagementKeyPairRepositoryPath();
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
-		if (!kpr.containsKeyPair(getManagementKeyPairName())) {
-			try {
-				kpr.createKeyPair(getManagementKeyPairName(),
-						getSshPlugInConf().getKeyPairSize(),
-						getManagementPassword());
-			} catch (IOException Ex) {
-				throw new SshException(Ex);
-			}
+		try {
+			kpr.createKeyPair(getManagementKeyPairName(), getSshPlugInConf()
+					.getKeyPairSize(), getManagementPassword());
+		} catch (IOException Ex) {
+			throw new SshException(Ex);
 		}
 	}
 
 	/**
-	 * Create a Managed Session, which will deploy user's key if necessary.
-	 * 
-	 * @throws SshException
+	 * @return an {@link ISshSession} which provides additional Ssh Management
+	 *         features (if this feature is enabled).
 	 */
 	@Override
 	protected ISshSession createSession() throws SshException {

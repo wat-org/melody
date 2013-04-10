@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.aws.ec2;
 
 import java.io.IOException;
+import java.security.KeyPair;
 import java.util.Arrays;
 
 import org.w3c.dom.Node;
@@ -8,13 +9,16 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
+import com.wat.melody.plugin.aws.ec2.common.AwsInstanceController;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -218,14 +222,6 @@ public class NewMachine extends AbstractOperation {
 					Messages.NewEx_INVALID_IMAGEID_ATTR, getImageId(),
 					getRegion()));
 		}
-		// Enable the given KeyPair.
-		try {
-			enableKeyPair(getKeyPairRepositoryPath(), getKeyPairName(),
-					getSshPlugInConf().getKeyPairSize(), getPassphrase());
-		} catch (IOException Ex) {
-			throw new AwsException(Ex);
-		}
-
 	}
 
 	@Override
@@ -242,6 +238,107 @@ public class NewMachine extends AbstractOperation {
 							getImageId(), getInstanceType(), getKeyPairName(),
 							getAvailabilityZoneFullName(),
 							getTargetNodeLocation() }));
+		}
+	}
+
+	/**
+	 * @return an {@link AwsInstanceController} which provides additional
+	 *         KeyPair Management features.
+	 */
+	@Override
+	public InstanceController newAwsInstanceController() {
+		/*
+		 * TODO : create AwsInstanceControllerWithKeyPairManagement
+		 */
+		return new AwsInstanceController(getEc2(), getInstanceId()) {
+
+			public String createInstance(InstanceType type, String site,
+					String imageId, KeyPairName keyPairName, long createTimeout)
+					throws OperationException, InterruptedException {
+				try {
+					enableKeyPair(getKeyPairRepositoryPath(), getKeyPairName(),
+							getSshPlugInConf().getKeyPairSize(),
+							getPassphrase());
+				} catch (IOException | AwsException Ex) {
+					throw new OperationException(Ex);
+				}
+
+				return super.createInstance(type, site, imageId, keyPairName,
+						createTimeout);
+			}
+
+		};
+	}
+
+	/**
+	 * <p>
+	 * Enable the given KeyPair in Aws. More formally, this will :
+	 * <ul>
+	 * <li>Create a new {@link KeyPair} and store it in the given local
+	 * {@link KeyPairRepository} in openSSH RSA format if the {@link KeyPair}
+	 * can not be found the given local {@link KeyPairRepository} ;</li>
+	 * <li>Import the public part of the given {@link KeyPair} in the Aws Region
+	 * defined by {@link #getRegion()} if the {@link KeyPair} exists in the
+	 * given local {@link KeyPairRepository} and doesn't exists in the given Aws
+	 * Region ;</li>
+	 * <li>Compare the public part of the given {@link KeyPair} with the public
+	 * part of the Aws {@link com.amazonaws.services.ec2.model.KeyPair} if the
+	 * {@link KeyPair} exists in the given local {@link KeyPairRepository} and
+	 * also exists in the given Aws Region, and will throw an
+	 * {@link AwsException} if they doesn't match ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param kprp
+	 *            is the {@link KeyPairRepository}.
+	 * @param keyPairName
+	 *            is the name of the {@link KeyPair} to enable.
+	 * @param keySize
+	 *            is the size of the {@link KeyPair} to create (only apply if
+	 *            the local {@link KeyPairRepository} doesn't contains the key
+	 *            pair).
+	 * @param passphrase
+	 *            is the passphrase to associate to the {@link KeyPair} to
+	 *            create (only apply if the local {@link KeyPairRepository}
+	 *            doesn't contains the key pair).
+	 * 
+	 * @throws AwsException
+	 *             if the {@link KeyPair} found in the local
+	 *             {@link KeyPairRepository} is corrupted (ex : not a valid
+	 *             OpenSSH RSA KeyPair) or if the {@link KeyPair} found in the
+	 *             local {@link KeyPairRepository} is not equal to the Aws
+	 *             {@link com.amazonaws.services.ec2.model.KeyPair}.
+	 * @throws IOException
+	 *             if an I/O error occurred while reading/storing the
+	 *             {@link KeyPair} in the local {@link KeyPairRepository}.
+	 */
+	public void enableKeyPair(KeyPairRepositoryPath kprp,
+			KeyPairName keyPairName, int keySize, String passphrase)
+			throws AwsException, IOException {
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
+		// this shared keypair-repo allow multiple thread to be synchronized
+		synchronized (kpr) {
+			// Create KeyPair in the repository
+			KeyPair kp = kpr.createKeyPair(keyPairName, keySize, passphrase);
+
+			/*
+			 * TODO : create a AwsKeyPairRepository ?
+			 */
+			// Create KeyPair in Aws
+			if (Common.keyPairExists(getEc2(), keyPairName) == true) {
+				String fingerprint = KeyPairRepository.getFingerprint(kp);
+				if (Common.keyPairCompare(getEc2(), keyPairName, fingerprint) == false) {
+					/*
+					 * TODO : externalize error message
+					 */
+					throw new AwsException(
+							"Aws KeyPair and Local KeyPair doesn't " + "match.");
+				}
+			} else {
+				String pubkey = KeyPairRepository.getPublicKeyInOpenSshFormat(
+						kp, "Generated by Melody");
+				Common.importKeyPair(getEc2(), keyPairName, pubkey);
+			}
 		}
 	}
 

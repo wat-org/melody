@@ -17,7 +17,6 @@ import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
-import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.xml.Doc;
@@ -130,20 +129,15 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	public InstanceController createInstance() throws LibVirtException {
-		try {
-			InstanceController instance = new LibVirtInstanceController(
-					getConnect(), getInstanceId());
-			instance = new InstanceControllerWithRelatedNode(instance, getRD(),
-					getTargetNode());
-			if (NetworkManagementHelper
-					.isManagementNetworkEnable(getTargetNode())) {
-				instance = new InstanceControllerWithNetworkManagement(
-						instance, this, getTargetNode());
-			}
-			return instance;
-		} catch (OperationException Ex) {
-			throw new LibVirtException(Ex);
+		InstanceController instance = new LibVirtInstanceController(
+				getConnect(), getInstanceId());
+		instance = new InstanceControllerWithRelatedNode(instance, getRD(),
+				getTargetNode());
+		if (NetworkManagementHelper.isManagementNetworkEnable(getTargetNode())) {
+			instance = new InstanceControllerWithNetworkManagement(instance,
+					this, getTargetNode());
 		}
+		return instance;
 	}
 
 	public IResourcesDescriptor getRD() {

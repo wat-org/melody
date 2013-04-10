@@ -27,8 +27,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	private AmazonEC2 _cnx;
 	private Instance _instance;
 
-	public AwsInstanceController(AmazonEC2 connection, String instanceId)
-			throws OperationException {
+	public AwsInstanceController(AmazonEC2 connection, String instanceId) {
 		setConnection(connection);
 		setInstanceId(instanceId);
 	}
@@ -252,7 +251,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public String setInstanceId(String instanceId) throws OperationException {
+	public String setInstanceId(String instanceId) {
 		String previous = super.setInstanceId(instanceId);
 		refreshInternalDatas();
 		return previous;

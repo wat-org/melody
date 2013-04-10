@@ -27,8 +27,7 @@ public class LibVirtInstanceController extends DefaultInstanceController
 	private Connect _cnx;
 	private Domain _domain;
 
-	public LibVirtInstanceController(Connect connection, String instanceId)
-			throws OperationException {
+	public LibVirtInstanceController(Connect connection, String instanceId) {
 		setConnection(connection);
 		setInstanceId(instanceId);
 	}
@@ -217,7 +216,7 @@ public class LibVirtInstanceController extends DefaultInstanceController
 	}
 
 	@Override
-	public String setInstanceId(String instanceId) throws OperationException {
+	public String setInstanceId(String instanceId) {
 		String previous = super.setInstanceId(instanceId);
 		refreshInternalDatas();
 		return previous;

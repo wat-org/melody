@@ -1,8 +1,5 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
-import java.io.IOException;
-import java.security.KeyPair;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
@@ -19,13 +16,8 @@ import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
-import com.wat.melody.cloud.instance.InstanceType;
-import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepository;
-import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
@@ -131,94 +123,22 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	public InstanceController createInstance() throws AwsException {
-		try {
-			InstanceController instance = new AwsInstanceController(getEc2(),
-					getInstanceId());
-			instance = new InstanceControllerWithRelatedNode(instance, getRD(),
-					getTargetNode());
-			if (NetworkManagementHelper
-					.isManagementNetworkEnable(getTargetNode())) {
-				instance = new InstanceControllerWithNetworkManagement(
-						instance, this, getTargetNode());
-			}
-			return instance;
-		} catch (OperationException Ex) {
-			throw new AwsException(Ex);
+		InstanceController instance = newAwsInstanceController();
+		instance = new InstanceControllerWithRelatedNode(instance, getRD(),
+				getTargetNode());
+		if (NetworkManagementHelper.isManagementNetworkEnable(getTargetNode())) {
+			instance = new InstanceControllerWithNetworkManagement(instance,
+					this, getTargetNode());
 		}
+		return instance;
 	}
 
 	/**
-	 * <p>
-	 * Enable the given KeyPair in Aws. More formally, this will :
-	 * <ul>
-	 * <li>Create a new {@link KeyPair} and store it in the given local
-	 * {@link KeyPairRepository} in openSSH RSA format if the {@link KeyPair}
-	 * can not be found the given local {@link KeyPairRepository} ;</li>
-	 * <li>Import the public part of the given {@link KeyPair} in the Aws Region
-	 * defined by {@link #getRegion()} if the {@link KeyPair} exists in the
-	 * given local {@link KeyPairRepository} and doesn't exists in the given Aws
-	 * Region ;</li>
-	 * <li>Compare the public part of the given {@link KeyPair} with the public
-	 * part of the Aws {@link com.amazonaws.services.ec2.model.KeyPair} if the
-	 * {@link KeyPair} exists in the given local {@link KeyPairRepository} and
-	 * also exists in the given Aws Region, and will throw an
-	 * {@link AwsException} if they doesn't match ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param kprp
-	 *            is the {@link KeyPairRepository}.
-	 * @param keyPairName
-	 *            is the name of the {@link KeyPair} to enable.
-	 * @param iKeySize
-	 *            is the size of the {@link KeyPair} to create (only apply if
-	 *            the local {@link KeyPairRepository} doesn't contains the key
-	 *            pair).
-	 * @param sPassphrase
-	 *            is the passphrase to associate to the {@link KeyPair} to
-	 *            create (only apply if the local {@link KeyPairRepository}
-	 *            doesn't contains the key pair).
-	 * 
-	 * @throws AwsException
-	 *             if the {@link KeyPair} found in the local
-	 *             {@link KeyPairRepository} is corrupted (ex : not a valid
-	 *             OpenSSH RSA KeyPair) or if the {@link KeyPair} found in the
-	 *             local {@link KeyPairRepository} is not equal to the Aws
-	 *             {@link com.amazonaws.services.ec2.model.KeyPair}.
-	 * @throws IOException
-	 *             if an I/O error occurred while reading/storing the
-	 *             {@link KeyPair} in the local {@link KeyPairRepository}.
+	 * Can be override by subclasses to provide enhanced behavior of the
+	 * {@link AwsInstanceController}.
 	 */
-	/*
-	 * TODO : put this in AwsInstanceController
-	 */
-	public synchronized void enableKeyPair(KeyPairRepositoryPath kprp,
-			KeyPairName keyPairName, int iKeySize, String sPassphrase)
-			throws AwsException, IOException {
-		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
-		// Create KeyPair in the KeyPair Repository
-		KeyPair kp = null;
-		if (!kpr.containsKeyPair(keyPairName)) {
-			kp = kpr.createKeyPair(keyPairName, iKeySize, sPassphrase);
-		} else {
-			kp = kpr.getKeyPair(keyPairName, sPassphrase);
-		}
-
-		// Create KeyPair in Aws
-		if (Common.keyPairExists(getEc2(), keyPairName) == true) {
-			String fingerprint = KeyPairRepository.getFingerprint(kp);
-			if (Common.keyPairCompare(getEc2(), keyPairName, fingerprint) == false) {
-				/*
-				 * TODO : externalize error message
-				 */
-				throw new AwsException("Aws KeyPair and Local KeyPair doesn't "
-						+ "match.");
-			}
-		} else {
-			String pubkey = KeyPairRepository.getPublicKeyInOpenSshFormat(kp,
-					"Generated by Melody");
-			Common.importKeyPair(getEc2(), keyPairName, pubkey);
-		}
+	public InstanceController newAwsInstanceController() {
+		return new AwsInstanceController(getEc2(), getInstanceId());
 	}
 
 	public IResourcesDescriptor getRD() {
@@ -228,11 +148,6 @@ abstract public class AbstractOperation implements ITask,
 
 	public String getTargetNodeLocation() {
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
-	}
-
-	protected boolean resizeInstance(InstanceType instanceType) {
-		return Common
-				.resizeAwsInstance(getEc2(), getInstanceId(), instanceType);
 	}
 
 	protected AwsPlugInConfiguration getPluginConf() throws AwsException {

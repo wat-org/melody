@@ -44,7 +44,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	 * @throws InterruptedException
 	 * @throws OperationException
 	 */
-	protected String setInstanceId(String instance) throws OperationException {
+	protected String setInstanceId(String instance) {
 		String previous = getInstanceId();
 		_instanceId = instance;
 		return previous;

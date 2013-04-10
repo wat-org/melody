@@ -97,33 +97,29 @@ public class KeyPairRepository implements IFileBased {
 
 	/**
 	 * <p>
-	 * Create a RSA {@link KeyPair}, and store it in this Repository.
+	 * Create a RSA {@link KeyPair}, and store it in this Repository, or
+	 * retrieve the {@link KeyPair} if it already exists in the repository.
 	 * </p>
 	 * 
 	 * @param keyPairName
 	 *            is the name of the key to create.
 	 * @param size
 	 *            is the size of the key to create.
-	 * @param sPassphrase
+	 * @param passphrase
 	 *            is the passphrase of the key to create.
 	 * 
-	 * @return a new RSA {@link KeyPair}, which is now stored in this
-	 *         Repository.
+	 * @return a new RSA {@link KeyPair}, created in this repository, or the
+	 *         existing {@link KeyPair} which match the given name if it already
+	 *         exists in the repository.
 	 * 
 	 * @throws IOException
 	 *             if an IO error occurred while storing the {@link KeyPair} in
 	 *             this Repository.
-	 * @throws IllegalArgumentException
-	 *             if a {@link KeyPair} with the same Name already exists in
-	 *             this Repository.
 	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String sPassphrase) throws IOException {
+			int size, String passphrase) throws IOException {
 		if (containsKeyPair(keyPairName)) {
-			throw new IllegalArgumentException(keyPairName + ": KeyPair "
-					+ "Name already exists. "
-					+ "Cannot create this KeyPair into the KeyPair "
-					+ "Repository '" + _f + "'.");
+			return getKeyPair(keyPairName, passphrase);
 		}
 		KeyPairGenerator keyGen = null;
 		try {
@@ -136,7 +132,7 @@ public class KeyPairRepository implements IFileBased {
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
-				kp, sPassphrase);
+				kp, passphrase);
 		return kp;
 	}
 

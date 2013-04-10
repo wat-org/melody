@@ -115,18 +115,17 @@ public abstract class AbstractSshOperation implements ITask {
 		if (getKeyPairName() == null) {
 			return;
 		}
-		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getSshPlugInConf().getKeyPairRepositoryPath());
+		if (getKeyPairRepositoryPath() == null) {
+			setKeyPairRepositoryPath(getSshPlugInConf()
+					.getKeyPairRepositoryPath());
 		}
-		KeyPairRepositoryPath kprp = getKeyPairRepository();
+		KeyPairRepositoryPath kprp = getKeyPairRepositoryPath();
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
-		if (!kpr.containsKeyPair(getKeyPairName())) {
-			try {
-				kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
-						.getKeyPairSize(), getPassword());
-			} catch (IOException Ex) {
-				throw new SshException(Ex);
-			}
+		try {
+			kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
+					.getKeyPairSize(), getPassword());
+		} catch (IOException Ex) {
+			throw new SshException(Ex);
 		}
 	}
 
@@ -152,9 +151,7 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	/**
-	 * Can be override by subclasses to provide another ISshSession.
-	 * 
-	 * @throws SshException
+	 * Can be override by subclasses to enhance behavior of {@link ISshSession}.
 	 */
 	protected ISshSession createSession() throws SshException {
 		ISshSession session = new SshSession();
@@ -249,12 +246,12 @@ public abstract class AbstractSshOperation implements ITask {
 		return getUserDatas().setPassword(sPassword);
 	}
 
-	public KeyPairRepositoryPath getKeyPairRepository() {
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
 		return getUserDatas().getKeyPairRepositoryPath();
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
-	public KeyPairRepositoryPath setKeyPairRepository(
+	public KeyPairRepositoryPath setKeyPairRepositoryPath(
 			KeyPairRepositoryPath keyPairRepository) {
 		return getUserDatas().setKeyPairRepositoryPath(keyPairRepository);
 	}
