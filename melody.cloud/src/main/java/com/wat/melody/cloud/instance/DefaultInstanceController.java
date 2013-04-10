@@ -97,15 +97,15 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public abstract void destroyInstance(long destroyTimeout)
 			throws OperationException, InterruptedException;
 
+	@Override
 	public void ensureInstanceIsStarted(long startTimeout)
 			throws OperationException, InterruptedException {
 		InstanceState is = getInstanceState();
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StartEx_NO_INSTANCE);
 		} else if (is == InstanceState.PENDING) {
-			log.warn(Messages.bind(Messages.StartMsg_PENDING, new Object[] {
-					getInstanceId(), InstanceState.PENDING,
-					InstanceState.RUNNING }));
+			log.warn(Messages.bind(Messages.StartMsg_PENDING, getInstanceId(),
+					InstanceState.PENDING, InstanceState.RUNNING));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.RUNNING,
 					startTimeout)) {
 				throw new OperationException(Messages.bind(
@@ -118,9 +118,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			log.info(Messages.bind(Messages.StartMsg_RUNNING, getInstanceId(),
 					InstanceState.RUNNING));
 		} else if (is == InstanceState.STOPPING) {
-			log.warn(Messages.bind(Messages.StartMsg_STOPPING, new Object[] {
-					getInstanceId(), InstanceState.STOPPING,
-					InstanceState.STOPPED }));
+			log.warn(Messages.bind(Messages.StartMsg_STOPPING, getInstanceId(),
+					InstanceState.STOPPING, InstanceState.STOPPED));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.STOPPED,
 					startTimeout)) {
 				throw new OperationException(Messages.bind(
@@ -150,6 +149,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public abstract void startInstance(long startTimeout)
 			throws OperationException, InterruptedException;
 
+	@Override
 	public void ensureInstanceIsStoped(long stopTimeout)
 			throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
@@ -165,6 +165,27 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract void stopInstance(long stopTimeout)
+			throws OperationException, InterruptedException;
+
+	@Override
+	public void ensureInstanceSizing(InstanceType targetType)
+			throws OperationException, InterruptedException {
+		InstanceState is = getInstanceState();
+		if (!isInstanceDefined()) {
+			log.warn(Messages.ResizeMsg_NO_INSTANCE);
+		} else if (getInstanceType() == targetType) {
+			log.warn(Messages.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
+					targetType));
+		} else if (is != InstanceState.STOPPED) {
+			throw new OperationException(Messages.bind(
+					Messages.ResizeEx_NOT_STOPPED, getInstanceId(),
+					InstanceState.STOPPED, is));
+		} else {
+			resizeInstance(getInstanceType());
+		}
+	}
+
+	public abstract void resizeInstance(InstanceType targetType)
 			throws OperationException, InterruptedException;
 
 	public boolean waitUntilInstanceStatusBecomes(InstanceState state,
@@ -206,8 +227,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 				target);
 
 		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
-				new Object[] { getInstanceId(), target, disksToAdd,
-						disksToRemove }));
+				getInstanceId(), target, disksToAdd, disksToRemove));
 
 		detachAndDeleteInstanceDiskDevices(disksToRemove, detachTimeout);
 		createAndAttachDiskInstanceDevices(disksToAdd, createTimeout,
@@ -227,6 +247,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public abstract void updateInstanceDiskDevicesDeleteOnTerminationFlag(
 			DiskDeviceList diskList);
 
+	@Override
 	public void ensureInstanceNetworkDevicesAreUpToDate(
 			NetworkDeviceNameList networkDeviceList, long attachTimeout,
 			long detachTimeout) throws OperationException, InterruptedException {
@@ -237,7 +258,6 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
 					detachTimeout);
 			if (instanceRuns()) {
-				// will apply network updates performed in listeners
 				fireInstanceStarted();
 			}
 		}
@@ -254,7 +274,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 				target);
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
-				new Object[] { getInstanceId(), target, toAdd, toRemove }));
+				getInstanceId(), target, toAdd, toRemove));
 
 		detachInstanceNetworkDevices(toRemove, detachTimeout);
 		attachInstanceNetworkDevices(toAdd, attachTimeout);
@@ -291,8 +311,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 					.computeFireWallRulesToRemove(current, expected);
 
 			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
-					new Object[] { getInstanceId(), netdev, expected, toAdd,
-							toRemove }));
+					getInstanceId(), netdev, expected, toAdd, toRemove));
 
 			revokeInstanceFireWallRules(netdev, toRemove);
 			authorizeInstanceFireWallRules(netdev, toAdd);

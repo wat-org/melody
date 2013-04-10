@@ -7,6 +7,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -20,7 +21,7 @@ import com.wat.melody.xpathextensions.XPathExpander;
  */
 public class ResizeMachine extends AbstractOperation {
 
-//	private static Log log = LogFactory.getLog(ResizeMachine.class);
+	// private static Log log = LogFactory.getLog(ResizeMachine.class);
 
 	/**
 	 * The 'ResizeMachine' XML element
@@ -71,66 +72,25 @@ public class ResizeMachine extends AbstractOperation {
 
 		// Initialize optional task's attributes with their default value
 		if (getInstanceType() == null) {
-			throw new LibVirtException(
-					Messages.bind(Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
-							new Object[] { ResizeMachine.INSTANCETYPE_ATTR,
-									ResizeMachine.RESIZE_MACHINE,
-									Common.INSTANCETYPE_ATTR,
-									getTargetNodeLocation() }));
+			throw new LibVirtException(Messages.bind(
+					Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
+					ResizeMachine.INSTANCETYPE_ATTR,
+					ResizeMachine.RESIZE_MACHINE, Common.INSTANCETYPE_ATTR,
+					getTargetNodeLocation()));
 		}
 	}
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
-		
-		/*
-		 * TODO : implement resize.
-		 * 
-		 * Even if CPU HotPlug is possible with libvirt and RHEL 6, the resize
-		 * feature will requiere the instance to be stopped. (because CPU UnPlug
-		 * is not possible, and because Memory HotPlug and UnPlug is a fake)
-		 */
-		throw new RuntimeException("Not implemented yet");
 
-//		Instance i = getInstance();
-//		if (i == null) {
-//			removeInstanceRelatedInfosToED(true);
-//			throw new AwsException(Messages.bind(
-//					Messages.ResizeEx_NO_INSTANCE,
-//					new Object[] { ResizeMachine.RESIZE_MACHINE,
-//							NewMachine.NEW_MACHINE,
-//							NewMachine.class.getPackage(),
-//							getTargetNodeLocation() }));
-//		} else if (Common.getInstanceState(getEc2(), getInstanceID()) != InstanceState.STOPPED) {
-//			setInstanceRelatedInfosToED(i);
-//			throw new AwsException(Messages.bind(
-//					Messages.ResizeEx_NOT_STOPPED,
-//					new Object[] { getInstanceID(), InstanceState.STOPPED,
-//							ResizeMachine.RESIZE_MACHINE,
-//							StopMachine.STOP_MACHINE,
-//							StopMachine.class.getPackage(),
-//							getTargetNodeLocation() }));
-//		} else {
-//			InstanceType currentType = i.getInstanceType();
-//			if (currentType != getInstanceType()) {
-//				if (!resizeInstance(getInstanceType())) {
-//					throw new AwsException(
-//							Messages.bind(Messages.ResizeEx_FAILED,
-//									new Object[] { getInstanceID(),
-//											currentType, getInstanceType(),
-//											getTargetNodeLocation() }));
-//				}
-//			} else {
-//				AwsException Ex = new AwsException(Messages.bind(
-//						Messages.ResizeMsg_NO_NEED, new Object[] {
-//								getInstanceID(), getInstanceType(),
-//								getTargetNodeLocation() }));
-//				log.warn(Util.getUserFriendlyStackTrace(new AwsException(
-//						Messages.ResizeMsg_GENERIC_WARN, Ex)));
-//			}
-//			setInstanceRelatedInfosToED(i);
-//		}
+		try {
+			getInstance().ensureInstanceSizing(getInstanceType());
+		} catch (OperationException Ex) {
+			throw new LibVirtException(Messages.bind(
+					Messages.ResizeEx_GENERIC_FAIL, getTargetNodeLocation(),
+					getInstanceType()), Ex);
+		}
 	}
 
 	public InstanceType getInstanceType() {

@@ -1555,4 +1555,10 @@ public abstract class LibVirtCloud {
 		return true;
 	}
 
+	public static boolean resizeInstance(Domain d, InstanceType targetType)
+			throws InterruptedException {
+		// TODO : implement LibVirt resize
+		return false;
+	}
+
 }

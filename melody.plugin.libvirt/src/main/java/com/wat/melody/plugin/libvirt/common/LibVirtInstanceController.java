@@ -98,6 +98,16 @@ public class LibVirtInstanceController extends DefaultInstanceController
 	}
 
 	@Override
+	public void resizeInstance(InstanceType targetType)
+			throws OperationException, InterruptedException {
+		if (!LibVirtCloud.resizeInstance(this.getInstance(), targetType)) {
+			throw new OperationException(Messages.bind(
+					Messages.ResizeEx_FAILED, getInstanceId(),
+					getInstanceType(), targetType));
+		}
+	}
+
+	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
 		return LibVirtCloud.getDiskDevices(this.getInstance());
 	}

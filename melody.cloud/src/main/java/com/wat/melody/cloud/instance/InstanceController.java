@@ -46,6 +46,9 @@ public interface InstanceController {
 	public void ensureInstanceIsStoped(long stopTimeout)
 			throws OperationException, InterruptedException;
 
+	public void ensureInstanceSizing(InstanceType targetType)
+			throws OperationException, InterruptedException;
+
 	public void ensureInstanceDiskDevicesAreUpToDate(
 			DiskDeviceList diskDeviceList, long createTimeout,
 			long attachTimeout, long detachTimeout) throws OperationException,

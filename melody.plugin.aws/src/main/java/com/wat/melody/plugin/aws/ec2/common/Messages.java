@@ -81,11 +81,9 @@ public class Messages extends NLS {
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
 	public static String ResizeEx_INSTANCETYPE_ERROR;
 	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
-	public static String ResizeEx_NO_INSTANCE;
-	public static String ResizeEx_NOT_STOPPED;
+
 	public static String ResizeEx_FAILED;
-	public static String ResizeMsg_NO_NEED;
-	public static String ResizeMsg_GENERIC_WARN;
+	public static String ResizeEx_GENERIC_FAIL;
 
 	public static String UpdateDiskDevEx_DETACH;
 	public static String UpdateDiskDevEx_CREATE;
@@ -99,6 +97,10 @@ public class Messages extends NLS {
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+	}
+
+	public static String bind(String message, Object... bindings) {
+		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {

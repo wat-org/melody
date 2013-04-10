@@ -166,6 +166,12 @@ public class InstanceControllerWithNetworkManagement extends
 	}
 
 	@Override
+	public void ensureInstanceSizing(InstanceType targetType)
+			throws OperationException, InterruptedException {
+		getInstance().ensureInstanceSizing(targetType);
+	}
+
+	@Override
 	public void ensureInstanceDiskDevicesAreUpToDate(
 			DiskDeviceList diskDeviceList, long createTimeout,
 			long attachTimeout, long detachTimeout) throws OperationException,

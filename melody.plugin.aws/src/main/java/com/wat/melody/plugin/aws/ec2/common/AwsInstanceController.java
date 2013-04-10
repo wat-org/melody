@@ -113,6 +113,17 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
+	public void resizeInstance(InstanceType targetType)
+			throws OperationException, InterruptedException {
+		if (!Common.resizeAwsInstance(getConnection(), getInstanceId(),
+				targetType)) {
+			throw new OperationException(Messages.bind(
+					Messages.ResizeEx_FAILED, getInstanceId(),
+					getInstanceType(), targetType));
+		}
+	}
+
+	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
 		return Common.getInstanceDisks(getConnection(), getInstance());
 	}
@@ -126,9 +137,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 					disksToRemove, detachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
-					Messages.UpdateDiskDevEx_DETACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
+					Messages.UpdateDiskDevEx_DETACH, Ex.getVolumeId(),
+					Ex.getDisk(), Ex.getTimeout()), Ex);
 		}
 	}
 
@@ -142,14 +152,12 @@ public class AwsInstanceController extends DefaultInstanceController implements
 					sAZ, disksToAdd, createTimeout, attachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
-					Messages.UpdateDiskDevEx_CREATE,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
+					Messages.UpdateDiskDevEx_CREATE, Ex.getVolumeId(),
+					Ex.getDisk(), Ex.getTimeout()), Ex);
 		} catch (WaitVolumeAttachmentStatusException Ex) {
 			throw new OperationException(Messages.bind(
-					Messages.UpdateDiskDevEx_ATTACH,
-					new Object[] { Ex.getVolumeId(), Ex.getDisk(),
-							Ex.getTimeout() }), Ex);
+					Messages.UpdateDiskDevEx_ATTACH, Ex.getVolumeId(),
+					Ex.getDisk(), Ex.getTimeout()), Ex);
 		}
 	}
 

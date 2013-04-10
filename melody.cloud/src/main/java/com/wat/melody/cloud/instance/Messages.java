@@ -29,6 +29,10 @@ public class Messages extends NLS {
 	public static String StopMsg_ALREADY_STOPPED;
 	public static String StopEx_NO_INSTANCE;
 
+	public static String ResizeMsg_NO_INSTANCE;
+	public static String ResizeMsg_NO_NEED;
+	public static String ResizeEx_NOT_STOPPED;
+
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
 	public static String UpdateDiskDevEx_IMPOSSIBLE;
@@ -49,6 +53,10 @@ public class Messages extends NLS {
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+	}
+
+	public static String bind(String message, Object... bindings) {
+		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {
