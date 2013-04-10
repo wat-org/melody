@@ -15,8 +15,10 @@
 			<echo message="instance '§[name]§' as IP '§[ip]§'"/>
 
 			<foreach	items="§[srv]§/*"
-						itemName="mod">
-				<echo message="§[node-name(§[mod]§)]§ : §[§[mod]§/text()]§"/>
+						itemName="nested_node">
+				<property name="nested_node_name" value="§[node-name(§[nested_node]§)]§"/>
+				<property name="nested_node_text" value="§[§[nested_node]§/text()]§"/>
+				<echo message="§[nested_node_name]§ : §[nested_node_text]§"/>
 			</foreach>
 			
 			<echo message="-------------------"/>

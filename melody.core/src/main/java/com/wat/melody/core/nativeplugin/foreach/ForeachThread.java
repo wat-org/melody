@@ -6,10 +6,10 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.MelodyThread;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.properties.PropertiesSet;
-import com.wat.melody.core.internal.CoreThread;
 
 /**
  * <p>
@@ -23,37 +23,38 @@ public class ForeachThread implements Runnable {
 
 	private PropertiesSet moPropertiesSet;
 	private Foreach moForeach;
-	private CoreThread moThread;
+	private MelodyThread moThread;
 	private Throwable moFinalError;
 
 	/**
 	 * <p>
-	 * Create a new <code>ForeachThread</code> object, which is especially
-	 * designed to process all inner-<code>Task</code> defined in the given
-	 * <code>Foreach</code> Task.
+	 * Create a new {@link ForeachThread} object, which is especially designed
+	 * to process all inner-{@link ITask} defined in the given {@link Foreach}
+	 * Task.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* The processing can be executed synchronously (see {@link #run()}) or
-	 * asynchronously (see {@link #startProcessing()}). </i>
+	 * <ul>
+	 * <li>The processing can be executed synchronously (see {@link #run()}) -
+	 * in the current thread - or asynchronously (see {@link #startProcessing()}
+	 * ) - in a dedicated thread - ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param p
-	 *            is the <code>Foreach</code> Task which contains all inner-
-	 *            <code>Task</code> to proceed.
+	 *            is the {@link Foreach} Task which contains all inner-
+	 *            {@link ITask} to proceed.
 	 * @param index
-	 *            is the index of the inner thread created by this object.
+	 *            is the index of the dedicated thread created by this object.
 	 * @param ps
-	 *            is a dedicated PropertiesSet, which will be used during
-	 *            variable's expansion.
+	 *            is a dedicated {@link PropertiesSet}, which will be used
+	 *            during {@link Foreach} inner- {@link ITask} variable's
+	 *            expansion.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given <code>Task</code> list is null.
+	 *             if the given {@link Foreach} Task is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if one of the <code>Task</code> in the <code>Task</code> list
-	 *             is null.
-	 * @throws IllegalArgumentException
-	 *             if the given <code>Foreach</code> is null.
+	 *             if the given {@link PropertiesSet} Task is <tt>null</tt>.
 	 * 
 	 * @see {@link #run()}
 	 * @see {@link #startProcessing()}
@@ -61,13 +62,10 @@ public class ForeachThread implements Runnable {
 	public ForeachThread(Foreach p, int index, PropertiesSet ps) {
 		setPropertiesSet(ps);
 		setForeach(p);
-		setThread(new CoreThread(p.getThreadGroup(), this, p.getThreadGroup()
-				.getName() + "-" + index));
-		initFinalError();
-	}
-
-	private void initFinalError() {
-		moFinalError = null;
+		setFinalError(null);
+		setThread(Melody.createNewMelodyThread(p.getThreadGroup(), this, p
+				.getThreadGroup().getName() + "-" + index));
+		getThread().pushContext(Melody.getContext());
 	}
 
 	/**
@@ -76,21 +74,26 @@ public class ForeachThread implements Runnable {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* If the processing failed, call {@link #getFinalError()} to retrieve
-	 * the exception that causes the failure. </i>
+	 * <ul>
+	 * <li>If the processing failed, call {@link #getFinalError()} to retrieve
+	 * the exception that causes the failure :</li>
+	 * </ul>
 	 * </p>
 	 * 
-	 * @return {@link Foreach.NEW} if the processing has not been started yet
-	 *         (see {@link #startProcessing()}). <BR/>
-	 *         {@link Foreach#RUNNING} if the processing has been started but is
-	 *         not finished. <BR/>
-	 *         {@link Foreach#SUCCEED} if the processing finished successfully. <BR/>
-	 *         {@link Foreach#INTERRUPTED} if the processing has been
-	 *         interrupted. <BR/>
-	 *         {@link Foreach#FAILED} if an error occurred during the
-	 *         processing. <BR/>
-	 *         {@link Foreach#CRITICAL} if an unmanaged error occurred during
-	 *         the processing.
+	 * @return <ul>
+	 *         <li>{@link Foreach.NEW} if the processing has not been started
+	 *         yet (see {@link #startProcessing()}) ;</li>
+	 *         <li>{@link Foreach#RUNNING} if the processing has been started
+	 *         but is not finished ;</li>
+	 *         <li>{@link Foreach#SUCCEED} if the processing finished
+	 *         successfully ;</li>
+	 *         <li>{@link Foreach#INTERRUPTED} if the processing has been
+	 *         interrupted ;</li>
+	 *         <li>{@link Foreach#FAILED} if an error occurred during the
+	 *         processing ;</li>
+	 *         <li>{@link Foreach#CRITICAL} if an unmanaged error occurred
+	 *         during the processing ;</li>
+	 *         </ul>
 	 * 
 	 * @see {@link #getFinalError()}
 	 * @see {@link #startProcessing()}
@@ -117,14 +120,15 @@ public class ForeachThread implements Runnable {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* The dedicated thread is created in the <code>ForeachEach</code>'s
-	 * thread group (see {@link #ForeachThread(List<Node>, Processor)}), meaning
-	 * that if the <code>ForeachEach</code>'s thread group is interrupted, the
-	 * dedicated thread will be interrupted too. <BR/>
-	 * * The processing can only be started one time. Future call to this method
-	 * will raise an <code>IllegalThreadStateException</code>. <BR/>
-	 * * After a call to this method, call {@link #waitTillProcessingIsDone()}
-	 * to wait for the processing to end. </i>
+	 * <ul>
+	 * <li>The dedicated thread is created in the {@link ForeachEach}'s thread
+	 * group, meaning that if the {@link ForeachEach}'s thread group is
+	 * interrupted, the dedicated thread will be interrupted too ;</li>
+	 * <li>The processing can only be started one time. Later call to this
+	 * method will raise an <tt>IllegalThreadStateException</tt> ;</li>
+	 * <li>After it has been started, call {@link #waitTillProcessingIsDone()}
+	 * to wait for the processing to end ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @throws IllegalThreadStateException
@@ -135,7 +139,6 @@ public class ForeachThread implements Runnable {
 	 * @see {@link #waitTillProcessingIsDone(long, int)}
 	 */
 	public void startProcessing() {
-		getThread().pushContext(Melody.getContext());
 		getThread().start();
 	}
 
@@ -145,11 +148,13 @@ public class ForeachThread implements Runnable {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* While waiting, this method doesn't consume CPU. <BR/>
-	 * * After a call to this method, call {@link #getFinalState()} to know if
-	 * the processing is finished successfully or not. <BR/>
-	 * * If the processing as not yet been started (see
-	 * {@link #startProcessing()}), this method will return immediately. </i>
+	 * <ul>
+	 * <li>While waiting, this method doesn't consume CPU ;</li>
+	 * <li>After a call to this method, call {@link #getFinalState()} to know if
+	 * the processing is finished successfully or not ;</li>
+	 * <li>If the processing as not yet been started (see
+	 * {@link #startProcessing()}), this method will return immediately.</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @throws InterruptedException
@@ -166,18 +171,19 @@ public class ForeachThread implements Runnable {
 
 	/**
 	 * <p>
-	 * Waits at most <code>millis</code> milliseconds for the processing to end.
-	 * <BR/>
-	 * If <code>millis</code> is equal to 0, this method will wait forever for
-	 * the processing to end.
+	 * Waits at most <tt>millis</tt> milliseconds for the processing to end. If
+	 * <tt>millis</tt> is equal to 0, this method will wait forever for the
+	 * processing to end.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* While waiting, this method doesn't consume CPU. <BR/>
-	 * * After a call to this method, call {@link #getFinalState()} to know if
-	 * the processing is finished or not. <BR/>
-	 * * If the processing as not yet been started (see
-	 * {@link #startProcessing()}), this method will return immediately. </i>
+	 * <ul>
+	 * <li>While waiting, this method doesn't consume CPU ;</li>
+	 * <li>After a call to this method, call {@link #getFinalState()} to know if
+	 * the processing is finished successfully or not ;</li>
+	 * <li>If the processing as not yet been started (see
+	 * {@link #startProcessing()}), this method will return immediately.</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param millis
@@ -186,7 +192,7 @@ public class ForeachThread implements Runnable {
 	 * @throws InterruptedException
 	 *             if the current thread was interrupted while waiting.
 	 * @throws IllegalArgumentException
-	 *             if <code>millis</code> is negative.
+	 *             if <tt>millis</tt> is negative.
 	 * 
 	 * @see {@link #getFinalState()}
 	 * @see {@link #startProcessing()}
@@ -200,18 +206,19 @@ public class ForeachThread implements Runnable {
 
 	/**
 	 * <p>
-	 * Waits at most <code>millis</code> milliseconds + <code>nanos</code>
-	 * nanoseconds for the processing to end. <BR/>
-	 * If <code>millis</code> and <code>nanos</code> are equal to 0, this method
-	 * will wait forever for the processing to end.
+	 * Waits at most <tt>millis</tt> milliseconds + <tt>nanos</tt> nanoseconds
+	 * for the processing to end. If <tt>millis</tt> and <tt>nanos</tt> are
+	 * equal to 0, this method will wait forever for the processing to end.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* While waiting, this method doesn't consume CPU. <BR/>
-	 * * After a call to this method, call {@link #getFinalState()} to know if
-	 * the processing is finished or not. <BR/>
-	 * * If the processing as not yet been started (see
-	 * {@link #startProcessing()}), this method will return immediately. </i>
+	 * <ul>
+	 * <li>While waiting, this method doesn't consume CPU ;</li>
+	 * <li>After a call to this method, call {@link #getFinalState()} to know if
+	 * the processing is finished successfully or not ;</li>
+	 * <li>If the processing as not yet been started (see
+	 * {@link #startProcessing()}), this method will return immediately.</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param millis
@@ -222,8 +229,8 @@ public class ForeachThread implements Runnable {
 	 * @throws InterruptedException
 	 *             if the current thread was interrupted while waiting.
 	 * @throws IllegalArgumentException
-	 *             if <code>millis</code> is negative and/or if
-	 *             <code>nanos</code> is out of the range 0-999999.
+	 *             if <tt>millis</tt> is negative and/or if <tt>nanos</tt> is
+	 *             out of the range 0-999999.
 	 * 
 	 * @see {@link #getFinalState()}
 	 * @see {@link #startProcessing()}
@@ -241,10 +248,12 @@ public class ForeachThread implements Runnable {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>* To start the processing in a dedicated thread, call
-	 * {@link #startProcessing()}. <BR/>
-	 * * When the processing is done, call {@link #getFinalState()} to know if
-	 * the processing is finished successfully or not. </i>
+	 * <ul>
+	 * <li>To start the processing in a dedicated thread, call
+	 * {@link #startProcessing()} ;</li>
+	 * <li>As soon as it is finished, call {@link #getFinalState()} to know if
+	 * the processing is finished successfully or not ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @see {@link #getFinalState()}
@@ -266,15 +275,15 @@ public class ForeachThread implements Runnable {
 
 	/**
 	 * <p>
-	 * Set the PropertiesSet of this object, which contains the appropriate
-	 * 'item' definition.
+	 * Set the {@link PropertiesSet} of this object, which contains the
+	 * appropriate 'item' definition.
 	 * </p>
 	 * 
 	 * @param a
 	 *            is the {@link PropertiesSet} to set.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link PropertiesSet} is <code>null</code>.
+	 *             if the given {@link PropertiesSet} is <tt>null</tt>.
 	 * 
 	 */
 	private void setPropertiesSet(PropertiesSet ps) {
@@ -298,7 +307,7 @@ public class ForeachThread implements Runnable {
 	 *            is the parent {@link Foreach} to set.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Foreach} is <code>null</code>.
+	 *             if the given {@link Foreach} is <tt>null</tt>.
 	 * 
 	 */
 	private Foreach setForeach(Foreach p) {
@@ -309,11 +318,11 @@ public class ForeachThread implements Runnable {
 		return moForeach = p;
 	}
 
-	private CoreThread getThread() {
+	private MelodyThread getThread() {
 		return moThread;
 	}
 
-	private CoreThread setThread(CoreThread t) {
+	private MelodyThread setThread(MelodyThread t) {
 		return moThread = t;
 	}
 
@@ -322,17 +331,19 @@ public class ForeachThread implements Runnable {
 	 * Get the exception that causes the processing to fail.
 	 * </p>
 	 * 
-	 * @return <code>null</code> if the processing has not been started yet (see
-	 *         {@link #startProcessing()}). <BR/>
-	 *         <code>null</code> if the processing has been started but is not
-	 *         finished and no error has occurred yet. <BR/>
-	 *         <code>null</code> if the processing finished successfully. <BR/>
-	 *         an object of the class {@link InterruptedException} if the
-	 *         processing has been interrupted. <BR/>
-	 *         an object of the class {@link TaskException} if an error occurred
-	 *         during the processing. <BR/>
-	 *         an object of the class {@link Throwable} if an unmanaged error
-	 *         occurred during the processing.
+	 * @return <ul>
+	 *         <li><tt>null</tt> if the processing has not been started yet (see
+	 *         {@link #startProcessing()}) ;</li>
+	 *         <li><tt>null</tt> if the processing has been started but is not
+	 *         finished and no error has occurred yet ;</li>
+	 *         <li><tt>null</tt> if the processing finished successfully ;</li>
+	 *         <li>an object of the class {@link InterruptedException} if the
+	 *         processing has been interrupted ;</li>
+	 *         <li>an object of the class {@link TaskException} if an error
+	 *         occurred during the processing ;</li>
+	 *         <li>an object of the class {@link Throwable} if an unmanaged
+	 *         error occurred during the processing ;</li>
+	 *         </ul>
 	 * 
 	 * @see {@link #startProcessing()}
 	 */

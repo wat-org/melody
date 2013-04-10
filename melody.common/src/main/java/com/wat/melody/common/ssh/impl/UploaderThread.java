@@ -21,11 +21,7 @@ class UploaderThread implements Runnable {
 		setUploader(p);
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
-		initFinalError();
-	}
-
-	private void initFinalError() {
-		moFinalError = null;
+		setFinalError(null);
 	}
 
 	protected short getFinalState() {

@@ -14,6 +14,7 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.MelodyThread;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.event.ProcessingFinishedEvent;
 import com.wat.melody.api.event.ProcessingStartedEvent;
@@ -80,7 +81,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private boolean mbStopRequested;
 	private boolean mbPauseRequested;
 	private ThreadGroup moThreadGroup;
-	private Thread moThread;
+	private MelodyThread moThread;
 	private Throwable moFinalError;
 	private List<IProcessorListener> maListeners;
 	private IProcessorManager moParentProcessorManager;
@@ -469,13 +470,13 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		return getThread() != null;
 	}
 
-	private Thread getThread() {
+	private MelodyThread getThread() {
 		return moThread;
 	}
 
-	private Thread setThread(Thread v) {
+	private MelodyThread setThread(MelodyThread v) {
 		// Can be set to null, when cleaning
-		Thread previous = getThread();
+		MelodyThread previous = getThread();
 		moThread = v;
 		return previous;
 	}
@@ -840,9 +841,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
 		} finally {
-			// TODO : new - test => put this + ownPS creation into PM, and pop
-			// in finally
-			CoreThread.currentCoreThread().popContext();
+			Melody.popContext();
 		}
 	}
 }

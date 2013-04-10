@@ -19,8 +19,8 @@ import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.ITopLevelTask;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
@@ -457,8 +457,7 @@ public class TaskFactory {
 		// Doesn't apply to ITask which implements IShareProperties
 		PropertiesSet ownPs = implementsInterface(c, IShareProperties.class) ? ps
 				: ps.copy();
-		ITaskContext tc = new TaskContext(n, ownPs, getProcessorManager());
-		CoreThread.currentCoreThread().pushContext(tc);
+		Melody.pushContext(new TaskContext(n, ownPs, getProcessorManager()));
 
 		ITask t = null;
 		try {
