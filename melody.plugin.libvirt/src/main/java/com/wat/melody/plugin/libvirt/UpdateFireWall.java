@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -46,7 +47,7 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceFireWallRulesAreUpToDate(getFwRules());

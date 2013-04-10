@@ -7,7 +7,7 @@
 
 		<property name="IP" value="127.0.0.1"/>
 		<property name="property1" value="salut les filles"/>
-		
+
 		<echo message="Transfering files to 'IP:§[IP]§' ..."/>
 
 		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" maxpar="10" >

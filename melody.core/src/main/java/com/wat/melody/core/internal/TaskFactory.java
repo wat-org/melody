@@ -19,6 +19,7 @@ import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
+import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.ITopLevelTask;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
@@ -451,6 +452,14 @@ public class TaskFactory {
 
 		Class<? extends ITask> c = findTaskClass(n);
 		validateTaskHierarchy(c, n.getParentNode());
+		// Duplicate the PropertiesSet, so the Task can work with its own
+		// PropertiesSet
+		// Doesn't apply to ITask which implements IShareProperties
+		PropertiesSet ownPs = implementsInterface(c, IShareProperties.class) ? ps
+				: ps.copy();
+		ITaskContext tc = new TaskContext(n, ownPs, getProcessorManager());
+		CoreThread.currentCoreThread().pushContext(tc);
+
 		ITask t = null;
 		try {
 			t = c.newInstance();
@@ -462,16 +471,7 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a "
 					+ "bug have been introduced.", Ex);
 		}
-		// Duplicate the PropertiesSet, so the Task can work with its own
-		// PropertiesSet
-		// Doesn't apply to ITask which implements IShareProperties
-		PropertiesSet ownPs = implementsInterface(c, IShareProperties.class) ? ps
-				: ps.copy();
-		try {
-			t.setContext(new TaskContext(n, ownPs, getProcessorManager()));
-		} catch (TaskException Ex) {
-			throw new TaskFactoryException(Ex);
-		}
+
 		setAllMembers(t, n.getAttributes(), n.getNodeName(), ownPs);
 		setAllNestedElements(t, n.getChildNodes(), n.getNodeName(), ownPs);
 		try {

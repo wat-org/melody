@@ -73,7 +73,7 @@
 				<ssh
 					login="ec2-user"
 					host="§[§[item]§/@ip]§"
-					keypairname="sshkey-DEV">
+					keypair-name="sshkey-DEV">
 					<exec command="§[
 			string-join(
 				for $n in //module[@type='weblogic_app' and @app='c3s_fo' and @active='true']

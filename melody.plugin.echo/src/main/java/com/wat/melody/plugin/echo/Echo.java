@@ -8,7 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.files.FS;
@@ -56,7 +56,6 @@ public class Echo implements ITask {
 	 */
 	public static final String SEVERITY_ATTR = "severity";
 
-	private ITaskContext moContext;
 	private String msMessage;
 	private File moFile;
 	private boolean mbAppend;
@@ -64,16 +63,11 @@ public class Echo implements ITask {
 	private LogThreshold moSeverity;
 
 	public Echo() {
-		initContext();
 		setMessage("");
 		initFile();
 		setAppend(false);
 		setCreateParentDir(false);
 		setSeverity(null);
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	private void initFile() {
@@ -126,7 +120,7 @@ public class Echo implements ITask {
 	 */
 	@Override
 	public void doProcessing() throws EchoException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		String logMsg = ECHO + " message:'" + getMessage() + "', location:";
 		if (getFile() != null) {
@@ -146,7 +140,7 @@ public class Echo implements ITask {
 						Messages.EchoEx_IO_ERROR, ECHO), Ex);
 			}
 		} else if (getSeverity() != null) {
-			log(getSeverity(), logMsg + "logger");
+			log(getSeverity(), getMessage());
 		} else {
 			log.debug(logMsg + "console");
 			System.out.println(getMessage());
@@ -182,20 +176,6 @@ public class Echo implements ITask {
 		}
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
-	}
-
 	private String getMessage() {
 		return msMessage;
 	}
@@ -212,11 +192,11 @@ public class Echo implements ITask {
 		return moFile;
 	}
 
-	@Attribute(name = FILE_ATTR, description = "The '"
-			+ FILE_ATTR
-			+ "' attribute of the '"
-			+ ECHO
-			+ "' Task defines the file where the message will be written.\nIf this attribute is not specified, the message will be displayed in the standard output.")
+	@Attribute(name = FILE_ATTR, description = "The '" + FILE_ATTR
+			+ "' attribute of the '" + ECHO + "' Task defines the file where "
+			+ "the message will be written.\n"
+			+ "If this attribute is not specified, the message will be "
+			+ "displayed in the standard output.")
 	public File setFile(File f) throws IllegalFileException,
 			IllegalDirectoryException {
 		FS.validateFilePath(f.getPath());

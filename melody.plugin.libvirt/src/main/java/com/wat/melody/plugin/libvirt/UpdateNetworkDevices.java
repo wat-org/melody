@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.libvirt;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -70,7 +71,7 @@ public class UpdateNetworkDevices extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceNetworkDevicesAreUpToDate(

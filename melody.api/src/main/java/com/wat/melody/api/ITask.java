@@ -11,28 +11,6 @@ public interface ITask {
 
 	/**
 	 * <p>
-	 * Associate the given {@link ITaskContext} to this object.
-	 * </p>
-	 * 
-	 * @param tc
-	 *            is the {@link ITaskContext} to associate to this object.
-	 * 
-	 * @throws TaskException
-	 *             if an error occurred during this call.
-	 */
-	public void setContext(ITaskContext tc) throws TaskException;
-
-	/**
-	 * <p>
-	 * Get the {@link ITaskContainer} associated to this object.
-	 * </p>
-	 * 
-	 * @return the {@link ITaskContainer} associated to this object.
-	 */
-	public ITaskContext getContext();
-
-	/**
-	 * <p>
 	 * Place holder where this object's validation is done.
 	 * </p>
 	 * 

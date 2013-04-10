@@ -13,6 +13,7 @@ import com.wat.melody.api.IProcessorListener;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.event.ProcessingFinishedEvent;
 import com.wat.melody.api.event.ProcessingStartedEvent;
@@ -531,7 +532,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		// Will be automatically destroyed
 		getThreadGroup().setDaemon(true);
 		// Create a dedicated Thread which will perform the processing
-		setThread(new Thread(getThreadGroup(), this, sTGName));
+		setThread(new CoreThread(getThreadGroup(), this, sTGName));
 		// Start the dedicated thread (call the method run - see Thread)
 		getThread().start();
 	}
@@ -811,7 +812,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			Object[] args = new Object[] {
 					task.getClass().getSimpleName().toLowerCase(),
 					State.INTERRUPTED,
-					Doc.getNodeLocation(task.getContext().getNode()) };
+					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			InterruptedException e = new InterruptedException(Messages.bind(
 					Messages.TaskEx_PROCESS_FINAL_STATE, args));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);
@@ -820,7 +821,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			Object[] args = new Object[] {
 					task.getClass().getSimpleName().toLowerCase(),
 					State.FAILED,
-					Doc.getNodeLocation(task.getContext().getNode()) };
+					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			TaskException e = new TaskException(Messages.bind(
 					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
 			fireTaskFinishedEvent(task, State.FAILED, e);
@@ -833,11 +834,15 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			Object[] args = new Object[] {
 					task.getClass().getSimpleName().toLowerCase(),
 					State.CRITICAL,
-					Doc.getNodeLocation(task.getContext().getNode()) };
+					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			TaskException e = new TaskException(Messages.bind(
 					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
+		} finally {
+			// TODO : new - test => put this + ownPS creation into PM, and pop
+			// in finally
+			CoreThread.currentCoreThread().popContext();
 		}
 	}
 }

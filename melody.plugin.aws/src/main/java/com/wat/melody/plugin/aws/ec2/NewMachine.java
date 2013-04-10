@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.w3c.dom.Node;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -174,7 +175,8 @@ public class NewMachine extends AbstractOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepositoryPath() == null) {
-			setKeyPairRepositoryPath(getSshConfiguration().getKeyPairRepositoryPath());
+			setKeyPairRepositoryPath(getSshPlugInConf()
+					.getKeyPairRepositoryPath());
 		}
 		// Validate everything is provided.
 		if (getInstanceType() == null) {
@@ -219,7 +221,7 @@ public class NewMachine extends AbstractOperation {
 		// Enable the given KeyPair.
 		try {
 			enableKeyPair(getKeyPairRepositoryPath(), getKeyPairName(),
-					getSshConfiguration().getKeyPairSize(), getPassphrase());
+					getSshPlugInConf().getKeyPairSize(), getPassphrase());
 		} catch (IOException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -228,7 +230,7 @@ public class NewMachine extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws AwsException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceIsCreated(getInstanceType(),

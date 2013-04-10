@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.libvirt;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -23,7 +24,7 @@ public class StartMachine extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceIsStarted(getTimeout());

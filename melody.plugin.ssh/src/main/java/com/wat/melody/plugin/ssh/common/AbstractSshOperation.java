@@ -3,7 +3,7 @@ package com.wat.melody.plugin.ssh.common;
 import java.io.IOException;
 
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -30,68 +30,59 @@ import com.wat.melody.plugin.ssh.common.exception.SshException;
 public abstract class AbstractSshOperation implements ITask {
 
 	/**
-	 * XML attribute in the SD which define the ip of the remote system to
-	 * connect to
+	 * Defines the remote system ip or fqdn.
 	 */
 	public static final String HOST_ATTR = "host";
 
 	/**
-	 * XML attribute in the SD which define the port of the ssh daemon on the
-	 * remote system to connect to
+	 * Defines the remote system port (e.g. the port of ssh daemon on the remote
+	 * system).
 	 */
 	public static final String PORT_ATTR = "port";
 
 	/**
-	 * XML attribute in the SD which define how the remote system to connect to
-	 * should be trusted. 'false' means that the remote system must have been
-	 * previously registered in the knownhosts file in order to connect to.
-	 * 'true' means that the remote system to connect to will be automatically
-	 * trusted, even if it is not registered in the knownhosts file.
+	 * Defines how the remote system to connect to should be trusted.
+	 * <ul>
+	 * <li>'false' means that the remote system must have been previously
+	 * registered in the knownhosts file in order to connect to ;</li>
+	 * <li>'true' means that the remote system to connect to will be
+	 * automatically trusted, even if it is not registered in the knownhosts
+	 * file ;</li>
+	 * </ul>
 	 */
 	public static final String TRUST_ATTR = "trust";
 
 	/**
-	 * XML attribute in the SD which define the remote account to connect to
+	 * Defines the user to connect with on the remote system.
 	 */
 	public static final String LOGIN_ATTR = "login";
 
 	/**
-	 * XML attribute in the SD which is either the password of the remote
-	 * account, or the password of the keypair.
+	 * Defines the password of the user used to connect to the remote system. If
+	 * a keypair is provide, defines the keypair's passphrase.
 	 */
 	public static final String PASS_ATTR = "password";
 
 	/**
-	 * XML attribute in the SD which define the path of the keypair repository
-	 * which contains the keypair used to connect to the remote system.
+	 * Defines the path of the keypair repository which contains the keypair
+	 * used to connect to the remote system.
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
 	/**
-	 * XML attribute in the SD which define the name of the keypair to use to
-	 * connect to the remote system; The keypair will be found/created in the
-	 * keypair repositoy.
+	 * Defines the name of the keypair - relative to the keypair-repository - to
+	 * use to connect to the remote system. If the keypair-repository doesn't
+	 * contains such keypair, it will be automatically created. If a passphrase
+	 * was provided, the keypair will be encrypted with it.
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
-	private ITaskContext moContext;
-	private SshPlugInConfiguration moPluginConf;
 	private ISshUserDatas moUserDatas;
 	private ISshConnectionDatas moCnxDatas;
 
 	public AbstractSshOperation() {
-		initContext();
-		initPluginConf();
 		setUserDatas(new SshUserDatas());
 		setConnectionDatas(new SshConnectionDatas());
-	}
-
-	private void initContext() {
-		moContext = null;
-	}
-
-	private void initPluginConf() {
-		moPluginConf = null;
 	}
 
 	private ISshUserDatas getUserDatas() {
@@ -125,13 +116,13 @@ public abstract class AbstractSshOperation implements ITask {
 			return;
 		}
 		if (getKeyPairRepository() == null) {
-			setKeyPairRepository(getPluginConf().getKeyPairRepositoryPath());
+			setKeyPairRepository(getSshPlugInConf().getKeyPairRepositoryPath());
 		}
 		KeyPairRepositoryPath kprp = getKeyPairRepository();
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		if (!kpr.containsKeyPair(getKeyPairName())) {
 			try {
-				kpr.createKeyPair(getKeyPairName(), getPluginConf()
+				kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
 						.getKeyPairSize(), getPassword());
 			} catch (IOException Ex) {
 				throw new SshException(Ex);
@@ -162,12 +153,14 @@ public abstract class AbstractSshOperation implements ITask {
 
 	/**
 	 * Can be override by subclasses to provide another ISshSession.
+	 * 
+	 * @throws SshException
 	 */
-	protected ISshSession createSession() {
+	protected ISshSession createSession() throws SshException {
 		ISshSession session = new SshSession();
 		session.setUserDatas(getUserDatas());
 		session.setConnectionDatas(getConnectionDatas());
-		session.setSessionConfiguration(getPluginConf());
+		session.setSessionConfiguration(getSshPlugInConf());
 		return session;
 	}
 
@@ -190,57 +183,13 @@ public abstract class AbstractSshOperation implements ITask {
 		}
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	/**
-	 * <p>
-	 * Set the {@link ITaskContext} of this object with the given
-	 * {@link ITaskContext} and retrieve the Ssh Plug-In
-	 * {@link SshPlugInConfiguration}.
-	 * </p>
-	 * 
-	 * @param p
-	 *            is the {@link ITaskContext} to set.
-	 * 
-	 * @throws SshException
-	 *             if an error occurred while retrieving the Ssh Plug-In
-	 *             {@link SshPlugInConfiguration}.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link ITaskContext} is <tt>null</tt>.
-	 */
-	@Override
-	public void setContext(ITaskContext p) throws SshException {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
-
-		// Get the configuration at the very beginning
+	protected SshPlugInConfiguration getSshPlugInConf() throws SshException {
 		try {
-			setPluginConf(SshPlugInConfiguration.get(getContext()
-					.getProcessorManager()));
+			return SshPlugInConfiguration.get(Melody.getContext()
+					.getProcessorManager());
 		} catch (PlugInConfigurationException Ex) {
 			throw new SshException(Ex);
 		}
-
-	}
-
-	protected SshPlugInConfiguration getPluginConf() {
-		return moPluginConf;
-	}
-
-	public SshPlugInConfiguration setPluginConf(SshPlugInConfiguration p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Configuration.");
-		}
-		SshPlugInConfiguration previous = getPluginConf();
-		moPluginConf = p;
-		return previous;
 	}
 
 	public Host getHost() {

@@ -7,7 +7,7 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
@@ -43,22 +43,16 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	 */
 	public static final String MAXPAR_ATTR = "maxPar";
 
-	private ITaskContext moContext;
 	private List<Node> maNodes;
 	private LockId moLockId;
 	private LockScope moLockScope;
 	private MaxPar moMaxPar;
 
 	public Synchronize() {
-		initContext();
 		setNodes(new ArrayList<Node>());
 		setLockId(LockId.DEFAULT_LOCK_ID);
 		setLockScope(LockScope.CURRENT);
 		setMaxPar(MaxPar.SEQUENTIAL);
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	@Override
@@ -93,7 +87,7 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	public void doRun() throws SynchronizeException, InterruptedException {
 		try {
 			for (Node n : getNodes()) {
-				getContext().processTask(n);
+				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
 			throw new MelodyInterruptedException("Synchronize task have been "
@@ -101,21 +95,6 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 		} catch (TaskException Ex) {
 			throw new SynchronizeException(Ex);
 		}
-	}
-
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ ITaskContext.class.getCanonicalName() + ".");
-		}
-		moContext = p;
 	}
 
 	private List<Node> getNodes() {

@@ -21,29 +21,29 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		AbstractSshOperation {
 
 	/**
-	 * XML attribute in the SD which define the management master user to use to
-	 * connect to remote system for keypair deployment.
+	 * Defines the management master user to use to connect to remote system for
+	 * keypair deployment.
 	 */
 	public static final String MGMT_MASTER_USER_ATTR = "mgmt-master-login";
 
 	/**
-	 * XML attribute in the SD which define the management master password to
-	 * use to connect to remote system for keypair deployment. It can be either
-	 * the password of the management master user, or the password of the
-	 * keypair of the management master user.
+	 * Defines the management master password to use to connect to remote system
+	 * for keypair deployment. It can be either the password of the management
+	 * master user, or the password of the management keypair.
 	 */
 	public static final String MGMT_MASTER_PASS_ATTR = "mgmt-master-pass";
 
 	/**
-	 * XML attribute in the SD which define the path of the keypair repository
-	 * which contains the keypair used to connect to the remote system for
-	 * keypair deployment.
+	 * Defines the path of the keypair repository which contains the management
+	 * keypair used to connect to the remote system for keypair deployment.
 	 */
 	public static final String MGMT_MASTER_REPO_ATTR = "mgmt-master-repo";
 
 	/**
-	 * XML attribute in the SD which define the management master keypairname to
-	 * use to connect to remote system for keypair deployment.
+	 * Defines the management master keypair - relative to the
+	 * keypair-repository - to use to connect to remote system for keypair
+	 * deployment. If the keypair-repository doesn't contains such keypair, it
+	 * will not be automatically created.
 	 */
 	public static final String MGMT_MASTER_KEY_ATTR = "mgmt-master-key";
 
@@ -69,7 +69,7 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		super.validate();
 
 		// if Ssh Management Feature is disable => exit
-		if (getPluginConf().getMgmtEnable() == false) {
+		if (getSshPlugInConf().getMgmtEnable() == false) {
 			return;
 		}
 
@@ -79,13 +79,13 @@ public abstract class AbstractSshConnectionManagedOperation extends
 					Messages.SshEx_MISSING_USER_KEYPAIRNAME_ATTR, new Object[] {
 							KEYPAIR_NAME_ATTR,
 							SshPlugInConfiguration.MGMT_ENABLE,
-							getPluginConf().getFilePath() }));
+							getSshPlugInConf().getFilePath() }));
 		}
 
 		// Verify that the Management User Login is defined
 		if (getManagementLogin() == null
-				&& getPluginConf().getManagementLogin() != null) {
-			setManagementLogin(getPluginConf().getManagementLogin());
+				&& getSshPlugInConf().getManagementLogin() != null) {
+			setManagementLogin(getSshPlugInConf().getManagementLogin());
 		}
 		if (getManagementLogin() == null) {
 			throw new SshException(Messages.bind(
@@ -93,19 +93,20 @@ public abstract class AbstractSshConnectionManagedOperation extends
 							MGMT_MASTER_USER_ATTR,
 							SshPlugInConfiguration.MGMT_LOGIN,
 							SshPlugInConfiguration.MGMT_ENABLE,
-							getPluginConf().getFilePath() }));
+							getSshPlugInConf().getFilePath() }));
 		}
 
 		// Verify that the Management User Credentials are defined
 		if (getManagementKeyPairRepositoryPath() == null) {
-			setManagementKeyPairRepositoryPath(getPluginConf()
+			setManagementKeyPairRepositoryPath(getSshPlugInConf()
 					.getKeyPairRepositoryPath());
 		}
 		if (getManagementKeyPairName() == null) {
-			setManagementKeyPairName(getPluginConf().getManagementKeyPairName());
+			setManagementKeyPairName(getSshPlugInConf()
+					.getManagementKeyPairName());
 		}
 		if (getManagementPassword() == null) {
-			setManagementPassword(getPluginConf().getManagementPassword());
+			setManagementPassword(getSshPlugInConf().getManagementPassword());
 		}
 		if (getManagementKeyPairName() == null
 				&& getManagementPassword() == null) {
@@ -115,7 +116,7 @@ public abstract class AbstractSshConnectionManagedOperation extends
 							SshPlugInConfiguration.MGMT_PASSWORD,
 							SshPlugInConfiguration.MGMT_KEYPAIRNAME,
 							SshPlugInConfiguration.MGMT_ENABLE,
-							getPluginConf().getFilePath() }));
+							getSshPlugInConf().getFilePath() }));
 		}
 
 		// Create the Management User KeyPair if it doesn't exists
@@ -126,8 +127,9 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		if (!kpr.containsKeyPair(getManagementKeyPairName())) {
 			try {
-				kpr.createKeyPair(getManagementKeyPairName(), getPluginConf()
-						.getKeyPairSize(), getManagementPassword());
+				kpr.createKeyPair(getManagementKeyPairName(),
+						getSshPlugInConf().getKeyPairSize(),
+						getManagementPassword());
 			} catch (IOException Ex) {
 				throw new SshException(Ex);
 			}
@@ -136,10 +138,12 @@ public abstract class AbstractSshConnectionManagedOperation extends
 
 	/**
 	 * Create a Managed Session, which will deploy user's key if necessary.
+	 * 
+	 * @throws SshException
 	 */
 	@Override
-	protected ISshSession createSession() {
-		if (getPluginConf().getMgmtEnable() == false) {
+	protected ISshSession createSession() throws SshException {
+		if (getSshPlugInConf().getMgmtEnable() == false) {
 			return super.createSession();
 		}
 		SshManagedSession session = new SshManagedSession(super.createSession());

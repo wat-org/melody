@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
@@ -141,7 +142,7 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 				String fileContent = null;
 				if (is.getTemplate()) {
 					try {
-						fileContent = getContext().expand(
+						fileContent = Melody.getContext().expand(
 								Paths.get(is.getFile().toString()));
 					} catch (IllegalFileException Ex) {
 						throw new RuntimeException("Unexpected error while "

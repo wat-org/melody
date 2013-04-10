@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
@@ -36,7 +36,6 @@ public class Call extends Ref implements ITask {
 	private static final short INTERRUPTED = 2;
 	private static final short CRITICAL = 4;
 
-	private ITaskContext moContext;
 	private List<Ref> maCallRefs;
 
 	private short miState;
@@ -51,16 +50,11 @@ public class Call extends Ref implements ITask {
 	 */
 	public Call() {
 		super();
-		initContext();
 		setRelatedCall(this);
 		setCallRefs(new ArrayList<Ref>());
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setExceptionsSet(new MelodyConsolidatedException());
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	/**
@@ -121,7 +115,7 @@ public class Call extends Ref implements ITask {
 			}
 			try {
 				pm.getSequenceDescriptor().load(
-						getContext().getProcessorManager()
+						Melody.getContext().getProcessorManager()
 								.getSequenceDescriptor());
 			} catch (IllegalOrderException Ex) {
 				throw new CallException(Ex);
@@ -209,7 +203,7 @@ public class Call extends Ref implements ITask {
 	 */
 	private void startProcessing()
 			throws ProcessorManagerConfigurationException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		int index = 1;
 		for (IProcessorManager pm : getIProcessorManagers()) {
@@ -241,14 +235,15 @@ public class Call extends Ref implements ITask {
 			if (!running) {
 				return;
 			}
-			if (getContext().getProcessorManager().isPauseRequested()) {
+			if (Melody.getContext().getProcessorManager().isPauseRequested()) {
 				// if the processor is paused => propagate the pause to all
 				// sub-ProcessorManager
 				for (IProcessorManager pm : getIProcessorManagers()) {
 					pm.pauseProcessing();
 				}
 				// while the processor is paused => sleep
-				while (getContext().getProcessorManager().isPauseRequested()) {
+				while (Melody.getContext().getProcessorManager()
+						.isPauseRequested()) {
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException Ex) {
@@ -259,7 +254,8 @@ public class Call extends Ref implements ITask {
 				}
 				// if the pause ended and if it was not because of a stop =>
 				// resume all sub-ProcessorManager
-				if (!getContext().getProcessorManager().isStopRequested()) {
+				if (!Melody.getContext().getProcessorManager()
+						.isStopRequested()) {
 					for (IProcessorManager pm : getIProcessorManagers()) {
 						pm.resumeProcessing();
 					}
@@ -313,20 +309,6 @@ public class Call extends Ref implements ITask {
 		}
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
-	}
-
 	private List<Ref> getCallRefs() {
 		return maCallRefs;
 	}
@@ -341,15 +323,15 @@ public class Call extends Ref implements ITask {
 		return previous;
 	}
 
+	protected ThreadGroup getThreadGroup() {
+		return moThreadGroup;
+	}
+
 	private ThreadGroup setThreadGroup(ThreadGroup tg) {
 		// Can be null
 		ThreadGroup previous = getThreadGroup();
 		moThreadGroup = tg;
 		return previous;
-	}
-
-	protected ThreadGroup getThreadGroup() {
-		return moThreadGroup;
 	}
 
 	/**

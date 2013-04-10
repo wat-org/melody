@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
@@ -36,20 +36,14 @@ public class SetEDAttrValue implements ITask {
 	 */
 	public static final String NEW_VALUE_ATTR = "newValue";
 
-	private ITaskContext moContext;
 	private String msItems;
 	private String msNewValue;
 	private NodeList moAttributesToUpdate;
 
 	public SetEDAttrValue() {
-		initContext();
 		initItems();
 		initNewValue();
 		initAttributes();
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	private void initItems() {
@@ -71,9 +65,9 @@ public class SetEDAttrValue implements ITask {
 	@Override
 	public void doProcessing() throws SetEDAttrValueException,
 			InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
-		IResourcesDescriptor env = getContext().getProcessorManager()
+		IResourcesDescriptor env = Melody.getContext().getProcessorManager()
 				.getResourcesDescriptor();
 
 		for (int i = 0; i < getAttributesToUpdate().getLength(); i++) {
@@ -87,20 +81,6 @@ public class SetEDAttrValue implements ITask {
 						+ "' can not be found in the Resources Descriptor.", Ex);
 			}
 		}
-	}
-
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
 	}
 
 	public String getItems() {
@@ -118,7 +98,7 @@ public class SetEDAttrValue implements ITask {
 					Messages.SetEDAttrEx_UPDATE_ED_ITEMS_EMPTY, items));
 		}
 
-		IResourcesDescriptor env = getContext().getProcessorManager()
+		IResourcesDescriptor env = Melody.getContext().getProcessorManager()
 				.getResourcesDescriptor();
 		try {
 			setAttributesToUpdate(env.evaluateAsNodeList(items));

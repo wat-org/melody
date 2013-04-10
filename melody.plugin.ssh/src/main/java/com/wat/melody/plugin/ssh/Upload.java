@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
@@ -52,6 +54,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	private int miMaxPar;
 
 	private List<SimpleResource> maSimpleResourcesList;
+	private ITaskContext moTaskContext;
 
 	public Upload() {
 		super();
@@ -62,6 +65,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 			throw new RuntimeException("TODO impossible");
 		}
 		setSimpleResourcesList(new ArrayList<SimpleResource>());
+		setContext(Melody.getContext());
 	}
 
 	@Override
@@ -217,6 +221,16 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 		}
 		List<SimpleResource> previous = getSimpleResourcesList();
 		maSimpleResourcesList = aft;
+		return previous;
+	}
+
+	private ITaskContext getContext() {
+		return moTaskContext;
+	}
+
+	private ITaskContext setContext(ITaskContext tc) {
+		ITaskContext previous = getContext();
+		moTaskContext = tc;
 		return previous;
 	}
 

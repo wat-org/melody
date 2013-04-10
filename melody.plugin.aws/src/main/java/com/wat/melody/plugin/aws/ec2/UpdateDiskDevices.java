@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.aws.ec2;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
@@ -76,7 +77,7 @@ public class UpdateDiskDevices extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws AwsException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceDiskDevicesAreUpToDate(

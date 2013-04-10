@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
@@ -159,7 +160,7 @@ public class Ref {
 		try {
 			for (OrderName order : orders) {
 				IProcessorManager spm = null;
-				spm = getRelatedCall().getContext().createSubProcessorManager();
+				spm = Melody.getContext().createSubProcessorManager();
 				addIProcessorManager(spm);
 				if (getSDPath() != null) {
 					spm.getSequenceDescriptor().load(getSDPath());

@@ -12,7 +12,7 @@ import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
@@ -112,20 +112,14 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 		}
 	}
 
-	private ITaskContext moContext;
 	private OrderName msName;
 	private String msDescription;
 	private List<Node> maNodes;
 
 	public Order() {
-		initContext();
 		initName();
 		initDescription();
 		initNodes();
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	private void initName() {
@@ -160,7 +154,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 * 
 	 */
 	public Node findOrder(OrderName order) throws IllegalOrderException {
-		return findOrder(order, getContext().getProcessorManager()
+		return findOrder(order, Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor());
 	}
 
@@ -183,7 +177,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 *             <code>null</code>.
 	 */
 	public NodeList findOrders(OrderName order) throws IllegalOrderException {
-		return findOrders(order, getContext().getProcessorManager()
+		return findOrders(order, Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor());
 	}
 
@@ -208,7 +202,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	public void doProcessing() throws OrderException, InterruptedException {
 		try {
 			for (Node n : getNodes()) {
-				getContext().processTask(n);
+				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
 			throw new InterruptedException(Messages.bind(
@@ -216,20 +210,6 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 		} catch (TaskException Ex) {
 			throw new OrderException(Ex);
 		}
-	}
-
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
 	}
 
 	public OrderName getName() {

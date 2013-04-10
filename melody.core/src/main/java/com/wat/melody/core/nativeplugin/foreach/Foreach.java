@@ -9,7 +9,7 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.MelodyConsolidatedException;
 import com.wat.melody.common.properties.PropertiesSet;
@@ -52,7 +52,6 @@ public class Foreach implements ITask, ITaskContainer {
 	public static final short INTERRUPTED = 2;
 	public static final short CRITICAL = 4;
 
-	private ITaskContext moContext;
 	private String msItems;
 	private PropertyName msItemName;
 	private int miMaxPar;
@@ -65,7 +64,6 @@ public class Foreach implements ITask, ITaskContainer {
 
 	public Foreach() {
 		// Initialize members
-		initContext();
 		initItems();
 		initItemName();
 		try {
@@ -78,10 +76,6 @@ public class Foreach implements ITask, ITaskContainer {
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
 		setExceptionsSet(new MelodyConsolidatedException());
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	private void initItems() {
@@ -191,7 +185,7 @@ public class Foreach implements ITask, ITaskContainer {
 	private void initializeForeachThreads() {
 		List<Node> targets = null;
 		try {
-			targets = getContext().getProcessorManager()
+			targets = Melody.getContext().getProcessorManager()
 					.getResourcesDescriptor().evaluateTargets(getItems());
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
@@ -201,7 +195,7 @@ public class Foreach implements ITask, ITaskContainer {
 		}
 		int index = 1;
 		for (Node target : targets) {
-			PropertiesSet ps = getContext().getProperties().copy();
+			PropertiesSet ps = Melody.getContext().getProperties().copy();
 			// Add the property '<ItemName>=<XPath position of currentItem>', so
 			// that '§[<ItemName>]§' will be expanded with the item's XPath
 			// position
@@ -228,7 +222,7 @@ public class Foreach implements ITask, ITaskContainer {
 	private void startForeachThreads() throws InterruptedException {
 		if (getMaxPar() == 0) {
 			for (ForeachThread ft : getThreadsList()) {
-				getContext().handleProcessorStateUpdates();
+				Melody.getContext().handleProcessorStateUpdates();
 				ft.startProcessing();
 			}
 			return;
@@ -238,7 +232,7 @@ public class Foreach implements ITask, ITaskContainer {
 		List<ForeachThread> runningThreads = new ArrayList<ForeachThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
-			getContext().handleProcessorStateUpdates();
+			Melody.getContext().handleProcessorStateUpdates();
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
 				ForeachThread ft = getThreadsList().get(--threadToLaunchID);
@@ -306,20 +300,6 @@ public class Foreach implements ITask, ITaskContainer {
 		}
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext context) {
-		if (context == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = context;
-	}
-
 	/**
 	 * <p>
 	 * Get the XPath expression which allow to retrieve Targets.
@@ -359,7 +339,7 @@ public class Foreach implements ITask, ITaskContainer {
 					Messages.ForeachEx_EMPTY_ITEMS_ATTR, sItems));
 		}
 		try {
-			getContext().getProcessorManager().getResourcesDescriptor()
+			Melody.getContext().getProcessorManager().getResourcesDescriptor()
 					.evaluateTargets(sItems);
 		} catch (XPathExpressionException Ex) {
 			throw new ForeachException(Messages.bind(

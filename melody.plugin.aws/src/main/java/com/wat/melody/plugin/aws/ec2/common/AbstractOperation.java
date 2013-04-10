@@ -11,7 +11,7 @@ import org.w3c.dom.NodeList;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -54,9 +54,6 @@ abstract public class AbstractOperation implements ITask,
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
-	private ITaskContext moContext;
-	private AwsPlugInConfiguration moPluginConf;
-	private SshPlugInConfiguration moSshPluginConf;
 	private AmazonEC2 moEC2;
 	private InstanceController moInstance;
 	private String msInstanceId;
@@ -66,22 +63,12 @@ abstract public class AbstractOperation implements ITask,
 	private long mlTimeout;
 
 	public AbstractOperation() {
-		initContext();
-		initPluginConf();
 		initEC2();
 		initInstance();
 		initTargetNode();
 		initInstanceId();
 		initRegion();
 		initTimeout();
-	}
-
-	private void initContext() {
-		moContext = null;
-	}
-
-	private void initPluginConf() {
-		moPluginConf = null;
 	}
 
 	private void initEC2() {
@@ -235,7 +222,8 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	public IResourcesDescriptor getRD() {
-		return getContext().getProcessorManager().getResourcesDescriptor();
+		return Melody.getContext().getProcessorManager()
+				.getResourcesDescriptor();
 	}
 
 	public String getTargetNodeLocation() {
@@ -247,83 +235,34 @@ abstract public class AbstractOperation implements ITask,
 				.resizeAwsInstance(getEc2(), getInstanceId(), instanceType);
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	/**
-	 * <p>
-	 * Set the {@link ITaskContext} of this object with the given
-	 * {@link ITaskContext}. Retrieve the Aws Plug-In
-	 * {@link AwsPlugInConfiguration} and the Ssh Plug-In
-	 * {@link SshPlugInConfiguration}.
-	 * </p>
-	 * 
-	 * @param p
-	 *            is the {@link ITaskContext} to set.
-	 * 
-	 * @throws AwsException
-	 *             if an error occurred while retrieving the Aws Plug-In
-	 *             {@link AwsPlugInConfiguration}.
-	 * @throws AwsException
-	 *             if an error occurred while retrieving the Ssh Plug-In
-	 *             {@link SshPlugInConfiguration}.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link ITaskContext} is <tt>null</tt>.
-	 */
-	@Override
-	public void setContext(ITaskContext p) throws AwsException {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
-
-		// Get the configuration at the very beginning
+	protected AwsPlugInConfiguration getPluginConf() throws AwsException {
 		try {
-			setPluginConf(AwsPlugInConfiguration.get(getContext()
-					.getProcessorManager()));
-		} catch (PlugInConfigurationException Ex) {
-			throw new AwsException(Ex);
-		}
-
-		// Get the Ssh Plug-In configuration at the very beginning
-		try {
-			setSshPluginConf(SshPlugInConfiguration.get(getContext()
-					.getProcessorManager()));
+			return AwsPlugInConfiguration.get(Melody.getContext()
+					.getProcessorManager());
 		} catch (PlugInConfigurationException Ex) {
 			throw new AwsException(Ex);
 		}
 	}
 
-	protected AwsPlugInConfiguration getPluginConf() {
-		return moPluginConf;
-	}
-
-	public AwsPlugInConfiguration setPluginConf(AwsPlugInConfiguration p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Configuration.");
+	public SshPlugInConfiguration getSshPlugInConf() throws AwsException {
+		try {
+			return SshPlugInConfiguration.get(Melody.getContext()
+					.getProcessorManager());
+		} catch (PlugInConfigurationException Ex) {
+			throw new AwsException(Ex);
 		}
-		AwsPlugInConfiguration previous = getPluginConf();
-		moPluginConf = p;
-		return previous;
 	}
 
 	@Override
 	public SshPlugInConfiguration getSshConfiguration() {
-		return moSshPluginConf;
-	}
-
-	public SshPlugInConfiguration setSshPluginConf(SshPlugInConfiguration p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Configuration.");
+		try {
+			return getSshPlugInConf();
+		} catch (AwsException Ex) {
+			throw new RuntimeException("Unexpected error when retrieving Ssh "
+					+ " Plug-In configuration. "
+					+ "Because such configuration registration have been "
+					+ "previously prouved, such error cannot happened.");
 		}
-		SshPlugInConfiguration previous = getSshConfiguration();
-		moSshPluginConf = p;
-		return previous;
 	}
 
 	protected AmazonEC2 getEc2() {

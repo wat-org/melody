@@ -2,6 +2,7 @@ package com.wat.melody.plugin.libvirt;
 
 import java.util.Arrays;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -81,7 +82,7 @@ public class ResizeMachine extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 		
 		/*
 		 * TODO : implement resize.

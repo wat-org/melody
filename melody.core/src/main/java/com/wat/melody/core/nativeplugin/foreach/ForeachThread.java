@@ -5,9 +5,11 @@ import java.lang.Thread.State;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.core.internal.CoreThread;
 
 /**
  * <p>
@@ -21,7 +23,7 @@ public class ForeachThread implements Runnable {
 
 	private PropertiesSet moPropertiesSet;
 	private Foreach moForeach;
-	private Thread moThread;
+	private CoreThread moThread;
 	private Throwable moFinalError;
 
 	/**
@@ -59,7 +61,7 @@ public class ForeachThread implements Runnable {
 	public ForeachThread(Foreach p, int index, PropertiesSet ps) {
 		setPropertiesSet(ps);
 		setForeach(p);
-		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
+		setThread(new CoreThread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
 		initFinalError();
 	}
@@ -133,6 +135,7 @@ public class ForeachThread implements Runnable {
 	 * @see {@link #waitTillProcessingIsDone(long, int)}
 	 */
 	public void startProcessing() {
+		getThread().pushContext(Melody.getContext());
 		getThread().start();
 	}
 
@@ -250,7 +253,7 @@ public class ForeachThread implements Runnable {
 	public void run() {
 		try {
 			for (Node n : getForeach().getNodes()) {
-				getForeach().getContext().processTask(n, getPropertiesSet());
+				Melody.getContext().processTask(n, getPropertiesSet());
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);
@@ -306,11 +309,11 @@ public class ForeachThread implements Runnable {
 		return moForeach = p;
 	}
 
-	private Thread getThread() {
+	private CoreThread getThread() {
 		return moThread;
 	}
 
-	private Thread setThread(Thread t) {
+	private CoreThread setThread(CoreThread t) {
 		return moThread = t;
 	}
 

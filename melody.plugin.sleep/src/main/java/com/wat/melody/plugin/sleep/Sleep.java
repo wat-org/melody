@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 
 /**
@@ -26,16 +26,10 @@ public class Sleep implements ITask {
 	 */
 	public static final String MILLIS_ATTR = "millis";
 
-	private ITaskContext moContext;
 	private SleepTimeout moTimeout;
 
 	public Sleep() {
-		initContext();
 		setTimeout(SleepTimeout.DEFAULT_VALUE);
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	@Override
@@ -51,24 +45,10 @@ public class Sleep implements ITask {
 	 */
 	@Override
 	public void doProcessing() throws InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 		log.debug(Messages.bind(Messages.SleepMsg_INFO, getTimeout()
 				.getTimeoutInMillis()));
 		Thread.sleep(getTimeout().getTimeoutInMillis());
-	}
-
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
 	}
 
 	private SleepTimeout getTimeout() {

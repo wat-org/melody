@@ -8,8 +8,8 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
-import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.ITopLevelTask;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
@@ -48,22 +48,16 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 
-	private ITaskContext moContext;
 	private File msBaseDir;
 	private OrderName msDefault;
 	private String msDescription;
 	private List<Node> maNodes;
 
 	public Sequence() {
-		initContext();
 		initBaseDir();
 		initDefault();
 		initDescription();
 		initNodes();
-	}
-
-	private void initContext() {
-		moContext = null;
 	}
 
 	private void initBaseDir() {
@@ -92,10 +86,11 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 		// Note: Injected Properties predates declared property in the sequence
 		// task (and property can be injected via the command line or via the
 		// configuration file)
-		if (getContext().getProperties().containsKey(p.getName().getValue())) {
+		if (Melody.getContext().getProperties()
+				.containsKey(p.getName().getValue())) {
 			return;
 		}
-		getContext().getProperties().put(p);
+		Melody.getContext().getProperties().put(p);
 	}
 
 	/**
@@ -164,9 +159,9 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	@Override
 	public void doProcessing() throws SequenceException, InterruptedException {
 		try {
-			for (int i = 0; i < getContext().getProcessorManager()
+			for (int i = 0; i < Melody.getContext().getProcessorManager()
 					.getSequenceDescriptor().countOrders(); i++) {
-				processOrder(getContext().getProcessorManager()
+				processOrder(Melody.getContext().getProcessorManager()
 						.getSequenceDescriptor().getOrder(i));
 			}
 		} catch (InterruptedException Ex) {
@@ -183,24 +178,10 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 			if (n.getNodeName().equalsIgnoreCase(Order.class.getSimpleName())
 					&& n.getAttributes().getNamedItem(Order.NAME_ATTR)
 							.getNodeValue().equals(order.getValue())) {
-				getContext().processTask(n);
+				Melody.getContext().processTask(n);
 				return;
 			}
 		}
-	}
-
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	@Override
-	public void setContext(ITaskContext p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
 	}
 
 	public File getBaseDir() {
@@ -214,7 +195,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 					+ "Cannot be null.");
 		}
 		try {
-			getContext().getProcessorManager().getSequenceDescriptor()
+			Melody.getContext().getProcessorManager().getSequenceDescriptor()
 					.setBaseDir(name);
 		} catch (IllegalDirectoryException Ex) {
 			throw new SequenceException(Ex);
@@ -255,11 +236,11 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		if (getContext().getProcessorManager().getSequenceDescriptor()
+		if (Melody.getContext().getProcessorManager().getSequenceDescriptor()
 				.countOrders() == 0) {
 			try {
-				getContext().getProcessorManager().getSequenceDescriptor()
-						.addOrder(order);
+				Melody.getContext().getProcessorManager()
+						.getSequenceDescriptor().addOrder(order);
 			} catch (IllegalOrderException Ex) {
 				throw new SequenceException(Ex);
 			}

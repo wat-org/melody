@@ -9,12 +9,12 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.ITaskContext;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceController;
+import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -48,9 +48,6 @@ public abstract class AbstractOperation implements ITask,
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
-	private ITaskContext moContext;
-	private LibVirtPlugInConfiguration moPluginConf;
-	private SshPlugInConfiguration moSshPluginConf;
 	private Connect moConnect;
 	private InstanceController moInstance;
 	private String msInstanceId;
@@ -60,22 +57,12 @@ public abstract class AbstractOperation implements ITask,
 	private long mlTimeout;
 
 	public AbstractOperation() {
-		initContext();
-		initPluginConf();
 		initCnx();
 		initInstance();
 		initTargetNode();
 		initInstanceId();
 		initRegion();
 		initTimeout();
-	}
-
-	private void initContext() {
-		moContext = null;
-	}
-
-	private void initPluginConf() {
-		moPluginConf = null;
 	}
 
 	private void initCnx() {
@@ -150,8 +137,8 @@ public abstract class AbstractOperation implements ITask,
 					getTargetNode());
 			if (NetworkManagementHelper
 					.isManagementNetworkEnable(getTargetNode())) {
-				instance = new InstanceControllerWithNetworkManagement(instance,
-						this, getTargetNode());
+				instance = new InstanceControllerWithNetworkManagement(
+						instance, this, getTargetNode());
 			}
 			return instance;
 		} catch (OperationException Ex) {
@@ -160,90 +147,43 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	public IResourcesDescriptor getRD() {
-		return getContext().getProcessorManager().getResourcesDescriptor();
+		return Melody.getContext().getProcessorManager()
+				.getResourcesDescriptor();
 	}
 
 	public String getTargetNodeLocation() {
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
-	@Override
-	public ITaskContext getContext() {
-		return moContext;
-	}
-
-	/**
-	 * <p>
-	 * Set the {@link ITaskContext} of this object with the given
-	 * {@link ITaskContext}. Retrieve the LibVirt Plug-In
-	 * {@link LibVirtPlugInConfiguration} and the Ssh Plug-In
-	 * {@link SshPlugInConfiguration}.
-	 * </p>
-	 * 
-	 * @param p
-	 *            is the {@link ITaskContext} to set.
-	 * 
-	 * @throws LibVirtException
-	 *             if an error occurred while retrieving the Libvirt Plug-In
-	 *             {@link LibVirtPlugInConfiguration}.
-	 * @throws LibVirtException
-	 *             if an error occurred while retrieving the Ssh Plug-In
-	 *             {@link SshPlugInConfiguration}.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link ITaskContext} is <tt>null</tt>.
-	 */
-	@Override
-	public void setContext(ITaskContext p) throws LibVirtException {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ITaskContext.");
-		}
-		moContext = p;
-
-		// Get the configuration at the very beginning
+	protected LibVirtPlugInConfiguration getPluginConf()
+			throws LibVirtException {
 		try {
-			setPluginConf(LibVirtPlugInConfiguration.get(getContext()
-					.getProcessorManager()));
-		} catch (PlugInConfigurationException Ex) {
-			throw new LibVirtException(Ex);
-		}
-
-		// Get the Ssh Plug-In configuration at the very beginning
-		try {
-			setSshPluginConf(SshPlugInConfiguration.get(getContext()
-					.getProcessorManager()));
+			return LibVirtPlugInConfiguration.get(Melody.getContext()
+					.getProcessorManager());
 		} catch (PlugInConfigurationException Ex) {
 			throw new LibVirtException(Ex);
 		}
 	}
 
-	protected LibVirtPlugInConfiguration getPluginConf() {
-		return moPluginConf;
-	}
-
-	public LibVirtPlugInConfiguration setPluginConf(LibVirtPlugInConfiguration p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Configuration.");
+	public SshPlugInConfiguration getSshPlugInConf() throws LibVirtException {
+		try {
+			return SshPlugInConfiguration.get(Melody.getContext()
+					.getProcessorManager());
+		} catch (PlugInConfigurationException Ex) {
+			throw new LibVirtException(Ex);
 		}
-		LibVirtPlugInConfiguration previous = getPluginConf();
-		moPluginConf = p;
-		return previous;
 	}
 
 	@Override
 	public SshPlugInConfiguration getSshConfiguration() {
-		return moSshPluginConf;
-	}
-
-	public SshPlugInConfiguration setSshPluginConf(SshPlugInConfiguration p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Configuration.");
+		try {
+			return getSshPlugInConf();
+		} catch (LibVirtException Ex) {
+			throw new RuntimeException("Unexpected error when retrieving Ssh "
+					+ " Plug-In configuration. "
+					+ "Because such configuration registration have been "
+					+ "previously prouved, such error cannot happened.");
 		}
-		SshPlugInConfiguration previous = getSshConfiguration();
-		moSshPluginConf = p;
-		return previous;
 	}
 
 	protected Connect getConnect() {

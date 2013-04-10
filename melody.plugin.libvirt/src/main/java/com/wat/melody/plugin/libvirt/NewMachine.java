@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.w3c.dom.Node;
 
 import com.wat.cloud.libvirt.LibVirtCloud;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
@@ -157,7 +158,8 @@ public class NewMachine extends AbstractOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepositoryPath() == null) {
-			setKeyPairRepositoryPath(getSshConfiguration().getKeyPairRepositoryPath());
+			setKeyPairRepositoryPath(getSshPlugInConf()
+					.getKeyPairRepositoryPath());
 		}
 		// Validate everything is provided.
 		if (getInstanceType() == null) {
@@ -203,7 +205,7 @@ public class NewMachine extends AbstractOperation {
 
 	@Override
 	public void doProcessing() throws LibVirtException, InterruptedException {
-		getContext().handleProcessorStateUpdates();
+		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceIsCreated(getInstanceType(), null,
