@@ -14,6 +14,7 @@ import com.amazonaws.services.ec2.model.AttachVolumeRequest;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
+import com.amazonaws.services.ec2.model.DeleteKeyPairRequest;
 import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesRequest;
@@ -434,7 +435,7 @@ public class Common {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <code>null</code>.
 	 */
-	public static boolean keyPairCompare(AmazonEC2 ec2,
+	public static boolean compareKeyPair(AmazonEC2 ec2,
 			KeyPairName keyPairName, String sFingerprint) {
 		KeyPairInfo kpi = getKeyPair(ec2, keyPairName);
 		if (kpi == null) {
@@ -490,6 +491,40 @@ public class Common {
 				throw Ex;
 			}
 		}
+	}
+
+	/**
+	 * <p>
+	 * Delete a RSA KeyPair into Aws. Will not fail if the given KeyPair doesn't
+	 * exists.
+	 * </p>
+	 * 
+	 * @param ec2
+	 * @param keyPairName
+	 *            is the name of the key pair which will be imported.
+	 * 
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 * @throws IllegalArgumentException
+	 *             if ec2 is <code>null</code>.
+	 */
+	public static void deleteKeyPair(AmazonEC2 ec2, KeyPairName keyPairName) {
+		if (ec2 == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid AmazonEC2.");
+		}
+		if (keyPairName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (an Aws KeyPair Name).");
+		}
+
+		DeleteKeyPairRequest dkpreq = new DeleteKeyPairRequest();
+		dkpreq.withKeyName(keyPairName.getValue());
+
+		// will not fail if the given doesn't exists
+		ec2.deleteKeyPair(dkpreq);
 	}
 
 	/**

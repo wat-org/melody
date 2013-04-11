@@ -70,10 +70,26 @@ public class KeyPairRepository implements IFileBased {
 		return KeyPairHelper.generateFingerprint(kp);
 	}
 
-	private KeyPairRepositoryPath _f;
+	private KeyPairRepositoryPath _kprp;
 
-	private KeyPairRepository(KeyPairRepositoryPath keyPairRepositoryPath) {
-		_f = keyPairRepositoryPath;
+	private KeyPairRepository(KeyPairRepositoryPath kprp) {
+		setKeyPairRepositoryPath(kprp);
+	}
+
+	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
+		return _kprp;
+	}
+
+	private KeyPairRepositoryPath setKeyPairRepositoryPath(
+			KeyPairRepositoryPath kprp) {
+		if (kprp == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ KeyPairRepositoryPath.class.getCanonicalName() + ".");
+		}
+		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
+		_kprp = kprp;
+		return previous;
 	}
 
 	/**
@@ -181,7 +197,7 @@ public class KeyPairRepository implements IFileBased {
 		} catch (FileNotFoundException Ex) {
 			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
 					+ "doesn't exists. Cannot retreive this KeyPair into the "
-					+ "KeyPair Repository '" + _f + "'.");
+					+ "KeyPair Repository '" + _kprp + "'.");
 		}
 	}
 
@@ -191,7 +207,7 @@ public class KeyPairRepository implements IFileBased {
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ ".");
 		}
-		return Paths.get(_f.getPath(), keyPairName.getValue());
+		return Paths.get(_kprp.getPath(), keyPairName.getValue());
 	}
 
 	public File getPrivateKeyFile(KeyPairName keyPairName) {
@@ -200,7 +216,7 @@ public class KeyPairRepository implements IFileBased {
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ ".");
 		}
-		return new File(_f.getPath(), keyPairName.getValue());
+		return new File(_kprp.getPath(), keyPairName.getValue());
 	}
 
 	/**
@@ -235,7 +251,7 @@ public class KeyPairRepository implements IFileBased {
 		} catch (FileNotFoundException Ex) {
 			throw new IllegalArgumentException(keyPairName + ": KeyPair Name "
 					+ "doesn't exists. Cannot retreive such KeyPair into the "
-					+ "KeyPair Repository '" + _f + "'.");
+					+ "KeyPair Repository '" + _kprp + "'.");
 		}
 	}
 
