@@ -217,28 +217,14 @@ public abstract class LibVirtCloud {
 		return (int) (Float.parseFloat(sRam) * 1024 * 1024);
 	}
 
-	public static int getCore(InstanceType type) {
-		try {
-			return Integer.parseInt(sizeconf
-					.evaluateAsString("/sizings/sizing[@name='" + type
-							+ "']/@core"));
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	public static int getSocket(InstanceType type) {
-		try {
-			return Integer.parseInt(sizeconf
-					.evaluateAsString("/sizings/sizing[@name='" + type
-							+ "']/@socket"));
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
 	public static int getVCPU(InstanceType type) {
-		return getCore(type) * getSocket(type);
+		try {
+			return Integer.parseInt(sizeconf
+					.evaluateAsString("/sizings/sizing[@name='" + type
+							+ "']/@vcpu"));
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException(Ex);
+		}
 	}
 
 	public static InstanceType getDomainType(Domain d) {
@@ -1557,8 +1543,42 @@ public abstract class LibVirtCloud {
 
 	public static boolean resizeInstance(Domain d, InstanceType targetType)
 			throws InterruptedException {
-		// TODO : implement LibVirt resize
-		return false;
+		try {
+			/*
+			 * Memory hotplug/unplug is not for real (it acts on balloning), and
+			 * cpu unplug is not supported. For these reason, we only deal with
+			 * 'stopped' domain.
+			 */
+			if (getDomainState(d) != InstanceState.STOPPED) {
+				return false;
+			}
+			String sMemory = sizeconf.evaluateAsString("//sizing[@name='"
+					+ targetType + "']/@ram");
+			String sCPU = sizeconf.evaluateAsString("//sizing[@name='"
+					+ targetType + "']/@vcpu");
+
+			String sTargetMemory = String.valueOf((long) (Float
+					.parseFloat(sMemory) * 1024 * 1024));
+
+			/*
+			 * we cannot use Domin.setMemory and Domain.setVcpus, because it
+			 * only work on 'running ' domain.
+			 */
+			Doc doc = getDomainXMLDesc(d);
+			Node node;
+			node = doc.evaluateAsNode("/domain/currentMemory");
+			node.setTextContent(sTargetMemory);
+			node = doc.evaluateAsNode("/domain/memory");
+			node.setTextContent(sTargetMemory);
+			node = doc.evaluateAsNode("/domain/vcpu");
+			node.setTextContent(sCPU);
+
+			d.getConnect().domainDefineXML(doc.dump());
+		} catch (XPathExpressionException | NumberFormatException
+				| LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+		return true;
 	}
 
 }

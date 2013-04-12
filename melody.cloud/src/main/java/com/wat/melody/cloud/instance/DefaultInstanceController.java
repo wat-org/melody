@@ -181,7 +181,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 					Messages.ResizeEx_NOT_STOPPED, getInstanceId(),
 					InstanceState.STOPPED, is));
 		} else {
-			resizeInstance(getInstanceType());
+			resizeInstance(targetType);
 		}
 	}
 
