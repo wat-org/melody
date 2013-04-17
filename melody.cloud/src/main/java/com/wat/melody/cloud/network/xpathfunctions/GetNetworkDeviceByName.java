@@ -1,4 +1,4 @@
-package com.wat.melody.xpathextensions;
+package com.wat.melody.cloud.network.xpathfunctions;
 
 import java.util.List;
 
@@ -32,8 +32,8 @@ public class GetNetworkDeviceByName implements XPathFunction {
 		}
 		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
-					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
-					+ NAME + "() expects a Node or a List<Node> as first "
+					+ ": Not accepted. " + NAME
+					+ "() expects a Node or a List<Node> as first "
 					+ "argument.");
 		}
 		String arg1val = null;
@@ -45,8 +45,7 @@ public class GetNetworkDeviceByName implements XPathFunction {
 			} else if (arg1 instanceof String) {
 				arg1val = (String) arg1;
 			} else {
-				throw new XPathFunctionException("null: Not accepted. "
-						+ CustomXPathFunctions.NAMESPACE + ":" + NAME
+				throw new XPathFunctionException("null: Not accepted. " + NAME
 						+ "() expects a String or a Node as second argument.");
 			}
 		}

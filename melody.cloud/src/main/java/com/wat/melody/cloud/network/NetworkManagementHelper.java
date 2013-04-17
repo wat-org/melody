@@ -16,8 +16,8 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
-import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -333,15 +333,21 @@ public abstract class NetworkManagementHelper {
 		NodeList nl = null;
 		String sMgmtInterfaceSelector = getManagementNetworkDeviceSelector(mgmtNode);
 		try {
-			nl = Doc.evaluateAsNodeList("." + sMgmtInterfaceSelector,
-					instanceNode);
+			/*
+			 * TODO : should handle xpath rather than null ?
+			 */
+			nl = XPathExpander.evaluateAsNodeList("." + sMgmtInterfaceSelector,
+					instanceNode, null);
 			if (nl != null && nl.getLength() > 1) {
 				throw new ResourcesDescriptorException(instanceNode,
 						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE);
 			} else if (nl == null || nl.getLength() == 0) {
 				sMgmtInterfaceSelector = getNetworkDevicesSelector(mgmtNode);
-				nl = Doc.evaluateAsNodeList("." + sMgmtInterfaceSelector,
-						instanceNode);
+				/*
+				 * TODO : should handle xpath rather than null ?
+				 */
+				nl = XPathExpander.evaluateAsNodeList("."
+						+ sMgmtInterfaceSelector, instanceNode, null);
 			}
 		} catch (XPathExpressionException Ex) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
@@ -1068,7 +1074,11 @@ public abstract class NetworkManagementHelper {
 		String sNetDevSelector = "." + sAllNetDevSelector
 				+ (netDevName == null ? "" : "[@device='" + netDevName + "']");
 		try {
-			return Doc.evaluateAsNodeList(sNetDevSelector, instanceNode);
+			/*
+			 * TODO : should handle xpath rather than null ?
+			 */
+			return XPathExpander.evaluateAsNodeList(sNetDevSelector,
+					instanceNode, null);
 		} catch (XPathExpressionException Ex) {
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);

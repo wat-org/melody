@@ -18,7 +18,7 @@ import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -112,7 +112,7 @@ public class NewMachine extends AbstractOperation {
 			Node n = getTargetNode();
 			String v = null;
 
-			v = XPathExpander.getHeritedAttributeValue(n,
+			v = XPathHelper.getHeritedAttributeValue(n,
 					Common.INSTANCETYPE_ATTR);
 			try {
 				if (v != null) {
@@ -124,7 +124,7 @@ public class NewMachine extends AbstractOperation {
 						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathExpander.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
 			try {
 				if (v != null) {
 					setImageId(v);
@@ -135,7 +135,7 @@ public class NewMachine extends AbstractOperation {
 						getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathExpander.getHeritedAttributeValue(n,
+			v = XPathHelper.getHeritedAttributeValue(n,
 					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
@@ -147,8 +147,7 @@ public class NewMachine extends AbstractOperation {
 						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathExpander.getHeritedAttributeValue(n,
-					Common.PASSPHRASE_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n, Common.PASSPHRASE_ATTR);
 			if (v != null) {
 				setPassphrase(v);
 			}

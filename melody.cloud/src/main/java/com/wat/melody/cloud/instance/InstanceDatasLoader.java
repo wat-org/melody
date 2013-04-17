@@ -9,7 +9,7 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.xml.FilteredDocHelper;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -94,7 +94,7 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadRegion(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, REGION_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, REGION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -103,7 +103,7 @@ public class InstanceDatasLoader {
 
 	private InstanceType loadInstanceType(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, INSTANCETYPE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, INSTANCETYPE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -117,7 +117,7 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadImageId(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, IMAGEID_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, IMAGEID_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -126,7 +126,7 @@ public class InstanceDatasLoader {
 
 	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, KEYPAIR_REPO_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_REPO_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -141,7 +141,7 @@ public class InstanceDatasLoader {
 
 	private KeyPairName loadKeyPairName(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, KEYPAIR_NAME_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -155,7 +155,7 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadPassphrase(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, PASSPHRASE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, PASSPHRASE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -163,7 +163,7 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadSite(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, SITE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, SITE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -171,8 +171,7 @@ public class InstanceDatasLoader {
 	}
 
 	private Long loadCreateTimeout(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n,
-				TIMEOUT_CREATE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_CREATE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -186,8 +185,7 @@ public class InstanceDatasLoader {
 	}
 
 	private Long loadDeleteTimeout(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n,
-				TIMEOUT_DELETE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_DELETE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -201,7 +199,7 @@ public class InstanceDatasLoader {
 	}
 
 	private Long loadStopTimeout(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, TIMEOUT_STOP_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_STOP_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -215,8 +213,7 @@ public class InstanceDatasLoader {
 	}
 
 	private Long loadStartTimeout(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander
-				.getHeritedAttributeValue(n, TIMEOUT_START_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_START_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}

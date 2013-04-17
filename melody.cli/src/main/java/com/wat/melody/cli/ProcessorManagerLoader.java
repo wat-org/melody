@@ -36,6 +36,8 @@ import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetFileFormatException;
+import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
+import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
 /**
  * <p>
@@ -63,6 +65,8 @@ public class ProcessorManagerLoader {
 	// can be defined in the global configuration file
 	public static final String TASK_DIRECTIVES = "tasks.directives";
 	public static final String PLUGIN_CONF_DIRECTIVES = "plugin.configuration.directives";
+	public static final String XPATH_NAMESPACE_DIRECTIVES = "xpath.namespace.directives";
+	public static final String XPATH_FUNCTION_DIRECTIVES = "xpath.function.directives";
 
 	public static final String RESOURCES_DESCRIPTORS = "resourcesDescriptors";
 	public static final String BATCH_MODE = "batchMode";
@@ -304,7 +308,7 @@ public class ProcessorManagerLoader {
 					Ex);
 		}
 	}
-	
+
 	private Pattern C_OPTION_FINDER = Pattern.compile("^-(\\w*)C\\w*$");
 
 	/**
@@ -339,7 +343,7 @@ public class ProcessorManagerLoader {
 					throw new CommandLineParsingException(
 							Messages.CmdEx_MULTIPLE_GLOBAL_CONF_FILE_ERROR);
 				}
-				i += match.group(1).length()+1;
+				i += match.group(1).length() + 1;
 				try {
 					if (cmdLine[i].equals("--")) {
 						throw new CommandLineParsingException(Messages.bind(
@@ -718,6 +722,9 @@ public class ProcessorManagerLoader {
 			loadHardKillTimeout(oProps);
 
 			// Optional Configuration Directives
+			loadAllXPathNamespaceDefinitions(oProps);
+			loadAllXPathFunctionDefinitions(oProps);
+
 			loadResourcesDescriptors(oProps);
 			loadBatchMode(oProps);
 			loadPreserveTmpFileMode(oProps);
@@ -1392,6 +1399,88 @@ public class ProcessorManagerLoader {
 	private void registerPlugInConfiguration(IPlugInConfiguration pc) {
 		IProcessorManager pm = getProcessorManager();
 		pm.getPluginConfigurations().put(pc);
+	}
+
+	private void loadAllXPathNamespaceDefinitions(PropertiesSet oProps)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(XPATH_NAMESPACE_DIRECTIVES)) {
+			return;
+		}
+
+		String nscds = oProps.get(XPATH_NAMESPACE_DIRECTIVES);
+		if (nscds.trim().length() == 0) {
+			return;
+		}
+
+		for (String nscd : nscds.split(",")) {
+			nscd = nscd.trim();
+			if (nscd.length() == 0) {
+				continue;
+			}
+			loadXPathNamespaceDefinitions(oProps, nscd);
+		}
+	}
+
+	private void loadXPathNamespaceDefinitions(PropertiesSet oProps, String nscd)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(nscd)) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_MISSING_DIRECTIVE, nscd));
+		}
+
+		try {
+			String nss = oProps.get(nscd);
+			if (nss.trim().length() == 0) {
+				throw new ConfigurationLoadingException(
+						Messages.ConfEx_EMPTY_DIRECTIVE);
+			}
+			getProcessorManager().getXPathResolver().loadNamespaceDefinitions(
+					oProps, nss.split(","));
+		} catch (XPathNamespaceContextResolverLoadingException Ex) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, nscd), Ex);
+		}
+	}
+
+	private void loadAllXPathFunctionDefinitions(PropertiesSet oProps)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(XPATH_FUNCTION_DIRECTIVES)) {
+			return;
+		}
+
+		String fcds = oProps.get(XPATH_FUNCTION_DIRECTIVES);
+		if (fcds.trim().length() == 0) {
+			return;
+		}
+
+		for (String fcd : fcds.split(",")) {
+			fcd = fcd.trim();
+			if (fcd.length() == 0) {
+				continue;
+			}
+			loadXPathFunctionDefinitions(oProps, fcd);
+		}
+	}
+
+	private void loadXPathFunctionDefinitions(PropertiesSet oProps, String fcd)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(fcd)) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_MISSING_DIRECTIVE, fcd));
+		}
+
+		try {
+			String nss = oProps.get(fcd);
+			if (nss.trim().length() == 0) {
+				throw new ConfigurationLoadingException(
+						Messages.ConfEx_EMPTY_DIRECTIVE);
+			}
+			getProcessorManager().getXPathResolver().loadFunctionDefinitions(
+					oProps, nss.split(","));
+		} catch (XPathFunctionResolverLoadingException Ex) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, fcd), Ex);
+		}
 	}
 
 	/**

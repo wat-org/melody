@@ -1,6 +1,4 @@
-package com.wat.melody.xpathextensions.exception;
-
-import com.wat.melody.api.exception.ExpressionSyntaxException;
+package com.wat.melody.common.xpath.exception;
 
 /**
  * 

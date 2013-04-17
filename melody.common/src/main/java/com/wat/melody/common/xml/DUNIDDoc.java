@@ -12,6 +12,7 @@ import com.wat.melody.common.xml.exception.DUNIDDocException;
 import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -28,15 +29,16 @@ public class DUNIDDoc extends Doc {
 	 * in the given {@link Document}.
 	 * </p>
 	 * 
-	 * @param doc
+	 * @param d
 	 *            is the {@link Document} to search in.
 	 * 
 	 * @return a {@link NodeList}, where each item is a {@link Node} which
 	 *         contains a {@link #DUNID_ATTR} XML attribute.
 	 */
-	public static NodeList findDUNIDs(Document doc) {
+	public static NodeList findDUNIDs(Document d) {
 		try {
-			return evaluateAsNodeList("//*[ exists(@" + DUNID_ATTR + ") ]", doc);
+			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
+					+ DUNID_ATTR + ") ]", d, null);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "
@@ -53,7 +55,7 @@ public class DUNIDDoc extends Doc {
 	 * the given {@link DUNID}.
 	 * </p>
 	 * 
-	 * @param base
+	 * @param d
 	 *            is the {@link Document} to search in.
 	 * @param dunid
 	 *            is the {@link DUNID} to search.
@@ -67,8 +69,8 @@ public class DUNIDDoc extends Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link DUNID} is <code>null</code>.
 	 */
-	public static Node getNode(Document base, DUNID dunid) {
-		if (base == null) {
+	public static Node getNode(Document d, DUNID dunid) {
+		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Document.");
 		}
@@ -77,8 +79,8 @@ public class DUNIDDoc extends Doc {
 					+ "Must be a valid DUNID.");
 		}
 		try {
-			return evaluateAsNode(
-					"//*[@" + DUNID_ATTR + "='" + dunid.getValue() + "']", base);
+			return XPathExpander.evaluateAsNode("//*[@" + DUNID_ATTR + "='"
+					+ dunid.getValue() + "']", d, null);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "
@@ -143,12 +145,12 @@ public class DUNIDDoc extends Doc {
 	 * Get the attribute's value of the requested {@link Node}.
 	 * </p>
 	 * 
-	 * @param doc
+	 * @param d
 	 *            is the {@link Document} where the requested {@link Node} will
 	 *            be searched.
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute.
 	 * 
 	 * @return a {@link String}, which contains the value of the requested
@@ -164,20 +166,20 @@ public class DUNIDDoc extends Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link String} is <code>null</code>.
 	 */
-	public synchronized static String getAttributeValue(Document doc,
-			DUNID ownerNodeDUNID, String sAttrName) throws NoSuchDUNIDException {
-		if (sAttrName == null) {
+	public synchronized static String getAttributeValue(Document d,
+			DUNID ownerNodeDUNID, String attrName) throws NoSuchDUNIDException {
+		if (attrName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XML Attribute Name).");
 		}
-		if (doc != null) {
-			Node n = getNode(doc, ownerNodeDUNID);
+		if (d != null) {
+			Node n = getNode(d, ownerNodeDUNID);
 			if (n == null) {
 				throw new NoSuchDUNIDException(Messages.bind(
 						Messages.NoSuchDUNIDEx_UNFOUND,
 						ownerNodeDUNID.getValue()));
 			}
-			Node a = n.getAttributes().getNamedItem(sAttrName);
+			Node a = n.getAttributes().getNamedItem(attrName);
 			if (a != null) {
 				return a.getNodeValue();
 			}
@@ -196,9 +198,9 @@ public class DUNIDDoc extends Doc {
 	 *            be searched.
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute to set/create.
-	 * @param sAttrValue
+	 * @param attrValue
 	 *            is the value to assign.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
@@ -214,26 +216,26 @@ public class DUNIDDoc extends Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link String} is <code>null</code>.
 	 */
-	public synchronized static String setAttributeValue(Document base,
-			DUNID ownerNodeDUNID, String sAttrName, String sAttrValue)
+	public synchronized static String setAttributeValue(Document d,
+			DUNID ownerNodeDUNID, String attrName, String attrValue)
 			throws NoSuchDUNIDException {
-		if (sAttrName == null) {
+		if (attrName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XML Attribute Name).");
 		}
-		if (base != null) {
-			Node n = getNode(base, ownerNodeDUNID);
+		if (d != null) {
+			Node n = getNode(d, ownerNodeDUNID);
 			if (n == null) {
 				throw new NoSuchDUNIDException(Messages.bind(
 						Messages.NoSuchDUNIDEx_UNFOUND,
 						ownerNodeDUNID.getValue()));
 			}
-			Node a = n.getAttributes().getNamedItem(sAttrName);
+			Node a = n.getAttributes().getNamedItem(attrName);
 			if (a == null) {
-				createAttribute(sAttrName, sAttrValue, n);
+				createAttribute(attrName, attrValue, n);
 			} else {
 				String previous = a.getNodeValue();
-				a.setNodeValue(sAttrValue);
+				a.setNodeValue(attrValue);
 				return previous;
 			}
 		}
@@ -245,12 +247,12 @@ public class DUNIDDoc extends Doc {
 	 * Remove the given attribute of the requested {@link Node}.
 	 * </p>
 	 * 
-	 * @param doc
+	 * @param d
 	 *            is the {@link Document} where the requested {@link Node} will
 	 *            be searched.
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute to remove.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
@@ -266,14 +268,14 @@ public class DUNIDDoc extends Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link String} is <code>null</code>.
 	 */
-	public static synchronized String removeAttribute(Document doc,
-			DUNID ownerNodeDUNID, String sAttrName) throws NoSuchDUNIDException {
-		if (sAttrName == null) {
+	public static synchronized String removeAttribute(Document d,
+			DUNID ownerNodeDUNID, String attrName) throws NoSuchDUNIDException {
+		if (attrName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XML Attribute Name).");
 		}
-		if (doc != null) {
-			Node n = getNode(doc, ownerNodeDUNID);
+		if (d != null) {
+			Node n = getNode(d, ownerNodeDUNID);
 			if (n == null) {
 				throw new NoSuchDUNIDException(Messages.bind(
 						Messages.NoSuchDUNIDEx_UNFOUND,
@@ -281,7 +283,7 @@ public class DUNIDDoc extends Doc {
 			}
 			Node removed = null;
 			try {
-				removed = n.getAttributes().removeNamedItem(sAttrName);
+				removed = n.getAttributes().removeNamedItem(attrName);
 			} catch (DOMException Ex) {
 				// no need to raise anything
 			}
@@ -293,11 +295,11 @@ public class DUNIDDoc extends Doc {
 	}
 
 	// Add a DUNID Attribute to all child of the given Node
-	private static void addDUNIDToNodeAndChildNodes(Node oNode, int index) {
-		if (oNode.getNodeType() != Node.ELEMENT_NODE) {
+	private static void addDUNIDToNodeAndChildNodes(Node n, int index) {
+		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			return;
 		}
-		NamedNodeMap oAttrList = oNode.getAttributes();
+		NamedNodeMap oAttrList = n.getAttributes();
 
 		// If the Node doesn't have a DUNID attribute
 		if (oAttrList.getNamedItem(DUNID_ATTR) == null) {
@@ -306,15 +308,14 @@ public class DUNIDDoc extends Doc {
 			Node oIsDunidAlreadyInserted;
 			do {
 				sDunid = new DUNID(index);
-				oIsDunidAlreadyInserted = getNode(oNode.getOwnerDocument(),
-						sDunid);
+				oIsDunidAlreadyInserted = getNode(n.getOwnerDocument(), sDunid);
 			} while (oIsDunidAlreadyInserted != null);
 			// Add the DUNID to the Node
-			createAttribute(DUNID_ATTR, sDunid.getValue(), oNode);
+			createAttribute(DUNID_ATTR, sDunid.getValue(), n);
 		}
 		// Repeat it for child Nodes
-		for (int i = 0; i < oNode.getChildNodes().getLength(); i++) {
-			addDUNIDToNodeAndChildNodes(oNode.getChildNodes().item(i), index);
+		for (int i = 0; i < n.getChildNodes().getLength(); i++) {
+			addDUNIDToNodeAndChildNodes(n.getChildNodes().item(i), index);
 		}
 	}
 
@@ -446,7 +447,7 @@ public class DUNIDDoc extends Doc {
 	 * 
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute.
 	 * 
 	 * @return a {@link String}, which contains the value of the requested
@@ -463,8 +464,8 @@ public class DUNIDDoc extends Doc {
 	 *             if the given {@link String} is <code>null</code>.
 	 */
 	public synchronized String getAttributeValue(DUNID ownerNodeDUNID,
-			String sAttrName) throws NoSuchDUNIDException {
-		return getAttributeValue(getDocument(), ownerNodeDUNID, sAttrName);
+			String attrName) throws NoSuchDUNIDException {
+		return getAttributeValue(getDocument(), ownerNodeDUNID, attrName);
 	}
 
 	/**
@@ -475,9 +476,9 @@ public class DUNIDDoc extends Doc {
 	 * 
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute to set/create.
-	 * @param sAttrValue
+	 * @param attrValue
 	 *            is the value to assign.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
@@ -494,10 +495,10 @@ public class DUNIDDoc extends Doc {
 	 *             if the given {@link String} is <code>null</code>.
 	 */
 	public synchronized String setAttributeValue(DUNID ownerNodeDUNID,
-			String sAttrName, String sAttrValue) throws NoSuchDUNIDException {
+			String attrName, String attrValue) throws NoSuchDUNIDException {
 		String previous = setAttributeValue(getDocument(), ownerNodeDUNID,
-				sAttrName, sAttrValue);
-		if (previous == null || !sAttrValue.equals(previous)) {
+				attrName, attrValue);
+		if (previous == null || !attrValue.equals(previous)) {
 			markHasChanged();
 		}
 		return previous;
@@ -510,7 +511,7 @@ public class DUNIDDoc extends Doc {
 	 * 
 	 * @param ownerNodeDUNID
 	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute to remove.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
@@ -527,9 +528,9 @@ public class DUNIDDoc extends Doc {
 	 *             if the given {@link String} is <code>null</code>.
 	 */
 	public synchronized String removeAttribute(DUNID ownerNodeDUNID,
-			String sAttrName) throws NoSuchDUNIDException {
+			String attrName) throws NoSuchDUNIDException {
 		String previous = removeAttribute(getDocument(), ownerNodeDUNID,
-				sAttrName);
+				attrName);
 		if (previous != null) {
 			markHasChanged();
 		}

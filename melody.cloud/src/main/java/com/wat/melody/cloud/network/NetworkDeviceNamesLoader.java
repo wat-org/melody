@@ -3,11 +3,11 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -57,24 +57,14 @@ public class NetworkDeviceNamesLoader {
 
 	private NetworkDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
-		Node attr = n.getAttributes().getNamedItem(DEVICE_ATTR);
-		if (attr == null) {
-			throw new ResourcesDescriptorException(n, Messages.bind(
-					Messages.NetworkDeviceEx_MISSING_ATTR, DEVICE_ATTR));
-		}
-		String v = attr.getNodeValue();
-		try {
-			v = XPathExpander.expand(v, n.getOwnerDocument().getFirstChild(),
-					null);
-		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
-		}
+		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return NetworkDeviceName.parseString(v);
 		} catch (IllegalNetworkDeviceNameException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(n, DEVICE_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
@@ -115,6 +105,11 @@ public class NetworkDeviceNamesLoader {
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
 			NetworkDeviceName netDevName = loadDeviceName(n);
+			if (netDevName == null) {
+				throw new ResourcesDescriptorException(n, Messages.bind(
+						Messages.NetworkDeviceEx_MISSING_ATTR, DEVICE_ATTR));
+			}
+
 			try {
 				dl.addNetworkDevice(netDevName);
 			} catch (IllegalNetworkDeviceNameListException Ex) {

@@ -21,7 +21,7 @@ import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.network.exception.IllegalProtocolsException;
 import com.wat.melody.common.xml.FilteredDocHelper;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -86,7 +86,7 @@ public class FireWallRulesLoader {
 	}
 
 	private IpRanges loadFromIps(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, FROM_IPS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -101,7 +101,7 @@ public class FireWallRulesLoader {
 
 	private PortRanges loadFromPorts(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -115,7 +115,7 @@ public class FireWallRulesLoader {
 	}
 
 	private IpRanges loadToIps(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, TO_IPS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -128,7 +128,7 @@ public class FireWallRulesLoader {
 	}
 
 	private PortRanges loadToPorts(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, TO_PORTS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, TO_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -141,7 +141,7 @@ public class FireWallRulesLoader {
 	}
 
 	private Interfaces loadDevices(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -155,7 +155,7 @@ public class FireWallRulesLoader {
 	}
 
 	private Protocols loadProtocols(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, PROTOCOLS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, PROTOCOLS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -170,7 +170,7 @@ public class FireWallRulesLoader {
 
 	private Directions loadDirection(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, DIRECTION_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, DIRECTION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -184,7 +184,7 @@ public class FireWallRulesLoader {
 	}
 
 	private Access loadAccess(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, ACCESS_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, ACCESS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}

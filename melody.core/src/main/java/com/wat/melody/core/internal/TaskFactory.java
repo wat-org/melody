@@ -16,7 +16,6 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
-import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITopLevelTask;
@@ -25,7 +24,6 @@ import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.event.State;
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryAttributeException;
 import com.wat.melody.api.exception.TaskFactoryException;
@@ -33,7 +31,7 @@ import com.wat.melody.api.exception.TaskFactoryNestedElementException;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 /**
  * 
@@ -306,7 +304,6 @@ public class TaskFactory {
 		return null;
 	}
 
-	private ProcessorManager moProcessorManager;
 	private IRegisteredTasks moRegisteredTasks;
 
 	/**
@@ -327,23 +324,8 @@ public class TaskFactory {
 	 *             ClassPath.
 	 * 
 	 */
-	public TaskFactory(ProcessorManager p) {
-		setProcessorManager(p);
+	public TaskFactory() {
 		setRegisteredTasks(new RegisteredTasks());
-	}
-
-	private ProcessorManager getProcessorManager() {
-		return moProcessorManager;
-	}
-
-	private ProcessorManager setProcessorManager(ProcessorManager p) {
-		if (p == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Processor.");
-		}
-		ProcessorManager previous = getProcessorManager();
-		moProcessorManager = p;
-		return previous;
 	}
 
 	public IRegisteredTasks getRegisteredTasks() {
@@ -358,6 +340,19 @@ public class TaskFactory {
 		IRegisteredTasks previous = getRegisteredTasks();
 		moRegisteredTasks = rg;
 		return previous;
+	}
+
+	public Class<? extends ITask> identifyTask(Node n)
+			throws TaskFactoryException {
+		if (n == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Node (an "
+					+ ITask.class.getCanonicalName() + ").");
+		}
+
+		Class<? extends ITask> c = findTaskClass(n);
+		validateTaskHierarchy(c, n.getParentNode());
+		return c;
 	}
 
 	/**
@@ -384,6 +379,39 @@ public class TaskFactory {
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
 		}
 		return getRegisteredTasks().get(sSimpleName);
+	}
+
+	private void validateTaskHierarchy(Class<?> c, Node parentNode)
+			throws TaskFactoryException {
+		Class<?> p = null;
+		if (parentNode != null
+				&& parentNode.getNodeType() != Node.DOCUMENT_NODE) {
+			try {
+				p = findTaskClass(parentNode);
+			} catch (TaskFactoryException Ex) {
+				throw new RuntimeException("Unexpected error while finding "
+						+ "the Task Class which match '" + parentNode + "'. "
+						+ "Because this Task is a parent Task, meaning that "
+						+ "it had already been created, such error cannot "
+						+ "happened. "
+						+ "Source code has certainly been modified and a bug "
+						+ "have been introduced.", Ex);
+			}
+		}
+		String sName = c.getName().toLowerCase();
+		String sPName = parentNode.getNodeName().toLowerCase();
+		if (implementsInterface(c, ITopLevelTask.class) && p != null) {
+			throw new TaskFactoryException(Messages.bind(
+					Messages.TaskFactoryEx_TOPLEVEL_ERROR, sName));
+		} else if (implementsInterface(c, IFirstLevelTask.class) && p != null
+				&& !implementsInterface(p, ITopLevelTask.class)) {
+			throw new TaskFactoryException(Messages.bind(
+					Messages.TaskFactoryEx_FIRSTLEVEL_ERROR, sName, sPName));
+		} else if (!implementsInterface(c, IFirstLevelTask.class) && p != null
+				&& implementsInterface(p, ITopLevelTask.class)) {
+			throw new TaskFactoryException(Messages.bind(
+					Messages.TaskFactoryEx_CHILD_ERROR, sName, sPName));
+		}
 	}
 
 	/**
@@ -433,7 +461,7 @@ public class TaskFactory {
 	 *             if a the given {@link Node} is not an XML Element.
 	 * 
 	 */
-	public synchronized ITask newTask(Node n, PropertiesSet ps)
+	public ITask newTask(Class<? extends ITask> c, Node n, PropertiesSet ps)
 			throws TaskFactoryException {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -450,15 +478,6 @@ public class TaskFactory {
 					+ ": Not accepted. " + "Must be a valid XML Elment node.");
 		}
 
-		Class<? extends ITask> c = findTaskClass(n);
-		validateTaskHierarchy(c, n.getParentNode());
-		// Duplicate the PropertiesSet, so the Task can work with its own
-		// PropertiesSet
-		// Doesn't apply to ITask which implements IShareProperties
-		PropertiesSet ownPs = implementsInterface(c, IShareProperties.class) ? ps
-				: ps.copy();
-		Melody.pushContext(new TaskContext(n, ownPs, getProcessorManager()));
-
 		ITask t = null;
 		try {
 			t = c.newInstance();
@@ -471,8 +490,10 @@ public class TaskFactory {
 					+ "bug have been introduced.", Ex);
 		}
 
-		setAllMembers(t, n.getAttributes(), n.getNodeName(), ownPs);
-		setAllNestedElements(t, n.getChildNodes(), n.getNodeName(), ownPs);
+		synchronized (n.getOwnerDocument()) {
+			setAllMembers(t, n.getAttributes(), n.getNodeName());
+			setAllNestedElements(t, n.getChildNodes(), n.getNodeName());
+		}
 		try {
 			t.validate();
 		} catch (TaskException Ex) {
@@ -481,41 +502,8 @@ public class TaskFactory {
 		return t;
 	}
 
-	private void validateTaskHierarchy(Class<?> c, Node parentNode)
+	private void setAllMembers(Object base, NamedNodeMap attrs, String sNodeName)
 			throws TaskFactoryException {
-		Class<?> p = null;
-		if (parentNode != null
-				&& parentNode.getNodeType() != Node.DOCUMENT_NODE) {
-			try {
-				p = findTaskClass(parentNode);
-			} catch (TaskFactoryException Ex) {
-				throw new RuntimeException("Unexpected error while finding "
-						+ "the Task Class which match '" + parentNode + "'. "
-						+ "Because this Task is a parent Task, meaning that "
-						+ "it had already been created, such error cannot "
-						+ "happened. "
-						+ "Source code has certainly been modified and a bug "
-						+ "have been introduced.", Ex);
-			}
-		}
-		String sName = c.getName().toLowerCase();
-		String sPName = parentNode.getNodeName().toLowerCase();
-		if (implementsInterface(c, ITopLevelTask.class) && p != null) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_TOPLEVEL_ERROR, sName));
-		} else if (implementsInterface(c, IFirstLevelTask.class) && p != null
-				&& !implementsInterface(p, ITopLevelTask.class)) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_FIRSTLEVEL_ERROR, sName, sPName));
-		} else if (!implementsInterface(c, IFirstLevelTask.class) && p != null
-				&& implementsInterface(p, ITopLevelTask.class)) {
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_CHILD_ERROR, sName, sPName));
-		}
-	}
-
-	private void setAllMembers(Object base, NamedNodeMap attrs,
-			String sNodeName, PropertiesSet ps) throws TaskFactoryException {
 		if (attrs == null) {
 			return;
 		}
@@ -526,9 +514,7 @@ public class TaskFactory {
 			if (m != null) {
 				String sAttrVal = null;
 				try {
-					sAttrVal = XPathExpander.expand(attr.getNodeValue(),
-							getProcessorManager().getResourcesDescriptor()
-									.getDocument().getFirstChild(), ps);
+					sAttrVal = Melody.getContext().expand(attr.getNodeValue());
 				} catch (ExpressionSyntaxException Ex) {
 					throw new TaskFactoryAttributeException(attr, m,
 							Messages.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
@@ -572,7 +558,7 @@ public class TaskFactory {
 	}
 
 	private void setAllNestedElements(Object base, NodeList nestedNodes,
-			String sNodeName, PropertiesSet ps) throws TaskFactoryException {
+			String sNodeName) throws TaskFactoryException {
 		if (nestedNodes == null) {
 			return;
 		}
@@ -581,8 +567,7 @@ public class TaskFactory {
 			if (n.getNodeType() != Node.ELEMENT_NODE) {
 				continue;
 			}
-			if (addNestedElement(base, n, ps)
-					|| createNestedElement(base, n, ps)
+			if (addNestedElement(base, n) || createNestedElement(base, n)
 					|| addNodeNestedElement(base, n)) {
 				continue;
 			}
@@ -615,7 +600,7 @@ public class TaskFactory {
 		}
 	}
 
-	private boolean addNestedElement(Object base, Node n, PropertiesSet ps)
+	private boolean addNestedElement(Object base, Node n)
 			throws TaskFactoryException {
 		Method m = findAddMethod(base.getClass(), n.getNodeName());
 		if (m == null) {
@@ -632,8 +617,8 @@ public class TaskFactory {
 						+ "have been introduced.", Ex);
 			}
 
-			setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
-			setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
+			setAllMembers(o, n.getAttributes(), n.getNodeName());
+			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
 
 			try {
 				m.invoke(base, o);
@@ -658,7 +643,7 @@ public class TaskFactory {
 		return true;
 	}
 
-	private boolean createNestedElement(Object base, Node n, PropertiesSet ps)
+	private boolean createNestedElement(Object base, Node n)
 			throws TaskFactoryException {
 		Method m = findCreateMethod(base.getClass(), n.getNodeName());
 		if (m == null) {
@@ -677,8 +662,8 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 
-			setAllMembers(o, n.getAttributes(), n.getNodeName(), ps);
-			setAllNestedElements(o, n.getChildNodes(), n.getNodeName(), ps);
+			setAllMembers(o, n.getAttributes(), n.getNodeName());
+			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
 					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
@@ -841,8 +826,8 @@ public class TaskFactory {
 		}
 		// make an absolute path, relative to the sequence descriptor basedir
 		if (!new File(sAttrVal).isAbsolute()) {
-			File sBaseDir = getProcessorManager().getSequenceDescriptor()
-					.getBaseDir();
+			File sBaseDir = Melody.getContext().getProcessorManager()
+					.getSequenceDescriptor().getBaseDir();
 			try {
 				sAttrVal = new File(sBaseDir, sAttrVal).getCanonicalPath();
 			} catch (IOException Ex) {

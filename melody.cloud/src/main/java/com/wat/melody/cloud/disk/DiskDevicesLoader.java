@@ -8,7 +8,7 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 import com.wat.melody.common.xml.FilteredDocHelper;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -50,7 +50,7 @@ public class DiskDevicesLoader {
 
 	private DiskDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, DEVICE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -64,7 +64,7 @@ public class DiskDevicesLoader {
 
 	private DiskDeviceSize loadDeviceSize(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, SIZE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, SIZE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -78,7 +78,7 @@ public class DiskDevicesLoader {
 
 	private Boolean loadDeleteOnTermination(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n,
+		String v = XPathHelper.getHeritedAttributeValue(n,
 				DELETEONTERMINATION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -87,7 +87,7 @@ public class DiskDevicesLoader {
 	}
 
 	private Boolean loadRootDevice(Node n) throws ResourcesDescriptorException {
-		String v = XPathExpander.getHeritedAttributeValue(n, ROOTDEVICE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, ROOTDEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
@@ -132,18 +132,14 @@ public class DiskDevicesLoader {
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node n = nl.item(i);
-			DiskDeviceName devname = null;
-			DiskDeviceSize devsize = null;
-			Boolean delonterm = null;
-			Boolean isroot = null;
-			devname = loadDeviceName(n);
+			DiskDeviceName devname = loadDeviceName(n);
 			if (devname == null) {
 				throw new ResourcesDescriptorException(n, Messages.bind(
 						Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
 			}
-			devsize = loadDeviceSize(n);
-			delonterm = loadDeleteOnTermination(n);
-			isroot = loadRootDevice(n);
+			DiskDeviceSize devsize = loadDeviceSize(n);
+			Boolean delonterm = loadDeleteOnTermination(n);
+			Boolean isroot = loadRootDevice(n);
 
 			try {
 				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,

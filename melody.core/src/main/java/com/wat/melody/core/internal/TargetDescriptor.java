@@ -10,6 +10,7 @@ import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.xml.FilteredDoc;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -18,7 +19,7 @@ import com.wat.melody.common.xml.FilteredDoc;
  */
 public class TargetDescriptor extends FilteredDoc {
 
-	public void load(ResourcesDescriptor doc)
+	public synchronized void load(ResourcesDescriptor doc)
 			throws IllegalTargetFilterException {
 		try {
 			super.load(doc);
@@ -30,23 +31,26 @@ public class TargetDescriptor extends FilteredDoc {
 	@Override
 	public synchronized String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsString(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsString(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override
 	public synchronized NodeList evaluateAsNodeList(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNodeList(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsNodeList(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override
 	public synchronized Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNode(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsNode(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override
-	public String setFilter(int i, Filter filter)
+	public synchronized String setFilter(int i, Filter filter)
 			throws IllegalTargetFilterException {
 		try {
 			return super.setFilter(i, filter);
@@ -56,7 +60,7 @@ public class TargetDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public void setFilters(FilterSet filters)
+	public synchronized void setFilters(FilterSet filters)
 			throws IllegalTargetFilterException {
 		try {
 			super.setFilters(filters);
@@ -66,7 +70,8 @@ public class TargetDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public void addFilter(Filter filter) throws IllegalTargetFilterException {
+	public synchronized void addFilter(Filter filter)
+			throws IllegalTargetFilterException {
 		try {
 			super.addFilter(filter);
 		} catch (IllegalFilterException Ex) {
@@ -75,7 +80,7 @@ public class TargetDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public void addFilters(FilterSet filters)
+	public synchronized void addFilters(FilterSet filters)
 			throws IllegalTargetFilterException {
 		try {
 			super.addFilters(filters);

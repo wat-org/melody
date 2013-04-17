@@ -12,6 +12,7 @@ import com.wat.melody.api.IPlugInConfigurations;
 import com.wat.melody.api.IProcessorListener;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
+import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.MelodyThread;
@@ -36,6 +37,10 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xpath.XPathExpander;
+import com.wat.melody.common.xpath.XPathFunctionResolver;
+import com.wat.melody.common.xpath.XPathNamespaceContextResolver;
+import com.wat.melody.common.xpath.XPathResolver;
 import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
 
 /**
@@ -77,6 +82,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private ResourcesDescriptor moResourcesDescriptor;
 
 	private PlugInConfigurations moPluginConfigurations;
+	private XPathResolver moXPathResolver;
 
 	private boolean mbStopRequested;
 	private boolean mbPauseRequested;
@@ -104,18 +110,20 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		setBatchMode(false);
 		setPreserveTemporaryFilesMode(false);
 		setRunDryMode(false);
+		setTaskFactory(new TaskFactory());
 		setSequenceDescriptor(new SequenceDescriptor());
 		setResourcesDescriptor(new ResourcesDescriptor());
+		setPluginConfigurations(new PlugInConfigurations());
+		setXPathResolver(new XPathResolver(new XPathNamespaceContextResolver(),
+				new XPathFunctionResolver()));
 
 		// Processing members
-		setPluginConfigurations(new PlugInConfigurations());
 		setStopRequested(false);
 		setPauseRequested(false);
 		setThreadGroup(null);
 		setThread(null);
 		setFinalError(null);
 		setListeners(new ArrayList<IProcessorListener>());
-		setTaskFactory(new TaskFactory(this));
 		setParentProcessorManager(null);
 	}
 
@@ -326,6 +334,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		return previous;
 	}
 
+	@Override
 	public IPlugInConfiguration getPluginConfiguration(
 			Class<? extends IPlugInConfiguration> key)
 			throws PlugInConfigurationException {
@@ -337,6 +346,20 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					Messages.ConfEx_CONF_NOT_REGISTERED, key));
 		}
 		return pc;
+	}
+
+	@Override
+	public XPathResolver getXPathResolver() {
+		return moXPathResolver;
+	}
+
+	private XPathResolver setXPathResolver(XPathResolver xpathResolver) {
+		// can be null
+		XPathResolver previous = getXPathResolver();
+		moXPathResolver = xpathResolver;
+		getResourcesDescriptor()
+				.setXPath(XPathExpander.newXPath(xpathResolver));
+		return previous;
 	}
 
 	private boolean isSubPM() {
@@ -354,6 +377,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		ProcessorManager dest = new ProcessorManager();
 		dest.setParentProcessorManager(this);
 		dest.setRegisteredTasks(getRegisteredTasks());
+		dest.setXPathResolver(getXPathResolver());
 
 		try {
 			dest.setWorkingFolderPath(getWorkingFolderPath());
@@ -756,9 +780,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	private void processSequenceDescriptor() throws TaskException,
 			InterruptedException {
-		ITask sequence = newTask(getSequenceDescriptor().getRoot(),
+		createAndProcessTask(getSequenceDescriptor().getRoot(),
 				getSequenceDescriptor().getProperties());
-		processTask(sequence);
 	}
 
 	private void deleteTemporaryResources() {
@@ -778,53 +801,64 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		}
 	}
 
-	public synchronized ITask newTask(Node n, PropertiesSet ps)
-			throws TaskException {
+	protected void createAndProcessTask(Node n, PropertiesSet ps)
+			throws TaskException, InterruptedException {
 		try {
-			ITask t = getTaskFactory().newTask(n, ps);
+			processTask(newTask(n, ps));
+		} finally {
+			Melody.popContext();
+		}
+	}
+
+	protected ITask newTask(Node n, PropertiesSet ps) throws TaskException {
+		try {
+			Class<? extends ITask> c = getTaskFactory().identifyTask(n);
+			// Duplicate the PropertiesSet, so the Task can work with its own
+			// PropertiesSet
+			// Doesn't apply to ITask which implements IShareProperties
+			PropertiesSet ownPs = TaskFactory.implementsInterface(c,
+					IShareProperties.class) ? ps : ps.copy();
+			Melody.pushContext(new TaskContext(n, ownPs, this));
+			ITask t = getTaskFactory().newTask(c, n, ps);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.SUCCESS,
 					null);
 			return t;
 		} catch (TaskFactoryException Ex) {
-			Object[] args = new Object[] { n.getNodeName().toLowerCase(),
-					State.FAILED, Doc.getNodeLocation(n) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_INIT_FINAL_STATE, args), Ex);
+					Messages.TaskEx_INIT_FINAL_STATE, n.getNodeName()
+							.toLowerCase(), State.FAILED, Doc
+							.getNodeLocation(n)), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.FAILED, e);
 			throw e;
 		} catch (Throwable Ex) {
-			Object[] args = new Object[] { n.getNodeName().toLowerCase(),
-					State.CRITICAL, Doc.getNodeLocation(n) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_INIT_FINAL_STATE, args), Ex);
+					Messages.TaskEx_INIT_FINAL_STATE, n.getNodeName()
+							.toLowerCase(), State.CRITICAL, Doc
+							.getNodeLocation(n)), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.CRITICAL,
 					e);
 			throw e;
 		}
 	}
 
-	public void processTask(ITask task) throws TaskException,
+	protected void processTask(ITask task) throws TaskException,
 			InterruptedException {
 		try {
 			fireTaskStartedEvent(task);
 			task.doProcessing();
 			fireTaskFinishedEvent(task, State.SUCCESS, null);
 		} catch (InterruptedException Ex) {
-			Object[] args = new Object[] {
-					task.getClass().getSimpleName().toLowerCase(),
-					State.INTERRUPTED,
-					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			InterruptedException e = new InterruptedException(Messages.bind(
-					Messages.TaskEx_PROCESS_FINAL_STATE, args));
+					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
+							.getSimpleName().toLowerCase(), State.INTERRUPTED,
+					Doc.getNodeLocation(Melody.getContext().getNode())));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);
 			throw e;
 		} catch (TaskException Ex) {
-			Object[] args = new Object[] {
-					task.getClass().getSimpleName().toLowerCase(),
-					State.FAILED,
-					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
+					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
+							.getSimpleName().toLowerCase(), State.FAILED,
+					Doc.getNodeLocation(Melody.getContext().getNode())), Ex);
 			fireTaskFinishedEvent(task, State.FAILED, e);
 			if (Ex instanceof SequenceException) {
 				throw Ex;
@@ -832,16 +866,12 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				throw e;
 			}
 		} catch (Throwable Ex) {
-			Object[] args = new Object[] {
-					task.getClass().getSimpleName().toLowerCase(),
-					State.CRITICAL,
-					Doc.getNodeLocation(Melody.getContext().getNode()) };
 			TaskException e = new TaskException(Messages.bind(
-					Messages.TaskEx_PROCESS_FINAL_STATE, args), Ex);
+					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
+							.getSimpleName().toLowerCase(), State.CRITICAL,
+					Doc.getNodeLocation(Melody.getContext().getNode())), Ex);
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
-		} finally {
-			Melody.popContext();
 		}
 	}
 }

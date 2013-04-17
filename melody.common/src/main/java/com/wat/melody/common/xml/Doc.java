@@ -15,9 +15,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -30,6 +28,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -39,17 +38,8 @@ import com.wat.melody.common.xml.exception.IllegalDocException;
 public class Doc {
 
 	private static DocumentBuilder moBuilder;
-	private static XPath moXPath;
-
-	/*
-	 * TODO : XQuery doesn't support 'order by' and 'where'....
-	 */
 
 	static {
-		// Specify we want the 'saxon XPath 2.0 resolver'
-		System.setProperty("javax.xml.transform.TransformerFactory",
-				"net.sf.saxon.TransformerFactoryImpl");
-		moXPath = XPathFactory.newInstance().newXPath();
 		try {
 			moBuilder = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
@@ -91,10 +81,6 @@ public class Doc {
 		return Parser.parse(content);
 	}
 
-	public static XPath getXPath() {
-		return moXPath;
-	}
-
 	/**
 	 * <p>
 	 * Create an empty Document.
@@ -102,31 +88,11 @@ public class Doc {
 	 * 
 	 * @return an empty Document.
 	 */
-	public synchronized static Document newDocument() {
-		return getDocumentBuilder().newDocument();
-	}
-
-	// evaluate XPath expression as a String, inside a Node (XPath 2.0
-	// supported)
-	public synchronized static String evaluateAsString(String sXPathExpr,
-			Node oNode) throws XPathExpressionException {
-		return (String) getXPath().evaluate(sXPathExpr, oNode,
-				XPathConstants.STRING);
-	}
-
-	// evaluate XPath expression as a NodeList, inside a Node (XPath 2.0
-	// supported)
-	public synchronized static NodeList evaluateAsNodeList(String sXPathExpr,
-			Node oNode) throws XPathExpressionException {
-		return (NodeList) getXPath().evaluate(sXPathExpr, oNode,
-				XPathConstants.NODESET);
-	}
-
-	// evaluate XPath expression as a Node, inside a Node (XPath 2.0 supported)
-	public synchronized static Node evaluateAsNode(String sXPathExpr, Node oNode)
-			throws XPathExpressionException {
-		return (Node) getXPath().evaluate(sXPathExpr, oNode,
-				XPathConstants.NODE);
+	public static Document newDocument() {
+		DocumentBuilder builder = getDocumentBuilder();
+		synchronized (builder) {
+			return builder.newDocument();
+		}
 	}
 
 	public static String parseInt(int nodeType) {
@@ -176,8 +142,8 @@ public class Doc {
 	 * 
 	 * @return the newly created Attribute.
 	 */
-	public synchronized static Attr createAttribute(String sAttrName,
-			String sAttrValue, Node oNode) {
+	public static Attr createAttribute(String sAttrName, String sAttrValue,
+			Node oNode) {
 		if (sAttrName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XML Attribute name).");
@@ -201,36 +167,37 @@ public class Doc {
 	 * Store the given Document into the given file.
 	 * </p>
 	 * 
-	 * @param oDoc
+	 * @param d
 	 *            is the {@link Document} to store on disk.
-	 * @param sPath
+	 * @param path
 	 *            is the path where the {@link Document} will be stored.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <code>null</code>, or if the
 	 *             given path is <code>null</code>.
 	 */
-	public synchronized static void store(Document oDoc, String sPath) {
-		if (sPath == null) {
+	public static void store(Document d, String path) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a file path).");
 		}
-		if (sPath.trim().length() == 0) {
+		if (path.trim().length() == 0) {
 			throw new IllegalArgumentException(": Not accepted. "
 					+ "Must be a valid String (a file path).");
 		}
-		if (oDoc == null) {
+		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Document.");
 		}
 		try {
-			TransformerFactory factory = TransformerFactory.newInstance();
-			Transformer transformer = factory.newTransformer();
-			transformer.transform(new DOMSource(oDoc), new StreamResult(
-					new File(sPath)));
+			synchronized (d) {
+				TransformerFactory f = TransformerFactory.newInstance();
+				Transformer t = f.newTransformer();
+				t.transform(new DOMSource(d), new StreamResult(new File(path)));
+			}
 		} catch (TransformerException Ex) {
 			throw new RuntimeException("Error while saving XML document "
-					+ "to '" + sPath + "'.", Ex);
+					+ "to '" + path + "'.", Ex);
 		}
 	}
 
@@ -239,7 +206,7 @@ public class Doc {
 	 * Dump the given Document into a <code>String</code>.
 	 * </p>
 	 * 
-	 * @param oDoc
+	 * @param d
 	 *            is the {@link Document} to dump.
 	 * 
 	 * @return a <code>String</code>, which is the String representation of the
@@ -248,22 +215,23 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <code>null</code>.
 	 */
-	public static String dump(Document oDoc) {
-		if (oDoc == null) {
+	public static String dump(Document d) {
+		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Document.");
 		}
 		try {
-			StringWriter sw = new StringWriter();
-			TransformerFactory factory = TransformerFactory.newInstance();
-			Transformer transformer = factory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,
-					"yes");
-			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-			transformer.transform(new DOMSource(oDoc), new StreamResult(sw));
-			return sw.toString();
+			synchronized (d) {
+				StringWriter sw = new StringWriter();
+				TransformerFactory f = TransformerFactory.newInstance();
+				Transformer t = f.newTransformer();
+				t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+				t.setOutputProperty(OutputKeys.METHOD, "xml");
+				t.setOutputProperty(OutputKeys.INDENT, "yes");
+				t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+				t.transform(new DOMSource(d), new StreamResult(sw));
+				return sw.toString();
+			}
 		} catch (TransformerException Ex) {
 			throw new RuntimeException("Error while dumping XML document.", Ex);
 		}
@@ -271,20 +239,20 @@ public class Doc {
 
 	/**
 	 * <p>
-	 * Get the XPath position of the given <code>Node</code>.
+	 * Get the XPath position of the given {@link Node}.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the node
+	 *            is the node.
 	 * 
-	 * @return an XPath expression which can be used to query the given
-	 *         <code>Node</code>.
+	 * @return an XPath Expression, which can be used to query the given
+	 *         {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given <code>Node</code> is <code>null</code> or is not
-	 *             an Element <code>Node</code>.
+	 *             if the given {@link Node} is <code>null</code> or is not an
+	 *             Element {@link Node}.
 	 */
-	public synchronized static String getXPathPosition(Node n) {
+	public static String getXPathPosition(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
@@ -293,15 +261,16 @@ public class Doc {
 			throw new IllegalArgumentException(n.getNodeName()
 					+ ": Not accepted. " + "Must be a Element Node.");
 		}
-
 		String sTargetXPath = "";
-		for (; n.getParentNode() != null; n = n.getParentNode())
-			sTargetXPath = "/" + n.getNodeName() + "["
-					+ getChildNodePosition(n) + "]" + sTargetXPath;
+		synchronized (n.getOwnerDocument()) {
+			for (; n.getParentNode() != null; n = n.getParentNode())
+				sTargetXPath = "/" + n.getNodeName() + "["
+						+ getChildNodePosition(n) + "]" + sTargetXPath;
+		}
 		return sTargetXPath;
 	}
 
-	private synchronized static int getChildNodePosition(Node child) {
+	private static int getChildNodePosition(Node child) {
 		if (child == null) {
 			throw new NullPointerException("null: Not accepted. "
 					+ "Must be a Node.");
@@ -333,6 +302,7 @@ public class Doc {
 
 	private String msFFP;
 	private Document moDOM;
+	private XPath moXPath;
 
 	public Doc() {
 		initFileFullPath();
@@ -474,17 +444,20 @@ public class Doc {
 
 	public String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsString(sXPathExpr, getDocument());
+		return XPathExpander.evaluateAsString(sXPathExpr, getDocument(),
+				getXPath());
 	}
 
 	public NodeList evaluateAsNodeList(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNodeList(sXPathExpr, getDocument());
+		return XPathExpander.evaluateAsNodeList(sXPathExpr, getDocument(),
+				getXPath());
 	}
 
 	public Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNode(sXPathExpr, getDocument());
+		return XPathExpander.evaluateAsNode(sXPathExpr, getDocument(),
+				getXPath());
 	}
 
 	public void store() {
@@ -507,7 +480,7 @@ public class Doc {
 
 	protected String setFileFullPath(String sPath) throws IllegalFileException {
 		FS.validateFileExists(sPath);
-		String previous = msFFP;
+		String previous = getFileFullPath();
 		msFFP = sPath;
 		return previous;
 	}
@@ -521,8 +494,22 @@ public class Doc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Document.");
 		}
-		Document previous = moDOM;
+		Document previous = getDocument();
 		moDOM = v;
+		return previous;
+	}
+
+	public XPath getXPath() {
+		return moXPath;
+	}
+
+	/**
+	 * if null, xpath expression will be evaluate without any custom xpath
+	 * function resolution.
+	 */
+	public XPath setXPath(XPath v) {
+		XPath previous = getXPath();
+		moXPath = v;
 		return previous;
 	}
 

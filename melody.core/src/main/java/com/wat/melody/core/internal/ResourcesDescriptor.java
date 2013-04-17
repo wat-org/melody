@@ -23,6 +23,7 @@ import com.wat.melody.common.xml.DUNIDDoc;
 import com.wat.melody.common.xml.FilteredDoc;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -131,15 +132,17 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public List<Node> evaluateTargets(String xpath)
+	public synchronized List<Node> evaluateTargets(String xpath)
 			throws XPathExpressionException {
 		List<Node> targets = new ArrayList<Node>();
 		// Evaluate expression in the current document
-		NodeList nl = evaluateAsNodeList(xpath);
-		// Search for resulting nodes in the eligible targets
-		for (int i = 0; i < nl.getLength(); i++) {
-			if (getTargetDescriptor().getNode(getDUNID(nl.item(i))) != null) {
-				targets.add(nl.item(i));
+		synchronized (getDocument()) {
+			NodeList nl = evaluateAsNodeList(xpath);
+			// Search for resulting nodes in the eligible targets
+			for (int i = 0; i < nl.getLength(); i++) {
+				if (getTargetDescriptor().getNode(getDUNID(nl.item(i))) != null) {
+					targets.add(nl.item(i));
+				}
 			}
 		}
 		return targets;
@@ -247,19 +250,22 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsString(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsString(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override
 	public synchronized NodeList evaluateAsNodeList(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNodeList(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsNodeList(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override
 	public synchronized Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException {
-		return evaluateAsNode(sXPathExpr, getDocument().getFirstChild());
+		return XPathExpander.evaluateAsNode(sXPathExpr, getDocument()
+				.getFirstChild(), getXPath());
 	}
 
 	@Override

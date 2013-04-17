@@ -3,15 +3,17 @@ package com.wat.melody.core.internal;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import javax.xml.xpath.XPath;
+
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.api.exception.ExpressionSyntaxException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertiesSet;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.common.xpath.XPathExpander;
+import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 /**
  * <p>
@@ -26,11 +28,13 @@ public class TaskContext implements ITaskContext {
 	private Node moNode;
 	private PropertiesSet moProperties;
 	private ProcessorManager moProcessorManager;
+	private XPath moXPath;
 
 	public TaskContext(Node n, PropertiesSet ps, ProcessorManager p) {
 		setProcessorManager(p);
 		setProperties(ps);
 		setNode(n);
+		setXPath(XPathExpander.newXPath(p.getXPathResolver()));
 	}
 
 	@Override
@@ -78,6 +82,16 @@ public class TaskContext implements ITaskContext {
 		return previous;
 	}
 
+	public XPath getXPath() {
+		return moXPath;
+	}
+
+	private XPath setXPath(XPath xpath) {
+		XPath previous = getXPath();
+		moXPath = xpath;
+		return previous;
+	}
+
 	@Override
 	public void handleProcessorStateUpdates() throws InterruptedException {
 		moProcessorManager.handleProcessorStateUpdates();
@@ -87,7 +101,7 @@ public class TaskContext implements ITaskContext {
 	public String expand(String sToExpand) throws ExpressionSyntaxException {
 		return XPathExpander.expand(sToExpand, moProcessorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
-				getProperties());
+				getProperties(), getXPath());
 	}
 
 	@Override
@@ -95,7 +109,7 @@ public class TaskContext implements ITaskContext {
 			IOException, IllegalFileException {
 		return XPathExpander.expand(fileToExpand, moProcessorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
-				getProperties());
+				getProperties(), getXPath());
 	}
 
 	@Override
@@ -106,7 +120,7 @@ public class TaskContext implements ITaskContext {
 	@Override
 	public void processTask(Node n, PropertiesSet ps) throws TaskException,
 			InterruptedException {
-		moProcessorManager.processTask(moProcessorManager.newTask(n, ps));
+		moProcessorManager.createAndProcessTask(n, ps);
 	}
 
 	@Override

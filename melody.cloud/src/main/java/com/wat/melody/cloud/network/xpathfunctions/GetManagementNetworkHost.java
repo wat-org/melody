@@ -1,4 +1,4 @@
-package com.wat.melody.xpathextensions;
+package com.wat.melody.cloud.network.xpathfunctions;
 
 import java.util.List;
 
@@ -15,9 +15,9 @@ import com.wat.melody.cloud.network.NetworkManagementHelper;
  * @author Guillaume Cornet
  * 
  */
-public final class GetManagementNetworkDevice implements XPathFunction {
+public class GetManagementNetworkHost implements XPathFunction {
 
-	public static final String NAME = "getManagementNetworkDevice";
+	public static final String NAME = "getManagementNetworkHost";
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
@@ -27,17 +27,17 @@ public final class GetManagementNetworkDevice implements XPathFunction {
 		}
 		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
-					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
-					+ NAME + "() expects a Node or a List<Node> as first "
+					+ ": Not accepted. " + NAME
+					+ "() expects a Node or a List<Node> as first "
 					+ "argument.");
 		}
 		try {
 			if (arg0 instanceof Node) {
 				return NetworkManagementHelper
-						.findManagementNetworkDeviceNode((Node) arg0);
+						.findManagementNetworkHostNode((Node) arg0);
 			} else {
 				return NetworkManagementHelper
-						.findManagementNetworkDeviceNode((List<Node>) arg0);
+						.findManagementNetworkHostNode((List<Node>) arg0);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

@@ -54,9 +54,9 @@ import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xpath.XPathExpander;
+import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
-import com.wat.melody.xpathextensions.XPathExpander;
-import com.wat.melody.xpathextensions.exception.XPathExpressionSyntaxException;
 
 /**
  * <p>
@@ -296,11 +296,12 @@ public abstract class LibVirtCloud {
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
 			for (int i = 0; i < nl.getLength(); i++) {
-				String volPath = Doc.evaluateAsString("source/@file",
-						nl.item(i));
+				String volPath = XPathExpander.evaluateAsString("source/@file",
+						nl.item(i), null);
 				StorageVol sv = d.getConnect().storageVolLookupByPath(volPath);
 				DiskDeviceName devname = DiskDeviceName.parseString("/dev/"
-						+ Doc.evaluateAsString("target/@dev", nl.item(i)));
+						+ XPathExpander.evaluateAsString("target/@dev",
+								nl.item(i), null));
 				DiskDeviceSize devsize = DiskDeviceSize.parseInt((int) (sv
 						.getInfo().capacity / (1024 * 1024 * 1024)));
 				Boolean delonterm = true;
@@ -365,7 +366,7 @@ public abstract class LibVirtCloud {
 						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
-						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars, null), flag);
 				log.trace("Disk Device '" + disk.getDiskDeviceName()
 						+ "' detached on Domain '" + d.getName() + "'.");
 				// suppression du volume
@@ -461,7 +462,7 @@ public abstract class LibVirtCloud {
 				log.trace("Creating Disk Device '" + disk.getDiskDeviceName()
 						+ "' for Domain '" + d.getName() + "' ...");
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
-						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
+						NEW_DISK_DEVICE_XML_SNIPPET, null, vars, null), 0);
 				log.debug("Disk Device '" + disk.getDiskDeviceName()
 						+ "' created for Domain '" + d.getName()
 						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
@@ -473,7 +474,7 @@ public abstract class LibVirtCloud {
 						+ "' on Domain '" + d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.attachDeviceFlags(XPathExpander.expand(
-						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars, null), flag);
 				log.debug("Disk Device '" + disk.getDiskDeviceName()
 						+ "' attached on Domain '" + d.getName() + "'.");
 			}
@@ -542,7 +543,7 @@ public abstract class LibVirtCloud {
 					+ "' on Domain '" + sInstanceId + "' ...");
 			int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 			d.detachDeviceFlags(XPathExpander.expand(
-					DETACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+					DETACH_NETWORK_DEVICE_XML_SNIPPET, null, vars, null), flag);
 			log.debug("Network Device '" + netDevName
 					+ "' detached on Domain '" + sInstanceId + "'.");
 
@@ -602,7 +603,7 @@ public abstract class LibVirtCloud {
 					+ vars.getProperty("vmMacAddr").getValue() + "'.");
 			int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 			d.attachDeviceFlags(XPathExpander.expand(
-					ATTACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
+					ATTACH_NETWORK_DEVICE_XML_SNIPPET, null, vars, null), flag);
 			log.debug("Network Device '" + netDevName
 					+ "' attached on Domain '" + sInstanceId + "'.");
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
@@ -659,37 +660,47 @@ public abstract class LibVirtCloud {
 			for (int i = 0; i < nl.getLength(); i++) {
 				n = nl.item(i);
 
-				String sIp = Doc.evaluateAsString("./*/@srcipaddr", n);
-				String sMask = Doc.evaluateAsString("./*/@srcipmask", n);
+				String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr",
+						n, null);
+				String sMask = XPathExpander.evaluateAsString("./*/@srcipmask",
+						n, null);
 				fromIp = IpRange.parseString(sIp + "/" + sMask);
 
-				String start = Doc.evaluateAsString("./*/@srcporstart", n);
-				String end = Doc.evaluateAsString("./*/@srcportend", n);
+				String start = XPathExpander.evaluateAsString(
+						"./*/@srcporstart", n, null);
+				String end = XPathExpander.evaluateAsString("./*/@srcportend",
+						n, null);
 				fromPorts = PortRange.parseString(start + "-" + end);
 
-				sIp = Doc.evaluateAsString("./*/@dstipaddr", n);
-				sMask = Doc.evaluateAsString("./*/@dstipmask", n);
+				sIp = XPathExpander.evaluateAsString("./*/@dstipaddr", n, null);
+				sMask = XPathExpander.evaluateAsString("./*/@dstipmask", n,
+						null);
 				toIp = IpRange.parseString(sIp + "/" + sMask);
 
-				start = Doc.evaluateAsString("./*/@dstportstart", n);
-				end = Doc.evaluateAsString("./*/@dstportend", n);
+				start = XPathExpander.evaluateAsString("./*/@dstportstart", n,
+						null);
+				end = XPathExpander
+						.evaluateAsString("./*/@dstportend", n, null);
 				toPorts = PortRange.parseString(start + "-" + end);
 
-				String sProtocol = Doc.evaluateAsString("./node-name(*)", n);
+				String sProtocol = XPathExpander.evaluateAsString(
+						"./node-name(*)", n, null);
 				if (sProtocol.equalsIgnoreCase("tcp")) {
 					proto = Protocol.TCP;
 				} else {
 					proto = Protocol.UDP;
 				}// TODO : handle ICMP
 
-				String sDirection = Doc.evaluateAsString("./@direction", n);
+				String sDirection = XPathExpander.evaluateAsString(
+						"./@direction", n, null);
 				if (sDirection.equalsIgnoreCase("in")) {
 					dir = Direction.IN;
 				} else {
 					dir = Direction.OUT;
 				}
 
-				String sAccess = Doc.evaluateAsString("./@action", n);
+				String sAccess = XPathExpander.evaluateAsString("./@action", n,
+						null);
 				if (sAccess.equalsIgnoreCase("accept")) {
 					access = Access.ALLOW;
 				} else {
@@ -1220,7 +1231,7 @@ public abstract class LibVirtCloud {
 					+ "-nwfilter' (linked to Security Group '" + sSGName
 					+ "') for Domain '" + sInstanceId + "' ...");
 			cnx.networkFilterDefineXML(XPathExpander.expand(
-					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
+					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps, null));
 			log.debug("Network Filter '" + sInstanceId + "-" + eth
 					+ "-nwfilter' (linked to Security Group '" + sSGName
 					+ "') created for Domain '" + sInstanceId + "'.");
@@ -1393,8 +1404,8 @@ public abstract class LibVirtCloud {
 						+ "' based on the template " + sImageId
 						+ " ... MacAddress is '"
 						+ ps.getProperty("vmMacAddr").getValue() + "'.");
-				domain = cnx.domainDefineXML(XPathExpander
-						.expand(ddt, null, ps));
+				domain = cnx.domainDefineXML(XPathExpander.expand(ddt, null,
+						ps, null));
 			}
 			log.debug("Domain '" + sInstanceId + "' created.");
 
@@ -1423,7 +1434,7 @@ public abstract class LibVirtCloud {
 						.storageVolLookupByPath(sSourceVolumePath);
 				String sDescriptor = null;
 				sDescriptor = XPathExpander.expand(Paths.get(sDescriptorPath),
-						null, ps);
+						null, ps, null);
 				StorageVol sv = null;
 				synchronized (LOCK_CLONE_DISK) {
 					// we can't clone a volume which is already being cloned

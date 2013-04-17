@@ -1,4 +1,4 @@
-package com.wat.melody.api.exception;
+package com.wat.melody.common.xpath.exception;
 
 import com.wat.melody.common.ex.MelodyException;
 

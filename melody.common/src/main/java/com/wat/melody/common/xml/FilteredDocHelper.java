@@ -10,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.xml.exception.FilteredDocException;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -18,10 +19,10 @@ import com.wat.melody.common.xml.exception.FilteredDocException;
  */
 public class FilteredDocHelper {
 
-	public static NodeList getHeritedContent(Node n, String sXPathExpr)
+	public static NodeList getHeritedContent(Node n, String expr)
 			throws XPathExpressionException {
 		String refNodesXpr = Doc.getXPathPosition(n);
-		Node base = n.getOwnerDocument().getFirstChild();
+		Node ctx = n.getOwnerDocument().getFirstChild();
 		List<Node> circle = new ArrayList<Node>();
 		circle.add(n);
 		while (true) {
@@ -33,15 +34,15 @@ public class FilteredDocHelper {
 						+ "Because all herited attributes have already been "
 						+ "validated, such error cannot happened. "
 						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced.");
+						+ "a bug have been introduced.", Ex);
 			}
 			if (n == null) {
 				break;
 			}
 			refNodesXpr += " | " + Doc.getXPathPosition(n);
 		}
-		return Doc.evaluateAsNodeList("for $n in " + refNodesXpr + " "
-				+ "return $n" + sXPathExpr, base);
+		return XPathExpander.evaluateAsNodeList("for $n in " + refNodesXpr
+				+ " " + "return $n" + expr, ctx, null);
 	}
 
 	public static Node getHeritedAttribute(Node n, String sAttrName) {
@@ -65,7 +66,7 @@ public class FilteredDocHelper {
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
+					+ "a bug have been introduced.", Ex);
 		}
 		if (parent == null) {
 			return null;
@@ -114,8 +115,11 @@ public class FilteredDocHelper {
 		}
 		NodeList nl = null;
 		try {
-			nl = Doc.evaluateAsNodeList(xpath, n.getOwnerDocument()
-					.getFirstChild());
+			/*
+			 * TODO : should handle xpath rather than null ?
+			 */
+			nl = XPathExpander.evaluateAsNodeList(xpath, n.getOwnerDocument()
+					.getFirstChild(), null);
 		} catch (XPathExpressionException Ex) {
 			throw new FilteredDocException(herit, Messages.bind(
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH, xpath), Ex);
@@ -166,7 +170,7 @@ public class FilteredDocHelper {
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
+					+ "a bug have been introduced.", Ex);
 		}
 		if (parent == null) {
 			return;
@@ -214,8 +218,8 @@ public class FilteredDocHelper {
 	 */
 	public static NodeList findNodeWithHeritAttr(Document doc) {
 		try {
-			return Doc.evaluateAsNodeList("//*[ exists(@"
-					+ FilteredDoc.HERIT_ATTR + ") ]", doc);
+			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
+					+ FilteredDoc.HERIT_ATTR + ") ]", doc, null);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "

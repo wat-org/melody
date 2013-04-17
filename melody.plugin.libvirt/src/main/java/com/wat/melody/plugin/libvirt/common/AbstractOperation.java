@@ -22,7 +22,7 @@ import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -93,7 +93,7 @@ public abstract class AbstractOperation implements ITask,
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = XPathExpander.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);

@@ -1,4 +1,4 @@
-package com.wat.melody.xpathextensions;
+package com.wat.melody.cloud.network.xpathfunctions;
 
 import java.util.List;
 
@@ -15,24 +15,30 @@ import com.wat.melody.cloud.network.NetworkManagementHelper;
  * @author Guillaume Cornet
  * 
  */
-public class GetManagementNetworkMethod implements XPathFunction {
+public final class GetManagementNetworkDevice implements XPathFunction {
 
-	public static final String NAME = "getManagementNetworkMethod";
+	public static final String NAME = "getManagementNetworkDevice";
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node)) {
+		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
-					+ ": Not accepted. " + CustomXPathFunctions.NAMESPACE + ":"
-					+ NAME + "() expects a Node as first argument.");
+					+ ": Not accepted. " + NAME
+					+ "() expects a Node or a List<Node> as first "
+					+ "argument.");
 		}
 		try {
-			return NetworkManagementHelper
-					.findManagementNetworkMethodNode((Node) arg0);
+			if (arg0 instanceof Node) {
+				return NetworkManagementHelper
+						.findManagementNetworkDeviceNode((Node) arg0);
+			} else {
+				return NetworkManagementHelper
+						.findManagementNetworkDeviceNode((List<Node>) arg0);
+			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

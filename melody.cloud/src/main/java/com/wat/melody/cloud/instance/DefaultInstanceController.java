@@ -174,7 +174,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.ResizeMsg_NO_INSTANCE);
 		} else if (getInstanceType() == targetType) {
-			log.warn(Messages.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
+			log.info(Messages.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
 					targetType));
 		} else if (is != InstanceState.STOPPED) {
 			throw new OperationException(Messages.bind(

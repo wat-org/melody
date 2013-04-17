@@ -12,7 +12,7 @@ import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
-import com.wat.melody.xpathextensions.XPathExpander;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -50,7 +50,7 @@ public class ResizeMachine extends AbstractOperation {
 
 		try {
 			String v = null;
-			v = XPathExpander.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
 					Common.INSTANCETYPE_ATTR);
 			try {
 				try {
