@@ -13,6 +13,26 @@ public class Messages extends NLS {
 	public static String XPathResolver_MISSING_NAMESPACE_URI;
 	public static String XPathResolver_INVALID_NAMESPACE_URI;
 
+	public static String XPathResolver_INVALID_FUNCTION_DEFINITION;
+	public static String XPathResolver_INVALID_FUNCTION_NAME_DEFINITION;
+	public static String XPathResolver_INVALID_FUNCTION_NAME;
+
+	public static String XPathResolver_INVALID_FUNCTION_NAMESPACE_URI_DEFINITION;
+	public static String XPathResolver_MISSING_FUNCTION_NAMESPACE_URI;
+	public static String XPathResolver_INVALID_FUNCTION_NAMESPACE_URI;
+
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_DEFINITION;
+	public static String XPathResolver_MISSING_FUNCTION_CLASS;
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_EMPTY;
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_CNF;
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_NCDF;
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_CC;
+	public static String XPathResolver_INVALID_FUNCTION_CLASS_IA;
+
+	public static String XPathResolver_INVALID_FUNCTION_ARITY_DEFINITION;
+	public static String XPathResolver_MISSING_FUNCTION_ARITY;
+	public static String XPathResolver_INVALID_FUNCTION_ARITY;
+
 	public static String XPathExprSyntaxEx_UNDEF_PROPERTY;
 	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR;
 	public static String XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE;

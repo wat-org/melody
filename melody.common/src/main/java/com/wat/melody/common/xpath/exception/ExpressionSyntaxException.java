@@ -9,6 +9,9 @@ import com.wat.melody.common.ex.MelodyException;
  */
 public class ExpressionSyntaxException extends MelodyException {
 
+	/*
+	 * This method should not be in this package
+	 */
 	private static final long serialVersionUID = -4894096879684300065L;
 
 	public ExpressionSyntaxException() {

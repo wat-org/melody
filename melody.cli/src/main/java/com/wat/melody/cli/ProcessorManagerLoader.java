@@ -1239,6 +1239,12 @@ public class ProcessorManagerLoader {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NCDF_TASKS_DIRECTIVE, new Object[] { pi,
 							pic, Ex.getMessage().replaceAll("/", ".") }));
+		}
+		try {
+			c.newInstance();
+		} catch (IllegalAccessException | InstantiationException Ex) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_CC_TASKS_DIRECTIVE, pi, pic));
 		} catch (ClassCastException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CC_TASKS_DIRECTIVE, pi, pic));
@@ -1338,9 +1344,9 @@ public class ProcessorManagerLoader {
 	private Class<? extends IPlugInConfiguration> convertPlugInConfigurationClass(
 			PropertiesSet pcps, String pcc)
 			throws ConfigurationLoadingException {
-		Class<?> c = null;
+		Class<? extends IPlugInConfiguration> c = null;
 		try {
-			c = Class.forName(pcc);
+			c = (Class<? extends IPlugInConfiguration>) Class.forName(pcc);
 		} catch (ClassNotFoundException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CNF_CONF_DIRECTIVE,
@@ -1353,23 +1359,14 @@ public class ProcessorManagerLoader {
 							pcps.getFilePath(), pcc,
 							Ex.getMessage().replaceAll("/", ".") }));
 		}
-		Class<? extends IPlugInConfiguration> cc = null;
-		try {
-			cc = (Class<? extends IPlugInConfiguration>) c;
-		} catch (ClassCastException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_CC_CONF_DIRECTIVE,
-					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), pcc }));
-		}
 		IProcessorManager pm = getProcessorManager();
-		if (pm.getPluginConfigurations().contains(cc)) {
+		if (pm.getPluginConfigurations().contains(c)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
 					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), cc }));
+							pcps.getFilePath(), c }));
 		}
-		return cc;
+		return c;
 	}
 
 	private IPlugInConfiguration instanciatePlugInConfiguration(
@@ -1379,6 +1376,13 @@ public class ProcessorManagerLoader {
 		try {
 			pc = c.newInstance();
 		} catch (InstantiationException | IllegalAccessException Ex) {
+			throw new ConfigurationLoadingException(
+					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
+							new Object[] {
+									IPlugInConfiguration.PLUGIN_CONF_CLASS,
+									pcps.getFilePath(),
+									c.getClass().getCanonicalName() }));
+		} catch (ClassCastException Ex) {
 			throw new ConfigurationLoadingException(
 					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
 							new Object[] {

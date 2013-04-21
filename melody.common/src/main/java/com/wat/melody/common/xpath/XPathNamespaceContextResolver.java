@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.xml.namespace.NamespaceContext;
 
 import com.wat.melody.common.properties.PropertiesSet;
-import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
 /**
@@ -22,7 +21,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 	private static String NAMESPACE_NAME_PATTERN = "[a-zA-Z]+";
 
 	/**
-	 * Keys is a 'namespace' / value is its corresponding 'namespace's uri'
+	 * Entry are : namespace => namespace's uri
 	 */
 	private Map<String, String> _nsDefintion;
 
@@ -32,16 +31,18 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 
 	/**
 	 * <p>
-	 * Load the NameSpaces described by the given {@propertyName}'s list from
-	 * the given {@link PropertiesSet}.
+	 * Load the Custom NameSpaces definitions described by the given
+	 * properties's list from the given {@link PropertiesSet}.
 	 * </p>
 	 * 
 	 * @param ps
-	 *            contains Custom XPath Function definitions to load.
+	 *            contains Custom XPath NameSpace definitions to load.
 	 * @param properties
 	 *            indicates the properties - in the given {@link PropertiesSet}
 	 *            - which contain the Custom NameSpace definitions to load.
+	 * 
 	 * @throws XPathNamespaceContextResolverLoadingException
+	 *             if a Custom NameSpace definition is invalid.
 	 */
 	public void loadDefinitions(PropertiesSet ps, String... properties)
 			throws XPathNamespaceContextResolverLoadingException {
@@ -50,11 +51,13 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		}
 		if (properties == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid list of "
-					+ PropertyName.class.getCanonicalName() + ".");
+					+ "Must be a valid list of properties's name.");
 		}
 
 		for (String property : properties) {
+			if (property == null) {
+				continue;
+			}
 			property = property.trim();
 			if (property.length() == 0) {
 				continue;
@@ -81,7 +84,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		getNamespaceDefinition().put(name, uri);
 	}
 
-	public String loadNamespace(PropertiesSet ps, String key)
+	private String loadNamespace(PropertiesSet ps, String key)
 			throws XPathNamespaceContextResolverLoadingException {
 		int lastIndexOfDot = key.lastIndexOf('.') + 1;
 		if (lastIndexOfDot >= key.length()) {
@@ -100,7 +103,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		return namespaceName;
 	}
 
-	public String loadNamespaceURI(PropertiesSet ps, String key)
+	private String loadNamespaceURI(PropertiesSet ps, String key)
 			throws XPathNamespaceContextResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_NAMESPACE_URI)) {
@@ -125,7 +128,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		}
 	}
 
-	public Map<String, String> getNamespaceDefinition() {
+	private Map<String, String> getNamespaceDefinition() {
 		return _nsDefintion;
 	}
 
