@@ -12,6 +12,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.core.nativeplugin.order.exception.OrderException;
 import com.wat.melody.core.nativeplugin.synchronize.exception.SynchronizeException;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockScope;
@@ -43,29 +44,40 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	 */
 	public static final String MAXPAR_ATTR = "maxPar";
 
-	private List<Node> maNodes;
-	private LockId moLockId;
-	private LockScope moLockScope;
-	private MaxPar moMaxPar;
+	private List<Node> _innerTasks;
+	private LockId _lockId;
+	private LockScope _lockScope;
+	private MaxPar _maxPar;
 
 	public Synchronize() {
-		setNodes(new ArrayList<Node>());
+		setInnerTask(new ArrayList<Node>());
 		setLockId(LockId.DEFAULT_LOCK_ID);
 		setLockScope(LockScope.CURRENT);
 		setMaxPar(MaxPar.SEQUENTIAL);
 	}
 
+	/**
+	 * <p>
+	 * Register the given Task (in its native Node format) as an inner-task of
+	 * this object.
+	 * </p>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given node is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the given node is already registered.
+	 */
 	@Override
-	public void addNode(Node n) throws TaskException {
+	public void registerInnerTask(Node n) throws TaskException {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
-		if (getNodes().contains(n)) {
+		if (getInnerTask().contains(n)) {
 			throw new IllegalArgumentException(n.getNodeName()
 					+ ": Not accepted. " + "Node already present in list.");
 		}
-		getNodes().add(n);
+		getInnerTask().add(n);
 	}
 
 	@Override
@@ -73,6 +85,19 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 		// nothing to do
 	}
 
+	/**
+	 * <p>
+	 * Process all inner-tasks registered in this object. Wait for a free place
+	 * in the semaphore to start processing.
+	 * </p>
+	 * 
+	 * @throws OrderException
+	 *             if an error occurred during processing.
+	 * @throws InterruptedException
+	 *             if the processing was interrupted.
+	 * @throws Throwable
+	 *             if an unmanaged error occurred during the processing.
+	 */
 	@Override
 	public void doProcessing() throws SynchronizeException,
 			InterruptedException {
@@ -86,7 +111,7 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	@Override
 	public void doRun() throws SynchronizeException, InterruptedException {
 		try {
-			for (Node n : getNodes()) {
+			for (Node n : getInnerTask()) {
 				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
@@ -97,23 +122,30 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 		}
 	}
 
-	private List<Node> getNodes() {
-		return maNodes;
+	/**
+	 * <p>
+	 * Get all inner-tasks (in their native {@link Node} format) of this task.
+	 * </p>
+	 * 
+	 * @return all inner-task (in their native {@link Node} format).
+	 */
+	private List<Node> getInnerTask() {
+		return _innerTasks;
 	}
 
-	private List<Node> setNodes(List<Node> nodes) {
+	private List<Node> setInnerTask(List<Node> nodes) {
 		if (nodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ Node.class.getCanonicalName() + ">.");
 		}
-		List<Node> previous = getNodes();
-		maNodes = nodes;
+		List<Node> previous = getInnerTask();
+		_innerTasks = nodes;
 		return previous;
 	}
 
 	private LockId getLockId() {
-		return moLockId;
+		return _lockId;
 	}
 
 	@Attribute(name = LOCK_ID_ATTR)
@@ -124,12 +156,12 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 					+ ".");
 		}
 		LockId previous = getLockId();
-		moLockId = lockId;
+		_lockId = lockId;
 		return previous;
 	}
 
 	private LockScope getLockScope() {
-		return moLockScope;
+		return _lockScope;
 	}
 
 	@Attribute(name = SCOPE_ATTR)
@@ -140,12 +172,12 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 					+ ".");
 		}
 		LockScope previous = getLockScope();
-		moLockScope = maxPar;
+		_lockScope = maxPar;
 		return previous;
 	}
 
 	private MaxPar getMaxPar() {
-		return moMaxPar;
+		return _maxPar;
 	}
 
 	@Attribute(name = MAXPAR_ATTR)
@@ -156,7 +188,7 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 					+ ".");
 		}
 		MaxPar previous = getMaxPar();
-		moMaxPar = maxPar;
+		_maxPar = maxPar;
 		return previous;
 	}
 

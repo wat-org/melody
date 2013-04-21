@@ -8,6 +8,7 @@ import org.w3c.dom.Node;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
+import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.ITopLevelTask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
@@ -17,6 +18,7 @@ import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.core.internal.SequenceDescriptor;
 import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
@@ -48,34 +50,33 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 
-	private File msBaseDir;
-	private OrderName msDefault;
-	private String msDescription;
-	private List<Node> maNodes;
+	private File _baseDir = null;
+	private OrderName _defaultOrder = null;
+	private String _description = null;
+	private List<Node> _innerTasks;
 
 	public Sequence() {
-		initBaseDir();
-		initDefault();
-		initDescription();
-		initNodes();
+		setInnerTasks(new ArrayList<Node>());
 	}
 
-	private void initBaseDir() {
-		msBaseDir = null;
-	}
-
-	private void initDefault() {
-		msDefault = null;
-	}
-
-	private void initDescription() {
-		msDescription = null;
-	}
-
-	private void initNodes() {
-		maNodes = new ArrayList<Node>();
-	}
-
+	/**
+	 * <p>
+	 * Register the given {@link Property} in the current {@link ITaskContext},
+	 * so that it's {@link PropertyName} can be used during variable expansion.
+	 * </p>
+	 * 
+	 * <p>
+	 * <ul>
+	 * <li>If the given {@link Property} already exists in the current
+	 * {@link ITaskContext}, it will not be registered (because injected
+	 * properties - via the command line or via the configuration file -
+	 * predates) ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param p
+	 *            is the {@link Property} to register.
+	 */
 	@NestedElement(name = Property.PROPERTY, type = NestedElement.Type.ADD)
 	public void addProperty(Property p) {
 		if (p == null) {
@@ -83,9 +84,6 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 					+ "Must be a valid Property.");
 		}
 		// If the property already exists => do not replace it !!
-		// Note: Injected Properties predates declared property in the sequence
-		// task (and property can be injected via the command line or via the
-		// configuration file)
 		if (Melody.getContext().getProperties()
 				.containsKey(p.getName().getValue())) {
 			return;
@@ -95,66 +93,45 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 
 	/**
 	 * <p>
-	 * Register the given Task (in its native Node format) as an inner Task of
+	 * Register the given Task (in its native Node format) as an inner-task of
 	 * this object.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <code>null</code>.
-	 * 
+	 *             if the given node is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given node is already registered.
-	 * 
 	 */
 	@Override
-	public void addNode(Node n) {
+	public void registerInnerTask(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
-		if (maNodes.contains(n)) {
+		if (_innerTasks.contains(n)) {
 			throw new IllegalArgumentException(n.getNodeName()
 					+ ": Not accepted. " + "Node already present in list.");
 		}
-		maNodes.add(n);
+		_innerTasks.add(n);
 	}
 
-	/**
-	 * <p>
-	 * Validate this object.
-	 * </p>
-	 * <p>
-	 * <i> * Set the {@link SequenceDescriptor}'s baseDir to the baseDir default
-	 * value if it was not defined. <BR/>
-	 * * The baseDir default value is the parent folder of the Sequence
-	 * Descriptor file. <BR/>
-	 * </i>
-	 * </p>
-	 * 
-	 */
 	@Override
 	public void validate() {
+		// almost nothing to do
 	}
 
 	/**
 	 * <p>
-	 * Process the {@link Sequence} Task.
-	 * </p>
-	 * <p>
-	 * <i> * All orders defined in the Sequence Descriptor orders' list are
-	 * proceed one by one. <BR/>
-	 * </i>
+	 * Process all orders defined in the Sequence Descriptor orders's list, one
+	 * by one.
 	 * </p>
 	 * 
 	 * @throws SequenceException
 	 *             if an error occurred during processing.
-	 * 
 	 * @throws InterruptedException
 	 *             if the processing was interrupted.
-	 * 
 	 * @throws Throwable
 	 *             if an unmanaged error occurred during the processing.
-	 * 
 	 */
 	@Override
 	public void doProcessing() throws SequenceException, InterruptedException {
@@ -174,7 +151,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 
 	private void processOrder(OrderName order) throws TaskException,
 			InterruptedException {
-		for (Node n : getNodes()) {
+		for (Node n : getInnerTasks()) {
 			if (n.getNodeName().equalsIgnoreCase(Order.class.getSimpleName())
 					&& n.getAttributes().getNamedItem(Order.NAME_ATTR)
 							.getNodeValue().equals(order.getValue())) {
@@ -185,57 +162,69 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	}
 
 	public File getBaseDir() {
-		return msBaseDir;
+		return _baseDir;
 	}
 
+	/**
+	 * <p>
+	 * Register the given path as the {@link SequenceDescriptor}'s baseDir.
+	 * </p>
+	 * 
+	 * @throws SequenceException
+	 *             if the given path doesn't point to a valid Directory.
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
+	 */
 	@Attribute(name = BASEDIR_ATTR)
-	public File setBaseDir(File name) throws SequenceException {
-		if (name == null) {
+	public File setBaseDir(File path) throws SequenceException {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
 		try {
 			Melody.getContext().getProcessorManager().getSequenceDescriptor()
-					.setBaseDir(name);
+					.setBaseDir(path);
 		} catch (IllegalDirectoryException Ex) {
 			throw new SequenceException(Ex);
 		}
 		File previous = getBaseDir();
-		msBaseDir = name;
+		_baseDir = path;
 		return previous;
 	}
 
 	public OrderName getDefault() {
-		return msDefault;
+		return _defaultOrder;
 	}
 
 	/**
 	 * <p>
-	 * Validate the given name. If no Order has been explicitly loaded into the
-	 * {@link SequenceDescriptor}, will load the Order which correspond to the
-	 * given name.
+	 * Register the given order as the default order.
+	 * </p>
+	 * 
+	 * <p>
+	 * <ul>
+	 * <li>If no order have been registered into the {@link SequenceDescriptor},
+	 * this default order will be proceed ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param order
 	 *            is the name of the default Order.
 	 * 
 	 * @throws SequenceException
-	 *             if the given name doesn't refer to the name of an Order
+	 *             if the given order doesn't refer to the name of an Order
 	 *             defined in the Sequence Descriptor.
-	 * 
-	 * @throws SequenceException
-	 *             if the given name is not a valid Order name.
-	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given name is <code>null</code>.
-	 * 
+	 *             if the given name is <tt>null</tt>.
 	 */
 	@Attribute(name = DEFAULT_ATTR)
 	public OrderName setDefault(OrderName order) throws SequenceException {
 		if (order == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + OrderName.class.getCanonicalName()
+					+ ".");
 		}
+		// If no order have been registered, the default order will be proceed.
 		if (Melody.getContext().getProcessorManager().getSequenceDescriptor()
 				.countOrders() == 0) {
 			try {
@@ -246,47 +235,55 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 			}
 		}
 		OrderName previous = getDefault();
-		msDefault = order;
+		_defaultOrder = order;
 		return previous;
 	}
 
 	public String getDescription() {
-		return msDescription;
+		return _description;
 	}
 
 	/**
 	 * <p>
-	 * Set the Description with the given value.
+	 * Set the description with the given value.
 	 * </p>
 	 * 
-	 * @param v
+	 * @param description
 	 *            is the description to set.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given value is <code>null</code>.
-	 * 
+	 *             if the given value is <tt>null</tt>.
 	 */
 	@Attribute(name = DESCRIPTION_ATTR)
-	public String setDescription(String v) {
-		if (v == null) {
+	public String setDescription(String description) {
+		if (description == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid String.");
 		}
 		String previous = getDescription();
-		msDescription = v;
+		_description = description;
 		return previous;
 	}
 
 	/**
 	 * <p>
-	 * Get all inner Task (in their native Node format) of this object.
+	 * Get all inner-tasks (in their native {@link Node} format) of this task.
 	 * </p>
 	 * 
-	 * @return all inner Task (in their native Node format)
-	 * 
+	 * @return all inner-task (in their native {@link Node} format).
 	 */
-	private List<Node> getNodes() {
-		return maNodes;
+	private List<Node> getInnerTasks() {
+		return _innerTasks;
+	}
+
+	private List<Node> setInnerTasks(List<Node> innerTasks) {
+		if (innerTasks == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid List<Node>.");
+		}
+		List<Node> previous = getInnerTasks();
+		_innerTasks = innerTasks;
+		return previous;
 	}
 
 }

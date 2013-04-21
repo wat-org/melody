@@ -57,11 +57,11 @@ public class MaxPar {
 	private int _value;
 
 	public MaxPar(int iMaxPar) throws IllegalMaxParException {
-		setTimeout(iMaxPar);
+		setValue(iMaxPar);
 	}
 
 	public MaxPar(String sMaxPar) throws IllegalMaxParException {
-		setTimeout(sMaxPar);
+		setValue(sMaxPar);
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class MaxPar {
 		return _value;
 	}
 
-	private int setTimeout(int iMaxPar) throws IllegalMaxParException {
+	private int setValue(int iMaxPar) throws IllegalMaxParException {
 		if (iMaxPar < 0) {
 			throw new IllegalMaxParException(Messages.bind(
 					Messages.MaxParEx_NEGATIVE, iMaxPar));
@@ -95,7 +95,7 @@ public class MaxPar {
 		return previous;
 	}
 
-	private int setTimeout(String sMaxPar) throws IllegalMaxParException {
+	private int setValue(String sMaxPar) throws IllegalMaxParException {
 		if (sMaxPar == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
@@ -106,7 +106,7 @@ public class MaxPar {
 					Messages.MaxParEx_EMPTY, sMaxPar));
 		}
 		try {
-			return setTimeout(Integer.parseInt(sMaxPar));
+			return setValue(Integer.parseInt(sMaxPar));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalMaxParException(Messages.bind(
 					Messages.MaxParEx_NOT_A_NUMBER, sMaxPar));

@@ -52,38 +52,23 @@ public class Foreach implements ITask, ITaskContainer {
 	public static final short INTERRUPTED = 2;
 	public static final short CRITICAL = 4;
 
-	private String msItems;
-	private PropertyName msItemName;
-	private int miMaxPar;
-	private List<Node> maNodes;
+	private String _items = null;
+	private PropertyName _itemName = null;
+	private List<Node> _targets = null;
+	private int _maxPar = 0;
+	private List<Node> _innerTasks;
 
-	private short miState;
-	private ThreadGroup moThreadGroup;
-	private List<ForeachThread> maThreadsList;
-	private MelodyConsolidatedException moExceptionsSet;
+	private short _state;
+	private ThreadGroup _threadGroup;
+	private List<ForeachThread> _threadsList;
+	private MelodyConsolidatedException _exceptionsSet;
 
 	public Foreach() {
-		// Initialize members
-		initItems();
-		initItemName();
-		try {
-			setMaxPar(0);
-		} catch (ForeachException Ex) {
-			throw new RuntimeException("TODO impossible");
-		}
-		setNodes(new ArrayList<Node>());
+		setInnerTasks(new ArrayList<Node>());
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
 		setExceptionsSet(new MelodyConsolidatedException());
-	}
-
-	private void initItems() {
-		msItems = null;
-	}
-
-	private void initItemName() {
-		msItemName = null;
 	}
 
 	/**
@@ -93,21 +78,21 @@ public class Foreach implements ITask, ITaskContainer {
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <code>null</code>.
+	 *             if the given node is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given node is already registered.
 	 */
 	@Override
-	public void addNode(Node n) {
+	public void registerInnerTask(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
-		if (maNodes.contains(n)) {
+		if (_innerTasks.contains(n)) {
 			throw new IllegalArgumentException(n.getNodeName()
 					+ ": Not accepted. " + "Node already present in list.");
 		}
-		maNodes.add(n);
+		_innerTasks.add(n);
 	}
 
 	@Override
@@ -115,29 +100,26 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	private short markState(short state) {
-		return miState |= state;
+		return _state |= state;
 	}
 
 	private boolean isFailed() {
-		return FAILED == (miState & FAILED);
+		return FAILED == (_state & FAILED);
 	}
 
 	private boolean isInterrupted() {
-		return INTERRUPTED == (miState & INTERRUPTED);
+		return INTERRUPTED == (_state & INTERRUPTED);
 	}
 
 	private boolean isCritical() {
-		return CRITICAL == (miState & CRITICAL);
+		return CRITICAL == (_state & CRITICAL);
 	}
 
 	/**
 	 * <p>
-	 * Process the {@link Foreach} Task.
-	 * </p>
-	 * <p>
-	 * All Inner Task of the {@link Foreach} Task are proceed for each item
-	 * specified by the XPath expression given the {@link #ITEMS_ATTR} XML
-	 * Attribute.
+	 * Process all inner-task against all selected targets (see
+	 * {@link #getTargets()}). Each targets is proceed in a dedicated
+	 * {@link ForeachThread}.
 	 * </p>
 	 * 
 	 * @throws ForeachException
@@ -183,18 +165,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 * </p>
 	 */
 	private void initializeForeachThreads() {
-		List<Node> targets = null;
-		try {
-			targets = Melody.getContext().getProcessorManager()
-					.getResourcesDescriptor().evaluateTargets(getItems());
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexecpted error while evaluating "
-					+ "an XPath Expression. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		int index = 1;
-		for (Node target : targets) {
+		for (Node target : getTargets()) {
 			PropertiesSet ps = Melody.getContext().getProperties().copy();
 			// Add the property '<ItemName>=<XPath position of currentItem>', so
 			// that '§[<ItemName>]§' will be expanded with the item's XPath
@@ -202,10 +173,11 @@ public class Foreach implements ITask, ITaskContainer {
 			Property p = new Property(getItemName(),
 					Doc.getXPathPosition(target), null);
 			ps.put(p);
-			ForeachThread ft = new ForeachThread(this, index++, ps);
+			ForeachThread ft = new ForeachThread(this, ps);
 			if (!getThreadsList().add(ft)) {
 				throw new RuntimeException("Didn't managed to register "
-						+ "a new ForeachThread.");
+						+ "a new " + ForeachThread.class.getCanonicalName()
+						+ ".");
 			}
 		}
 	}
@@ -302,60 +274,6 @@ public class Foreach implements ITask, ITaskContainer {
 
 	/**
 	 * <p>
-	 * Get the XPath expression which allow to retrieve Targets.
-	 * </p>
-	 * 
-	 * @return the XPath expression which allow to retrieve Targets.
-	 */
-	private String getItems() {
-		return msItems;
-	}
-
-	/**
-	 * <p>
-	 * Set the XPath expression which allow to retrieve targets.
-	 * </p>
-	 * 
-	 * @param sItems
-	 *            the XPath expression which allow to retrieve targets.
-	 * 
-	 * @throws ForeachException
-	 *             if the given XPath expression is an empty <code>String</code>
-	 *             .
-	 * @throws ForeachException
-	 *             if the given XPath expression is not a valid XPath
-	 *             Expression.
-	 * @throws IllegalArgumentException
-	 *             if the given XPath expression is <code>null</code>.
-	 */
-	@Attribute(name = ITEMS_ATTR, mandatory = true)
-	public String setItems(String sItems) throws ForeachException {
-		if (sItems == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
-		}
-		if (sItems.trim().length() == 0) {
-			throw new ForeachException(Messages.bind(
-					Messages.ForeachEx_EMPTY_ITEMS_ATTR, sItems));
-		}
-		try {
-			/*
-			 * can be optimized : store the resulting target list in a dedicated
-			 * member
-			 */
-			Melody.getContext().getProcessorManager().getResourcesDescriptor()
-					.evaluateTargets(sItems);
-		} catch (XPathExpressionException Ex) {
-			throw new ForeachException(Messages.bind(
-					Messages.ForeachEx_INVALID_ITEMS_ATTR, sItems), Ex);
-		}
-		String previous = getItems();
-		msItems = sItems;
-		return previous;
-	}
-
-	/**
-	 * <p>
 	 * Get the name of the property which will contains the XPath position of
 	 * the current Target.
 	 * </p>
@@ -364,7 +282,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 *         of the current Target.
 	 */
 	private PropertyName getItemName() {
-		return msItemName;
+		return _itemName;
 	}
 
 	/**
@@ -382,7 +300,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 * @throws ForeachException
 	 *             if a property with the same name was already defined.
 	 * @throws IllegalArgumentException
-	 *             if the given name is <code>null</code>.
+	 *             if the given name is <tt>null</tt>.
 	 */
 	@Attribute(name = ITEMNAME_ATTR, mandatory = true)
 	public PropertyName setItemName(PropertyName propertyName)
@@ -392,7 +310,78 @@ public class Foreach implements ITask, ITaskContainer {
 					+ "Cannot be null.");
 		}
 		PropertyName previous = getItemName();
-		msItemName = propertyName;
+		_itemName = propertyName;
+		return previous;
+	}
+
+	/**
+	 * <p>
+	 * Get the XPath expression which selects Targets.
+	 * </p>
+	 * 
+	 * @return the XPath expression which selects Targets.
+	 */
+	private String getItems() {
+		return _items;
+	}
+
+	/**
+	 * <p>
+	 * Set the XPath Expression which selects targets.
+	 * </p>
+	 * 
+	 * @param itemsExpr
+	 *            the XPath expression which selects targets.
+	 * 
+	 * @throws ForeachException
+	 *             if the given <tt>String</tt> is an empty <tt>String</tt>.
+	 * @throws ForeachException
+	 *             if the given <tt>String</tt> is not a valid XPath Expression.
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 */
+	@Attribute(name = ITEMS_ATTR, mandatory = true)
+	public String setItems(String itemsExpr) throws ForeachException {
+		if (itemsExpr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String.");
+		}
+		if (itemsExpr.trim().length() == 0) {
+			throw new ForeachException(Messages.bind(
+					Messages.ForeachEx_EMPTY_ITEMS_ATTR, itemsExpr));
+		}
+		try {
+			setTargets(Melody.getContext().getProcessorManager()
+					.getResourcesDescriptor().evaluateTargets(itemsExpr));
+		} catch (XPathExpressionException Ex) {
+			throw new ForeachException(Messages.bind(
+					Messages.ForeachEx_INVALID_ITEMS_ATTR, itemsExpr), Ex);
+		}
+		String previous = getItems();
+		_items = itemsExpr;
+		return previous;
+	}
+
+	/**
+	 * <p>
+	 * Get the targets selected by the XPath Expression which stands in
+	 * {@link #getItems()}.
+	 * </p>
+	 * 
+	 * @return the targets selected by the XPath Expression which stands in
+	 *         {@link #getItems()}.
+	 */
+	private List<Node> getTargets() {
+		return _targets;
+	}
+
+	private List<Node> setTargets(List<Node> targets) {
+		if (targets == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid List<Node>.");
+		}
+		List<Node> previous = getTargets();
+		_targets = targets;
 		return previous;
 	}
 
@@ -401,20 +390,17 @@ public class Foreach implements ITask, ITaskContainer {
 	 * Get the maximum number of thread this object can run simultaneously.
 	 * </p>
 	 * 
-	 * @return the maximum number of thread this object can run simultaneously. <BR/>
-	 *         0 means that there is not limit. <BR/>
+	 * @return the maximum number of thread this object can run simultaneously.
+	 *         0 means there is no limit.
 	 */
 	private int getMaxPar() {
-		return miMaxPar;
+		return _maxPar;
 	}
 
 	/**
 	 * <p>
-	 * Set the maximum number of threads this object can run simultaneously.
-	 * </p>
-	 * <p>
-	 * <i> * 0 means that there is not limit. <BR/>
-	 * </i>
+	 * Set the maximum number of threads this object can run simultaneously. 0
+	 * means there is no limit.
 	 * </p>
 	 * 
 	 * @param iMaxPar
@@ -431,51 +417,60 @@ public class Foreach implements ITask, ITaskContainer {
 					Messages.ForeachEx_INVALID_MAXPAR_ATTR, iMaxPar));
 		}
 		int previous = getMaxPar();
-		miMaxPar = iMaxPar;
+		_maxPar = iMaxPar;
 		return previous;
 	}
 
 	/**
 	 * <p>
-	 * Get all inner Task (in their native Node format) of this object.
+	 * Get all inner-tasks (in their native {@link Node} format) of this task.
 	 * </p>
 	 * 
-	 * @return all inner Task (in their native Node format).
+	 * @return all inner-task (in their native {@link Node} format).
 	 */
-	protected List<Node> getNodes() {
-		return maNodes;
+	protected List<Node> getInnerTasks() {
+		return _innerTasks;
 	}
 
-	private List<Node> setNodes(List<Node> an) {
-		if (an == null) {
+	private List<Node> setInnerTasks(List<Node> innerTasks) {
+		if (innerTasks == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List<Node>.");
 		}
-		List<Node> previous = getNodes();
-		maNodes = an;
+		List<Node> previous = getInnerTasks();
+		_innerTasks = innerTasks;
 		return previous;
 	}
 
+	/**
+	 * <p>
+	 * Get the {@link ThreadGroup} which holds all {@link ForeachThread} managed
+	 * by this object.
+	 * </p>
+	 * 
+	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
+	 *         managed by this object.
+	 */
 	protected ThreadGroup getThreadGroup() {
-		return moThreadGroup;
+		return _threadGroup;
 	}
 
 	private ThreadGroup setThreadGroup(ThreadGroup tg) {
 		// Can be null
 		ThreadGroup previous = getThreadGroup();
-		moThreadGroup = tg;
+		_threadGroup = tg;
 		return previous;
 	}
 
 	/**
 	 * <p>
-	 * Get the {@link ForeachThread} list.
+	 * Get the all the {@link ForeachThread} managed by this object.
 	 * </p>
 	 * 
-	 * @return the {@link ForeachThread} list.
+	 * @return the all the {@link ForeachThread} managed by this object.
 	 */
-	private List<ForeachThread> getThreadsList() {
-		return maThreadsList;
+	protected List<ForeachThread> getThreadsList() {
+		return _threadsList;
 	}
 
 	private List<ForeachThread> setThreadsList(List<ForeachThread> aft) {
@@ -484,7 +479,7 @@ public class Foreach implements ITask, ITaskContainer {
 					+ "Must be a valid List<ForeachThread>.");
 		}
 		List<ForeachThread> previous = getThreadsList();
-		maThreadsList = aft;
+		_threadsList = aft;
 		return previous;
 	}
 
@@ -498,7 +493,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 *         object.
 	 */
 	private MelodyConsolidatedException getExceptionsSet() {
-		return moExceptionsSet;
+		return _exceptionsSet;
 	}
 
 	private MelodyConsolidatedException setExceptionsSet(
@@ -510,7 +505,7 @@ public class Foreach implements ITask, ITaskContainer {
 					+ ".");
 		}
 		MelodyConsolidatedException previous = getExceptionsSet();
-		moExceptionsSet = cex;
+		_exceptionsSet = cex;
 		return previous;
 	}
 

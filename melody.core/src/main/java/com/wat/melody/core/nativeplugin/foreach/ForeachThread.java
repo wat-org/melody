@@ -21,16 +21,16 @@ import com.wat.melody.common.properties.PropertiesSet;
  */
 public class ForeachThread implements Runnable {
 
-	private PropertiesSet moPropertiesSet;
-	private Foreach moForeach;
-	private MelodyThread moThread;
-	private Throwable moFinalError;
+	private PropertiesSet _propertiesSet;
+	private Foreach _foreach;
+	private MelodyThread _thread;
+	private Throwable _finalError;
 
 	/**
 	 * <p>
 	 * Create a new {@link ForeachThread} object, which is especially designed
-	 * to process all inner-{@link ITask} defined in the given {@link Foreach}
-	 * Task.
+	 * to process all inner-task defined in the given {@link Foreach} Task
+	 * against a specific target.
 	 * </p>
 	 * 
 	 * <p>
@@ -42,14 +42,11 @@ public class ForeachThread implements Runnable {
 	 * </p>
 	 * 
 	 * @param p
-	 *            is the {@link Foreach} Task which contains all inner-
-	 *            {@link ITask} to proceed.
-	 * @param index
-	 *            is the index of the dedicated thread created by this object.
+	 *            is the {@link Foreach} Task which contains all inner-task to
+	 *            proceed.
 	 * @param ps
 	 *            is a dedicated {@link PropertiesSet}, which will be used
-	 *            during {@link Foreach} inner- {@link ITask} variable's
-	 *            expansion.
+	 *            during {@link Foreach} inner-task variable's expansion.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Foreach} Task is <tt>null</tt>.
@@ -59,12 +56,14 @@ public class ForeachThread implements Runnable {
 	 * @see {@link #run()}
 	 * @see {@link #startProcessing()}
 	 */
-	public ForeachThread(Foreach p, int index, PropertiesSet ps) {
+	public ForeachThread(Foreach p, PropertiesSet ps) {
 		setPropertiesSet(ps);
 		setForeach(p);
 		setFinalError(null);
 		setThread(Melody.createNewMelodyThread(p.getThreadGroup(), this, p
-				.getThreadGroup().getName() + "-" + index));
+				.getThreadGroup().getName()
+				+ "-"
+				+ (p.getThreadsList().size() + 1)));
 		getThread().pushContext(Melody.getContext());
 	}
 
@@ -261,7 +260,7 @@ public class ForeachThread implements Runnable {
 	 */
 	public void run() {
 		try {
-			for (Node n : getForeach().getNodes()) {
+			for (Node n : getForeach().getInnerTasks()) {
 				Melody.getContext().processTask(n, getPropertiesSet());
 			}
 		} catch (Throwable Ex) {
@@ -270,7 +269,7 @@ public class ForeachThread implements Runnable {
 	}
 
 	private PropertiesSet getPropertiesSet() {
-		return moPropertiesSet;
+		return _propertiesSet;
 	}
 
 	/**
@@ -289,13 +288,14 @@ public class ForeachThread implements Runnable {
 	private void setPropertiesSet(PropertiesSet ps) {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PropertiesSet.");
+					+ "Must be a valid "
+					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
-		moPropertiesSet = ps;
+		_propertiesSet = ps;
 	}
 
 	private Foreach getForeach() {
-		return moForeach;
+		return _foreach;
 	}
 
 	/**
@@ -313,17 +313,18 @@ public class ForeachThread implements Runnable {
 	private Foreach setForeach(Foreach p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Foreach.");
+					+ "Must be a valid " + Foreach.class.getCanonicalName()
+					+ ".");
 		}
-		return moForeach = p;
+		return _foreach = p;
 	}
 
 	private MelodyThread getThread() {
-		return moThread;
+		return _thread;
 	}
 
 	private MelodyThread setThread(MelodyThread t) {
-		return moThread = t;
+		return _thread = t;
 	}
 
 	/**
@@ -348,11 +349,11 @@ public class ForeachThread implements Runnable {
 	 * @see {@link #startProcessing()}
 	 */
 	public Throwable getFinalError() {
-		return moFinalError;
+		return _finalError;
 	}
 
 	private Throwable setFinalError(Throwable e) {
-		return moFinalError = e;
+		return _finalError = e;
 	}
 
 }

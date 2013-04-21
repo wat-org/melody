@@ -713,7 +713,7 @@ public class TaskFactory {
 			return false;
 		}
 		try {
-			((ITaskContainer) base).addNode(n);
+			((ITaskContainer) base).registerInnerTask(n);
 		} catch (TaskException Ex) {
 			throw new TaskFactoryException(Ex);
 		}

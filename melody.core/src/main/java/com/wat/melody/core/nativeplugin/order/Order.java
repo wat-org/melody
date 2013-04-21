@@ -56,10 +56,10 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 *         input {@link OrderName}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <code>null</code>.
+	 *             if the given input {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given input {@link ISequenceDescriptor} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
 	public static Node findOrder(OrderName order, ISequenceDescriptor SD) {
 		NodeList nl = findOrders(order, SD);
@@ -78,20 +78,20 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 * 
 	 * @param order
 	 *            is the given input {@link OrderName}.
-	 * @param SD
+	 * @param sd
 	 *            is the Sequence Descriptor to search in.
 	 * 
 	 * @return the Order Element <code>NodeList</code> whose name match the
 	 *         given input {@link OrderName}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <code>null</code>.
+	 *             if the given input {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given input {@link ISequenceDescriptor} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
-	public static NodeList findOrders(OrderName order, ISequenceDescriptor SD) {
-		if (SD == null) {
+	public static NodeList findOrders(OrderName order, ISequenceDescriptor sd) {
+		if (sd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid SequenceDescriptor.");
 		}
@@ -100,7 +100,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ "Must be a valid String (an Order).");
 		}
 		try {
-			return SD.evaluateAsNodeList("/*/" + ORDER + "[@" + NAME_ATTR
+			return sd.evaluateAsNodeList("/*/" + ORDER + "[@" + NAME_ATTR
 					+ "='" + order + "']");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
@@ -112,46 +112,29 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 		}
 	}
 
-	private OrderName msName;
-	private String msDescription;
-	private List<Node> maNodes;
+	private OrderName _orderName = null;
+	private String _description = null;
+	private List<Node> _innerTasks;
 
 	public Order() {
-		initName();
-		initDescription();
-		initNodes();
-	}
-
-	private void initName() {
-		msName = null;
-	}
-
-	private void initDescription() {
-		msDescription = null;
-	}
-
-	private void initNodes() {
-		maNodes = new ArrayList<Node>();
+		setInnerTasks(new ArrayList<Node>());
 	}
 
 	/**
 	 * <p>
-	 * Search the Order whose name is equal to the given input {@link OrderName}
-	 * .
+	 * Search for order whose name is equal to the given {@link OrderName}.
 	 * </p>
 	 * 
 	 * @param order
-	 *            is the given input {@link OrderName}.
+	 *            is the given {@link OrderName} to search.
 	 * 
-	 * @return the Order Element <code>Node</code> whose name match the given
-	 *         input {@link OrderName}.
+	 * @return the found order (in its native {@link Node} format).
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <code>null</code>.
+	 *             if the given {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the underlying {@link ISequenceDescriptor} is
-	 *             <code>null</code>.
-	 * 
+	 *             <tt>null</tt>.
 	 */
 	public Node findOrder(OrderName order) throws IllegalOrderException {
 		return findOrder(order, Melody.getContext().getProcessorManager()
@@ -160,48 +143,70 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 
 	/**
 	 * <p>
-	 * Search all Orders whose name are equal to the given input
-	 * {@link OrderName} .
+	 * Search for order whose name are equal to the given {@link OrderName}.
 	 * </p>
 	 * 
 	 * @param order
-	 *            is the given input {@link OrderName}.
+	 *            is the given {@link OrderName} to search.
 	 * 
-	 * @return the Order Element <code>NodeList</code> whose name match the
-	 *         given input {@link OrderName}.
+	 * @return the found orders (in their native {@link Node} format).
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <code>null</code>.
+	 *             if the given {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the underlying {@link ISequenceDescriptor} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
-	public NodeList findOrders(OrderName order) throws IllegalOrderException {
+	public NodeList findOrders(OrderName order) {
 		return findOrders(order, Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor());
 	}
 
+	/**
+	 * <p>
+	 * Register the given Task (in its native Node format) as an inner-task of
+	 * this object.
+	 * </p>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given node is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the given node is already registered.
+	 */
 	@Override
-	public void addNode(Node n) {
+	public void registerInnerTask(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node.");
 		}
-		if (maNodes.contains(n)) {
+		if (_innerTasks.contains(n)) {
 			throw new IllegalArgumentException(n.getNodeName()
 					+ ": Not accepted. " + "Node already present in list.");
 		}
-		maNodes.add(n);
+		_innerTasks.add(n);
 	}
 
 	@Override
 	public void validate() {
+		// almost nothing to do
 	}
 
+	/**
+	 * <p>
+	 * Process all inner-tasks registered in this object.
+	 * </p>
+	 * 
+	 * @throws OrderException
+	 *             if an error occurred during processing.
+	 * @throws InterruptedException
+	 *             if the processing was interrupted.
+	 * @throws Throwable
+	 *             if an unmanaged error occurred during the processing.
+	 */
 	@Override
 	public void doProcessing() throws OrderException, InterruptedException {
 		try {
-			for (Node n : getNodes()) {
+			for (Node n : getInnerTasks()) {
 				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
@@ -213,9 +218,28 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	}
 
 	public OrderName getName() {
-		return msName;
+		return _orderName;
 	}
 
+	/**
+	 * <p>
+	 * Assign the given name to this object.
+	 * </p>
+	 * 
+	 * @param name
+	 *            is the name to assign to this object.
+	 * 
+	 * @return the previous name of this object.
+	 * 
+	 * @throws OrderException
+	 *             if the given name is not unique in the underlying
+	 *             {@link ISequenceDescriptor}.
+	 * @throws IllegalArgumentException
+	 *             if the given input {@link OrderName} is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the underlying {@link ISequenceDescriptor} is
+	 *             <tt>null</tt>.
+	 */
 	@Attribute(name = NAME_ATTR, mandatory = true)
 	public OrderName setName(OrderName name) throws OrderException {
 		if (name == null) {
@@ -224,33 +248,40 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ ".");
 		}
 
-		try {
-			int duplicate = findOrders(name).getLength();
-			if (duplicate == 0) {
-				throw new RuntimeException("Unexpected error while detecting "
-						+ "duplicate order name. No order whose name is equal "
-						+ "to " + name + " were found."
-						+ "Because such order exists, such error cannot "
-						+ "happened."
-						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced. ");
-			} else if (duplicate > 1) {
-				throw new OrderException(Messages.bind(
-						Messages.OrderEx_DUPLICATE_NAME, new Object[] { name,
-								ORDER, NAME_ATTR }));
-			}
-		} catch (IllegalOrderException Ex) {
-			throw new OrderException(Ex);
+		int count = findOrders(name).getLength();
+		if (count == 0) {
+			throw new RuntimeException("Unexpected error while detecting "
+					+ "duplicate order name. No order whose name is equal "
+					+ "to " + name + " were found."
+					+ "Because such order exists, such error cannot "
+					+ "happened."
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced. ");
+		} else if (count > 1) {
+			throw new OrderException(Messages.bind(
+					Messages.OrderEx_DUPLICATE_NAME, new Object[] { name,
+							ORDER, NAME_ATTR }));
 		}
 		OrderName previous = getName();
-		msName = name;
+		_orderName = name;
 		return previous;
 	}
 
 	public String getDescription() {
-		return msDescription;
+		return _description;
 	}
 
+	/**
+	 * <p>
+	 * Set the description with the given value.
+	 * </p>
+	 * 
+	 * @param description
+	 *            is the description to set.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given value is <tt>null</tt>.
+	 */
 	@Attribute(name = DESCRIPTION_ATTR)
 	public String setDescription(String v) {
 		if (v == null) {
@@ -258,12 +289,29 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ "Cannot be null.");
 		}
 		String previous = getDescription();
-		msDescription = v;
+		_description = v;
 		return previous;
 	}
 
-	private List<Node> getNodes() {
-		return maNodes;
+	/**
+	 * <p>
+	 * Get all inner-tasks (in their native {@link Node} format) of this task.
+	 * </p>
+	 * 
+	 * @return all inner-task (in their native {@link Node} format).
+	 */
+	private List<Node> getInnerTasks() {
+		return _innerTasks;
+	}
+
+	private List<Node> setInnerTasks(List<Node> innerTasks) {
+		if (innerTasks == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid List<Node>.");
+		}
+		List<Node> previous = getInnerTasks();
+		_innerTasks = innerTasks;
+		return previous;
 	}
 
 }
