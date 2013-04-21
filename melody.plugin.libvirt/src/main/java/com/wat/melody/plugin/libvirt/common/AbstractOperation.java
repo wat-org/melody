@@ -294,7 +294,7 @@ public abstract class AbstractOperation implements ITask,
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH,
-					target, Doc.parseInt(n.getNodeType())));
+					target, Doc.parseNodeType(n.getNodeType())));
 		}
 		setTargetNode(n);
 		try {

@@ -63,9 +63,8 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             {@inheritDoc}
 	 */
-	protected static Document parse(File sPath) throws SAXException,
-			IOException {
-		return Parser.parse(sPath);
+	protected static Document parse(File path) throws SAXException, IOException {
+		return Parser.parse(path);
 	}
 
 	/**
@@ -76,9 +75,9 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             {@inheritDoc}
 	 */
-	protected static Document parse(String content) throws SAXException,
+	protected static Document parse(String xml) throws SAXException,
 			IOException {
-		return Parser.parse(content);
+		return Parser.parse(xml);
 	}
 
 	/**
@@ -95,7 +94,7 @@ public class Doc {
 		}
 	}
 
-	public static String parseInt(int nodeType) {
+	public static String parseNodeType(int nodeType) {
 		switch (nodeType) {
 		case Node.ATTRIBUTE_NODE:
 			return "ATTRIBUTE";
@@ -133,32 +132,35 @@ public class Doc {
 	 * value and add it to the given Node.
 	 * </p>
 	 * 
-	 * @param sAttrName
+	 * @param attrName
 	 *            is the name of the attribute to create.
-	 * @param sAttrValue
+	 * @param attrValue
 	 *            is the corresponding value of the attribute.
-	 * @param oNode
+	 * @param n
 	 *            is the Node where the new Attribute will be added.
 	 * 
 	 * @return the newly created Attribute.
 	 */
-	public static Attr createAttribute(String sAttrName, String sAttrValue,
-			Node oNode) {
-		if (sAttrName == null) {
+	public static Attr createAttribute(String attrName, String attrValue, Node n) {
+		if (attrName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XML Attribute name).");
 		}
-		if (sAttrName.trim().length() == 0) {
+		if (attrName.trim().length() == 0) {
 			throw new IllegalArgumentException(": Not accepted. "
 					+ "Must be a valid String (an XML Attribute name).");
 		}
-		if (oNode == null) {
+		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
-		Attr oAtr = oNode.getOwnerDocument().createAttribute(sAttrName);
-		oAtr.setNodeValue(sAttrValue);
-		oNode.getAttributes().setNamedItem(oAtr);
+		if (n.getNodeType() != Node.ELEMENT_NODE) {
+			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
+					+ ": Not accepted. " + "Must be an Element Node.");
+		}
+		Attr oAtr = n.getOwnerDocument().createAttribute(attrName);
+		oAtr.setNodeValue(attrValue);
+		n.getAttributes().setNamedItem(oAtr);
 		return oAtr;
 	}
 
@@ -173,8 +175,8 @@ public class Doc {
 	 *            is the path where the {@link Document} will be stored.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Document} is <code>null</code>, or if the
-	 *             given path is <code>null</code>.
+	 *             if the given {@link Document} is <tt>null</tt>, or if the
+	 *             given path is <tt>null</tt>.
 	 */
 	public static void store(Document d, String path) {
 		if (path == null) {
@@ -187,7 +189,8 @@ public class Doc {
 		}
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Document.");
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
 		}
 		try {
 			synchronized (d) {
@@ -213,12 +216,13 @@ public class Doc {
 	 *         given {@link Document}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Document} is <code>null</code>.
+	 *             if the given {@link Document} is <tt>null</tt>.
 	 */
 	public static String dump(Document d) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Document.");
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
 		}
 		try {
 			synchronized (d) {
@@ -249,17 +253,17 @@ public class Doc {
 	 *         {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code> or is not an
+	 *             if the given {@link Node} is <tt>null</tt> or is not an
 	 *             Element {@link Node}.
 	 */
 	public static String getXPathPosition(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(n.getNodeName()
-					+ ": Not accepted. " + "Must be a Element Node.");
+			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
+					+ ": Not accepted. " + "Must be an Element Node.");
 		}
 		String sTargetXPath = "";
 		synchronized (n.getOwnerDocument()) {
@@ -270,23 +274,23 @@ public class Doc {
 		return sTargetXPath;
 	}
 
-	private static int getChildNodePosition(Node child) {
-		if (child == null) {
+	private static int getChildNodePosition(Node n) {
+		if (n == null) {
 			throw new NullPointerException("null: Not accepted. "
-					+ "Must be a Node.");
+					+ "Must be a " + Node.class.getCanonicalName() + ".");
 		}
-		if (child.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(child.getNodeName()
-					+ ": Not accepted. " + "Must be a Element Node.");
+		if (n.getNodeType() != Node.ELEMENT_NODE) {
+			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
+					+ ": Not accepted. " + "Must be an Element Node.");
 		}
 
-		Node parent = child.getParentNode();
+		Node parent = n.getParentNode();
 		int index = 1;
 		for (int i = 0; i < parent.getChildNodes().getLength(); ++i)
-			if (parent.getChildNodes().item(i) == child) {
+			if (parent.getChildNodes().item(i) == n) {
 				return index;
 			} else if (parent.getChildNodes().item(i).getNodeName()
-					.compareTo(child.getNodeName()) == 0) {
+					.compareTo(n.getNodeName()) == 0) {
 				++index;
 			}
 
@@ -300,25 +304,74 @@ public class Doc {
 		return new Location(n);
 	}
 
-	private String msFFP;
-	private Document moDOM;
-	private XPath moXPath;
+	private static String XPATH = "x";
+
+	/**
+	 * <p>
+	 * Store the given {@link XPath} object into the given {@link Document} as
+	 * user data.
+	 * </p>
+	 * 
+	 * <p>
+	 * The {@link XPath} object can be retrieve using the method
+	 * {@link #retrieveXPath(Document)}.
+	 * </p>
+	 * 
+	 * @param d
+	 *            is the {@link Document} to store the {@link XPath} object in.
+	 * @param xpath
+	 *            is the {@link XPath} to store. Can be <tt>null</tt>.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <tt>null</tt>.
+	 */
+	public static void storeXPath(Document d, XPath xpath) {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
+		}
+		d.setUserData(XPATH, xpath, new CloneUserDataHandler());
+	}
+
+	/**
+	 * <p>
+	 * Retrieve from the given {@link Document}'s user data a previously stored
+	 * {@link XPath} object.
+	 * </p>
+	 * 
+	 * <p>
+	 * An {@link XPath} object can be store using the method
+	 * {@link #storeXPath(Document, XPath)}.
+	 * </p>
+	 * 
+	 * @param d
+	 *            is the {@link Document} to retrieve the {@link XPath} object
+	 *            from.
+	 * 
+	 * @return the previously stored {@link XPath} object, or <tt>null</tt>.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <tt>null</tt>.
+	 */
+	public static XPath retrieveXPath(Document d) {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
+		}
+		Object obj = d.getUserData(XPATH);
+		if (obj != null) {
+			return (XPath) obj;
+		}
+		return null;
+	}
+
+	private String msFFP = null;
+	private Document moDOM = null;
+	private XPath moXPath = null;
 
 	public Doc() {
-		initFileFullPath();
-		initDocument();
-	}
-
-	public String dump() {
-		return dump(getDocument());
-	}
-
-	private String initFileFullPath() {
-		return msFFP = null;
-	}
-
-	private Document initDocument() {
-		return moDOM = null;
 	}
 
 	/**
@@ -326,7 +379,7 @@ public class Doc {
 	 * Load the content of the file points by the given path into this object.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the file to load.
 	 * 
 	 * @throws IllegalFileException
@@ -340,21 +393,21 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given path is <tt>null</tt>.
 	 */
-	public void load(String sPath) throws MelodyException, IllegalDocException,
+	public void load(String path) throws MelodyException, IllegalDocException,
 			IllegalFileException, IOException {
-		setFileFullPath(sPath);
+		setFileFullPath(path);
 		try {
-			setDocument(parse(new File(sPath)));
+			setDocument(parse(new File(path)));
 		} catch (SAXParseException Ex) {
 			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX_AT, new Object[] { sPath,
+					Messages.DocEx_INVALID_XML_SYNTAX_AT, new Object[] { path,
 							Ex.getLineNumber(), Ex.getColumnNumber() }), Ex);
 		} catch (SAXException Ex) {
 			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX, sPath), Ex);
+					Messages.DocEx_INVALID_XML_SYNTAX, path), Ex);
 		} catch (CharConversionException Ex) {
 			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_DATA, sPath), Ex);
+					Messages.DocEx_INVALID_XML_DATA, path), Ex);
 		}
 		validateContent();
 	}
@@ -378,7 +431,7 @@ public class Doc {
 	public void load(Doc doc) {
 		if (doc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Doc.");
+					+ "Must be a valid " + Doc.class.getCanonicalName() + ".");
 		}
 		try {
 			if (doc.getFileFullPath() != null) {
@@ -402,7 +455,7 @@ public class Doc {
 	 * Load the given XML content into this object.
 	 * </p>
 	 * 
-	 * @param content
+	 * @param xml
 	 *            is an XML String.
 	 * 
 	 * @throws IllegalDocException
@@ -412,10 +465,10 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             {@inheritDoc}
 	 */
-	public void loadFromXML(String content) throws MelodyException,
+	public void loadFromXML(String xml) throws MelodyException,
 			IllegalDocException, IOException {
 		try {
-			setDocument(parse(content));
+			setDocument(parse(xml));
 		} catch (SAXParseException Ex) {
 			throw new IllegalDocException(Messages.bind(
 					Messages.DocEx_INVALID_XML_SYNTAX_AT,
@@ -442,22 +495,17 @@ public class Doc {
 	protected void validateContent() throws IllegalDocException {
 	}
 
-	public String evaluateAsString(String sXPathExpr)
-			throws XPathExpressionException {
-		return XPathExpander.evaluateAsString(sXPathExpr, getDocument(),
-				getXPath());
+	public String evaluateAsString(String expr) throws XPathExpressionException {
+		return XPathExpander.evaluateAsString(expr, getDocument());
 	}
 
-	public NodeList evaluateAsNodeList(String sXPathExpr)
+	public NodeList evaluateAsNodeList(String expr)
 			throws XPathExpressionException {
-		return XPathExpander.evaluateAsNodeList(sXPathExpr, getDocument(),
-				getXPath());
+		return XPathExpander.evaluateAsNodeList(expr, getDocument());
 	}
 
-	public Node evaluateAsNode(String sXPathExpr)
-			throws XPathExpressionException {
-		return XPathExpander.evaluateAsNode(sXPathExpr, getDocument(),
-				getXPath());
+	public Node evaluateAsNode(String expr) throws XPathExpressionException {
+		return XPathExpander.evaluateAsNode(expr, getDocument());
 	}
 
 	public void store() {
@@ -467,21 +515,25 @@ public class Doc {
 		store(getFileFullPath());
 	}
 
-	public void store(String sPath) {
+	public void store(String path) {
 		if (getDocument() == null) {
 			return;
 		}
-		store(getDocument(), sPath);
+		store(getDocument(), path);
+	}
+
+	public String dump() {
+		return dump(getDocument());
 	}
 
 	public String getFileFullPath() {
 		return msFFP;
 	}
 
-	protected String setFileFullPath(String sPath) throws IllegalFileException {
-		FS.validateFileExists(sPath);
+	protected String setFileFullPath(String path) throws IllegalFileException {
+		FS.validateFileExists(path);
 		String previous = getFileFullPath();
-		msFFP = sPath;
+		msFFP = path;
 		return previous;
 	}
 
@@ -489,13 +541,19 @@ public class Doc {
 		return moDOM;
 	}
 
-	protected Document setDocument(Document v) {
-		if (v == null) {
+	protected Document setDocument(Document d) {
+		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Document.");
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
 		}
 		Document previous = getDocument();
-		moDOM = v;
+		moDOM = d;
+		/*
+		 * Store the XPath into the Document's user data, so it can be retrieved
+		 * from everywhere.
+		 */
+		storeXPath(getDocument(), getXPath());
 		return previous;
 	}
 
@@ -504,12 +562,12 @@ public class Doc {
 	}
 
 	/**
-	 * if null, xpath expression will be evaluate without any custom xpath
-	 * function resolution.
+	 * if <tt>null</tt>, XPath Expression will be evaluated without custom
+	 * namespace and custom xpath function support.
 	 */
-	public XPath setXPath(XPath v) {
+	public XPath setXPath(XPath xpath) {
 		XPath previous = getXPath();
-		moXPath = v;
+		moXPath = xpath;
 		return previous;
 	}
 

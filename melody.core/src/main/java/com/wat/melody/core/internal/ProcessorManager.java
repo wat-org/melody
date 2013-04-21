@@ -3,6 +3,8 @@ package com.wat.melody.core.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.xpath.XPath;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
@@ -71,26 +73,27 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	private static Log log = LogFactory.getLog(ProcessorManager.class);
 
-	private TaskFactory moTaskFactory;
-	private String msWorkingFolderPath;
-	private int miMaxSimultaneousStep;
-	private int miHardKillTimeout;
-	private boolean mbBatchMode;
-	private boolean mbPreserveTemporayFilesMode;
-	private boolean mbRunDryMode;
-	private SequenceDescriptor moSequenceDescriptor;
-	private ResourcesDescriptor moResourcesDescriptor;
+	private TaskFactory _taskFactory;
+	private String _workingFolderPath;
+	private int _maxSimultaneousStep;
+	private int _hardKillTimeout;
+	private boolean _batchMode;
+	private boolean _preserveTemporayFilesMode;
+	private boolean _runDryMode;
+	private SequenceDescriptor _sequenceDescriptor;
+	private ResourcesDescriptor _resourcesDescriptor;
 
-	private PlugInConfigurations moPluginConfigurations;
-	private XPathResolver moXPathResolver;
+	private PlugInConfigurations _pluginConfigurations;
+	private XPathResolver _xpathResolver;
+	private XPath _xpath;
 
-	private boolean mbStopRequested;
-	private boolean mbPauseRequested;
-	private ThreadGroup moThreadGroup;
-	private MelodyThread moThread;
-	private Throwable moFinalError;
-	private List<IProcessorListener> maListeners;
-	private IProcessorManager moParentProcessorManager;
+	private boolean _stopRequested;
+	private boolean _pauseRequested;
+	private ThreadGroup _threadGroup;
+	private MelodyThread _thread;
+	private Throwable _finalError;
+	private List<IProcessorListener> _listeners;
+	private IProcessorManager _parentProcessorManager;
 
 	public ProcessorManager() {
 		// Mandatory Configuration Directives
@@ -98,12 +101,22 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		try {
 			setMaxSimultaneousStep(0);
 		} catch (ProcessorManagerConfigurationException Ex) {
-			throw new RuntimeException("TODO");
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "maximal amount of simultaneous thread to 0. "
+					+ "Because this value is hard coded, such error cannot "
+					+ "happened."
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced. ", Ex);
 		}
 		try {
 			setHardKillTimeout(0);
 		} catch (ProcessorManagerConfigurationException Ex) {
-			throw new RuntimeException("TODO");
+			throw new RuntimeException("Unexpected error while setting the "
+					+ "maximal kill timeout to 0. "
+					+ "Because this value is hard coded, such error cannot "
+					+ "happened."
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced. ", Ex);
 		}
 
 		// Optional Configuration Directives
@@ -128,11 +141,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	private void initWorkingFolderPath() {
-		msWorkingFolderPath = null;
+		_workingFolderPath = null;
 	}
 
 	private TaskFactory getTaskFactory() {
-		return moTaskFactory;
+		return _taskFactory;
 	}
 
 	private TaskFactory setTaskFactory(TaskFactory tf) {
@@ -141,36 +154,36 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid TaskFactory.");
 		}
 		TaskFactory previous = getTaskFactory();
-		moTaskFactory = tf;
+		_taskFactory = tf;
 		return previous;
 	}
 
 	private IProcessorManager getParentProcessorManager() {
-		return moParentProcessorManager;
+		return _parentProcessorManager;
 	}
 
 	private void setParentProcessorManager(IProcessorManager ppm) {
 		// can be null, if it is the master ProcessorManager
-		moParentProcessorManager = ppm;
+		_parentProcessorManager = ppm;
 	}
 
 	@Override
 	public String getWorkingFolderPath() {
-		return msWorkingFolderPath;
+		return _workingFolderPath;
 	}
 
 	@Override
 	public String setWorkingFolderPath(String v)
 			throws IllegalDirectoryException {
 		FS.validateDirPath(v);
-		String previous = msWorkingFolderPath;
-		msWorkingFolderPath = v;
+		String previous = _workingFolderPath;
+		_workingFolderPath = v;
 		return previous;
 	}
 
 	@Override
 	public int getMaxSimultaneousStep() {
-		return miMaxSimultaneousStep;
+		return _maxSimultaneousStep;
 	}
 
 	@Override
@@ -180,14 +193,14 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			throw new ProcessorManagerConfigurationException(Messages.bind(
 					Messages.ProcMgrEx_HARD_KILL_TIMEOUT, v));
 		}
-		int previous = miMaxSimultaneousStep;
-		miMaxSimultaneousStep = v;
+		int previous = _maxSimultaneousStep;
+		_maxSimultaneousStep = v;
 		return previous;
 	}
 
 	@Override
 	public int getHardKillTimeout() {
-		return miHardKillTimeout;
+		return _hardKillTimeout;
 	}
 
 	@Override
@@ -197,92 +210,92 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			throw new ProcessorManagerConfigurationException(Messages.bind(
 					Messages.ProcMgrEx_MAX_PAR, v));
 		}
-		int previous = miHardKillTimeout;
-		miHardKillTimeout = v;
+		int previous = _hardKillTimeout;
+		_hardKillTimeout = v;
 		return previous;
 	}
 
 	@Override
 	public boolean setBatchMode(boolean v) {
-		boolean previous = mbBatchMode;
-		mbBatchMode = v;
+		boolean previous = _batchMode;
+		_batchMode = v;
 		return previous;
 	}
 
 	@Override
 	public boolean enableBatchMode() {
-		boolean previous = mbBatchMode;
-		mbBatchMode = true;
+		boolean previous = _batchMode;
+		_batchMode = true;
 		return previous;
 	}
 
 	@Override
 	public boolean disableBatchMode() {
-		boolean previous = mbBatchMode;
-		mbBatchMode = false;
+		boolean previous = _batchMode;
+		_batchMode = false;
 		return previous;
 	}
 
 	@Override
 	public boolean isBatchModeEnable() {
-		return mbBatchMode;
+		return _batchMode;
 	}
 
 	@Override
 	public boolean setPreserveTemporaryFilesMode(boolean v) {
-		boolean previous = mbPreserveTemporayFilesMode;
-		mbPreserveTemporayFilesMode = v;
+		boolean previous = _preserveTemporayFilesMode;
+		_preserveTemporayFilesMode = v;
 		return previous;
 	}
 
 	@Override
 	public boolean enablePreserveTemporaryFilesMode() {
-		boolean previous = mbPreserveTemporayFilesMode;
-		mbPreserveTemporayFilesMode = true;
+		boolean previous = _preserveTemporayFilesMode;
+		_preserveTemporayFilesMode = true;
 		return previous;
 	}
 
 	@Override
 	public boolean disablePreserveTemporaryFilesMode() {
-		boolean previous = mbPreserveTemporayFilesMode;
-		mbPreserveTemporayFilesMode = false;
+		boolean previous = _preserveTemporayFilesMode;
+		_preserveTemporayFilesMode = false;
 		return previous;
 	}
 
 	@Override
 	public boolean isPreserveTemporaryFilesModeEnable() {
-		return mbPreserveTemporayFilesMode;
+		return _preserveTemporayFilesMode;
 	}
 
 	@Override
 	public boolean setRunDryMode(boolean v) {
-		boolean previous = mbRunDryMode;
-		mbRunDryMode = v;
+		boolean previous = _runDryMode;
+		_runDryMode = v;
 		return previous;
 	}
 
 	@Override
 	public boolean enableRunDryMode() {
-		boolean previous = mbRunDryMode;
-		mbRunDryMode = true;
+		boolean previous = _runDryMode;
+		_runDryMode = true;
 		return previous;
 	}
 
 	@Override
 	public boolean disableRunDryMode() {
-		boolean previous = mbRunDryMode;
-		mbRunDryMode = false;
+		boolean previous = _runDryMode;
+		_runDryMode = false;
 		return previous;
 	}
 
 	@Override
 	public boolean isRunDryModeEnable() {
-		return mbRunDryMode;
+		return _runDryMode;
 	}
 
 	@Override
 	public SequenceDescriptor getSequenceDescriptor() {
-		return moSequenceDescriptor;
+		return _sequenceDescriptor;
 	}
 
 	public SequenceDescriptor setSequenceDescriptor(SequenceDescriptor sd) {
@@ -290,14 +303,14 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid ISequenceDescriptor.");
 		}
-		SequenceDescriptor previous = moSequenceDescriptor;
-		moSequenceDescriptor = sd;
+		SequenceDescriptor previous = _sequenceDescriptor;
+		_sequenceDescriptor = sd;
 		return previous;
 	}
 
 	@Override
 	public ResourcesDescriptor getResourcesDescriptor() {
-		return moResourcesDescriptor;
+		return _resourcesDescriptor;
 	}
 
 	public ResourcesDescriptor setResourcesDescriptor(ResourcesDescriptor rds) {
@@ -306,7 +319,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid IResourcesDescriptor.");
 		}
 		ResourcesDescriptor previous = getResourcesDescriptor();
-		moResourcesDescriptor = rds;
+		_resourcesDescriptor = rds;
 		return previous;
 	}
 
@@ -321,7 +334,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	@Override
 	public PlugInConfigurations getPluginConfigurations() {
-		return moPluginConfigurations;
+		return _pluginConfigurations;
 	}
 
 	public PlugInConfigurations setPluginConfigurations(PlugInConfigurations pcs) {
@@ -330,7 +343,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid Map<String, PropertiesSet>.");
 		}
 		PlugInConfigurations previous = getPluginConfigurations();
-		moPluginConfigurations = pcs;
+		_pluginConfigurations = pcs;
 		return previous;
 	}
 
@@ -350,15 +363,30 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	@Override
 	public XPathResolver getXPathResolver() {
-		return moXPathResolver;
+		return _xpathResolver;
 	}
 
 	private XPathResolver setXPathResolver(XPathResolver xpathResolver) {
 		// can be null
 		XPathResolver previous = getXPathResolver();
-		moXPathResolver = xpathResolver;
-		getResourcesDescriptor()
-				.setXPath(XPathExpander.newXPath(xpathResolver));
+		_xpathResolver = xpathResolver;
+		setXPath(XPathExpander.newXPath(getXPathResolver()));
+		getResourcesDescriptor().setXPath(getXPath());
+		getSequenceDescriptor().setXPath(getXPath());
+		return previous;
+	}
+
+	private XPath getXPath() {
+		return _xpath;
+	}
+
+	private XPath setXPath(XPath xpath) {
+		if (xpath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + XPath.class.getCanonicalName() + ".");
+		}
+		XPath previous = getXPath();
+		_xpath = xpath;
 		return previous;
 	}
 
@@ -472,21 +500,21 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	private void setStopRequested(boolean bStopRequested) {
-		mbStopRequested = bStopRequested;
+		_stopRequested = bStopRequested;
 	}
 
 	private void setPauseRequested(boolean bPauseRequested) {
-		mbPauseRequested = bPauseRequested;
+		_pauseRequested = bPauseRequested;
 	}
 
 	@Override
 	public synchronized boolean isStopRequested() {
-		return mbStopRequested;
+		return _stopRequested;
 	}
 
 	@Override
 	public synchronized boolean isPauseRequested() {
-		return mbPauseRequested;
+		return _pauseRequested;
 	}
 
 	@Override
@@ -495,37 +523,37 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	private MelodyThread getThread() {
-		return moThread;
+		return _thread;
 	}
 
 	private MelodyThread setThread(MelodyThread v) {
 		// Can be set to null, when cleaning
 		MelodyThread previous = getThread();
-		moThread = v;
+		_thread = v;
 		return previous;
 	}
 
 	private ThreadGroup getThreadGroup() {
-		return moThreadGroup;
+		return _threadGroup;
 	}
 
 	private ThreadGroup setThreadGroup(ThreadGroup tg) {
 		// Can be set to null, when cleaning
 		ThreadGroup previous = getThreadGroup();
-		moThreadGroup = tg;
+		_threadGroup = tg;
 		return previous;
 	}
 
 	private Throwable setFinalError(Throwable e) {
 		// Can be set to null, when there is no error
 		Throwable previous = getProcessingFinalError();
-		moFinalError = e;
+		_finalError = e;
 		return previous;
 	}
 
 	@Override
 	public Throwable getProcessingFinalError() {
-		return moFinalError;
+		return _finalError;
 	}
 
 	@Override
@@ -565,7 +593,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	@Override
 	public synchronized void stopProcessing() {
 		fireRequestProcessorToStopEvent();
-		mbStopRequested = true;
+		_stopRequested = true;
 		// If the Thread is null, that mean that the processing has not been
 		// started. In such condition, there is nothing to stop
 		if (getThread() != null) {
@@ -576,7 +604,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	@Override
 	public synchronized void pauseProcessing() {
 		fireRequestProcessorToPauseEvent();
-		mbPauseRequested = true;
+		_pauseRequested = true;
 	}
 
 	@Override
@@ -584,7 +612,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		fireRequestProcessorToResumeEvent();
 		if (!isPauseRequested())
 			return;
-		mbPauseRequested = false;
+		_pauseRequested = false;
 		notifyAll();
 	}
 
@@ -616,7 +644,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid "
 					+ IProcessorListener.class.getCanonicalName() + ".");
 		}
-		return maListeners.add(l);
+		return _listeners.add(l);
 	}
 
 	@Override
@@ -626,12 +654,12 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid "
 					+ IProcessorListener.class.getCanonicalName() + ".");
 		}
-		return maListeners.remove(l);
+		return _listeners.remove(l);
 	}
 
 	@Override
 	public List<IProcessorListener> getListeners() {
-		return maListeners;
+		return _listeners;
 	}
 
 	@Override
@@ -641,8 +669,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Must be a valid List<"
 					+ IProcessorListener.class.getCanonicalName() + ">.");
 		}
-		List<IProcessorListener> previous = maListeners;
-		maListeners = l;
+		List<IProcessorListener> previous = _listeners;
+		_listeners = l;
 		return previous;
 	}
 
@@ -803,14 +831,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	protected void createAndProcessTask(Node n, PropertiesSet ps)
 			throws TaskException, InterruptedException {
-		try {
-			processTask(newTask(n, ps));
-		} finally {
-			Melody.popContext();
-		}
+		processTask(newTask(n, ps));
 	}
 
 	protected ITask newTask(Node n, PropertiesSet ps) throws TaskException {
+		boolean pushed = false;
 		try {
 			Class<? extends ITask> c = getTaskFactory().identifyTask(n);
 			// Duplicate the PropertiesSet, so the Task can work with its own
@@ -819,6 +844,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			PropertiesSet ownPs = TaskFactory.implementsInterface(c,
 					IShareProperties.class) ? ps : ps.copy();
 			Melody.pushContext(new TaskContext(n, ownPs, this));
+			pushed = true;
 			ITask t = getTaskFactory().newTask(c, n, ps);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.SUCCESS,
 					null);
@@ -829,6 +855,9 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 							.toLowerCase(), State.FAILED, Doc
 							.getNodeLocation(n)), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.FAILED, e);
+			if (pushed) {
+				Melody.popContext();
+			}
 			throw e;
 		} catch (Throwable Ex) {
 			TaskException e = new TaskException(Messages.bind(
@@ -837,6 +866,9 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 							.getNodeLocation(n)), Ex);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.CRITICAL,
 					e);
+			if (pushed) {
+				Melody.popContext();
+			}
 			throw e;
 		}
 	}
@@ -872,6 +904,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					Doc.getNodeLocation(Melody.getContext().getNode())), Ex);
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
+		} finally {
+			Melody.popContext();
 		}
 	}
 }

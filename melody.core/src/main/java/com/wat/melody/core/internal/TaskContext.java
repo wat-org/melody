@@ -3,8 +3,6 @@ package com.wat.melody.core.internal;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import javax.xml.xpath.XPath;
-
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.IProcessorManager;
@@ -28,13 +26,11 @@ public class TaskContext implements ITaskContext {
 	private Node moNode;
 	private PropertiesSet moProperties;
 	private ProcessorManager moProcessorManager;
-	private XPath moXPath;
 
 	public TaskContext(Node n, PropertiesSet ps, ProcessorManager p) {
 		setProcessorManager(p);
 		setProperties(ps);
 		setNode(n);
-		setXPath(XPathExpander.newXPath(p.getXPathResolver()));
 	}
 
 	@Override
@@ -45,7 +41,8 @@ public class TaskContext implements ITaskContext {
 	private ProcessorManager setProcessorManager(ProcessorManager pm) {
 		if (pm == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ProcessorManager.");
+					+ "Must be a valid "
+					+ ProcessorManager.class.getCanonicalName() + ".");
 		}
 		ProcessorManager previous = moProcessorManager;
 		moProcessorManager = pm;
@@ -60,7 +57,8 @@ public class TaskContext implements ITaskContext {
 	private PropertiesSet setProperties(PropertiesSet ps) {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PropertiesSet.");
+					+ "Must be a valid "
+					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
 		PropertiesSet previous = getProperties();
 		moProperties = ps;
@@ -75,20 +73,10 @@ public class TaskContext implements ITaskContext {
 	private Node setNode(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 		Node previous = getNode();
 		moNode = n;
-		return previous;
-	}
-
-	public XPath getXPath() {
-		return moXPath;
-	}
-
-	private XPath setXPath(XPath xpath) {
-		XPath previous = getXPath();
-		moXPath = xpath;
 		return previous;
 	}
 
@@ -101,7 +89,7 @@ public class TaskContext implements ITaskContext {
 	public String expand(String sToExpand) throws ExpressionSyntaxException {
 		return XPathExpander.expand(sToExpand, moProcessorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
-				getProperties(), getXPath());
+				getProperties());
 	}
 
 	@Override
@@ -109,7 +97,7 @@ public class TaskContext implements ITaskContext {
 			IOException, IllegalFileException {
 		return XPathExpander.expand(fileToExpand, moProcessorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
-				getProperties(), getXPath());
+				getProperties());
 	}
 
 	@Override

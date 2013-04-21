@@ -19,6 +19,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.PropertyName;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
@@ -45,17 +46,17 @@ public abstract class XPathExpander {
 	 * </p>
 	 * 
 	 * @param xpathResolver
-	 *            contains custom namespaces and custom functions (see
-	 *            {@link XPath#setNamespaceContext(NamespaceContext)} and
-	 *            {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}
-	 *            ) definitions, so that the {@link XPath} returned by this
-	 *            method can evaluate expressions which contains such custom
-	 *            namespaces and custom functions. When this parameter is
-	 *            <tt>null</tt>, a default {@link XPath} will be created, which
-	 *            is not able to evaluate custom namespaces and custom
-	 *            functions.
+	 *            contains custom namespaces and custom functions definitions.
+	 *            Can be <tt>null</tt>.
 	 * 
-	 * @return
+	 * @return an {@link XPath} object, which can be used to evaluate XPath
+	 *         Expression. When the given {@link XPathResolver} is <tt>null</tt>
+	 *         , a default {@link XPath} object is returned, which doens't have
+	 *         the capacity to evaluate any custom namespaces and custom
+	 *         functions. When the given {@link XPathResolver} is not
+	 *         <tt>null</tt>, the returned {@link XPath} object have the
+	 *         capacity to evaluate custom namespace and functions defined in
+	 *         the given {@link XPathResolver}.
 	 */
 	public static XPath newXPath(XPathResolver xpathResolver) {
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -70,7 +71,28 @@ public abstract class XPathExpander {
 
 	/**
 	 * <p>
-	 * Evaluate XPath expression as a <tt>String</tt> (XPath 2.0 supported).
+	 * Evaluate XPath expression as a <tt>String</tt>, in the given context
+	 * (XPath 2.0 supported).
+	 * </p>
+	 * 
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
 	 * </p>
 	 * 
 	 * @param expr
@@ -78,17 +100,6 @@ public abstract class XPathExpander {
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
 	 *            {@link Node}.
-	 * @param xpath
-	 *            is the xpath object which will perform the evaluation of the
-	 *            expression. This object can contains custom namespaces and
-	 *            custom functions (see
-	 *            {@link XPath#setNamespaceContext(NamespaceContext)} and
-	 *            {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}
-	 *            ), so that custom namespaces and custom functions used in the
-	 *            expression to evaluate will be evaluated successfully. When
-	 *            this object is <tt>null</tt>, a default one will be used,
-	 *            which will not be able to evaluate custom namespaces and
-	 *            custom functions.
 	 * 
 	 * @return the evaluated expression, as a <tt>String</tt>.
 	 * 
@@ -97,21 +108,43 @@ public abstract class XPathExpander {
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
 	 */
-	public static String evaluateAsString(String expr, Node ctx, XPath xpath)
+	public static String evaluateAsString(String expr, Node ctx)
 			throws XPathExpressionException {
+		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
+		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
+		XPath xpath = Doc.retrieveXPath(d);
 		if (xpath == null) {
 			xpath = newXPath(null);
 		}
-		Object lock = ctx.getNodeType() == Node.DOCUMENT_NODE ? ctx : ctx
-				.getOwnerDocument();
-		synchronized (lock) {
+		synchronized (d) {
 			return (String) xpath.evaluate(expr, ctx, XPathConstants.STRING);
 		}
 	}
 
 	/**
 	 * <p>
-	 * Evaluate XPath expression as a {@link Node} (XPath 2.0 supported).
+	 * Evaluate XPath expression as a {@link Node}, in the given context (XPath
+	 * 2.0 supported).
+	 * </p>
+	 * 
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
 	 * </p>
 	 * 
 	 * @param expr
@@ -119,17 +152,6 @@ public abstract class XPathExpander {
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
 	 *            {@link Node}.
-	 * @param xpath
-	 *            is the xpath object which will perform the evaluation of the
-	 *            expression. This object can contains custom namespaces and
-	 *            custom functions (see
-	 *            {@link XPath#setNamespaceContext(NamespaceContext)} and
-	 *            {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}
-	 *            ), so that custom namespaces and custom functions used in the
-	 *            expression to evaluate will be evaluated successfully. When
-	 *            this object is <tt>null</tt>, a default one will be used,
-	 *            which will not be able to evaluate custom namespaces and
-	 *            custom functions.
 	 * 
 	 * @return the evaluated expression, as a {@link Node}.
 	 * 
@@ -138,21 +160,43 @@ public abstract class XPathExpander {
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
 	 */
-	public static NodeList evaluateAsNodeList(String expr, Node ctx, XPath xpath)
+	public static NodeList evaluateAsNodeList(String expr, Node ctx)
 			throws XPathExpressionException {
+		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
+		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
+		XPath xpath = Doc.retrieveXPath(d);
 		if (xpath == null) {
 			xpath = newXPath(null);
 		}
-		Object lock = ctx.getNodeType() == Node.DOCUMENT_NODE ? ctx : ctx
-				.getOwnerDocument();
-		synchronized (lock) {
+		synchronized (d) {
 			return (NodeList) xpath.evaluate(expr, ctx, XPathConstants.NODESET);
 		}
 	}
 
 	/**
 	 * <p>
-	 * Evaluate XPath expression as a {@link NodeList} (XPath 2.0 supported).
+	 * Evaluate XPath expression as a {@link NodeList}, in the given context
+	 * (XPath 2.0 supported).
+	 * </p>
+	 * 
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
 	 * </p>
 	 * 
 	 * @param expr
@@ -160,17 +204,6 @@ public abstract class XPathExpander {
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
 	 *            {@link Node}.
-	 * @param xpath
-	 *            is the xpath object which will perform the evaluation of the
-	 *            expression. This object can contains custom namespaces and
-	 *            custom functions (see
-	 *            {@link XPath#setNamespaceContext(NamespaceContext)} and
-	 *            {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}
-	 *            ), so that custom namespaces and custom functions used in the
-	 *            expression to evaluate will be evaluated successfully. When
-	 *            this object is <tt>null</tt>, a default one will be used,
-	 *            which will not be able to evaluate custom namespaces and
-	 *            custom functions.
 	 * 
 	 * @return the evaluated expression, as a {@link NodeList}.
 	 * 
@@ -179,14 +212,15 @@ public abstract class XPathExpander {
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
 	 */
-	public static Node evaluateAsNode(String expr, Node ctx, XPath xpath)
+	public static Node evaluateAsNode(String expr, Node ctx)
 			throws XPathExpressionException {
+		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
+		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
+		XPath xpath = Doc.retrieveXPath(d);
 		if (xpath == null) {
 			xpath = newXPath(null);
 		}
-		Object lock = ctx.getNodeType() == Node.DOCUMENT_NODE ? ctx : ctx
-				.getOwnerDocument();
-		synchronized (lock) {
+		synchronized (d) {
 			return (Node) xpath.evaluate(expr, ctx, XPathConstants.NODE);
 		}
 	}
@@ -204,10 +238,30 @@ public abstract class XPathExpander {
 	 * <ul>
 	 * <li>Melody Expressions are delimited by '§[' and ']§' ;</li>
 	 * <li>When a Melody Expression is equal to an XPath 2.0 Expression, it is
-	 * replaced by its value (found in the given context) ;</li>
+	 * replaced by its value (evaluated in the given context) ;</li>
 	 * <li>When a Melody Expression is equal to a Property's Name, it is
 	 * replaced by its value (found in the given properties) ;</li>
 	 * </ul>
+	 * </p>
+	 * 
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
 	 * </p>
 	 * 
 	 * @param fileToExpand
@@ -234,9 +288,8 @@ public abstract class XPathExpander {
 	 *             if fileToExpand is <tt>null</tt>.
 	 */
 	public static String expand(Path fileToExpand, Node ctx,
-			PropertiesSet properties, XPath xpath)
-			throws XPathExpressionSyntaxException, IOException,
-			IllegalFileException {
+			PropertiesSet properties) throws XPathExpressionSyntaxException,
+			IOException, IllegalFileException {
 		if (fileToExpand == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -244,7 +297,7 @@ public abstract class XPathExpander {
 		FS.validateFileExists(fileToExpand.toString());
 		String fileContent = new String(Files.readAllBytes(fileToExpand));
 		try {
-			return expand(fileContent, ctx, properties, xpath);
+			return expand(fileContent, ctx, properties);
 		} catch (XPathExpressionSyntaxException Ex) {
 			throw new XPathExpressionSyntaxException(Messages.bind(
 					Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE,
@@ -254,23 +307,43 @@ public abstract class XPathExpander {
 
 	/**
 	 * <p>
-	 * Expand all Melody X2Path Expressions found in the given input
+	 * Expand all Melody Expressions found in the given input
 	 * <code>String</code>.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * Melody X2Path Expressions are delimited by '§[' and ']§' ; <BR/>
-	 * * When a Melody X2Path Expression is equal to an XPath 2.0 Expression, it
-	 * is replaced by its value (found in the given {@link Node} context) ; <BR/>
-	 * * When a Melody X2Path Expression is equal to a Property's Name (declared
-	 * in the given {@link PropertiesSet}), it is replaced by its value (found
-	 * in the given {@link PropertiesSet}) ; <BR/>
-	 * </i>
+	 * <ul>
+	 * <li>Melody Expressions are delimited by '§[' and ']§' ;</li>
+	 * <li>When a Melody Expression is equal to an XPath 2.0 Expression, it is
+	 * replaced by its value (evaluated in the given context) ;</li>
+	 * <li>When a Melody Expression is equal to a Property's Name, it is
+	 * replaced by its value (found in the given properties) ;</li>
+	 * </ul>
 	 * </p>
 	 * 
-	 * @param sBase
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
+	 * </p>
+	 * 
+	 * @param expr
 	 *            is the <code>String</code> to expand.
-	 * @param context
+	 * @param ctx
 	 *            necessary to expand XPath 2.0 Expression.
 	 * @param vars
 	 *            necessary to expand Property's Name.
@@ -281,23 +354,23 @@ public abstract class XPathExpander {
 	 *             if a Melody Expression cannot be expanded because it is not a
 	 *             valid X2Path Expression.
 	 */
-	public static String expand(String sBase, Node context, PropertiesSet vars,
-			XPath xpath) throws XPathExpressionSyntaxException {
-		if (sBase == null) {
+	public static String expand(String expr, Node ctx, PropertiesSet vars)
+			throws XPathExpressionSyntaxException {
+		if (expr == null) {
 			return null;
 		}
-		int start = sBase.indexOf(DELIM_START);
-		int end = sBase.indexOf(DELIM_STOP);
+		int start = expr.indexOf(DELIM_START);
+		int end = expr.indexOf(DELIM_STOP);
 		if (start == -1) {
 			// Start Delimiter not found
 			if (end == -1) {
 				// Start Delimiter not found AND Stop Delimiter not found
-				return sBase;
+				return expr;
 			} else {
 				// Start Delimiter not found AND Stop Delimiter found
 				throw new XPathExpressionSyntaxException(Messages.bind(
 						Messages.XPathExprSyntaxEx_START_DELIM_MISSING,
-						extractPart(sBase, end)));
+						extractPart(expr, end)));
 			}
 		}
 		// Start Delimiter found
@@ -305,17 +378,17 @@ public abstract class XPathExpander {
 			// Start Delimiter found AND Stop Delimiter not found
 			throw new XPathExpressionSyntaxException(Messages.bind(
 					Messages.XPathExprSyntaxEx_STOP_DELIM_MISSING,
-					extractPart(sBase, start)));
+					extractPart(expr, start)));
 		} else if (end < start) {
 			// Start Delimiter found AFTER Stop Delimiter
 			throw new XPathExpressionSyntaxException(Messages.bind(
 					Messages.XPathExprSyntaxEx_START_DELIM_MISSING,
-					extractPart(sBase, end)));
+					extractPart(expr, end)));
 		}
 		int next = start;
-		while ((next = sBase.indexOf(DELIM_START, next + DELIM_START.length())) != -1) {
+		while ((next = expr.indexOf(DELIM_START, next + DELIM_START.length())) != -1) {
 			if (next < end) {
-				end = sBase.indexOf(DELIM_STOP, end + DELIM_STOP.length());
+				end = expr.indexOf(DELIM_STOP, end + DELIM_STOP.length());
 			} else {
 				break;
 			}
@@ -325,49 +398,46 @@ public abstract class XPathExpander {
 			// Start Delimiter found AND Stop Delimiter not found
 			throw new XPathExpressionSyntaxException(Messages.bind(
 					Messages.XPathExprSyntaxEx_STOP_DELIM_MISSING,
-					extractPart(sBase, start)));
+					extractPart(expr, start)));
 		}
-		return sBase.substring(0, start)
+		return expr.substring(0, start)
 				+ resolvedXPathExpression(
-						sBase.substring(start + DELIM_START.length(), end),
-						context, vars, xpath)
-				+ expand(sBase.substring(end + DELIM_STOP.length()), context,
-						vars, xpath);
+						expr.substring(start + DELIM_START.length(), end), ctx,
+						vars)
+				+ expand(expr.substring(end + DELIM_STOP.length()), ctx, vars);
 	}
 
-	private static String resolvedXPathExpression(String sXPathExpr,
-			Node context, PropertiesSet vars, XPath xpath)
-			throws XPathExpressionSyntaxException {
+	private static String resolvedXPathExpression(String expr, Node ctx,
+			PropertiesSet vars) throws XPathExpressionSyntaxException {
 		// Expand Nested Expression
-		sXPathExpr = expand(sXPathExpr, context, vars, xpath);
-		sXPathExpr = sXPathExpr.trim();
+		expr = expand(expr, ctx, vars);
+		expr = expr.trim();
 		// Here, all Nested Expression have been expanded
-		if (sXPathExpr.matches("^" + PropertyName.PATTERN + "$")) {
+		if (expr.matches("^" + PropertyName.PATTERN + "$")) {
 			// If it matches the PropertyName Pattern, the Expression is
 			// remplaced by the Property's value
 			if (vars == null) {
 				throw new RuntimeException("Cannot expand the property '"
-						+ sXPathExpr
+						+ expr
 						+ "' because no PropertiesSet have been provided.");
 			}
-			if (vars.containsKey(sXPathExpr)) {
-				return vars.get(sXPathExpr);
+			if (vars.containsKey(expr)) {
+				return vars.get(expr);
 			} else {
 				throw new XPathExpressionSyntaxException(Messages.bind(
-						Messages.XPathExprSyntaxEx_UNDEF_PROPERTY, sXPathExpr));
+						Messages.XPathExprSyntaxEx_UNDEF_PROPERTY, expr));
 			}
 		} else {
-			if (context == null) {
+			if (ctx == null) {
 				throw new RuntimeException("Cannot expand the expression '"
-						+ sXPathExpr
-						+ "' because no Context have been provided.");
+						+ expr + "' because no Context have been provided.");
 			}
 			try {
-				return evaluateAsString(sXPathExpr, context, xpath);
+				return evaluateAsString(expr, ctx);
 			} catch (XPathExpressionException Ex) {
 				throw new XPathExpressionSyntaxException(Messages.bind(
 						Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR,
-						extractPart(sXPathExpr, 0)), Ex);
+						extractPart(expr, 0)), Ex);
 			}
 		}
 	}

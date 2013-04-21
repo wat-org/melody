@@ -14,7 +14,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.UserDataHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -298,16 +297,4 @@ class MySAXHandler extends DefaultHandler2 {
 		Node textNode = doc.createComment(new String(ch, start, length));
 		el.appendChild(textNode);
 	}
-}
-
-class CloneUserDataHandler implements UserDataHandler {
-
-	@Override
-	public void handle(short op, String key, Object data, Node src, Node dst) {
-		if (dst == null) {
-			return;
-		}
-		dst.setUserData(key, data, this);
-	}
-
 }

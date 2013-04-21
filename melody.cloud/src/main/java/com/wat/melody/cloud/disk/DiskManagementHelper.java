@@ -58,8 +58,8 @@ public abstract class DiskManagementHelper {
 	 *         <li>The last Disk Device Management {@link Node} related to the
 	 *         given Instance {@link Node}, if multiple Disk Device Management
 	 *         {@link Node} were found ;</li>
-	 *         <li><code>null</code>, if no Disk Device Management {@link Node}
-	 *         were found ;</li>
+	 *         <li><tt>null</tt>, if no Disk Device Management {@link Node} were
+	 *         found ;</li>
 	 *         </ul>
 	 */
 	public static Node findDiskManagementNode(Node instanceNode) {
@@ -106,7 +106,7 @@ public abstract class DiskManagementHelper {
 	 * @return The Disk Device {@link Node}s of the given Instance {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the disk Devices Selector (found in the Disk Device
 	 *             Management {@link Node}) is not a valid XPath Expression.

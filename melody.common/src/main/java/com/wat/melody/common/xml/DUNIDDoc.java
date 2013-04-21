@@ -38,7 +38,7 @@ public class DUNIDDoc extends Doc {
 	public static NodeList findDUNIDs(Document d) {
 		try {
 			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
-					+ DUNID_ATTR + ") ]", d, null);
+					+ DUNID_ATTR + ") ]", d);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "
@@ -61,13 +61,13 @@ public class DUNIDDoc extends Doc {
 	 *            is the {@link DUNID} to search.
 	 * 
 	 * @return the {@link Node} whose {@link #DUNID_ATTR} XML attribute is equal
-	 *         to the given input {@link DUNID}, or <code>null</code> if such
+	 *         to the given input {@link DUNID}, or <tt>null</tt> if such
 	 *         {@link Node} cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given given {@link Document} is <code>null</code>.
+	 *             if the given given {@link Document} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 */
 	public static Node getNode(Document d, DUNID dunid) {
 		if (d == null) {
@@ -80,7 +80,7 @@ public class DUNIDDoc extends Doc {
 		}
 		try {
 			return XPathExpander.evaluateAsNode("//*[@" + DUNID_ATTR + "='"
-					+ dunid.getValue() + "']", d, null);
+					+ dunid.getValue() + "']", d);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "
@@ -100,7 +100,7 @@ public class DUNIDDoc extends Doc {
 	 *         {@link #DUNID_ATTR} XML Attribute.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link Node} is <tt>null</tt>.
 	 * @throws RuntimeException
 	 *             if the given {@link Node} doens't have any
 	 *             {@link #DUNID_ATTR} attribute, or if the value found in the
@@ -154,17 +154,17 @@ public class DUNIDDoc extends Doc {
 	 *            is the name of the attribute.
 	 * 
 	 * @return a {@link String}, which contains the value of the requested
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the requested {@link Node}'s
-	 *         attribute doesn't exists.
+	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
+	 *         not been loaded yet or if the requested {@link Node}'s attribute
+	 *         doesn't exists.
 	 * 
 	 * @throws NoSuchDUNIDException
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any {@link node}s.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized static String getAttributeValue(Document d,
 			DUNID ownerNodeDUNID, String attrName) throws NoSuchDUNIDException {
@@ -204,7 +204,7 @@ public class DUNIDDoc extends Doc {
 	 *            is the value to assign.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         requested {@link Node}'s attribute, or <code>null</code> if this
+	 *         requested {@link Node}'s attribute, or <tt>null</tt> if this
 	 *         object have not been loaded yet or if the requested {@link Node}
 	 *         's attribute didn't exists before the operation.
 	 * 
@@ -212,9 +212,9 @@ public class DUNIDDoc extends Doc {
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any {@link Node}.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized static String setAttributeValue(Document d,
 			DUNID ownerNodeDUNID, String attrName, String attrValue)
@@ -256,17 +256,17 @@ public class DUNIDDoc extends Doc {
 	 *            is the name of the attribute to remove.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the given attribute cannot be
-	 *         found in the requested {@link Node}.
+	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
+	 *         not been loaded yet or if the given attribute cannot be found in
+	 *         the requested {@link Node}.
 	 * 
 	 * @throws NoSuchDUNIDException
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any node.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public static synchronized String removeAttribute(Document d,
 			DUNID ownerNodeDUNID, String attrName) throws NoSuchDUNIDException {
@@ -428,13 +428,13 @@ public class DUNIDDoc extends Doc {
 	 *            is the {@link DUNID} to search.
 	 * 
 	 * @return the {@link Node} whose {@link #DUNID_ATTR} XML attribute is equal
-	 *         to the given input {@link DUNID}, or <code>null</code> if such
+	 *         to the given input {@link DUNID}, or <tt>null</tt> if such
 	 *         {@link Node} cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if this object have not been loaded yet.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 */
 	public synchronized Node getNode(DUNID dunid) {
 		return getNode(getDocument(), dunid);
@@ -451,17 +451,17 @@ public class DUNIDDoc extends Doc {
 	 *            is the name of the attribute.
 	 * 
 	 * @return a {@link String}, which contains the value of the requested
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the requested {@link Node}'s
-	 *         attribute doesn't exists.
+	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
+	 *         not been loaded yet or if the requested {@link Node}'s attribute
+	 *         doesn't exists.
 	 * 
 	 * @throws NoSuchDUNIDException
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any {@link node}s.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized String getAttributeValue(DUNID ownerNodeDUNID,
 			String attrName) throws NoSuchDUNIDException {
@@ -482,7 +482,7 @@ public class DUNIDDoc extends Doc {
 	 *            is the value to assign.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         requested {@link Node}'s attribute, or <code>null</code> if this
+	 *         requested {@link Node}'s attribute, or <tt>null</tt> if this
 	 *         object have not been loaded yet or if the requested {@link Node}
 	 *         's attribute didn't exists before the operation.
 	 * 
@@ -490,9 +490,9 @@ public class DUNIDDoc extends Doc {
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any {@link Node}.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized String setAttributeValue(DUNID ownerNodeDUNID,
 			String attrName, String attrValue) throws NoSuchDUNIDException {
@@ -515,17 +515,17 @@ public class DUNIDDoc extends Doc {
 	 *            is the name of the attribute to remove.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the given attribute cannot be
-	 *         found in the requested {@link Node}.
+	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
+	 *         not been loaded yet or if the given attribute cannot be found in
+	 *         the requested {@link Node}.
 	 * 
 	 * @throws NoSuchDUNIDException
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any node.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized String removeAttribute(DUNID ownerNodeDUNID,
 			String attrName) throws NoSuchDUNIDException {

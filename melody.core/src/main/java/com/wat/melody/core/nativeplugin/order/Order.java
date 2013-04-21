@@ -220,11 +220,21 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	public OrderName setName(OrderName name) throws OrderException {
 		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + OrderName.class.getCanonicalName()
+					+ ".");
 		}
 
 		try {
-			if (findOrders(name).getLength() != 1) {
+			int duplicate = findOrders(name).getLength();
+			if (duplicate == 0) {
+				throw new RuntimeException("Unexpected error while detecting "
+						+ "duplicate order name. No order whose name is equal "
+						+ "to " + name + " were found."
+						+ "Because such order exists, such error cannot "
+						+ "happened."
+						+ "Source code has certainly been modified and "
+						+ "a bug have been introduced. ");
+			} else if (duplicate > 1) {
 				throw new OrderException(Messages.bind(
 						Messages.OrderEx_DUPLICATE_NAME, new Object[] { name,
 								ORDER, NAME_ATTR }));

@@ -339,6 +339,10 @@ public class Foreach implements ITask, ITaskContainer {
 					Messages.ForeachEx_EMPTY_ITEMS_ATTR, sItems));
 		}
 		try {
+			/*
+			 * can be optimized : store the resulting target list in a dedicated
+			 * member
+			 */
 			Melody.getContext().getProcessorManager().getResourcesDescriptor()
 					.evaluateTargets(sItems);
 		} catch (XPathExpressionException Ex) {

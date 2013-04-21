@@ -418,7 +418,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is the value to assign.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         requested {@link Node}'s attribute, or <code>null</code> if this
+	 *         requested {@link Node}'s attribute, or <tt>null</tt> if this
 	 *         object have not been loaded yet or if the requested {@link Node}
 	 *         's attribute didn't exists before the operation.
 	 * 
@@ -426,9 +426,9 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any {@link Node}.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized String setAttributeValue(DUNID ownerNodeDUNID,
 			String sAttrName, String sAttrValue) throws NoSuchDUNIDException {
@@ -459,17 +459,17 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is the name of the attribute to remove.
 	 * 
 	 * @return a {@link String}, which contains the previous value of the
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the given attribute cannot be
-	 *         found in the requested {@link Node}.
+	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
+	 *         not been loaded yet or if the given attribute cannot be found in
+	 *         the requested {@link Node}.
 	 * 
 	 * @throws NoSuchDUNIDException
 	 *             if the given {@link DUNID} cannot be found in the
 	 *             {@link #DUNID_ATTR}'s attribute of any node.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
+	 *             if the given {@link String} is <tt>null</tt>.
 	 */
 	public synchronized String removeAttribute(DUNID ownerNodeDUNID,
 			String sAttrName) throws NoSuchDUNIDException {

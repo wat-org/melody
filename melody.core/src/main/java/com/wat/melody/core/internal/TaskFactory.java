@@ -122,7 +122,7 @@ public class TaskFactory {
 	 *            is the name of searched attribute.
 	 * 
 	 * @return the setter's method which matches the given attribute name, or
-	 *         <code>null</code> if no setter's method which matches the given
+	 *         <tt>null</tt> if no setter's method which matches the given
 	 *         attribute name can be found in the given class.
 	 * 
 	 * @throws TaskFactoryException
@@ -195,8 +195,8 @@ public class TaskFactory {
 	 *            is the name of searched attribute.
 	 * 
 	 * @return the add's method which matches the given attribute name, or
-	 *         <code>null</code> if no add method which matches the given
-	 *         attribute name can be found in the given class.
+	 *         <tt>null</tt> if no add method which matches the given attribute
+	 *         name can be found in the given class.
 	 * 
 	 * @throws TaskFactoryException
 	 *             if the method decorated by the annotation
@@ -272,8 +272,8 @@ public class TaskFactory {
 	 *            is the name of searched attribute.
 	 * 
 	 * @return the create's method which matches the given attribute name, or
-	 *         <code>null</code> if no add method which matches the given
-	 *         attribute name can be found in the given class.
+	 *         <tt>null</tt> if no add method which matches the given attribute
+	 *         name can be found in the given class.
 	 * 
 	 * @throws TaskFactoryException
 	 *             if the method decorated by the annotation
@@ -342,12 +342,35 @@ public class TaskFactory {
 		return previous;
 	}
 
+	/**
+	 * <p>
+	 * Identify the Class of the given Task.
+	 * </p>
+	 * 
+	 * @param n
+	 *            is an element node, which represent a Task, in its native
+	 *            {@link Node} format.
+	 * 
+	 * @return the Class of the given Task.
+	 * 
+	 * @throws TaskFactoryException
+	 *             if the node name doesn't match any registered task.
+	 * @throws IllegalArgumentException
+	 *             if a the given {@link Node} is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if a the given {@link Node} is not an XML Element.
+	 * 
+	 */
 	public Class<? extends ITask> identifyTask(Node n)
 			throws TaskFactoryException {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node (an "
 					+ ITask.class.getCanonicalName() + ").");
+		}
+		if (n.getNodeType() != Node.ELEMENT_NODE) {
+			throw new IllegalArgumentException(n.getNodeType()
+					+ ": Not accepted. " + "Must be a valid XML Elment node.");
 		}
 
 		Class<? extends ITask> c = findTaskClass(n);
@@ -398,19 +421,22 @@ public class TaskFactory {
 						+ "have been introduced.", Ex);
 			}
 		}
-		String sName = c.getName().toLowerCase();
-		String sPName = parentNode.getNodeName().toLowerCase();
 		if (implementsInterface(c, ITopLevelTask.class) && p != null) {
 			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_TOPLEVEL_ERROR, sName));
+					Messages.TaskFactoryEx_MUST_BE_TOPLEVEL, c.getName()));
+		} else if (!implementsInterface(c, ITopLevelTask.class) && p == null) {
+			throw new TaskFactoryException(Messages.bind(
+					Messages.TaskFactoryEx_CANNOT_BE_TOPLEVEL, c.getName()));
 		} else if (implementsInterface(c, IFirstLevelTask.class) && p != null
 				&& !implementsInterface(p, ITopLevelTask.class)) {
 			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_FIRSTLEVEL_ERROR, sName, sPName));
+					Messages.TaskFactoryEx_MUST_BE_FIRSTLEVEL, c.getName(),
+					p.getName()));
 		} else if (!implementsInterface(c, IFirstLevelTask.class) && p != null
 				&& implementsInterface(p, ITopLevelTask.class)) {
 			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_CHILD_ERROR, sName, sPName));
+					Messages.TaskFactoryEx_CANNOT_BE_FIRSTLEVEL, c.getName(),
+					p.getName()));
 		}
 	}
 
@@ -420,17 +446,21 @@ public class TaskFactory {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * Will expand attribute values * During expansion process, the given
-	 * PropertiesSet will be used. * PropertiesSet contains all variables
-	 * name/values that can be used in expression. </i>
+	 * <ul>
+	 * <li>Will expand attribute values ;</li>
+	 * <li>During expansion process, the given PropertiesSet will be used ;</li>
+	 * <li>PropertiesSet contains all variables name/values that can be used in
+	 * expression ;</li>
+	 * </ul>
 	 * </p>
 	 * 
+	 * @param c
+	 *            is the class of the Task to create.
 	 * @param n
-	 *            is an element node, which represent the Task to create.
+	 *            is an element node, which represent the Task to create, in its
+	 *            native {@link Node} format.
 	 * @param ps
 	 *            is a PropertiesSet, which will be used during expansion.
-	 * @param p
-	 *            is the parent Task.
 	 * 
 	 * @return a new object that implement Task.
 	 * 
@@ -454,9 +484,9 @@ public class TaskFactory {
 	 * @throws TaskFactoryException
 	 *             if, while validating the task, the task generate an error.
 	 * @throws IllegalArgumentException
-	 *             if a the given {@link Node} is <code>null</code>.
+	 *             if a the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if a the {@link PropertiesSet} is <code>null</code>.
+	 *             if a the {@link PropertiesSet} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Node} is not an XML Element.
 	 * 

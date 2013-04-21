@@ -42,7 +42,7 @@ public class FilteredDocHelper {
 			refNodesXpr += " | " + Doc.getXPathPosition(n);
 		}
 		return XPathExpander.evaluateAsNodeList("for $n in " + refNodesXpr
-				+ " " + "return $n" + expr, ctx, null);
+				+ " " + "return $n" + expr, ctx);
 	}
 
 	public static Node getHeritedAttribute(Node n, String sAttrName) {
@@ -115,11 +115,8 @@ public class FilteredDocHelper {
 		}
 		NodeList nl = null;
 		try {
-			/*
-			 * TODO : should handle xpath rather than null ?
-			 */
 			nl = XPathExpander.evaluateAsNodeList(xpath, n.getOwnerDocument()
-					.getFirstChild(), null);
+					.getFirstChild());
 		} catch (XPathExpressionException Ex) {
 			throw new FilteredDocException(herit, Messages.bind(
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH, xpath), Ex);
@@ -219,7 +216,7 @@ public class FilteredDocHelper {
 	public static NodeList findNodeWithHeritAttr(Document doc) {
 		try {
 			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
-					+ FilteredDoc.HERIT_ATTR + ") ]", doc, null);
+					+ FilteredDoc.HERIT_ATTR + ") ]", doc);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "

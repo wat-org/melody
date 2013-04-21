@@ -58,8 +58,8 @@ public abstract class FireWallManagementHelper {
 	 *         <li>The last FireWall Management {@link Node} related to the
 	 *         given Instance {@link Node}, if multiple FireWall Management
 	 *         {@link Node} were found ;</li>
-	 *         <li><code>null</code>, if no FireWall Management {@link Node}
-	 *         were found ;</li>
+	 *         <li><tt>null</tt>, if no FireWall Management {@link Node} were
+	 *         found ;</li>
 	 *         </ul>
 	 */
 	public static Node findFireWallManagementNode(Node instanceNode) {
@@ -107,7 +107,7 @@ public abstract class FireWallManagementHelper {
 	 *         {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the FireWall Rules Selector (found in the FireWall Rule
 	 *             Management {@link Node}) is not a valid XPath Expression.

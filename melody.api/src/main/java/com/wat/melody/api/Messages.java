@@ -16,9 +16,10 @@ public class Messages extends NLS {
 	public static String TaskFactoryEx_NO_CONSTRUCTOR_MATCH;
 	public static String TaskFactoryEx_ADD_NE_SPEC_CONFLICT;
 	public static String TaskFactoryEx_CREATE_NE_SPEC_CONFLICT;
-	public static String TaskFactoryEx_TOPLEVEL_ERROR;
-	public static String TaskFactoryEx_FIRSTLEVEL_ERROR;
-	public static String TaskFactoryEx_CHILD_ERROR;
+	public static String TaskFactoryEx_MUST_BE_TOPLEVEL;
+	public static String TaskFactoryEx_CANNOT_BE_TOPLEVEL;
+	public static String TaskFactoryEx_MUST_BE_FIRSTLEVEL;
+	public static String TaskFactoryEx_CANNOT_BE_FIRSTLEVEL;
 	public static String TaskFactoryEx_UNDEF_TASK;
 	public static String TaskFactoryEx_CONVERT_ATTR;
 	public static String TaskFactoryEx_CONVERT_ATTR_TO_ENUM;

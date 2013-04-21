@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
@@ -127,6 +128,13 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
+	public XPath setXPath(XPath xpath) {
+		XPath previous = super.setXPath(xpath);
+		getTargetDescriptor().setXPath(xpath);
+		return previous;
+	}
+
+	@Override
 	public synchronized DUNID getMelodyID(Node n) {
 		return getDUNID(n);
 	}
@@ -175,6 +183,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		try {
 			// Add in the list
 			DUNIDDoc d = new DUNIDDoc(getNextDUNIDDocIndex());
+			d.setXPath(getXPath());
 			d.load(sPath);
 			getDUNIDDocList().add(d);
 			// Add the content
@@ -248,24 +257,24 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized String evaluateAsString(String sXPathExpr)
+	public synchronized String evaluateAsString(String expr)
 			throws XPathExpressionException {
-		return XPathExpander.evaluateAsString(sXPathExpr, getDocument()
-				.getFirstChild(), getXPath());
+		return XPathExpander.evaluateAsString(expr, getDocument()
+				.getFirstChild());
 	}
 
 	@Override
-	public synchronized NodeList evaluateAsNodeList(String sXPathExpr)
+	public synchronized NodeList evaluateAsNodeList(String expr)
 			throws XPathExpressionException {
-		return XPathExpander.evaluateAsNodeList(sXPathExpr, getDocument()
-				.getFirstChild(), getXPath());
+		return XPathExpander.evaluateAsNodeList(expr, getDocument()
+				.getFirstChild());
 	}
 
 	@Override
-	public synchronized Node evaluateAsNode(String sXPathExpr)
+	public synchronized Node evaluateAsNode(String expr)
 			throws XPathExpressionException {
-		return XPathExpander.evaluateAsNode(sXPathExpr, getDocument()
-				.getFirstChild(), getXPath());
+		return XPathExpander
+				.evaluateAsNode(expr, getDocument().getFirstChild());
 	}
 
 	@Override

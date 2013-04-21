@@ -97,7 +97,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if any Instance {@link Node} has no Network Device Management
 	 *             {@link Node}.
@@ -134,7 +134,7 @@ public abstract class NetworkManagementHelper {
 	 *         </ul>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Network Device Management {@link Node} can be found.
 	 */
@@ -168,8 +168,7 @@ public abstract class NetworkManagementHelper {
 	 * </p>
 	 * 
 	 * @param mgmtNode
-	 *            is a Network Device Management {@link Node}, or
-	 *            <code>null</code>.
+	 *            is a Network Device Management {@link Node}, or <tt>null</tt>.
 	 * 
 	 * @return the concatenation of :
 	 *         <ul>
@@ -203,8 +202,7 @@ public abstract class NetworkManagementHelper {
 	 * </p>
 	 * 
 	 * @param mgmtNode
-	 *            is a Network Device Management {@link Node}, or
-	 *            <code>null</code>.
+	 *            is a Network Device Management {@link Node}, or <tt>null</tt>.
 	 * 
 	 * @return <ul>
 	 *         <li>The content of the
@@ -212,8 +210,7 @@ public abstract class NetworkManagementHelper {
 	 *         Attribute of the given Network Device Management {@link Node} ;</li>
 	 *         <li>
 	 *         {@link #DEFAULT_NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR} if the
-	 *         given Network Device Management {@link Node} was
-	 *         <code>null</code> ;</li>
+	 *         given Network Device Management {@link Node} was <tt>null</tt> ;</li>
 	 *         <li>
 	 *         {@link #DEFAULT_NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR} if no
 	 *         {@link #NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR} XML
@@ -245,7 +242,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of an Instance
 	 *             {@link Node} is not a valid XPath expression.
@@ -286,7 +283,7 @@ public abstract class NetworkManagementHelper {
 	 *         Instance {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector is not a valid
 	 *             XPath expression.
@@ -315,8 +312,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * 
 	 * @return the Management Network Device {@link Node} related to the given
@@ -333,21 +330,15 @@ public abstract class NetworkManagementHelper {
 		NodeList nl = null;
 		String sMgmtInterfaceSelector = getManagementNetworkDeviceSelector(mgmtNode);
 		try {
-			/*
-			 * TODO : should handle xpath rather than null ?
-			 */
 			nl = XPathExpander.evaluateAsNodeList("." + sMgmtInterfaceSelector,
-					instanceNode, null);
+					instanceNode);
 			if (nl != null && nl.getLength() > 1) {
 				throw new ResourcesDescriptorException(instanceNode,
 						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE);
 			} else if (nl == null || nl.getLength() == 0) {
 				sMgmtInterfaceSelector = getNetworkDevicesSelector(mgmtNode);
-				/*
-				 * TODO : should handle xpath rather than null ?
-				 */
 				nl = XPathExpander.evaluateAsNodeList("."
-						+ sMgmtInterfaceSelector, instanceNode, null);
+						+ sMgmtInterfaceSelector, instanceNode);
 			}
 		} catch (XPathExpressionException Ex) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
@@ -370,7 +361,7 @@ public abstract class NetworkManagementHelper {
 	 *         to the given {@link List} of Instance {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of one Instance is
 	 *             not a valid XPath expression.
@@ -408,7 +399,7 @@ public abstract class NetworkManagementHelper {
 	 * @return the Instance's Management Network Device's {@link Host}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
@@ -439,8 +430,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device {@link Host}.
@@ -488,7 +479,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of one Instance is
 	 *             not a valid XPath expression.
@@ -529,7 +520,7 @@ public abstract class NetworkManagementHelper {
 	 *         one.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
@@ -554,8 +545,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device {@link Host}
@@ -583,7 +574,7 @@ public abstract class NetworkManagementHelper {
 	 * @return the Instance's Network Device Management {@link Port}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -615,7 +606,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the value of the
 	 *             {@link ManagementNetworkDatasLoader#PORT_ATTR} attribute
@@ -649,10 +640,10 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Instance's Network Device Management {@link Port} attribute
-	 *         as a {@link Node}, or <code>null</code> if it doesn't have one.
+	 *         as a {@link Node}, or <tt>null</tt> if it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -669,12 +660,11 @@ public abstract class NetworkManagementHelper {
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link Port} attribute as a
-	 *         {@link Node}, or <code>null</code> if such attribute cannot be
-	 *         found.
+	 *         {@link Node}, or <tt>null</tt> if such attribute cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
 	public static Node getManagementNetworkPortNode(Node mgmtNode) {
 		if (mgmtNode == null) {
@@ -699,7 +689,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the given Network Device Management {@link Node} doesn't
 	 *             define a ManagementNetworkMethod (which is normaly used to
@@ -741,7 +731,7 @@ public abstract class NetworkManagementHelper {
 	 *         {@link ManagementNetworkMethod}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -770,7 +760,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no {@link ManagementNetworkDatasLoader#METHOD_ATTR} can be
 	 *             found in the given Network Device Management {@link Node}.
@@ -804,10 +794,10 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @return the Instance's Network Device Management
 	 *         {@link ManagementNetworkMethod} attribute as a {@link Node}, or
-	 *         <code>null</code> it doesn't have one.
+	 *         <tt>null</tt> it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -824,12 +814,12 @@ public abstract class NetworkManagementHelper {
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link ManagementNetworkMethod}
-	 *         Attribute as a {@link Node}, or <code>null</code> if such
-	 *         attribute cannot be found.
+	 *         Attribute as a {@link Node}, or <tt>null</tt> if such attribute
+	 *         cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
 	public static Node getManagementNetworkMethodNode(Node mgmtNode) {
 		if (mgmtNode == null) {
@@ -856,7 +846,7 @@ public abstract class NetworkManagementHelper {
 	 *         </ul>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 */
 	public static boolean isManagementNetworkEnable(Node instanceNode) {
 		Node mgmtNode = null;
@@ -877,7 +867,7 @@ public abstract class NetworkManagementHelper {
 	 *         <li>The Network Device Management {@link Node}'s
 	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
 	 *         <li><code>false</code> if the given Network Device Management
-	 *         {@link Node} is <code>null</code> ;</li>
+	 *         {@link Node} is <tt>null</tt> ;</li>
 	 *         <li><code>true</code> if the given Network Device Management
 	 *         {@link Node} has no
 	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
@@ -918,7 +908,7 @@ public abstract class NetworkManagementHelper {
 	 *         </ul>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 */
 	public static String findNetworkDevicesSelector(Node instanceNode) {
 		Node mgmtNode = null;
@@ -946,7 +936,7 @@ public abstract class NetworkManagementHelper {
 	 *         the given Network Device Management {@link Node} ;</li>
 	 *         <li>
 	 *         {@link #DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR} if the given
-	 *         Network Device Management {@link Node} is <code>null</code> ;</li>
+	 *         Network Device Management {@link Node} is <tt>null</tt> ;</li>
 	 *         <li>
 	 *         {@link #DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR} if the given
 	 *         Network Device Management {@link Node} has no
@@ -980,7 +970,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if any Network Devices Selector (found in the Network Device
 	 *             Management {@link Node} of the instance) is not a valid XPath
@@ -1021,7 +1011,7 @@ public abstract class NetworkManagementHelper {
 	 *         name is null.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Network Devices Selector (found in the Network Device
 	 *             Management {@link Node} of the given instance) is not a valid
@@ -1049,8 +1039,8 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * @param netDevName
 	 *            is the requested network device name.
@@ -1074,11 +1064,8 @@ public abstract class NetworkManagementHelper {
 		String sNetDevSelector = "." + sAllNetDevSelector
 				+ (netDevName == null ? "" : "[@device='" + netDevName + "']");
 		try {
-			/*
-			 * TODO : should handle xpath rather than null ?
-			 */
 			return XPathExpander.evaluateAsNodeList(sNetDevSelector,
-					instanceNode, null);
+					instanceNode);
 		} catch (XPathExpressionException Ex) {
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
@@ -1098,7 +1085,7 @@ public abstract class NetworkManagementHelper {
 	 *         Instance {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of one Instance is
 	 *             not a valid XPath expression.
@@ -1137,7 +1124,7 @@ public abstract class NetworkManagementHelper {
 	 *         {@link NetworkDeviceName}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
@@ -1167,8 +1154,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device
@@ -1218,7 +1205,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
-	 *             <code>null</code> or contains <tt>null</tt> elements.
+	 *             <tt>null</tt> or contains <tt>null</tt> elements.
 	 * @throws ResourcesDescriptorException
 	 *             if the Management Network Device Selector of one Instance is
 	 *             not a valid XPath expression.
@@ -1259,7 +1246,7 @@ public abstract class NetworkManagementHelper {
 	 *         doens't have one.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the Instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
@@ -1284,8 +1271,8 @@ public abstract class NetworkManagementHelper {
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
 	 *            is the Network Device Management {@link Node} related to the
-	 *            given Instance {@link Node}, or <code>null</code>, if the
-	 *            given Instance {@link Node} has no Network Device Management
+	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
+	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
 	 * 
 	 * @return the Instance's Management Network Device
@@ -1314,7 +1301,7 @@ public abstract class NetworkManagementHelper {
 	 *         {@link ManagementNetworkEnableTimeout}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the value of the
 	 *             {@link ManagementNetworkDatasLoader#ENABLE_TIMEOUT_ATTR}
@@ -1343,7 +1330,7 @@ public abstract class NetworkManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if the value of the
 	 *             {@link ManagementNetworkDatasLoader#ENABLE_TIMEOUT_ATTR}
@@ -1371,11 +1358,11 @@ public abstract class NetworkManagementHelper {
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Instance's Network Device Management enable-timeout attribute
-	 *         as a {@link Node}, or <code>null</code> if no enable-timeout
+	 *         as a {@link Node}, or <tt>null</tt> if no enable-timeout
 	 *         attribute can be found.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code>.
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
@@ -1392,12 +1379,12 @@ public abstract class NetworkManagementHelper {
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management enable-timeout attribute as a
-	 *         {@link Node}, or <code>null</code> if no enable-timeout attribute
-	 *         can be found.
+	 *         {@link Node}, or <tt>null</tt> if no enable-timeout attribute can
+	 *         be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
-	 *             <code>null</code>.
+	 *             <tt>null</tt>.
 	 */
 	public static Node getManagementNetworkEnableTimeoutNode(Node mgmtNode) {
 		if (mgmtNode == null) {
