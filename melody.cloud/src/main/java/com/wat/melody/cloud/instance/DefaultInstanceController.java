@@ -173,6 +173,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		InstanceState is = getInstanceState();
 		if (!isInstanceDefined()) {
 			log.warn(Messages.ResizeMsg_NO_INSTANCE);
+		} else if (!instanceExists()) {
+			fireInstanceStopped();
+			fireInstanceDestroyed();
+			String sInstanceId = setInstanceId(null);
+			throw new OperationException(Messages.bind(
+					Messages.ResizeEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else if (getInstanceType() == targetType) {
 			log.info(Messages.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
 					targetType));
@@ -203,6 +209,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateDiskDevMsg_NO_INSTANCE);
+		} else if (!instanceExists()) {
+			fireInstanceStopped();
+			fireInstanceDestroyed();
+			String sInstanceId = setInstanceId(null);
+			throw new OperationException(Messages.bind(
+					Messages.UpdateDiskDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceDiskDevices(diskDeviceList, createTimeout,
 					attachTimeout, detachTimeout);
@@ -254,6 +266,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			fireInstanceStopped();
 			log.warn(Messages.UpdateNetDevMsg_NO_INSTANCE);
+		} else if (!instanceExists()) {
+			fireInstanceStopped();
+			fireInstanceDestroyed();
+			String sInstanceId = setInstanceId(null);
+			throw new OperationException(Messages.bind(
+					Messages.UpdateNetDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
 					detachTimeout);
@@ -290,16 +308,23 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException {
+			FwRulesDecomposed fireWallRules) throws OperationException,
+			InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateFireWallMsg_NO_INSTANCE);
+		} else if (!instanceExists()) {
+			fireInstanceStopped();
+			fireInstanceDestroyed();
+			String sInstanceId = setInstanceId(null);
+			throw new OperationException(Messages.bind(
+					Messages.UpdateFireWallEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceFireWallRules(fireWallRules);
 		}
 	}
 
 	public void updateInstanceFireWallRules(FwRulesDecomposed target)
-			throws OperationException {
+			throws OperationException, InterruptedException {
 		NetworkDeviceNameList netdevs = getInstanceNetworkDevices();
 		for (NetworkDeviceName netdev : netdevs) {
 			FwRulesDecomposed current = getInstanceFireWallRules(netdev);

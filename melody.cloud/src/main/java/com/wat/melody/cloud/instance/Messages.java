@@ -30,17 +30,21 @@ public class Messages extends NLS {
 	public static String StopEx_NO_INSTANCE;
 
 	public static String ResizeMsg_NO_INSTANCE;
+	public static String ResizeEx_INVALID_INSTANCE_ID;
 	public static String ResizeMsg_NO_NEED;
 	public static String ResizeEx_NOT_STOPPED;
 
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
+	public static String UpdateDiskDevEx_INVALID_INSTANCE_ID;
 	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
 	public static String UpdateDiskDevEx_IMPOSSIBLE;
 
 	public static String UpdateNetDevMsg_NO_INSTANCE;
+	public static String UpdateNetDevEx_INVALID_INSTANCE_ID;
 	public static String UpdateNetDevMsg_NETWORK_DEVICES_RESUME;
 
 	public static String UpdateFireWallMsg_NO_INSTANCE;
+	public static String UpdateFireWallEx_INVALID_INSTANCE_ID;
 	public static String UpdateFireWallMsg_FWRULES_RESUME;
 
 	public static String InstanceEx_MANAGEMENT_ENABLE_FAILED;

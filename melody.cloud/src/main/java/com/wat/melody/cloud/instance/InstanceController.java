@@ -66,13 +66,16 @@ public interface InstanceController {
 			NetworkDeviceName netdev);
 
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException;
+			FwRulesDecomposed fireWallRules) throws OperationException,
+			InterruptedException;
 
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException;
+			FwRulesDecomposed toRevoke) throws OperationException,
+			InterruptedException;
 
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException;
+			FwRulesDecomposed toAutorize) throws OperationException,
+			InterruptedException;
 
 	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev);
 

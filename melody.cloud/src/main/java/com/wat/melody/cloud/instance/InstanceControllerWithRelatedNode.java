@@ -204,19 +204,22 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException {
+			FwRulesDecomposed fireWallRules) throws OperationException,
+			InterruptedException {
 		getInstance().ensureInstanceFireWallRulesAreUpToDate(fireWallRules);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException {
+			FwRulesDecomposed toRevoke) throws OperationException,
+			InterruptedException {
 		getInstance().revokeInstanceFireWallRules(netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException {
+			FwRulesDecomposed toAutorize) throws OperationException,
+			InterruptedException {
 		getInstance().authorizeInstanceFireWallRules(netDev, toAutorize);
 	}
 
