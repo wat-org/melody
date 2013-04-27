@@ -209,11 +209,11 @@ public class NewMachine extends AbstractOperation {
 		try {
 			getInstance().ensureInstanceIsCreated(getInstanceType(), null,
 					getImageId(), getKeyPairName(), getTimeout());
-		} catch (OperationException e) {
+		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.CreateEx_GENERIC_FAIL, new Object[] { getRegion(),
 							getImageId(), getInstanceType(), getKeyPairName(),
-							null, getTargetNodeLocation() }));
+							null, getTargetNodeLocation() }), Ex);
 		}
 	}
 

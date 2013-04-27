@@ -228,11 +228,11 @@ public class NewMachine extends AbstractOperation {
 			getInstance().ensureInstanceIsCreated(getInstanceType(),
 					getAvailabilityZoneFullName(), getImageId(),
 					getKeyPairName(), getTimeout());
-		} catch (OperationException e) {
+		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.CreateEx_GENERIC_FAIL, getRegion(), getImageId(),
 					getInstanceType(), getKeyPairName(),
-					getAvailabilityZoneFullName(), getTargetNodeLocation()));
+					getAvailabilityZoneFullName(), getTargetNodeLocation()), Ex);
 		}
 	}
 

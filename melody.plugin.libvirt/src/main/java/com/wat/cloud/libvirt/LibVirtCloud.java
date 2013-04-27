@@ -1011,6 +1011,14 @@ public abstract class LibVirtCloud {
 		if (sInstanceId == null) {
 			return null;
 		}
+		/*
+		 * When domainLookupByName() cannot found the given domain, it writes
+		 * "libvir: QEMU error : Domain not found: no domain with matching name '<sInstanceId>'"
+		 * in System.err. This test prevent this error to be writen.
+		 */
+		if (!instanceExists(cnx, sInstanceId)) {
+			return null;
+		}
 		try {
 			return cnx.domainLookupByName(sInstanceId);
 		} catch (LibvirtException Ex) {
@@ -1030,6 +1038,14 @@ public abstract class LibVirtCloud {
 			return false;
 		}
 		try {
+			// iterate through the active domains
+			for (int activeDomainId : cnx.listDomains()) {
+				Domain d = cnx.domainLookupByID(activeDomainId);
+				if (d.getName().equals(sInstanceId)) {
+					return true;
+				}
+			}
+			// search in the inactive domains
 			String[] names = cnx.listDefinedDomains();
 			return Arrays.asList(names).contains(sInstanceId);
 		} catch (LibvirtException Ex) {

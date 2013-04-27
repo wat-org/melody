@@ -53,6 +53,9 @@ public class FilteredDocHelper {
 
 	private static Node getHeritedAttribute(Node n, String sAttrName,
 			List<Node> circle) {
+		if (n == null) {
+			return null;
+		}
 		Node a = n.getAttributes().getNamedItem(sAttrName);
 		if (a != null) {
 			return a;
@@ -105,6 +108,9 @@ public class FilteredDocHelper {
 	 */
 	protected static Node resolvHeritAttr(Node n, List<Node> circle)
 			throws FilteredDocException {
+		if (n == null) {
+			return null;
+		}
 		Node herit = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
 		if (herit == null) {
 			return null;

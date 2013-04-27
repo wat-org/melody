@@ -54,6 +54,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 
 	private void validate() throws LibVirtPlugInConfigurationException {
 		// validate all configuration directives
+		// almost nothing to
 	}
 
 }
