@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.libvirt;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.w3c.dom.Node;
@@ -8,6 +9,7 @@ import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -16,6 +18,8 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
+import com.wat.melody.plugin.libvirt.common.LibVirtInstanceController;
+import com.wat.melody.plugin.libvirt.common.LibVirtKeyPairRepository;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -215,6 +219,35 @@ public class NewMachine extends AbstractOperation {
 							getImageId(), getInstanceType(), getKeyPairName(),
 							null, getTargetNodeLocation() }), Ex);
 		}
+	}
+
+	/**
+	 * @return an {@link LibVirtInstanceController} which provides additional
+	 *         KeyPair Management features.
+	 */
+	@Override
+	public InstanceController newLibVirtInstanceController() {
+		// create LibVirtInstanceControllerWithKeyPairManagement class ?
+		return new LibVirtInstanceController(getConnect(), getInstanceId()) {
+
+			public String createInstance(InstanceType type, String site,
+					String imageId, KeyPairName keyPairName, long createTimeout)
+					throws OperationException, InterruptedException {
+				try {
+					LibVirtKeyPairRepository kpr = LibVirtKeyPairRepository
+							.getLibVirtKeyPairRepository(getConnection(),
+									getKeyPairRepositoryPath());
+					kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
+							.getKeyPairSize(), getPassphrase());
+				} catch (IOException | LibVirtException Ex) {
+					throw new OperationException(Ex);
+				}
+
+				return super.createInstance(type, site, imageId, keyPairName,
+						createTimeout);
+			}
+
+		};
 	}
 
 	public InstanceType getInstanceType() {

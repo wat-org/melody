@@ -10,7 +10,8 @@
 					itemName="srv" >
 			<newMachine	target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created (IP: §[adm_ip]§)." />
+			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
+			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created§[adm_ip]§." />
 		</foreach>
 
 		<echo message="-- Virtual machines created." />

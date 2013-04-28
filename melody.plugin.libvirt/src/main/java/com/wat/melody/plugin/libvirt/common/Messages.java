@@ -6,6 +6,8 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.libvirt.common.messages";
 
+	public static String KeyPairEx_DIFFERENT;
+
 	public static String MachineEx_MISSING_REGION_ATTR;
 	public static String MachineEx_REGION_ERROR;
 	public static String MachineEx_INVALID_TIMEOUT_ATTR;

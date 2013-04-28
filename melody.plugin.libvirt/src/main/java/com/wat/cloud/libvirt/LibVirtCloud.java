@@ -71,13 +71,13 @@ public abstract class LibVirtCloud {
 	private static Log log = LogFactory.getLog(LibVirtCloud.class);
 
 	public static final String LIBVIRT_CLOUD_IMG_CONF = "/Cloud/libvirt/conf.xml";
-	private static Doc conf = loadLibVirtCloudConfiguration();
+	protected static Doc conf = loadLibVirtCloudConfiguration();
 
-	public static final String LIBVIRT_CLOUD_NET_CONF = "/Cloud/libvirt/net-default.xml";
-	private static Doc netconf = loadLibVirtCloudNetworkConfiguration();
+	public static final String LIBVIRT_CLOUD_NET_CONF = "/Cloud/libvirt/conf-net.xml";
+	protected static Doc netconf = loadLibVirtCloudNetworkConfiguration();
 
-	public static final String LIBVIRT_CLOUD_SIZE_CONF = "/Cloud/libvirt/instance-sizing.xml";
-	private static Doc sizeconf = loadLibVirtCloudSizingConfiguration();
+	public static final String LIBVIRT_CLOUD_SIZE_CONF = "/Cloud/libvirt/conf-sizing.xml";
+	protected static Doc sizeconf = loadLibVirtCloudSizingConfiguration();
 
 	private static Doc loadLibVirtCloudConfiguration() {
 		Doc doc = new Doc();
@@ -1366,7 +1366,7 @@ public abstract class LibVirtCloud {
 
 	private static String LOCK_UNIQ_DOMAIN = "";
 	private static String LOCK_CLONE_DISK = "";
-	private static NetworkDeviceName eth0 = createNetworkDeviceName("eth0");
+	protected static NetworkDeviceName eth0 = createNetworkDeviceName("eth0");
 
 	private static NetworkDeviceName createNetworkDeviceName(String n) {
 		try {
@@ -1403,8 +1403,7 @@ public abstract class LibVirtCloud {
 			Domain domain = null;
 			String sInstanceId = null;
 			// Defines domain
-			synchronized (LOCK_UNIQ_DOMAIN) {
-				// this block is sync because the sInstanceId must be consistent
+			synchronized (LOCK_UNIQ_DOMAIN) {// domain's name must be consistent
 				sInstanceId = generateUniqDomainName(cnx);
 				ps.put(new Property("vmName", sInstanceId));
 				ps.put(new Property("vmMacAddr", generateUniqMacAddress()));
@@ -1421,6 +1420,9 @@ public abstract class LibVirtCloud {
 			}
 			log.debug("Domain '" + sInstanceId + "' created.");
 
+			// Associate the keypair
+			LibVirtCloudKeyPair.associateKeyPairToInstance(domain, keyPairName);
+
 			// Create a network filter for the network device
 			createNetworkFilter(domain, ps);
 
@@ -1428,7 +1430,6 @@ public abstract class LibVirtCloud {
 			NodeList nl = null;
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
-			// recuperation du storage pool
 			StoragePool sp = cnx.storagePoolLookupByName("default");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node n = nl.item(i);
@@ -1459,7 +1460,7 @@ public abstract class LibVirtCloud {
 						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
-			// Starts domain
+			// Start domain
 			log.trace("Starting Domain '" + sInstanceId + "' ...");
 			domain.create();
 			log.debug("Domain '" + sInstanceId + "' started.");
@@ -1491,6 +1492,9 @@ public abstract class LibVirtCloud {
 				d.destroy();
 				log.debug("Domain '" + sInstanceId + "' destroyed.");
 			}
+			// De associate keyPair
+			LibVirtCloudKeyPair.deassociateKeyPairToInstance(d);
+
 			// Release network devices
 			NetworkDeviceNameList netdevs = getNetworkDevices(d);
 			for (NetworkDeviceName netdev : netdevs) {
@@ -1568,8 +1572,8 @@ public abstract class LibVirtCloud {
 			throws InterruptedException {
 		try {
 			/*
-			 * Memory hotplug/unplug is not for real (it acts on balloning), and
-			 * cpu unplug is not supported. For these reason, we only deal with
+			 * Memory hotplug/unplug is a fake (it acts on balloning!), and cpu
+			 * unplug is not supported. For these reason, we only deal with
 			 * 'stopped' domain.
 			 */
 			if (getDomainState(d) != InstanceState.STOPPED) {
@@ -1584,7 +1588,7 @@ public abstract class LibVirtCloud {
 					.parseFloat(sMemory) * 1024 * 1024));
 
 			/*
-			 * we cannot use Domin.setMemory and Domain.setVcpus, because it
+			 * we cannot use Domain.setMemory and Domain.setVcpus, because it
 			 * only work on 'running ' domain.
 			 */
 			Doc doc = getDomainXMLDesc(d);

@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.libvirt.common;
 
+import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
@@ -55,6 +56,9 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	private void validate() throws LibVirtPlugInConfigurationException {
 		// validate all configuration directives
 		// almost nothing to
+
+		// Start the LibVirtCloudServicesEndpoint
+		LibVirtCloudServicesEndpoint.start();
 	}
 
 }

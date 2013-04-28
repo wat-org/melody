@@ -129,8 +129,7 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	public InstanceController createInstance() throws LibVirtException {
-		InstanceController instance = new LibVirtInstanceController(
-				getConnect(), getInstanceId());
+		InstanceController instance = newLibVirtInstanceController();
 		instance = new InstanceControllerWithRelatedNode(instance, getRD(),
 				getTargetNode());
 		if (NetworkManagementHelper.isManagementNetworkEnable(getTargetNode())) {
@@ -138,6 +137,14 @@ public abstract class AbstractOperation implements ITask,
 					this, getTargetNode());
 		}
 		return instance;
+	}
+
+	/**
+	 * Can be override by subclasses to provide enhanced behavior of the
+	 * {@link AwsInstanceController}.
+	 */
+	public InstanceController newLibVirtInstanceController() {
+		return new LibVirtInstanceController(getConnect(), getInstanceId());
 	}
 
 	public IResourcesDescriptor getRD() {

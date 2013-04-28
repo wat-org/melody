@@ -158,10 +158,13 @@ public class Doc {
 			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
 					+ ": Not accepted. " + "Must be an Element Node.");
 		}
-		Attr oAtr = n.getOwnerDocument().createAttribute(attrName);
-		oAtr.setNodeValue(attrValue);
-		n.getAttributes().setNamedItem(oAtr);
-		return oAtr;
+		Document d = n.getOwnerDocument();
+		synchronized (d) {
+			Attr oAtr = d.createAttribute(attrName);
+			oAtr.setNodeValue(attrValue);
+			n.getAttributes().setNamedItem(oAtr);
+			return oAtr;
+		}
 	}
 
 	/**

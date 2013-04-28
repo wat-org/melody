@@ -1,40 +1,42 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.plugin.libvirt.common;
 
 import java.io.IOException;
 import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.amazonaws.services.ec2.AmazonEC2;
+import org.libvirt.Connect;
+
+import com.wat.cloud.libvirt.LibVirtCloudKeyPair;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
+import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
 /**
  * <p>
- * A {@link AwsKeyPairRepository} helps to create, store and destroy
- * {@link KeyPair} on the local File System and in Aws EC2.
+ * A {@link LibVirtKeyPairRepository} helps to create, store and destroy
+ * {@link KeyPair} on the local File System and in LibVirtCloud.
  * </p>
  * 
  * <p>
- * A {@link AwsKeyPairRepository} enhance the {@link KeyPairRepostory} by
- * providing Local KeyPair synchronization with Aws KeyPairs.
+ * A {@link LibVirtKeyPairRepository} enhance the {@link KeyPairRepostory} by
+ * providing Local KeyPair synchronization with LibVirtCloud KeyPairs.
  * </p>
  * 
  * <p>
- * A {@link AwsKeyPairRepository} is thread safe.
+ * A {@link LibVirtKeyPairRepository} is thread safe.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class AwsKeyPairRepository {
+public class LibVirtKeyPairRepository {
 
-	private static Map<KeyPairRepositoryPath, AwsKeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, AwsKeyPairRepository>();
+	private static Map<KeyPairRepositoryPath, LibVirtKeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, LibVirtKeyPairRepository>();
 
-	public synchronized static AwsKeyPairRepository getAwsKeyPairRepository(
-			AmazonEC2 ec2, KeyPairRepositoryPath keyPairRepositoryPath) {
+	public synchronized static LibVirtKeyPairRepository getLibVirtKeyPairRepository(
+			Connect cnx, KeyPairRepositoryPath keyPairRepositoryPath) {
 		if (keyPairRepositoryPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -43,31 +45,31 @@ public class AwsKeyPairRepository {
 		if (REGISTERED_REPOS.containsKey(keyPairRepositoryPath)) {
 			return REGISTERED_REPOS.get(keyPairRepositoryPath);
 		}
-		AwsKeyPairRepository kpr = new AwsKeyPairRepository(ec2,
+		LibVirtKeyPairRepository kpr = new LibVirtKeyPairRepository(cnx,
 				keyPairRepositoryPath);
 		REGISTERED_REPOS.put(keyPairRepositoryPath, kpr);
 		return kpr;
 	}
 
 	private KeyPairRepository _kpr;
-	private AmazonEC2 _cnx;
+	private Connect _cnx;
 
-	protected AwsKeyPairRepository(AmazonEC2 ec2, KeyPairRepositoryPath kppr) {
-		setConnection(ec2);
+	protected LibVirtKeyPairRepository(Connect cnx, KeyPairRepositoryPath kppr) {
+		setConnection(cnx);
 		setKeyPairRepository(KeyPairRepository.getKeyPairRepository(kppr));
 	}
 
-	public AmazonEC2 getConnection() {
+	public Connect getConnection() {
 		return _cnx;
 	}
 
-	private AmazonEC2 setConnection(AmazonEC2 connection) {
+	private Connect setConnection(Connect connection) {
 		if (connection == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ "Must be a valid " + Connect.class.getCanonicalName()
 					+ ".");
 		}
-		AmazonEC2 previous = getConnection();
+		Connect previous = getConnection();
 		_cnx = connection;
 		return previous;
 	}
@@ -92,37 +94,39 @@ public class AwsKeyPairRepository {
 	}
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase) throws AwsException, IOException {
+			int size, String passphrase) throws LibVirtException, IOException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);
-		// Create/test KeyPair in Aws
-		createKeyPairInAws(keyPairName, kp);
+		// Create/test KeyPair in LibVirtCloud
+		createKeyPairInLibVirtCloud(keyPairName, kp);
 		return kp;
 	}
 
 	public synchronized void destroyKeyPair(KeyPairName keyPairName) {
-		// Delete KeyPair in Aws
-		Common.deleteKeyPair(getConnection(), keyPairName);
+		// Delete KeyPair in LibVirtCloud
+		LibVirtCloudKeyPair.deleteKeyPair(getConnection(), keyPairName);
 		// Delete KeyPair in the underlying repository
 		getKeyPairRepository().destroyKeyPair(keyPairName);
 	}
 
-	private synchronized void createKeyPairInAws(KeyPairName kpn, KeyPair kp)
-			throws AwsException {
-		if (Common.keyPairExists(getConnection(), kpn)) {
-			// when KeyPair is already in AWS, verify it is the same fingerprint
+	private synchronized void createKeyPairInLibVirtCloud(KeyPairName kpn,
+			KeyPair kp) throws LibVirtException {
+		if (LibVirtCloudKeyPair.keyPairExists(getConnection(), kpn)) {
+			// when KeyPair is already in LibVirtCloud, verify it is the same
+			// fingerprint
 			String fprint = KeyPairRepository.getFingerprint(kp);
-			if (Common.compareKeyPair(getConnection(), kpn, fprint) == false) {
-				throw new AwsException(Messages.bind(
+			if (LibVirtCloudKeyPair
+					.compareKeyPair(getConnection(), kpn, fprint) == false) {
+				throw new LibVirtException(Messages.bind(
 						Messages.KeyPairEx_DIFFERENT, kpn,
 						getKeyPairRepository().getKeyPairRepositoryPath()));
 			}
 		} else {
-			// when KeyPair is not in AWS, import the public key
+			// when KeyPair is not in LibVirtCloud, import the public key
 			String pubkey = KeyPairRepository.getPublicKeyInOpenSshFormat(kp,
 					"Generated by Melody");
-			Common.importKeyPair(getConnection(), kpn, pubkey);
+			LibVirtCloudKeyPair.importKeyPair(getConnection(), kpn, pubkey);
 		}
 	}
 
