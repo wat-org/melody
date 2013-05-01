@@ -253,10 +253,10 @@ public class SshSession implements ISshSession {
 		_session.setConfig("compression_level", conf.getCompressionLevel()
 				.getValue());
 		/*
-		 * TODO : We remove 'gssapi-with-mic' authentication method because,
-		 * when the target sshd is Kerberized, and when the client has no
-		 * Kerberos ticket yet, the auth method 'gssapi-with-mic' will wait for
-		 * the user to prompt a password.
+		 * We remove 'gssapi-with-mic' authentication method because, when the
+		 * target sshd is Kerberized, and when the client has no Kerberos ticket
+		 * yet, the auth method 'gssapi-with-mic' will wait for the user to
+		 * prompt a password.
 		 * 
 		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
 		 * as the bug is not solved, we must exclude kerberos/GSS auth method.

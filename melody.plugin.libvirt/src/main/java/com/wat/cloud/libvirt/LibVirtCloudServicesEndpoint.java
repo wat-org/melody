@@ -17,6 +17,9 @@ public class LibVirtCloudServicesEndpoint {
 	private static Log log = LogFactory
 			.getLog(LibVirtCloudServicesEndpoint.class);
 
+	/*
+	 * TODO : extarnalize listen ip and listen port
+	 */
 	public static final String SERVER_ENDPOINT = "http://0.0.0.0:6060/LibVirtCloudServices";
 
 	private static LibVirtCloudServicesEndpoint _singleton = null;

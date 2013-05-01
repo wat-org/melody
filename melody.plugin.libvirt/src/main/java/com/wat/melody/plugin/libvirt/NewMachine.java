@@ -195,15 +195,6 @@ public class NewMachine extends AbstractOperation {
 					Messages.NewEx_INVALID_IMAGEID_ATTR, getImageId(),
 					getRegion()));
 		}
-		/*
-		 * TODO : Enable the given KeyPair.
-		 * 
-		 * Use the Ssh management feateure of the SshManageSession to deploy the
-		 * ssh key on the remote machine.
-		 * 
-		 * Store the super admin user/pwd in conf.xml.
-		 */
-
 	}
 
 	@Override

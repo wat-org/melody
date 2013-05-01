@@ -112,6 +112,9 @@ public class LibVirtKeyPairRepository {
 
 	private synchronized void createKeyPairInLibVirtCloud(KeyPairName kpn,
 			KeyPair kp) throws LibVirtException {
+		/*
+		 * TODO : add log messages
+		 */
 		if (LibVirtCloudKeyPair.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in LibVirtCloud, verify it is the same
 			// fingerprint

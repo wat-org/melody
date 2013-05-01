@@ -110,6 +110,9 @@ public class AwsKeyPairRepository {
 
 	private synchronized void createKeyPairInAws(KeyPairName kpn, KeyPair kp)
 			throws AwsException {
+		/*
+		 * TODO : add log messages
+		 */
 		if (Common.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in AWS, verify it is the same fingerprint
 			String fprint = KeyPairRepository.getFingerprint(kp);

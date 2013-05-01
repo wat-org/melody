@@ -1412,8 +1412,8 @@ public abstract class LibVirtCloud {
 				ps.put(new Property("sgName", sSGName));
 				ps.put(new Property("eth", eth0.getValue()));
 				log.trace("Creating domain '" + sInstanceId
-						+ "' based on the template " + sImageId
-						+ " ... MacAddress is '"
+						+ "' based on the template '" + sImageId
+						+ "' ... MacAddress is '"
 						+ ps.getProperty("vmMacAddr").getValue() + "'.");
 				domain = cnx.domainDefineXML(XPathExpander
 						.expand(ddt, null, ps));

@@ -145,6 +145,9 @@ public class KeyPairRepository implements IFileBased {
 					+ "Source code have been modified and a bug "
 					+ "introduced.", Ex);
 		}
+		/*
+		 * TODO : add log messages
+		 */
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
