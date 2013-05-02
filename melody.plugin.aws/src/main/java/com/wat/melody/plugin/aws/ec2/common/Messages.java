@@ -45,6 +45,11 @@ public class Messages extends NLS {
 	public static String CommonMsg_SKIP_FWRULE;
 	public static String CommonMsg_ATTACH_NOTWORK_DEVICE_NOT_SUPPORTED;
 	public static String CommonMsg_DETACH_NOTWORK_DEVICE_NOT_SUPPORTED;
+	public static String CommonMsg_GENKEY_BEGIN;
+	public static String CommonMsg_GENKEY_DUP;
+	public static String CommonMsg_GENKEY_END;
+	public static String CommonMsg_DELKEY_BEGIN;
+	public static String CommonMsg_DELKEY_END;
 
 	public static String MachineEx_MISSING_REGION_ATTR;
 	public static String MachineEx_REGION_ERROR;

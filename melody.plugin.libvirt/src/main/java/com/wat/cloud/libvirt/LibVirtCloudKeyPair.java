@@ -49,13 +49,15 @@ public abstract class LibVirtCloudKeyPair {
 			if (pkEntry == null) {
 				return;
 			}
-			log.trace("Deleting PublicKey '" + keyPairName + "' ...");
+			log.trace("Deleting PublicKey '" + keyPairName
+					+ "' in LibVirt Cloud ...");
 			// remove the entry
 			pkEntry.getParentNode().removeChild(pkEntry);
 			LibVirtCloud.conf.store();
 			// remove the file
 			Files.delete(getPublicKeyPath(getPublicKeyRepoPath(), keyPairName));
-			log.debug("PublicKey '" + keyPairName + "' deleted.");
+			log.debug("PublicKey '" + keyPairName
+					+ "' deleted in LibVirt Cloud.");
 		} catch (IOException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -139,10 +141,13 @@ public abstract class LibVirtCloudKeyPair {
 	public static void importKeyPair(Connect cnx, KeyPairName keyPairName,
 			String sPublicKey) {
 		try {
-			log.trace("Importing PublicKey '" + keyPairName + "' ...");
+			log.trace("Importing PublicKey '" + keyPairName
+					+ "' in LibVirt Cloud ...");
 			Node pkEntry = getPublicKeyEntry(keyPairName);
 			if (pkEntry != null) {
 				// already exists (We don't verify the content is the same)
+				log.debug("PublicKey '" + keyPairName
+						+ "' imported in LibVirt Cloud (already exists).");
 				return;
 			}
 			// create a new entry for the key
@@ -156,7 +161,8 @@ public abstract class LibVirtCloudKeyPair {
 			// save the public key to disk
 			Files.write(getPublicKeyPath(getPublicKeyRepoPath(), keyPairName),
 					sPublicKey.getBytes());
-			log.debug("PublicKey '" + keyPairName + "' imported.");
+			log.debug("PublicKey '" + keyPairName
+					+ "' imported in LibVirt Cloud.");
 		} catch (XPathExpressionException | IOException Ex) {
 			throw new RuntimeException(Ex);
 		}

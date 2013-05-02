@@ -477,6 +477,7 @@ public class Common {
 					+ "Must be a valid File (a Public Key File).");
 		}
 
+		log.trace(Messages.bind(Messages.CommonMsg_GENKEY_BEGIN, keyPairName));
 		ImportKeyPairRequest ikpreq = new ImportKeyPairRequest();
 		ikpreq.withKeyName(keyPairName.getValue());
 		ikpreq.withPublicKeyMaterial(sPublicKey);
@@ -486,11 +487,14 @@ public class Common {
 		} catch (AmazonServiceException Ex) {
 			// Means that the given Key Pair Name is not valid
 			if (Ex.getErrorCode().indexOf("InvalidKeyPair.Duplicate") != -1) {
+				log.debug(Messages.bind(Messages.CommonMsg_GENKEY_DUP,
+						keyPairName));
 				return;
 			} else {
 				throw Ex;
 			}
 		}
+		log.debug(Messages.bind(Messages.CommonMsg_GENKEY_END, keyPairName));
 	}
 
 	/**
@@ -520,11 +524,13 @@ public class Common {
 					+ "Must be a valid String (an Aws KeyPair Name).");
 		}
 
+		log.trace(Messages.bind(Messages.CommonMsg_DELKEY_BEGIN, keyPairName));
 		DeleteKeyPairRequest dkpreq = new DeleteKeyPairRequest();
 		dkpreq.withKeyName(keyPairName.getValue());
 
 		// will not fail if the given doesn't exists
 		ec2.deleteKeyPair(dkpreq);
+		log.debug(Messages.bind(Messages.CommonMsg_DELKEY_END, keyPairName));
 	}
 
 	/**

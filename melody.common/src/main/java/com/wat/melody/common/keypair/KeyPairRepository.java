@@ -13,6 +13,9 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -44,6 +47,8 @@ import com.wat.melody.common.files.exception.IllegalFileException;
  * 
  */
 public class KeyPairRepository implements IFileBased {
+
+	private static Log log = LogFactory.getLog(KeyPairRepository.class);
 
 	private static Map<KeyPairRepositoryPath, KeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, KeyPairRepository>();
 
@@ -145,13 +150,14 @@ public class KeyPairRepository implements IFileBased {
 					+ "Source code have been modified and a bug "
 					+ "introduced.", Ex);
 		}
-		/*
-		 * TODO : add log messages
-		 */
+		log.trace(Messages.bind(Messages.KeyPairRepoMsg_GENKEY_BEGIN,
+				keyPairName, getKeyPairRepositoryPath()));
 		keyGen.initialize(size, new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
 				kp, passphrase);
+		log.debug(Messages.bind(Messages.KeyPairRepoMsg_GENKEY_END,
+				keyPairName, getKeyPairRepositoryPath()));
 		return kp;
 	}
 
@@ -165,7 +171,11 @@ public class KeyPairRepository implements IFileBased {
 	 */
 	public synchronized void destroyKeyPair(KeyPairName keyPairName) {
 		if (containsKeyPair(keyPairName)) {
+			log.trace(Messages.bind(Messages.KeyPairRepoMsg_DELKEY_BEGIN,
+					keyPairName, getKeyPairRepositoryPath()));
 			getPrivateKeyFile(keyPairName).delete();
+			log.debug(Messages.bind(Messages.KeyPairRepoMsg_DELKEY_END,
+					keyPairName, getKeyPairRepositoryPath()));
 		}
 	}
 

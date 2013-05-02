@@ -12,6 +12,11 @@ public class Messages extends NLS {
 	public static String KeyPairRepoPathEx_INVALID_REPO_PATH;
 	public static String KeyPairRepoPathEx_FAILED_TO_CREATE_REPO;
 
+	public static String KeyPairRepoMsg_GENKEY_BEGIN;
+	public static String KeyPairRepoMsg_GENKEY_END;
+	public static String KeyPairRepoMsg_DELKEY_BEGIN;
+	public static String KeyPairRepoMsg_DELKEY_END;
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
