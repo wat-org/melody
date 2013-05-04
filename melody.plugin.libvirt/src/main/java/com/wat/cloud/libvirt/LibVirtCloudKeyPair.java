@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -14,6 +16,7 @@ import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.w3c.dom.Node;
 
+import com.wat.melody.common.keypair.KeyPairHelper;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -117,11 +120,17 @@ public abstract class LibVirtCloudKeyPair {
 	 */
 	public static boolean compareKeyPair(Connect cnx, KeyPairName keyPairName,
 			String sFingerprint) {
-		/*
-		 * TODO : not so easy to get the publickey's fingerprint from the open
-		 * ssh public key..
-		 */
-		return true;
+		try {
+			Path pubkeypath = getPublicKeyPath(getPublicKeyRepoPath(),
+					keyPairName);
+			PublicKey pubkey = KeyPairHelper
+					.readOpenSshRSAPublicKey(pubkeypath);
+			String storedFingerprint = KeyPairHelper
+					.generateFingerprint(pubkey);
+			return storedFingerprint.equals(sFingerprint);
+		} catch (InvalidKeySpecException | IOException Ex) {
+			throw new RuntimeException(Ex);
+		}
 	}
 
 	/**

@@ -72,7 +72,7 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	public static String getFingerprint(KeyPair kp) {
-		return KeyPairHelper.generateFingerprint(kp);
+		return KeyPairHelper.generateFingerprint(kp.getPublic());
 	}
 
 	private KeyPairRepositoryPath _kprp;

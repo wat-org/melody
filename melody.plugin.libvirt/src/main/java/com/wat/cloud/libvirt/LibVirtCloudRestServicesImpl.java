@@ -38,7 +38,7 @@ public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 	public Response getInstanceRegisteredPublicKey() {
 		try {
 			log.trace("Receive 'GetRegisteredPublicKey' request from remote "
-					+ "system with ip '" + request.getRemoteAddr() + "'.");
+					+ "system '" + request.getRemoteAddr() + "'.");
 			String key = null;
 			switch (getClientOsFamilly()) {
 			case LINUX:
@@ -50,12 +50,12 @@ public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 				break;
 			}
 			log.debug("Successfully respond to 'GetRegisteredPublicKey' "
-					+ "request initiated by remote system with ip '"
+					+ "request initiated by remote system '"
 					+ request.getRemoteAddr() + "'.");
 			return Response.ok(key).build();
 		} catch (LibVirtException Ex) {
 			log.debug("Failed to respond to 'GetRegisteredPublicKey' "
-					+ "request initiated by remote system with ip '"
+					+ "request initiated by remote system '"
 					+ request.getRemoteAddr() + "' (" + Ex.getMessage() + ").");
 			return Response.ok("undefined").build();
 		}

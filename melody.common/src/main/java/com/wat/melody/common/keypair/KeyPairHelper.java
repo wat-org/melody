@@ -6,16 +6,21 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -76,7 +81,7 @@ public abstract class KeyPairHelper {
 
 	public static void writeOpenSslPEMFingerprint(Path filePath, KeyPair kp)
 			throws IOException {
-		Files.write(filePath, generateFingerprint(kp).getBytes());
+		Files.write(filePath, generateFingerprint(kp.getPublic()).getBytes());
 	}
 
 	public static void writeOpenSslPEMPrivateKey(Path filePath, KeyPair kp,
@@ -118,7 +123,7 @@ public abstract class KeyPairHelper {
 		}
 	}
 
-	public static String generateFingerprint(KeyPair kp) {
+	public static String generateFingerprint(Key key) {
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("MD5");
@@ -127,7 +132,7 @@ public abstract class KeyPairHelper {
 					+ "Source code have been modified and a bug introduced.",
 					Ex);
 		}
-		md.update(kp.getPublic().getEncoded());
+		md.update(key.getEncoded());
 		return bytesToHex(md.digest());
 	}
 
@@ -146,12 +151,65 @@ public abstract class KeyPairHelper {
 		return buf.toString();
 	}
 
+	/**
+	 * <p>
+	 * Converts a OpenSsh RSA public key in a {@link PublicKey}.
+	 * </p>
+	 * 
+	 * <p>
+	 * OpenSsh RSA public key looks like :
+	 * 
+	 * <pre>
+	 * ssh-rsa AAAAB3NzaC1yc2EAAAADAQ .... I2ofbbqeP6Ljq45Vtfat5 comment
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param filePath
+	 *            is the path a file file, which contains one line and this line
+	 *            should be an OpenSsh Rsa public key.
+	 * 
+	 * @return a {@link PublicKey}, which is equal to the given file content.
+	 * 
+	 * @throws IOException
+	 *             if the given path is not valid.
+	 * @throws InvalidKeySpecException
+	 *             if the content of the given file is not a valid RSA public
+	 *             key.
+	 */
+	public static PublicKey readOpenSshRSAPublicKey(Path filePath) throws IOException,
+			InvalidKeySpecException {
+		String content = new String(Files.readAllBytes(filePath));
+		String opensshpubkey = content.split(" ")[1];
+		byte[] opensshpubblob = Base64.decodeBase64(opensshpubkey.getBytes());
+
+		Buffer buf = new Buffer(opensshpubblob);
+		String keyalg = new String(buf.getString());
+		BigInteger pubexponent = new BigInteger(buf.getString());
+		BigInteger modulus = new BigInteger(buf.getString());
+
+		RSAPublicKeySpec spec = new RSAPublicKeySpec(modulus, pubexponent);
+		KeyFactory factory = null;
+		if (!keyalg.equals("ssh-rsa")) {
+			throw new RuntimeException(keyalg + ": Not accepted. "
+					+ "Only accepts RSA keys.");
+		}
+		try {
+			factory = KeyFactory.getInstance("RSA");
+		} catch (NoSuchAlgorithmException Ex) {
+			throw new RuntimeException("RSA algorithm doesn't exists ! "
+					+ "Source code have been modified and a bug introduced.",
+					Ex);
+		}
+		return factory.generatePublic(spec);
+	}
+
 	public static String generateOpenSshRSAPublicKey(KeyPair kp, String comment) {
 		byte[] pubblob = getPublicKeyBlob(kp);
 		String res = null;
 		byte[] pub = Base64.encodeBase64(pubblob);
 		try {
-			res = new String(getKeyTypeName());
+			res = new String(sshrsa);
 			res += new String(space);
 			res += new String(pub);
 			if (comment != null && comment.trim().length() != 0) {
@@ -193,9 +251,5 @@ public abstract class KeyPairHelper {
 
 	private static byte[] space = str2byte(" ");
 	private static final byte[] sshrsa = str2byte("ssh-rsa");
-
-	private static byte[] getKeyTypeName() {
-		return sshrsa;
-	}
 
 }
