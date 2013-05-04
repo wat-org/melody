@@ -34,9 +34,6 @@ public class LibVirtCloudServicesEndpoint {
 	private JAXRSServerFactoryBean _restServer;
 
 	private LibVirtCloudServicesEndpoint() {
-		/*
-		 * TODO : uses slf4j. Find how to handle these logs messages.
-		 */
 		try {
 			log.info("Starting server on : [" + SERVER_ENDPOINT + "]");
 			LibVirtCloudRestServices lvService = new LibVirtCloudRestServicesImpl();

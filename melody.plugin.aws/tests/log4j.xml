@@ -7,7 +7,8 @@
 	This configuration provides :
 		- log of ERROR messages from all packages into the log file and the console
 		- log of ALL messages from package 'com.wat.melody' into the log file and the console
-		- log threshold of messages log to the console is driven by Command Line Options 'v and -q
+		- log of ALL messages from package 'com.amazonaws' and 'org.apache.http' into the a specific log file
+		- log threshold of the console is driven by Command Line Options -v and -q
 	-->
 
 
@@ -19,7 +20,7 @@
 		<layout class="org.apache.log4j.PatternLayout" > 
 			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
 		</layout>
-    		<filter class="org.apache.log4j.varia.LevelRangeFilter" >
+    	<filter class="org.apache.log4j.varia.LevelRangeFilter" >
 			<param name="levelMin" value="${log4j.defaultLoggingLevel}" />
 		</filter>
 	</appender>
@@ -28,7 +29,7 @@
 		<param name="file" value="${log4j.logFilePath}" />
 		<param name="MaxFileSize" value="5MB" />
 		<param name="MaxBackupIndex" value="3" />
-    		<layout class="org.apache.log4j.PatternLayout" > 
+    	<layout class="org.apache.log4j.PatternLayout" > 
 			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
 		</layout>
 	</appender>
@@ -37,8 +38,8 @@
 		<param name="file" value="${log4j.aws.logFilePath}" />
 		<param name="MaxFileSize" value="50MB" />
 		<param name="MaxBackupIndex" value="3" />
-    		<layout class="org.apache.log4j.PatternLayout" > 
-			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
+    	<layout class="org.apache.log4j.PatternLayout" > 
+			<param name="ConversionPattern" value="[%d{MM-dd-yyyy}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] [%C] - %m%n" /> 
 		</layout>
 	</appender>
 
