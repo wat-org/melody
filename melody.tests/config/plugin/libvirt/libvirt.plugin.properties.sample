@@ -10,3 +10,15 @@
 plugin.configuration.canonicalclassname=com.wat.melody.plugin.libvirt.common.LibvirtPlugInConfiguration
 
 
+#####################
+### LibVirt Cloud Services Endpoint
+#####################
+
+### Is the LibVirt Cloud Services Endpoint secure ? (false: http; true: https)
+#endpoint.secure=false
+### The local Ip address the LibVirt Cloud Services Endpoint listen on
+#endpoint.listen.ip=0.0.0.0
+### The port the LibVirt Cloud Services Endpoint listen on
+#endpoint.listen.port=6060
+### The context root of the LibVirt Cloud Services Endpoint
+#endpoint.contextroot=LibVirtCloudServices

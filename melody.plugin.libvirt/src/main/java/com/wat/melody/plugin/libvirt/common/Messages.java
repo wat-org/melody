@@ -8,6 +8,11 @@ public class Messages extends NLS {
 
 	public static String KeyPairEx_DIFFERENT;
 
+	public static String ConfEx_MISSING_DIRECTIVE;
+	public static String ConfEx_INVALID_DIRECTIVE;
+	public static String ConfEx_EMPTY_DIRECTIVE;
+	public static String ConfEx_INVALID_ENDPOINT_CONTEXT_ROOT;
+
 	public static String MachineEx_MISSING_REGION_ATTR;
 	public static String MachineEx_REGION_ERROR;
 	public static String MachineEx_INVALID_TIMEOUT_ATTR;

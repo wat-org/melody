@@ -14,33 +14,33 @@ public class PropertyName {
 	 * Convert the given <code>String</code> to an {@link PropertyName} object.
 	 * </p>
 	 * 
-	 * @param sPropertyName
+	 * @param propertyName
 	 *            is the given <code>String</code> to convert.
 	 * 
-	 * @return an <code>PropertyName</code> object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @return a {@link PropertyName} object, whose equal to the given input
+	 *         <code>String</code>.
 	 * 
 	 * @throws IllegalPropertyNameException
 	 *             if the given input <code>String</code> is not a valid
-	 *             <code>PropertyName</code>.
+	 *             {@link PropertyName}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <code>String</code> is <code>null</code>.
 	 */
-	public static PropertyName parseString(String sPropertyName)
+	public static PropertyName parseString(String propertyName)
 			throws IllegalPropertyNameException {
-		return new PropertyName(sPropertyName);
+		return new PropertyName(propertyName);
 	}
 
 	/**
-	 * The pattern which the 'name' must statisfied
+	 * The pattern which the 'name' must satisfied
 	 */
 	public static final String PATTERN = "\\w+([.]\\w+)*";
 
 	private String msValue;
 
-	public PropertyName(String sPropertyName)
+	public PropertyName(String propertyName)
 			throws IllegalPropertyNameException {
-		setValue(sPropertyName);
+		setValue(propertyName);
 	}
 
 	@Override
@@ -64,21 +64,21 @@ public class PropertyName {
 		return msValue;
 	}
 
-	private String setValue(String sPropertyName)
+	private String setValue(String propertyName)
 			throws IllegalPropertyNameException {
-		if (sPropertyName == null) {
+		if (propertyName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a PropertyName).");
 		}
-		if (sPropertyName.trim().length() == 0) {
+		if (propertyName.trim().length() == 0) {
 			throw new IllegalPropertyNameException(Messages.bind(
-					Messages.PropertyNameEx_EMPTY, sPropertyName));
-		} else if (!sPropertyName.matches("^" + PATTERN + "$")) {
+					Messages.PropertyNameEx_EMPTY, propertyName));
+		} else if (!propertyName.matches("^" + PATTERN + "$")) {
 			throw new IllegalPropertyNameException(Messages.bind(
-					Messages.PropertyNameEx_INVALID, sPropertyName, PATTERN));
+					Messages.PropertyNameEx_INVALID, propertyName, PATTERN));
 		}
 		String previous = getValue();
-		msValue = sPropertyName;
+		msValue = propertyName;
 		return previous;
 	}
 }
