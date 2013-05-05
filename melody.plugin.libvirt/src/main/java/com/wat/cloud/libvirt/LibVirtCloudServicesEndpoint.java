@@ -23,7 +23,7 @@ public class LibVirtCloudServicesEndpoint {
 
 	private static LibVirtCloudServicesEndpoint _singleton = null;
 
-	public static LibVirtCloudServicesEndpoint getInstance() {
+	public synchronized static LibVirtCloudServicesEndpoint getInstance() {
 		if (_singleton == null) {
 			_singleton = new LibVirtCloudServicesEndpoint();
 		}
