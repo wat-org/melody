@@ -55,7 +55,7 @@ public class LibVirtCloudServicesEndpoint {
 	}
 
 	public String getEndpoint() {
-		return (getEndpointSecure() ? "https" : "http") + "//"
+		return (getEndpointSecure() ? "https" : "http") + "://"
 				+ getEndpointListenIp().getAddress() + ":"
 				+ getEndpointListenPort() + "/" + getEndpointContextRoot();
 	}
