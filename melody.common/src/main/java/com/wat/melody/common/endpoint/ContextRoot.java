@@ -11,20 +11,20 @@ public class ContextRoot {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link ContextRoot} object.
+	 * Convert the given <tt>String</tt> to an {@link ContextRoot} object.
 	 * </p>
 	 * 
 	 * @param contextRoot
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link ContextRoot} object, whose equal to the given input
-	 *         <code>String</code>.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalContextRootException
-	 *             if the given input <code>String</code> is not a valid
+	 *             if the given input <tt>String</tt> is not a valid
 	 *             {@link ContextRoot}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static ContextRoot parseString(String contextRoot)
 			throws IllegalContextRootException {

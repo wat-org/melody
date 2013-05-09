@@ -4,6 +4,8 @@ import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.bool.Bool;
+import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.endpoint.ContextRoot;
 import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
 import com.wat.melody.common.network.Host;
@@ -66,21 +68,24 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	}
 
 	// CONFIGURATION DIRECTIVES DEFAULT VALUES
-	public final boolean DEFAULT_ENDPOINT_SECURE = false;
-	public final Host DEFAULT_ENDPOINT_LISTEN_IP = createHost("0.0.0.0");
-	public final Port DEFAULT_ENDPOINT_LISTEN_PORT = createPort("6060");
-	public final ContextRoot DEFAULT_ENDPOINT_CONTEXT_ROOT = createContextRoot("LibVirtCloudServices");
+	public static final boolean DEFAULT_ENDPOINT_ENABLED = true;
+	public static final boolean DEFAULT_ENDPOINT_SECURED = false;
+	public static final Host DEFAULT_ENDPOINT_LISTEN_IP = createHost("0.0.0.0");
+	public static final Port DEFAULT_ENDPOINT_LISTEN_PORT = createPort("6060");
+	public static final ContextRoot DEFAULT_ENDPOINT_CONTEXT_ROOT = createContextRoot("LibVirtCloudServices");
 
 	// MANDATORY CONFIGURATION DIRECTIVE
-	public final String ENDPOINT_SECURE = "endpoint.secure";
-	public final String ENDPOINT_LISTEN_IP = "endpoint.listen.ip";
-	public final String ENDPOINT_LISTEN_PORT = "endpoint.listen.port";
-	public final String ENDPOINT_CONTEXT_ROOT = "endpoint.contextroot";
+	public static final String ENDPOINT_ENABLED = "endpoint.enabled";
+	public static final String ENDPOINT_SECURED = "endpoint.secured";
+	public static final String ENDPOINT_LISTEN_IP = "endpoint.listen.ip";
+	public static final String ENDPOINT_LISTEN_PORT = "endpoint.listen.port";
+	public static final String ENDPOINT_CONTEXT_ROOT = "endpoint.contextroot";
 
 	// OPTIONNAL CONFIGURATION DIRECTIVE
 
-	private String msConfigurationFilePath;
-	private boolean _endpointSecure = DEFAULT_ENDPOINT_SECURE;
+	private String _configurationFilePath;
+	private boolean _endpointEnabled = DEFAULT_ENDPOINT_ENABLED;
+	private boolean _endpointSecured = DEFAULT_ENDPOINT_SECURED;
 	private Host _endpointListenIp = DEFAULT_ENDPOINT_LISTEN_IP;
 	private Port _endpointListenPort = DEFAULT_ENDPOINT_LISTEN_PORT;
 	private ContextRoot _endpointContextRoot = DEFAULT_ENDPOINT_CONTEXT_ROOT;
@@ -90,16 +95,16 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 
 	@Override
 	public String getFilePath() {
-		return msConfigurationFilePath;
+		return _configurationFilePath;
 	}
 
 	private void setFilePath(String fp) {
 		if (fp == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a LibVirt Plug-In "
-					+ "Configuration file path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (a LibVirt Plug-In " + "Configuration file path).");
 		}
-		msConfigurationFilePath = fp;
+		_configurationFilePath = fp;
 	}
 
 	@Override
@@ -113,7 +118,8 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		setFilePath(ps.getFilePath());
 
 		// load and validate each configuration directives
-		loadEndpointSecure(ps);
+		loadEndpointEnabled(ps);
+		loadEndpointSecured(ps);
 		loadEndpointListenIp(ps);
 		loadEndpointListenPort(ps);
 		loadEndpointContextRoot(ps);
@@ -121,16 +127,29 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		validate();
 	}
 
-	private void loadEndpointSecure(PropertiesSet ps)
+	private void loadEndpointEnabled(PropertiesSet ps)
 			throws LibVirtPlugInConfigurationException {
-		if (!ps.containsKey(ENDPOINT_SECURE)) {
+		if (!ps.containsKey(ENDPOINT_ENABLED)) {
 			return;
 		}
 		try {
-			setEndpointSecure(ps.get(ENDPOINT_SECURE));
+			setEndpointEnabled(ps.get(ENDPOINT_ENABLED));
 		} catch (LibVirtPlugInConfigurationException Ex) {
 			throw new LibVirtPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_SECURE), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_ENABLED), Ex);
+		}
+	}
+
+	private void loadEndpointSecured(PropertiesSet ps)
+			throws LibVirtPlugInConfigurationException {
+		if (!ps.containsKey(ENDPOINT_SECURED)) {
+			return;
+		}
+		try {
+			setEndpointSecured(ps.get(ENDPOINT_SECURED));
+		} catch (LibVirtPlugInConfigurationException Ex) {
+			throw new LibVirtPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_SECURED), Ex);
 		}
 	}
 
@@ -180,33 +199,49 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		// almost nothing to
 
 		// Start the LibVirtCloudServicesEndpoint
-		LibVirtCloudServicesEndpoint.getInstance().start(getEndpointSecure(),
-				getEndpointListenIp(), getEndpointListenPort(),
-				getEndpointContextRoot());
+		if (getEndpointEnabled() == true) {
+			LibVirtCloudServicesEndpoint.getInstance().start(
+					getEndpointSecured(), getEndpointListenIp(),
+					getEndpointListenPort(), getEndpointContextRoot());
+		}
 	}
 
-	public boolean getEndpointSecure() {
-		return _endpointSecure;
+	public boolean getEndpointEnabled() {
+		return _endpointEnabled;
 	}
 
-	public boolean setEndpointSecure(boolean secure) {
-		boolean previous = getEndpointSecure();
-		_endpointSecure = secure;
+	public boolean setEndpointEnabled(boolean enabled) {
+		boolean previous = getEndpointEnabled();
+		_endpointEnabled = enabled;
 		return previous;
 	}
 
-	public boolean setEndpointSecure(String secure)
+	public boolean setEndpointEnabled(String enabled)
 			throws LibVirtPlugInConfigurationException {
-		if (secure == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+		try {
+			return setEndpointEnabled(Bool.parseString(enabled));
+		} catch (IllegalBooleanException Ex) {
+			throw new LibVirtPlugInConfigurationException(Ex);
 		}
-		if (secure.trim().length() == 0) {
-			throw new LibVirtPlugInConfigurationException(
-					Messages.ConfEx_EMPTY_DIRECTIVE);
+	}
+
+	public boolean getEndpointSecured() {
+		return _endpointSecured;
+	}
+
+	public boolean setEndpointSecured(boolean secured) {
+		boolean previous = getEndpointSecured();
+		_endpointSecured = secured;
+		return previous;
+	}
+
+	public boolean setEndpointSecured(String secured)
+			throws LibVirtPlugInConfigurationException {
+		try {
+			return setEndpointSecured(Bool.parseString(secured));
+		} catch (IllegalBooleanException Ex) {
+			throw new LibVirtPlugInConfigurationException(Ex);
 		}
-		return setEndpointSecure(Boolean.parseBoolean(secure));
 	}
 
 	public Host getEndpointListenIp() {

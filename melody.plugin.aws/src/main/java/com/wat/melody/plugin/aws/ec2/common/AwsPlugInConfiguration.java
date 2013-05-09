@@ -2,6 +2,7 @@ package com.wat.melody.plugin.aws.ec2.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -52,11 +53,11 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public static final String EC2_PROXY_USERNAME = "aws.conn.proxy.username";
 	public static final String EC2_PROXY_PASSWORD = "aws.conn.proxy.password";
 
-	private String msConfigurationFilePath;
-	private String msAccessKey;
-	private String msSecretKey;
-	private ClientConfiguration moCC;
-	private Map<String, AmazonEC2> moPooledEc2s;
+	private String _configurationFilePath;
+	private String _accessKey;
+	private String _secretKey;
+	private ClientConfiguration _clientConfiguration;
+	private Map<String, AmazonEC2> _ec2Pool;
 
 	public AwsPlugInConfiguration() {
 		setCC(new ClientConfiguration());
@@ -65,23 +66,24 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 
 	@Override
 	public String getFilePath() {
-		return msConfigurationFilePath;
+		return _configurationFilePath;
 	}
 
 	private void setFilePath(String fp) {
 		if (fp == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS EC2 Plug-In "
-					+ "Configuration file path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (an AWS EC2 Plug-In Configuration file path).");
 		}
-		msConfigurationFilePath = fp;
+		_configurationFilePath = fp;
 	}
 
 	@Override
 	public void load(PropertiesSet ps) throws AwsPlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PropertiesSet.");
+					+ "Must be a valid "
+					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
 		setFilePath(ps.getFilePath());
 
@@ -297,11 +299,10 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			Common.validate(new AmazonEC2Client(this, getCC()));
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
-				throw new AwsPlugInConfigurationException(
-						Messages.bind(Messages.ConfEx_INVALID_AWS_CREDENTIALS,
-								new Object[] { getAWSAccessKeyId(),
-										getAWSSecretKey(), EC2_ACCESS_KEY,
-										EC2_SECRET_KEY, getFilePath() }));
+				throw new AwsPlugInConfigurationException(Messages.bind(
+						Messages.ConfEx_INVALID_AWS_CREDENTIALS,
+						getAWSAccessKeyId(), getAWSSecretKey(), EC2_ACCESS_KEY,
+						EC2_SECRET_KEY, getFilePath()));
 			} else {
 				throw new AwsPlugInConfigurationException(
 						Messages.ConfEx_VALIDATION, Ex);
@@ -313,21 +314,22 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public ClientConfiguration getCC() {
-		return moCC;
+		return _clientConfiguration;
 	}
 
 	public ClientConfiguration setCC(ClientConfiguration cg) {
 		if (cg == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ClientConfiguration.");
+					+ "Must be a valid "
+					+ ClientConfiguration.class.getCanonicalName() + ".");
 		}
 		ClientConfiguration previous = getCC();
-		moCC = cg;
+		_clientConfiguration = cg;
 		return previous;
 	}
 
 	public Map<String, AmazonEC2> getPooledEc2s() {
-		return moPooledEc2s;
+		return _ec2Pool;
 	}
 
 	public Map<String, AmazonEC2> setPooledEc2s(Map<String, AmazonEC2> ec2s) {
@@ -337,47 +339,49 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 					+ "contains pooled AmazonEc2, by region).");
 		}
 		Map<String, AmazonEC2> previous = getPooledEc2s();
-		moPooledEc2s = ec2s;
+		_ec2Pool = ec2s;
 		return previous;
 	}
 
 	@Override
 	public String getAWSAccessKeyId() {
-		return msAccessKey;
+		return _accessKey;
 	}
 
 	public String setAccessKey(String accessKey)
 			throws AwsPlugInConfigurationException {
 		if (accessKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS accesKey).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the AWS EC2 accesKey).");
 		}
 		if (accessKey.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getAWSAccessKeyId();
-		msAccessKey = accessKey;
+		_accessKey = accessKey;
 		return previous;
 	}
 
 	@Override
 	public String getAWSSecretKey() {
-		return msSecretKey;
+		return _secretKey;
 	}
 
 	public String setSecretKey(String secretKey)
 			throws AwsPlugInConfigurationException {
 		if (secretKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS secretKey).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the AWS EC2 secretKey).");
 		}
 		if (secretKey.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getAWSSecretKey();
-		msSecretKey = secretKey;
+		_secretKey = secretKey;
 		return previous;
 	}
 
@@ -389,8 +393,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer or zero (a connection timeout).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the connection timeout; a positive Integer or "
+					+ "zero).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -423,8 +428,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer or zero (a socket timeout).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the socket timeout; a positive Integer or zero).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -457,8 +462,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer or zero (a retry attempts).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the retry attempts; a positive Integer or zero).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -491,8 +496,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer or zero (a maximum connection amount).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the maximum connection amount; a positive Integer "
+					+ "or zero).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -525,8 +531,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer (a Send Buffer Size).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Send Buffer Size; a positive Integer).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -560,8 +566,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents an positive "
-					+ "Integer (a Receive Buffer Size).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Receive Buffer Size; a positive Integer).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -594,9 +600,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a Protocol "
-					+ "(Accepted values are '" + Protocol.values().toString()
-					+ "').");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (a Protocol; accepted values are '"
+					+ Arrays.asList(Protocol.values()) + "').");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -623,7 +629,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a User Agent).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the User Agent).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -642,8 +649,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a Proxy Host FQDN or IP "
-					+ "address).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Proxy Host FQDN or IP address used to connect"
+					+ " to AWS EC2).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -667,8 +675,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setProxyPort(String val) throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a positive "
-					+ "Integer (a Proxy Port).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Proxy Port used to connect to AWS EC2; "
+					+ "a positive Integer).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -700,7 +709,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a Proxy Username).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Proxy Username used to connect to AWS EC2).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -719,7 +729,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throws AwsPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a Proxy Password).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Proxy Password used to connect to AWS EC2).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -732,16 +743,16 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 
 	/**
 	 * <p>
-	 * Get a <code>AmazonEC2</code> object which is already configured for the
+	 * Get a {@link AmazonEC2} object which is already configured for the
 	 * requested region.
 	 * </p>
 	 * 
 	 * @param region
 	 *            is the requested region.
 	 * 
-	 * @return a <code>AmazonEC2</code> object which is already configured for
-	 *         the requested region, or <code>null</code> if the requested
-	 *         region is not valid.
+	 * @return a {@link AmazonEC2} object which is already configured for the
+	 *         requested region, or <tt>null</tt> if the requested region is not
+	 *         valid.
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the operation fails.

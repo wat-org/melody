@@ -24,6 +24,7 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 import com.wat.melody.cli.exception.CommandLineParsingException;
 import com.wat.melody.cli.exception.ConfigurationLoadingException;
+import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -962,12 +963,8 @@ public class ProcessorManagerLoader {
 		}
 		try {
 			String val = oProps.get(BATCH_MODE);
-			if (val.trim().length() == 0) {
-				throw new ConfigurationLoadingException(
-						Messages.ConfEx_EMPTY_DIRECTIVE);
-			}
 			IProcessorManager pm = getProcessorManager();
-			pm.setBatchMode(Boolean.parseBoolean(val));
+			pm.setBatchMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, BATCH_MODE), Ex);
@@ -981,12 +978,8 @@ public class ProcessorManagerLoader {
 		}
 		try {
 			String val = oProps.get(PRESERVE_TEMPORARY_FILES_MODE);
-			if (val.trim().length() == 0) {
-				throw new ConfigurationLoadingException(
-						Messages.ConfEx_EMPTY_DIRECTIVE);
-			}
 			IProcessorManager pm = getProcessorManager();
-			pm.setPreserveTemporaryFilesMode(Boolean.parseBoolean(val));
+			pm.setPreserveTemporaryFilesMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
@@ -1001,12 +994,8 @@ public class ProcessorManagerLoader {
 		}
 		try {
 			String val = oProps.get(RUN_DRY_MODE);
-			if (val.trim().length() == 0) {
-				throw new ConfigurationLoadingException(
-						Messages.ConfEx_EMPTY_DIRECTIVE);
-			}
 			IProcessorManager pm = getProcessorManager();
-			pm.setRunDryMode(Boolean.parseBoolean(val));
+			pm.setRunDryMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, RUN_DRY_MODE), Ex);

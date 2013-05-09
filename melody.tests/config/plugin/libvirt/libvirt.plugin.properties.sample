@@ -14,11 +14,30 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.libvirt.common.Lib
 ### LibVirt Cloud Services Endpoint
 #####################
 
-### Is the LibVirt Cloud Services Endpoint secure ? (false: http; true: https)
-#endpoint.secure=false
-### The local Ip address the LibVirt Cloud Services Endpoint listen on
+### Is the Embedded LibVirt Cloud Services Endpoint enabled ?
+### Default value is 'true'.
+### - false: the Embedded LibVirt Cloud Services Endpoint will not be started. It assumes a 
+### LibVirt Cloud Services Endpoint is started in a separated process ;
+### - true: the Embedded LibVirt Cloud Services Endpoint will be started, as described by the 
+### properties bellow (endpoint.secured, endpoint.listen.ip, endpoint.listen.port, 
+### endpoint.contextroot) ;
+#endpoint.enabled=true
+
+### Is the Embedded LibVirt Cloud Services Endpoint secured ?
+### Default value is 'false'.
+### - false: http ;
+### - true: https ;
+#endpoint.secured=false
+
+### The local Ip address the Embedded LibVirt Cloud Services Endpoint listen on
+### Default value is '0.0.0.0'.
 #endpoint.listen.ip=0.0.0.0
-### The port the LibVirt Cloud Services Endpoint listen on
+
+### The port the Embedded LibVirt Cloud Services Endpoint listen on
+### Default value is '6060'.
 #endpoint.listen.port=6060
-### The context root of the LibVirt Cloud Services Endpoint
+
+### The context root of the Embedded LibVirt Cloud Services Endpoint
+### Default value is 'LibVirtCloudServices'.
 #endpoint.contextroot=LibVirtCloudServices
+

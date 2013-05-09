@@ -5,6 +5,8 @@ import java.io.File;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.bool.Bool;
+import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
@@ -51,8 +53,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	// CONFIGURATION DIRECTIVES DEFAULT VALUES
-	public final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
-	public final String DEFAULT_KEYPAIR_REPO = ".ssh/";
+	public static final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
+	public static final String DEFAULT_KEYPAIR_REPO = ".ssh/";
 
 	// MANDATORY CONFIGURATION DIRECTIVE
 
@@ -78,14 +80,14 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	public static final String MGMT_KEYPAIRNAME = "ssh.management.master.key";
 	public static final String MGMT_PASSWORD = "ssh.management.master.pass";
 
-	private String msConfigurationFilePath;
-	private KeyPairRepositoryPath moKeyPairRepo;
-	private int miKeyPairSize = 2048;
-	private ISshSessionConfiguration moSshSessionConfiguration;
-	private Boolean mbMgmtEnable = true;
-	private String moMgmtLogin;
-	private KeyPairName moMgmtKeyPairName;
-	private String moMgmtPassword;
+	private String _configurationFilePath;
+	private KeyPairRepositoryPath _keyPairRepo;
+	private int _keyPairSize = 2048;
+	private ISshSessionConfiguration _sshSessionConfiguration;
+	private Boolean _mgmtEnable = true;
+	private String _mgmtLogin;
+	private KeyPairName _mgmtKeyPairName;
+	private String _mgmtPassword;
 
 	public SshPlugInConfiguration() {
 		setSshSessionConfiguration(new SshSessionConfiguration());
@@ -93,20 +95,20 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 
 	@Override
 	public String getFilePath() {
-		return msConfigurationFilePath;
+		return _configurationFilePath;
 	}
 
 	private void setFilePath(String fp) {
 		if (fp == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS EC2 Plug-In "
-					+ "Configuration file path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (an Ssh Plug-In " + "Configuration file path).");
 		}
-		msConfigurationFilePath = fp;
+		_configurationFilePath = fp;
 	}
 
 	private ISshSessionConfiguration getSshSessionConfiguration() {
-		return moSshSessionConfiguration;
+		return _sshSessionConfiguration;
 	}
 
 	private void setSshSessionConfiguration(ISshSessionConfiguration fp) {
@@ -115,14 +117,15 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 					+ "Must be a valid "
 					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
 		}
-		moSshSessionConfiguration = fp;
+		_sshSessionConfiguration = fp;
 	}
 
 	@Override
 	public void load(PropertiesSet ps) throws PlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PropertiesSet.");
+					+ "Must be a valid "
+					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
 		setFilePath(ps.getFilePath());
 
@@ -311,7 +314,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		if (!ps.containsKey(MGMT_ENABLE)) {
 			return;
 		}
-		setMgmtEnable(ps.get(MGMT_ENABLE));
+		try {
+			setMgmtEnable(ps.get(MGMT_ENABLE));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Messages.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_ENABLE), Ex);
+		}
 	}
 
 	private void loadMgmtMasterUser(PropertiesSet ps)
@@ -366,17 +374,19 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
-		return moKeyPairRepo;
+		return _keyPairRepo;
 	}
 
 	public KeyPairRepositoryPath setKeyPairRepositoryPath(
 			KeyPairRepositoryPath keyPairRepoPath) {
 		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Directory (a KeyPair Repo path).");
+					+ "Must be a valid "
+					+ KeyPairRepositoryPath.class.getCanonicalName()
+					+ " (the KeyPair Repository Path).");
 		}
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		moKeyPairRepo = keyPairRepoPath;
+		_keyPairRepo = keyPairRepoPath;
 		return previous;
 	}
 
@@ -384,7 +394,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throws SshPlugInConfigurationException {
 		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Directory (a KeyPair Repo path).");
+					+ "Must be a valid " + File.class.getCanonicalName()
+					+ " (the KeyPair Repository Path).");
 		}
 		if (!keyPairRepoPath.isAbsolute()) {
 			// Resolve from this configuration File's parent location
@@ -403,7 +414,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Directory (a KeyPair Repo path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the KeyPair Repository Path).");
 		}
 		if (val.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
@@ -413,7 +425,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public int getKeyPairSize() {
-		return miKeyPairSize;
+		return _keyPairSize;
 	}
 
 	public int setKeyPairSize(int ival) {
@@ -422,7 +434,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 					Messages.ConfEx_INVALID_KEYPAIR_SIZE, ival));
 		}
 		int previous = getKeyPairSize();
-		miKeyPairSize = ival;
+		_keyPairSize = ival;
 		return previous;
 	}
 
@@ -446,10 +458,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public IKnownHostsRepository getKnownHosts() {
 		return getSshSessionConfiguration().getKnownHosts();
 	}
 
+	@Override
 	public IKnownHostsRepository setKnownHosts(IKnownHostsRepository knownHosts) {
 		return getSshSessionConfiguration().setKnownHosts(knownHosts);
 
@@ -460,7 +474,9 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throws KnownHostsException {
 		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Directory (a KeyPair Repo path).");
+					+ "Must be a valid "
+					+ KnownHostsRepositoryPath.class.getCanonicalName()
+					+ " (the KnownHosts Repository Path).");
 		}
 		return setKnownHosts(KnownHostsRepository
 				.getKnownHostsRepository(keyPairRepoPath));
@@ -470,7 +486,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throws SshPlugInConfigurationException {
 		if (knownHosts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a KnownHosts File).");
+					+ "Must be a valid " + File.class.getCanonicalName()
+					+ " (the KnownHosts Repository Path).");
 		}
 		if (!knownHosts.isAbsolute()) {
 			// Resolve from this configuration File's parent location
@@ -490,7 +507,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throws SshPlugInConfigurationException {
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a KnownHosts File path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the KnownHosts Repository Path).");
 		}
 		if (val.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
@@ -499,10 +517,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		return setKnownHosts(new File(val));
 	}
 
+	@Override
 	public CompressionLevel getCompressionLevel() {
 		return getSshSessionConfiguration().getCompressionLevel();
 	}
 
+	@Override
 	public CompressionLevel setCompressionLevel(
 			CompressionLevel compressionLevel) {
 		return getSshSessionConfiguration().setCompressionLevel(
@@ -518,10 +538,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public CompressionType getCompressionType() {
 		return getSshSessionConfiguration().getCompressionType();
 	}
 
+	@Override
 	public CompressionType setCompressionType(CompressionType compressionType) {
 		return getSshSessionConfiguration().setCompressionType(compressionType);
 	}
@@ -535,10 +557,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public Timeout getConnectionTimeout() {
 		return getSshSessionConfiguration().getConnectionTimeout();
 	}
 
+	@Override
 	public Timeout setConnectionTimeout(ConnectionTimeout ival) {
 		return getSshSessionConfiguration().setConnectionTimeout(ival);
 	}
@@ -552,10 +576,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public Timeout getReadTimeout() {
 		return getSshSessionConfiguration().getReadTimeout();
 	}
 
+	@Override
 	public Timeout setReadTimeout(ReadTimeout ival) {
 		return getSshSessionConfiguration().setReadTimeout(ival);
 	}
@@ -569,10 +595,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public ServerAliveMaxCount getServerAliveCountMax() {
 		return getSshSessionConfiguration().getServerAliveCountMax();
 	}
 
+	@Override
 	public ServerAliveMaxCount setServerAliveCountMax(ServerAliveMaxCount ival) {
 		return getSshSessionConfiguration().setServerAliveCountMax(ival);
 	}
@@ -586,10 +614,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public Timeout getServerAliveInterval() {
 		return getSshSessionConfiguration().getServerAliveInterval();
 	}
 
+	@Override
 	public Timeout setServerAliveInterval(ServerAliveInterval ival) {
 		return getSshSessionConfiguration().setServerAliveInterval(ival);
 	}
@@ -603,10 +633,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public ProxyType getProxyType() {
 		return getSshSessionConfiguration().getProxyType();
 	}
 
+	@Override
 	public ProxyType setProxyType(ProxyType val) {
 		return getSshSessionConfiguration().setProxyType(val);
 	}
@@ -620,10 +652,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public Host getProxyHost() {
 		return getSshSessionConfiguration().getProxyHost();
 	}
 
+	@Override
 	public Host setProxyHost(Host val) {
 		return getSshSessionConfiguration().setProxyHost(val);
 	}
@@ -636,10 +670,12 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	@Override
 	public Port getProxyPort() {
 		return getSshSessionConfiguration().getProxyPort();
 	}
 
+	@Override
 	public Port setProxyPort(Port port) {
 		return getSshSessionConfiguration().setProxyPort(port);
 	}
@@ -653,17 +689,22 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public boolean getMgmtEnable() {
-		return mbMgmtEnable;
+		return _mgmtEnable;
 	}
 
 	public boolean setMgmtEnable(boolean val) {
 		boolean previous = getMgmtEnable();
-		mbMgmtEnable = val;
+		_mgmtEnable = val;
 		return previous;
 	}
 
-	public boolean setMgmtEnable(String val) {
-		return setMgmtEnable(Boolean.parseBoolean(val));
+	public boolean setMgmtEnable(String val)
+			throws SshPlugInConfigurationException {
+		try {
+			return setMgmtEnable(Bool.parseString(val));
+		} catch (IllegalBooleanException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
+		}
 	}
 
 	/**
@@ -671,21 +712,22 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	 * @return the ssh management master user. Cannot be null.
 	 */
 	public String getManagementLogin() {
-		return moMgmtLogin;
+		return _mgmtLogin;
 	}
 
 	public String setManagementLogin(String mgmtMasterUser)
 			throws SshPlugInConfigurationException {
 		if (mgmtMasterUser == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a user.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the management user's login).");
 		}
 		if (mgmtMasterUser.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getManagementLogin();
-		moMgmtLogin = mgmtMasterUser;
+		_mgmtLogin = mgmtMasterUser;
 		return previous;
 	}
 
@@ -696,17 +738,17 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	 *         without keypair.
 	 */
 	public KeyPairName getManagementKeyPairName() {
-		return moMgmtKeyPairName;
+		return _mgmtKeyPairName;
 	}
 
 	public KeyPairName setMgmtMasterKey(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the management user's keypair name).");
 		}
 		KeyPairName previous = getManagementKeyPairName();
-		moMgmtKeyPairName = keyPairName;
+		_mgmtKeyPairName = keyPairName;
 		return previous;
 	}
 
@@ -727,21 +769,23 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	 *         this key don't have a passphrase.
 	 */
 	public String getManagementPassword() {
-		return moMgmtPassword;
+		return _mgmtPassword;
 	}
 
 	public String setManagementPassword(String mgmtMasterPass)
 			throws SshPlugInConfigurationException {
 		if (mgmtMasterPass == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String which represents a password.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the management user's password or keypair "
+					+ " passphrase).");
 		}
 		if (mgmtMasterPass.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		String previous = getManagementLogin();
-		moMgmtPassword = mgmtMasterPass;
+		_mgmtPassword = mgmtMasterPass;
 		return previous;
 	}
 

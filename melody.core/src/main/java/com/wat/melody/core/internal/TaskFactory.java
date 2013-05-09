@@ -28,6 +28,8 @@ import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryAttributeException;
 import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.api.exception.TaskFactoryNestedElementException;
+import com.wat.melody.common.bool.Bool;
+import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
@@ -39,8 +41,6 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
  * 
  */
 public class TaskFactory {
-
-	public static final String BOOLEAN_PATTERN = "(?i)^\\s*(true|y(es)?|o(n)?)\\s*$";
 
 	/**
 	 * <p>
@@ -55,8 +55,19 @@ public class TaskFactory {
 	 * 
 	 * @return <code>true</code> if the given subject class implements the given
 	 *         interface, or <code>false</code> if not.
+	 * 
+	 * @throw IllegalArgumentException if the given subject class or the given
+	 *        interface is <tt>null</tt>.
 	 */
 	public static boolean implementsInterface(Class<?> c, Class<?> base) {
+		if (c == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+		}
+		if (base == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+		}
 		for (Class<?> i : c.getInterfaces()) {
 			if (i == base) {
 				return true;
@@ -72,19 +83,30 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Tests if the given subject class extends the required class, at any
+	 * Tests if the given subject class extends the given parent class, at any
 	 * parent degrees.
 	 * </p>
 	 * 
 	 * @param c
 	 *            is the subject class.
 	 * @param base
-	 *            is the required class.
+	 *            is the parent class.
 	 * 
 	 * @return <code>true</code> if the given subject class extends the required
 	 *         class, or <code>false</code> if not.
+	 * 
+	 * @throw IllegalArgumentException if the given subject class or the given
+	 *        parent class is <tt>null</tt>.
 	 */
 	public static boolean heritsClass(Class<?> c, Class<?> base) {
+		if (c == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+		}
+		if (base == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+		}
 		if (c == base) {
 			return true;
 		}
@@ -103,17 +125,18 @@ public class TaskFactory {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> The setter's method should respect the following rules :<BR/>
-	 * * must be <code>public</code>,<BR/>
-	 * * must not be <code>abstract</code>,<BR/>
-	 * * must have an {@link Attribute} annotation whose name is equal to the
-	 * attribute name (no case match),<BR/>
-	 * * must have 1 argument,<BR/>
-	 * * the argument type must be public,<BR/>
-	 * * the argument type must not be an abstract,<BR/>
-	 * * the argument type must not be an array,<BR/>
-	 * * the argument type must not be an interface.<BR/>
-	 * </i>
+	 * The setter's method should respect the following rules :
+	 * <ul>
+	 * <li>must be <code>public</code> ;</li>
+	 * <li>must not be <code>abstract</code> ;</li>
+	 * <li>must have an {@link Attribute} annotation whose name is equal to the
+	 * given attribute name (no case match) ;</li>
+	 * <li>must have 1 argument ;</li>
+	 * <li>the argument type must be public ;</li>
+	 * <li>the argument type must not be an abstract ;</li>
+	 * <li>the argument type must not be an array ;</li>
+	 * <li>the argument type must not be an interface ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param c
@@ -171,22 +194,23 @@ public class TaskFactory {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> The add's method should respect the following rules :<BR/>
-	 * * must be <code>public</code>,<BR/>
-	 * * must not be <code>abstract</code>,<BR/>
-	 * * must have an {@link NestedElement} annotation whose name is equal to
-	 * the attribute name (no case match) and whose type is equal to
-	 * {@link NestedElement.Type#ADD},<BR/>
-	 * * must not return <code>void</code>,<BR/>
-	 * * must have 1 argument,<BR/>
-	 * * the argument type must be public,<BR/>
-	 * * the argument type must not be an abstract,<BR/>
-	 * * the argument type must not be an interface,<BR/>
-	 * * the argument type must not be an enumeration,<BR/>
-	 * * the argument type must not be an primitive,<BR/>
-	 * * the argument type must not be an array,<BR/>
-	 * * the argument type must have a public no-arg constructor.<BR/>
-	 * </i>
+	 * The add's method should respect the following rules :
+	 * <ul>
+	 * <li>must be <code>public</code> ;</li>
+	 * <li>must not be <code>abstract</code> ;</li>
+	 * <li>must have an {@link NestedElement} annotation whose name is equal to
+	 * the given attribute name (no case match) and whose type is equal to
+	 * {@link NestedElement.Type#ADD} ;</li>
+	 * <li>must not return <code>void</code> ;</li>
+	 * <li>must have 1 argument ;</li>
+	 * <li>the argument type must be public ;</li>
+	 * <li>the argument type must not be an abstract ;</li>
+	 * <li>the argument type must not be an interface ;</li>
+	 * <li>the argument type must not be an enumeration ;</li>
+	 * <li>the argument type must not be an primitive ;</li>
+	 * <li>the argument type must not be an array ;</li>
+	 * <li>the argument type must have a public no-arg constructor ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param c
@@ -255,15 +279,16 @@ public class TaskFactory {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> The create's method should respect the following rules :<BR/>
-	 * * must be <code>public</code>,<BR/>
-	 * * must not be an <code>abstract</code>,<BR/>
-	 * * must have an {@link NestedElement} annotation whose name is equal to
-	 * the attribute name (no case match) and whose type is equal to
-	 * {@link NestedElement.Type#CREATE},<BR/>
-	 * * must not return <code>void</code>,<BR/>
-	 * * must have 0 argument.<BR/>
-	 * </i>
+	 * The create's method should respect the following rules :
+	 * <ul>
+	 * <li>must be <code>public</code> ;</li>
+	 * <li>must not be an <code>abstract</code> ;</li>
+	 * <li>must have an {@link NestedElement} annotation whose name is equal to
+	 * the given attribute name (no case match) and whose type is equal to
+	 * {@link NestedElement.Type#CREATE} ;</li>
+	 * <li>must not return <code>void</code> ;</li>
+	 * <li>must have 0 argument ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param c
@@ -308,21 +333,9 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Create a new <code>TaskFactory</code> instance, which allow to create new
-	 * <code>ITask</code> from Elements Nodes found in the Sequence Descriptor.
+	 * Create a new {@link TaskFactory} instance, which allow to create new
+	 * {@link ITask} from Elements Nodes found in the Sequence Descriptor.
 	 * </p>
-	 * <p>
-	 * Register all Tasks found in all jars loaded in the ClassPath
-	 * </p>
-	 * 
-	 * @throws TaskFactoryException
-	 *             if a Task registration fails (possible cause : multiple
-	 *             classes that implements <code>Task</code> are found with the
-	 *             same name).
-	 * @throws IOException
-	 *             if an IO error occurred while reading jars loaded in the
-	 *             ClassPath.
-	 * 
 	 */
 	public TaskFactory() {
 		setRegisteredTasks(new RegisteredTasks());
@@ -344,17 +357,20 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Identify the Class of the given Task.
+	 * Identify the Class which correspond to the given node. This node
+	 * represents an {@link ITask}, in its native {@link Node} format
 	 * </p>
 	 * 
 	 * @param n
-	 *            is an element node, which represent a Task, in its native
-	 *            {@link Node} format.
+	 *            is an element node, which represent an {@link ITask}, in its
+	 *            native {@link Node} format.
 	 * 
-	 * @return the Class of the given Task.
+	 * @return the Class which correspond to the given node.
 	 * 
 	 * @throws TaskFactoryException
-	 *             if the node name doesn't match any registered task.
+	 *             if the element node name doesn't match any registered task.
+	 * @throws TaskFactoryException
+	 *             if the Task hierarchy is not valid.
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
@@ -460,12 +476,11 @@ public class TaskFactory {
 	 *            is an element node, which represent the Task to create, in its
 	 *            native {@link Node} format.
 	 * @param ps
-	 *            is a PropertiesSet, which will be used during expansion.
+	 *            is a PropertiesSet, which will be used during attribute's
+	 *            value's expansion.
 	 * 
 	 * @return a new object that implement Task.
 	 * 
-	 * @throws TaskFactoryException
-	 *             if the node name doesn't match any registered task.
 	 * @throws TaskFactoryException
 	 *             if an attribute which is not supported by the task is found.
 	 * @throws TaskFactoryException
@@ -484,6 +499,8 @@ public class TaskFactory {
 	 * @throws TaskFactoryException
 	 *             if, while validating the task, the task generate an error.
 	 * @throws IllegalArgumentException
+	 *             if a the given {@link Class} is <tt>null</tt>.
+	 * @throws IllegalArgumentException
 	 *             if a the given {@link Node} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if a the {@link PropertiesSet} is <tt>null</tt>.
@@ -493,6 +510,10 @@ public class TaskFactory {
 	 */
 	public ITask newTask(Class<? extends ITask> c, Node n, PropertiesSet ps)
 			throws TaskFactoryException {
+		if (c == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+		}
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Node (an "
@@ -771,7 +792,13 @@ public class TaskFactory {
 
 		Object o = null;
 		if (param == Boolean.TYPE) {
-			o = sAttrVal.matches(BOOLEAN_PATTERN);
+			try {
+				o = Bool.parseString(sAttrVal);
+			} catch (IllegalBooleanException e) {
+				throw new TaskFactoryException(Messages.bind(
+						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Boolean.class.getSimpleName()));
+			}
 		} else if (param == Character.TYPE) {
 			if (sAttrVal != null && sAttrVal.length() == 1) {
 				o = sAttrVal.charAt(0);
@@ -850,7 +877,8 @@ public class TaskFactory {
 
 	private Object createNewFile(Class<?> param, String sAttrVal)
 			throws TaskFactoryException {
-		if (!(param == Path.class) && !heritsClass(param, File.class)
+		if (!implementsInterface(param, Path.class)
+				&& !heritsClass(param, File.class)
 				&& !implementsInterface(param, IFileBased.class)) {
 			return null;
 		}
@@ -867,8 +895,9 @@ public class TaskFactory {
 		}
 		if (param == Path.class) {
 			return Paths.get(sAttrVal);
+		} else {
+			return createNewObject(param, sAttrVal);
 		}
-		return createNewObject(param, sAttrVal);
 	}
 
 	private Object createNewObject(Class<?> param, String sAttrVal)
