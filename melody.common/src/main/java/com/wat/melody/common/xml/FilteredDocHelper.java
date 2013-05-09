@@ -9,6 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.xml.exception.FilteredDocException;
 import com.wat.melody.common.xpath.XPathExpander;
 
@@ -141,11 +142,27 @@ public class FilteredDocHelper {
 			if (circle.contains(parent)) {
 				throw new FilteredDocException(herit, Messages.bind(
 						Messages.FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF,
-						xpath, Doc.getNodeLocation(nl.item(0)).toFullString()));
+						printCircularReferences(circle)));
 			}
 			circle.add(parent);
 		}
 		return parent;
+	}
+
+	private static String printCircularReferences(List<Node> circularRefStack) {
+		String str = "";
+		try {
+			for (Node n : circularRefStack) {
+				str += Util.NEW_LINE
+						+ "  Node ["
+						+ Doc.getNodeLocation(n).toFullString()
+						+ "] herits of Node ["
+						+ Doc.getNodeLocation(resolvHeritAttr(n, null))
+								.toFullString() + "]";
+			}
+		} catch (FilteredDocException ignored) {
+		}
+		return str;
 	}
 
 	/**

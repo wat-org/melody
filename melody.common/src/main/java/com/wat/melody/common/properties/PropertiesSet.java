@@ -464,13 +464,22 @@ public class PropertiesSet {
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_UNDEFINED, v));
 		} else if (circle.contains(escaped)) {
 			throw new IllegalPropertiesSetFileFormatException(Messages.bind(
-					Messages.PropertiesSetEx_CIRCULAR_REFERENCE, circle.get(0),
-					escaped));
+					Messages.PropertiesSetEx_CIRCULAR_REFERENCE,
+					printCircularReferences(circle)));
 		}
 		circle.add(escaped);
 		String expanded = escapeAndExpand(get(escaped), circle);
 		circle.remove(escaped);
 		return expanded;
+	}
+
+	private String printCircularReferences(List<String> circularRefStack) {
+		String str = "";
+		for (String property : circularRefStack) {
+			str += Util.NEW_LINE + "  Configuration Directive '" + property
+					+ "' depends of '" + get(property) + "'";
+		}
+		return str;
 	}
 
 	/**
