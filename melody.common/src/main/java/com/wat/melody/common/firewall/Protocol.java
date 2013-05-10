@@ -1,8 +1,8 @@
-package com.wat.melody.common.network;
+package com.wat.melody.common.firewall;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.network.exception.IllegalProtocolException;
+import com.wat.melody.common.firewall.exception.IllegalProtocolException;
 
 /**
  * 

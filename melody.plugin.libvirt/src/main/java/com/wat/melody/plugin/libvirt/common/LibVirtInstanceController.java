@@ -4,6 +4,7 @@ import org.libvirt.Connect;
 import org.libvirt.Domain;
 
 import com.wat.cloud.libvirt.LibVirtCloud;
+import com.wat.cloud.libvirt.LibVirtCloudFireWall;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.DefaultInstanceController;
 import com.wat.melody.cloud.instance.InstanceController;
@@ -13,8 +14,8 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.FwRulesDecomposed;
 
 /**
  * 
@@ -165,17 +166,19 @@ public class LibVirtInstanceController extends DefaultInstanceController
 	}
 
 	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return LibVirtCloud.getFireWallRules(this.getInstance(), netDev);
+		return LibVirtCloudFireWall
+				.getFireWallRules(this.getInstance(), netDev);
 	}
 
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toRevoke) throws OperationException {
-		LibVirtCloud.revokeFireWallRules(this.getInstance(), netDev, toRevoke);
+		LibVirtCloudFireWall.revokeFireWallRules(this.getInstance(), netDev,
+				toRevoke);
 	}
 
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toAutorize) throws OperationException {
-		LibVirtCloud.authorizeFireWallRules(this.getInstance(), netDev,
+		LibVirtCloudFireWall.authorizeFireWallRules(this.getInstance(), netDev,
 				toAutorize);
 	}
 

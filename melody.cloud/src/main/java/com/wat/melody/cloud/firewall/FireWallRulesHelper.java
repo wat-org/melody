@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
-import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
 
 /**
  * 

@@ -1,9 +1,9 @@
-package com.wat.melody.common.network;
+package com.wat.melody.common.firewall;
 
 import java.util.LinkedHashSet;
 
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
-import com.wat.melody.common.network.exception.IllegalInterfacesException;
+import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
+import com.wat.melody.common.firewall.exception.IllegalInterfacesException;
 
 /**
  * 

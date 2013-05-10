@@ -16,9 +16,9 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
+import com.wat.melody.plugin.aws.ec2.common.AwsEc2Cloud;
 import com.wat.melody.plugin.aws.ec2.common.AwsInstanceController;
 import com.wat.melody.plugin.aws.ec2.common.AwsKeyPairRepository;
-import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -120,30 +120,32 @@ public class NewMachine extends AbstractOperation {
 			String v = null;
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					Common.INSTANCETYPE_ATTR);
+					AwsEc2Cloud.INSTANCETYPE_ATTR);
 			try {
 				if (v != null) {
 					setInstanceType(InstanceType.parseString(v));
 				}
 			} catch (IllegalInstanceTypeException Ex) {
-				throw new AwsException(Messages.bind(
-						Messages.NewEx_INSTANCETYPE_ERROR,
-						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
+				throw new AwsException(
+						Messages.bind(Messages.NewEx_INSTANCETYPE_ERROR,
+								AwsEc2Cloud.INSTANCETYPE_ATTR,
+								getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n,
+					AwsEc2Cloud.IMAGEID_ATTR);
 			try {
 				if (v != null) {
 					setImageId(v);
 				}
 			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
-						Messages.NewEx_IMAGEID_ERROR, Common.IMAGEID_ATTR,
+						Messages.NewEx_IMAGEID_ERROR, AwsEc2Cloud.IMAGEID_ATTR,
 						getTargetNodeLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					Common.AVAILABILITYZONE_ATTR);
+					AwsEc2Cloud.AVAILABILITYZONE_ATTR);
 			try {
 				if (v != null) {
 					setAvailabilityZone(v);
@@ -151,23 +153,25 @@ public class NewMachine extends AbstractOperation {
 			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_AVAILABILITYZONE_ERROR,
-						Common.AVAILABILITYZONE_ATTR, getTargetNodeLocation()),
-						Ex);
+						AwsEc2Cloud.AVAILABILITYZONE_ATTR,
+						getTargetNodeLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					Common.KEYPAIR_NAME_ATTR);
+					AwsEc2Cloud.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
 					setKeyPairName(KeyPairName.parseString(v));
 				}
 			} catch (IllegalKeyPairNameException Ex) {
-				throw new AwsException(Messages.bind(
-						Messages.NewEx_KEYPAIR_NAME_ERROR,
-						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
+				throw new AwsException(
+						Messages.bind(Messages.NewEx_KEYPAIR_NAME_ERROR,
+								AwsEc2Cloud.KEYPAIR_NAME_ATTR,
+								getTargetNodeLocation()), Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n, Common.PASSPHRASE_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n,
+					AwsEc2Cloud.PASSPHRASE_ATTR);
 			if (v != null) {
 				setPassphrase(v);
 			}
@@ -185,35 +189,35 @@ public class NewMachine extends AbstractOperation {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_INSTANCETYPE_ATTR,
 					NewMachine.INSTANCETYPE_ATTR, NewMachine.NEW_MACHINE,
-					Common.INSTANCETYPE_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetNodeLocation()));
 		}
 
 		if (getImageId() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_IMAGEID_ATTR,
 					NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-					Common.IMAGEID_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.IMAGEID_ATTR, getTargetNodeLocation()));
 		}
 
 		if (getKeyPairName() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR,
 					NewMachine.KEYPAIR_NAME_ATTR, NewMachine.NEW_MACHINE,
-					Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.KEYPAIR_NAME_ATTR, getTargetNodeLocation()));
 		}
 
 		// Validate task's attributes
 		// AZ must be validated AFTER the Aws Region is known
 		// AZ can be null
 		if (getAvailabilityZoneFullName() != null
-				&& !Common.availabilityZoneExists(getEc2(),
+				&& !AwsEc2Cloud.availabilityZoneExists(getEc2(),
 						getAvailabilityZoneFullName())) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_INVALID_AVAILABILITYZONE_ATTR,
 					getAvailabilityZone(), getRegion()));
 		}
 		// imageId must be validated AFTER the Aws Region is known
-		if (!Common.imageIdExists(getEc2(), getImageId())) {
+		if (!AwsEc2Cloud.imageIdExists(getEc2(), getImageId())) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_INVALID_IMAGEID_ATTR, getImageId(),
 					getRegion()));

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
 	<fwrules>
-		<in access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
+		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
 	</fwrules>
 	
 	<models>
@@ -9,9 +9,14 @@
 			<network-management method="ssh"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
-				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
-				<fwrule access="allow" direction="in" from-ips="10.10.0.0/16" protocols="tcp" to-ports="678"/>
-				<fwrule herit="./environment/fwrules/in[@name='SSH']"/>
+				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
+				<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
+				<tcp herit="./environment/fwrules/ssh"/>
+				<udp access="allow" directions="in" from-ips="all" to-ports="51,123"/>
+				<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+				<udp herit="./environment/fwrules/ssh"/>
+				<icmp access="allow" directions="in" from-ips="all"/>
+				<icmp access="allow" codes="all" directions="in" from-ips="all" types="0,8"/>
 			</fwrules>
 			<disks>
 				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>

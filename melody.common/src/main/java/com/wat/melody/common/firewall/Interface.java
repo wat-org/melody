@@ -1,6 +1,6 @@
-package com.wat.melody.common.network;
+package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
+import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
 
 /**
  * 

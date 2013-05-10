@@ -21,8 +21,6 @@ import com.wat.melody.xpathextensions.XPathHelper;
  */
 public class ResizeMachine extends AbstractOperation {
 
-	// private static Log log = LogFactory.getLog(ResizeMachine.class);
-
 	/**
 	 * The 'ResizeMachine' XML element
 	 */

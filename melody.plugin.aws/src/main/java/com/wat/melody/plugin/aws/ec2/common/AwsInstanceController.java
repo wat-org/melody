@@ -11,8 +11,8 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.FwRulesDecomposed;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 
@@ -34,33 +34,33 @@ public class AwsInstanceController extends DefaultInstanceController implements
 
 	@Override
 	public boolean instanceExists() {
-		return Common.instanceExists(getConnection(), getInstanceId());
+		return AwsEc2Cloud.instanceExists(getConnection(), getInstanceId());
 	}
 
 	@Override
 	public boolean instanceLives() {
-		return Common.instanceLives(getConnection(), getInstanceId());
+		return AwsEc2Cloud.instanceLives(getConnection(), getInstanceId());
 	}
 
 	@Override
 	public boolean instanceRuns() {
-		return Common.instanceRuns(getConnection(), getInstanceId());
+		return AwsEc2Cloud.instanceRuns(getConnection(), getInstanceId());
 	}
 
 	@Override
 	public InstanceState getInstanceState() {
-		return Common.getInstanceState(getConnection(), getInstanceId());
+		return AwsEc2Cloud.getInstanceState(getConnection(), getInstanceId());
 	}
 
 	@Override
 	public InstanceType getInstanceType() {
-		return Common.getInstanceType(getInstance());
+		return AwsEc2Cloud.getInstanceType(getInstance());
 	}
 
 	@Override
 	public boolean waitUntilInstanceStatusBecomes(InstanceState state,
 			long timeout, long sleepfirst) throws InterruptedException {
-		return Common.waitUntilInstanceStatusBecomes(getConnection(),
+		return AwsEc2Cloud.waitUntilInstanceStatusBecomes(getConnection(),
 				getInstanceId(), state, timeout, sleepfirst);
 	}
 
@@ -68,12 +68,12 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	public String createInstance(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName, long createTimeout)
 			throws OperationException, InterruptedException {
-		String instanceId = Common.newAwsInstance(getConnection(), type,
+		String instanceId = AwsEc2Cloud.newAwsInstance(getConnection(), type,
 				imageId, site, keyPairName);
 		// Immediately assign the instanceId
 		setInstanceId(instanceId);
-		if (!Common.waitUntilInstanceStatusBecomes(getConnection(), instanceId,
-				InstanceState.RUNNING, createTimeout, 10000)) {
+		if (!AwsEc2Cloud.waitUntilInstanceStatusBecomes(getConnection(),
+				instanceId, InstanceState.RUNNING, createTimeout, 10000)) {
 			throw new OperationException(Messages.bind(
 					Messages.CreateEx_TIMEOUT, instanceId, createTimeout));
 		}
@@ -83,7 +83,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void destroyInstance(long destroyTimeout) throws OperationException,
 			InterruptedException {
-		if (!Common.deleteAwsInstance(getConnection(), getInstance(),
+		if (!AwsEc2Cloud.deleteAwsInstance(getConnection(), getInstance(),
 				destroyTimeout)) {
 			throw new OperationException(
 					Messages.bind(Messages.DestroyEx_TIMEOUT, getInstanceId(),
@@ -94,7 +94,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void startInstance(long startTimeout) throws OperationException,
 			InterruptedException {
-		if (!Common.startAwsInstance(getConnection(), getInstanceId(),
+		if (!AwsEc2Cloud.startAwsInstance(getConnection(), getInstanceId(),
 				startTimeout)) {
 			throw new OperationException(Messages.bind(
 					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
@@ -104,7 +104,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void stopInstance(long stopTimeout) throws OperationException,
 			InterruptedException {
-		if (!Common.stopAwsInstance(getConnection(), getInstanceId(),
+		if (!AwsEc2Cloud.stopAwsInstance(getConnection(), getInstanceId(),
 				stopTimeout)) {
 			throw new OperationException(Messages.bind(Messages.StopEx_TIMEOUT,
 					getInstanceId(), stopTimeout));
@@ -114,7 +114,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void resizeInstance(InstanceType targetType)
 			throws OperationException, InterruptedException {
-		if (!Common.resizeAwsInstance(getConnection(), getInstanceId(),
+		if (!AwsEc2Cloud.resizeAwsInstance(getConnection(), getInstanceId(),
 				targetType)) {
 			throw new OperationException(Messages.bind(
 					Messages.ResizeEx_FAILED, getInstanceId(),
@@ -124,7 +124,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 
 	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
-		return Common.getInstanceDisks(getConnection(), getInstance());
+		return AwsEc2Cloud.getInstanceDisks(getConnection(), getInstance());
 	}
 
 	@Override
@@ -132,8 +132,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			DiskDeviceList disksToRemove, long detachTimeout)
 			throws OperationException, InterruptedException {
 		try {
-			Common.detachAndDeleteDiskDevices(getConnection(), getInstance(),
-					disksToRemove, detachTimeout);
+			AwsEc2Cloud.detachAndDeleteDiskDevices(getConnection(),
+					getInstance(), disksToRemove, detachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_DETACH, Ex.getVolumeId(),
@@ -147,8 +147,9 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			InterruptedException {
 		String sAZ = getInstance().getPlacement().getAvailabilityZone();
 		try {
-			Common.createAndAttachDiskDevices(getConnection(), getInstanceId(),
-					sAZ, disksToAdd, createTimeout, attachTimeout);
+			AwsEc2Cloud.createAndAttachDiskDevices(getConnection(),
+					getInstanceId(), sAZ, disksToAdd, createTimeout,
+					attachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_CREATE, Ex.getVolumeId(),
@@ -163,20 +164,20 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void updateInstanceDiskDevicesDeleteOnTerminationFlag(
 			DiskDeviceList diskList) {
-		Common.updateDeleteOnTerminationFlag(getConnection(), getInstanceId(),
-				diskList);
+		AwsEc2Cloud.updateDeleteOnTerminationFlag(getConnection(),
+				getInstanceId(), diskList);
 	}
 
 	@Override
 	public NetworkDeviceNameList getInstanceNetworkDevices() {
-		return Common.getNetworkDevices(getConnection(), getInstance());
+		return AwsEc2Cloud.getNetworkDevices(getConnection(), getInstance());
 	}
 
 	@Override
 	public void detachInstanceNetworkDevices(
 			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
 			throws OperationException, InterruptedException {
-		Common.detachNetworkDevices(getConnection(), getInstance(),
+		AwsEc2Cloud.detachNetworkDevices(getConnection(), getInstance(),
 				netDevivesToRemove, detachTimeout);
 	}
 
@@ -184,38 +185,39 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	public void attachInstanceNetworkDevices(
 			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
 			throws OperationException, InterruptedException {
-		Common.attachNetworkDevices(getConnection(), getInstance(),
+		AwsEc2Cloud.attachNetworkDevices(getConnection(), getInstance(),
 				netDevivesToAdd, attachTimeout);
 	}
 
 	@Override
 	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
 			NetworkDeviceName netdev) {
-		return Common.getNetworkDeviceDatas(getConnection(),
+		return AwsEc2Cloud.getNetworkDeviceDatas(getConnection(),
 				this.getInstance(), netdev);
 	}
 
 	@Override
 	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return Common.getFireWallRules(getConnection(), getInstance(), netDev);
+		return AwsEc2CloudFireWall.getFireWallRules(getConnection(),
+				getInstance(), netDev);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toRevoke) throws OperationException {
-		Common.revokeFireWallRules(getConnection(), getInstance(), netDev,
-				toRevoke);
+		AwsEc2CloudFireWall.revokeFireWallRules(getConnection(), getInstance(),
+				netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
 			FwRulesDecomposed toAutorize) throws OperationException {
-		Common.authorizeFireWallRules(getConnection(), getInstance(), netDev,
-				toAutorize);
+		AwsEc2CloudFireWall.authorizeFireWallRules(getConnection(),
+				getInstance(), netDev, toAutorize);
 	}
 
 	public void refreshInternalDatas() {
-		setInstance(Common.getInstance(getConnection(), getInstanceId()));
+		setInstance(AwsEc2Cloud.getInstance(getConnection(), getInstanceId()));
 	}
 
 	public AmazonEC2 getConnection() {

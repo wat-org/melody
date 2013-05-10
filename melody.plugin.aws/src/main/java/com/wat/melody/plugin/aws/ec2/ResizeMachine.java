@@ -9,7 +9,7 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
-import com.wat.melody.plugin.aws.ec2.common.Common;
+import com.wat.melody.plugin.aws.ec2.common.AwsEc2Cloud;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -20,8 +20,6 @@ import com.wat.melody.xpathextensions.XPathHelper;
  * 
  */
 public class ResizeMachine extends AbstractOperation {
-
-	// private static Log log = LogFactory.getLog(ResizeMachine.class);
 
 	/**
 	 * The 'ResizeMachine' XML element
@@ -51,7 +49,7 @@ public class ResizeMachine extends AbstractOperation {
 		try {
 			String v = null;
 			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
-					Common.INSTANCETYPE_ATTR);
+					AwsEc2Cloud.INSTANCETYPE_ATTR);
 			try {
 				try {
 					if (v != null) {
@@ -62,9 +60,10 @@ public class ResizeMachine extends AbstractOperation {
 							Messages.ResizeEx_INVALID_INSTANCETYPE_ATTR, v));
 				}
 			} catch (AwsException Ex) {
-				throw new AwsException(Messages.bind(
-						Messages.ResizeEx_INSTANCETYPE_ERROR,
-						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
+				throw new AwsException(
+						Messages.bind(Messages.ResizeEx_INSTANCETYPE_ERROR,
+								AwsEc2Cloud.INSTANCETYPE_ATTR,
+								getTargetNodeLocation()), Ex);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
@@ -75,8 +74,8 @@ public class ResizeMachine extends AbstractOperation {
 			throw new AwsException(Messages.bind(
 					Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
 					ResizeMachine.INSTANCETYPE_ATTR,
-					ResizeMachine.RESIZE_MACHINE, Common.INSTANCETYPE_ATTR,
-					getTargetNodeLocation()));
+					ResizeMachine.RESIZE_MACHINE,
+					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetNodeLocation()));
 		}
 	}
 

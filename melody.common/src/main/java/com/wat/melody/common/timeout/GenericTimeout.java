@@ -72,6 +72,11 @@ public class GenericTimeout implements Timeout {
 	}
 
 	@Override
+	public int hashCode() {
+		return (int) getTimeout();
+	}
+
+	@Override
 	public String toString() {
 		return String.valueOf(_timeout);
 	}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
 	<global-fwrules>
-		<fwrule access="allow" direction="in" from-ips="all" name="SSH" protocols="tcp" to-ports="22"/>
+		<tcp access="allow" directions="in" from-ips="all" name="SSH" to-ports="22"/>
 	</global-fwrules>
 	
 	<models>
@@ -9,8 +9,8 @@
 			<network-management enable="true" method="ssh" port="22"/>
 			<disk-management diskDevicesSelector="//disk"/>
 			<fwrules>
-				<fwrule access="allow" direction="in" from-ips="all" protocols="tcp" to-ports="8080"/>
-				<fwrule herit="./environment/global-fwrules/fwrule[@name='SSH']"/>
+				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
+				<tcp herit="./environment/global-fwrules/tcp[@name='SSH']"/>
 			</fwrules>
 			<disks>
 				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>
@@ -25,6 +25,7 @@
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
 			<network-management method="ssh" networkDevicesSelector="//if" port="22"/>
 			<disk-management diskDevicesSelector="//disque"/>
+			<firewall-management fireWallRulesSelector="//parefeu"/>
 			<devices>
 				<if device="eth0"/>
 				<if device="eth1"/>
@@ -32,6 +33,10 @@
 				<disque deleteOnTermination="true" device="/dev/vdb" size="3 G"/>
 				<disque deleteOnTermination="true" device="/dev/vdc" size="6 G"/>
 			</devices>
+			<parefeu>
+				<udp access="allow" directions="in" from-ips="all" to-ports="51,123"/>
+				<icmp access="allow" directions="in" from-ips="all" types="0,8" codes="all"/>
+			</parefeu>
 		</instance>
 		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">

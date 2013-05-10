@@ -5,7 +5,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;

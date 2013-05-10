@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.aws.ec2.common;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,7 +10,6 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.AttachVolumeRequest;
-import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.DeleteKeyPairRequest;
@@ -36,7 +34,6 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Placement;
-import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
@@ -61,18 +58,6 @@ import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.Access;
-import com.wat.melody.common.network.Direction;
-import com.wat.melody.common.network.FwRuleDecomposed;
-import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.common.network.Interface;
-import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.Protocol;
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
-import com.wat.melody.common.network.exception.IllegalIpRangeException;
-import com.wat.melody.common.network.exception.IllegalPortRangeException;
-import com.wat.melody.common.network.exception.IllegalProtocolException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
@@ -83,9 +68,9 @@ import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
  * @author Guillaume Cornet
  * 
  */
-public class Common {
+public abstract class AwsEc2Cloud {
 
-	private static Log log = LogFactory.getLog(Common.class);
+	private static Log log = LogFactory.getLog(AwsEc2Cloud.class);
 
 	/**
 	 * The 'region' XML attribute of the Aws Instance Node
@@ -1971,105 +1956,12 @@ public class Common {
 		}
 	}
 
-	private static String getSecurityGroup(AmazonEC2 ec2, Instance i,
+	public static String getSecurityGroup(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
 		/*
 		 * always retrieve the security group associated to eth0.
 		 */
 		return i.getSecurityGroups().get(0).getGroupName();
-	}
-
-	public static FwRulesDecomposed getFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netdev) {
-		String sgname = getSecurityGroup(ec2, i, netdev);
-		List<IpPermission> perms = Common.describeSecurityGroupRules(ec2,
-				sgname);
-		return convertIpPermissions(perms, netdev);
-	}
-
-	public static void revokeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netdev, FwRulesDecomposed toRevoke) {
-		if (toRevoke == null || toRevoke.size() == 0) {
-			return;
-		}
-		String sgname = getSecurityGroup(ec2, i, netdev);
-		List<IpPermission> toRev = convertFwRules(toRevoke);
-		RevokeSecurityGroupIngressRequest revreq = null;
-		revreq = new RevokeSecurityGroupIngressRequest();
-		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
-		ec2.revokeSecurityGroupIngress(revreq);
-		for (FwRuleDecomposed rule : toRevoke) {
-			log.info(Messages.bind(Messages.CommonMsg_REVOKE_FWRULE,
-					new Object[] { i.getImageId(), netdev, rule }));
-		}
-	}
-
-	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netdev, FwRulesDecomposed toAuthorize) {
-		if (toAuthorize == null || toAuthorize.size() == 0) {
-			return;
-		}
-		String sgname = getSecurityGroup(ec2, i, netdev);
-		List<IpPermission> toAuth = convertFwRules(toAuthorize);
-		AuthorizeSecurityGroupIngressRequest authreq = null;
-		authreq = new AuthorizeSecurityGroupIngressRequest();
-		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
-		ec2.authorizeSecurityGroupIngress(authreq);
-		for (FwRuleDecomposed rule : toAuthorize) {
-			log.info(Messages.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
-					new Object[] { i.getImageId(), netdev, rule }));
-		}
-	}
-
-	private static FwRulesDecomposed convertIpPermissions(
-			List<IpPermission> perms, NetworkDeviceName netdev) {
-		Interface inter = null;
-		try {
-			inter = Interface.parseString(netdev.getValue());
-		} catch (IllegalInterfaceException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		FwRulesDecomposed rules = new FwRulesDecomposed();
-		IpRange fromIp = null;
-		PortRange toPorts = null;
-		Protocol proto = null;
-		for (IpPermission perm : perms) {
-			try {
-				fromIp = IpRange.parseString(perm.getIpRanges().get(0));
-				toPorts = PortRange.parseString(perm.getFromPort() + "-"
-						+ perm.getToPort());
-				proto = Protocol.parseString(perm.getIpProtocol());
-			} catch (IllegalProtocolException | IllegalIpRangeException
-					| IllegalPortRangeException Ex) {
-				throw new RuntimeException(Ex);
-			}
-			rules.add(new FwRuleDecomposed(inter, fromIp, PortRange.ALL,
-					IpRange.ALL, toPorts, proto, Direction.IN, Access.ALLOW));
-		}
-		return rules;
-	}
-
-	private static List<IpPermission> convertFwRules(FwRulesDecomposed rules) {
-		List<IpPermission> perms = new ArrayList<IpPermission>();
-		for (FwRuleDecomposed rule : rules) {
-			if (rule.getDirection().equals(Direction.OUT)) {
-				log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
-						Direction.OUT));
-				continue;
-			}
-			if (rule.getAccess().equals(Access.DENY)) {
-				log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
-						Access.DENY));
-				continue;
-			}
-			IpPermission perm = new IpPermission();
-			perm.withIpProtocol(rule.getProtocol().getValue());
-			perm.withIpRanges(rule.getFromIpRange().getValue());
-			perm.withFromPort(rule.getToPortRange().getStartPort().getValue());
-			perm.withToPort(rule.getToPortRange().getEndPort().getValue());
-			perms.add(perm);
-		}
-		return perms;
 	}
 
 }

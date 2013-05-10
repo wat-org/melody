@@ -13,17 +13,17 @@ import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.common.firewall.Access;
+import com.wat.melody.common.firewall.Direction;
+import com.wat.melody.common.firewall.FwRuleDecomposed;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.Interface;
+import com.wat.melody.common.firewall.TcpFwRuleDecomposed;
+import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.Access;
-import com.wat.melody.common.network.Direction;
-import com.wat.melody.common.network.FwRuleDecomposed;
-import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.common.network.Interface;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.Protocol;
-import com.wat.melody.common.network.exception.IllegalInterfaceException;
 import com.wat.melody.common.network.exception.IllegalPortRangeException;
 
 /**
@@ -288,9 +288,8 @@ public class InstanceControllerWithNetworkManagement extends
 		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
 			throw new RuntimeException("BUG ! Cannot happened !", Ex);
 		}
-		FwRuleDecomposed rule = new FwRuleDecomposed(inter, IpRange.ALL,
-				PortRange.ALL, IpRange.ALL, toPorts, Protocol.TCP,
-				Direction.IN, Access.ALLOW);
+		FwRuleDecomposed rule = new TcpFwRuleDecomposed(inter, IpRange.ALL,
+				PortRange.ALL, IpRange.ALL, toPorts, Direction.IN, Access.ALLOW);
 		FwRulesDecomposed rules = new FwRulesDecomposed();
 		FwRulesDecomposed currentRules = getInstanceFireWallRules(netdev);
 		if (!currentRules.contains(rule)) {

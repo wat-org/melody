@@ -6,23 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.network.messages";
 
-	public static String AccessEx_EMPTY;
-	public static String AccessEx_INVALID;
-
-	public static String DirectionEx_EMPTY;
-	public static String DirectionEx_INVALID;
-
-	public static String DirectionsEx_EMPTY_DIRECTION;
-	public static String DirectionsEx_INVALID_DIRECTION;
-	public static String DirectionsEx_EMPTY;
-
-	public static String InterfaceEx_EMPTY;
-	public static String InterfaceEx_INVALID;
-
-	public static String InterfacesEx_EMPTY_INTERFACE;
-	public static String InterfacesEx_INVALID_INTERFACE;
-	public static String InterfacesEx_EMPTY;
-
 	public static String HostEx_EMPTY;
 	public static String HostEx_INVALID;
 
@@ -50,13 +33,6 @@ public class Messages extends NLS {
 	public static String PortRangesEx_EMPTY_PORT_RANGE;
 	public static String PortRangesEx_INVALID_PORT_RANGE;
 	public static String PortRangesEx_EMPTY;
-
-	public static String ProtocolEx_EMPTY;
-	public static String ProtocolEx_INVALID;
-
-	public static String ProtocolsEx_EMPTY_PROTOCOL;
-	public static String ProtocolsEx_INVALID_PROTOCOL;
-	public static String ProtocolsEx_EMPTY;
 
 	static {
 		// initialize resource bundle

@@ -296,7 +296,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 
 	private void validate() throws AwsPlugInConfigurationException {
 		try {
-			Common.validate(new AmazonEC2Client(this, getCC()));
+			AwsEc2Cloud.validate(new AmazonEC2Client(this, getCC()));
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
 				throw new AwsPlugInConfigurationException(Messages.bind(
@@ -769,7 +769,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 		if (ec2 == null) {
 			ec2 = new AmazonEC2Client(this, getCC());
-			String ep = Common.getEndpoint(ec2, region);
+			String ep = AwsEc2Cloud.getEndpoint(ec2, region);
 			if (ep == null) {
 				return null;
 			}

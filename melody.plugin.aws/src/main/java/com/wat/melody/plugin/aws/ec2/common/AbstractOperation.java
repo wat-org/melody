@@ -93,7 +93,7 @@ abstract public class AbstractOperation implements ITask,
 		String v = null;
 		try {
 			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
-					Common.REGION_ATTR);
+					AwsEc2Cloud.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -103,7 +103,7 @@ abstract public class AbstractOperation implements ITask,
 			}
 		} catch (AwsException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_REGION_ERROR, Common.REGION_ATTR,
+					Messages.MachineEx_REGION_ERROR, AwsEc2Cloud.REGION_ATTR,
 					getTargetNodeLocation()), Ex);
 		}
 
@@ -113,7 +113,7 @@ abstract public class AbstractOperation implements ITask,
 					Messages.MachineEx_MISSING_REGION_ATTR, new Object[] {
 							REGION_ATTR,
 							getClass().getSimpleName().toLowerCase(),
-							Common.REGION_ATTR, getTargetNodeLocation() }));
+							AwsEc2Cloud.REGION_ATTR, getTargetNodeLocation() }));
 		}
 
 		// Initialize AmazonEC2 for the current region

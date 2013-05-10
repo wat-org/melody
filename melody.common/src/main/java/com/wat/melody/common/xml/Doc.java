@@ -372,7 +372,7 @@ public class Doc {
 
 	private String msFFP = null;
 	private Document moDOM = null;
-	private XPath moXPath = null;
+	private XPath moXPath = XPathExpander.newXPath(null);
 
 	public Doc() {
 	}

@@ -11,10 +11,10 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.common.firewall.FwRuleDecomposed;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.Interface;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.network.FwRuleDecomposed;
-import com.wat.melody.common.network.FwRulesDecomposed;
-import com.wat.melody.common.network.Interface;
 
 /**
  * 

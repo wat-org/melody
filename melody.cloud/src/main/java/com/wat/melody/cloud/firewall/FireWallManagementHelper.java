@@ -30,17 +30,40 @@ public abstract class FireWallManagementHelper {
 			+ FIREWALL_MGMT_NE;
 
 	/**
-	 * XML attribute of the FireWall Management Node, which contains the
+	 * XML attribute of the FireWall Management Node, which contains the TCP
 	 * FireWall Rule Nodes Selector
 	 */
-	public static final String FIREWALL_RULE_NODES_SELECTOR_ATTRIBUTE = "FireWallRulesSelector";
+	public static final String FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE = "tcpFireWallRulesSelector";
 
 	/**
-	 * Default XPath Expression to select FireWall Rules Nodes in the RD,
+	 * XML attribute of the FireWall Management Node, which contains the TCP
+	 * FireWall Rule Nodes Selector
+	 */
+	public static final String FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE = "udpFireWallRulesSelector";
+
+	/**
+	 * XML attribute of the FireWall Management Node, which contains the TCP
+	 * FireWall Rule Nodes Selector
+	 */
+	public static final String FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE = "icmpFireWallRulesSelector";
+
+	/**
+	 * Default XPath Expression to select TCP FireWall Rules Nodes in the RD,
 	 * related to an Instance Node
 	 */
-	public static final String DEFAULT_FIREWALL_RULE_NODES_SELECTOR = "//"
-			+ FireWallRulesLoader.FIREWALL_RULE_NE;
+	public static final String DEFAULT_TCP_FIREWALL_RULE_NODES_SELECTOR = "//tcp";
+
+	/**
+	 * Default XPath Expression to select UDP FireWall Rules Nodes in the RD,
+	 * related to an Instance Node
+	 */
+	public static final String DEFAULT_UDP_FIREWALL_RULE_NODES_SELECTOR = "//udp";
+
+	/**
+	 * Default XPath Expression to select ICMP FireWall Rules Nodes in the RD,
+	 * related to an Instance Node
+	 */
+	public static final String DEFAULT_ICMP_FIREWALL_RULE_NODES_SELECTOR = "//icmp";
 
 	/**
 	 * <p>
@@ -83,45 +106,138 @@ public abstract class FireWallManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findFireWallRulesSelector(Node instanceNode) {
+	public static String findTcpFireWallRulesSelector(Node instanceNode) {
 		Node mgmtNode = findFireWallManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
-					.getNamedItem(FIREWALL_RULE_NODES_SELECTOR_ATTRIBUTE)
+					.getNamedItem(FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE)
 					.getNodeValue();
 		} catch (NullPointerException Ex) {
-			return DEFAULT_FIREWALL_RULE_NODES_SELECTOR;
+			return DEFAULT_TCP_FIREWALL_RULE_NODES_SELECTOR;
 		}
 	}
 
 	/**
 	 * <p>
-	 * Return the FireWall Rule {@link Node}s of the given Instance {@link Node}
-	 * .
+	 * Return the TCP FireWall Rule {@link Node}s of the given Instance
+	 * {@link Node} .
 	 * </p>
 	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
-	 * @return The FireWall Rule {@link Node}s of the given Instance
+	 * @return The TCP FireWall Rule {@link Node}s of the given Instance
 	 *         {@link Node}.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws ResourcesDescriptorException
-	 *             if the FireWall Rules Selector (found in the FireWall Rule
-	 *             Management {@link Node}) is not a valid XPath Expression.
+	 *             if the TCP FireWall Rules Selector (found in the FireWall
+	 *             Rule Management {@link Node}) is not a valid XPath
+	 *             Expression.
 	 */
-	public static NodeList findFireWallRules(Node instanceNode)
+	public static NodeList findTcpFireWallRules(Node instanceNode)
 			throws ResourcesDescriptorException {
-		String sAllFWRulesSelector = findFireWallRulesSelector(instanceNode);
+		String sAllFWRulesSelector = findTcpFireWallRulesSelector(instanceNode);
 		try {
 			return FilteredDocHelper.getHeritedContent(instanceNode,
 					sAllFWRulesSelector);
 		} catch (XPathExpressionException Ex) {
 			Node mgmtNode = findFireWallManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
-					FIREWALL_RULE_NODES_SELECTOR_ATTRIBUTE);
+					FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE);
+			throw new ResourcesDescriptorException(attr, Messages.bind(
+					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					sAllFWRulesSelector), Ex);
+		}
+	}
+
+	public static String findUdpFireWallRulesSelector(Node instanceNode) {
+		Node mgmtNode = findFireWallManagementNode(instanceNode);
+		try {
+			return mgmtNode.getAttributes()
+					.getNamedItem(FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE)
+					.getNodeValue();
+		} catch (NullPointerException Ex) {
+			return DEFAULT_UDP_FIREWALL_RULE_NODES_SELECTOR;
+		}
+	}
+
+	/**
+	 * <p>
+	 * Return the UDP FireWall Rule {@link Node}s of the given Instance
+	 * {@link Node} .
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return The UDP FireWall Rule {@link Node}s of the given Instance
+	 *         {@link Node}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
+	 * @throws ResourcesDescriptorException
+	 *             if the UCP FireWall Rules Selector (found in the FireWall
+	 *             Rule Management {@link Node}) is not a valid XPath
+	 *             Expression.
+	 */
+	public static NodeList findUdpFireWallRules(Node instanceNode)
+			throws ResourcesDescriptorException {
+		String sAllFWRulesSelector = findUdpFireWallRulesSelector(instanceNode);
+		try {
+			return FilteredDocHelper.getHeritedContent(instanceNode,
+					sAllFWRulesSelector);
+		} catch (XPathExpressionException Ex) {
+			Node mgmtNode = findFireWallManagementNode(instanceNode);
+			Node attr = mgmtNode.getAttributes().getNamedItem(
+					FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE);
+			throw new ResourcesDescriptorException(attr, Messages.bind(
+					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					sAllFWRulesSelector), Ex);
+		}
+	}
+
+	public static String findIcmpFireWallRulesSelector(Node instanceNode) {
+		Node mgmtNode = findFireWallManagementNode(instanceNode);
+		try {
+			return mgmtNode.getAttributes()
+					.getNamedItem(FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE)
+					.getNodeValue();
+		} catch (NullPointerException Ex) {
+			return DEFAULT_ICMP_FIREWALL_RULE_NODES_SELECTOR;
+		}
+	}
+
+	/**
+	 * <p>
+	 * Return the ICMP FireWall Rule {@link Node}s of the given Instance
+	 * {@link Node} .
+	 * </p>
+	 * 
+	 * @param instanceNode
+	 *            is an Instance {@link Node}.
+	 * 
+	 * @return The ICMP FireWall Rule {@link Node}s of the given Instance
+	 *         {@link Node}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance {@link Node} is <tt>null</tt>.
+	 * @throws ResourcesDescriptorException
+	 *             if the ICMP FireWall Rules Selector (found in the FireWall
+	 *             Rule Management {@link Node}) is not a valid XPath
+	 *             Expression.
+	 */
+	public static NodeList findIcmpFireWallRules(Node instanceNode)
+			throws ResourcesDescriptorException {
+		String sAllFWRulesSelector = findIcmpFireWallRulesSelector(instanceNode);
+		try {
+			return FilteredDocHelper.getHeritedContent(instanceNode,
+					sAllFWRulesSelector);
+		} catch (XPathExpressionException Ex) {
+			Node mgmtNode = findFireWallManagementNode(instanceNode);
+			Node attr = mgmtNode.getAttributes().getNamedItem(
+					FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(
 					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);

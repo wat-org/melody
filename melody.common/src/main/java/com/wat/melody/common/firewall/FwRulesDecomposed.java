@@ -1,4 +1,4 @@
-package com.wat.melody.common.network;
+package com.wat.melody.common.firewall;
 
 import java.util.LinkedHashSet;
 

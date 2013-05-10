@@ -1,4 +1,4 @@
-package com.wat.melody.common.network.exception;
+package com.wat.melody.common.firewall.exception;
 
 import com.wat.melody.common.ex.MelodyException;
 

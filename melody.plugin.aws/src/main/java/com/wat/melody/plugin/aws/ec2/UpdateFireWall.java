@@ -4,7 +4,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.network.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FwRulesDecomposed;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
