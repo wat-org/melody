@@ -33,7 +33,7 @@ public abstract class DiskManagementHelper {
 	 * XML attribute of the Disk Device Management Node, which contains the Disk
 	 * Device Nodes Selector
 	 */
-	public static final String DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "diskDevicesSelector";
+	public static final String DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "disk-devices-selector";
 
 	/**
 	 * Default XPath Expression to select Disk Device Nodes in the RD, related

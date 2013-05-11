@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
-	<fwrules>
+	<global-fwrules>
 		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
-	</fwrules>
+	</global-fwrules>
 	
 	<models>
 		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
 			<network-management method="ssh"/>
-			<disk-management diskDevicesSelector="//disk"/>
+			<disk-management disk-devices-selector="//disk"/>
 			<fwrules>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
 				<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
-				<tcp herit="./environment/fwrules/ssh"/>
+				<tcp herit="./environment/global-fwrules/ssh"/>
 				<udp access="allow" directions="in" from-ips="all" to-ports="51,123"/>
 				<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
-				<udp herit="./environment/fwrules/ssh"/>
+				<ucp herit="./environment/global-fwrules/ssh"/>
 				<icmp access="allow" directions="in" from-ips="all"/>
 				<icmp access="allow" codes="all" directions="in" from-ips="all" types="0,8"/>
 			</fwrules>
 			<disks>
-				<disk deleteOnTermination="true" device="/dev/vda" rootDevice="true"/>
+				<disk delete-on-termination="true" device="/dev/vda" root-device="true"/>
 			</disks>
 		</model>
 	</models>
@@ -28,8 +28,8 @@
 		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
 			<network>
-				<interface device="eth0"/>
-				<interface device="eth1"/>
+				<interface device-name="eth0"/>
+				<interface device-name="eth1"/>
 			</network>
 		</instance>
 		

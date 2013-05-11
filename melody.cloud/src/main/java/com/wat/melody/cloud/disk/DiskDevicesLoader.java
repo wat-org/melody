@@ -37,13 +37,13 @@ public class DiskDevicesLoader {
 	 * XML attribute of a Disk Device Node, which indicate if the device should
 	 * be automatically deleted when the instance is deleted.
 	 */
-	public static final String DELETEONTERMINATION_ATTR = "deleteOnTermination";
+	public static final String DELETEONTERMINATION_ATTR = "delete-on-termination";
 
 	/**
 	 * XML attribute of a Disk Device Node, which indicate if the device is the
 	 * root device.
 	 */
-	public static final String ROOTDEVICE_ATTR = "rootDevice";
+	public static final String ROOTDEVICE_ATTR = "root-device";
 
 	public DiskDevicesLoader() {
 	}
@@ -106,8 +106,8 @@ public class DiskDevicesLoader {
 	 * <li>device : which should contains a {@link DiskDeviceName} (ex:
 	 * /dev/sda1, /dev/vda) ;</li>
 	 * <li>size : which should contains a {@link DiskDeviceSize} ;</li>
-	 * <li>deleteOnTermination : which should contains a Boolean ;</li>
-	 * <li>rootDevice : which should contains a Boolean ;</li>
+	 * <li>delete-on-termination : which should contains a Boolean ;</li>
+	 * <li>root-device : which should contains a Boolean ;</li>
 	 * </ul>
 	 * </p>
 	 * 

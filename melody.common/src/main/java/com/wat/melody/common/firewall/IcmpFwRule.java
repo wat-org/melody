@@ -34,7 +34,7 @@ public class IcmpFwRule extends AbstractFwRule {
 
 	@Override
 	public String toString() {
-		return "{ devives-name:" + getInterfaces() + ", protocol: "
+		return "{ devices-name:" + getInterfaces() + ", protocol: "
 				+ getProtocol() + ",from-ips: " + getFromIpRanges()
 				+ ", to-ips: " + getToIpRanges() + ", types: " + getTypes()
 				+ ", codes: " + getCodes() + ", directions: " + getDirections()

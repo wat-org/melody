@@ -273,10 +273,13 @@ public class InstanceControllerWithNetworkManagement extends
 	 */
 	public void enableNetworkManagement() throws OperationException,
 			InterruptedException {
+		NetworkManager nm = getNetworkManager();
+		if (nm == null) {
+			return;
+		}
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceId()));
 
-		NetworkManager nm = getNetworkManager();
 		NetworkDeviceName netdev = nm.getManagementDatas()
 				.getNetworkDeviceName();
 		Port p = nm.getManagementDatas().getPort();
@@ -327,10 +330,14 @@ public class InstanceControllerWithNetworkManagement extends
 	 */
 	public void disableNetworkManagement() throws OperationException,
 			InterruptedException {
+		NetworkManager nm = getNetworkManager();
+		if (nm == null) {
+			return;
+		}
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceId()));
 		try {
-			getNetworkManager().disableNetworkManagement();
+			nm.disableNetworkManagement();
 		} catch (NetworkManagementException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,

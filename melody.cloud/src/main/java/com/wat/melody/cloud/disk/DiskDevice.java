@@ -33,7 +33,7 @@ public class DiskDevice {
 				+ getSize()
 				+ " Go"
 				+ (isRootDevice() == true ? ", rootDevice:true" : "")
-				+ (isDeletedOnTermination() == false ? ", deleteOnTermination:false "
+				+ (isDeletedOnTermination() == false ? ", delete-on-termination:false "
 						: "") + " }";
 	}
 

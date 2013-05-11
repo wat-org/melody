@@ -7,11 +7,11 @@ package com.wat.melody.cloud.network;
  */
 public class NetworkDeviceDatas {
 
-	private String msMac;
-	private String msIP;
-	private String msFQDN;
-	private String msNatIP;
-	private String msNatFQDN;
+	private String msMac = null;
+	private String msIP = null;
+	private String msFQDN = null;
+	private String msNatIP = null;
+	private String msNatFQDN = null;
 
 	public NetworkDeviceDatas(String mac, String ip, String fqdn, String natip,
 			String natfqdn) {
@@ -20,6 +20,19 @@ public class NetworkDeviceDatas {
 		setFQDN(fqdn);
 		setNatIp(natip);
 		setNatFQDN(natfqdn);
+	}
+
+	@Override
+	public String toString() {
+		String res = (getMac() != null ? "mac:" + getMac() + ", " : "")
+				+ (getIP() != null ? "ip:" + getIP() + ", " : "")
+				+ (getFQDN() != null ? "fqdn:" + getFQDN() + ", " : "")
+				+ (getNatIP() != null ? "nat-ip:" + getNatIP() + ", " : "")
+				+ (getNatFQDN() != null ? "nat-fqdn:" + getNatFQDN() + ", "
+						: "");
+		return "{ "
+				+ (res.length() == 0 ? "undef" : res.substring(0,
+						res.length() - 2)) + " }";
 	}
 
 	public String getMac() {

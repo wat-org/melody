@@ -33,7 +33,7 @@ public abstract class AbstractTcpUdpFwRuleDecomposed extends
 
 	@Override
 	public String toString() {
-		return "{ " + "devive-name: " + getInterface() + ", protocol: "
+		return "{ " + "device-name: " + getInterface() + ", protocol: "
 				+ getProtocol() + ", from-ip: " + getFromIpRange()
 				+ ", from-port: " + getFromPortRange() + ", to-ip: "
 				+ getToIpRange() + ", to-port: " + getToPortRange()

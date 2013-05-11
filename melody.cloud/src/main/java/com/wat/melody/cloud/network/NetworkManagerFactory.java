@@ -43,7 +43,7 @@ public abstract class NetworkManagerFactory {
 						+ "bug have been introduced.");
 			}
 		} catch (ResourcesDescriptorException Ex) {
-			return new NullNetworkManager();
+			return null;
 		}
 	}
 

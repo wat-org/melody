@@ -38,7 +38,7 @@ public abstract class AbstractTcpUdpFwRule extends AbstractFwRule {
 
 	@Override
 	public String toString() {
-		return "{ devives-name:" + getInterfaces() + ", protocol: "
+		return "{ devices-name:" + getInterfaces() + ", protocol: "
 				+ getProtocol() + ",from-ips: " + getFromIpRanges()
 				+ ", from-ports: " + getFromPortRanges() + ", to-ips: "
 				+ getToIpRanges() + ", to-ports: " + getToPortRanges()

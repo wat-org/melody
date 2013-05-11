@@ -23,32 +23,32 @@ public class NetworkDeviceNamesLoader {
 	public static final String INTERFACE_NE = "interface";
 
 	/**
-	 * XML attribute of a Network Device Node, which define the name of the
-	 * device.
+	 * XML attribute of a Network Device Node, which define the device name of
+	 * the interface.
 	 */
-	public static final String DEVICE_ATTR = "device";
+	public static final String DEVICE_NAME_ATTR = "device-name";
 
 	/**
-	 * XML attribute of a Network Device Node, which define the ip of the
-	 * device.
+	 * XML attribute of a Network Device Node, which define the ip associated to
+	 * the interface.
 	 */
 	public static final String IP_ATTR = "ip";
 
 	/**
-	 * XML attribute of a Network Device Node, which define the fqdn of the
-	 * device.
+	 * XML attribute of a Network Device Node, which define the fqdn associated
+	 * to the interface.
 	 */
 	public static final String FQDN_ATTR = "fqdn";
 
 	/**
-	 * XML attribute of a Network Device Node, which define the nat-ip of the
-	 * device.
+	 * XML attribute of a Network Device Node, which define the nat-ip
+	 * associated to the interface.
 	 */
 	public static final String NAT_IP_ATTR = "nat-ip";
 
 	/**
-	 * XML attribute of a Network Device Node, which define the nat-fqdn of the
-	 * device.
+	 * XML attribute of a Network Device Node, which define the nat-fqdn
+	 * associated to the interface.
 	 */
 	public static final String NAT_FQDN_ATTR = "nat-fqdn";
 
@@ -57,14 +57,15 @@ public class NetworkDeviceNamesLoader {
 
 	private NetworkDeviceName loadDeviceName(Node n)
 			throws ResourcesDescriptorException {
-		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return NetworkDeviceName.parseString(v);
 		} catch (IllegalNetworkDeviceNameException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, DEVICE_ATTR);
+			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+					DEVICE_NAME_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);
 		}
 	}
@@ -78,7 +79,7 @@ public class NetworkDeviceNamesLoader {
 	 * <p>
 	 * A Network Device {@link Node} must have the attributes : <BR/>
 	 * <ul>
-	 * <li>device : which must contains a {@link NetworkDeviceName} ;</li>
+	 * <li>device-name : which must contains a {@link NetworkDeviceName} ;</li>
 	 * </ul>
 	 * </p>
 	 * 
@@ -106,8 +107,9 @@ public class NetworkDeviceNamesLoader {
 			Node n = nl.item(i);
 			NetworkDeviceName netDevName = loadDeviceName(n);
 			if (netDevName == null) {
-				throw new ResourcesDescriptorException(n, Messages.bind(
-						Messages.NetworkDeviceEx_MISSING_ATTR, DEVICE_ATTR));
+				throw new ResourcesDescriptorException(n,
+						Messages.bind(Messages.NetworkDeviceEx_MISSING_ATTR,
+								DEVICE_NAME_ATTR));
 			}
 
 			try {

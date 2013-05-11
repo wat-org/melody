@@ -44,7 +44,7 @@ public abstract class NetworkManagementHelper {
 	 * XML attribute of the Network Device Management Node, which contains the
 	 * XPath Expression to select Network Devices.
 	 */
-	public static final String NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "networkDevicesSelector";
+	public static final String NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE = "network-devices-selector";
 
 	/**
 	 * Default XPath Expression to select Network Devices.
@@ -56,20 +56,20 @@ public abstract class NetworkManagementHelper {
 	 * XML attribute of the Network Device Management Node, which contains the
 	 * criteria of XPath Expression to select Network Device Management Node.
 	 */
-	public static final String NETWORK_MGMT_DEVICE_NODE_CRITERIA_ATTR = "mgmtNetworkDeviceCriteria";
+	public static final String NETWORK_MGMT_DEVICE_NODE_CRITERIA_ATTR = "mgmt-network-device-criteria";
 
 	/**
 	 * Default XPath Expression to select Network Device Management Node
 	 */
 	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA = "@"
-			+ NetworkDeviceNamesLoader.DEVICE_ATTR + "='eth0'";
+			+ NetworkDeviceNamesLoader.DEVICE_NAME_ATTR + "='eth0'";
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
 	 * XML attribute of the Network Device Management Node which select the Host
 	 * to manage.
 	 */
-	public static final String NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR = "mgmtNetworkDeviceAttribute";
+	public static final String NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR = "mgmt-network-device-attribute";
 
 	/**
 	 * Default XML attribute of the Network Device Management Node which select
@@ -1061,8 +1061,12 @@ public abstract class NetworkManagementHelper {
 					+ "Must be a valid Instance Node.");
 		}
 		String sAllNetDevSelector = getNetworkDevicesSelector(mgmtNode);
-		String sNetDevSelector = "." + sAllNetDevSelector
-				+ (netDevName == null ? "" : "[@device='" + netDevName + "']");
+		String sNetDevCriteria = "";
+		if (netDevName != null) {
+			sNetDevCriteria = "[@" + NetworkDeviceNamesLoader.DEVICE_NAME_ATTR
+					+ "='" + netDevName + "']";
+		}
+		String sNetDevSelector = "." + sAllNetDevSelector + sNetDevCriteria;
 		try {
 			return XPathExpander.evaluateAsNodeList(sNetDevSelector,
 					instanceNode);
@@ -1182,13 +1186,13 @@ public abstract class NetworkManagementHelper {
 		} catch (NullPointerException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
-			String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
+			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			Node netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
-			String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
+			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
@@ -1288,7 +1292,7 @@ public abstract class NetworkManagementHelper {
 	public static Node getManagementNetworkDeviceNameNode(Node instanceNode,
 			Node mgmtNode) throws ResourcesDescriptorException {
 		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
-		String attr = NetworkDeviceNamesLoader.DEVICE_ATTR;
+		String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
 		return netNode.getAttributes().getNamedItem(attr);
 	}
 

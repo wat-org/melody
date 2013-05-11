@@ -33,19 +33,19 @@ public abstract class FireWallManagementHelper {
 	 * XML attribute of the FireWall Management Node, which contains the TCP
 	 * FireWall Rule Nodes Selector
 	 */
-	public static final String FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE = "tcpFireWallRulesSelector";
+	public static final String FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE = "tcp-firewall-rules-selector";
 
 	/**
 	 * XML attribute of the FireWall Management Node, which contains the TCP
 	 * FireWall Rule Nodes Selector
 	 */
-	public static final String FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE = "udpFireWallRulesSelector";
+	public static final String FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE = "udp-firewall-rules-selector";
 
 	/**
 	 * XML attribute of the FireWall Management Node, which contains the TCP
 	 * FireWall Rule Nodes Selector
 	 */
-	public static final String FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE = "icmpFireWallRulesSelector";
+	public static final String FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE = "icmp-firewall-rules-selector";
 
 	/**
 	 * Default XPath Expression to select TCP FireWall Rules Nodes in the RD,

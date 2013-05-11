@@ -30,7 +30,7 @@ public class IcmpFwRuleDecomposed extends AbstractFwRuleDecomposed {
 
 	@Override
 	public String toString() {
-		return "{ " + "devive-name: " + getInterface() + ", protocol: "
+		return "{ " + "device-name: " + getInterface() + ", protocol: "
 				+ getProtocol() + ", from-ip: " + getFromIpRange()
 				+ ", to-ip: " + getToIpRange() + ", type: " + getType()
 				+ ", code: " + getCode() + ", direction: " + getDirection()
