@@ -16,7 +16,8 @@ public class Messages extends NLS {
 
 	public static String NetworkDeviceNameListEx_DEVICE_ALREADY_DEFINE;
 
-	public static String NetworkDeviceEx_MISSING_ATTR;
+	public static String NetworkDevLoaderEx_MISSING_ATTR;
+	public static String NetworkDevLoaderEx_GENERIC_ERROR;
 
 	public static String NetMgmtMsg_INTRO;
 	public static String NetMgmtMsg_RESUME;

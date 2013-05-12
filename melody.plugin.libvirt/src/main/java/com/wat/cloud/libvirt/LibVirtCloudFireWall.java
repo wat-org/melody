@@ -15,18 +15,17 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.firewall.AbstractTcpUdpFwRuleDecomposed;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
-import com.wat.melody.common.firewall.FwRuleDecomposed;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.IcmpCode;
-import com.wat.melody.common.firewall.IcmpFwRuleDecomposed;
 import com.wat.melody.common.firewall.IcmpType;
-import com.wat.melody.common.firewall.Interface;
 import com.wat.melody.common.firewall.Protocol;
-import com.wat.melody.common.firewall.TcpFwRuleDecomposed;
-import com.wat.melody.common.firewall.UdpFwRuleDecomposed;
+import com.wat.melody.common.firewall.SimpleAbstractTcpUdpFireWallwRule;
+import com.wat.melody.common.firewall.SimpleFireWallRule;
+import com.wat.melody.common.firewall.SimpleIcmpFireWallRule;
+import com.wat.melody.common.firewall.SimpleTcpFireWallRule;
+import com.wat.melody.common.firewall.SimpleUdpFireWallRule;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodeException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
 import com.wat.melody.common.network.IpRange;
@@ -48,7 +47,7 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Log log = LogFactory.getLog(LibVirtCloudFireWall.class);
 
-	public static FwRulesDecomposed getFireWallRules(Domain d,
+	public static FireWallRules getFireWallRules(Domain d,
 			NetworkDeviceName netdev) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -61,7 +60,7 @@ public abstract class LibVirtCloudFireWall {
 					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 		try {
-			FwRulesDecomposed rules = new FwRulesDecomposed();
+			FireWallRules rules = new FireWallRules();
 			Connect cnx = d.getConnect();
 			String sSGName = LibVirtCloud.getSecurityGroup(d, netdev);
 			NetworkFilter nf = cnx.networkFilterLookupByName(sSGName);
@@ -70,22 +69,21 @@ public abstract class LibVirtCloudFireWall {
 
 			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
 			Node n = null;
-			Interface inter = Interface.parseString(netdev.getValue());
 			for (int i = 0; i < nl.getLength(); i++) {
 				n = nl.item(i);
 				String sProtocol = XPathExpander.evaluateAsString(
 						"./node-name(*)", n);
 				Protocol proto = Protocol.parseString(sProtocol);
-				FwRuleDecomposed rule = null;
+				SimpleFireWallRule rule = null;
 				switch (proto) {
 				case TCP:
-					rule = createTcpRuleFromNode(inter, n);
+					rule = createTcpRuleFromNode(n);
 					break;
 				case UDP:
-					rule = createUdpRuleFromNode(inter, n);
+					rule = createUdpRuleFromNode(n);
 					break;
 				case ICMP:
-					rule = createIcmpRuleFromNode(inter, n);
+					rule = createIcmpRuleFromNode(n);
 					break;
 				}
 				if (rule == null) {
@@ -100,8 +98,7 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static FwRuleDecomposed createTcpRuleFromNode(Interface inter,
-			Node n) {
+	private static SimpleFireWallRule createTcpRuleFromNode(Node n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -127,16 +124,15 @@ public abstract class LibVirtCloudFireWall {
 			String sAccess = XPathExpander.evaluateAsString("./@action", n);
 			Access access = sAccess.equalsIgnoreCase("accept") ? Access.ALLOW
 					: Access.DENY;
-			return new TcpFwRuleDecomposed(inter, fromIp, fromPorts, toIp,
-					toPorts, dir, access);
+			return new SimpleTcpFireWallRule(fromIp, fromPorts, toIp, toPorts,
+					dir, access);
 		} catch (XPathExpressionException | IllegalIpRangeException
 				| IllegalPortRangeException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	private static FwRuleDecomposed createUdpRuleFromNode(Interface inter,
-			Node n) {
+	private static SimpleFireWallRule createUdpRuleFromNode(Node n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -162,16 +158,15 @@ public abstract class LibVirtCloudFireWall {
 			String sAccess = XPathExpander.evaluateAsString("./@action", n);
 			Access access = sAccess.equalsIgnoreCase("accept") ? Access.ALLOW
 					: Access.DENY;
-			return new UdpFwRuleDecomposed(inter, fromIp, fromPorts, toIp,
-					toPorts, dir, access);
+			return new SimpleUdpFireWallRule(fromIp, fromPorts, toIp, toPorts,
+					dir, access);
 		} catch (XPathExpressionException | IllegalIpRangeException
 				| IllegalPortRangeException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	private static FwRuleDecomposed createIcmpRuleFromNode(Interface inter,
-			Node n) {
+	private static SimpleFireWallRule createIcmpRuleFromNode(Node n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -201,8 +196,8 @@ public abstract class LibVirtCloudFireWall {
 				code = IcmpCode.parseString(sCode);
 			}
 
-			return new IcmpFwRuleDecomposed(inter, fromIp, toIp, type, code,
-					dir, access);
+			return new SimpleIcmpFireWallRule(fromIp, toIp, type, code, dir,
+					access);
 		} catch (XPathExpressionException | IllegalIpRangeException
 				| IllegalIcmpTypeException | IllegalIcmpCodeException Ex) {
 			throw new RuntimeException(Ex);
@@ -210,7 +205,7 @@ public abstract class LibVirtCloudFireWall {
 	}
 
 	public static void revokeFireWallRules(Domain d, NetworkDeviceName netdev,
-			FwRulesDecomposed rules) {
+			FireWallRules rules) {
 		if (rules == null || rules.size() == 0) {
 			return;
 		}
@@ -232,17 +227,19 @@ public abstract class LibVirtCloudFireWall {
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());
 
-			for (FwRuleDecomposed rule : rules) {
+			for (SimpleFireWallRule rule : rules) {
 				Node n = null;
 				switch (rule.getProtocol()) {
 				case TCP:
-					n = selectTcpUdpFwRuleNode(doc, (TcpFwRuleDecomposed) rule);
+					n = selectTcpUdpFwRuleNode(doc,
+							(SimpleTcpFireWallRule) rule);
 					break;
 				case UDP:
-					n = selectTcpUdpFwRuleNode(doc, (UdpFwRuleDecomposed) rule);
+					n = selectTcpUdpFwRuleNode(doc,
+							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					n = selectIcmpFwRuleNode(doc, (IcmpFwRuleDecomposed) rule);
+					n = selectIcmpFwRuleNode(doc, (SimpleIcmpFireWallRule) rule);
 					break;
 				}
 				if (n == null) {
@@ -259,7 +256,7 @@ public abstract class LibVirtCloudFireWall {
 	}
 
 	private static Node selectTcpUdpFwRuleNode(Doc doc,
-			AbstractTcpUdpFwRuleDecomposed rule) {
+			SimpleAbstractTcpUdpFireWallwRule rule) {
 		try {
 			return doc.evaluateAsNode("/filter/rule[" + " @action='"
 					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
@@ -283,7 +280,8 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static Node selectIcmpFwRuleNode(Doc doc, IcmpFwRuleDecomposed rule) {
+	private static Node selectIcmpFwRuleNode(Doc doc,
+			SimpleIcmpFireWallRule rule) {
 		try {
 			String typeCond = " and not(exists(@type))";
 			String codeCond = " and not(exists(@code))";
@@ -309,7 +307,7 @@ public abstract class LibVirtCloudFireWall {
 	}
 
 	public static void authorizeFireWallRules(Domain d,
-			NetworkDeviceName netdev, FwRulesDecomposed rules) {
+			NetworkDeviceName netdev, FireWallRules rules) {
 		if (rules == null || rules.size() == 0) {
 			return;
 		}
@@ -331,20 +329,21 @@ public abstract class LibVirtCloudFireWall {
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());
 
-			for (FwRuleDecomposed rule : rules) {
+			for (SimpleFireWallRule rule : rules) {
 				Node nrule = doc.getDocument().createElement("rule");
 				Node nin = null;
 				switch (rule.getProtocol()) {
 				case TCP:
 					nin = createTcpUdpRuleNode(nrule,
-							(TcpFwRuleDecomposed) rule);
+							(SimpleTcpFireWallRule) rule);
 					break;
 				case UDP:
 					nin = createTcpUdpRuleNode(nrule,
-							(UdpFwRuleDecomposed) rule);
+							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					nin = createIcmpRuleNode(nrule, (IcmpFwRuleDecomposed) rule);
+					nin = createIcmpRuleNode(nrule,
+							(SimpleIcmpFireWallRule) rule);
 					break;
 				}
 				if (nin == null) {
@@ -369,7 +368,7 @@ public abstract class LibVirtCloudFireWall {
 	}
 
 	private static Node createTcpUdpRuleNode(Node nrule,
-			AbstractTcpUdpFwRuleDecomposed rule) {
+			SimpleAbstractTcpUdpFireWallwRule rule) {
 		Node n = nrule.getOwnerDocument().createElement(
 				rule.getProtocol().getValue());
 		Doc.createAttribute("state", "NEW", n);
@@ -392,7 +391,8 @@ public abstract class LibVirtCloudFireWall {
 		return n;
 	}
 
-	private static Node createIcmpRuleNode(Node nrule, IcmpFwRuleDecomposed rule) {
+	private static Node createIcmpRuleNode(Node nrule,
+			SimpleIcmpFireWallRule rule) {
 		Node n = nrule.getOwnerDocument().createElement("icmp");
 		Doc.createAttribute("state", "NEW", n);
 

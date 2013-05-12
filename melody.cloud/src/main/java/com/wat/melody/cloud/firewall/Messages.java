@@ -6,7 +6,9 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.firewall.messages";
 
-	public static String FWRulesMgmtEx_INVALID_FWRULES_SELECTOR;
+	public static String FWRulesMgmtEx_INVALID_TCP_FWRULES_SELECTOR;
+	public static String FWRulesMgmtEx_INVALID_UDP_FWRULES_SELECTOR;
+	public static String FWRulesMgmtEx_INVALID_ICMP_FWRULES_SELECTOR;
 
 	static {
 		// initialize resource bundle

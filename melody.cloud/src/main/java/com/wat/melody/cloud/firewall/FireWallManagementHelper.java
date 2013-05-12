@@ -147,7 +147,7 @@ public abstract class FireWallManagementHelper {
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(
-					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					Messages.FWRulesMgmtEx_INVALID_TCP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}
 	}
@@ -193,7 +193,7 @@ public abstract class FireWallManagementHelper {
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(
-					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					Messages.FWRulesMgmtEx_INVALID_UDP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}
 	}
@@ -239,7 +239,7 @@ public abstract class FireWallManagementHelper {
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(
-					Messages.FWRulesMgmtEx_INVALID_FWRULES_SELECTOR,
+					Messages.FWRulesMgmtEx_INVALID_ICMP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}
 	}

@@ -51,7 +51,7 @@ public class Interface {
 		return new Interface(sInterface);
 	}
 
-	private String msValue;
+	private String _value;
 
 	public Interface(String sInterface) throws IllegalInterfaceException {
 		setValue(sInterface);
@@ -64,7 +64,7 @@ public class Interface {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class Interface {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sInterface) throws IllegalInterfaceException {
@@ -94,13 +94,13 @@ public class Interface {
 			throw new IllegalInterfaceException(Messages.bind(
 					Messages.InterfaceEx_EMPTY, sInterface));
 		} else if (sInterface.equalsIgnoreCase(_ALL)) {
-			msValue = _ALL;
+			_value = _ALL;
 			return previous;
 		} else if (!sInterface.matches("^" + PATTERN + "$")) {
 			throw new IllegalInterfaceException(Messages.bind(
 					Messages.InterfaceEx_INVALID, sInterface, PATTERN));
 		}
-		msValue = sInterface;
+		_value = sInterface;
 		return previous;
 	}
 

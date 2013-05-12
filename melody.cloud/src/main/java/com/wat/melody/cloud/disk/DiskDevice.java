@@ -11,17 +11,26 @@ public class DiskDevice {
 	private static boolean DEFAULT_IS_ROOT_DEVICE = false;
 	private static boolean DEFAULT_DELETE_ON_TERMINATION = true;
 
-	private DiskDeviceSize moDiskDeviceSize;
-	private DiskDeviceName moDiskDeviceName;
-	private boolean mbDeleteOnTermination;
-	private boolean mbRootDevice;
+	private DiskDeviceSize _size;
+	private DiskDeviceName _name;
+	private boolean _deleteOnTermination;
+	private boolean _rootDevice;
 
+	/**
+	 * @throws IllegalArgumentException
+	 *             if the given disk device name is <tt>null</tt>.
+	 */
 	public DiskDevice(DiskDeviceName devname, DiskDeviceSize devsize,
 			Boolean delOnTermination, Boolean isRootDevice) {
 		setDiskDeviceName(devname);
 		setDiskDeviceSize(devsize);
 		setDeleteOnTermination(delOnTermination);
 		setRootDevice(isRootDevice);
+	}
+
+	@Override
+	public int hashCode() {
+		return 0;
 	}
 
 	@Override
@@ -32,7 +41,7 @@ public class DiskDevice {
 				+ ", size:"
 				+ getSize()
 				+ " Go"
-				+ (isRootDevice() == true ? ", rootDevice:true" : "")
+				+ (isRootDevice() == true ? ", root-device:true" : "")
 				+ (isDeletedOnTermination() == false ? ", delete-on-termination:false "
 						: "") + " }";
 	}
@@ -56,11 +65,11 @@ public class DiskDevice {
 	 * @return the size, in Go, of this object.
 	 */
 	public int getSize() {
-		return moDiskDeviceSize.getSize();
+		return _size.getSize();
 	}
 
 	public DiskDeviceSize getDiskDeviceSize() {
-		return moDiskDeviceSize;
+		return _size;
 	}
 
 	public DiskDeviceSize setDiskDeviceSize(DiskDeviceSize devsize) {
@@ -68,27 +77,26 @@ public class DiskDevice {
 			devsize = DEFAULT_DISK_DEVICE_SIZE;
 		}
 		DiskDeviceSize previous = getDiskDeviceSize();
-		moDiskDeviceSize = devsize;
+		_size = devsize;
 		return previous;
 	}
 
 	public DiskDeviceName getDiskDeviceName() {
-		return moDiskDeviceName;
+		return _name;
 	}
 
 	/**
 	 * <p>
 	 * Set the disk device name of this object.
 	 * </p>
-	 * <ul>
-	 * <li>The given disk device name should match the pattern
-	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
 	 * 
 	 * @param devname
 	 *            is the disk device name to assign to this object.
 	 * 
 	 * @return the disk device name, before this operation.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given disk device name is <tt>null</tt>.
 	 */
 	public DiskDeviceName setDiskDeviceName(DiskDeviceName devname) {
 		if (devname == null) {
@@ -97,12 +105,12 @@ public class DiskDevice {
 					+ ".");
 		}
 		DiskDeviceName previous = getDiskDeviceName();
-		moDiskDeviceName = devname;
+		_name = devname;
 		return previous;
 	}
 
 	public boolean isDeletedOnTermination() {
-		return mbDeleteOnTermination;
+		return _deleteOnTermination;
 	}
 
 	public boolean setDeleteOnTermination(Boolean deleteOnTermination) {
@@ -110,12 +118,12 @@ public class DiskDevice {
 			deleteOnTermination = DEFAULT_DELETE_ON_TERMINATION;
 		}
 		boolean previous = isDeletedOnTermination();
-		mbDeleteOnTermination = deleteOnTermination;
+		_deleteOnTermination = deleteOnTermination;
 		return previous;
 	}
 
 	public boolean isRootDevice() {
-		return mbRootDevice;
+		return _rootDevice;
 	}
 
 	public boolean setRootDevice(Boolean isRootDevice) {
@@ -123,7 +131,7 @@ public class DiskDevice {
 			isRootDevice = DEFAULT_IS_ROOT_DEVICE;
 		}
 		boolean previous = isRootDevice();
-		mbRootDevice = isRootDevice;
+		_rootDevice = isRootDevice;
 		return previous;
 	}
 

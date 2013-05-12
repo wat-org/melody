@@ -18,20 +18,20 @@ public enum InstanceType {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link InstanceType} object.
+	 * Convert the given <tt>String</tt> to a {@link InstanceType} object.
 	 * </p>
 	 * 
 	 * @param sType
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return an <code>InstanceType</code> object, whose equal to the given
-	 *         input <code>String</code>.
+	 *         input <tt>String</tt>.
 	 * 
 	 * @throws IllegalInstanceTypeException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>InstanceType</code> Enumeration Constant.
+	 *             if the given input <tt>String</tt> is not a valid
+	 *             {@link InstanceType} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static InstanceType parseString(String sType)
 			throws IllegalInstanceTypeException {
@@ -56,19 +56,19 @@ public enum InstanceType {
 				Arrays.asList(InstanceType.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private InstanceType(String v) {
-		this.msValue = v;
+		this._value = v;
 	}
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	private String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

@@ -11,9 +11,10 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceHelper;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.firewall.FwRuleDecomposed;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.Interface;
+import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
 import com.wat.melody.common.keypair.KeyPairName;
 
 /**
@@ -228,8 +229,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		try {
 			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(current, target);
 		} catch (DiskDeviceException Ex) {
-			throw new OperationException(Messages.UpdateDiskDevEx_IMPOSSIBLE,
-					Ex);
+			throw new OperationException(Ex);
 		}
 
 		DiskDeviceList disksToAdd = null;
@@ -308,7 +308,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException,
+			FireWallRulesPerDevice fireWallRules) throws OperationException,
 			InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateFireWallMsg_NO_INSTANCE);
@@ -323,16 +323,17 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		}
 	}
 
-	public void updateInstanceFireWallRules(FwRulesDecomposed target)
+	public void updateInstanceFireWallRules(
+			FireWallRulesPerDevice expectedRulesPerDevice)
 			throws OperationException, InterruptedException {
 		NetworkDeviceNameList netdevs = getInstanceNetworkDevices();
 		for (NetworkDeviceName netdev : netdevs) {
-			FwRulesDecomposed current = getInstanceFireWallRules(netdev);
-			FwRulesDecomposed expected = getExpectedFireWallRules(target,
-					netdev);
-			FwRulesDecomposed toAdd = FireWallRulesHelper
+			FireWallRules current = getInstanceFireWallRules(netdev);
+			FireWallRules expected = getExpectedFireWallRules(
+					expectedRulesPerDevice, netdev);
+			FireWallRules toAdd = FireWallRulesHelper
 					.computeFireWallRulesToAdd(current, expected);
-			FwRulesDecomposed toRemove = FireWallRulesHelper
+			FireWallRules toRemove = FireWallRulesHelper
 					.computeFireWallRulesToRemove(current, expected);
 
 			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
@@ -343,14 +344,24 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		}
 	}
 
-	private FwRulesDecomposed getExpectedFireWallRules(
-			FwRulesDecomposed target, NetworkDeviceName netDev) {
-		FwRulesDecomposed rules = new FwRulesDecomposed();
-		for (FwRuleDecomposed rule : target) {
-			if (rule.getInterface().getValue().equals(netDev.getValue())
-					|| rule.getInterface().equals(Interface.ALL)) {
-				rules.add(rule);
+	private FireWallRules getExpectedFireWallRules(
+			FireWallRulesPerDevice rulesPerDevice, NetworkDeviceName netDev) {
+		FireWallRules rules = new FireWallRules();
+		FireWallRules tmp = rulesPerDevice.get(Interface.ALL);
+		if (tmp != null) {
+			rules.addAll(tmp);
+		}
+		try {
+			tmp = rulesPerDevice.get(Interface.parseString(netDev.getValue()));
+			if (tmp != null) {
+				rules.addAll(tmp);
 			}
+		} catch (IllegalInterfaceException e) {
+			throw new RuntimeException("Unexecpted error while creating an "
+					+ "Interface from a NetworkDeviceName equals to '" + netDev
+					+ "'. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.");
 		}
 		return rules;
 	}

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
 	<global-fwrules>
-		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
+		<!-- This melody expression is crazy (because it mentioned §[srv]§, which is defined in the sequence descriptor), but it works -->
+		<ssh access="allow" devices-name="§[melody:getManagementNetworkDeviceName(§[srv]§)]§" directions="in" from-ips="all" to-ports="22"/>
 	</global-fwrules>
 	
 	<models>
@@ -10,12 +11,15 @@
 			<disk-management disk-devices-selector="//disk"/>
 			<fwrules>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
-				<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
+				<tcp access="allow" devices-name="eth1" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
 				<tcp herit="./environment/global-fwrules/ssh"/>
 				<udp access="allow" directions="in" from-ips="all" to-ports="51,123"/>
-				<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+				<udp access="allow" devices-name="eth1" directions="in" from-ips="all" to-ports="514"/>
 				<ucp herit="./environment/global-fwrules/ssh"/>
 				<icmp access="allow" directions="in" from-ips="all"/>
+				<icmp access="allow" codes="8" devices-name="eth0" directions="in" from-ips="all" types="4,5"/>
+				<icmp access="allow" codes="6,7" devices-name="eth1" directions="in" from-ips="all" types="3"/>
+				<icmp access="allow" codes="6,7" devices-name="eth2" directions="in" from-ips="all" types="3"/>
 				<icmp access="allow" codes="all" directions="in" from-ips="all" types="0,8"/>
 			</fwrules>
 			<disks>

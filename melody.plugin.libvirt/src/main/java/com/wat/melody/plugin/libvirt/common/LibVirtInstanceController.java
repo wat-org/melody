@@ -14,7 +14,7 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.keypair.KeyPairName;
 
 /**
@@ -165,19 +165,19 @@ public class LibVirtInstanceController extends DefaultInstanceController
 		return LibVirtCloud.getNetworkDeviceDatas(this.getInstance(), netdev);
 	}
 
-	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
 		return LibVirtCloudFireWall
 				.getFireWallRules(this.getInstance(), netDev);
 	}
 
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException {
+			FireWallRules toRevoke) throws OperationException {
 		LibVirtCloudFireWall.revokeFireWallRules(this.getInstance(), netDev,
 				toRevoke);
 	}
 
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException {
+			FireWallRules toAutorize) throws OperationException {
 		LibVirtCloudFireWall.authorizeFireWallRules(this.getInstance(), netDev,
 				toAutorize);
 	}

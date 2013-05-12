@@ -12,7 +12,8 @@ import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.DUNIDDoc;
@@ -204,27 +205,27 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException,
+			FireWallRulesPerDevice fireWallRules) throws OperationException,
 			InterruptedException {
 		getInstance().ensureInstanceFireWallRulesAreUpToDate(fireWallRules);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException,
+			FireWallRules toRevoke) throws OperationException,
 			InterruptedException {
 		getInstance().revokeInstanceFireWallRules(netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException,
+			FireWallRules toAutorize) throws OperationException,
 			InterruptedException {
 		getInstance().authorizeInstanceFireWallRules(netDev, toAutorize);
 	}
 
 	@Override
-	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
 		return getInstance().getInstanceFireWallRules(netDev);
 	}
 

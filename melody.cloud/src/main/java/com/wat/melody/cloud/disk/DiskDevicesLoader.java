@@ -135,7 +135,7 @@ public class DiskDevicesLoader {
 			DiskDeviceName devname = loadDeviceName(n);
 			if (devname == null) {
 				throw new ResourcesDescriptorException(n, Messages.bind(
-						Messages.DiskLoadEx_MISSING_ATTR, DEVICE_ATTR));
+						Messages.DiskDevLoaderEx_MISSING_ATTR, DEVICE_ATTR));
 			}
 			DiskDeviceSize devsize = loadDeviceSize(n);
 			Boolean delonterm = loadDeleteOnTermination(n);
@@ -145,9 +145,8 @@ public class DiskDevicesLoader {
 				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
 						isroot));
 			} catch (IllegalDiskDeviceListException Ex) {
-				throw new ResourcesDescriptorException(n, "This Disk device "
-						+ "Node description is not valid. Read message "
-						+ "bellow to get more details about this issue.", Ex);
+				throw new ResourcesDescriptorException(n,
+						Messages.DiskDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}
 		return dl;

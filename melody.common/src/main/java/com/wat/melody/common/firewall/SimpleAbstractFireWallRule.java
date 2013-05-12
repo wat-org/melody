@@ -7,44 +7,28 @@ import com.wat.melody.common.network.IpRange;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractFwRuleDecomposed implements FwRuleDecomposed {
+public abstract class SimpleAbstractFireWallRule implements SimpleFireWallRule {
 
-	private static Interface DEFAULT_INTERFACE = Interface.ALL;
 	private static IpRange DEFAULT_FROM_IP_RANGE = IpRange.ALL;
 	private static IpRange DEFAULT_TO_IP_RANGE = IpRange.ALL;
 	private static Direction DEFAULT_DIRECTION = Direction.IN;
 	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	private Interface moInterface = DEFAULT_INTERFACE;
-	private IpRange moFromIpRange = DEFAULT_FROM_IP_RANGE;
-	private IpRange moToIpRange = DEFAULT_TO_IP_RANGE;
-	private Direction meDirection = DEFAULT_DIRECTION;
-	private Access meAccess = DEFAULT_ACCESS;
+	private IpRange _fromIpRange = DEFAULT_FROM_IP_RANGE;
+	private IpRange _toIpRange = DEFAULT_TO_IP_RANGE;
+	private Direction _direction = DEFAULT_DIRECTION;
+	private Access _access = DEFAULT_ACCESS;
 
-	public AbstractFwRuleDecomposed(Interface inter, IpRange fromIpRange,
-			IpRange toIpRange, Direction direction, Access access) {
-		setInterface(inter);
+	public SimpleAbstractFireWallRule(IpRange fromIpRange, IpRange toIpRange,
+			Direction direction, Access access) {
 		setFromIpRange(fromIpRange);
 		setToIpRange(toIpRange);
 		setDirection(direction);
 		setAccess(access);
 	}
 
-	public Interface getInterface() {
-		return moInterface;
-	}
-
-	public Interface setInterface(Interface inter) {
-		if (inter == null) {
-			inter = DEFAULT_INTERFACE;
-		}
-		Interface previous = getInterface();
-		moInterface = inter;
-		return previous;
-	}
-
 	public IpRange getFromIpRange() {
-		return moFromIpRange;
+		return _fromIpRange;
 	}
 
 	public IpRange setFromIpRange(IpRange fromIpRange) {
@@ -52,12 +36,12 @@ public abstract class AbstractFwRuleDecomposed implements FwRuleDecomposed {
 			fromIpRange = DEFAULT_FROM_IP_RANGE;
 		}
 		IpRange previous = getFromIpRange();
-		moFromIpRange = fromIpRange;
+		_fromIpRange = fromIpRange;
 		return previous;
 	}
 
 	public IpRange getToIpRange() {
-		return moToIpRange;
+		return _toIpRange;
 	}
 
 	public IpRange setToIpRange(IpRange toIpRange) {
@@ -65,12 +49,12 @@ public abstract class AbstractFwRuleDecomposed implements FwRuleDecomposed {
 			toIpRange = DEFAULT_TO_IP_RANGE;
 		}
 		IpRange previous = getToIpRange();
-		moToIpRange = toIpRange;
+		_toIpRange = toIpRange;
 		return previous;
 	}
 
 	public Direction getDirection() {
-		return meDirection;
+		return _direction;
 	}
 
 	public Direction setDirection(Direction direction) {
@@ -78,12 +62,12 @@ public abstract class AbstractFwRuleDecomposed implements FwRuleDecomposed {
 			direction = DEFAULT_DIRECTION;
 		}
 		Direction previous = getDirection();
-		this.meDirection = direction;
+		this._direction = direction;
 		return previous;
 	}
 
 	public Access getAccess() {
-		return meAccess;
+		return _access;
 	}
 
 	public Access setAccess(Access access) {
@@ -91,7 +75,7 @@ public abstract class AbstractFwRuleDecomposed implements FwRuleDecomposed {
 			access = DEFAULT_ACCESS;
 		}
 		Access previous = getAccess();
-		this.meAccess = access;
+		this._access = access;
 		return previous;
 	}
 

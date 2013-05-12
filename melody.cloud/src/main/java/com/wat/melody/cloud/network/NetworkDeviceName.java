@@ -11,24 +11,57 @@ public class NetworkDeviceName {
 
 	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";
 
-	public static NetworkDeviceName parseString(String sInterface)
+	/**
+	 * <p>
+	 * create a new {@link NetworkDeviceName}, with the given name.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>The given name should match the pattern
+	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 *            is the name to assign to this object.
+	 * 
+	 * @throws IllegalNetworkDeviceNameException
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given size is <tt>null</tt>.
+	 */
+	public static NetworkDeviceName parseString(String name)
 			throws IllegalNetworkDeviceNameException {
-		return new NetworkDeviceName(sInterface);
+		return new NetworkDeviceName(name);
 	}
 
-	private String msValue;
+	private String _value;
 
-	public NetworkDeviceName() {
-		initValue();
-	}
-
-	public NetworkDeviceName(String sDeviceName)
+	/**
+	 * <p>
+	 * create a new {@link NetworkDeviceName}, with the given name.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>The given name should match the pattern
+	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 *            is the name to assign to this object.
+	 * 
+	 * @throws IllegalNetworkDeviceNameException
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given size is <tt>null</tt>.
+	 */
+	public NetworkDeviceName(String name)
 			throws IllegalNetworkDeviceNameException {
-		setValue(sDeviceName);
+		setValue(name);
 	}
 
-	private void initValue() {
-		msValue = null;
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
@@ -49,43 +82,46 @@ public class NetworkDeviceName {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	/**
 	 * <p>
-	 * Set the network device name of this object.
+	 * Set the name of this object.
 	 * </p>
+	 * 
 	 * <ul>
-	 * <li>The given network device name should match the pattern
+	 * <li>The given name should match the pattern
 	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
 	 * </ul>
 	 * 
-	 * @param sDeviceName
-	 *            is the network device name to assign to this object.
+	 * @param name
+	 *            is the name to assign to this object.
 	 * 
-	 * @return the network device name, before this operation.
+	 * @return the name of this object, before this operation.
 	 * 
 	 * @throws IllegalNetworkDeviceNameException
-	 *             if the given network device name is invalid.
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given size is <tt>null</tt>.
 	 */
-	private String setValue(String sDeviceName)
+	private String setValue(String name)
 			throws IllegalNetworkDeviceNameException {
-		if (sDeviceName == null) {
+		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a String (a linux Network Device name)");
 		}
-		if (sDeviceName.trim().length() == 0) {
+		if (name.trim().length() == 0) {
 			throw new IllegalNetworkDeviceNameException(Messages.bind(
-					Messages.NetworkDeviceNameEx_EMPTY, sDeviceName));
+					Messages.NetworkDeviceNameEx_EMPTY, name));
 		}
-		if (!sDeviceName.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
+		if (!name.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
 			throw new IllegalNetworkDeviceNameException(Messages.bind(
-					Messages.NetworkDeviceNameEx_INVALID, sDeviceName,
+					Messages.NetworkDeviceNameEx_INVALID, name,
 					NETWORK_DEVICE_NAME_PATTERN));
 		}
 		String previous = getValue();
-		msValue = sDeviceName;
+		_value = name;
 		return previous;
 	}
 

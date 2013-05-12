@@ -2,6 +2,8 @@ package com.wat.melody.cloud.instance;
 
 import org.eclipse.osgi.util.NLS;
 
+import com.wat.melody.common.ex.Util;
+
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.instance.messages";
@@ -37,7 +39,6 @@ public class Messages extends NLS {
 	public static String UpdateDiskDevMsg_NO_INSTANCE;
 	public static String UpdateDiskDevEx_INVALID_INSTANCE_ID;
 	public static String UpdateDiskDevMsg_DISK_DEVICES_RESUME;
-	public static String UpdateDiskDevEx_IMPOSSIBLE;
 
 	public static String UpdateNetDevMsg_NO_INSTANCE;
 	public static String UpdateNetDevEx_INVALID_INSTANCE_ID;
@@ -60,6 +61,10 @@ public class Messages extends NLS {
 	}
 
 	public static String bind(String message, Object... bindings) {
+		for (int i = 0; i < bindings.length; i++) {
+			bindings[i] = bindings[i].toString().replaceAll(Util.NEW_LINE,
+					Util.NEW_LINE + "  ");
+		}
 		return NLS.bind(message, bindings);
 	}
 

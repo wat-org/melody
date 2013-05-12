@@ -4,7 +4,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -21,7 +21,7 @@ public class UpdateFireWall extends AbstractOperation {
 	 */
 	public static final String UPDATE_FIREWALL = "UpdateFireWall";
 
-	private FwRulesDecomposed maFwRules;
+	private FireWallRulesPerDevice _rulesPerDevice;
 
 	public UpdateFireWall() {
 		super();
@@ -29,7 +29,7 @@ public class UpdateFireWall extends AbstractOperation {
 	}
 
 	private void initFwRules() {
-		maFwRules = null;
+		_rulesPerDevice = null;
 	}
 
 	@Override
@@ -38,8 +38,7 @@ public class UpdateFireWall extends AbstractOperation {
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			setFwRules(new FireWallRulesLoader().load(getTargetNode())
-					.decompose());
+			setFwRules(new FireWallRulesLoader().load(getTargetNode()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -58,17 +57,18 @@ public class UpdateFireWall extends AbstractOperation {
 		}
 	}
 
-	private FwRulesDecomposed getFwRules() {
-		return maFwRules;
+	private FireWallRulesPerDevice getFwRules() {
+		return _rulesPerDevice;
 	}
 
-	private FwRulesDecomposed setFwRules(FwRulesDecomposed fwrs) {
+	private FireWallRulesPerDevice setFwRules(FireWallRulesPerDevice fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid FwRules.");
+					+ "Must be a valid "
+					+ FireWallRulesPerDevice.class.getCanonicalName() + ".");
 		}
-		FwRulesDecomposed previous = getFwRules();
-		maFwRules = fwrs;
+		FireWallRulesPerDevice previous = getFwRules();
+		_rulesPerDevice = fwrs;
 		return previous;
 	}
 

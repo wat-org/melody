@@ -11,24 +11,56 @@ public class DiskDeviceName {
 
 	public static final String DISK_DEVICE_NAME_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
 
-	public static DiskDeviceName parseString(String sDiskDeviceName)
+	/**
+	 * <p>
+	 * Create a new {@link DiskDeviceName}, with the given name.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>The given name should match the pattern
+	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 *            is the name to assign to this object.
+	 * 
+	 * @throws IllegalDiskDeviceNameException
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given name is <tt>null</tt>.
+	 */
+	public static DiskDeviceName parseString(String name)
 			throws IllegalDiskDeviceNameException {
-		return new DiskDeviceName(sDiskDeviceName);
+		return new DiskDeviceName(name);
 	}
 
-	private String msValue;
+	private String _value;
 
-	public DiskDeviceName() {
-		initValue();
+	/**
+	 * <p>
+	 * Create a new {@link DiskDeviceName}, with the given name.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>The given name should match the pattern
+	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 *            is the name to assign to this object.
+	 * 
+	 * @throws IllegalDiskDeviceNameException
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given name is <tt>null</tt>.
+	 */
+	public DiskDeviceName(String name) throws IllegalDiskDeviceNameException {
+		setValue(name);
 	}
 
-	public DiskDeviceName(String sDiskDeviceName)
-			throws IllegalDiskDeviceNameException {
-		setValue(sDiskDeviceName);
-	}
-
-	private void initValue() {
-		msValue = null;
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
@@ -49,43 +81,45 @@ public class DiskDeviceName {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	/**
 	 * <p>
-	 * Set the Disk device name of this object.
+	 * Set the name of this object.
 	 * </p>
+	 * 
 	 * <ul>
-	 * <li>The given Disk device name should match the pattern
+	 * <li>The given name should match the pattern
 	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
 	 * </ul>
 	 * 
-	 * @param sDiskDeviceName
-	 *            is the Disk device name to assign to this object.
+	 * @param name
+	 *            is the name to assign to this object.
 	 * 
-	 * @return the Disk device name, before this operation.
+	 * @return the name of this object before this call.
 	 * 
 	 * @throws IllegalDiskDeviceNameException
-	 *             if the given Disk device name is invalid.
+	 *             if the given name is invalid.
+	 * @throws IllegalArgumentException
+	 *             if the given name is <tt>null</tt>.
 	 */
-	private String setValue(String sDiskDeviceName)
-			throws IllegalDiskDeviceNameException {
-		if (sDiskDeviceName == null) {
+	private String setValue(String name) throws IllegalDiskDeviceNameException {
+		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a String (a linux Disk Device name)");
 		}
-		if (sDiskDeviceName.trim().length() == 0) {
+		if (name.trim().length() == 0) {
 			throw new IllegalDiskDeviceNameException(Messages.bind(
-					Messages.DiskDeviceNameEx_EMPTY, sDiskDeviceName));
+					Messages.DiskDeviceNameEx_EMPTY, name));
 		}
-		if (!sDiskDeviceName.matches("^" + DISK_DEVICE_NAME_PATTERN + "$")) {
+		if (!name.matches("^" + DISK_DEVICE_NAME_PATTERN + "$")) {
 			throw new IllegalDiskDeviceNameException(Messages.bind(
-					Messages.DiskDeviceNameEx_INVALID, sDiskDeviceName,
+					Messages.DiskDeviceNameEx_INVALID, name,
 					DISK_DEVICE_NAME_PATTERN));
 		}
 		String previous = getValue();
-		msValue = sDiskDeviceName;
+		_value = name;
 		return previous;
 	}
 

@@ -7,44 +7,29 @@ import com.wat.melody.common.network.IpRanges;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractFwRule implements FwRule {
+public abstract class ComplexAbstractFireWallRule implements
+		ComplexFireWallRule {
 
-	private static Interfaces DEFAULT_INTERFACES = Interfaces.ALL;
 	private static IpRanges DEFAULT_FROM_IP_RANGES = IpRanges.ALL;
 	private static IpRanges DEFAULT_TO_IP_RANGES = IpRanges.ALL;
 	private static Directions DEFAULT_DIRECTIONS = Directions.ALL;
 	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	private Interfaces moInterfaces = DEFAULT_INTERFACES;
-	private IpRanges moFromIpRanges = DEFAULT_FROM_IP_RANGES;
-	private IpRanges moToIpRanges = DEFAULT_TO_IP_RANGES;
-	private Directions moDirections = DEFAULT_DIRECTIONS;
-	private Access meAccess = DEFAULT_ACCESS;
+	private IpRanges _fromIpRanges = DEFAULT_FROM_IP_RANGES;
+	private IpRanges _toIpRanges = DEFAULT_TO_IP_RANGES;
+	private Directions _directions = DEFAULT_DIRECTIONS;
+	private Access _access = DEFAULT_ACCESS;
 
-	public AbstractFwRule(Interfaces interfaces, IpRanges fromIpRanges,
+	public ComplexAbstractFireWallRule(IpRanges fromIpRanges,
 			IpRanges toIpRanges, Directions directions, Access access) {
-		setInterfaces(interfaces);
 		setFromIpRanges(fromIpRanges);
 		setToIpRanges(toIpRanges);
 		setDirections(directions);
 		setAccess(access);
 	}
 
-	public Interfaces getInterfaces() {
-		return moInterfaces;
-	}
-
-	public Interfaces setInterfaces(Interfaces inter) {
-		if (inter == null) {
-			inter = DEFAULT_INTERFACES;
-		}
-		Interfaces previous = getInterfaces();
-		moInterfaces = inter;
-		return previous;
-	}
-
 	public IpRanges getFromIpRanges() {
-		return moFromIpRanges;
+		return _fromIpRanges;
 	}
 
 	public IpRanges setFromIpRanges(IpRanges fromIpRanges) {
@@ -52,12 +37,12 @@ public abstract class AbstractFwRule implements FwRule {
 			fromIpRanges = DEFAULT_FROM_IP_RANGES;
 		}
 		IpRanges previous = getFromIpRanges();
-		moFromIpRanges = fromIpRanges;
+		_fromIpRanges = fromIpRanges;
 		return previous;
 	}
 
 	public IpRanges getToIpRanges() {
-		return moToIpRanges;
+		return _toIpRanges;
 	}
 
 	public IpRanges setToIpRanges(IpRanges toIpRanges) {
@@ -65,12 +50,12 @@ public abstract class AbstractFwRule implements FwRule {
 			toIpRanges = DEFAULT_TO_IP_RANGES;
 		}
 		IpRanges previous = getToIpRanges();
-		moToIpRanges = toIpRanges;
+		_toIpRanges = toIpRanges;
 		return previous;
 	}
 
 	public Directions getDirections() {
-		return moDirections;
+		return _directions;
 	}
 
 	public Directions setDirections(Directions directions) {
@@ -78,12 +63,12 @@ public abstract class AbstractFwRule implements FwRule {
 			directions = DEFAULT_DIRECTIONS;
 		}
 		Directions previous = getDirections();
-		this.moDirections = directions;
+		this._directions = directions;
 		return previous;
 	}
 
 	public Access getAccess() {
-		return meAccess;
+		return _access;
 	}
 
 	public Access setAccess(Access access) {
@@ -91,7 +76,7 @@ public abstract class AbstractFwRule implements FwRule {
 			access = DEFAULT_ACCESS;
 		}
 		Access previous = getAccess();
-		this.meAccess = access;
+		this._access = access;
 		return previous;
 	}
 

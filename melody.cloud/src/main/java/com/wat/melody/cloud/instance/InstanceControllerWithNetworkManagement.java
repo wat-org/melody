@@ -15,11 +15,10 @@ import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.cloud.network.exception.NetworkManagementException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
-import com.wat.melody.common.firewall.FwRuleDecomposed;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
-import com.wat.melody.common.firewall.Interface;
-import com.wat.melody.common.firewall.TcpFwRuleDecomposed;
-import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
+import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
+import com.wat.melody.common.firewall.SimpleFireWallRule;
+import com.wat.melody.common.firewall.SimpleTcpFireWallRule;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
@@ -206,27 +205,27 @@ public class InstanceControllerWithNetworkManagement extends
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException,
+			FireWallRulesPerDevice fireWallRules) throws OperationException,
 			InterruptedException {
 		getInstance().ensureInstanceFireWallRulesAreUpToDate(fireWallRules);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException,
+			FireWallRules toRevoke) throws OperationException,
 			InterruptedException {
 		getInstance().revokeInstanceFireWallRules(netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException,
+			FireWallRules toAutorize) throws OperationException,
 			InterruptedException {
 		getInstance().authorizeInstanceFireWallRules(netDev, toAutorize);
 	}
 
 	@Override
-	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
 		return getInstance().getInstanceFireWallRules(netDev);
 	}
 
@@ -283,18 +282,16 @@ public class InstanceControllerWithNetworkManagement extends
 		NetworkDeviceName netdev = nm.getManagementDatas()
 				.getNetworkDeviceName();
 		Port p = nm.getManagementDatas().getPort();
-		Interface inter = null;
 		PortRange toPorts = null;
 		try {
-			inter = Interface.parseString(netdev.getValue());
 			toPorts = new PortRange(p, p);
-		} catch (IllegalInterfaceException | IllegalPortRangeException Ex) {
+		} catch (IllegalPortRangeException Ex) {
 			throw new RuntimeException("BUG ! Cannot happened !", Ex);
 		}
-		FwRuleDecomposed rule = new TcpFwRuleDecomposed(inter, IpRange.ALL,
+		SimpleFireWallRule rule = new SimpleTcpFireWallRule(IpRange.ALL,
 				PortRange.ALL, IpRange.ALL, toPorts, Direction.IN, Access.ALLOW);
-		FwRulesDecomposed rules = new FwRulesDecomposed();
-		FwRulesDecomposed currentRules = getInstanceFireWallRules(netdev);
+		FireWallRules rules = new FireWallRules();
+		FireWallRules currentRules = getInstanceFireWallRules(netdev);
 		if (!currentRules.contains(rule)) {
 			rules.add(rule);
 		}

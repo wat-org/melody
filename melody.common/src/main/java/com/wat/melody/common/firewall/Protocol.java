@@ -53,14 +53,14 @@ public enum Protocol {
 				Arrays.asList(Protocol.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private Protocol(String sProtocol) {
-		this.msValue = sProtocol;
+		this._value = sProtocol;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

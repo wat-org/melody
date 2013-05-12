@@ -107,17 +107,16 @@ public class NetworkDeviceNamesLoader {
 			Node n = nl.item(i);
 			NetworkDeviceName netDevName = loadDeviceName(n);
 			if (netDevName == null) {
-				throw new ResourcesDescriptorException(n,
-						Messages.bind(Messages.NetworkDeviceEx_MISSING_ATTR,
-								DEVICE_NAME_ATTR));
+				throw new ResourcesDescriptorException(n, Messages.bind(
+						Messages.NetworkDevLoaderEx_MISSING_ATTR,
+						DEVICE_NAME_ATTR));
 			}
 
 			try {
 				dl.addNetworkDevice(netDevName);
 			} catch (IllegalNetworkDeviceNameListException Ex) {
-				throw new ResourcesDescriptorException(n, "This Network "
-						+ "Device Node description is not valid. Read message "
-						+ "bellow to get more details about this issue.", Ex);
+				throw new ResourcesDescriptorException(n,
+						Messages.NetworkDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}
 		return dl;

@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
 
 /**
  * 
@@ -9,16 +9,16 @@ import com.wat.melody.common.firewall.FwRulesDecomposed;
  */
 public class FireWallRulesHelper {
 
-	public static FwRulesDecomposed computeFireWallRulesToAdd(
-			FwRulesDecomposed current, FwRulesDecomposed target) {
-		FwRulesDecomposed networkToAdd = new FwRulesDecomposed(target);
+	public static FireWallRules computeFireWallRulesToAdd(
+			FireWallRules current, FireWallRules target) {
+		FireWallRules networkToAdd = new FireWallRules(target);
 		networkToAdd.removeAll(current);
 		return networkToAdd;
 	}
 
-	public static FwRulesDecomposed computeFireWallRulesToRemove(
-			FwRulesDecomposed current, FwRulesDecomposed target) {
-		FwRulesDecomposed networkToRemove = new FwRulesDecomposed(current);
+	public static FireWallRules computeFireWallRulesToRemove(
+			FireWallRules current, FireWallRules target) {
+		FireWallRules networkToRemove = new FireWallRules(current);
 		networkToRemove.removeAll(target);
 		return networkToRemove;
 	}

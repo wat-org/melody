@@ -5,10 +5,10 @@ package com.wat.melody.common.firewall;
  * @author Guillaume Cornet
  * 
  */
-public abstract interface FwRule {
+public abstract interface ComplexFireWallRule {
 
 	public abstract Protocol getProtocol();
 
-	public abstract FwRulesDecomposed decompose();
+	public abstract FireWallRules decompose();
 
 }

@@ -7,7 +7,7 @@ import com.wat.melody.common.network.IpRange;
  * @author Guillaume Cornet
  * 
  */
-public class IcmpFwRuleDecomposed extends AbstractFwRuleDecomposed {
+public class SimpleIcmpFireWallRule extends SimpleAbstractFireWallRule {
 
 	private static IcmpType DEFAULT_TYPE = IcmpType.ALL;
 	private static IcmpCode DEFAULT_CODE = IcmpCode.ALL;
@@ -15,10 +15,9 @@ public class IcmpFwRuleDecomposed extends AbstractFwRuleDecomposed {
 	private IcmpType _type = DEFAULT_TYPE;
 	private IcmpCode _code = DEFAULT_CODE;
 
-	public IcmpFwRuleDecomposed(Interface inter, IpRange fromIpRange,
-			IpRange toIpRange, IcmpType type, IcmpCode code,
-			Direction direction, Access access) {
-		super(inter, fromIpRange, toIpRange, direction, access);
+	public SimpleIcmpFireWallRule(IpRange fromIpRange, IpRange toIpRange,
+			IcmpType type, IcmpCode code, Direction direction, Access access) {
+		super(fromIpRange, toIpRange, direction, access);
 		setType(type);
 		setCode(code);
 	}
@@ -30,11 +29,10 @@ public class IcmpFwRuleDecomposed extends AbstractFwRuleDecomposed {
 
 	@Override
 	public String toString() {
-		return "{ " + "device-name: " + getInterface() + ", protocol: "
-				+ getProtocol() + ", from-ip: " + getFromIpRange()
-				+ ", to-ip: " + getToIpRange() + ", type: " + getType()
-				+ ", code: " + getCode() + ", direction: " + getDirection()
-				+ ", access: " + getAccess() + " }";
+		return "{ " + "protocol: " + getProtocol() + ", from-ip: "
+				+ getFromIpRange() + ", to-ip: " + getToIpRange() + ", type: "
+				+ getType() + ", code: " + getCode() + ", direction: "
+				+ getDirection() + ", access: " + getAccess() + " }";
 	}
 
 	@Override
@@ -42,17 +40,14 @@ public class IcmpFwRuleDecomposed extends AbstractFwRuleDecomposed {
 		if (this == anObject) {
 			return true;
 		}
-		if (anObject instanceof IcmpFwRuleDecomposed) {
-			IcmpFwRuleDecomposed rule = (IcmpFwRuleDecomposed) anObject;
+		if (anObject instanceof SimpleIcmpFireWallRule) {
+			SimpleIcmpFireWallRule rule = (SimpleIcmpFireWallRule) anObject;
 			return rule.getFromIpRange().equals(getFromIpRange())
 					&& rule.getToIpRange().equals(getToIpRange())
 					&& rule.getType().equals(getType())
 					&& rule.getCode().equals(getCode())
 					&& rule.getDirection().equals(getDirection())
-					&& rule.getAccess().equals(getAccess())
-					&& (rule.getInterface().equals(Interface.ALL)
-							|| getInterface().equals(Interface.ALL) || rule
-							.getInterface().equals(getInterface()));
+					&& rule.getAccess().equals(getAccess());
 		}
 		return false;
 	}

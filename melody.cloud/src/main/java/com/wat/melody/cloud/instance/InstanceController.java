@@ -5,7 +5,8 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.keypair.KeyPairName;
 
 /**
@@ -66,17 +67,17 @@ public interface InstanceController {
 			NetworkDeviceName netdev);
 
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FwRulesDecomposed fireWallRules) throws OperationException,
+			FireWallRulesPerDevice fireWallRules) throws OperationException,
 			InterruptedException;
 
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException,
+			FireWallRules toRevoke) throws OperationException,
 			InterruptedException;
 
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException,
+			FireWallRules toAutorize) throws OperationException,
 			InterruptedException;
 
-	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev);
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev);
 
 }

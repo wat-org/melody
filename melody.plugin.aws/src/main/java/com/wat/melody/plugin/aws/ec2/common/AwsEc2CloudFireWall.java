@@ -12,21 +12,19 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.wat.melody.cloud.network.NetworkDeviceName;
-import com.wat.melody.common.firewall.AbstractTcpUdpFwRuleDecomposed;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
-import com.wat.melody.common.firewall.FwRuleDecomposed;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.IcmpCode;
-import com.wat.melody.common.firewall.IcmpFwRuleDecomposed;
 import com.wat.melody.common.firewall.IcmpType;
-import com.wat.melody.common.firewall.Interface;
 import com.wat.melody.common.firewall.Protocol;
-import com.wat.melody.common.firewall.TcpFwRuleDecomposed;
-import com.wat.melody.common.firewall.UdpFwRuleDecomposed;
+import com.wat.melody.common.firewall.SimpleAbstractTcpUdpFireWallwRule;
+import com.wat.melody.common.firewall.SimpleFireWallRule;
+import com.wat.melody.common.firewall.SimpleIcmpFireWallRule;
+import com.wat.melody.common.firewall.SimpleTcpFireWallRule;
+import com.wat.melody.common.firewall.SimpleUdpFireWallRule;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodeException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
-import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.PortRange;
@@ -42,7 +40,7 @@ public abstract class AwsEc2CloudFireWall {
 
 	private static Log log = LogFactory.getLog(AwsEc2CloudFireWall.class);
 
-	public static FwRulesDecomposed getFireWallRules(AmazonEC2 ec2, Instance i,
+	public static FireWallRules getFireWallRules(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
 		String sgname = AwsEc2Cloud.getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> perms = AwsEc2Cloud.describeSecurityGroupRules(ec2,
@@ -50,40 +48,32 @@ public abstract class AwsEc2CloudFireWall {
 		return convertIpPermissions(perms, netdev);
 	}
 
-	private static FwRulesDecomposed convertIpPermissions(
-			List<IpPermission> perms, NetworkDeviceName netdev) {
-		Interface inter = null;
-		try {
-			inter = Interface.parseString(netdev.getValue());
-		} catch (IllegalInterfaceException Ex) {
-			throw new RuntimeException(Ex);
-		}
-		FwRulesDecomposed rules = new FwRulesDecomposed();
+	private static FireWallRules convertIpPermissions(List<IpPermission> perms,
+			NetworkDeviceName netdev) {
+		FireWallRules rules = new FireWallRules();
 		try {
 			for (IpPermission perm : perms) {
-				FwRuleDecomposed rule = null;
+				SimpleFireWallRule rule = null;
 				Protocol proto = Protocol.parseString(perm.getIpProtocol());
 				switch (proto) {
 				case TCP:
-					rule = new TcpFwRuleDecomposed(inter,
-							IpRange.parseString(perm.getIpRanges().get(0)),
-							PortRange.ALL, IpRange.ALL,
+					rule = new SimpleTcpFireWallRule(IpRange.parseString(perm
+							.getIpRanges().get(0)), PortRange.ALL, IpRange.ALL,
 							PortRange.parseString(perm.getFromPort() + "-"
 									+ perm.getToPort()), Direction.IN,
 							Access.ALLOW);
 					break;
 				case UDP:
-					rule = new UdpFwRuleDecomposed(inter,
-							IpRange.parseString(perm.getIpRanges().get(0)),
-							PortRange.ALL, IpRange.ALL,
+					rule = new SimpleUdpFireWallRule(IpRange.parseString(perm
+							.getIpRanges().get(0)), PortRange.ALL, IpRange.ALL,
 							PortRange.parseString(perm.getFromPort() + "-"
 									+ perm.getToPort()), Direction.IN,
 							Access.ALLOW);
 					break;
 				case ICMP:
-					rule = new IcmpFwRuleDecomposed(inter,
-							IpRange.parseString(perm.getIpRanges().get(0)),
-							IpRange.ALL, IcmpType.parseInt(perm.getFromPort()),
+					rule = new SimpleIcmpFireWallRule(IpRange.parseString(perm
+							.getIpRanges().get(0)), IpRange.ALL,
+							IcmpType.parseInt(perm.getFromPort()),
 							IcmpCode.parseInt(perm.getToPort()), Direction.IN,
 							Access.ALLOW);
 					break;
@@ -99,7 +89,7 @@ public abstract class AwsEc2CloudFireWall {
 	}
 
 	public static void revokeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netdev, FwRulesDecomposed toRevoke) {
+			NetworkDeviceName netdev, FireWallRules toRevoke) {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
@@ -109,14 +99,14 @@ public abstract class AwsEc2CloudFireWall {
 		revreq = new RevokeSecurityGroupIngressRequest();
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
-		for (FwRuleDecomposed rule : toRevoke) {
+		for (SimpleFireWallRule rule : toRevoke) {
 			log.info(Messages.bind(Messages.CommonMsg_REVOKE_FWRULE,
 					new Object[] { i.getImageId(), netdev, rule }));
 		}
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
-			NetworkDeviceName netdev, FwRulesDecomposed toAuthorize) {
+			NetworkDeviceName netdev, FireWallRules toAuthorize) {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
@@ -126,25 +116,25 @@ public abstract class AwsEc2CloudFireWall {
 		authreq = new AuthorizeSecurityGroupIngressRequest();
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
-		for (FwRuleDecomposed rule : toAuthorize) {
+		for (SimpleFireWallRule rule : toAuthorize) {
 			log.info(Messages.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
 					new Object[] { i.getImageId(), netdev, rule }));
 		}
 	}
 
-	private static List<IpPermission> convertFwRules(FwRulesDecomposed rules) {
+	private static List<IpPermission> convertFwRules(FireWallRules rules) {
 		List<IpPermission> perms = new ArrayList<IpPermission>();
-		for (FwRuleDecomposed rule : rules) {
+		for (SimpleFireWallRule rule : rules) {
 			IpPermission perm = null;
 			switch (rule.getProtocol()) {
 			case TCP:
-				perm = createTcpUdpPermission((TcpFwRuleDecomposed) rule);
+				perm = createTcpUdpPermission((SimpleTcpFireWallRule) rule);
 				break;
 			case UDP:
-				perm = createTcpUdpPermission((UdpFwRuleDecomposed) rule);
+				perm = createTcpUdpPermission((SimpleUdpFireWallRule) rule);
 				break;
 			case ICMP:
-				perm = createIcmpPermission((IcmpFwRuleDecomposed) rule);
+				perm = createIcmpPermission((SimpleIcmpFireWallRule) rule);
 				break;
 			}
 			if (perm == null) {
@@ -156,7 +146,7 @@ public abstract class AwsEc2CloudFireWall {
 	}
 
 	private static IpPermission createTcpUdpPermission(
-			AbstractTcpUdpFwRuleDecomposed rule) {
+			SimpleAbstractTcpUdpFireWallwRule rule) {
 		if (rule.getDirection().equals(Direction.OUT)) {
 			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
 					Direction.OUT));
@@ -175,7 +165,7 @@ public abstract class AwsEc2CloudFireWall {
 		return perm;
 	}
 
-	private static IpPermission createIcmpPermission(IcmpFwRuleDecomposed rule) {
+	private static IpPermission createIcmpPermission(SimpleIcmpFireWallRule rule) {
 		if (rule.getDirection().equals(Direction.OUT)) {
 			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
 					Direction.OUT));

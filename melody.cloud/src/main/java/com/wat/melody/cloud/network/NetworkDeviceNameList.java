@@ -3,6 +3,7 @@ package com.wat.melody.cloud.network;
 import java.util.ArrayList;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.common.ex.Util;
 
 /**
  * 
@@ -32,6 +33,15 @@ public class NetworkDeviceNameList extends ArrayList<NetworkDeviceName> {
 			}
 		}
 		return super.add(nd);
+	}
+
+	@Override
+	public String toString() {
+		String res = "";
+		for (NetworkDeviceName rule : this) {
+			res += Util.NEW_LINE + "network device:" + rule;
+		}
+		return res.length() == 0 ? Util.NEW_LINE + "no network devices" : res;
 	}
 
 }

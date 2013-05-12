@@ -3,6 +3,7 @@ package com.wat.melody.cloud.disk;
 import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
+import com.wat.melody.common.ex.Util;
 
 /**
  * 
@@ -61,6 +62,15 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		DiskDevice previous = getRootDevice();
 		moRootDevice = dd;
 		return previous;
+	}
+
+	@Override
+	public String toString() {
+		String res = "";
+		for (DiskDevice rule : this) {
+			res += Util.NEW_LINE + "disk device:" + rule;
+		}
+		return res.length() == 0 ? Util.NEW_LINE + "no disk devices" : res;
 	}
 
 }

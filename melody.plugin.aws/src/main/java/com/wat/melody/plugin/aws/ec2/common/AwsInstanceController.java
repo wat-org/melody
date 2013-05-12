@@ -11,7 +11,7 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
 import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.firewall.FwRulesDecomposed;
+import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
 import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
@@ -197,21 +197,21 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public FwRulesDecomposed getInstanceFireWallRules(NetworkDeviceName netDev) {
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
 		return AwsEc2CloudFireWall.getFireWallRules(getConnection(),
 				getInstance(), netDev);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toRevoke) throws OperationException {
+			FireWallRules toRevoke) throws OperationException {
 		AwsEc2CloudFireWall.revokeFireWallRules(getConnection(), getInstance(),
 				netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FwRulesDecomposed toAutorize) throws OperationException {
+			FireWallRules toAutorize) throws OperationException {
 		AwsEc2CloudFireWall.authorizeFireWallRules(getConnection(),
 				getInstance(), netDev, toAutorize);
 	}

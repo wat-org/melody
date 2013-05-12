@@ -5,10 +5,9 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.Access;
+import com.wat.melody.common.firewall.ComplexFireWallRule;
+import com.wat.melody.common.firewall.ComplexUdpFireWallRule;
 import com.wat.melody.common.firewall.Directions;
-import com.wat.melody.common.firewall.FwRule;
-import com.wat.melody.common.firewall.Interfaces;
-import com.wat.melody.common.firewall.UdpFwRule;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 
@@ -26,10 +25,10 @@ public class UdpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 	}
 
 	@Override
-	public FwRule newFwRule(Interfaces interfaces, IpRanges fromIpRanges,
+	public ComplexFireWallRule newFwRule(IpRanges fromIpRanges,
 			PortRanges fromPortRanges, IpRanges toIpRanges,
 			PortRanges toPortRanges, Directions directions, Access access) {
-		return new UdpFwRule(interfaces, fromIpRanges, fromPortRanges,
+		return new ComplexUdpFireWallRule(fromIpRanges, fromPortRanges,
 				toIpRanges, toPortRanges, directions, access);
 	}
 

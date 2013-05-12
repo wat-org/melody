@@ -10,7 +10,7 @@ import com.wat.melody.common.network.PortRanges;
  * @author Guillaume Cornet
  * 
  */
-public class IcmpFwRule extends AbstractFwRule {
+public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 
 	private static IcmpTypes DEFAULT_TYPES = IcmpTypes.ALL;
 	private static IcmpCodes DEFAULT_CODES = IcmpCodes.ALL;
@@ -18,27 +18,26 @@ public class IcmpFwRule extends AbstractFwRule {
 	private IcmpTypes _types = DEFAULT_TYPES;
 	private IcmpCodes _codes = DEFAULT_CODES;
 
-	public IcmpFwRule(Interfaces interfaces, IpRanges fromIpRanges,
-			IpRanges toIpRanges, IcmpTypes types, IcmpCodes codes,
-			Directions directions, Access access) {
-		super(interfaces, fromIpRanges, toIpRanges, directions, access);
+	public ComplexIcmpFireWallRule(IpRanges fromIpRanges, IpRanges toIpRanges,
+			IcmpTypes types, IcmpCodes codes, Directions directions,
+			Access access) {
+		super(fromIpRanges, toIpRanges, directions, access);
 		setTypes(types);
 		setCodes(codes);
 	}
 
 	@Override
 	public int hashCode() {
-		return getInterfaces().hashCode() + getFromIpRanges().hashCode()
-				+ getToIpRanges().hashCode();
+		return getFromIpRanges().hashCode() + getToIpRanges().hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "{ devices-name:" + getInterfaces() + ", protocol: "
-				+ getProtocol() + ",from-ips: " + getFromIpRanges()
-				+ ", to-ips: " + getToIpRanges() + ", types: " + getTypes()
-				+ ", codes: " + getCodes() + ", directions: " + getDirections()
-				+ ", access: " + getAccess() + " }";
+		return "{ " + "protocol: " + getProtocol() + ",from-ips: "
+				+ getFromIpRanges() + ", to-ips: " + getToIpRanges()
+				+ ", types: " + getTypes() + ", codes: " + getCodes()
+				+ ", directions: " + getDirections() + ", access: "
+				+ getAccess() + " }";
 	}
 
 	@Override
@@ -49,32 +48,30 @@ public class IcmpFwRule extends AbstractFwRule {
 	/**
 	 * <p>
 	 * Decompose this object into an equivalent collection of
-	 * {@link FwRuleDecomposed} objects.
+	 * {@link SimpleFireWallRule} objects.
 	 * </p>
 	 * 
 	 * <p>
 	 * More formally, this object's 'from' {@link IpRanges}, 'from'
 	 * {@link PortRanges}, 'to' {@link IpRanges}, 'to' {@link PortRanges} and
 	 * {@link Directions} are decomposed into the corresponding
-	 * {@link FwRuleDecomposed} objects, which contains equivalent 'from'
+	 * {@link SimpleFireWallRule} objects, which contains equivalent 'from'
 	 * {@link IpRange}, 'from' {@link PortRange}, 'to' {@link IpRange}, 'to'
 	 * {@link PortRange} and {@link Direction}.
 	 * </p>
 	 * 
-	 * @return an equivalent collection of {@link FwRuleDecomposed} objects.
+	 * @return an equivalent collection of {@link SimpleFireWallRule} objects.
 	 */
-	public FwRulesDecomposed decompose() {
-		FwRulesDecomposed fws = new FwRulesDecomposed();
+	public FireWallRules decompose() {
+		FireWallRules fws = new FireWallRules();
 		Access a = getAccess();
-		for (Interface i : getInterfaces()) {
-			for (Direction d : getDirections()) {
-				for (IpRange fi : getFromIpRanges()) {
-					for (IpRange ti : getToIpRanges()) {
-						for (IcmpType t : getTypes()) {
-							for (IcmpCode c : getCodes()) {
-								fws.add(new IcmpFwRuleDecomposed(i, fi, ti, t,
-										c, d, a));
-							}
+		for (Direction d : getDirections()) {
+			for (IpRange fi : getFromIpRanges()) {
+				for (IpRange ti : getToIpRanges()) {
+					for (IcmpType t : getTypes()) {
+						for (IcmpCode c : getCodes()) {
+							fws.add(new SimpleIcmpFireWallRule(fi, ti, t, c, d,
+									a));
 						}
 					}
 				}
