@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import java.util.ArrayList;
 import java.util.List;

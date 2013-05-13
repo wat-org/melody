@@ -37,14 +37,13 @@ public class UpdateDiskDevices extends AbstractOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private DiskDeviceList maDiskDeviceList;
+	private DiskDeviceList maDiskDeviceList = null;
 	private long mlDetachTimeout;
 	private long mlCreateTimeout;
 	private long mlAttachTimeout;
 
 	public UpdateDiskDevices() {
 		super();
-		initDiskDeviceList();
 		try {
 			setDetachTimeout(getTimeout());
 			setCreateTimeout(getTimeout());
@@ -57,10 +56,6 @@ public class UpdateDiskDevices extends AbstractOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-	}
-
-	private void initDiskDeviceList() {
-		maDiskDeviceList = null;
 	}
 
 	@Override

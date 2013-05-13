@@ -6,6 +6,9 @@ import java.util.Arrays;
 import org.w3c.dom.Node;
 
 import com.wat.cloud.libvirt.LibVirtCloud;
+import com.wat.cloud.libvirt.LibVirtInstanceController;
+import com.wat.cloud.libvirt.LibVirtKeyPairRepository;
+import com.wat.cloud.libvirt.exception.LibVirtKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -18,8 +21,6 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
-import com.wat.melody.plugin.libvirt.common.LibVirtInstanceController;
-import com.wat.melody.plugin.libvirt.common.LibVirtKeyPairRepository;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -68,39 +69,14 @@ public class NewMachine extends AbstractOperation {
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
-	private InstanceType msInstanceType;
-	private String msImageId;
-	private KeyPairRepositoryPath moKeyPairRepositoryPath;
-	private KeyPairName msKeyPairName;
-	private String msPassphrase;
+	private InstanceType _instanceType = null;
+	private String _imageId = null;
+	private KeyPairRepositoryPath _keyPairRepositoryPath = null;
+	private KeyPairName _keyPairName = null;
+	private String _passphrase = null;
 
 	public NewMachine() {
 		super();
-		initPassphrase();
-		initKeyPairName();
-		initKeyPairRepository();
-		initImageId();
-		initInstanceType();
-	}
-
-	private void initPassphrase() {
-		msPassphrase = null;
-	}
-
-	private void initKeyPairName() {
-		msKeyPairName = null;
-	}
-
-	private void initKeyPairRepository() {
-		moKeyPairRepositoryPath = null;
-	}
-
-	private void initImageId() {
-		msImageId = null;
-	}
-
-	private void initInstanceType() {
-		msInstanceType = null;
 	}
 
 	@Override
@@ -161,7 +137,7 @@ public class NewMachine extends AbstractOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepositoryPath() == null) {
-			setKeyPairRepositoryPath(getSshPlugInConf()
+			setKeyPairRepositoryPath(getSshPlugInConfiguration()
 					.getKeyPairRepositoryPath());
 		}
 		// Validate everything is provided.
@@ -228,9 +204,11 @@ public class NewMachine extends AbstractOperation {
 					LibVirtKeyPairRepository kpr = LibVirtKeyPairRepository
 							.getLibVirtKeyPairRepository(getConnection(),
 									getKeyPairRepositoryPath());
-					kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
-							.getKeyPairSize(), getPassphrase());
-				} catch (IOException | LibVirtException Ex) {
+					kpr.createKeyPair(getKeyPairName(),
+							getSshPlugInConfiguration().getKeyPairSize(),
+							getPassphrase());
+				} catch (LibVirtException | IOException
+						| LibVirtKeyPairRepositoryException Ex) {
 					throw new OperationException(Ex);
 				}
 
@@ -242,7 +220,7 @@ public class NewMachine extends AbstractOperation {
 	}
 
 	public InstanceType getInstanceType() {
-		return msInstanceType;
+		return _instanceType;
 	}
 
 	@Attribute(name = INSTANCETYPE_ATTR)
@@ -253,12 +231,12 @@ public class NewMachine extends AbstractOperation {
 					+ Arrays.asList(InstanceType.values()) + ").");
 		}
 		InstanceType previous = getInstanceType();
-		msInstanceType = instanceType;
+		_instanceType = instanceType;
 		return previous;
 	}
 
 	public String getImageId() {
-		return msImageId;
+		return _imageId;
 	}
 
 	@Attribute(name = IMAGEID_ATTR)
@@ -268,12 +246,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid String (an libvirt AMI Id).");
 		}
 		String previous = getImageId();
-		msImageId = imageId;
+		_imageId = imageId;
 		return previous;
 	}
 
 	public KeyPairName getKeyPairName() {
-		return msKeyPairName;
+		return _keyPairName;
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
@@ -283,12 +261,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid String (an libvirt KeyPair Name).");
 		}
 		KeyPairName previous = getKeyPairName();
-		msKeyPairName = keyPairName;
+		_keyPairName = keyPairName;
 		return previous;
 	}
 
 	public String getPassphrase() {
-		return msPassphrase;
+		return _passphrase;
 	}
 
 	@Attribute(name = PASSPHRASE_ATTR)
@@ -298,12 +276,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Cannot be null.");
 		}
 		String previous = getPassphrase();
-		msPassphrase = sPassphrase;
+		_passphrase = sPassphrase;
 		return previous;
 	}
 
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
-		return moKeyPairRepositoryPath;
+		return _keyPairRepositoryPath;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
@@ -314,7 +292,7 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid File (a Key Repository Path).");
 		}
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		moKeyPairRepositoryPath = keyPairRepository;
+		_keyPairRepositoryPath = keyPairRepository;
 		return previous;
 	}
 

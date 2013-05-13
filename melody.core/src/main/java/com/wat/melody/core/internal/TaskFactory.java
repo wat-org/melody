@@ -540,6 +540,7 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a "
 					+ "bug have been introduced.", Ex);
 		}
+		// TODO : catch InvocationTargetException
 
 		synchronized (n.getOwnerDocument()) {
 			setAllMembers(t, n.getAttributes(), n.getNodeName());
@@ -667,6 +668,7 @@ public class TaskFactory {
 						+ "Source code has certainly been modified and a bug "
 						+ "have been introduced.", Ex);
 			}
+			// TODO : catch InvocationTargetException
 
 			setAllMembers(o, n.getAttributes(), n.getNodeName());
 			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());

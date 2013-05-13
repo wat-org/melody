@@ -107,5 +107,6 @@ public class ProcessorManagerFactory {
 					moPMClass.getCanonicalName(),
 					IProcessorManager.class.getCanonicalName()));
 		}
+		// TODO : catch InvocationTargetException
 	}
 }

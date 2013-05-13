@@ -10,8 +10,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
-
 /**
  * <p>
  * Implementation of the {@link LibVirtCloudRestServices}.
@@ -36,29 +34,30 @@ public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 	@Produces("text/plain")
 	@Path("/GetRegisteredPublicKey")
 	public Response getInstanceRegisteredPublicKey() {
-		try {
-			log.trace("Receive 'GetRegisteredPublicKey' request from remote "
-					+ "system '" + request.getRemoteAddr() + "'.");
-			String key = null;
-			switch (getClientOsFamilly()) {
-			case LINUX:
-				key = LibVirtCloudKeyPair.getInstancePublicKey(request
-						.getRemoteAddr());
-				break;
-			case WINDOWS:
-				key = "Not supported yet";
-				break;
-			}
+		log.trace("Receive 'GetRegisteredPublicKey' request from remote "
+				+ "system '" + request.getRemoteAddr() + "'.");
+		String key = null;
+		switch (getClientOsFamilly()) {
+		case LINUX:
+			key = LibVirtCloudKeyPair.getInstancePublicKey(request
+					.getRemoteAddr());
+			break;
+		case WINDOWS:
+			key = "Not supported yet";
+			break;
+		}
+		if (key == null) {
+			log.debug("Failed to respond to 'GetRegisteredPublicKey' "
+					+ "request initiated by remote system '"
+					+ request.getRemoteAddr() + "' "
+					+ "(system not registered or no keypair associated to).");
+			key = "undefined";
+		} else {
 			log.debug("Successfully respond to 'GetRegisteredPublicKey' "
 					+ "request initiated by remote system '"
 					+ request.getRemoteAddr() + "'.");
-			return Response.ok(key).build();
-		} catch (LibVirtException Ex) {
-			log.debug("Failed to respond to 'GetRegisteredPublicKey' "
-					+ "request initiated by remote system '"
-					+ request.getRemoteAddr() + "' (" + Ex.getMessage() + ").");
-			return Response.ok("undefined").build();
 		}
+		return Response.ok(key).build();
 	}
 
 	private OS_FAMILLY getClientOsFamilly() {

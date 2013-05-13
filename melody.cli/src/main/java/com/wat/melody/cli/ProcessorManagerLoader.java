@@ -1238,6 +1238,7 @@ public class ProcessorManagerLoader {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CC_TASKS_DIRECTIVE, pi, pic));
 		}
+		// TODO : catch InvocationTargetException
 		/*
 		 * Will throw a RuntimeException if the given Class<ITask> doesn't
 		 * respect ITask specification. Should only happened during Task
@@ -1379,6 +1380,7 @@ public class ProcessorManagerLoader {
 									pcps.getFilePath(),
 									c.getClass().getCanonicalName() }));
 		}
+		// TODO : catch InvocationTargetException
 		try {
 			pc.load(pcps);
 		} catch (PlugInConfigurationException Ex) {

@@ -1,8 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import java.util.Arrays;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
+import com.wat.cloud.aws.ec2.exception.IllegalVolumeStateException;
 
 /**
  * 
@@ -16,20 +16,20 @@ public enum VolumeState {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link VolumeState} object.
+	 * Convert the given <tt>String</tt> to a {@link VolumeState} object.
 	 * </p>
 	 * 
 	 * @param sType
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>VolumeState</code> object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @return a {@link VolumeState} object, whose equal to the given input
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalVolumeStateException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>VolumeState</code> Enumeration Constant.
+	 *             if the given input <tt>String</tt> is not a valid
+	 *             {@link VolumeState} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static VolumeState parseString(String sType)
 			throws IllegalVolumeStateException {

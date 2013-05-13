@@ -5,6 +5,10 @@ import java.util.Arrays;
 
 import org.w3c.dom.Node;
 
+import com.wat.cloud.aws.ec2.AwsEc2Cloud;
+import com.wat.cloud.aws.ec2.AwsInstanceController;
+import com.wat.cloud.aws.ec2.AwsKeyPairRepository;
+import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -16,9 +20,6 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
-import com.wat.melody.plugin.aws.ec2.common.AwsEc2Cloud;
-import com.wat.melody.plugin.aws.ec2.common.AwsInstanceController;
-import com.wat.melody.plugin.aws.ec2.common.AwsKeyPairRepository;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -65,45 +66,15 @@ public class NewMachine extends AbstractOperation {
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
-	private InstanceType msInstanceType;
-	private String msImageId;
-	private KeyPairRepositoryPath moKeyPairRepository;
-	private KeyPairName moKeyPairName;
-	private String msPassphrase;
-	private String msAvailabilityZone;
+	private InstanceType _instanceType = null;
+	private String _imageId = null;
+	private KeyPairRepositoryPath _keyPairRepository = null;
+	private KeyPairName _keyPairName = null;
+	private String _passphrase = null;
+	private String _availabilityZone = null;
 
 	public NewMachine() {
 		super();
-		initAvailabilityZone();
-		initPassphrase();
-		initKeyPairName();
-		initKeyPairRepository();
-		initImageId();
-		initInstanceType();
-	}
-
-	private void initAvailabilityZone() {
-		msAvailabilityZone = null;
-	}
-
-	private void initPassphrase() {
-		msPassphrase = null;
-	}
-
-	private void initKeyPairName() {
-		moKeyPairName = null;
-	}
-
-	private void initKeyPairRepository() {
-		moKeyPairRepository = null;
-	}
-
-	private void initImageId() {
-		msImageId = null;
-	}
-
-	private void initInstanceType() {
-		msInstanceType = null;
 	}
 
 	@Override
@@ -181,7 +152,7 @@ public class NewMachine extends AbstractOperation {
 
 		// Get the default KeyPair Repository, if not provided.
 		if (getKeyPairRepositoryPath() == null) {
-			setKeyPairRepositoryPath(getSshPlugInConf()
+			setKeyPairRepositoryPath(getSshPlugInConfiguration()
 					.getKeyPairRepositoryPath());
 		}
 		// Validate everything is provided.
@@ -256,9 +227,11 @@ public class NewMachine extends AbstractOperation {
 					AwsKeyPairRepository kpr = AwsKeyPairRepository
 							.getAwsKeyPairRepository(getConnection(),
 									getKeyPairRepositoryPath());
-					kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
-							.getKeyPairSize(), getPassphrase());
-				} catch (IOException | AwsException Ex) {
+					kpr.createKeyPair(getKeyPairName(),
+							getSshPlugInConfiguration().getKeyPairSize(),
+							getPassphrase());
+				} catch (AwsException | IOException
+						| AwsKeyPairRepositoryException Ex) {
 					throw new OperationException(Ex);
 				}
 
@@ -270,7 +243,7 @@ public class NewMachine extends AbstractOperation {
 	}
 
 	public InstanceType getInstanceType() {
-		return msInstanceType;
+		return _instanceType;
 	}
 
 	@Attribute(name = INSTANCETYPE_ATTR)
@@ -281,12 +254,12 @@ public class NewMachine extends AbstractOperation {
 					+ Arrays.asList(InstanceType.values()) + ").");
 		}
 		InstanceType previous = getInstanceType();
-		msInstanceType = instanceType;
+		_instanceType = instanceType;
 		return previous;
 	}
 
 	public String getImageId() {
-		return msImageId;
+		return _imageId;
 	}
 
 	@Attribute(name = IMAGEID_ATTR)
@@ -296,12 +269,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid String (an AWS AMI Id).");
 		}
 		String previous = getImageId();
-		msImageId = imageId;
+		_imageId = imageId;
 		return previous;
 	}
 
 	public String getAvailabilityZone() {
-		return msAvailabilityZone;
+		return _availabilityZone;
 	}
 
 	@Attribute(name = AVAILABILITYZONE_ATTR)
@@ -311,7 +284,7 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid String (an AWS Availability Zone).");
 		}
 		String previous = getAvailabilityZone();
-		msAvailabilityZone = sAZ;
+		_availabilityZone = sAZ;
 		return previous;
 	}
 
@@ -323,7 +296,7 @@ public class NewMachine extends AbstractOperation {
 	}
 
 	public KeyPairName getKeyPairName() {
-		return moKeyPairName;
+		return _keyPairName;
 	}
 
 	@Attribute(name = KEYPAIR_NAME_ATTR)
@@ -333,12 +306,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid String (an AWS KeyPair Name).");
 		}
 		KeyPairName previous = getKeyPairName();
-		moKeyPairName = keyPairName;
+		_keyPairName = keyPairName;
 		return previous;
 	}
 
 	public String getPassphrase() {
-		return msPassphrase;
+		return _passphrase;
 	}
 
 	@Attribute(name = PASSPHRASE_ATTR)
@@ -348,12 +321,12 @@ public class NewMachine extends AbstractOperation {
 					+ "Cannot be null.");
 		}
 		String previous = getPassphrase();
-		msPassphrase = sPassphrase;
+		_passphrase = sPassphrase;
 		return previous;
 	}
 
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
-		return moKeyPairRepository;
+		return _keyPairRepository;
 	}
 
 	@Attribute(name = KEYPAIR_REPO_ATTR)
@@ -364,7 +337,7 @@ public class NewMachine extends AbstractOperation {
 					+ "Must be a valid File (a Key Repository Path).");
 		}
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		moKeyPairRepository = keyPairRepository;
+		_keyPairRepository = keyPairRepository;
 		return previous;
 	}
 

@@ -7,6 +7,7 @@ import org.libvirt.LibvirtException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.cloud.libvirt.LibVirtInstanceController;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
@@ -47,45 +48,15 @@ public abstract class AbstractOperation implements ITask,
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
-	private Connect moConnect;
-	private InstanceController moInstance;
-	private String msInstanceId;
-	private Node moTargetNode;
-	private String msRegion;
-	private String msTarget;
-	private long mlTimeout;
+	private Connect _connect = null;
+	private InstanceController _instance = null;
+	private String _instanceId = null;
+	private Node _targetNode = null;
+	private String _region = null;
+	private String _target = null;
+	private long _timeout = 90000;
 
 	public AbstractOperation() {
-		initCnx();
-		initInstance();
-		initTargetNode();
-		initInstanceId();
-		initRegion();
-		initTimeout();
-	}
-
-	private void initCnx() {
-		moConnect = null;
-	}
-
-	private void initInstance() {
-		moInstance = null;
-	}
-
-	private void initTargetNode() {
-		moTargetNode = null;
-	}
-
-	private void initInstanceId() {
-		msInstanceId = null;
-	}
-
-	private void initRegion() {
-		msRegion = null;
-	}
-
-	private void initTimeout() {
-		mlTimeout = 90000;
 	}
 
 	@Override
@@ -156,7 +127,7 @@ public abstract class AbstractOperation implements ITask,
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
-	protected LibVirtPlugInConfiguration getPluginConf()
+	public LibVirtPlugInConfiguration getLibVirtPlugInConfiguration()
 			throws LibVirtException {
 		try {
 			return LibVirtPlugInConfiguration.get(Melody.getContext()
@@ -166,7 +137,8 @@ public abstract class AbstractOperation implements ITask,
 		}
 	}
 
-	public SshPlugInConfiguration getSshPlugInConf() throws LibVirtException {
+	public SshPlugInConfiguration getSshPlugInConfiguration()
+			throws LibVirtException {
 		try {
 			return SshPlugInConfiguration.get(Melody.getContext()
 					.getProcessorManager());
@@ -178,7 +150,7 @@ public abstract class AbstractOperation implements ITask,
 	@Override
 	public SshPlugInConfiguration getSshConfiguration() {
 		try {
-			return getSshPlugInConf();
+			return getSshPlugInConfiguration();
 		} catch (LibVirtException Ex) {
 			throw new RuntimeException("Unexpected error when retrieving Ssh "
 					+ " Plug-In configuration. "
@@ -188,7 +160,7 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	protected Connect getConnect() {
-		return moConnect;
+		return _connect;
 	}
 
 	private Connect setConnect(Connect cnx) {
@@ -198,12 +170,12 @@ public abstract class AbstractOperation implements ITask,
 					+ ".");
 		}
 		Connect previous = getConnect();
-		moConnect = cnx;
+		_connect = cnx;
 		return previous;
 	}
 
 	public InstanceController getInstance() {
-		return moInstance;
+		return _instance;
 	}
 
 	public InstanceController setInstance(InstanceController instance) {
@@ -213,7 +185,7 @@ public abstract class AbstractOperation implements ITask,
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
 		InstanceController previous = getInstance();
-		moInstance = instance;
+		_instance = instance;
 		return previous;
 	}
 
@@ -221,7 +193,7 @@ public abstract class AbstractOperation implements ITask,
 	 * @return the targeted {@link Node}.
 	 */
 	public Node getTargetNode() {
-		return moTargetNode;
+		return _targetNode;
 	}
 
 	public Node setTargetNode(Node n) {
@@ -230,7 +202,7 @@ public abstract class AbstractOperation implements ITask,
 					+ "Must be a valid Node (the targeted Instance Node).");
 		}
 		Node previous = getTargetNode();
-		moTargetNode = n;
+		_targetNode = n;
 		return previous;
 	}
 
@@ -239,18 +211,18 @@ public abstract class AbstractOperation implements ITask,
 	 *         <code>null</code>).
 	 */
 	protected String getInstanceId() {
-		return msInstanceId;
+		return _instanceId;
 	}
 
 	protected String setInstanceId(String sInstanceID) {
 		// can be null, if no Instance have been created yet
 		String previous = getInstanceId();
-		msInstanceId = sInstanceID;
+		_instanceId = sInstanceID;
 		return previous;
 	}
 
 	public String getRegion() {
-		return msRegion;
+		return _region;
 	}
 
 	@Attribute(name = REGION_ATTR)
@@ -261,7 +233,7 @@ public abstract class AbstractOperation implements ITask,
 		}
 		// TODO : how to validate the region? by testing the connection ?
 		String previous = getRegion();
-		this.msRegion = region;
+		this._region = region;
 		return previous;
 	}
 
@@ -269,7 +241,7 @@ public abstract class AbstractOperation implements ITask,
 	 * @return the XPath expression which selects the targeted Node.
 	 */
 	public String getTarget() {
-		return msTarget;
+		return _target;
 	}
 
 	@Attribute(name = TARGET_ATTR, mandatory = true)
@@ -311,12 +283,12 @@ public abstract class AbstractOperation implements ITask,
 		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();
-		msTarget = target;
+		_target = target;
 		return previous;
 	}
 
 	public long getTimeout() {
-		return mlTimeout;
+		return _timeout;
 	}
 
 	@Attribute(name = TIMEOUT_ATTR)
@@ -326,7 +298,7 @@ public abstract class AbstractOperation implements ITask,
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getTimeout();
-		mlTimeout = timeout;
+		_timeout = timeout;
 		return previous;
 	}
 

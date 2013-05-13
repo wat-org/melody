@@ -32,13 +32,12 @@ public class UpdateNetworkDevices extends AbstractOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private NetworkDeviceNameList maNetworkDeviceList;
+	private NetworkDeviceNameList maNetworkDeviceList = null;
 	private long mlDetachTimeout;
 	private long mlAttachTimeout;
 
 	public UpdateNetworkDevices() {
 		super();
-		initNetworkDeviceList();
 		try {
 			setDetachTimeout(getTimeout());
 			setAttachTimeout(getTimeout());
@@ -50,10 +49,6 @@ public class UpdateNetworkDevices extends AbstractOperation {
 					+ "Source code has certainly been modified and a bug have "
 					+ "been introduced.", Ex);
 		}
-	}
-
-	private void initNetworkDeviceList() {
-		maNetworkDeviceList = null;
 	}
 
 	@Override

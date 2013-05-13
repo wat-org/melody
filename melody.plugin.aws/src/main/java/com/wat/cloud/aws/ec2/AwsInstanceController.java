@@ -1,7 +1,9 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.Instance;
+import com.wat.cloud.aws.ec2.exception.WaitVolumeAttachmentStatusException;
+import com.wat.cloud.aws.ec2.exception.WaitVolumeStatusException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.DefaultInstanceController;
 import com.wat.melody.cloud.instance.InstanceController;
@@ -13,8 +15,6 @@ import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 
 /**
  * 

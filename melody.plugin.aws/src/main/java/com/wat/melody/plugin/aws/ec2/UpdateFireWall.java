@@ -21,15 +21,10 @@ public class UpdateFireWall extends AbstractOperation {
 	 */
 	public static final String UPDATE_FIREWALL = "UpdateFireWall";
 
-	private FireWallRulesPerDevice _rulesPerDevice;
+	private FireWallRulesPerDevice _rulesPerDevice = null;
 
 	public UpdateFireWall() {
 		super();
-		initFwRules();
-	}
-
-	private void initFwRules() {
-		_rulesPerDevice = null;
 	}
 
 	@Override

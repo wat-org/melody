@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 
 /**
  * <p>
@@ -92,7 +92,8 @@ public class AwsKeyPairRepository {
 	}
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase) throws AwsException, IOException {
+			int size, String passphrase) throws AwsKeyPairRepositoryException,
+			IOException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);
@@ -109,12 +110,12 @@ public class AwsKeyPairRepository {
 	}
 
 	private synchronized void createKeyPairInAws(KeyPairName kpn, KeyPair kp)
-			throws AwsException {
+			throws AwsKeyPairRepositoryException {
 		if (AwsEc2Cloud.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in AWS, verify the fingerprint
 			String fprint = KeyPairRepository.getFingerprint(kp);
 			if (AwsEc2Cloud.compareKeyPair(getConnection(), kpn, fprint) == false) {
-				throw new AwsException(Messages.bind(
+				throw new AwsKeyPairRepositoryException(Messages.bind(
 						Messages.KeyPairEx_DIFFERENT, kpn,
 						getKeyPairRepository().getKeyPairRepositoryPath()));
 			}

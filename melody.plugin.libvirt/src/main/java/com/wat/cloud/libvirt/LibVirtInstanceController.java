@@ -1,13 +1,10 @@
-package com.wat.melody.plugin.libvirt.common;
+package com.wat.cloud.libvirt;
 
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 
-import com.wat.cloud.libvirt.LibVirtCloud;
-import com.wat.cloud.libvirt.LibVirtCloudFireWall;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.DefaultInstanceController;
-import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -22,8 +19,7 @@ import com.wat.melody.common.keypair.KeyPairName;
  * @author Guillaume Cornet
  * 
  */
-public class LibVirtInstanceController extends DefaultInstanceController
-		implements InstanceController {
+public class LibVirtInstanceController extends DefaultInstanceController {
 
 	private Connect _cnx;
 	private Domain _domain;

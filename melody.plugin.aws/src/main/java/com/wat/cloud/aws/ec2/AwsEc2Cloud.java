@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +41,10 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
+import com.wat.cloud.aws.ec2.exception.IllegalVolumeAttachmentStateException;
+import com.wat.cloud.aws.ec2.exception.IllegalVolumeStateException;
+import com.wat.cloud.aws.ec2.exception.WaitVolumeAttachmentStatusException;
+import com.wat.cloud.aws.ec2.exception.WaitVolumeStatusException;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDeviceName;
@@ -58,10 +62,6 @@ import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeStateException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeAttachmentStatusException;
-import com.wat.melody.plugin.aws.ec2.common.exception.WaitVolumeStatusException;
 
 /**
  * 

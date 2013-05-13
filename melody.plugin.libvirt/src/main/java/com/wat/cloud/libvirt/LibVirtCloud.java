@@ -48,7 +48,6 @@ import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
-import com.wat.melody.plugin.libvirt.common.InstanceStateConverter;
 
 /**
  * <p>
@@ -1379,6 +1378,30 @@ public abstract class LibVirtCloud {
 			throw new RuntimeException(Ex);
 		}
 		return true;
+	}
+
+}
+
+abstract class DiskDeviceNameConverter {
+
+	/**
+	 * <p>
+	 * Converts the given {@link DiskDeviceName} to the libvirt name of the disk
+	 * device.
+	 * </p>
+	 * 
+	 * @param diskdev
+	 *            is the {@link DiskDeviceName} to convert.
+	 * 
+	 * @return the libvirt name of the disk device.
+	 */
+	public static String convert(DiskDeviceName diskdev) {
+		if (diskdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ DiskDeviceName.class.getCanonicalName() + ".");
+		}
+		return diskdev.getValue().replace("/dev/", "");
 	}
 
 }

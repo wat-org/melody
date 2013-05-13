@@ -22,14 +22,10 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 	 */
 	public static final String UPDATE_FIREWALL = "UpdateFireWall";
 
-	private FireWallRulesPerDevice _rulesPerDevice;
+	private FireWallRulesPerDevice _rulesPerDevice = null;
 
 	public UpdateFireWall() {
-		initFwRules();
-	}
-
-	private void initFwRules() {
-		_rulesPerDevice = null;
+		super();
 	}
 
 	@Override

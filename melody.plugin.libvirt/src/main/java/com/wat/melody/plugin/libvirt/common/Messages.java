@@ -6,8 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.plugin.libvirt.common.messages";
 
-	public static String KeyPairEx_DIFFERENT;
-
 	public static String ConfEx_MISSING_DIRECTIVE;
 	public static String ConfEx_INVALID_DIRECTIVE;
 	public static String ConfEx_EMPTY_DIRECTIVE;
@@ -35,17 +33,13 @@ public class Messages extends NLS {
 
 	public static String DestroyEx_GENERIC_FAIL;
 
-	public static String StartEx_TIMEOUT;
 	public static String StartEx_GENERIC_FAIL;
 
-	public static String StopEx_TIMEOUT;
 	public static String StopEx_GENERIC_FAIL;
 
 	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
 	public static String ResizeEx_INSTANCETYPE_ERROR;
 	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
-
-	public static String ResizeEx_FAILED;
 	public static String ResizeEx_GENERIC_FAIL;
 
 	public static String UpdateDiskDevEx_GENERIC_FAIL;

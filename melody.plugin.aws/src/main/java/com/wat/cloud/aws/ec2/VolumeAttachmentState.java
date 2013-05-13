@@ -1,8 +1,8 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.cloud.aws.ec2;
 
 import java.util.Arrays;
 
-import com.wat.melody.plugin.aws.ec2.common.exception.IllegalVolumeAttachmentStateException;
+import com.wat.cloud.aws.ec2.exception.IllegalVolumeAttachmentStateException;
 
 /**
  * Note that the DELETED state cannot be used. That's the reason why it is not
@@ -17,21 +17,21 @@ public enum VolumeAttachmentState {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link VolumeAttachmentState}
+	 * Convert the given <tt>String</tt> to a {@link VolumeAttachmentState}
 	 * object.
 	 * </p>
 	 * 
 	 * @param sType
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>VolumeAttachmentState</code> object, whose equal to the
-	 *         given input <code>String</code>.
+	 * @return an {@link VolumeAttachmentState} object, whose equal to the given
+	 *         input <tt>String</tt>.
 	 * 
 	 * @throws IllegalVolumeAttachmentStateException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>VolumeAttachmentState</code> Enumeration Constant.
+	 *             if the given input <tt>String</tt> is not a valid
+	 *             {@link VolumeAttachmentState} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static VolumeAttachmentState parseString(String sType)
 			throws IllegalVolumeAttachmentStateException {

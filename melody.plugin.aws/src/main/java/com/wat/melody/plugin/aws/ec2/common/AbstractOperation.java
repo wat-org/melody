@@ -6,6 +6,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.wat.cloud.aws.ec2.AwsEc2Cloud;
+import com.wat.cloud.aws.ec2.AwsInstanceController;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
@@ -46,45 +48,15 @@ abstract public class AbstractOperation implements ITask,
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
-	private AmazonEC2 moEC2;
-	private InstanceController moInstance;
-	private String msInstanceId;
-	private Node moTargetNode;
-	private String msRegion;
-	private String msTarget;
-	private long mlTimeout;
+	private AmazonEC2 _ec2 = null;
+	private InstanceController _instance = null;
+	private String _instanceId = null;
+	private Node _targetNode = null;
+	private String _region = null;
+	private String _target = null;
+	private long _timeout = 90000;
 
 	public AbstractOperation() {
-		initEC2();
-		initInstance();
-		initTargetNode();
-		initInstanceId();
-		initRegion();
-		initTimeout();
-	}
-
-	private void initEC2() {
-		moEC2 = null;
-	}
-
-	private void initInstance() {
-		moInstance = null;
-	}
-
-	private void initTargetNode() {
-		moTargetNode = null;
-	}
-
-	private void initInstanceId() {
-		msInstanceId = null;
-	}
-
-	private void initRegion() {
-		msRegion = null;
-	}
-
-	private void initTimeout() {
-		mlTimeout = 90000;
 	}
 
 	@Override
@@ -117,7 +89,7 @@ abstract public class AbstractOperation implements ITask,
 		}
 
 		// Initialize AmazonEC2 for the current region
-		setEc2(getPluginConf().getAmazonEC2(getRegion()));
+		setEc2(getAwsPlugInConfiguration().getAmazonEC2(getRegion()));
 
 		setInstance(createInstance());
 	}
@@ -150,7 +122,8 @@ abstract public class AbstractOperation implements ITask,
 		return Doc.getNodeLocation(getTargetNode()).toFullString();
 	}
 
-	protected AwsPlugInConfiguration getPluginConf() throws AwsException {
+	public AwsPlugInConfiguration getAwsPlugInConfiguration()
+			throws AwsException {
 		try {
 			return AwsPlugInConfiguration.get(Melody.getContext()
 					.getProcessorManager());
@@ -159,7 +132,8 @@ abstract public class AbstractOperation implements ITask,
 		}
 	}
 
-	public SshPlugInConfiguration getSshPlugInConf() throws AwsException {
+	public SshPlugInConfiguration getSshPlugInConfiguration()
+			throws AwsException {
 		try {
 			return SshPlugInConfiguration.get(Melody.getContext()
 					.getProcessorManager());
@@ -171,7 +145,7 @@ abstract public class AbstractOperation implements ITask,
 	@Override
 	public SshPlugInConfiguration getSshConfiguration() {
 		try {
-			return getSshPlugInConf();
+			return getSshPlugInConfiguration();
 		} catch (AwsException Ex) {
 			throw new RuntimeException("Unexpected error when retrieving Ssh "
 					+ " Plug-In configuration. "
@@ -181,7 +155,7 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	protected AmazonEC2 getEc2() {
-		return moEC2;
+		return _ec2;
 	}
 
 	private AmazonEC2 setEc2(AmazonEC2 ec2) {
@@ -190,12 +164,12 @@ abstract public class AbstractOperation implements ITask,
 					+ "Must be a valid AmazonEC2.");
 		}
 		AmazonEC2 previous = getEc2();
-		moEC2 = ec2;
+		_ec2 = ec2;
 		return previous;
 	}
 
 	public InstanceController getInstance() {
-		return moInstance;
+		return _instance;
 	}
 
 	public InstanceController setInstance(InstanceController instance) {
@@ -205,7 +179,7 @@ abstract public class AbstractOperation implements ITask,
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
 		InstanceController previous = getInstance();
-		moInstance = instance;
+		_instance = instance;
 		return previous;
 	}
 
@@ -213,7 +187,7 @@ abstract public class AbstractOperation implements ITask,
 	 * @return the targeted {@link Node}.
 	 */
 	public Node getTargetNode() {
-		return moTargetNode;
+		return _targetNode;
 	}
 
 	public Node setTargetNode(Node n) {
@@ -222,7 +196,7 @@ abstract public class AbstractOperation implements ITask,
 					+ "Must be a valid Node (the targeted AWS Instance Node).");
 		}
 		Node previous = getTargetNode();
-		moTargetNode = n;
+		_targetNode = n;
 		return previous;
 	}
 
@@ -231,18 +205,18 @@ abstract public class AbstractOperation implements ITask,
 	 *         be <code>null</code>).
 	 */
 	protected String getInstanceId() {
-		return msInstanceId;
+		return _instanceId;
 	}
 
 	protected String setInstanceId(String instanceID) {
 		// can be null, if no AWS instance have been created yet
 		String previous = getInstanceId();
-		msInstanceId = instanceID;
+		_instanceId = instanceID;
 		return previous;
 	}
 
 	public String getRegion() {
-		return msRegion;
+		return _region;
 	}
 
 	@Attribute(name = REGION_ATTR)
@@ -251,12 +225,12 @@ abstract public class AbstractOperation implements ITask,
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an AWS Region Name).");
 		}
-		if (getPluginConf().getAmazonEC2(region) == null) {
+		if (getAwsPlugInConfiguration().getAmazonEC2(region) == null) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_REGION_ATTR, region));
 		}
 		String previous = getRegion();
-		this.msRegion = region;
+		this._region = region;
 		return previous;
 	}
 
@@ -264,7 +238,7 @@ abstract public class AbstractOperation implements ITask,
 	 * @return the XPath expression which selects the targeted Node.
 	 */
 	public String getTarget() {
-		return msTarget;
+		return _target;
 	}
 
 	@Attribute(name = TARGET_ATTR, mandatory = true)
@@ -306,12 +280,12 @@ abstract public class AbstractOperation implements ITask,
 		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();
-		msTarget = target;
+		_target = target;
 		return previous;
 	}
 
 	public long getTimeout() {
-		return mlTimeout;
+		return _timeout;
 	}
 
 	@Attribute(name = TIMEOUT_ATTR)
@@ -321,7 +295,7 @@ abstract public class AbstractOperation implements ITask,
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getTimeout();
-		mlTimeout = timeout;
+		_timeout = timeout;
 		return previous;
 	}
 

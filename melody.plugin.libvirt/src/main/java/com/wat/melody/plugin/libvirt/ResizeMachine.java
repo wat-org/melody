@@ -31,15 +31,10 @@ public class ResizeMachine extends AbstractOperation {
 	 */
 	public static final String INSTANCETYPE_ATTR = "instanceType";
 
-	private InstanceType msInstanceType;
+	private InstanceType _instanceType = null;
 
 	public ResizeMachine() {
 		super();
-		initInstanceType();
-	}
-
-	private void initInstanceType() {
-		msInstanceType = null;
 	}
 
 	@Override
@@ -92,7 +87,7 @@ public class ResizeMachine extends AbstractOperation {
 	}
 
 	public InstanceType getInstanceType() {
-		return msInstanceType;
+		return _instanceType;
 	}
 
 	@Attribute(name = INSTANCETYPE_ATTR)
@@ -104,7 +99,7 @@ public class ResizeMachine extends AbstractOperation {
 					+ Arrays.asList(InstanceType.values()) + ").");
 		}
 		InstanceType previous = getInstanceType();
-		msInstanceType = instanceType;
+		_instanceType = instanceType;
 		return previous;
 	}
 

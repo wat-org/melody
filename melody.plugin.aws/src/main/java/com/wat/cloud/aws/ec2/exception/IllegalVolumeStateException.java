@@ -1,11 +1,13 @@
-package com.wat.melody.plugin.aws.ec2.common.exception;
+package com.wat.cloud.aws.ec2.exception;
+
+import com.wat.melody.common.ex.MelodyException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class IllegalVolumeStateException extends AwsException {
+public class IllegalVolumeStateException extends MelodyException {
 
 	private static final long serialVersionUID = -654654322574326576L;
 

@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.libvirt.common;
+package com.wat.cloud.libvirt;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -7,11 +7,10 @@ import java.util.Map;
 
 import org.libvirt.Connect;
 
-import com.wat.cloud.libvirt.LibVirtCloudKeyPair;
+import com.wat.cloud.libvirt.exception.LibVirtKeyPairRepositoryException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
-import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
 /**
  * <p>
@@ -94,7 +93,8 @@ public class LibVirtKeyPairRepository {
 	}
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase) throws LibVirtException, IOException {
+			int size, String passphrase)
+			throws LibVirtKeyPairRepositoryException, IOException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);
@@ -111,13 +111,13 @@ public class LibVirtKeyPairRepository {
 	}
 
 	private synchronized void createKeyPairInLibVirtCloud(KeyPairName kpn,
-			KeyPair kp) throws LibVirtException {
+			KeyPair kp) throws LibVirtKeyPairRepositoryException {
 		if (LibVirtCloudKeyPair.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in LibVirtCloud, verify the fingerprint
 			String fprint = KeyPairRepository.getFingerprint(kp);
 			if (LibVirtCloudKeyPair
 					.compareKeyPair(getConnection(), kpn, fprint) == false) {
-				throw new LibVirtException(Messages.bind(
+				throw new LibVirtKeyPairRepositoryException(Messages.bind(
 						Messages.KeyPairEx_DIFFERENT, kpn,
 						getKeyPairRepository().getKeyPairRepositoryPath()));
 			}

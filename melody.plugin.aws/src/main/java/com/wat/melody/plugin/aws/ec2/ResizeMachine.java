@@ -2,6 +2,7 @@ package com.wat.melody.plugin.aws.ec2;
 
 import java.util.Arrays;
 
+import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -9,7 +10,6 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
-import com.wat.melody.plugin.aws.ec2.common.AwsEc2Cloud;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -31,15 +31,10 @@ public class ResizeMachine extends AbstractOperation {
 	 */
 	public static final String INSTANCETYPE_ATTR = "instanceType";
 
-	private InstanceType msInstanceType;
+	private InstanceType _instanceType = null;
 
 	public ResizeMachine() {
 		super();
-		initInstanceType();
-	}
-
-	private void initInstanceType() {
-		msInstanceType = null;
 	}
 
 	@Override
@@ -93,7 +88,7 @@ public class ResizeMachine extends AbstractOperation {
 	}
 
 	public InstanceType getInstanceType() {
-		return msInstanceType;
+		return _instanceType;
 	}
 
 	@Attribute(name = INSTANCETYPE_ATTR)
@@ -105,7 +100,7 @@ public class ResizeMachine extends AbstractOperation {
 					+ Arrays.asList(InstanceType.values()) + ").");
 		}
 		InstanceType previous = getInstanceType();
-		msInstanceType = instanceType;
+		_instanceType = instanceType;
 		return previous;
 	}
 

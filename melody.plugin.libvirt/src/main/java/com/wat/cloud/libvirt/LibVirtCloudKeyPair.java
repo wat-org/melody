@@ -19,7 +19,6 @@ import org.w3c.dom.Node;
 import com.wat.melody.common.keypair.KeyPairHelper;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 
 /**
  * <p>
@@ -233,21 +232,17 @@ public abstract class LibVirtCloudKeyPair {
 	 *            is the ip address of the requested libvrit domain.
 	 * 
 	 * @return the public key associated to the libvirt domain which have the
-	 *         given ip.
-	 * 
-	 * @throws LibVirtException
-	 *             if the libvirt domain which have the given ip address has no
-	 *             public key associated to.
+	 *         given ip, or <tt>null</tt> if the libvirt domain which have the
+	 *         given ip address is not registered or has no publik-key
+	 *         associated to.
 	 */
-	public static String getInstancePublicKey(String instanceIp)
-			throws LibVirtException {
+	public static String getInstancePublicKey(String instanceIp) {
 		try {
 			String keypairname = LibVirtCloud.netconf
 					.evaluateAsString("/network/ip/dhcp/host[ @ip='"
 							+ instanceIp + "' ]/@keypair-name");
 			if (keypairname == null || keypairname.trim().length() == 0) {
-				throw new LibVirtException("IP ''" + instanceIp + "'' is not "
-						+ "registered or has no publik-key associated to.");
+				return null;
 			}
 			return getPublicKeyBytes(keypairname);
 		} catch (XPathExpressionException Ex) {

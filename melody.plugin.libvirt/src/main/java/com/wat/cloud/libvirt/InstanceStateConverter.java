@@ -1,10 +1,11 @@
-package com.wat.melody.plugin.libvirt.common;
+package com.wat.cloud.libvirt;
 
 import java.util.Arrays;
 
 import org.libvirt.DomainInfo;
 
 import com.wat.melody.cloud.instance.InstanceState;
+import com.wat.melody.cloud.instance.Messages;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 
 /**
@@ -16,7 +17,7 @@ public abstract class InstanceStateConverter {
 
 	/**
 	 * <p>
-	 * Convert the given {@link DomainInfo.DomainState} to a
+	 * Convert the given {@link DomainInfo.DomainState} to an
 	 * {@link InstanceState} object.
 	 * </p>
 	 * 
@@ -24,7 +25,7 @@ public abstract class InstanceStateConverter {
 	 *            is the given {@link DomainInfo.DomainState} to convert.
 	 * 
 	 * @return an {@link InstanceState} object, whose equal to the given input
-	 *         <code>int</code>.
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalInstanceStateException
 	 *             if the given input {@link DomainInfo.DomainState} is not a
@@ -57,8 +58,8 @@ public abstract class InstanceStateConverter {
 		 * libVitCloud dé-provisionne le Domain
 		 */
 		throw new IllegalInstanceStateException(Messages.bind(
-				com.wat.melody.cloud.instance.Messages.InstanceStateEx_INVALID,
-				iState, Arrays.asList(DomainInfo.DomainState.values())));
+				Messages.InstanceStateEx_INVALID, iState,
+				Arrays.asList(DomainInfo.DomainState.values())));
 	}
 
 }
