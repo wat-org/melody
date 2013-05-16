@@ -2,6 +2,8 @@ package com.wat.melody.api;
 
 import org.eclipse.osgi.util.NLS;
 
+import com.wat.melody.common.ex.Util;
+
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.api.messages";
@@ -42,8 +44,8 @@ public class Messages extends NLS {
 	public static String PMFactoryEx_UNDEF_ENV;
 	public static String PMFactoryEx_CLASS_NOT_FOUND;
 	public static String PMFactoryEx_NO_CLASS_DEF_FOUND;
-	public static String PMFactoryEx_ILLEGAL_ACCESS;
-	public static String PMFactoryEx_CLASS_CAST;
+	public static String PMFactoryEx_INVALID_SPEC;
+	public static String PMFactoryEx_INTERNAL_ERROR;
 
 	static {
 		// initialize resource bundle
@@ -51,6 +53,10 @@ public class Messages extends NLS {
 	}
 
 	public static String bind(String message, Object... bindings) {
+		for (int i = 0; i < bindings.length; i++) {
+			bindings[i] = bindings[i].toString().replaceAll(Util.NEW_LINE,
+					Util.NEW_LINE + "  ");
+		}
 		return NLS.bind(message, bindings);
 	}
 

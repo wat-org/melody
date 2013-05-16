@@ -1,5 +1,7 @@
 package com.wat.melody.api;
 
+import java.lang.reflect.InvocationTargetException;
+
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 
 /**
@@ -62,8 +64,10 @@ public class ProcessorManagerFactory {
 	 */
 	public IProcessorManager newProcessorManager() {
 		try {
-			return moPMClass.newInstance();
-		} catch (InstantiationException | IllegalAccessException Ex) {
+			return moPMClass.getConstructor().newInstance();
+		} catch (NoSuchMethodException | InstantiationException
+				| IllegalAccessException | ClassCastException
+				| InvocationTargetException Ex) {
 			throw new RuntimeException("Unexecpted error while creating a new "
 					+ moPMClass.getCanonicalName() + " object. "
 					+ "Since the validity of this no contructor have been "
@@ -78,10 +82,10 @@ public class ProcessorManagerFactory {
 		String pmClassName = System.getProperty(PROCESSOR_MANAGER_IMPL_KEY);
 		if (pmClassName == null) {
 			throw new ProcessorManagerFactoryException(Messages.bind(
-					Messages.PMFactoryEx_UNDEF_ENV, new Object[] {
-							ProcessorManagerFactory.class.getSimpleName(),
-							IProcessorManager.class.getCanonicalName(),
-							PROCESSOR_MANAGER_IMPL_KEY }));
+					Messages.PMFactoryEx_UNDEF_ENV,
+					ProcessorManagerFactory.class.getSimpleName(),
+					IProcessorManager.class.getCanonicalName(),
+					PROCESSOR_MANAGER_IMPL_KEY));
 		}
 		try {
 			moPMClass = (Class<IProcessorManager>) Class.forName(pmClassName);
@@ -95,17 +99,18 @@ public class ProcessorManagerFactory {
 							.getMessage().replaceAll("/", ".")));
 		}
 		try {
-			IProcessorManager pm = moPMClass.newInstance();
-		} catch (InstantiationException | IllegalAccessException Ex) {
+			IProcessorManager pm = moPMClass.getConstructor().newInstance();
+		} catch (NoSuchMethodException | InstantiationException
+				| IllegalAccessException | ClassCastException Ex) {
 			throw new ProcessorManagerFactoryException(Messages.bind(
-					Messages.PMFactoryEx_ILLEGAL_ACCESS,
+					Messages.PMFactoryEx_INVALID_SPEC,
 					moPMClass.getCanonicalName(),
 					IProcessorManager.class.getCanonicalName()));
-		} catch (ClassCastException Ex) {
+		} catch (InvocationTargetException Ex) {
 			throw new ProcessorManagerFactoryException(Messages.bind(
-					Messages.PMFactoryEx_CLASS_CAST,
+					Messages.PMFactoryEx_INTERNAL_ERROR,
 					moPMClass.getCanonicalName(),
-					IProcessorManager.class.getCanonicalName()));
+					IProcessorManager.class.getCanonicalName(), Ex.getCause()));
 		}
 		// TODO : catch InvocationTargetException
 	}

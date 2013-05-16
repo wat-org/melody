@@ -428,11 +428,11 @@ public class TaskFactory {
 			try {
 				p = findTaskClass(parentNode);
 			} catch (TaskFactoryException Ex) {
-				throw new RuntimeException("Unexpected error while finding "
-						+ "the Task Class which match '" + parentNode + "'. "
-						+ "Because this Task is a parent Task, meaning that "
-						+ "it had already been created, such error cannot "
-						+ "happened. "
+				throw new RuntimeException("Unexpected error while searching "
+						+ "the Task Class which match the Node ["
+						+ Doc.getNodeLocation(parentNode) + "]. "
+						+ "Because this Task already been created, "
+						+ "such error cannot happened. "
 						+ "Source code has certainly been modified and a bug "
 						+ "have been introduced.", Ex);
 			}
@@ -531,16 +531,20 @@ public class TaskFactory {
 
 		ITask t = null;
 		try {
-			t = c.newInstance();
-		} catch (InstantiationException | IllegalAccessException Ex) {
+			t = c.getConstructor().newInstance();
+		} catch (NoSuchMethodException | InstantiationException
+				| IllegalAccessException | ClassCastException Ex) {
 			throw new RuntimeException("Unexpected error while creating a "
-					+ "Task by reflection. "
+					+ "Task '" + c.getCanonicalName() + "' by reflection. "
 					+ "Because a public no-argument constructor exists "
 					+ "(see 'registerTasks'), such error cannot happened. "
 					+ "Source code has certainly been modified and a "
 					+ "bug have been introduced.", Ex);
+		} catch (InvocationTargetException Ex) {
+			throw new RuntimeException("Task '" + c.getCanonicalName()
+					+ "' creation fails, generating the error below. ",
+					Ex.getCause());
 		}
-		// TODO : catch InvocationTargetException
 
 		synchronized (n.getOwnerDocument()) {
 			setAllMembers(t, n.getAttributes(), n.getNodeName());
@@ -661,14 +665,16 @@ public class TaskFactory {
 		try {
 			Object o;
 			try {
-				o = m.getParameterTypes()[0].newInstance();
-			} catch (InstantiationException | IllegalAccessException Ex) {
+				o = m.getParameterTypes()[0].getConstructor().newInstance();
+			} catch (NoSuchMethodException | InstantiationException
+					| IllegalAccessException | ClassCastException Ex) {
 				throw new RuntimeException("Unexpected error while adding a "
 						+ "nested element by reflection. "
-						+ "Source code has certainly been modified and a bug "
-						+ "have been introduced.", Ex);
+						+ "Source code has certainly been modified and a "
+						+ "bug have been introduced.", Ex);
+			} catch (InvocationTargetException Ex) {
+				throw new TaskFactoryException(Ex.getCause());
 			}
-			// TODO : catch InvocationTargetException
 
 			setAllMembers(o, n.getAttributes(), n.getNodeName());
 			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());

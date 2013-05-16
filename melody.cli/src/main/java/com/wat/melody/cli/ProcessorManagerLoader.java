@@ -1,6 +1,7 @@
 package com.wat.melody.cli;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -259,9 +260,8 @@ public class ProcessorManagerLoader {
 		}
 		try {
 			/*
-			 * TODO : put the default configuration file into the classpath ?
-			 * instead of in the command line. Copy the mechanism of log4J with
-			 * log4j.xml
+			 * TODO : put the default configuration file into a system property,
+			 * instead of the first command line parameter.
 			 */
 			/*
 			 * The Melody Shell/Bat Wrapper must add the Default Global
@@ -1195,8 +1195,8 @@ public class ProcessorManagerLoader {
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pi)) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, new Object[] {
-							TASK_DIRECTIVES, pi, oProps.getFilePath() }));
+					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, TASK_DIRECTIVES,
+					pi, oProps.getFilePath()));
 		}
 		String pics = oProps.get(pi);
 		if (pics.trim().length() == 0) {
@@ -1226,19 +1226,20 @@ public class ProcessorManagerLoader {
 					Messages.ConfEx_CNF_TASKS_DIRECTIVE, pi, pic));
 		} catch (NoClassDefFoundError Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_NCDF_TASKS_DIRECTIVE, new Object[] { pi,
-							pic, Ex.getMessage().replaceAll("/", ".") }));
+					Messages.ConfEx_NCDF_TASKS_DIRECTIVE, pi, pic, Ex
+							.getMessage().replaceAll("/", ".")));
 		}
 		try {
-			c.newInstance();
-		} catch (IllegalAccessException | InstantiationException Ex) {
+			c.getConstructor().newInstance();
+		} catch (NoSuchMethodException | IllegalAccessException
+				| InstantiationException | ClassCastException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_CC_TASKS_DIRECTIVE, pi, pic));
-		} catch (ClassCastException Ex) {
+					Messages.ConfEx_IS_TASKS_DIRECTIVE, pi, pic,
+					ITask.class.getCanonicalName()));
+		} catch (InvocationTargetException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_CC_TASKS_DIRECTIVE, pi, pic));
+					Messages.ConfEx_IE_TASKS_DIRECTIVE, pi, pic), Ex.getCause());
 		}
-		// TODO : catch InvocationTargetException
 		/*
 		 * Will throw a RuntimeException if the given Class<ITask> doesn't
 		 * respect ITask specification. Should only happened during Task
@@ -1281,11 +1282,9 @@ public class ProcessorManagerLoader {
 	private String loadPlugInConfigurationDirective(PropertiesSet oProps,
 			String pcd) throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pcd)) {
-			throw new ConfigurationLoadingException(
-					Messages.bind(
-							Messages.ConfEx_MISSING_PLUGINS_DIRECTIVE,
-							new Object[] { PLUGIN_CONF_DIRECTIVES, pcd,
-									oProps.getFilePath() }));
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_MISSING_PLUGINS_DIRECTIVE,
+					PLUGIN_CONF_DIRECTIVES, pcd, oProps.getFilePath()));
 		}
 		String pcf = oProps.get(pcd);
 		if (pcf.trim().length() == 0) {
@@ -1317,9 +1316,8 @@ public class ProcessorManagerLoader {
 			throws ConfigurationLoadingException {
 		if (!pcps.containsKey(IPlugInConfiguration.PLUGIN_CONF_CLASS)) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_MISSING_PCC_DIRECTIVE, new Object[] { pcd,
-							pcps.getFilePath(),
-							IPlugInConfiguration.PLUGIN_CONF_CLASS }));
+					Messages.ConfEx_MISSING_PCC_DIRECTIVE, pcd,
+					pcps.getFilePath(), IPlugInConfiguration.PLUGIN_CONF_CLASS));
 		}
 		String pcc = pcps.get(IPlugInConfiguration.PLUGIN_CONF_CLASS);
 		if (pcc.trim().length() == 0) {
@@ -1340,21 +1338,20 @@ public class ProcessorManagerLoader {
 		} catch (ClassNotFoundException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CNF_CONF_DIRECTIVE,
-					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), pcc }));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
+					pcc));
 		} catch (NoClassDefFoundError Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NCDF_CONF_DIRECTIVE,
-					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), pcc,
-							Ex.getMessage().replaceAll("/", ".") }));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
+					pcc, Ex.getMessage().replaceAll("/", ".")));
 		}
 		IProcessorManager pm = getProcessorManager();
 		if (pm.getPluginConfigurations().contains(c)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
-					new Object[] { IPlugInConfiguration.PLUGIN_CONF_CLASS,
-							pcps.getFilePath(), c }));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
+					c));
 		}
 		return c;
 	}
@@ -1364,23 +1361,20 @@ public class ProcessorManagerLoader {
 			throws ConfigurationLoadingException {
 		IPlugInConfiguration pc = null;
 		try {
-			pc = c.newInstance();
-		} catch (InstantiationException | IllegalAccessException Ex) {
-			throw new ConfigurationLoadingException(
-					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
-							new Object[] {
-									IPlugInConfiguration.PLUGIN_CONF_CLASS,
-									pcps.getFilePath(),
-									c.getClass().getCanonicalName() }));
-		} catch (ClassCastException Ex) {
-			throw new ConfigurationLoadingException(
-					Messages.bind(Messages.ConfEx_CC_CONF_DIRECTIVE,
-							new Object[] {
-									IPlugInConfiguration.PLUGIN_CONF_CLASS,
-									pcps.getFilePath(),
-									c.getClass().getCanonicalName() }));
+			pc = c.getConstructor().newInstance();
+		} catch (NoSuchMethodException | InstantiationException
+				| IllegalAccessException | ClassCastException Ex) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_IS_CONF_DIRECTIVE,
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
+					c.getClass().getCanonicalName(),
+					IPlugInConfiguration.class.getCanonicalName()));
+		} catch (InvocationTargetException Ex) {
+			throw new ConfigurationLoadingException(Messages.bind(
+					Messages.ConfEx_IE_CONF_DIRECTIVE,
+					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
+					c.getClass().getCanonicalName(), Ex.getCause()));
 		}
-		// TODO : catch InvocationTargetException
 		try {
 			pc.load(pcps);
 		} catch (PlugInConfigurationException Ex) {

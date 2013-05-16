@@ -2,6 +2,8 @@ package com.wat.melody.cli;
 
 import org.eclipse.osgi.util.NLS;
 
+import com.wat.melody.common.ex.Util;
+
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cli.messages";
@@ -29,7 +31,8 @@ public class Messages extends NLS {
 	public static String ConfEx_EMPTY_TASKS_DIRECTIVE;
 	public static String ConfEx_CNF_TASKS_DIRECTIVE;
 	public static String ConfEx_NCDF_TASKS_DIRECTIVE;
-	public static String ConfEx_CC_TASKS_DIRECTIVE;
+	public static String ConfEx_IS_TASKS_DIRECTIVE;
+	public static String ConfEx_IE_TASKS_DIRECTIVE;
 
 	public static String ConfEx_MISSING_PLUGINS_DIRECTIVE;
 	public static String ConfEx_EMPTY_PLUGINS_DIRECTIVE;
@@ -40,13 +43,22 @@ public class Messages extends NLS {
 	public static String ConfEx_EMPTY_PCC_DIRECTIVE;
 	public static String ConfEx_CNF_CONF_DIRECTIVE;
 	public static String ConfEx_NCDF_CONF_DIRECTIVE;
-	public static String ConfEx_CC_CONF_DIRECTIVE;
+	public static String ConfEx_IS_CONF_DIRECTIVE;
+	public static String ConfEx_IE_CONF_DIRECTIVE;
 	public static String ConfEx_DUPLICATE_CONF_DIRECTIVE;
 	public static String ConfEx_GENERIC_PLUGIN_LOAD;
 
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+	}
+
+	public static String bind(String message, Object... bindings) {
+		for (int i = 0; i < bindings.length; i++) {
+			bindings[i] = bindings[i].toString().replaceAll(Util.NEW_LINE,
+					Util.NEW_LINE + "  ");
+		}
+		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {
