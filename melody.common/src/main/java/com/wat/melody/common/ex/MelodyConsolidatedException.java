@@ -4,7 +4,15 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.wat.melody.common.systool.SysTool;
+
 /**
+ * <p>
+ * This exception have the ability to store multiple causes. This object is
+ * particularly useful in a multi-thread environment, when many threads raised
+ * exception. All these exceptions can be grouped in a single
+ * {@link MelodyConsolidatedException}.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -59,16 +67,17 @@ public class MelodyConsolidatedException extends MelodyException {
 		}
 		Iterator<Throwable> iter = getCauses().iterator();
 		if (getCauses().size() == 1) {
-			String err = Util.getUserFriendlyStackTrace(iter.next());
-			return err.replaceAll(Util.NEW_LINE + "    ", Util.NEW_LINE);
+			StringBuilder err = getUserFriendlyStackTrace(iter.next());
+			return SysTool.replaceAll(err, SysTool.NEW_LINE + "    ",
+					SysTool.NEW_LINE).toString();
 		}
-		String err = "";
+		StringBuilder err = new StringBuilder("");
 		for (int i = 0; iter.hasNext(); i++) {
-			Throwable ex = iter.next();
-			err += Util.NEW_LINE + "Error " + (i + 1) + " : "
-					+ Util.getUserFriendlyStackTrace(ex);
+			err.append(SysTool.NEW_LINE + "Error " + (i + 1) + " : ");
+			err.append(getUserFriendlyStackTrace(iter.next()));
 		}
-		return err.replaceAll(Util.NEW_LINE, Util.NEW_LINE + "  ");
+		return SysTool.replaceAll(err, SysTool.NEW_LINE,
+				SysTool.NEW_LINE + "  ").toString();
 	}
 
 }

@@ -3,7 +3,7 @@ package com.wat.melody.cloud.disk;
 import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * 
@@ -66,11 +66,13 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 
 	@Override
 	public String toString() {
-		String res = "";
+		StringBuilder str = new StringBuilder("");
 		for (DiskDevice rule : this) {
-			res += Util.NEW_LINE + "disk device:" + rule;
+			str.append(SysTool.NEW_LINE + "disk device:" + rule);
 		}
-		return res.length() == 0 ? Util.NEW_LINE + "no disk devices" : res;
+		return str.length() == 0 ? SysTool.NEW_LINE + "no disk devices" : str
+				.toString();
+
 	}
 
 }

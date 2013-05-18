@@ -10,11 +10,11 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetFileFormatException;
 import com.wat.melody.common.properties.exception.IllegalPropertyException;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
@@ -244,16 +244,15 @@ public class PropertiesSet {
 
 		// Add a property 'UUID', which have a unique value
 		final String UUID_COMMENT = "# 'UUID' is a special configuration "
-				+ "directive automatically added by Melody." + Util.NEW_LINE
+				+ "directive automatically added by Melody." + SysTool.NEW_LINE
 				+ "# 'UUID' can be used in Configuration Directive's value "
-				+ "to generate unique value." + Util.NEW_LINE
+				+ "to generate unique value." + SysTool.NEW_LINE
 				+ "# 'UUID' is used in the 'workingFolderPath' directive "
 				+ "to generate unique working folder, so that multiple "
 				+ "simultaneous execution of Melody have their own working "
 				+ "folder.";
 		try {
-			put(new Property("UUID", java.util.UUID.randomUUID().toString(),
-					UUID_COMMENT));
+			put(new Property("UUID", SysTool.newUUID().toString(), UUID_COMMENT));
 		} catch (IllegalPropertyException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
 					+ "setting the 'UUID' property. "
@@ -315,7 +314,7 @@ public class PropertiesSet {
 				if (comment == null) {
 					comment = line;
 				} else {
-					comment += Util.NEW_LINE + line;
+					comment += SysTool.NEW_LINE + line;
 				}
 			} else {
 				try {
@@ -474,12 +473,13 @@ public class PropertiesSet {
 	}
 
 	private String printCircularReferences(List<String> circularRefStack) {
-		String str = "";
+		StringBuilder str = new StringBuilder("");
 		for (String property : circularRefStack) {
-			str += Util.NEW_LINE + "  Configuration Directive '" + property
-					+ "' depends of '" + get(property) + "'";
+			str.append(SysTool.NEW_LINE);
+			str.append("  Configuration Directive '" + property + "'");
+			str.append(" depends of '" + get(property) + "'");
 		}
-		return str;
+		return str.toString();
 	}
 
 	/**

@@ -2,7 +2,7 @@ package com.wat.melody.common.firewall;
 
 import java.util.LinkedHashSet;
 
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
@@ -26,11 +26,12 @@ public class FireWallRules extends LinkedHashSet<SimpleFireWallRule> {
 
 	@Override
 	public String toString() {
-		String res = "";
+		StringBuilder str = new StringBuilder("");
 		for (SimpleFireWallRule rule : this) {
-			res += Util.NEW_LINE + "firewall rule:" + rule;
+			str.append(SysTool.NEW_LINE + "firewall rule:" + rule);
 		}
-		return res.length() == 0 ? Util.NEW_LINE + "no firewall rules" : res;
+		return str.length() == 0 ? SysTool.NEW_LINE + "no firewall rules" : str
+				.toString();
 	}
 
 }

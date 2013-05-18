@@ -10,11 +10,11 @@ import org.apache.commons.logging.LogFactory;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.log.LogThreshold;
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.plugin.echo.exception.EchoException;
 
 /**
@@ -129,7 +129,7 @@ public class Echo implements ITask {
 			try {
 				try {
 					fw = new FileWriter(getFile(), getAppend());
-					fw.write(getMessage() + Util.NEW_LINE);
+					fw.write(getMessage() + SysTool.NEW_LINE);
 				} finally {
 					if (fw != null) {
 						fw.close();

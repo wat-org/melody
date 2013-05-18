@@ -2,7 +2,7 @@ package com.wat.melody.common.firewall;
 
 import java.util.HashMap;
 
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
@@ -205,19 +205,18 @@ public class FireWallRulesPerDevice extends HashMap<Interface, FireWallRules> {
 
 	@Override
 	public String toString() {
-		String res = "";
+		StringBuilder str = new StringBuilder("");
 		for (Interface inter : keySet()) {
 			FireWallRules rules = get(inter);
 			if (rules == null || rules.size() == 0) {
 				continue;
 			}
-			res += Util.NEW_LINE
-					+ "device-name:"
-					+ inter
-					+ rules.toString().replaceAll(Util.NEW_LINE,
-							Util.NEW_LINE + "  ");
+			str.append(SysTool.NEW_LINE + "device-name:" + inter);
+			str.append(rules.toString().replaceAll(SysTool.NEW_LINE,
+					SysTool.NEW_LINE + "  "));
 		}
-		return res.length() == 0 ? Util.NEW_LINE + "no firewall rules" : res;
+		return str.length() == 0 ? SysTool.NEW_LINE + "no firewall rules" : str
+				.toString();
 	}
 
 }

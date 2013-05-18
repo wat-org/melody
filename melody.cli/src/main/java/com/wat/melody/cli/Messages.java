@@ -2,7 +2,7 @@ package com.wat.melody.cli;
 
 import org.eclipse.osgi.util.NLS;
 
-import com.wat.melody.common.ex.Util;
+import com.wat.melody.common.systool.SysTool;
 
 public class Messages extends NLS {
 
@@ -55,8 +55,8 @@ public class Messages extends NLS {
 
 	public static String bind(String message, Object... bindings) {
 		for (int i = 0; i < bindings.length; i++) {
-			bindings[i] = bindings[i].toString().replaceAll(Util.NEW_LINE,
-					Util.NEW_LINE + "  ");
+			bindings[i] = bindings[i].toString().replaceAll(SysTool.NEW_LINE,
+					SysTool.NEW_LINE + "  ");
 		}
 		return NLS.bind(message, bindings);
 	}

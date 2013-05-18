@@ -21,6 +21,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 import com.wat.melody.common.ssh.types.exception.ResourceException;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
@@ -331,7 +332,7 @@ class Finder extends SimpleFileVisitor<Path> {
 					+ "match is null.");
 		}
 		String path = baseResource.getLocalBaseDir().getAbsolutePath()
-				+ FS.FILE_SEPARATOR + baseResource.getMatch();
+				+ SysTool.FILE_SEPARATOR + baseResource.getMatch();
 		String sPattern = "glob:" + Paths.get(path).normalize().toString();
 		moBaseResource = baseResource;
 		matcher = FileSystems.getDefault().getPathMatcher(sPattern);

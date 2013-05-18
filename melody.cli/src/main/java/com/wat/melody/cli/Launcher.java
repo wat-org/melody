@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.utils.ReturnCode;
 
 public class Launcher {
@@ -37,12 +36,12 @@ public class Launcher {
 			pml = new ProcessorManagerLoader();
 			pm = pml.parseCommandLine(args);
 		} catch (MelodyException Ex) {
-			System.err.println(Util.getUserFriendlyStackTrace(Ex));
+			System.err.println(Ex.toString());
 			System.exit(ReturnCode.KO.getValue());
 		} catch (Throwable Ex) {
-			Exception e = new Exception("Something bad happend. "
+			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			System.err.println(Util.getUserFriendlyStackTrace(e));
+			System.err.println(e.toString());
 			System.exit(ReturnCode.ERRGEN.getValue());
 		}
 
@@ -62,15 +61,16 @@ public class Launcher {
 			}
 			iReturnCode = ReturnCode.OK;
 		} catch (InterruptedException Ex) {
-			log.warn(Util.getUserFriendlyStackTrace(Ex));
+			MelodyException e = new MelodyException(Ex);
+			log.warn(e.toString());
 			iReturnCode = ReturnCode.INTERRUPTED;
 		} catch (MelodyException Ex) {
-			log.error(Util.getUserFriendlyStackTrace(Ex));
+			log.error(Ex.toString());
 			iReturnCode = ReturnCode.KO;
 		} catch (Throwable Ex) {
-			Exception e = new Exception("Something bad happend. "
+			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			log.fatal(Util.getUserFriendlyStackTrace(e));
+			log.fatal(e.toString());
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
 			if (pm != null && dpl != null) {
@@ -79,9 +79,9 @@ public class Launcher {
 			try {
 				pml.deleteTemporaryResources();
 			} catch (IOException Ex) {
-				Exception e = new Exception("Failed to delete CLI temporary "
-						+ "resources.", Ex);
-				log.warn(Util.getUserFriendlyStackTrace(e));
+				MelodyException e = new MelodyException("Fail to delete CLI "
+						+ "temporary resources.", Ex);
+				log.warn(e.toString());
 			}
 			// If we call System.exit while the processing has already been
 			// stopped by user (i.e. the shutdownHook is started), it will block
@@ -96,5 +96,4 @@ public class Launcher {
 			}
 		}
 	}
-
 }

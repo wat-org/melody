@@ -14,7 +14,6 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
 import com.wat.melody.api.exception.IllegalTargetFilterException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.Util;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
@@ -109,22 +108,21 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	@Override
 	public String toString() {
-		String s = null;
-		s += "Resources Descriptor(s)" + "=";
+		StringBuilder str = new StringBuilder("");
+		str.append("resources-Descriptors:{ ");
 		for (DUNIDDoc rd : getDUNIDDocList()) {
-			s += rd.getFileFullPath() + ", ";
+			str.append(rd.getFileFullPath() + ", ");
 		}
-		s += Util.NEW_LINE;
-		s += "Resources Filter(s)" + "=";
+		str.append("}, resources-filters:{ ");
 		for (int i = 0; i < countFilters(); i++) {
-			s += getFilter(i) + ", ";
+			str.append(getFilter(i) + ", ");
 		}
-		s += Util.NEW_LINE;
-		s += "Target Filter(s)" + "=";
+		str.append("}, target-filter:{ ");
 		for (int i = 0; i < countTargetsFilters(); i++) {
-			s += getTargetsFilter(i) + ", ";
+			str.append(getTargetsFilter(i) + ", ");
 		}
-		return s;
+		str.append("}");
+		return str.toString();
 	}
 
 	@Override

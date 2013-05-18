@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.files.exception.IllegalTarGzException;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * 
@@ -22,18 +23,6 @@ import com.wat.melody.common.files.exception.IllegalTarGzException;
  * 
  */
 public abstract class FS {
-
-	/**
-	 * Is equal to System.getProperty("file.separator")
-	 */
-	public static final String FILE_SEPARATOR = System
-			.getProperty("file.separator");
-
-	/**
-	 * Is equal to System.getProperty("java.io.tmpdir")
-	 */
-	public static final String SYSTEM_TEMP_DIR = System
-			.getProperty("java.io.tmpdir");
 
 	/**
 	 * <p>
@@ -453,15 +442,6 @@ public abstract class FS {
 		}
 	}
 
-	public static void replaceAll(StringBuilder builder, String from, String to) {
-		int index = builder.indexOf(from);
-		while (index != -1) {
-			builder.replace(index, index + from.length(), to);
-			index += to.length(); // Move to the end of the replacement
-			index = builder.indexOf(from, index);
-		}
-	}
-
 	public static int validateBashSyntax(String sBashToValidate,
 			StringBuilder sOutRes) throws IOException, InterruptedException {
 		// pour le debuggage sous windows
@@ -481,7 +461,7 @@ public abstract class FS {
 			is.close();
 			int nRes = oP.waitFor();
 			oP.destroy();
-			FS.replaceAll(sOutRes, sBashToValidate + ":", "");
+			SysTool.replaceAll(sOutRes, sBashToValidate + ":", "");
 			return nRes;
 		} finally {
 			if (is != null)
