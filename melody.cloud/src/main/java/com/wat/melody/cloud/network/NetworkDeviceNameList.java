@@ -3,6 +3,7 @@ package com.wat.melody.cloud.network;
 import java.util.ArrayList;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -43,6 +44,20 @@ public class NetworkDeviceNameList extends ArrayList<NetworkDeviceName> {
 		}
 		return str.length() == 0 ? SysTool.NEW_LINE + "no network devices"
 				: str.toString();
+	}
+
+	/**
+	 * 
+	 * @param target
+	 * 
+	 * @return a {@link NetworkDeviceNameList}, which contains all
+	 *         {@link NetworkDeviceName} which are in the given target
+	 *         {@link NetworkDeviceNameList} and not in this object.
+	 */
+	public NetworkDeviceNameList delta(NetworkDeviceNameList target) {
+		NetworkDeviceNameList delta = new NetworkDeviceNameList(target);
+		delta.removeAll(this);
+		return delta;
 	}
 
 }

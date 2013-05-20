@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.network;
 
+import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;

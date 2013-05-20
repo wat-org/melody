@@ -3,18 +3,13 @@ package com.wat.melody.cloud.instance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.melody.cloud.disk.DiskDeviceHelper;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
-import com.wat.melody.cloud.firewall.FireWallRulesHelper;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceHelper;
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
-import com.wat.melody.common.firewall.Interface;
-import com.wat.melody.common.firewall.exception.IllegalInterfaceException;
+import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
 
 /**
@@ -227,16 +222,15 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throws OperationException, InterruptedException {
 		DiskDeviceList current = getInstanceDiskDevices();
 		try {
-			DiskDeviceHelper.ensureDiskDevicesUpdateIsPossible(current, target);
+			current.isCompatible(target);
 		} catch (DiskDeviceException Ex) {
 			throw new OperationException(Ex);
 		}
 
 		DiskDeviceList disksToAdd = null;
 		DiskDeviceList disksToRemove = null;
-		disksToAdd = DiskDeviceHelper.computeDiskDevicesToAdd(current, target);
-		disksToRemove = DiskDeviceHelper.computeDiskDevicesToRemove(current,
-				target);
+		disksToAdd = current.delta(target);
+		disksToRemove = target.delta(current);
 
 		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
 				getInstanceId(), target, disksToAdd, disksToRemove));
@@ -287,9 +281,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		NetworkDeviceNameList current = getInstanceNetworkDevices();
 		NetworkDeviceNameList toAdd = null;
 		NetworkDeviceNameList toRemove = null;
-		toAdd = NetworkDeviceHelper.computeNetworkDevicesToAdd(current, target);
-		toRemove = NetworkDeviceHelper.computeNetworkDevicesToRemove(current,
-				target);
+		toAdd = current.delta(target);
+		toRemove = target.delta(current);
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
 				getInstanceId(), target, toAdd, toRemove));
@@ -323,18 +316,14 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		}
 	}
 
-	public void updateInstanceFireWallRules(
-			FireWallRulesPerDevice expectedRulesPerDevice)
+	public void updateInstanceFireWallRules(FireWallRulesPerDevice target)
 			throws OperationException, InterruptedException {
 		NetworkDeviceNameList netdevs = getInstanceNetworkDevices();
 		for (NetworkDeviceName netdev : netdevs) {
 			FireWallRules current = getInstanceFireWallRules(netdev);
-			FireWallRules expected = getExpectedFireWallRules(
-					expectedRulesPerDevice, netdev);
-			FireWallRules toAdd = FireWallRulesHelper
-					.computeFireWallRulesToAdd(current, expected);
-			FireWallRules toRemove = FireWallRulesHelper
-					.computeFireWallRulesToRemove(current, expected);
+			FireWallRules expected = target.getFireWallRules(netdev);
+			FireWallRules toAdd = current.delta(expected);
+			FireWallRules toRemove = expected.delta(current);
 
 			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
 					getInstanceId(), netdev, expected, toAdd, toRemove));
@@ -342,28 +331,6 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			revokeInstanceFireWallRules(netdev, toRemove);
 			authorizeInstanceFireWallRules(netdev, toAdd);
 		}
-	}
-
-	private FireWallRules getExpectedFireWallRules(
-			FireWallRulesPerDevice rulesPerDevice, NetworkDeviceName netDev) {
-		FireWallRules rules = new FireWallRules();
-		FireWallRules tmp = rulesPerDevice.get(Interface.ALL);
-		if (tmp != null) {
-			rules.addAll(tmp);
-		}
-		try {
-			tmp = rulesPerDevice.get(Interface.parseString(netDev.getValue()));
-			if (tmp != null) {
-				rules.addAll(tmp);
-			}
-		} catch (IllegalInterfaceException e) {
-			throw new RuntimeException("Unexecpted error while creating an "
-					+ "Interface from a NetworkDeviceName equals to '" + netDev
-					+ "'. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.");
-		}
-		return rules;
 	}
 
 }

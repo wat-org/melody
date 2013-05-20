@@ -32,12 +32,15 @@ public class Messages extends NLS {
 	public static String IcmpTypesEx_INVALID_TYPE;
 	public static String IcmpTypesEx_EMPTY;
 
-	public static String InterfaceEx_EMPTY;
-	public static String InterfaceEx_INVALID;
+	public static String NetworkDeviceNameRefEx_EMPTY;
+	public static String NetworkDeviceNameRefEx_INVALID;
 
-	public static String InterfacesEx_EMPTY_INTERFACE;
-	public static String InterfacesEx_INVALID_INTERFACE;
-	public static String InterfacesEx_EMPTY;
+	public static String NetworkDeviceNameRefsEx_EMPTY_PART;
+	public static String NetworkDeviceNameRefsEx_INVALID_PART;
+	public static String NetworkDeviceNameRefsEx_EMPTY;
+
+	public static String NetworkDeviceNameEx_EMPTY;
+	public static String NetworkDeviceNameEx_INVALID;
 
 	public static String ProtocolEx_EMPTY;
 	public static String ProtocolEx_INVALID;

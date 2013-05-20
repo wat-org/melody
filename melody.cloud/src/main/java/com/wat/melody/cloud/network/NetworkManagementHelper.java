@@ -10,7 +10,8 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalManagementMethodNetworkException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;

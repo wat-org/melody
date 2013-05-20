@@ -4,8 +4,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.xpathextensions.XPathHelper;
 

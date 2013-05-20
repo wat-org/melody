@@ -1,6 +1,6 @@
-package com.wat.melody.cloud.network;
+package com.wat.melody.common.firewall;
 
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 
 /**
  * 

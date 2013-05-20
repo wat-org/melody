@@ -4,13 +4,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexFireWallRule;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
-import com.wat.melody.common.firewall.Interfaces;
+import com.wat.melody.common.firewall.NetworkDeviceNameRef;
+import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
@@ -75,7 +75,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * <p>
 	 * <i>A TCP/UDP FireWall Rule <code>Node</code> must have the attributes :
 	 * <ul>
-	 * <li>devices-name : which should contains {@link NetworkDeviceName} ;</li>
+	 * <li>devices-name : which should contains {@link NetworkDeviceNameRef} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
 	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>to-ips : which should contains {@link IpRanges} :</li>
@@ -129,9 +129,9 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 			}
 			PortRanges fromPorts = loadFromPorts(n);
 			PortRanges toPorts = loadToPorts(n);
-			Interfaces inters = loadInterfaces(n);
+			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(n);
 			Access access = loadAccess(n);
-			fwrs.merge(inters,
+			fwrs.merge(refs,
 					newFwRule(fromIps, fromPorts, toIps, toPorts, dirs, access));
 		}
 		return fwrs;

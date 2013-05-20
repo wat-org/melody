@@ -356,6 +356,7 @@ public abstract class XPathExpander {
 	 */
 	public static String expand(String expr, Node ctx, PropertiesSet vars)
 			throws XPathExpressionSyntaxException {
+		// TODO: use a StringBuilder
 		if (expr == null) {
 			return null;
 		}

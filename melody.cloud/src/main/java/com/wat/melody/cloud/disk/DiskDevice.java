@@ -53,9 +53,13 @@ public class DiskDevice {
 		}
 		if (anObject instanceof DiskDevice) {
 			DiskDevice d = (DiskDevice) anObject;
-			return (isRootDevice() && d.isRootDevice())
-					|| (getSize() == d.getSize() && getDiskDeviceName().equals(
-							d.getDiskDeviceName()));
+			if (isRootDevice()) {
+				return d.isRootDevice()
+						&& getDiskDeviceName().equals(d.getDiskDeviceName());
+			}
+			return !d.isRootDevice()
+					&& getDiskDeviceName().equals(d.getDiskDeviceName())
+					&& getSize() == d.getSize();
 		}
 		return false;
 	}

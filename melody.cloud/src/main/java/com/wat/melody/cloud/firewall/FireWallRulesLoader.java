@@ -3,12 +3,12 @@ package com.wat.melody.cloud.firewall;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.IcmpCodes;
 import com.wat.melody.common.firewall.IcmpTypes;
+import com.wat.melody.common.firewall.NetworkDeviceNameRef;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 
@@ -31,7 +31,7 @@ public class FireWallRulesLoader {
 	 * <p>
 	 * A TCP and UDP FireWall Rule {@link Node} must have the attributes :
 	 * <ul>
-	 * <li>devices-name : which should contains {@link NetworkDeviceName} ;</li>
+	 * <li>devices-name : which should contains {@link NetworkDeviceNameRef} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
 	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>to-ips : which should contains {@link IpRanges} :</li>
@@ -46,7 +46,7 @@ public class FireWallRulesLoader {
 	 * <p>
 	 * An ICMP FireWall Rule {@link Node} must have the attributes :
 	 * <ul>
-	 * <li>devices-name : which should contains {@link NetworkDeviceName} ;</li>
+	 * <li>devices-name : which should contains {@link NetworkDeviceNameRef} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
 	 * <li>to-ips : which should contains {@link IpRanges} :</li>
 	 * <li>codes : which should contains {@link IcmpTypes} ;</li>

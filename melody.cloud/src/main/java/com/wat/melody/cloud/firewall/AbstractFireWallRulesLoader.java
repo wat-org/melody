@@ -5,11 +5,11 @@ import org.w3c.dom.Node;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Directions;
-import com.wat.melody.common.firewall.Interfaces;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
+import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionsException;
-import com.wat.melody.common.firewall.exception.IllegalInterfacesException;
+import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefsException;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -50,15 +50,15 @@ public abstract class AbstractFireWallRulesLoader {
 	 */
 	public static final String ACCESS_ATTR = "access";
 
-	protected Interfaces loadInterfaces(Node n)
+	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Node n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
 		if (v == null || v.length() == 0) {
-			return Interfaces.ALL;
+			return NetworkDeviceNameRefs.ALL;
 		}
 		try {
-			return Interfaces.parseString(v);
-		} catch (IllegalInterfacesException Ex) {
+			return NetworkDeviceNameRefs.parseString(v);
+		} catch (IllegalNetworkDeviceNameRefsException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					DEVICES_NAME_ATTR);
 			throw new ResourcesDescriptorException(attr, Ex);

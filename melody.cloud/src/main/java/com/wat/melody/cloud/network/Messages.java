@@ -11,9 +11,6 @@ public class Messages extends NLS {
 	public static String MgmtNetworkMethodEx_EMPTY;
 	public static String MgmtNetworkMethodEx_INVALID;
 
-	public static String NetworkDeviceNameEx_EMPTY;
-	public static String NetworkDeviceNameEx_INVALID;
-
 	public static String NetworkDeviceNameListEx_DEVICE_ALREADY_DEFINE;
 
 	public static String NetworkDevLoaderEx_MISSING_ATTR;
@@ -27,9 +24,6 @@ public class Messages extends NLS {
 	public static String SshNetMgrMsg_ENABLEMENT_DONE;
 	public static String SshNetMgrMsg_DISABLEMENT_DONE;
 	public static String SshNetMgrEx_ENABLEMENT_TIMEOUT;
-
-	public static String NullNetMgrMsg_ENABLEMENT;
-	public static String NullNetMgrMsg_DISABLEMENT;
 
 	public static String NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED;
 

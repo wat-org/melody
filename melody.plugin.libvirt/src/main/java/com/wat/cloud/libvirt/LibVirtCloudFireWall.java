@@ -13,13 +13,13 @@ import org.libvirt.NetworkFilter;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.IcmpCode;
 import com.wat.melody.common.firewall.IcmpType;
+import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.Protocol;
 import com.wat.melody.common.firewall.SimpleAbstractTcpUdpFireWallwRule;
 import com.wat.melody.common.firewall.SimpleFireWallRule;

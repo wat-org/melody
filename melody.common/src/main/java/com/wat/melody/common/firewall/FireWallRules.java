@@ -34,4 +34,18 @@ public class FireWallRules extends LinkedHashSet<SimpleFireWallRule> {
 				.toString();
 	}
 
+	/**
+	 * 
+	 * @param target
+	 * 
+	 * @return a {@link FireWallRules}, which contains all
+	 *         {@link SimpleFireWallRule} which are in the given target
+	 *         {@link FireWallRules} and not in this object.
+	 */
+	public FireWallRules delta(FireWallRules target) {
+		FireWallRules delta = new FireWallRules(target);
+		delta.removeAll(this);
+		return delta;
+	}
+
 }

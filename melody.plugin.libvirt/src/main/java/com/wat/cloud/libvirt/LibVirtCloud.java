@@ -34,13 +34,13 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceName;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
@@ -354,12 +354,14 @@ public abstract class LibVirtCloud {
 				vars.put(new Property("volPath", volPath));
 				// detachement de la device
 				log.trace("Detaching Disk Device '" + disk.getDiskDeviceName()
-						+ "' on Domain '" + d.getName() + "' ...");
+						+ "' (" + disk.getSize() + " Go) on Domain '"
+						+ d.getName() + "' ...");
 				int flag = getDomainState(d) == InstanceState.RUNNING ? 3 : 2;
 				d.detachDeviceFlags(XPathExpander.expand(
 						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
-				log.trace("Disk Device '" + disk.getDiskDeviceName()
-						+ "' detached on Domain '" + d.getName() + "'.");
+				log.trace("Disk Device '" + disk.getDiskDeviceName() + "' ("
+						+ disk.getSize() + " Go) detached on Domain '"
+						+ d.getName() + "'.");
 				// suppression du volume
 				deleteDiskDevice(d, disk);
 			}
@@ -404,9 +406,9 @@ public abstract class LibVirtCloud {
 					+ ".");
 		}
 		try {
-			String deviceToRemove = DiskDeviceNameConverter.convert(disk
+			String diskdevname = DiskDeviceNameConverter.convert(disk
 					.getDiskDeviceName());
-			return d.getName() + "-" + deviceToRemove + ".img";
+			return d.getName() + "-" + diskdevname + ".img";
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -451,12 +453,14 @@ public abstract class LibVirtCloud {
 						.getSize() * 1024 * 1024 * 1024)));
 				// creation du volume
 				log.trace("Creating Disk Device '" + disk.getDiskDeviceName()
-						+ "' for Domain '" + d.getName() + "' ...");
+						+ "' (" + disk.getSize() + " Go) for Domain '"
+						+ d.getName() + "' ...");
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
 						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
-				log.debug("Disk Device '" + disk.getDiskDeviceName()
-						+ "' created for Domain '" + d.getName()
-						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
+				log.debug("Disk Device '" + disk.getDiskDeviceName() + "' ("
+						+ disk.getSize() + " Go) created for Domain '"
+						+ d.getName() + "'. LibVirt Volume path is '"
+						+ sv.getPath() + "'.");
 
 				// variabilisation de l'attachement du volume
 				vars.put(new Property("volPath", sv.getPath()));
