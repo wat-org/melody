@@ -166,6 +166,13 @@ public interface IResourcesDescriptor {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link String} is <code>null</code>.
 	 */
+	/*
+	 * TODO : Is it possible to use nodes event/listener for the whole RD
+	 * modification, instead of using this crazy method ?
+	 * 
+	 * yes, it is possible. I have to create my own Node in Parser, and such
+	 * node have to generate events.
+	 */
 	public String setAttributeValue(DUNID sOwnerNodeDUNID, String sAttrName,
 			String sAttrValue) throws NoSuchDUNIDException;
 

@@ -296,11 +296,6 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 			return;
 		}
 		try {
-			/*
-			 * TODO : Is it possible to use nodes event/listener for the whole
-			 * RD modification, instead of using crzay method
-			 * gerRD().setAttributeValue ?
-			 */
 			getRD().setAttributeValue(dunid, sAttr, sValue);
 		} catch (NoSuchDUNIDException Ex) {
 			throw new RuntimeException("Unexpected error while setting the "
