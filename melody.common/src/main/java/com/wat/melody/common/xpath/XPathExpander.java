@@ -356,7 +356,6 @@ public abstract class XPathExpander {
 	 */
 	public static String expand(String expr, Node ctx, PropertiesSet vars)
 			throws XPathExpressionSyntaxException {
-		// TODO: use a StringBuilder
 		if (expr == null) {
 			return null;
 		}
@@ -401,11 +400,12 @@ public abstract class XPathExpander {
 					Messages.XPathExprSyntaxEx_STOP_DELIM_MISSING,
 					extractPart(expr, start)));
 		}
-		return expr.substring(0, start)
-				+ resolvedXPathExpression(
-						expr.substring(start + DELIM_START.length(), end), ctx,
-						vars)
-				+ expand(expr.substring(end + DELIM_STOP.length()), ctx, vars);
+		StringBuilder str = new StringBuilder();
+		str.append(expr.substring(0, start));
+		str.append(resolvedXPathExpression(
+				expr.substring(start + DELIM_START.length(), end), ctx, vars));
+		str.append(expand(expr.substring(end + DELIM_STOP.length()), ctx, vars));
+		return str.toString();
 	}
 
 	private static String resolvedXPathExpression(String expr, Node ctx,
