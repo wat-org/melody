@@ -110,7 +110,7 @@ public class ProcessorManagerFactory {
 			throw new ProcessorManagerFactoryException(Messages.bind(
 					Messages.PMFactoryEx_INTERNAL_ERROR,
 					moPMClass.getCanonicalName(),
-					IProcessorManager.class.getCanonicalName(), Ex.getCause()));
+					IProcessorManager.class.getCanonicalName()), Ex.getCause());
 		}
 	}
 }

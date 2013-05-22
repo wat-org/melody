@@ -1373,7 +1373,7 @@ public class ProcessorManagerLoader {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_IE_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					c.getClass().getCanonicalName(), Ex.getCause()));
+					c.getClass().getCanonicalName()), Ex.getCause());
 		}
 		try {
 			pc.load(pcps);
