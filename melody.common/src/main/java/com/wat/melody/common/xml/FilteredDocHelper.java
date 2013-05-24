@@ -5,7 +5,9 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -20,11 +22,11 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public class FilteredDocHelper {
 
-	public static NodeList getHeritedContent(Node n, String expr)
+	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
 		String refNodesXpr = Doc.getXPathPosition(n);
 		Node ctx = n.getOwnerDocument().getFirstChild();
-		List<Node> circle = new ArrayList<Node>();
+		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
 		while (true) {
 			try {
@@ -46,22 +48,22 @@ public class FilteredDocHelper {
 				+ " " + "return $n" + expr, ctx);
 	}
 
-	public static Node getHeritedAttribute(Node n, String sAttrName) {
-		List<Node> circle = new ArrayList<Node>();
+	public static Attr getHeritedAttribute(Element n, String sAttrName) {
+		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
 		return getHeritedAttribute(n, sAttrName, circle);
 	}
 
-	private static Node getHeritedAttribute(Node n, String sAttrName,
-			List<Node> circle) {
+	private static Attr getHeritedAttribute(Element n, String sAttrName,
+			List<Element> circle) {
 		if (n == null) {
 			return null;
 		}
-		Node a = n.getAttributes().getNamedItem(sAttrName);
+		Attr a = n.getAttributeNode(sAttrName);
 		if (a != null) {
 			return a;
 		}
-		Node parent = null;
+		Element parent = null;
 		try {
 			parent = resolvHeritAttr(n, circle);
 		} catch (FilteredDocException Ex) {
@@ -107,7 +109,7 @@ public class FilteredDocHelper {
 	 *             already been visited (e.g. a circular reference hae been
 	 *             detected).
 	 */
-	protected static Node resolvHeritAttr(Node n, List<Node> circle)
+	protected static Element resolvHeritAttr(Element n, List<Element> circle)
 			throws FilteredDocException {
 		if (n == null) {
 			return null;
@@ -137,7 +139,15 @@ public class FilteredDocHelper {
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH,
 					xpath));
 		}
-		Node parent = nl.item(0);
+		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
+			throw new FilteredDocException(
+					herit,
+					Messages.bind(
+							Messages.FilteredDocEx_INVALID_HERIT_ATTR_NOTANELEMENTMATCH,
+							xpath, Doc.parseNodeType(nl.item(0))));
+		}
+		Element parent = (Element) nl.item(0);
+
 		if (circle != null) {
 			if (circle.contains(parent)) {
 				throw new FilteredDocException(herit, Messages.bind(
@@ -149,11 +159,11 @@ public class FilteredDocHelper {
 		return parent;
 	}
 
-	private static String printCircularReferences(List<Node> circularRefStack) {
+	private static String printCircularReferences(List<Element> circularRefStack) {
 		StringBuilder str = new StringBuilder("");
 		try {
-			for (Node n : circularRefStack) {
-				Node h = resolvHeritAttr(n, null);
+			for (Element n : circularRefStack) {
+				Element h = resolvHeritAttr(n, null);
 				str.append(SysTool.NEW_LINE);
 				str.append("  Node ");
 				str.append("[" + Doc.getNodeLocation(n).toFullString() + "]");
@@ -177,13 +187,13 @@ public class FilteredDocHelper {
 	 *            is the {@link Node} to import in the given {@link Document}.
 	 *            All its herited parents will be imported too.
 	 */
-	protected static void importHeritedParentNode(Document dest, Node toClone) {
+	protected static void importHeritedParentNode(Document dest, Element toClone) {
 		if (toClone.getNodeType() != Node.ELEMENT_NODE) {
 			return;
 		}
-		Node parent = null;
+		Element parent = null;
 		try {
-			parent = FilteredDocHelper.resolvHeritAttr(toClone, null);
+			parent = resolvHeritAttr(toClone, null);
 		} catch (FilteredDocException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
 					+ "herited attribute. "
@@ -220,7 +230,7 @@ public class FilteredDocHelper {
 			return;
 		}
 		for (int i = 0; i < nl.getLength(); i++) {
-			validateHeritAttr(nl.item(i));
+			validateHeritAttr((Element) nl.item(i));
 		}
 	}
 
@@ -265,15 +275,16 @@ public class FilteredDocHelper {
 	 *             (circular ref, invalid xpath expr, no target, multiple
 	 *             targets).
 	 */
-	private static void validateHeritAttr(Node n) throws FilteredDocException {
-		List<Node> circle = new ArrayList<Node>();
+	private static void validateHeritAttr(Element n)
+			throws FilteredDocException {
+		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
 		validateHeritAttr(n, circle);
 	}
 
-	private static void validateHeritAttr(Node n, List<Node> circle)
+	private static void validateHeritAttr(Element n, List<Element> circle)
 			throws FilteredDocException {
-		Node parent = FilteredDocHelper.resolvHeritAttr(n, circle);
+		Element parent = resolvHeritAttr(n, circle);
 		if (parent == null) {
 			return;
 		}

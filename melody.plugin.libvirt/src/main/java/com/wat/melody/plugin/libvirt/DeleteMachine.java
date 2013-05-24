@@ -41,9 +41,9 @@ public class DeleteMachine extends AbstractOperation {
 		try {
 			getInstance().ensureInstanceIsDestroyed(getTimeout());
 		} catch (OperationException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.DestroyEx_GENERIC_FAIL, getTargetNodeLocation()),
-					Ex);
+			throw new LibVirtException(
+					Messages.bind(Messages.DestroyEx_GENERIC_FAIL,
+							getTargetElementLocation()), Ex);
 		}
 	}
 

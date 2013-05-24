@@ -10,8 +10,6 @@ import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.xml.DUNID;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.core.nativeplugin.setEDAttrValue.exception.SetEDAttrValueException;
 
 /**
@@ -36,26 +34,11 @@ public class SetEDAttrValue implements ITask {
 	 */
 	public static final String NEW_VALUE_ATTR = "newValue";
 
-	private String msItems;
-	private String msNewValue;
-	private NodeList moAttributesToUpdate;
+	private String _items = null;
+	private String _newValue = null;
+	private NodeList _attributesToUpdate = null;
 
 	public SetEDAttrValue() {
-		initItems();
-		initNewValue();
-		initAttributes();
-	}
-
-	private void initItems() {
-		msItems = null;
-	}
-
-	private void initNewValue() {
-		msNewValue = null;
-	}
-
-	private void initAttributes() {
-		moAttributesToUpdate = null;
 	}
 
 	@Override
@@ -67,24 +50,16 @@ public class SetEDAttrValue implements ITask {
 			InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
 
-		IResourcesDescriptor env = Melody.getContext().getProcessorManager()
-				.getResourcesDescriptor();
-
 		for (int i = 0; i < getAttributesToUpdate().getLength(); i++) {
 			Attr a = (Attr) getAttributesToUpdate().item(i);
-			DUNID sOwnerNodeMelodyID = env.getMelodyID(a.getOwnerElement());
-			try {
-				env.setAttributeValue(sOwnerNodeMelodyID, a.getNodeName(),
-						getNewValue());
-			} catch (NoSuchDUNIDException Ex) {
-				throw new RuntimeException("Node '" + sOwnerNodeMelodyID
-						+ "' can not be found in the Resources Descriptor.", Ex);
+			synchronized (a.getOwnerDocument()) {
+				a.setValue(getNewValue());
 			}
 		}
 	}
 
 	public String getItems() {
-		return msItems;
+		return _items;
 	}
 
 	@Attribute(name = ITEMS_ATTR, mandatory = true)
@@ -113,21 +88,12 @@ public class SetEDAttrValue implements ITask {
 						Messages.SetEDAttrEx_UPDATE_ED_ITEMS_INVALID_TARGET,
 						items));
 			}
-			Attr a = (Attr) getAttributesToUpdate().item(i);
-			if (env.getMelodyID(a.getOwnerElement()) == null) {
-				throw new RuntimeException("Cannot found the DUNID XML "
-						+ "attribute of a Node. "
-						+ "Because all Nodes should contains a DUNID XML "
-						+ "attribute, such error shouldn't be raised. "
-						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced.");
-			}
 		}
-		msItems = items;
+		_items = items;
 	}
 
 	public String getNewValue() {
-		return msNewValue;
+		return _newValue;
 	}
 
 	@Attribute(name = NEW_VALUE_ATTR, mandatory = true)
@@ -137,12 +103,12 @@ public class SetEDAttrValue implements ITask {
 					+ "Cannot be null.");
 		}
 		String previous = getNewValue();
-		msNewValue = v;
+		_newValue = v;
 		return previous;
 	}
 
 	private NodeList getAttributesToUpdate() {
-		return moAttributesToUpdate;
+		return _attributesToUpdate;
 	}
 
 	private void setAttributesToUpdate(NodeList nl) {
@@ -150,7 +116,7 @@ public class SetEDAttrValue implements ITask {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid NodeList (a XML Attribute list).");
 		}
-		moAttributesToUpdate = nl;
+		_attributesToUpdate = nl;
 	}
 
 }

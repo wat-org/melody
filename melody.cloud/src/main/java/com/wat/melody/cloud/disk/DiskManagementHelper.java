@@ -2,6 +2,7 @@ package com.wat.melody.cloud.disk;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -62,7 +63,7 @@ public abstract class DiskManagementHelper {
 	 *         found ;</li>
 	 *         </ul>
 	 */
-	public static Node findDiskManagementNode(Node instanceNode) {
+	public static Node findDiskManagementNode(Element instanceNode) {
 		NodeList nl = null;
 		try {
 			nl = FilteredDocHelper.getHeritedContent(instanceNode,
@@ -84,7 +85,7 @@ public abstract class DiskManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findDiskDevicesSelector(Node instanceNode) {
+	public static String findDiskDevicesSelector(Element instanceNode) {
 		Node mgmtNode = findDiskManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
@@ -111,7 +112,7 @@ public abstract class DiskManagementHelper {
 	 *             if the disk Devices Selector (found in the Disk Device
 	 *             Management {@link Node}) is not a valid XPath Expression.
 	 */
-	public static NodeList findDiskDevices(Node instanceNode)
+	public static NodeList findDiskDevices(Element instanceNode)
 			throws ResourcesDescriptorException {
 		String sAllDiskDevSelector = findDiskDevicesSelector(instanceNode);
 		try {

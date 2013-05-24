@@ -2,7 +2,7 @@ package com.wat.melody.cloud.instance;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -41,14 +41,15 @@ public class InstanceControllerWithNetworkManagement extends
 			.getLog(InstanceControllerWithNetworkManagement.class);
 
 	private InstanceController _instance;
-	private Node _relatedNode;
+	private Element _relatedElement;
 	private NetworkManagerFactoryConfigurationCallback _confCB;
 
 	public InstanceControllerWithNetworkManagement(InstanceController instance,
-			NetworkManagerFactoryConfigurationCallback confCB, Node relatedNode) {
+			NetworkManagerFactoryConfigurationCallback confCB,
+			Element relatedElement) {
 		setInstance(instance);
 		setNetworkManagerFactoryConfigurationCallback(confCB);
-		setRelatedNode(relatedNode);
+		setRelatedElement(relatedElement);
 		instance.addListener(this);
 	}
 
@@ -85,21 +86,22 @@ public class InstanceControllerWithNetworkManagement extends
 		return previous;
 	}
 
-	private Node getRelatedNode() {
-		return _relatedNode;
+	private Element getRelatedElement() {
+		return _relatedElement;
 	}
 
-	private Node setRelatedNode(Node rd) {
+	private Element setRelatedElement(Element rd) {
 		/*
 		 * TODO : this class shouldn't be linked to the instance node. It should
 		 * be useable without RD (like [Default]InstanceController)
 		 */
 		if (rd == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
-		Node previous = getRelatedNode();
-		_relatedNode = rd;
+		Element previous = getRelatedElement();
+		_relatedElement = rd;
 		return previous;
 	}
 
@@ -347,7 +349,7 @@ public class InstanceControllerWithNetworkManagement extends
 	private NetworkManager getNetworkManager() {
 		return NetworkManagerFactory.createNetworkManager(
 				getNetworkManagerFactoryConfigurationCallback(),
-				getRelatedNode());
+				getRelatedElement());
 	}
 
 }

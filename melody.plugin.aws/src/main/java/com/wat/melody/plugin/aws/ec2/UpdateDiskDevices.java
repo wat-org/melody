@@ -37,10 +37,10 @@ public class UpdateDiskDevices extends AbstractOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private DiskDeviceList maDiskDeviceList = null;
-	private long mlDetachTimeout;
-	private long mlCreateTimeout;
-	private long mlAttachTimeout;
+	private DiskDeviceList _diskDeviceList = null;
+	private long _detachTimeout;
+	private long _createTimeout;
+	private long _attachTimeout;
 
 	public UpdateDiskDevices() {
 		super();
@@ -64,7 +64,7 @@ public class UpdateDiskDevices extends AbstractOperation {
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
-			setDiskDeviceList(new DiskDevicesLoader().load(getTargetNode()));
+			setDiskDeviceList(new DiskDevicesLoader().load(getTargetElement()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -81,12 +81,12 @@ public class UpdateDiskDevices extends AbstractOperation {
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateDiskDevEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 
 	private DiskDeviceList getDiskDeviceList() {
-		return maDiskDeviceList;
+		return _diskDeviceList;
 	}
 
 	private DiskDeviceList setDiskDeviceList(DiskDeviceList dd) {
@@ -96,12 +96,12 @@ public class UpdateDiskDevices extends AbstractOperation {
 					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		DiskDeviceList previous = getDiskDeviceList();
-		maDiskDeviceList = dd;
+		_diskDeviceList = dd;
 		return previous;
 	}
 
 	public long getDetachTimeout() {
-		return mlDetachTimeout;
+		return _detachTimeout;
 	}
 
 	@Attribute(name = DETACH_TIMEOUT_ATTR)
@@ -111,12 +111,12 @@ public class UpdateDiskDevices extends AbstractOperation {
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getDetachTimeout();
-		mlDetachTimeout = timeout;
+		_detachTimeout = timeout;
 		return previous;
 	}
 
 	public long getCreateTimeout() {
-		return mlCreateTimeout;
+		return _createTimeout;
 	}
 
 	@Attribute(name = CREATE_TIMEOUT_ATTR)
@@ -126,12 +126,12 @@ public class UpdateDiskDevices extends AbstractOperation {
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getCreateTimeout();
-		mlCreateTimeout = timeout;
+		_createTimeout = timeout;
 		return previous;
 	}
 
 	public long getAttachTimeout() {
-		return mlAttachTimeout;
+		return _attachTimeout;
 	}
 
 	@Attribute(name = ATTACH_TIMEOUT_ATTR)
@@ -141,7 +141,7 @@ public class UpdateDiskDevices extends AbstractOperation {
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getAttachTimeout();
-		mlAttachTimeout = timeout;
+		_attachTimeout = timeout;
 		return previous;
 	}
 

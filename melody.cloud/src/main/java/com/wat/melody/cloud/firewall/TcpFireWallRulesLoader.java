@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -19,7 +19,7 @@ import com.wat.melody.common.network.PortRanges;
 public class TcpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 
 	@Override
-	public NodeList findFwRuleNodes(Node instanceNode)
+	public NodeList findFwRuleNodes(Element instanceNode)
 			throws ResourcesDescriptorException {
 		return FireWallManagementHelper.findTcpFireWallRules(instanceNode);
 	}

@@ -43,7 +43,7 @@ public class ResizeMachine extends AbstractOperation {
 
 		try {
 			String v = null;
-			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
 					AwsEc2Cloud.INSTANCETYPE_ATTR);
 			try {
 				try {
@@ -55,10 +55,10 @@ public class ResizeMachine extends AbstractOperation {
 							Messages.ResizeEx_INVALID_INSTANCETYPE_ATTR, v));
 				}
 			} catch (AwsException Ex) {
-				throw new AwsException(
-						Messages.bind(Messages.ResizeEx_INSTANCETYPE_ERROR,
-								AwsEc2Cloud.INSTANCETYPE_ATTR,
-								getTargetNodeLocation()), Ex);
+				throw new AwsException(Messages.bind(
+						Messages.ResizeEx_INSTANCETYPE_ERROR,
+						AwsEc2Cloud.INSTANCETYPE_ATTR,
+						getTargetElementLocation()), Ex);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
@@ -70,7 +70,7 @@ public class ResizeMachine extends AbstractOperation {
 					Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
 					ResizeMachine.INSTANCETYPE_ATTR,
 					ResizeMachine.RESIZE_MACHINE,
-					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetElementLocation()));
 		}
 	}
 
@@ -82,7 +82,7 @@ public class ResizeMachine extends AbstractOperation {
 			getInstance().ensureInstanceSizing(getInstanceType());
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.ResizeEx_GENERIC_FAIL, getTargetNodeLocation(),
+					Messages.ResizeEx_GENERIC_FAIL, getTargetElementLocation(),
 					getInstanceType()), Ex);
 		}
 	}

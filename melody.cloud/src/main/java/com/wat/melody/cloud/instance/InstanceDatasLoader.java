@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.instance;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -93,7 +94,7 @@ public class InstanceDatasLoader {
 	public InstanceDatasLoader() {
 	}
 
-	private String loadRegion(Node n) throws ResourcesDescriptorException {
+	private String loadRegion(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, REGION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -101,7 +102,7 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private InstanceType loadInstanceType(Node n)
+	private InstanceType loadInstanceType(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, INSTANCETYPE_ATTR);
 		if (v == null || v.length() == 0) {
@@ -116,7 +117,7 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private String loadImageId(Node n) throws ResourcesDescriptorException {
+	private String loadImageId(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, IMAGEID_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -124,7 +125,7 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Node n)
+	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_REPO_ATTR);
 		if (v == null || v.length() == 0) {
@@ -139,7 +140,7 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private KeyPairName loadKeyPairName(Node n)
+	private KeyPairName loadKeyPairName(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_NAME_ATTR);
 		if (v == null || v.length() == 0) {
@@ -154,7 +155,8 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private String loadPassphrase(Node n) throws ResourcesDescriptorException {
+	private String loadPassphrase(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, PASSPHRASE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -162,7 +164,7 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private String loadSite(Node n) throws ResourcesDescriptorException {
+	private String loadSite(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, SITE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -170,7 +172,8 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private Long loadCreateTimeout(Node n) throws ResourcesDescriptorException {
+	private Long loadCreateTimeout(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_CREATE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -184,7 +187,8 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private Long loadDeleteTimeout(Node n) throws ResourcesDescriptorException {
+	private Long loadDeleteTimeout(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_DELETE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -198,7 +202,7 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private Long loadStopTimeout(Node n) throws ResourcesDescriptorException {
+	private Long loadStopTimeout(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_STOP_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -212,7 +216,8 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	private Long loadStartTimeout(Node n) throws ResourcesDescriptorException {
+	private Long loadStartTimeout(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_START_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -226,7 +231,7 @@ public class InstanceDatasLoader {
 		}
 	}
 
-	public InstanceDatas load(Node instanceNode)
+	public InstanceDatas load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		String region = loadRegion(instanceNode);
 		InstanceType type = loadInstanceType(instanceNode);

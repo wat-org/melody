@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -37,7 +38,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 */
 	public static final String TO_PORTS_ATTR = "to-ports";
 
-	protected PortRanges loadFromPorts(Node n)
+	protected PortRanges loadFromPorts(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
@@ -52,7 +53,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		}
 	}
 
-	protected PortRanges loadToPorts(Node n)
+	protected PortRanges loadToPorts(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TO_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
@@ -102,14 +103,13 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Node instanceNode)
+	public FireWallRulesPerDevice load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = findFwRuleNodes(instanceNode);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
-		Node n = null;
 		for (int i = 0; i < nl.getLength(); i++) {
-			n = nl.item(i);
+			Element n = (Element) nl.item(i);
 			Directions dirs = loadDirection(n);
 			IpRanges fromIps = loadFromIps(n);
 			IpRanges toIps = loadToIps(n);
@@ -137,7 +137,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		return fwrs;
 	}
 
-	public abstract NodeList findFwRuleNodes(Node instanceNode)
+	public abstract NodeList findFwRuleNodes(Element instanceNode)
 			throws ResourcesDescriptorException;
 
 	public abstract ComplexFireWallRule newFwRule(IpRanges fromIpRanges,

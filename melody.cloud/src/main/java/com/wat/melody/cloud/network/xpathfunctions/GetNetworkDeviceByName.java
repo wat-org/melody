@@ -5,6 +5,7 @@ import java.util.List;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -30,10 +31,10 @@ public class GetNetworkDeviceByName implements XPathFunction {
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
+		if (!(arg0 instanceof Element) && !(arg0 instanceof List)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
 					+ ": Not accepted. " + NAME
-					+ "() expects a Node or a List<Node> as first "
+					+ "() expects an Element Node or a List<Element> as first "
 					+ "argument.");
 		}
 		String arg1val = null;
@@ -50,12 +51,12 @@ public class GetNetworkDeviceByName implements XPathFunction {
 			}
 		}
 		try {
-			if (arg0 instanceof Node) {
+			if (arg0 instanceof Element) {
 				return NetworkManagementHelper.findNetworkDeviceNodeByName(
-						(Node) arg0, arg1val);
+						(Element) arg0, arg1val);
 			} else {
 				return NetworkManagementHelper.findNetworkDeviceNodeByName(
-						(List<Node>) arg0, arg1val);
+						(List<Element>) arg0, arg1val);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

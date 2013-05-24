@@ -33,7 +33,7 @@ public class UpdateFireWall extends AbstractOperation {
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			setFwRules(new FireWallRulesLoader().load(getTargetNode()));
+			setFwRules(new FireWallRulesLoader().load(getTargetElement()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -48,7 +48,7 @@ public class UpdateFireWall extends AbstractOperation {
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateFireWallEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 

@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -103,14 +105,14 @@ public abstract class NetworkManagementHelper {
 	 *             if any Instance {@link Node} has no Network Device Management
 	 *             {@link Node}.
 	 */
-	public static List<Node> findNetworkManagementNode(List<Node> instanceNodes)
-			throws ResourcesDescriptorException {
+	public static List<Element> findNetworkManagementNode(
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List of Instance Node.");
 		}
-		List<Node> hl = new ArrayList<Node>();
-		for (Node instanceNode : instanceNodes) {
+		List<Element> hl = new ArrayList<Element>();
+		for (Element instanceNode : instanceNodes) {
 			hl.add(findNetworkManagementNode(instanceNode));
 		}
 		return hl;
@@ -139,7 +141,7 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Network Device Management {@link Node} can be found.
 	 */
-	public static Node findNetworkManagementNode(Node instanceNode)
+	public static Element findNetworkManagementNode(Element instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = null;
 		try {
@@ -156,10 +158,21 @@ public abstract class NetworkManagementHelper {
 		if (nl.getLength() == 0) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
 					Messages.NetMgmtEx_NO_MGMT_NODE, NETWORK_MGMT_NE));
-		} else if (nl.getLength() > 1) {
-			return nl.item(nl.getLength() - 1);
 		}
-		return nl.item(0);
+		Node mgmtNode = null;
+		if (nl.getLength() > 1) {
+			mgmtNode = nl.item(nl.getLength() - 1);
+		} else {
+			mgmtNode = nl.item(0);
+		}
+		if (mgmtNode.getNodeType() != Node.ELEMENT_NODE) {
+			throw new ResourcesDescriptorException(
+					instanceNode,
+					Messages.bind(
+							Messages.NetMgmtEx_MGMT_NETWORK_NODE_SELECTOR_NOT_MATCH_NODE,
+							NETWORK_MGMT_NODE_SELECTOR));
+		}
+		return (Element) mgmtNode;
 	}
 
 	/**
@@ -184,12 +197,11 @@ public abstract class NetworkManagementHelper {
 	 *         <li>The character ']' ;</li>
 	 *         </ul>
 	 */
-	public static String getManagementNetworkDeviceSelector(Node mgmtNode) {
+	public static String getManagementNetworkDeviceSelector(Element mgmtNode) {
 		String sCriteria = null;
 		try {
-			sCriteria = mgmtNode.getAttributes()
-					.getNamedItem(NETWORK_MGMT_DEVICE_NODE_CRITERIA_ATTR)
-					.getNodeValue();
+			sCriteria = mgmtNode.getAttributeNode(
+					NETWORK_MGMT_DEVICE_NODE_CRITERIA_ATTR).getNodeValue();
 		} catch (NullPointerException Ex) {
 			sCriteria = DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA;
 		}
@@ -219,11 +231,10 @@ public abstract class NetworkManagementHelper {
 	 *         </ul>
 	 */
 	public static String getManagementNetworkDeviceAttributeSelector(
-			Node mgmtNode) {
+			Element mgmtNode) {
 		try {
-			return mgmtNode.getAttributes()
-					.getNamedItem(NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR)
-					.getNodeValue();
+			return mgmtNode.getAttributeNode(
+					NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR).getNodeValue();
 		} catch (NullPointerException Ex) {
 			return DEFAULT_NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR;
 		}
@@ -251,15 +262,15 @@ public abstract class NetworkManagementHelper {
 	 *             if any Instance {@link Node} has no Management Network Device
 	 *             {@link Node}.
 	 */
-	public static List<Node> findManagementNetworkDeviceNode(
-			List<Node> instanceNodes) throws ResourcesDescriptorException {
+	public static List<Element> findManagementNetworkDeviceNode(
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List of Instance Node.");
 		}
-		List<Node> hl = new ArrayList<Node>();
-		Node mgmtNode = null;
-		for (Node instanceNode : instanceNodes) {
+		List<Element> hl = new ArrayList<Element>();
+		Element mgmtNode = null;
+		for (Element instanceNode : instanceNodes) {
 			try {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
@@ -291,9 +302,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node findManagementNetworkDeviceNode(Node instanceNode)
+	public static Element findManagementNetworkDeviceNode(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -326,31 +337,43 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node getManagementNetworkDeviceNode(Node instanceNode,
-			Node mgmtNode) throws ResourcesDescriptorException {
+	public static Element getManagementNetworkDeviceNode(Element instanceNode,
+			Element mgmtNode) throws ResourcesDescriptorException {
 		NodeList nl = null;
 		String sMgmtInterfaceSelector = getManagementNetworkDeviceSelector(mgmtNode);
 		try {
 			nl = XPathExpander.evaluateAsNodeList("." + sMgmtInterfaceSelector,
 					instanceNode);
-			if (nl != null && nl.getLength() > 1) {
-				throw new ResourcesDescriptorException(instanceNode,
-						Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE);
-			} else if (nl == null || nl.getLength() == 0) {
-				sMgmtInterfaceSelector = getNetworkDevicesSelector(mgmtNode);
-				nl = XPathExpander.evaluateAsNodeList("."
-						+ sMgmtInterfaceSelector, instanceNode);
-			}
+			/*
+			 * TODO : when we can't find the mgnt net dev, we select the first
+			 * one ? crazy
+			 * 
+			 * else if (nl == null || nl.getLength() == 0) {
+			 * sMgmtInterfaceSelector = getNetworkDevicesSelector(mgmtNode); nl
+			 * = XPathExpander.evaluateAsNodeList("." + sMgmtInterfaceSelector,
+			 * instanceNode); }
+			 */
 		} catch (XPathExpressionException Ex) {
 			throw new ResourcesDescriptorException(instanceNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_SELECTOR,
 					sMgmtInterfaceSelector), Ex);
 		}
+		if (nl != null && nl.getLength() > 1) {
+			throw new ResourcesDescriptorException(instanceNode,
+					Messages.NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE);
+		}
 		if (nl == null || nl.getLength() == 0) {
 			throw new ResourcesDescriptorException(instanceNode,
 					Messages.NetMgmtEx_NO_MGMT_NETWORK_DEVICE);
 		}
-		return nl.item(0);
+		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
+			throw new ResourcesDescriptorException(
+					instanceNode,
+					Messages.bind(
+							Messages.NetMgmtEx_MGMT_NETWORK_DEVICE_SELECTOR_NOT_MATCH_NODE,
+							sMgmtInterfaceSelector));
+		}
+		return (Element) nl.item(0);
 	}
 
 	/**
@@ -376,11 +399,11 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the value of one attribute is not a valid {@link Host}.
 	 */
-	public static List<Host> findManagementNetworkHost(List<Node> instanceNodes)
-			throws ResourcesDescriptorException {
+	public static List<Host> findManagementNetworkHost(
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		List<Host> hl = new ArrayList<Host>();
-		Node mgmtNode = null;
-		for (Node instanceNode : instanceNodes) {
+		Element mgmtNode = null;
+		for (Element instanceNode : instanceNodes) {
 			try {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
@@ -413,9 +436,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.
 	 */
-	public static Host findManagementNetworkHost(Node instanceNode)
+	public static Host findManagementNetworkHost(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -449,19 +472,19 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if the found value is not a valid {@link Host}.
 	 */
-	public static Host getManagementNetworkHost(Node instanceNode, Node mgmtNode)
-			throws ResourcesDescriptorException {
+	public static Host getManagementNetworkHost(Element instanceNode,
+			Element mgmtNode) throws ResourcesDescriptorException {
 		try {
 			return Host.parseString(getManagementNetworkHostNode(instanceNode,
 					mgmtNode).getNodeValue());
 		} catch (NullPointerException Ex) {
-			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
 			String attr = getManagementNetworkDeviceAttributeSelector(mgmtNode);
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalHostException Ex) {
-			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
 			String attr = getManagementNetworkDeviceAttributeSelector(mgmtNode);
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
@@ -488,22 +511,22 @@ public abstract class NetworkManagementHelper {
 	 *             if no Management Network Device {@link Node} can be found in
 	 *             at least one Instance.
 	 */
-	public static List<Node> findManagementNetworkHostNode(
-			List<Node> instanceNodes) throws ResourcesDescriptorException {
+	public static List<Attr> findManagementNetworkHostNode(
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List of Instance Node.");
 		}
-		List<Node> hl = new ArrayList<Node>();
-		Node mgmtNode = null;
-		for (Node instanceNode : instanceNodes) {
+		List<Attr> hl = new ArrayList<Attr>();
+		Element mgmtNode = null;
+		for (Element instanceNode : instanceNodes) {
 			try {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
 				// raised when Network Device Management datas are invalid.
 				// in this situation, we will use default values
 			}
-			Node n = getManagementNetworkHostNode(instanceNode, mgmtNode);
+			Attr n = getManagementNetworkHostNode(instanceNode, mgmtNode);
 			if (n != null) {
 				hl.add(n);
 			}
@@ -528,9 +551,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node findManagementNetworkHostNode(Node instanceNode)
+	public static Attr findManagementNetworkHostNode(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -560,11 +583,11 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node getManagementNetworkHostNode(Node instanceNode,
-			Node mgmtNode) throws ResourcesDescriptorException {
-		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
+	public static Attr getManagementNetworkHostNode(Element instanceNode,
+			Element mgmtNode) throws ResourcesDescriptorException {
+		Element netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
 		String attr = getManagementNetworkDeviceAttributeSelector(mgmtNode);
-		return netNode.getAttributes().getNamedItem(attr);
+		return netNode.getAttributeNode(attr);
 	}
 
 	/**
@@ -592,9 +615,9 @@ public abstract class NetworkManagementHelper {
 	 *             ManagementNetworkMethod (which is normaly used to define a
 	 *             default port).
 	 */
-	public static Port findManagementNetworkPort(Node instanceNode)
+	public static Port findManagementNetworkPort(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		Element mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkPort(mgmtNode);
 	}
 
@@ -621,7 +644,7 @@ public abstract class NetworkManagementHelper {
 	 *             ManagementNetworkMethod (which is normaly used to define a
 	 *             default port).
 	 */
-	public static Port getManagementNetworkPort(Node mgmtNode)
+	public static Port getManagementNetworkPort(Element mgmtNode)
 			throws ResourcesDescriptorException {
 		try {
 			return Port.parseString(getManagementNetworkPortNode(mgmtNode)
@@ -649,9 +672,9 @@ public abstract class NetworkManagementHelper {
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 */
-	public static Node findManagementNetworkPortNode(Node instanceNode)
+	public static Attr findManagementNetworkPortNode(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		Element mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkPortNode(mgmtNode);
 	}
 
@@ -667,13 +690,13 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Network Device Management {@link Node} is
 	 *             <tt>null</tt>.
 	 */
-	public static Node getManagementNetworkPortNode(Node mgmtNode) {
+	public static Attr getManagementNetworkPortNode(Element mgmtNode) {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Device Management Node.");
 		}
-		return mgmtNode.getAttributes().getNamedItem(
-				ManagementNetworkDatasLoader.PORT_ATTR);
+		return mgmtNode
+				.getAttributeNode(ManagementNetworkDatasLoader.PORT_ATTR);
 	}
 
 	/**
@@ -696,7 +719,7 @@ public abstract class NetworkManagementHelper {
 	 *             define a ManagementNetworkMethod (which is normaly used to
 	 *             define a default port).
 	 */
-	private static Port getDefaultMamangementPort(Node mgmtNode)
+	private static Port getDefaultMamangementPort(Element mgmtNode)
 			throws ResourcesDescriptorException {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -747,8 +770,8 @@ public abstract class NetworkManagementHelper {
 	 *             not a valid {@link ManagementNetworkMethod}.
 	 */
 	public static ManagementNetworkMethod findManagementNetworkMethod(
-			Node instanceNode) throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
+			Element instanceNode) throws ResourcesDescriptorException {
+		Element mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkMethod(mgmtNode);
 	}
 
@@ -772,7 +795,7 @@ public abstract class NetworkManagementHelper {
 	 *             {@link ManagementNetworkMethod}.
 	 */
 	public static ManagementNetworkMethod getManagementNetworkMethod(
-			Node mgmtNode) throws ResourcesDescriptorException {
+			Element mgmtNode) throws ResourcesDescriptorException {
 		try {
 			return ManagementNetworkMethod
 					.parseString(getManagementNetworkMethodNode(mgmtNode)
@@ -803,9 +826,9 @@ public abstract class NetworkManagementHelper {
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 */
-	public static Node findManagementNetworkMethodNode(Node instanceNode)
+	public static Attr findManagementNetworkMethodNode(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
+		Element mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkMethodNode(mgmtNode);
 	}
 
@@ -822,13 +845,13 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Network Device Management {@link Node} is
 	 *             <tt>null</tt>.
 	 */
-	public static Node getManagementNetworkMethodNode(Node mgmtNode) {
+	public static Attr getManagementNetworkMethodNode(Element mgmtNode) {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Device Management Node.");
 		}
-		return mgmtNode.getAttributes().getNamedItem(
-				ManagementNetworkDatasLoader.METHOD_ATTR);
+		return mgmtNode
+				.getAttributeNode(ManagementNetworkDatasLoader.METHOD_ATTR);
 	}
 
 	/**
@@ -849,8 +872,8 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 */
-	public static boolean isManagementNetworkEnable(Node instanceNode) {
-		Node mgmtNode = null;
+	public static boolean isManagementNetworkEnable(Element instanceNode) {
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -874,14 +897,14 @@ public abstract class NetworkManagementHelper {
 	 *         {@link ManagementNetworkDatasLoader#ENABLE_ATTR} XML Attribute ;</li>
 	 *         </ul>
 	 */
-	public static boolean getManagementNetworkEnable(Node mgmtNode) {
+	public static boolean getManagementNetworkEnable(Element mgmtNode) {
 		if (mgmtNode == null) {
 			return false;
 		}
 		String attr = ManagementNetworkDatasLoader.ENABLE_ATTR;
 		try {
-			return Boolean.parseBoolean(mgmtNode.getAttributes()
-					.getNamedItem(attr).getNodeValue());
+			return Boolean.parseBoolean(mgmtNode.getAttributeNode(attr)
+					.getNodeValue());
 		} catch (NullPointerException Ex) {
 			return true;
 		}
@@ -911,8 +934,8 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 */
-	public static String findNetworkDevicesSelector(Node instanceNode) {
-		Node mgmtNode = null;
+	public static String findNetworkDevicesSelector(Element instanceNode) {
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -944,11 +967,10 @@ public abstract class NetworkManagementHelper {
 	 *         {@link #NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE} XML Attribute ;</li>
 	 *         </ul>
 	 */
-	public static String getNetworkDevicesSelector(Node mgmtNode) {
+	public static String getNetworkDevicesSelector(Element mgmtNode) {
 		try {
-			return mgmtNode.getAttributes()
-					.getNamedItem(NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE)
-					.getNodeValue();
+			return mgmtNode.getAttributeNode(
+					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE).getNodeValue();
 		} catch (NullPointerException Ex) {
 			return DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR;
 		}
@@ -977,18 +999,18 @@ public abstract class NetworkManagementHelper {
 	 *             Management {@link Node} of the instance) is not a valid XPath
 	 *             Expression.
 	 */
-	public static List<Node> findNetworkDeviceNodeByName(
-			List<Node> instanceNodes, String netDevName)
+	public static List<Element> findNetworkDeviceNodeByName(
+			List<Element> instanceNodes, String netDevName)
 			throws ResourcesDescriptorException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List of Instance Node.");
 		}
-		List<Node> hl = new ArrayList<Node>();
-		for (Node instanceNode : instanceNodes) {
+		List<Element> hl = new ArrayList<Element>();
+		for (Element instanceNode : instanceNodes) {
 			NodeList nl = findNetworkDeviceNodeByName(instanceNode, netDevName);
 			for (int i = 0; i < nl.getLength(); i++) {
-				hl.add(nl.item(i));
+				hl.add((Element) nl.item(i));
 			}
 		}
 		return hl;
@@ -1018,9 +1040,9 @@ public abstract class NetworkManagementHelper {
 	 *             Management {@link Node} of the given instance) is not a valid
 	 *             XPath Expression.
 	 */
-	public static NodeList findNetworkDeviceNodeByName(Node instanceNode,
+	public static NodeList findNetworkDeviceNodeByName(Element instanceNode,
 			String netDevName) throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -1054,8 +1076,8 @@ public abstract class NetworkManagementHelper {
 	 *             if the Network Devices Selector (found in the Network Device
 	 *             Management {@link Node}) is not a valid XPath Expression.
 	 */
-	public static NodeList getNetworkDeviceNodeByName(Node instanceNode,
-			Node mgmtNode, String netDevName)
+	public static NodeList getNetworkDeviceNodeByName(Element instanceNode,
+			Element mgmtNode, String netDevName)
 			throws ResourcesDescriptorException {
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -1072,8 +1094,8 @@ public abstract class NetworkManagementHelper {
 			return XPathExpander.evaluateAsNodeList(sNetDevSelector,
 					instanceNode);
 		} catch (XPathExpressionException Ex) {
-			Node attr = mgmtNode.getAttributes().getNamedItem(
-					NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
+			Attr attr = mgmtNode
+					.getAttributeNode(NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
 			throw new ResourcesDescriptorException(attr, Messages.bind(
 					Messages.NetMgmtEx_INVALID_NETWORK_DEVICES_SELECTOR,
 					sAllNetDevSelector), Ex);
@@ -1105,10 +1127,10 @@ public abstract class NetworkManagementHelper {
 	 *             {@link NetworkDeviceName}.
 	 */
 	public static List<NetworkDeviceName> findManagementNetworkDeviceName(
-			List<Node> instanceNodes) throws ResourcesDescriptorException {
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		List<NetworkDeviceName> ndl = new ArrayList<NetworkDeviceName>();
-		Node mgmtNode = null;
-		for (Node instanceNode : instanceNodes) {
+		Element mgmtNode = null;
+		for (Element instanceNode : instanceNodes) {
 			try {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
@@ -1142,8 +1164,8 @@ public abstract class NetworkManagementHelper {
 	 *             if the found value is not a valid {@link NetworkDeviceName}.
 	 */
 	public static NetworkDeviceName findManagementNetworkDeviceName(
-			Node instanceNode) throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+			Element instanceNode) throws ResourcesDescriptorException {
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -1178,20 +1200,20 @@ public abstract class NetworkManagementHelper {
 	 *             if the found value is not a valid {@link NetworkDeviceName}.
 	 */
 	public static NetworkDeviceName getManagementNetworkDeviceName(
-			Node instanceNode, Node mgmtNode)
+			Element instanceNode, Element mgmtNode)
 			throws ResourcesDescriptorException {
 		try {
 			return NetworkDeviceName
 					.parseString(getManagementNetworkDeviceNameNode(
 							instanceNode, mgmtNode).getNodeValue());
 		} catch (NullPointerException Ex) {
-			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
 			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalNetworkDeviceNameException Ex) {
-			Node netNode = getManagementNetworkDeviceNode(instanceNode,
+			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
 			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
 			throw new ResourcesDescriptorException(netNode, Messages.bind(
@@ -1218,22 +1240,22 @@ public abstract class NetworkManagementHelper {
 	 *             if no Management Network Device {@link Node} can be found in
 	 *             at least one Instance.
 	 */
-	public static List<Node> findManagementNetworkDeviceNameNode(
-			List<Node> instanceNodes) throws ResourcesDescriptorException {
+	public static List<Attr> findManagementNetworkDeviceNameNode(
+			List<Element> instanceNodes) throws ResourcesDescriptorException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid List of Instance Node.");
 		}
-		List<Node> hl = new ArrayList<Node>();
-		Node mgmtNode = null;
-		for (Node instanceNode : instanceNodes) {
+		List<Attr> hl = new ArrayList<Attr>();
+		Element mgmtNode = null;
+		for (Element instanceNode : instanceNodes) {
 			try {
 				mgmtNode = findNetworkManagementNode(instanceNode);
 			} catch (ResourcesDescriptorException Ex) {
 				// raised when Network Device Management datas are invalid.
 				// in this situation, we will use default values
 			}
-			Node n = getManagementNetworkDeviceNameNode(instanceNode, mgmtNode);
+			Attr n = getManagementNetworkDeviceNameNode(instanceNode, mgmtNode);
 			if (n != null) {
 				hl.add(n);
 			}
@@ -1258,9 +1280,9 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node findManagementNetworkDeviceNameNode(Node instanceNode)
+	public static Attr findManagementNetworkDeviceNameNode(Element instanceNode)
 			throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -1290,11 +1312,11 @@ public abstract class NetworkManagementHelper {
 	 * @throws ResourcesDescriptorException
 	 *             if no Management Network Device {@link Node} can be found.
 	 */
-	public static Node getManagementNetworkDeviceNameNode(Node instanceNode,
-			Node mgmtNode) throws ResourcesDescriptorException {
-		Node netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
+	public static Attr getManagementNetworkDeviceNameNode(Element instanceNode,
+			Element mgmtNode) throws ResourcesDescriptorException {
+		Element netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
 		String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
-		return netNode.getAttributes().getNamedItem(attr);
+		return netNode.getAttributeNode(attr);
 	}
 
 	/**
@@ -1315,8 +1337,8 @@ public abstract class NetworkManagementHelper {
 	 *             {@link ManagementNetworkEnableTimeout}.
 	 */
 	public static ManagementNetworkEnableTimeout findManagementNetworkEnableTimeout(
-			Node instanceNode) throws ResourcesDescriptorException {
-		Node mgmtNode = null;
+			Element instanceNode) throws ResourcesDescriptorException {
+		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
 		} catch (ResourcesDescriptorException Ex) {
@@ -1343,8 +1365,8 @@ public abstract class NetworkManagementHelper {
 	 *             not a valid {@link ManagementNetworkEnableTimeout}.
 	 */
 	public static ManagementNetworkEnableTimeout getManagementNetworkEnableTimeout(
-			Node mgmtNode) throws ResourcesDescriptorException {
-		Node n = getManagementNetworkEnableTimeoutNode(mgmtNode);
+			Element mgmtNode) throws ResourcesDescriptorException {
+		Attr n = getManagementNetworkEnableTimeoutNode(mgmtNode);
 		if (n == null) {
 			return getDefaultManagementEnableTimeout(mgmtNode);
 		}
@@ -1372,9 +1394,9 @@ public abstract class NetworkManagementHelper {
 	 *             if no Instance's Network Device Management {@link Node} can
 	 *             be found.
 	 */
-	public static Node findManagementNetworkEnableTimeoutNode(Node instanceNode)
-			throws ResourcesDescriptorException {
-		Node mgmtNode = findNetworkManagementNode(instanceNode);
+	public static Attr findManagementNetworkEnableTimeoutNode(
+			Element instanceNode) throws ResourcesDescriptorException {
+		Element mgmtNode = findNetworkManagementNode(instanceNode);
 		return getManagementNetworkEnableTimeoutNode(mgmtNode);
 	}
 
@@ -1391,13 +1413,13 @@ public abstract class NetworkManagementHelper {
 	 *             if the given Network Device Management {@link Node} is
 	 *             <tt>null</tt>.
 	 */
-	public static Node getManagementNetworkEnableTimeoutNode(Node mgmtNode) {
+	public static Attr getManagementNetworkEnableTimeoutNode(Element mgmtNode) {
 		if (mgmtNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Device Management Node.");
 		}
 		String attr = ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR;
-		return mgmtNode.getAttributes().getNamedItem(attr);
+		return mgmtNode.getAttributeNode(attr);
 	}
 
 	/**
@@ -1415,7 +1437,7 @@ public abstract class NetworkManagementHelper {
 	 *         given Instance's {@link ManagementNetworkMethod}.
 	 */
 	private static ManagementNetworkEnableTimeout getDefaultManagementEnableTimeout(
-			Node mgmtNode) {
+			Element mgmtNode) {
 		if (mgmtNode == null) {
 			return ManagementNetworkDatas.DEFAULT_ENABLE_TIMEOUT;
 		}

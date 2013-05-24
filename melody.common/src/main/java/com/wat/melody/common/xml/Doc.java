@@ -17,7 +17,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -94,8 +93,8 @@ public class Doc {
 		}
 	}
 
-	public static String parseNodeType(int nodeType) {
-		switch (nodeType) {
+	public static String parseNodeType(Node n) {
+		switch (n.getNodeType()) {
 		case Node.ATTRIBUTE_NODE:
 			return "ATTRIBUTE";
 		case Node.CDATA_SECTION_NODE:
@@ -122,48 +121,7 @@ public class Doc {
 			return "TEXT";
 		default:
 			throw new IllegalArgumentException(": Not accepted. "
-					+ "Must a valid int (a Node Type).");
-		}
-	}
-
-	/**
-	 * <p>
-	 * Create a new Attribute with the given name, set its value to the given
-	 * value and add it to the given Node.
-	 * </p>
-	 * 
-	 * @param attrName
-	 *            is the name of the attribute to create.
-	 * @param attrValue
-	 *            is the corresponding value of the attribute.
-	 * @param n
-	 *            is the Node where the new Attribute will be added.
-	 * 
-	 * @return the newly created Attribute.
-	 */
-	public static Attr createAttribute(String attrName, String attrValue, Node n) {
-		if (attrName == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an XML Attribute name).");
-		}
-		if (attrName.trim().length() == 0) {
-			throw new IllegalArgumentException(": Not accepted. "
-					+ "Must be a valid String (an XML Attribute name).");
-		}
-		if (n == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
-		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
-					+ ": Not accepted. " + "Must be an Element Node.");
-		}
-		Document d = n.getOwnerDocument();
-		synchronized (d) {
-			Attr oAtr = d.createAttribute(attrName);
-			oAtr.setNodeValue(attrValue);
-			n.getAttributes().setNamedItem(oAtr);
-			return oAtr;
+					+ "Must a valid " + Node.class.getCanonicalName() + ".");
 		}
 	}
 
@@ -265,7 +223,7 @@ public class Doc {
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
+			throw new IllegalArgumentException(parseNodeType(n)
 					+ ": Not accepted. " + "Must be an Element Node.");
 		}
 		String sTargetXPath = "";
@@ -283,7 +241,7 @@ public class Doc {
 					+ "Must be a " + Node.class.getCanonicalName() + ".");
 		}
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(parseNodeType(n.getNodeType())
+			throw new IllegalArgumentException(parseNodeType(n)
 					+ ": Not accepted. " + "Must be an Element Node.");
 		}
 

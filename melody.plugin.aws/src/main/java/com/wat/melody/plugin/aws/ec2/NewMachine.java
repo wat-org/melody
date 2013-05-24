@@ -3,7 +3,7 @@ package com.wat.melody.plugin.aws.ec2;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsInstanceController;
@@ -87,7 +87,7 @@ public class NewMachine extends AbstractOperation {
 			 * 
 			 * Also create an InstanceHelper and remove all task attribute.
 			 */
-			Node n = getTargetNode();
+			Element n = getTargetElement();
 			String v = null;
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -97,10 +97,10 @@ public class NewMachine extends AbstractOperation {
 					setInstanceType(InstanceType.parseString(v));
 				}
 			} catch (IllegalInstanceTypeException Ex) {
-				throw new AwsException(
-						Messages.bind(Messages.NewEx_INSTANCETYPE_ERROR,
-								AwsEc2Cloud.INSTANCETYPE_ATTR,
-								getTargetNodeLocation()), Ex);
+				throw new AwsException(Messages.bind(
+						Messages.NewEx_INSTANCETYPE_ERROR,
+						AwsEc2Cloud.INSTANCETYPE_ATTR,
+						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -112,7 +112,7 @@ public class NewMachine extends AbstractOperation {
 			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_IMAGEID_ERROR, AwsEc2Cloud.IMAGEID_ATTR,
-						getTargetNodeLocation()), Ex);
+						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -125,7 +125,7 @@ public class NewMachine extends AbstractOperation {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_AVAILABILITYZONE_ERROR,
 						AwsEc2Cloud.AVAILABILITYZONE_ATTR,
-						getTargetNodeLocation()), Ex);
+						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -135,10 +135,10 @@ public class NewMachine extends AbstractOperation {
 					setKeyPairName(KeyPairName.parseString(v));
 				}
 			} catch (IllegalKeyPairNameException Ex) {
-				throw new AwsException(
-						Messages.bind(Messages.NewEx_KEYPAIR_NAME_ERROR,
-								AwsEc2Cloud.KEYPAIR_NAME_ATTR,
-								getTargetNodeLocation()), Ex);
+				throw new AwsException(Messages.bind(
+						Messages.NewEx_KEYPAIR_NAME_ERROR,
+						AwsEc2Cloud.KEYPAIR_NAME_ATTR,
+						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -160,21 +160,21 @@ public class NewMachine extends AbstractOperation {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_INSTANCETYPE_ATTR,
 					NewMachine.INSTANCETYPE_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetElementLocation()));
 		}
 
 		if (getImageId() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_IMAGEID_ATTR,
 					NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.IMAGEID_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.IMAGEID_ATTR, getTargetElementLocation()));
 		}
 
 		if (getKeyPairName() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR,
 					NewMachine.KEYPAIR_NAME_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.KEYPAIR_NAME_ATTR, getTargetNodeLocation()));
+					AwsEc2Cloud.KEYPAIR_NAME_ATTR, getTargetElementLocation()));
 		}
 
 		// Validate task's attributes
@@ -207,7 +207,8 @@ public class NewMachine extends AbstractOperation {
 			throw new AwsException(Messages.bind(
 					Messages.CreateEx_GENERIC_FAIL, getRegion(), getImageId(),
 					getInstanceType(), getKeyPairName(),
-					getAvailabilityZoneFullName(), getTargetNodeLocation()), Ex);
+					getAvailabilityZoneFullName(), getTargetElementLocation()),
+					Ex);
 		}
 	}
 

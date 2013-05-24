@@ -32,9 +32,9 @@ public class UpdateNetworkDevices extends AbstractOperation {
 	 */
 	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
 
-	private NetworkDeviceNameList maNetworkDeviceList = null;
-	private long mlDetachTimeout;
-	private long mlAttachTimeout;
+	private NetworkDeviceNameList _networkDeviceList = null;
+	private long _detachTimeout;
+	private long _attachTimeout;
 
 	public UpdateNetworkDevices() {
 		super();
@@ -58,7 +58,7 @@ public class UpdateNetworkDevices extends AbstractOperation {
 		// Build a NetworkDeviceList with Network Device Nodes found in the RD
 		try {
 			setNetworkDeviceList(new NetworkDeviceNamesLoader()
-					.load(getTargetNode()));
+					.load(getTargetElement()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -75,12 +75,12 @@ public class UpdateNetworkDevices extends AbstractOperation {
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.UpdateNetDevEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 
 	private NetworkDeviceNameList getNetworkDeviceList() {
-		return maNetworkDeviceList;
+		return _networkDeviceList;
 	}
 
 	private NetworkDeviceNameList setNetworkDeviceList(
@@ -90,12 +90,12 @@ public class UpdateNetworkDevices extends AbstractOperation {
 					+ "Must be a valid NetworkDeviceList.");
 		}
 		NetworkDeviceNameList previous = getNetworkDeviceList();
-		maNetworkDeviceList = fwrs;
+		_networkDeviceList = fwrs;
 		return previous;
 	}
 
 	public long getDetachTimeout() {
-		return mlDetachTimeout;
+		return _detachTimeout;
 	}
 
 	@Attribute(name = DETACH_TIMEOUT_ATTR)
@@ -105,12 +105,12 @@ public class UpdateNetworkDevices extends AbstractOperation {
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getDetachTimeout();
-		mlDetachTimeout = timeout;
+		_detachTimeout = timeout;
 		return previous;
 	}
 
 	public long getAttachTimeout() {
-		return mlAttachTimeout;
+		return _attachTimeout;
 	}
 
 	@Attribute(name = ATTACH_TIMEOUT_ATTR)
@@ -120,7 +120,7 @@ public class UpdateNetworkDevices extends AbstractOperation {
 					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
 		}
 		long previous = getAttachTimeout();
-		mlAttachTimeout = timeout;
+		_attachTimeout = timeout;
 		return previous;
 	}
 

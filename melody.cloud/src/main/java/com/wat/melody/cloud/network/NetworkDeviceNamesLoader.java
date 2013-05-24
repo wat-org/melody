@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.network;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -56,7 +57,7 @@ public class NetworkDeviceNamesLoader {
 	public NetworkDeviceNamesLoader() {
 	}
 
-	private NetworkDeviceName loadDeviceName(Node n)
+	private NetworkDeviceName loadDeviceName(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_NAME_ATTR);
 		if (v == null || v.length() == 0) {
@@ -98,14 +99,14 @@ public class NetworkDeviceNamesLoader {
 	 *             Device {@link Node} is not valid, multiple Network Device
 	 *             Name declare with the same name).
 	 */
-	public NetworkDeviceNameList load(Node instanceNode)
+	public NetworkDeviceNameList load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = NetworkManagementHelper.findNetworkDeviceNodeByName(
 				instanceNode, null);
 
 		NetworkDeviceNameList dl = new NetworkDeviceNameList();
 		for (int i = 0; i < nl.getLength(); i++) {
-			Node n = nl.item(i);
+			Element n = (Element) nl.item(i);
 			NetworkDeviceName netDevName = loadDeviceName(n);
 			if (netDevName == null) {
 				throw new ResourcesDescriptorException(n, Messages.bind(

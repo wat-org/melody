@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -72,7 +73,7 @@ public class FireWallRulesLoader {
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Node instanceNode)
+	public FireWallRulesPerDevice load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		fwrs.merge(new TcpFireWallRulesLoader().load(instanceNode));

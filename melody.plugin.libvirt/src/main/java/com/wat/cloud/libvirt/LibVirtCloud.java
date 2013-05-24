@@ -19,6 +19,7 @@ import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -119,14 +120,14 @@ public abstract class LibVirtCloud {
 			return;
 		}
 		for (int j = 0; j < nl.getLength(); j++) {
-			Node n = nl.item(j);
-			Node name = n.getAttributes().getNamedItem("name");
+			Element n = (Element) nl.item(j);
+			Node name = n.getAttributeNode("name");
 			if (name == null) {
 				throw new RuntimeException("Image is not valid. "
 						+ "'name' XML attribute cannot be found.");
 			}
 			String sImageId = name.getNodeValue();
-			Node descriptor = n.getAttributes().getNamedItem("descriptor");
+			Node descriptor = n.getAttributeNode("descriptor");
 			if (descriptor == null) {
 				throw new RuntimeException("Image '" + sImageId
 						+ "' is not valid. "
@@ -665,7 +666,7 @@ public abstract class LibVirtCloud {
 		String sFirstFreeMacAddr = nlFreeMacAddrPool.item(0).getAttributes()
 				.getNamedItem("mac").getNodeValue();
 		log.trace("Allocating Mac Address '" + sFirstFreeMacAddr + "' ...");
-		Doc.createAttribute("allocated", "true", nlFreeMacAddrPool.item(0));
+		((Element) nlFreeMacAddrPool.item(0)).setAttribute("allocated", "true");
 		netconf.store();
 		log.debug("Mac Address '" + sFirstFreeMacAddr + "' allocated.");
 		return sFirstFreeMacAddr;
@@ -678,9 +679,9 @@ public abstract class LibVirtCloud {
 					+ ".");
 		}
 		log.trace("Releasing Mac Address '" + sMacAddr + "' ...");
-		Node nMacAddr = null;
+		Element nMacAddr = null;
 		try {
-			nMacAddr = netconf.evaluateAsNode("/network/ip/dhcp" + "/host"
+			nMacAddr = (Element) netconf.evaluateAsNode("/network/ip/dhcp/host"
 					+ "[ upper-case(@mac)=upper-case('" + sMacAddr
 					+ "') and exists(@allocated) ]");
 		} catch (XPathExpressionException Ex) {
@@ -689,7 +690,7 @@ public abstract class LibVirtCloud {
 		if (nMacAddr == null) {
 			return;
 		}
-		nMacAddr.getAttributes().removeNamedItem("allocated");
+		nMacAddr.removeAttribute("allocated");
 		netconf.store();
 		log.debug("Mac Address '" + sMacAddr + "' released.");
 	}
@@ -1208,13 +1209,10 @@ public abstract class LibVirtCloud {
 					+ "']/disk");
 			StoragePool sp = cnx.storagePoolLookupByName("default");
 			for (int i = 0; i < nl.getLength(); i++) {
-				Node n = nl.item(i);
-				Node descriptor = n.getAttributes().getNamedItem("descriptor");
-				Node source = n.getAttributes().getNamedItem("source");
-				Node device = n.getAttributes().getNamedItem("device");
-				String sDescriptorPath = descriptor.getNodeValue();
-				String sSourceVolumePath = source.getNodeValue();
-				String sDiskDeviceName = device.getNodeValue();
+				Element n = (Element) nl.item(i);
+				String sDescriptorPath = n.getAttribute("descriptor");
+				String sSourceVolumePath = n.getAttribute("source");
+				String sDiskDeviceName = n.getAttribute("device");
 				log.trace("Creating Disk Device '" + sDiskDeviceName
 						+ "' for Domain '" + sInstanceId
 						+ "' ... LibVirt Volume Image is '" + sSourceVolumePath

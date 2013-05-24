@@ -2,7 +2,7 @@ package com.wat.melody.cloud.network;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -48,40 +48,40 @@ public abstract class ManagementNetworkDatasLoader {
 	public ManagementNetworkDatasLoader() {
 	}
 
-	protected ManagementNetworkMethod loadMgmtMethod(Node mgmtNode)
+	protected ManagementNetworkMethod loadMgmtMethod(Element mgmtNode)
 			throws ResourcesDescriptorException {
 		return NetworkManagementHelper.getManagementNetworkMethod(mgmtNode);
 	}
 
-	protected boolean loadMgmtEnable(Node mgmtNode)
+	protected boolean loadMgmtEnable(Element mgmtNode)
 			throws ResourcesDescriptorException {
 		return NetworkManagementHelper.getManagementNetworkEnable(mgmtNode);
 	}
 
-	protected ManagementNetworkEnableTimeout loadMgmtEnableTimeout(Node mgmtNode)
-			throws ResourcesDescriptorException {
+	protected ManagementNetworkEnableTimeout loadMgmtEnableTimeout(
+			Element mgmtNode) throws ResourcesDescriptorException {
 		return NetworkManagementHelper
 				.getManagementNetworkEnableTimeout(mgmtNode);
 	}
 
-	protected NetworkDeviceName loadMgmtNetDev(Node instanceNode, Node mgmtNode)
-			throws ResourcesDescriptorException {
+	protected NetworkDeviceName loadMgmtNetDev(Element instanceNode,
+			Element mgmtNode) throws ResourcesDescriptorException {
 		return NetworkManagementHelper.getManagementNetworkDeviceName(
 				instanceNode, mgmtNode);
 	}
 
-	protected Host loadMgmtHost(Node instanceNode, Node mgmtNode)
+	protected Host loadMgmtHost(Element instanceNode, Element mgmtNode)
 			throws ResourcesDescriptorException {
 		return NetworkManagementHelper.getManagementNetworkHost(instanceNode,
 				mgmtNode);
 	}
 
-	protected Port loadMgmtPort(Node mgmtNode)
+	protected Port loadMgmtPort(Element mgmtNode)
 			throws ResourcesDescriptorException {
 		return NetworkManagementHelper.getManagementNetworkPort(mgmtNode);
 	}
 
-	public abstract ManagementNetworkDatas load(Node instanceNode)
+	public abstract ManagementNetworkDatas load(Element instanceNode)
 			throws ResourcesDescriptorException;
 
 }

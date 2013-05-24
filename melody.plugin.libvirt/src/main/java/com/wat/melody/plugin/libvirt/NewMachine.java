@@ -3,7 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.cloud.libvirt.LibVirtCloud;
 import com.wat.cloud.libvirt.LibVirtInstanceController;
@@ -89,7 +89,7 @@ public class NewMachine extends AbstractOperation {
 			 * 
 			 * Also create an InstanceHelper and remove all task attribute.
 			 */
-			Node n = getTargetNode();
+			Element n = getTargetElement();
 			String v = null;
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -101,7 +101,8 @@ public class NewMachine extends AbstractOperation {
 			} catch (IllegalInstanceTypeException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.NewEx_INSTANCETYPE_ERROR,
-						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
+						Common.INSTANCETYPE_ATTR, getTargetElementLocation()),
+						Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
@@ -112,7 +113,7 @@ public class NewMachine extends AbstractOperation {
 			} catch (LibVirtException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.NewEx_IMAGEID_ERROR, Common.IMAGEID_ATTR,
-						getTargetNodeLocation()), Ex);
+						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
@@ -124,7 +125,8 @@ public class NewMachine extends AbstractOperation {
 			} catch (IllegalKeyPairNameException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.NewEx_KEYPAIR_NAME_ERROR,
-						Common.KEYPAIR_NAME_ATTR, getTargetNodeLocation()), Ex);
+						Common.KEYPAIR_NAME_ATTR, getTargetElementLocation()),
+						Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n, Common.PASSPHRASE_ATTR);
@@ -146,14 +148,14 @@ public class NewMachine extends AbstractOperation {
 					Messages.NewEx_MISSING_INSTANCETYPE_ATTR, new Object[] {
 							NewMachine.INSTANCETYPE_ATTR,
 							NewMachine.NEW_MACHINE, Common.INSTANCETYPE_ATTR,
-							getTargetNodeLocation() }));
+							getTargetElementLocation() }));
 		}
 
 		if (getImageId() == null) {
 			throw new LibVirtException(Messages.bind(
 					Messages.NewEx_MISSING_IMAGEID_ATTR, new Object[] {
 							NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-							Common.IMAGEID_ATTR, getTargetNodeLocation() }));
+							Common.IMAGEID_ATTR, getTargetElementLocation() }));
 		}
 
 		if (getKeyPairName() == null) {
@@ -161,7 +163,7 @@ public class NewMachine extends AbstractOperation {
 					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR, new Object[] {
 							NewMachine.KEYPAIR_NAME_ATTR,
 							NewMachine.NEW_MACHINE, Common.KEYPAIR_NAME_ATTR,
-							getTargetNodeLocation() }));
+							getTargetElementLocation() }));
 		}
 
 		// Validate task's attributes
@@ -184,7 +186,7 @@ public class NewMachine extends AbstractOperation {
 			throw new LibVirtException(Messages.bind(
 					Messages.CreateEx_GENERIC_FAIL, new Object[] { getRegion(),
 							getImageId(), getInstanceType(), getKeyPairName(),
-							null, getTargetNodeLocation() }), Ex);
+							null, getTargetElementLocation() }), Ex);
 		}
 	}
 

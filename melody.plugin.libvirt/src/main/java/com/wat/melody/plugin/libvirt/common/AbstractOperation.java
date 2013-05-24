@@ -4,6 +4,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -51,7 +52,7 @@ public abstract class AbstractOperation implements ITask,
 	private Connect _connect = null;
 	private InstanceController _instance = null;
 	private String _instanceId = null;
-	private Node _targetNode = null;
+	private Element _targetElement = null;
 	private String _region = null;
 	private String _target = null;
 	private long _timeout = 90000;
@@ -64,7 +65,7 @@ public abstract class AbstractOperation implements ITask,
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
 					Common.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -76,7 +77,7 @@ public abstract class AbstractOperation implements ITask,
 		} catch (LibVirtException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_REGION_ERROR, Common.REGION_ATTR,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 
 		// Is everything correctly loaded ?
@@ -85,7 +86,7 @@ public abstract class AbstractOperation implements ITask,
 					Messages.MachineEx_MISSING_REGION_ATTR, new Object[] {
 							REGION_ATTR,
 							getClass().getSimpleName().toLowerCase(),
-							Common.REGION_ATTR, getTargetNodeLocation() }));
+							Common.REGION_ATTR, getTargetElementLocation() }));
 		}
 
 		// Keep the Connection in a dedicated member
@@ -101,11 +102,12 @@ public abstract class AbstractOperation implements ITask,
 
 	public InstanceController createInstance() throws LibVirtException {
 		InstanceController instance = newLibVirtInstanceController();
-		instance = new InstanceControllerWithRelatedNode(instance, getRD(),
-				getTargetNode());
-		if (NetworkManagementHelper.isManagementNetworkEnable(getTargetNode())) {
+		instance = new InstanceControllerWithRelatedNode(instance,
+				getTargetElement());
+		if (NetworkManagementHelper
+				.isManagementNetworkEnable(getTargetElement())) {
 			instance = new InstanceControllerWithNetworkManagement(instance,
-					this, getTargetNode());
+					this, getTargetElement());
 		}
 		return instance;
 	}
@@ -123,8 +125,8 @@ public abstract class AbstractOperation implements ITask,
 				.getResourcesDescriptor();
 	}
 
-	public String getTargetNodeLocation() {
-		return Doc.getNodeLocation(getTargetNode()).toFullString();
+	public String getTargetElementLocation() {
+		return Doc.getNodeLocation(getTargetElement()).toFullString();
 	}
 
 	public LibVirtPlugInConfiguration getLibVirtPlugInConfiguration()
@@ -192,17 +194,18 @@ public abstract class AbstractOperation implements ITask,
 	/**
 	 * @return the targeted {@link Node}.
 	 */
-	public Node getTargetNode() {
-		return _targetNode;
+	public Element getTargetElement() {
+		return _targetElement;
 	}
 
-	public Node setTargetNode(Node n) {
+	public Element setTargetElement(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node (the targeted Instance Node).");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ " (the targeted LibVirt Instance Element Node).");
 		}
-		Node previous = getTargetNode();
-		_targetNode = n;
+		Element previous = getTargetElement();
+		_targetElement = n;
 		return previous;
 	}
 
@@ -273,9 +276,9 @@ public abstract class AbstractOperation implements ITask,
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			throw new LibVirtException(Messages.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH,
-					target, Doc.parseNodeType(n.getNodeType())));
+					target, Doc.parseNodeType(n)));
 		}
-		setTargetNode(n);
+		setTargetElement((Element) n);
 		try {
 			setInstanceId(n.getAttributes()
 					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)

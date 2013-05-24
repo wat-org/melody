@@ -1,5 +1,6 @@
 package com.wat.melody.xpathextensions;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.Melody;
@@ -29,7 +30,7 @@ public class XPathHelper {
 	 *             if the given attribute's value cannot be expanded (e.g.
 	 *             contains an invalid XPath Expression).
 	 */
-	public static String getHeritedAttributeValue(Node n, String sAttrName)
+	public static String getHeritedAttributeValue(Element n, String sAttrName)
 			throws ResourcesDescriptorException {
 		return getHeritedAttributeValue(n, sAttrName, true);
 	}
@@ -56,7 +57,7 @@ public class XPathHelper {
 	 *             contains an invalid XPath Expression). This should not
 	 *             happened if the third boolean argument is <tt>false</tt>.
 	 */
-	public static String getHeritedAttributeValue(Node n, String sAttrName,
+	public static String getHeritedAttributeValue(Element n, String sAttrName,
 			boolean expand) throws ResourcesDescriptorException {
 		Node attr = FilteredDocHelper.getHeritedAttribute(n, sAttrName);
 		if (attr == null) {

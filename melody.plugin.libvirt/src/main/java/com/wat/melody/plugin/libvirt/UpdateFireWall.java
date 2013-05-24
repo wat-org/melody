@@ -34,7 +34,7 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 
 		// Build a FwRule's Collection with FwRule Nodes found
 		try {
-			setFwRules(new FireWallRulesLoader().load(getTargetNode()));
+			setFwRules(new FireWallRulesLoader().load(getTargetElement()));
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
 		}
@@ -49,7 +49,7 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
 					Messages.UpdateFireWallEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 

@@ -30,7 +30,8 @@ public class StartMachine extends AbstractOperation {
 			getInstance().ensureInstanceIsStarted(getTimeout());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.StartEx_GENERIC_FAIL, getTargetNodeLocation()), Ex);
+					Messages.StartEx_GENERIC_FAIL, getTargetElementLocation()),
+					Ex);
 		}
 	}
 

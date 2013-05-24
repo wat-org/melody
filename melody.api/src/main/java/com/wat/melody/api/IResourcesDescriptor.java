@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -16,7 +17,6 @@ import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.exception.IllegalDocException;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 
 /**
  * <p>
@@ -76,24 +76,24 @@ public interface IResourcesDescriptor {
 
 	/**
 	 * <p>
-	 * Get the {@link DUNID} of the given {@link Node}.
+	 * Get the {@link DUNID} of the given {@link Element}.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is a {@link Node} owned by this object.
+	 *            is a {@link Element} owned by this object.
 	 * 
-	 * @return the {@link DUNID} of the given {@link Node}.
+	 * @return the {@link DUNID} of the given {@link Element}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
+	 *             if the given {@link Element} is <code>null</code>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is not owned by this object.
+	 *             if the given {@link Element} is not owned by this object.
 	 * @throws RuntimeException
-	 *             if the given {@link Node} doesn't have a {@link DUNID}
+	 *             if the given {@link Element} doesn't have a {@link DUNID}
 	 *             attribute, or if the attribute's value is not valid
 	 *             {@link DUNID}.
 	 */
-	public DUNID getMelodyID(Node n);
+	public DUNID getMelodyID(Element n);
 
 	/**
 	 * <p>
@@ -109,98 +109,7 @@ public interface IResourcesDescriptor {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link DUNID} is <code>null</code>.
 	 */
-	public Node getNode(DUNID melodyID);
-
-	/*
-	 * TODO : expand the resulting value.
-	 */
-	/**
-	 * <p>
-	 * Get the requested attribute's value of the requested {@link Node}.
-	 * </p>
-	 * 
-	 * @param sOwnerNodeDUNID
-	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
-	 *            is the name of the requested attribute.
-	 * 
-	 * @return a {@link String}, which contains the value of the requested
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the requested {@link Node}'s
-	 *         attribute doesn't exists.
-	 * 
-	 * @throws NoSuchDUNIDException
-	 *             if the given {@link DUNID} cannot be found in any
-	 *             {@link node}s.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
-	 */
-	public String getAttributeValue(DUNID sOwnerNodeDUNID, String sAttrName)
-			throws NoSuchDUNIDException;
-
-	/**
-	 * <p>
-	 * Set the attribute's value of the requested {@link Node}. Create the
-	 * attribute if it doesn't exist.
-	 * </p>
-	 * 
-	 * @param sOwnerNodeDUNID
-	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
-	 *            is the name of the attribute to set/create.
-	 * @param sAttrValue
-	 *            is the value to assign.
-	 * 
-	 * @return a {@link String}, which contains the previous value of the
-	 *         requested {@link Node}'s attribute, or <code>null</code> if this
-	 *         object have not been loaded yet or if the requested {@link Node}
-	 *         's attribute didn't exists before the operation.
-	 * 
-	 * @throws NoSuchDUNIDException
-	 *             if the given {@link DUNID} cannot be found in any
-	 *             {@link Node}.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
-	 */
-	/*
-	 * TODO : Is it possible to use nodes event/listener for the whole RD
-	 * modification, instead of using this crazy method ?
-	 * 
-	 * yes, it is possible. I have to create my own Node in Parser, and such
-	 * node have to generate events.
-	 */
-	public String setAttributeValue(DUNID sOwnerNodeDUNID, String sAttrName,
-			String sAttrValue) throws NoSuchDUNIDException;
-
-	/**
-	 * <p>
-	 * Remove the given attribute of the requested {@link Node}.
-	 * </p>
-	 * 
-	 * @param ownerNodeDUNID
-	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
-	 *            is the name of the attribute to remove.
-	 * 
-	 * @return a {@link String}, which contains the previous value of the
-	 *         {@link Node}'s attribute, or <code>null</code> if this object
-	 *         have not been loaded yet or if the given attribute cannot be
-	 *         found in the requested {@link Node}.
-	 * 
-	 * @throws NoSuchDUNIDException
-	 *             if the given {@link DUNID} cannot be found in the
-	 *             {@link #DUNID_ATTR}'s attribute of any node.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <code>null</code>.
-	 */
-	public String removeAttribute(DUNID sOwnerNodeDUNID, String sAttrName)
-			throws NoSuchDUNIDException;
+	public Element getElement(DUNID melodyID);
 
 	public String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException;

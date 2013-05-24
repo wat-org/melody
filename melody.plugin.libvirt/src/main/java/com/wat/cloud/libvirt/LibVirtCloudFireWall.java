@@ -10,7 +10,7 @@ import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.ex.MelodyException;
@@ -68,22 +68,22 @@ public abstract class LibVirtCloudFireWall {
 			doc.loadFromXML(nf.getXMLDesc());
 
 			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
-			Node n = null;
+			Element n = null;
 			for (int i = 0; i < nl.getLength(); i++) {
-				n = nl.item(i);
+				n = (Element) nl.item(i);
 				String sProtocol = XPathExpander.evaluateAsString(
 						"./node-name(*)", n);
 				Protocol proto = Protocol.parseString(sProtocol);
 				SimpleFireWallRule rule = null;
 				switch (proto) {
 				case TCP:
-					rule = createTcpRuleFromNode(n);
+					rule = createTcpRuleFromElement(n);
 					break;
 				case UDP:
-					rule = createUdpRuleFromNode(n);
+					rule = createUdpRuleFromElement(n);
 					break;
 				case ICMP:
-					rule = createIcmpRuleFromNode(n);
+					rule = createIcmpRuleFromElement(n);
 					break;
 				}
 				if (rule == null) {
@@ -98,7 +98,7 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static SimpleFireWallRule createTcpRuleFromNode(Node n) {
+	private static SimpleFireWallRule createTcpRuleFromElement(Element n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -132,7 +132,7 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static SimpleFireWallRule createUdpRuleFromNode(Node n) {
+	private static SimpleFireWallRule createUdpRuleFromElement(Element n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -166,7 +166,7 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static SimpleFireWallRule createIcmpRuleFromNode(Node n) {
+	private static SimpleFireWallRule createIcmpRuleFromElement(Element n) {
 		try {
 			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
 			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
@@ -228,18 +228,19 @@ public abstract class LibVirtCloudFireWall {
 			doc.loadFromXML(sg.getXMLDesc());
 
 			for (SimpleFireWallRule rule : rules) {
-				Node n = null;
+				Element n = null;
 				switch (rule.getProtocol()) {
 				case TCP:
-					n = selectTcpUdpFwRuleNode(doc,
+					n = selectTcpUdpFwRuleElement(doc,
 							(SimpleTcpFireWallRule) rule);
 					break;
 				case UDP:
-					n = selectTcpUdpFwRuleNode(doc,
+					n = selectTcpUdpFwRuleElement(doc,
 							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					n = selectIcmpFwRuleNode(doc, (SimpleIcmpFireWallRule) rule);
+					n = selectIcmpFwRuleelement(doc,
+							(SimpleIcmpFireWallRule) rule);
 					break;
 				}
 				if (n == null) {
@@ -255,10 +256,10 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static Node selectTcpUdpFwRuleNode(Doc doc,
+	private static Element selectTcpUdpFwRuleElement(Doc doc,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
 		try {
-			return doc.evaluateAsNode("/filter/rule[" + " @action='"
+			return (Element) doc.evaluateAsNode("/filter/rule[" + " @action='"
 					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
 					+ "' and @direction='"
 					+ (rule.getDirection() == Direction.IN ? "in" : "out")
@@ -280,7 +281,7 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static Node selectIcmpFwRuleNode(Doc doc,
+	private static Element selectIcmpFwRuleelement(Doc doc,
 			SimpleIcmpFireWallRule rule) {
 		try {
 			String typeCond = " and not(exists(@type))";
@@ -291,7 +292,7 @@ public abstract class LibVirtCloudFireWall {
 			if (!rule.getCode().equals(IcmpCode.ALL)) {
 				codeCond = " and @code='" + rule.getCode() + "'";
 			}
-			return doc.evaluateAsNode("/filter/rule[" + " @action='"
+			return (Element) doc.evaluateAsNode("/filter/rule[" + " @action='"
 					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
 					+ "' and @direction='"
 					+ (rule.getDirection() == Direction.IN ? "in" : "out")
@@ -330,32 +331,30 @@ public abstract class LibVirtCloudFireWall {
 			doc.loadFromXML(sg.getXMLDesc());
 
 			for (SimpleFireWallRule rule : rules) {
-				Node nrule = doc.getDocument().createElement("rule");
-				Node nin = null;
+				Element nrule = doc.getDocument().createElement("rule");
+				Element nin = null;
 				switch (rule.getProtocol()) {
 				case TCP:
-					nin = createTcpUdpRuleNode(nrule,
+					nin = createTcpUdpRuleElement(nrule,
 							(SimpleTcpFireWallRule) rule);
 					break;
 				case UDP:
-					nin = createTcpUdpRuleNode(nrule,
+					nin = createTcpUdpRuleElement(nrule,
 							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					nin = createIcmpRuleNode(nrule,
+					nin = createIcmpRuleElement(nrule,
 							(SimpleIcmpFireWallRule) rule);
 					break;
 				}
 				if (nin == null) {
 					continue;
 				}
-				Doc.createAttribute("priority", "500", nrule);
-				Doc.createAttribute("action",
-						rule.getAccess() == Access.ALLOW ? "accept" : "drop",
-						nrule);
-				Doc.createAttribute("direction",
-						rule.getDirection() == Direction.IN ? "in" : "out",
-						nrule);
+				nrule.setAttribute("priority", "500");
+				nrule.setAttribute("action",
+						rule.getAccess() == Access.ALLOW ? "accept" : "drop");
+				nrule.setAttribute("direction",
+						rule.getDirection() == Direction.IN ? "in" : "out");
 				nrule.appendChild(nin);
 				doc.getDocument().getFirstChild().appendChild(nrule);
 				log.debug("Domain '" + sInstanceId + "' grants '" + netdev
@@ -367,46 +366,46 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static Node createTcpUdpRuleNode(Node nrule,
+	private static Element createTcpUdpRuleElement(Element nrule,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
-		Node n = nrule.getOwnerDocument().createElement(
+		Element n = nrule.getOwnerDocument().createElement(
 				rule.getProtocol().getValue());
-		Doc.createAttribute("state", "NEW", n);
+		n.setAttribute("state", "NEW");
 
-		Doc.createAttribute("srcipaddr", rule.getFromIpRange().getIp(), n);
-		Doc.createAttribute("srcipmask", rule.getFromIpRange().getMask(), n);
+		n.setAttribute("srcipaddr", rule.getFromIpRange().getIp());
+		n.setAttribute("srcipmask", rule.getFromIpRange().getMask());
 
-		Doc.createAttribute("srcportstart", rule.getFromPortRange()
-				.getStartPort().toString(), n);
-		Doc.createAttribute("srcportend", rule.getFromPortRange().getEndPort()
-				.toString(), n);
+		n.setAttribute("srcportstart", rule.getFromPortRange().getStartPort()
+				.toString());
+		n.setAttribute("srcportend", rule.getFromPortRange().getEndPort()
+				.toString());
 
-		Doc.createAttribute("dstipaddr", rule.getToIpRange().getIp(), n);
-		Doc.createAttribute("dstipmask", rule.getToIpRange().getMask(), n);
+		n.setAttribute("dstipaddr", rule.getToIpRange().getIp());
+		n.setAttribute("dstipmask", rule.getToIpRange().getMask());
 
-		Doc.createAttribute("dstportstart", rule.getToPortRange()
-				.getStartPort().toString(), n);
-		Doc.createAttribute("dstportend", rule.getToPortRange().getEndPort()
-				.toString(), n);
+		n.setAttribute("dstportstart", rule.getToPortRange().getStartPort()
+				.toString());
+		n.setAttribute("dstportend", rule.getToPortRange().getEndPort()
+				.toString());
 		return n;
 	}
 
-	private static Node createIcmpRuleNode(Node nrule,
+	private static Element createIcmpRuleElement(Element nrule,
 			SimpleIcmpFireWallRule rule) {
-		Node n = nrule.getOwnerDocument().createElement("icmp");
-		Doc.createAttribute("state", "NEW", n);
+		Element n = nrule.getOwnerDocument().createElement("icmp");
+		n.setAttribute("state", "NEW");
 
-		Doc.createAttribute("srcipaddr", rule.getFromIpRange().getIp(), n);
-		Doc.createAttribute("srcipmask", rule.getFromIpRange().getMask(), n);
+		n.setAttribute("srcipaddr", rule.getFromIpRange().getIp());
+		n.setAttribute("srcipmask", rule.getFromIpRange().getMask());
 
-		Doc.createAttribute("dstipaddr", rule.getToIpRange().getIp(), n);
-		Doc.createAttribute("dstipmask", rule.getToIpRange().getMask(), n);
+		n.setAttribute("dstipaddr", rule.getToIpRange().getIp());
+		n.setAttribute("dstipmask", rule.getToIpRange().getMask());
 
 		if (!rule.getType().equals(IcmpType.ALL)) {
-			Doc.createAttribute("type", rule.getType().toString(), n);
+			n.setAttribute("type", rule.getType().toString());
 		}
 		if (!rule.getCode().equals(IcmpCode.ALL)) {
-			Doc.createAttribute("code", rule.getCode().toString(), n);
+			n.setAttribute("code", rule.getCode().toString());
 		}
 		return n;
 	}

@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -50,7 +51,7 @@ public abstract class AbstractFireWallRulesLoader {
 	 */
 	public static final String ACCESS_ATTR = "access";
 
-	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Node n)
+	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
 		if (v == null || v.length() == 0) {
@@ -65,7 +66,8 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected IpRanges loadFromIps(Node n) throws ResourcesDescriptorException {
+	protected IpRanges loadFromIps(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -78,7 +80,7 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected IpRanges loadToIps(Node n) throws ResourcesDescriptorException {
+	protected IpRanges loadToIps(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -91,7 +93,7 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected Directions loadDirection(Node n)
+	protected Directions loadDirection(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DIRECTIONS_ATTR);
 		if (v == null || v.length() == 0) {
@@ -106,7 +108,7 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected Access loadAccess(Node n) throws ResourcesDescriptorException {
+	protected Access loadAccess(Element n) throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, ACCESS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -119,7 +121,7 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	public abstract FireWallRulesPerDevice load(Node instanceNode)
+	public abstract FireWallRulesPerDevice load(Element instanceNode)
 			throws ResourcesDescriptorException;
 
 }

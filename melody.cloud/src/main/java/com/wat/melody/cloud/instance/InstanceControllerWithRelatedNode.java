@@ -1,9 +1,8 @@
 package com.wat.melody.cloud.instance;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -15,9 +14,6 @@ import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.xml.DUNID;
-import com.wat.melody.common.xml.DUNIDDoc;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 
 /**
  * <p>
@@ -32,15 +28,12 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		implements InstanceControllerListener {
 
 	private InstanceController _instance;
-	private IResourcesDescriptor _rd;
-	private Node _relatedNode;
-	private DUNID _relatedNodeDunid;
+	private Element _relatedElement;
 
 	public InstanceControllerWithRelatedNode(InstanceController instance,
-			IResourcesDescriptor rd, Node relatedNode) {
+			Element relatedElmt) {
 		setInstance(instance);
-		setRD(rd);
-		setRelatedNode(relatedNode);
+		setRelatedElement(relatedElmt);
 		instance.addListener(this);
 	}
 
@@ -59,47 +52,18 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		return previous;
 	}
 
-	public IResourcesDescriptor getRD() {
-		return _rd;
+	private Element getRelatedElement() {
+		return _relatedElement;
 	}
 
-	private IResourcesDescriptor setRD(IResourcesDescriptor instance) {
-		if (instance == null) {
-			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid "
-					+ IResourcesDescriptor.class.getCanonicalName() + ".");
-		}
-		IResourcesDescriptor previous = getRD();
-		_rd = instance;
-		return previous;
-	}
-
-	private Node getRelatedNode() {
-		return _relatedNode;
-	}
-
-	private Node setRelatedNode(Node relatedNode) {
+	private Element setRelatedElement(Element relatedNode) {
 		if (relatedNode == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
-		setRelatedNodeDunid(DUNIDDoc.getDUNID(relatedNode));
-		Node previous = getRelatedNode();
-		_relatedNode = relatedNode;
-		return previous;
-	}
-
-	private DUNID getRelatedNodeDunid() {
-		return _relatedNodeDunid;
-	}
-
-	private DUNID setRelatedNodeDunid(DUNID relatedNodeDunid) {
-		if (relatedNodeDunid == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a MelodyID).");
-		}
-		DUNID previous = getRelatedNodeDunid();
-		_relatedNodeDunid = relatedNodeDunid;
+		Element previous = getRelatedElement();
+		_relatedElement = relatedNode;
 		return previous;
 	}
 
@@ -232,8 +196,8 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	@Override
 	public void onInstanceCreated() throws OperationException,
 			InterruptedException {
-		setDataToRD(getRelatedNodeDunid(),
-				InstanceDatasLoader.INSTANCE_ID_ATTR, getInstanceId());
+		setData(getRelatedElement(), InstanceDatasLoader.INSTANCE_ID_ATTR,
+				getInstanceId());
 		fireInstanceCreated();
 	}
 
@@ -241,8 +205,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	public void onInstanceDestroyed() throws OperationException,
 			InterruptedException {
 		fireInstanceDestroyed();
-		removeDataFromRD(getRelatedNodeDunid(),
-				InstanceDatasLoader.INSTANCE_ID_ATTR);
+		removeData(getRelatedElement(), InstanceDatasLoader.INSTANCE_ID_ATTR);
 	}
 
 	@Override
@@ -251,16 +214,23 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		fireInstanceStopped();
 		NetworkDeviceNameList netDevices = null;
 		try {
-			netDevices = new NetworkDeviceNamesLoader().load(getRelatedNode());
+			netDevices = new NetworkDeviceNamesLoader()
+					.load(getRelatedElement());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new OperationException(Ex);
 		}
 		for (NetworkDeviceName netDev : netDevices) {
-			DUNID d = getNetworkDeviceDUNID(netDev);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.IP_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.FQDN_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR);
-			removeDataFromRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR);
+			Element d = getNetworkDeviceNode(netDev);
+			if (d == null) {
+				// The instance node could have no such network device node
+				continue;
+			}
+			synchronized (getRelatedElement().getOwnerDocument()) {
+				removeData(d, NetworkDeviceNamesLoader.IP_ATTR);
+				removeData(d, NetworkDeviceNamesLoader.FQDN_ATTR);
+				removeData(d, NetworkDeviceNamesLoader.NAT_IP_ATTR);
+				removeData(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR);
+			}
 		}
 	}
 
@@ -268,68 +238,45 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	public void onInstanceStarted() throws OperationException,
 			InterruptedException {
 		for (NetworkDeviceName netDevice : getInstanceNetworkDevices()) {
-			DUNID d = getNetworkDeviceDUNID(netDevice);
+			Element d = getNetworkDeviceNode(netDevice);
 			if (d == null) {
 				// The instance node could have no such network device node
 				continue;
 			}
 			NetworkDeviceDatas ndd = getInstanceNetworkDeviceDatas(netDevice);
-			setDataToRD(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
-			setDataToRD(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
-			setDataToRD(d, NetworkDeviceNamesLoader.NAT_IP_ATTR, ndd.getNatIP());
-			setDataToRD(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
-					ndd.getNatFQDN());
+			synchronized (getRelatedElement().getOwnerDocument()) {
+				setData(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
+				setData(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
+				setData(d, NetworkDeviceNamesLoader.NAT_IP_ATTR, ndd.getNatIP());
+				setData(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
+						ndd.getNatFQDN());
+			}
 		}
 		fireInstanceStarted();
 	}
 
-	protected void setDataToRD(DUNID dunid, String sAttr, String sValue) {
-		if (dunid == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DUNID.");
-		}
-		if (sAttr == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an XML Attribute Name).");
-		}
+	protected void setData(Element netdev, String sAttr, String sValue) {
 		if (sValue == null || sValue.length() == 0) {
 			return;
 		}
-		try {
-			getRD().setAttributeValue(dunid, sAttr, sValue);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "node's attribute '" + sAttr + "' via its DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
+		netdev.setAttribute(sAttr, sValue);
 	}
 
-	protected void removeDataFromRD(DUNID dunid, String sAttr) {
-		try {
-			getRD().removeAttribute(dunid, sAttr);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexpected error while removing the "
-					+ "node's attribute '" + sAttr + "' via the node DUNID. "
-					+ "No node DUNID match " + dunid + ". "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
-		}
+	protected void removeData(Element netdev, String sAttr) {
+		netdev.removeAttribute(sAttr);
 	}
 
-	private DUNID getNetworkDeviceDUNID(NetworkDeviceName nd)
+	private Element getNetworkDeviceNode(NetworkDeviceName nd)
 			throws OperationException {
 		NodeList netDevs = null;
 		try {
 			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
-					getRelatedNode(), nd.getValue());
+					getRelatedElement(), nd.getValue());
 		} catch (ResourcesDescriptorException Ex) {
 			throw new OperationException(Ex);
 		}
-		Node netDevNode = netDevs == null || netDevs.getLength() == 0 ? null
-				: netDevs.item(0);
-		return netDevNode == null ? null : getRD().getMelodyID(netDevNode);
+		return (netDevs == null || netDevs.getLength() == 0) ? null
+				: (Element) netDevs.item(0);
 	}
 
 }

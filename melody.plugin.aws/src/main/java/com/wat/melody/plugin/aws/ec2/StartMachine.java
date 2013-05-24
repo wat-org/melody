@@ -30,7 +30,7 @@ public class StartMachine extends AbstractOperation {
 			getInstance().ensureInstanceIsStarted(getTimeout());
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(Messages.StartEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 

@@ -30,7 +30,8 @@ public class StopMachine extends AbstractOperation {
 			getInstance().ensureInstanceIsStoped(getTimeout());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.StopEx_GENERIC_FAIL, getTargetNodeLocation()), Ex);
+					Messages.StopEx_GENERIC_FAIL, getTargetElementLocation()),
+					Ex);
 		}
 	}
 

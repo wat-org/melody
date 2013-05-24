@@ -30,7 +30,7 @@ public class StopMachine extends AbstractOperation {
 			getInstance().ensureInstanceIsStoped(getTimeout());
 		} catch (OperationException Ex) {
 			throw new AwsException(Messages.bind(Messages.StopEx_GENERIC_FAIL,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 	}
 

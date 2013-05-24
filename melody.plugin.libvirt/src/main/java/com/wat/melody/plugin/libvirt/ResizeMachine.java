@@ -43,7 +43,7 @@ public class ResizeMachine extends AbstractOperation {
 
 		try {
 			String v = null;
-			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
 					Common.INSTANCETYPE_ATTR);
 			try {
 				try {
@@ -57,7 +57,8 @@ public class ResizeMachine extends AbstractOperation {
 			} catch (LibVirtException Ex) {
 				throw new LibVirtException(Messages.bind(
 						Messages.ResizeEx_INSTANCETYPE_ERROR,
-						Common.INSTANCETYPE_ATTR, getTargetNodeLocation()), Ex);
+						Common.INSTANCETYPE_ATTR, getTargetElementLocation()),
+						Ex);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new LibVirtException(Ex);
@@ -69,7 +70,7 @@ public class ResizeMachine extends AbstractOperation {
 					Messages.ResizeEx_MISSING_INSTANCETYPE_ATTR,
 					ResizeMachine.INSTANCETYPE_ATTR,
 					ResizeMachine.RESIZE_MACHINE, Common.INSTANCETYPE_ATTR,
-					getTargetNodeLocation()));
+					getTargetElementLocation()));
 		}
 	}
 
@@ -81,7 +82,7 @@ public class ResizeMachine extends AbstractOperation {
 			getInstance().ensureInstanceSizing(getInstanceType());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.ResizeEx_GENERIC_FAIL, getTargetNodeLocation(),
+					Messages.ResizeEx_GENERIC_FAIL, getTargetElementLocation(),
 					getInstanceType()), Ex);
 		}
 	}

@@ -2,6 +2,7 @@ package com.wat.melody.plugin.aws.ec2.common;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -51,7 +52,7 @@ abstract public class AbstractOperation implements ITask,
 	private AmazonEC2 _ec2 = null;
 	private InstanceController _instance = null;
 	private String _instanceId = null;
-	private Node _targetNode = null;
+	private Element _targetElement = null;
 	private String _region = null;
 	private String _target = null;
 	private long _timeout = 90000;
@@ -64,7 +65,7 @@ abstract public class AbstractOperation implements ITask,
 		// Initialize task parameters with their default value
 		String v = null;
 		try {
-			v = XPathHelper.getHeritedAttributeValue(getTargetNode(),
+			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
 					AwsEc2Cloud.REGION_ATTR);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new AwsException(Ex);
@@ -76,16 +77,17 @@ abstract public class AbstractOperation implements ITask,
 		} catch (AwsException Ex) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_REGION_ERROR, AwsEc2Cloud.REGION_ATTR,
-					getTargetNodeLocation()), Ex);
+					getTargetElementLocation()), Ex);
 		}
 
 		// Is everything correctly loaded ?
 		if (getRegion() == null) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_MISSING_REGION_ATTR, new Object[] {
-							REGION_ATTR,
-							getClass().getSimpleName().toLowerCase(),
-							AwsEc2Cloud.REGION_ATTR, getTargetNodeLocation() }));
+			throw new AwsException(
+					Messages.bind(Messages.MachineEx_MISSING_REGION_ATTR,
+							new Object[] { REGION_ATTR,
+									getClass().getSimpleName().toLowerCase(),
+									AwsEc2Cloud.REGION_ATTR,
+									getTargetElementLocation() }));
 		}
 
 		// Initialize AmazonEC2 for the current region
@@ -96,11 +98,12 @@ abstract public class AbstractOperation implements ITask,
 
 	public InstanceController createInstance() throws AwsException {
 		InstanceController instance = newAwsInstanceController();
-		instance = new InstanceControllerWithRelatedNode(instance, getRD(),
-				getTargetNode());
-		if (NetworkManagementHelper.isManagementNetworkEnable(getTargetNode())) {
+		instance = new InstanceControllerWithRelatedNode(instance,
+				getTargetElement());
+		if (NetworkManagementHelper
+				.isManagementNetworkEnable(getTargetElement())) {
 			instance = new InstanceControllerWithNetworkManagement(instance,
-					this, getTargetNode());
+					this, getTargetElement());
 		}
 		return instance;
 	}
@@ -118,8 +121,8 @@ abstract public class AbstractOperation implements ITask,
 				.getResourcesDescriptor();
 	}
 
-	public String getTargetNodeLocation() {
-		return Doc.getNodeLocation(getTargetNode()).toFullString();
+	public String getTargetElementLocation() {
+		return Doc.getNodeLocation(getTargetElement()).toFullString();
 	}
 
 	public AwsPlugInConfiguration getAwsPlugInConfiguration()
@@ -186,17 +189,18 @@ abstract public class AbstractOperation implements ITask,
 	/**
 	 * @return the targeted {@link Node}.
 	 */
-	public Node getTargetNode() {
-		return _targetNode;
+	public Element getTargetElement() {
+		return _targetElement;
 	}
 
-	public Node setTargetNode(Node n) {
+	public Element setTargetElement(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node (the targeted AWS Instance Node).");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ " (the targeted AWS Instance Element Node).");
 		}
-		Node previous = getTargetNode();
-		_targetNode = n;
+		Element previous = getTargetElement();
+		_targetElement = n;
 		return previous;
 	}
 
@@ -270,9 +274,9 @@ abstract public class AbstractOperation implements ITask,
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH,
-					target, Doc.parseNodeType(n.getNodeType())));
+					target, Doc.parseNodeType(n)));
 		}
-		setTargetNode(n);
+		setTargetElement((Element) n);
 		try {
 			setInstanceId(n.getAttributes()
 					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)

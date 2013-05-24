@@ -1,6 +1,6 @@
 package com.wat.melody.cloud.network;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.ResourcesDescriptorException;
@@ -13,7 +13,8 @@ import com.wat.melody.api.exception.ResourcesDescriptorException;
 public abstract class NetworkManagerFactory {
 
 	public static NetworkManager createNetworkManager(
-			NetworkManagerFactoryConfigurationCallback confCB, Node instanceNode) {
+			NetworkManagerFactoryConfigurationCallback confCB,
+			Element instanceNode) {
 		if (confCB == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -21,7 +22,8 @@ public abstract class NetworkManagerFactory {
 		}
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
 		try {
 			ManagementNetworkMethod mm = NetworkManagementHelper

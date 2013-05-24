@@ -5,7 +5,7 @@ import java.util.List;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDoc;
@@ -31,17 +31,17 @@ public final class GetHeritedAttribute implements XPathFunction {
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node)) {
+		if (!(arg0 instanceof Element)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
 					+ ": Not accepted. " + NAME
-					+ "() expects a Node as first argument.");
+					+ "() expects an Element Node as first argument.");
 		}
 		if (arg1 == null || !(arg1 instanceof String)) {
 			throw new XPathFunctionException("null: Not accepted. " + NAME
 					+ "() expects a non-null String as second argument.");
 		}
 		try {
-			return XPathHelper.getHeritedAttributeValue((Node) arg0,
+			return XPathHelper.getHeritedAttributeValue((Element) arg0,
 					(String) arg1);
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

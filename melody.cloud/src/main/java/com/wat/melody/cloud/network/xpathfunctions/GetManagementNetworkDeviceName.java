@@ -5,7 +5,7 @@ import java.util.List;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
@@ -25,19 +25,19 @@ public class GetManagementNetworkDeviceName implements XPathFunction {
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Node) && !(arg0 instanceof List)) {
+		if (!(arg0 instanceof Element) && !(arg0 instanceof List)) {
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
 					+ ": Not accepted. " + NAME
-					+ "() expects a Node or a List<Node> as first "
+					+ "() expects an Element Node or a List<Element> as first "
 					+ "argument.");
 		}
 		try {
-			if (arg0 instanceof Node) {
+			if (arg0 instanceof Element) {
 				return NetworkManagementHelper
-						.findManagementNetworkDeviceNameNode((Node) arg0);
+						.findManagementNetworkDeviceNameNode((Element) arg0);
 			} else {
 				return NetworkManagementHelper
-						.findManagementNetworkDeviceNameNode((List<Node>) arg0);
+						.findManagementNetworkDeviceNameNode((List<Element>) arg0);
 			}
 		} catch (ResourcesDescriptorException Ex) {
 			throw new XPathFunctionException(Ex);

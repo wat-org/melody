@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,7 +39,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 */
 	public static final String CODES_ATTR = "codes";
 
-	protected IcmpTypes loadIcmpTypes(Node n)
+	protected IcmpTypes loadIcmpTypes(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TYPES_ATTR);
 		if (v == null || v.length() == 0) {
@@ -52,7 +53,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected IcmpCodes loadIcmpCodes(Node n)
+	protected IcmpCodes loadIcmpCodes(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, CODES_ATTR);
 		if (v == null || v.length() == 0) {
@@ -102,15 +103,14 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Node instanceNode)
+	public FireWallRulesPerDevice load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = FireWallManagementHelper
 				.findIcmpFireWallRules(instanceNode);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
-		Node n = null;
 		for (int i = 0; i < nl.getLength(); i++) {
-			n = nl.item(i);
+			Element n = (Element) nl.item(i);
 			Directions dirs = loadDirection(n);
 			IpRanges fromIps = loadFromIps(n);
 			IpRanges toIps = loadToIps(n);
@@ -137,4 +137,5 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 		}
 		return fwrs;
 	}
+
 }

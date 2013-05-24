@@ -5,8 +5,10 @@ import java.io.IOException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.events.MutationEvent;
 
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -15,7 +17,6 @@ import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.xml.exception.FilteredDocException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 
 /**
  * 
@@ -30,7 +31,7 @@ public class FilteredDoc extends DUNIDDoc {
 	public static final String HERIT_ATTR = "herit";
 
 	protected static Node importNodeIntoFilteredDocument(Document dest,
-			Node toImport, boolean importChilds) {
+			Element toImport, boolean importChilds) {
 		if (toImport == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be valid Node.");
@@ -44,7 +45,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Must be a valid Document.");
 		}
 
-		Node imported = getNode(dest, getDUNID(toImport));
+		Node imported = getElement(dest, getDUNID(toImport));
 		if (imported != null) {
 			return imported;
 		}
@@ -52,7 +53,7 @@ public class FilteredDoc extends DUNIDDoc {
 		Node destParent = dest;
 		if (toImport.getParentNode().getParentNode() != null) {
 			destParent = importNodeIntoFilteredDocument(dest,
-					toImport.getParentNode(), false);
+					(Element) toImport.getParentNode(), false);
 		}
 		imported = cloneNodesAndChilds(dest, toImport, importChilds);
 		destParent.appendChild(imported);
@@ -60,14 +61,14 @@ public class FilteredDoc extends DUNIDDoc {
 		return imported;
 	}
 
-	private static Node cloneNodesAndChilds(Document dest, Node toClone,
+	private static Node cloneNodesAndChilds(Document dest, Element toClone,
 			boolean cloneChilds) {
 		FilteredDocHelper.importHeritedParentNode(dest, toClone);
 
 		Node copy = dest.importNode(toClone, false);
 		if (cloneChilds) {
 			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
-				Node child = toClone.getChildNodes().item(i);
+				Element child = (Element) toClone.getChildNodes().item(i);
 				copy.appendChild(cloneNodesAndChilds(dest, child, true));
 			}
 		}
@@ -379,10 +380,18 @@ public class FilteredDoc extends DUNIDDoc {
 			throw new IllegalFilterException(Messages.bind(
 					Messages.FilteredDocEx_TOO_RSTRICTIVE, filter.getValue()));
 		}
+		for (int i = 0; i < nl.getLength(); i++) {
+			if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+				throw new IllegalFilterException(Messages.bind(
+						Messages.FilteredDocEx_MUST_TARGET_ELEMENT,
+						filter.getValue(), Doc.parseNodeType(nl.item(i))));
+			}
+		}
 
 		Document oFilteredDoc = newDocument();
 		for (int i = 0; i < nl.getLength(); i++) {
-			importNodeIntoFilteredDocument(oFilteredDoc, nl.item(i), true);
+			importNodeIntoFilteredDocument(oFilteredDoc, (Element) nl.item(i),
+					true);
 		}
 
 		setDocument(oFilteredDoc);
@@ -404,88 +413,82 @@ public class FilteredDoc extends DUNIDDoc {
 		}
 	}
 
-	/**
-	 * <p>
-	 * Set the attribute's value of the requested {@link Node}. Create the
-	 * attribute if it doesn't exist.
-	 * </p>
-	 * 
-	 * @param ownerNodeDUNID
-	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
-	 *            is the name of the attribute to set/create.
-	 * @param sAttrValue
-	 *            is the value to assign.
-	 * 
-	 * @return a {@link String}, which contains the previous value of the
-	 *         requested {@link Node}'s attribute, or <tt>null</tt> if this
-	 *         object have not been loaded yet or if the requested {@link Node}
-	 *         's attribute didn't exists before the operation.
-	 * 
-	 * @throws NoSuchDUNIDException
-	 *             if the given {@link DUNID} cannot be found in the
-	 *             {@link #DUNID_ATTR}'s attribute of any {@link Node}.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <tt>null</tt>.
-	 */
-	public synchronized String setAttributeValue(DUNID ownerNodeDUNID,
-			String sAttrName, String sAttrValue) throws NoSuchDUNIDException {
-		setAttributeValue(getDocument(), ownerNodeDUNID, sAttrName, sAttrValue);
+	@Override
+	protected void nodeInstered(MutationEvent evt) {
+		super.nodeInstered(evt);
+	}
 
-		try {
-			return setAttributeValue(getOriginalDocument(), ownerNodeDUNID,
-					sAttrName, sAttrValue);
-		} catch (NoSuchDUNIDException Ex) {
-			throw new RuntimeException("Unexecpted error while searching the "
-					+ "node '" + ownerNodeDUNID + "' in the Original "
-					+ "Document. "
-					+ "This is error is raised because the Current Document "
-					+ "and the Original Document are not consistent. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+	@Override
+	protected void nodeRemoved(MutationEvent evt) {
+		super.nodeRemoved(evt);
+	}
+
+	@Override
+	protected void nodeTextChanged(MutationEvent evt) {
+		super.nodeTextChanged(evt);
 	}
 
 	/**
-	 * <p>
-	 * Remove the given attribute of the requested {@link Node}.
-	 * </p>
-	 * 
-	 * @param ownerNodeDUNID
-	 *            is the {@link DUNID} of the requested {@link Node}.
-	 * @param sAttrName
-	 *            is the name of the attribute to remove.
-	 * 
-	 * @return a {@link String}, which contains the previous value of the
-	 *         {@link Node}'s attribute, or <tt>null</tt> if this object have
-	 *         not been loaded yet or if the given attribute cannot be found in
-	 *         the requested {@link Node}.
-	 * 
-	 * @throws NoSuchDUNIDException
-	 *             if the given {@link DUNID} cannot be found in the
-	 *             {@link #DUNID_ATTR}'s attribute of any node.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link String} is <tt>null</tt>.
+	 * An attribute have been inserted in the current document => modify the
+	 * original document
 	 */
-	public synchronized String removeAttribute(DUNID ownerNodeDUNID,
-			String sAttrName) throws NoSuchDUNIDException {
-		removeAttribute(getDocument(), ownerNodeDUNID, sAttrName);
-		try {
-			return removeAttribute(getOriginalDocument(), ownerNodeDUNID,
-					sAttrName);
-		} catch (NoSuchDUNIDException Ex) {
+	@Override
+	protected void attributeInserted(MutationEvent evt) {
+		super.attributeInserted(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		Element n = (Element) getElement(getOriginalDocument(), dunid);
+		if (n == null) {
 			throw new RuntimeException("Unexecpted error while searching the "
-					+ "node '" + ownerNodeDUNID + "' in the Original "
-					+ "Document. "
+					+ "node '" + dunid + "' in the Original Document. "
 					+ "This is error is raised because the Current Document "
 					+ "and the Original Document are not consistent. "
 					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+					+ "a bug have been introduced.");
 		}
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
+	}
+
+	/**
+	 * An attribute have been removed in the current document => modify the
+	 * original document
+	 */
+	@Override
+	protected void attributeRemoved(MutationEvent evt) {
+		super.attributeRemoved(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		Element n = (Element) getElement(getOriginalDocument(), dunid);
+		if (n == null) {
+			throw new RuntimeException("Unexecpted error while searching the "
+					+ "node '" + dunid + "' in the Original Document. "
+					+ "This is error is raised because the Current Document "
+					+ "and the Original Document are not consistent. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
+		n.removeAttribute(evt.getAttrName());
+	}
+
+	/**
+	 * An attribute have been modified in the current document => modify the
+	 * original document
+	 */
+	@Override
+	protected void attributeModified(MutationEvent evt) {
+		super.attributeModified(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		Element n = (Element) getElement(getOriginalDocument(), dunid);
+		if (n == null) {
+			throw new RuntimeException("Unexecpted error while searching the "
+					+ "node '" + dunid + "' in the Original Document. "
+					+ "This is error is raised because the Current Document "
+					+ "and the Original Document are not consistent. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 
 }

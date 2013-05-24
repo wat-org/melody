@@ -2,6 +2,7 @@ package com.wat.melody.cloud.firewall;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -85,7 +86,7 @@ public abstract class FireWallManagementHelper {
 	 *         found ;</li>
 	 *         </ul>
 	 */
-	public static Node findFireWallManagementNode(Node instanceNode) {
+	public static Node findFireWallManagementNode(Element instanceNode) {
 		NodeList nl = null;
 		try {
 			nl = FilteredDocHelper.getHeritedContent(instanceNode,
@@ -106,7 +107,7 @@ public abstract class FireWallManagementHelper {
 		return nl.item(0);
 	}
 
-	public static String findTcpFireWallRulesSelector(Node instanceNode) {
+	public static String findTcpFireWallRulesSelector(Element instanceNode) {
 		Node mgmtNode = findFireWallManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
@@ -136,7 +137,7 @@ public abstract class FireWallManagementHelper {
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
-	public static NodeList findTcpFireWallRules(Node instanceNode)
+	public static NodeList findTcpFireWallRules(Element instanceNode)
 			throws ResourcesDescriptorException {
 		String sAllFWRulesSelector = findTcpFireWallRulesSelector(instanceNode);
 		try {
@@ -152,7 +153,7 @@ public abstract class FireWallManagementHelper {
 		}
 	}
 
-	public static String findUdpFireWallRulesSelector(Node instanceNode) {
+	public static String findUdpFireWallRulesSelector(Element instanceNode) {
 		Node mgmtNode = findFireWallManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
@@ -182,7 +183,7 @@ public abstract class FireWallManagementHelper {
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
-	public static NodeList findUdpFireWallRules(Node instanceNode)
+	public static NodeList findUdpFireWallRules(Element instanceNode)
 			throws ResourcesDescriptorException {
 		String sAllFWRulesSelector = findUdpFireWallRulesSelector(instanceNode);
 		try {
@@ -198,7 +199,7 @@ public abstract class FireWallManagementHelper {
 		}
 	}
 
-	public static String findIcmpFireWallRulesSelector(Node instanceNode) {
+	public static String findIcmpFireWallRulesSelector(Element instanceNode) {
 		Node mgmtNode = findFireWallManagementNode(instanceNode);
 		try {
 			return mgmtNode.getAttributes()
@@ -228,7 +229,7 @@ public abstract class FireWallManagementHelper {
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
-	public static NodeList findIcmpFireWallRules(Node instanceNode)
+	public static NodeList findIcmpFireWallRules(Element instanceNode)
 			throws ResourcesDescriptorException {
 		String sAllFWRulesSelector = findIcmpFireWallRulesSelector(instanceNode);
 		try {

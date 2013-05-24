@@ -7,10 +7,14 @@ import java.util.List;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.events.MutationEvent;
 
 import com.wat.melody.api.IResourcesDescriptor;
+import com.wat.melody.api.Messages;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
 import com.wat.melody.api.exception.IllegalTargetFilterException;
 import com.wat.melody.common.ex.MelodyException;
@@ -20,9 +24,9 @@ import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.DUNIDDoc;
+import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.FilteredDoc;
 import com.wat.melody.common.xml.exception.IllegalDocException;
-import com.wat.melody.common.xml.exception.NoSuchDUNIDException;
 import com.wat.melody.common.xpath.XPathExpander;
 
 /**
@@ -55,10 +59,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// Build a new empty OriginalDocument
 		setOriginalDocument(newDocument());
 		// Add a first XML Element called root
-		Node root = getOriginalDocument().createElement("resources");
+		Element root = getOriginalDocument().createElement("resources");
 		getOriginalDocument().appendChild(root);
 		// Add it an DUNIND XML attribute
-		createAttribute(DUNID_ATTR, new DUNID(0).toString(), root);
+		root.setAttribute(DUNID_ATTR, new DUNID(0).getValue());
 		// The Current Document is a clone of the Original Document
 		setDocument(cloneOriginalDocument());
 		// Build a new TargetDescriptor
@@ -133,7 +137,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized DUNID getMelodyID(Node n) {
+	public synchronized DUNID getMelodyID(Element n) {
 		return getDUNID(n);
 	}
 
@@ -146,7 +150,15 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			NodeList nl = evaluateAsNodeList(xpath);
 			// Search for resulting nodes in the eligible targets
 			for (int i = 0; i < nl.getLength(); i++) {
-				if (getTargetDescriptor().getNode(getDUNID(nl.item(i))) != null) {
+				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+					// TODO: externalize error message
+					throw new XPathExpressionException(
+							Messages.bind(
+									"''{0}'': Not accepted. This expression target - at least - a ''{1}'' node. Since this expression doesn''t only targets Element Node, such value is not accepted.",
+									xpath, Doc.parseNodeType(nl.item(i))));
+				}
+				if (getTargetDescriptor().getElement(
+						getDUNID((Element) nl.item(i))) != null) {
 					targets.add(nl.item(i));
 				}
 			}
@@ -275,33 +287,82 @@ public class ResourcesDescriptor extends FilteredDoc implements
 				.evaluateAsNode(expr, getDocument().getFirstChild());
 	}
 
-	@Override
-	public synchronized String setAttributeValue(DUNID sOwnerNodeDUNID,
-			String sAttrName, String sAttrValue) throws NoSuchDUNIDException {
-		try {
-			getTargetDescriptor().setAttributeValue(sOwnerNodeDUNID, sAttrName,
-					sAttrValue);
-		} catch (NoSuchDUNIDException Ex) {
-			// This DUDID can not be in the target descriptor : it is normal
-			// There is no error
-		}
-		DUNIDDoc d = getOwnerDUNIDDoc(sOwnerNodeDUNID);
-		d.setAttributeValue(sOwnerNodeDUNID, sAttrName, sAttrValue);
-		return super.setAttributeValue(sOwnerNodeDUNID, sAttrName, sAttrValue);
+	protected void nodeInstered(MutationEvent evt) {
+		super.nodeInstered(evt);
 	}
 
-	@Override
-	public synchronized String removeAttribute(DUNID sOwnerNodeDUNID,
-			String sAttrName) throws NoSuchDUNIDException {
-		try {
-			getTargetDescriptor().removeAttribute(sOwnerNodeDUNID, sAttrName);
-		} catch (NoSuchDUNIDException Ex) {
-			// This DUNID can not be in the target descriptor : it is normal
-			// There is no error
+	protected void nodeRemoved(MutationEvent evt) {
+		super.nodeRemoved(evt);
+	}
+
+	protected void nodeTextChanged(MutationEvent evt) {
+		super.nodeTextChanged(evt);
+	}
+
+	/**
+	 * An attribute have been inserted in the current document => modify the
+	 * original DUNIDDoc and the target descriptor
+	 */
+	protected void attributeInserted(MutationEvent evt) {
+		super.attributeInserted(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		// Modify the DUNIDDoc
+		Document d = getOwnerDUNIDDoc(dunid).getDocument();
+		Element n = (Element) getElement(d, dunid);
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
+		// Modify the target descriptor
+		d = getTargetDescriptor().getDocument();
+		n = (Element) getElement(d, dunid);
+		if (n == null) {
+			// This DUNID may not be in the target descriptor
+			return;
 		}
-		DUNIDDoc d = getOwnerDUNIDDoc(sOwnerNodeDUNID);
-		d.removeAttribute(sOwnerNodeDUNID, sAttrName);
-		return super.removeAttribute(sOwnerNodeDUNID, sAttrName);
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
+	}
+
+	/**
+	 * An attribute have been removed in the current document => modify the
+	 * original DUNIDDoc and the target descriptor
+	 */
+	protected void attributeRemoved(MutationEvent evt) {
+		super.attributeRemoved(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		// Modify the DUNIDDoc
+		Document d = getOwnerDUNIDDoc(dunid).getDocument();
+		Element n = (Element) getElement(d, dunid);
+		n.removeAttribute(evt.getAttrName());
+		// Modify the target descriptor
+		d = getTargetDescriptor().getDocument();
+		n = (Element) getElement(d, dunid);
+		if (n == null) {
+			// This DUNID may not be in the target descriptor
+			return;
+		}
+		n.removeAttribute(evt.getAttrName());
+	}
+
+	/**
+	 * An attribute have been modified in the current document => modify the
+	 * original DUNIDDoc and the target descriptor
+	 */
+	protected void attributeModified(MutationEvent evt) {
+		super.attributeModified(evt);
+		Element t = (Element) evt.getTarget();
+		DUNID dunid = getDUNID(t);
+		// Modify the DUNIDDoc
+		Document d = getOwnerDUNIDDoc(dunid).getDocument();
+		Element n = (Element) getElement(d, dunid);
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
+		// Modify the target descriptor
+		d = getTargetDescriptor().getDocument();
+		n = (Element) getElement(d, dunid);
+		if (n == null) {
+			// This DUNID may not be in the target descriptor
+			return;
+		}
+		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 
 	@Override

@@ -41,9 +41,9 @@ public class DeleteMachine extends AbstractOperation {
 		try {
 			getInstance().ensureInstanceIsDestroyed(getTimeout());
 		} catch (OperationException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.DestroyEx_GENERIC_FAIL, getTargetNodeLocation()),
-					Ex);
+			throw new AwsException(
+					Messages.bind(Messages.DestroyEx_GENERIC_FAIL,
+							getTargetElementLocation()), Ex);
 		}
 	}
 

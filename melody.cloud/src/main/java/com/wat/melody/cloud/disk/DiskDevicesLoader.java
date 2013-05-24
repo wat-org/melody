@@ -1,5 +1,6 @@
 package com.wat.melody.cloud.disk;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -48,7 +49,7 @@ public class DiskDevicesLoader {
 	public DiskDevicesLoader() {
 	}
 
-	private DiskDeviceName loadDeviceName(Node n)
+	private DiskDeviceName loadDeviceName(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_ATTR);
 		if (v == null || v.length() == 0) {
@@ -62,7 +63,7 @@ public class DiskDevicesLoader {
 		}
 	}
 
-	private DiskDeviceSize loadDeviceSize(Node n)
+	private DiskDeviceSize loadDeviceSize(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, SIZE_ATTR);
 		if (v == null || v.length() == 0) {
@@ -76,7 +77,7 @@ public class DiskDevicesLoader {
 		}
 	}
 
-	private Boolean loadDeleteOnTermination(Node n)
+	private Boolean loadDeleteOnTermination(Element n)
 			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n,
 				DELETEONTERMINATION_ATTR);
@@ -86,7 +87,8 @@ public class DiskDevicesLoader {
 		return Boolean.parseBoolean(v);
 	}
 
-	private Boolean loadRootDevice(Node n) throws ResourcesDescriptorException {
+	private Boolean loadRootDevice(Element n)
+			throws ResourcesDescriptorException {
 		String v = XPathHelper.getHeritedAttributeValue(n, ROOTDEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -125,13 +127,13 @@ public class DiskDevicesLoader {
 	 *             {@link Node} is not valid, multiple root device are found,
 	 *             multiple device declare with the same name).
 	 */
-	public DiskDeviceList load(Node instanceNode)
+	public DiskDeviceList load(Element instanceNode)
 			throws ResourcesDescriptorException {
 		NodeList nl = DiskManagementHelper.findDiskDevices(instanceNode);
 
 		DiskDeviceList dl = new DiskDeviceList();
 		for (int i = 0; i < nl.getLength(); i++) {
-			Node n = nl.item(i);
+			Element n = (Element) nl.item(i);
 			DiskDeviceName devname = loadDeviceName(n);
 			if (devname == null) {
 				throw new ResourcesDescriptorException(n, Messages.bind(
