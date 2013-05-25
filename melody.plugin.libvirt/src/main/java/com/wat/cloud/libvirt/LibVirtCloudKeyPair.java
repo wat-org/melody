@@ -184,8 +184,8 @@ public abstract class LibVirtCloudKeyPair {
 				throw new RuntimeException("The key pair repository path is "
 						+ "not defined. "
 						+ "An attribute /libvirtcloud/public-keys/@repository "
-						+ "must exists in "
-						+ LibVirtCloud.conf.getFileFullPath() + ".");
+						+ "must exists in " + LibVirtCloud.conf.getSourceFile()
+						+ ".");
 			}
 			return pkRepoPath;
 		} catch (XPathExpressionException Ex) {

@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import com.wat.melody.common.systool.SysTool;
  * elements).
  * </p>
  * <p>
- * Each key and its corresponding value is a <code>String</code>.
+ * Each key and its corresponding value is a <tt>String</tt>.
  * </p>
  * <p>
  * Each value can contains a <b>variable part</b> of the form
@@ -57,8 +57,8 @@ public class PropertiesSet {
 	public static final String COMMENT_PATTERN = "^\\s*#.*$";
 	public static final String EMPTY_STRING_PATTERN = "^\\s*$";
 
-	private Map<String, Property> moProperties;
-	private String msFilePath;
+	private Map<String, Property> _properties = new LinkedHashMap<String, Property>();
+	private String _sourceFile = null;
 
 	/**
 	 * <p>
@@ -66,8 +66,6 @@ public class PropertiesSet {
 	 * </p>
 	 */
 	public PropertiesSet() {
-		initProperties();
-		initFilePath();
 	}
 
 	/**
@@ -85,8 +83,7 @@ public class PropertiesSet {
 	 *             existing, or non readable, or a directory, ...).
 	 * @throws IllegalPropertiesSetFileFormatException
 	 *             if a line of the file points by the given path is neither an
-	 *             empty <code>String</code>, nor a comment, nor a Property
-	 *             String.
+	 *             empty <tt>String</tt>, nor a comment, nor a Property String.
 	 * @throws IllegalPropertiesSetFileFormatException
 	 *             if a Property's name is declared twice.
 	 * @throws IllegalPropertiesSetFileFormatException
@@ -115,16 +112,8 @@ public class PropertiesSet {
 		load(sFilePath);
 	}
 
-	private void initProperties() {
-		moProperties = new Hashtable<String, Property>();
-	}
-
-	private void initFilePath() {
-		msFilePath = null;
-	}
-
 	private Map<String, Property> getProperties() {
-		return moProperties;
+		return _properties;
 	}
 
 	private String setFilePath(String sFilePath) {
@@ -132,7 +121,7 @@ public class PropertiesSet {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a File Path).");
 		}
-		return msFilePath = sFilePath;
+		return _sourceFile = sFilePath;
 	}
 
 	/**
@@ -141,12 +130,12 @@ public class PropertiesSet {
 	 * ) this object.
 	 * </p>
 	 * 
-	 * @return A <code>String</code> which represents the path of the file which
-	 *         was used to load (via {@link load(String)}) this object.
+	 * @return A <tt>String</tt> which represents the path of the file which was
+	 *         used to load (via {@link load(String)}) this object.
 	 * 
 	 */
 	public String getFilePath() {
-		return msFilePath;
+		return _sourceFile;
 	}
 
 	/**
@@ -212,8 +201,7 @@ public class PropertiesSet {
 	 *             existing, or non readable, or a directory, ...).
 	 * @throws IllegalPropertiesSetFileFormatException
 	 *             if a line of the file points by the given path is neither an
-	 *             empty <code>String</code>, nor a comment, nor a Property
-	 *             String.
+	 *             empty <tt>String</tt>, nor a comment, nor a Property String.
 	 * @throws IllegalPropertiesSetFileFormatException
 	 *             if a Property's name is declared twice.
 	 * @throws IllegalPropertiesSetFileFormatException
@@ -502,7 +490,7 @@ public class PropertiesSet {
 	 *         otherwise.
 	 * 
 	 * @throws NullPointerException
-	 *             if the requested key is <code>null</code>.
+	 *             if the requested key is <tt>null</tt>.
 	 * 
 	 */
 	public synchronized boolean containsKey(String key) {
@@ -526,8 +514,8 @@ public class PropertiesSet {
 	 * @param value
 	 *            is its corresponding value.
 	 * 
-	 * @return the previous value of the specified key, or <code>null</code> if
-	 *         it did not have one.
+	 * @return the previous value of the specified key, or <tt>null</tt> if it
+	 *         did not have one.
 	 * 
 	 */
 	public synchronized Property put(Property p) {
@@ -548,8 +536,8 @@ public class PropertiesSet {
 	 * @param key
 	 *            is the requested key.
 	 * 
-	 * @return the value of the specified key, or <code>null</code> if it did
-	 *         not have one.
+	 * @return the value of the specified key, or <tt>null</tt> if it did not
+	 *         have one.
 	 * 
 	 */
 	public synchronized String get(String key) {
@@ -573,8 +561,8 @@ public class PropertiesSet {
 	 * @param key
 	 *            is the requested key.
 	 * 
-	 * @return the {@link Property} of the specified key, or <code>null</code>
-	 *         if it did not have one.
+	 * @return the {@link Property} of the specified key, or <tt>null</tt> if it
+	 *         did not have one.
 	 * 
 	 */
 	public synchronized Property getProperty(String key) {
@@ -598,8 +586,8 @@ public class PropertiesSet {
 	 * @param key
 	 *            is the key to remove.
 	 * 
-	 * @return the previous value of the specified key, or <code>null</code> if
-	 *         it did not have one.
+	 * @return the previous value of the specified key, or <tt>null</tt> if it
+	 *         did not have one.
 	 * 
 	 */
 	public synchronized String remove(String key) {
@@ -632,18 +620,18 @@ public class PropertiesSet {
 
 	/**
 	 * <p>
-	 * Duplicate this <code>PropertySet</code>.
+	 * Duplicate this <code>PropertiesSet</code>.
 	 * </p>
 	 * 
 	 * <p>
 	 * <i> * Key and values are not duplicated. <BR/>
-	 * * The duplicated PropertySet can be modified (add, remove key, ...)
+	 * * The duplicated PropertiesSet can be modified (add, remove key, ...)
 	 * without impact one the original one. <BR/>
 	 * * Thread-safe. <BR/>
 	 * </i>
 	 * </p>
 	 * 
-	 * @return A <code>PropertySet</code>, which is the copy of this object.
+	 * @return A <code>PropertiesSet</code>, which is the copy of this object.
 	 * 
 	 */
 	public synchronized PropertiesSet copy() {

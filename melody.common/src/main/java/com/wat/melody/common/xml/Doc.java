@@ -18,6 +18,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -25,8 +26,11 @@ import org.xml.sax.SAXParseException;
 
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xml.location.Location;
+import com.wat.melody.common.xml.location.LocationFactory;
 import com.wat.melody.common.xpath.XPathExpander;
 
 /**
@@ -36,11 +40,11 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public class Doc {
 
-	private static DocumentBuilder moBuilder;
+	private static DocumentBuilder _docBuilder;
 
 	static {
 		try {
-			moBuilder = DocumentBuilderFactory.newInstance()
+			_docBuilder = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
 		} catch (ParserConfigurationException Ex) {
 			throw new RuntimeException("Unexecpted error while creating "
@@ -51,7 +55,7 @@ public class Doc {
 	}
 
 	protected static DocumentBuilder getDocumentBuilder() {
-		return moBuilder;
+		return _docBuilder;
 	}
 
 	/**
@@ -94,7 +98,15 @@ public class Doc {
 	}
 
 	public static String parseNodeType(Node n) {
-		switch (n.getNodeType()) {
+		if (n == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+		}
+		return parseNodeType(n.getNodeType());
+	}
+
+	public static String parseNodeType(int t) {
+		switch (t) {
 		case Node.ATTRIBUTE_NODE:
 			return "ATTRIBUTE";
 		case Node.CDATA_SECTION_NODE:
@@ -127,27 +139,36 @@ public class Doc {
 
 	/**
 	 * <p>
-	 * Store the given Document into the given file.
+	 * Store the given {@link Document} into the given file.
 	 * </p>
 	 * 
 	 * @param d
 	 *            is the {@link Document} to store on disk.
 	 * @param path
-	 *            is the path where the {@link Document} will be stored.
+	 *            is a file path, which specifies where the given
+	 *            {@link Document} will be stored.
 	 * 
+	 * @throws IllegalFileException
+	 *             if the given path points to a directory.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non readable file.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non writable file.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a readable
+	 *             directory.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a writable
+	 *             directory.
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <tt>null</tt>, or if the
 	 *             given path is <tt>null</tt>.
 	 */
-	public static void store(Document d, String path) {
-		if (path == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a file path).");
-		}
-		if (path.trim().length() == 0) {
-			throw new IllegalArgumentException(": Not accepted. "
-					+ "Must be a valid String (a file path).");
-		}
+	public static void store(Document d, String path)
+			throws IllegalFileException, IllegalDirectoryException {
+		FS.validateFilePath(path);
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Document.class.getCanonicalName()
@@ -166,15 +187,10 @@ public class Doc {
 	}
 
 	/**
-	 * <p>
-	 * Dump the given Document into a <code>String</code>.
-	 * </p>
-	 * 
 	 * @param d
-	 *            is the {@link Document} to dump.
+	 *            is a {@link Document}.
 	 * 
-	 * @return a <code>String</code>, which is the String representation of the
-	 *         given {@link Document}.
+	 * @return the <tt>String</tt> representation of the given {@link Document}.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <tt>null</tt>.
@@ -203,66 +219,53 @@ public class Doc {
 	}
 
 	/**
-	 * <p>
-	 * Get the XPath position of the given {@link Node}.
-	 * </p>
-	 * 
-	 * @param n
-	 *            is the node.
+	 * @param e
+	 *            is an {@link Element}.
 	 * 
 	 * @return an XPath Expression, which can be used to query the given
-	 *         {@link Node}.
+	 *         {@link Element} in the given {@link Element}'s owner
+	 *         {@link Document}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <tt>null</tt> or is not an
-	 *             Element {@link Node}.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static String getXPathPosition(Node n) {
-		if (n == null) {
+	public static String getXPathPosition(Element e) {
+		if (e == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(parseNodeType(n)
-					+ ": Not accepted. " + "Must be an Element Node.");
+		StringBuilder sTargetXPath = new StringBuilder();
+		synchronized (e.getOwnerDocument()) {
+			for (Node n = e; n.getParentNode() != null; n = n.getParentNode()) {
+				sTargetXPath.insert(0, "[" + getChildNodePosition(n) + "]");
+				sTargetXPath.insert(0, "/" + n.getNodeName());
+			}
 		}
-		String sTargetXPath = "";
-		synchronized (n.getOwnerDocument()) {
-			for (; n.getParentNode() != null; n = n.getParentNode())
-				sTargetXPath = "/" + n.getNodeName() + "["
-						+ getChildNodePosition(n) + "]" + sTargetXPath;
-		}
-		return sTargetXPath;
+		return sTargetXPath.toString();
 	}
 
-	private static int getChildNodePosition(Node n) {
-		if (n == null) {
-			throw new NullPointerException("null: Not accepted. "
-					+ "Must be a " + Node.class.getCanonicalName() + ".");
-		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(parseNodeType(n)
-					+ ": Not accepted. " + "Must be an Element Node.");
-		}
-
-		Node parent = n.getParentNode();
+	private static int getChildNodePosition(Node e) {
+		Node parent = e.getParentNode();
 		int index = 1;
-		for (int i = 0; i < parent.getChildNodes().getLength(); ++i)
-			if (parent.getChildNodes().item(i) == n) {
+		for (int i = 0; i < parent.getChildNodes().getLength(); ++i) {
+			Node c = parent.getChildNodes().item(i);
+			if (c == e) {
 				return index;
-			} else if (parent.getChildNodes().item(i).getNodeName()
-					.compareTo(n.getNodeName()) == 0) {
+			} else if (c.getNodeName().equals(e.getNodeName())) {
 				++index;
 			}
+		}
 
 		throw new RuntimeException("Unexecpted error while looking "
 				+ "for a child node position. "
+				+ "The given node cannot be found in its parent chlids. "
 				+ "Source code has certainly been modified and "
 				+ "a bug have been introduced.");
 	}
 
 	public static Location getNodeLocation(Node n) {
-		return new Location(n);
+		return LocationFactory.newLocation(n);
 	}
 
 	private static String XPATH = "x";
@@ -328,9 +331,9 @@ public class Doc {
 		return null;
 	}
 
-	private String msFFP = null;
-	private Document moDOM = null;
-	private XPath moXPath = XPathExpander.newXPath(null);
+	private String _sourceFile = null;
+	private Document _doc = null;
+	private XPath _xPath = XPathExpander.newXPath(null);
 
 	public Doc() {
 	}
@@ -356,7 +359,7 @@ public class Doc {
 	 */
 	public void load(String path) throws MelodyException, IllegalDocException,
 			IllegalFileException, IOException {
-		setFileFullPath(path);
+		setSourceFile(path);
 		try {
 			setDocument(parse(new File(path)));
 		} catch (SAXParseException Ex) {
@@ -395,13 +398,13 @@ public class Doc {
 					+ "Must be a valid " + Doc.class.getCanonicalName() + ".");
 		}
 		try {
-			if (doc.getFileFullPath() != null) {
-				setFileFullPath(doc.getFileFullPath());
+			if (doc.getSourceFile() != null) {
+				setSourceFile(doc.getSourceFile());
 			}
 		} catch (IllegalFileException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
 					+ "setting the Doc File Path to " + "'"
-					+ doc.getFileFullPath() + "'. "
+					+ doc.getSourceFile() + "'. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced. "
 					+ "Or an external event made the file no more "
@@ -469,14 +472,56 @@ public class Doc {
 		return XPathExpander.evaluateAsNode(expr, getDocument());
 	}
 
+	/**
+	 * <p>
+	 * Store this object in the file which was previously used to load it (see
+	 * {@link #load(String)}).
+	 * </p>
+	 */
 	public void store() {
-		if (getFileFullPath() == null) {
+		if (getSourceFile() == null) {
 			return;
 		}
-		store(getFileFullPath());
+		try {
+			store(getSourceFile());
+		} catch (IllegalFileException | IllegalDirectoryException Ex) {
+			throw new RuntimeException("Unexpected error occurred while "
+					+ "saving the Doc into its source File " + "'"
+					+ getSourceFile() + "'. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced. "
+					+ "Or an external event made the file no more "
+					+ "accessible (deleted, moved, read permission "
+					+ "removed, ...).", Ex);
+		}
 	}
 
-	public void store(String path) {
+	/**
+	 * <p>
+	 * Store this object into the given file.
+	 * </p>
+	 * 
+	 * @param path
+	 *            is a file path, which specifies where the given
+	 *            {@link Document} will be stored.
+	 * 
+	 * @throws IllegalFileException
+	 *             if the given path points to a directory.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non readable file.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non writable file.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a readable
+	 *             directory.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a writable
+	 *             directory.
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
+	 */
+	public void store(String path) throws IllegalFileException,
+			IllegalDirectoryException {
 		if (getDocument() == null) {
 			return;
 		}
@@ -487,19 +532,19 @@ public class Doc {
 		return dump(getDocument());
 	}
 
-	public String getFileFullPath() {
-		return msFFP;
+	public String getSourceFile() {
+		return _sourceFile;
 	}
 
-	protected String setFileFullPath(String path) throws IllegalFileException {
+	protected String setSourceFile(String path) throws IllegalFileException {
 		FS.validateFileExists(path);
-		String previous = getFileFullPath();
-		msFFP = path;
+		String previous = getSourceFile();
+		_sourceFile = path;
 		return previous;
 	}
 
 	public Document getDocument() {
-		return moDOM;
+		return _doc;
 	}
 
 	protected Document setDocument(Document d) {
@@ -509,7 +554,7 @@ public class Doc {
 					+ ".");
 		}
 		Document previous = getDocument();
-		moDOM = d;
+		_doc = d;
 		/*
 		 * Store the XPath into the Document's user data, so it can be retrieved
 		 * from everywhere.
@@ -519,7 +564,7 @@ public class Doc {
 	}
 
 	public XPath getXPath() {
-		return moXPath;
+		return _xPath;
 	}
 
 	/**
@@ -528,7 +573,7 @@ public class Doc {
 	 */
 	public XPath setXPath(XPath xpath) {
 		XPath previous = getXPath();
-		moXPath = xpath;
+		_xPath = xpath;
 		return previous;
 	}
 

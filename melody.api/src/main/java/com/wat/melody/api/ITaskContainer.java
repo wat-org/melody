@@ -1,6 +1,6 @@
 package com.wat.melody.api;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.exception.TaskException;
 
@@ -17,17 +17,16 @@ public interface ITaskContainer {
 
 	/**
 	 * <p>
-	 * Place holder where this object's inner-tasks are registered in their
-	 * native {@link Node} format.
+	 * Register the given inner-task, in its native {@link Element} format.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is an inner-task (in its native {@link Node} format) to
-	 *            register to this object.
+	 *            is an inner-task (in its native {@link Element} format) to
+	 *            register.
 	 * 
 	 * @throws TaskException
-	 *             if an error occurred while registering the {@link Node}.
+	 *             if an error occurred while registering the {@link Element}.
 	 */
-	public void registerInnerTask(Node n) throws TaskException;
+	public void registerInnerTask(Element n) throws TaskException;
 
 }

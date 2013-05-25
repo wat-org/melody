@@ -11,6 +11,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.events.MutationEvent;
 
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
@@ -51,7 +52,7 @@ public class FilteredDoc extends DUNIDDoc {
 		}
 
 		Node destParent = dest;
-		if (toImport.getParentNode().getParentNode() != null) {
+		if (toImport.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
 			destParent = importNodeIntoFilteredDocument(dest,
 					(Element) toImport.getParentNode(), false);
 		}
@@ -61,49 +62,61 @@ public class FilteredDoc extends DUNIDDoc {
 		return imported;
 	}
 
-	private static Node cloneNodesAndChilds(Document dest, Element toClone,
+	private static Node cloneNodesAndChilds(Document dest, Node toClone,
 			boolean cloneChilds) {
-		FilteredDocHelper.importHeritedParentNode(dest, toClone);
+		if (toClone.getNodeType() == Node.ELEMENT_NODE) {
+			FilteredDocHelper.importHeritedParentNode(dest, (Element) toClone);
+		}
 
 		Node copy = dest.importNode(toClone, false);
 		if (cloneChilds) {
 			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
-				Element child = (Element) toClone.getChildNodes().item(i);
+				Node child = toClone.getChildNodes().item(i);
 				copy.appendChild(cloneNodesAndChilds(dest, child, true));
 			}
 		}
 		return copy;
 	}
 
-	private Document moOriginalDOM;
-	private FilterSet maFilters;
+	private Document _originalDoc = null;
+	private FilterSet _filters = new FilterSet();
 
 	public FilteredDoc() {
 		super();
-		initOriginalDocument();
-		initFilters();
-	}
-
-	private Document initOriginalDocument() {
-		return moOriginalDOM = null;
-	}
-
-	private void initFilters() {
-		maFilters = new FilterSet();
 	}
 
 	protected Document getOriginalDocument() {
-		return moOriginalDOM;
+		return _originalDoc;
 	}
 
 	protected Document setOriginalDocument(Document doc) {
 		if (doc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Doc.");
+					+ "Must be a valid " + Document.class.getCanonicalName()
+					+ ".");
 		}
 		Document previous = getOriginalDocument();
-		moOriginalDOM = doc;
+		_originalDoc = doc;
 		return previous;
+	}
+
+	private synchronized FilterSet getFilters() {
+		return _filters;
+	}
+
+	public synchronized void setFilters(FilterSet filters)
+			throws IllegalFilterException {
+		if (filters == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + FilterSet.class.getCanonicalName()
+					+ ".");
+		}
+		if (getOriginalDocument() != null) {
+			setDocument(cloneOriginalDocument());
+		}
+		getFilters().clear();
+		getFilters().addAll(filters);
+		applyFilters();
 	}
 
 	protected Document cloneOriginalDocument() {
@@ -231,35 +244,20 @@ public class FilteredDoc extends DUNIDDoc {
 		FilteredDocHelper.validateParentHeritedNodes(getDocument());
 	}
 
-	/**
-	 * <p>
-	 * Store this object at the given location.
-	 * </p>
-	 * 
-	 * @throws IllegalArgumentException
-	 *             is the given location is <tt>null</tt>.
-	 */
-	public synchronized void store(String sPath) {
-		if (sPath == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String.");
-		}
+	public synchronized void store(String sPath) throws IllegalFileException,
+			IllegalDirectoryException {
 		Document memory = getDocument();
 		setDocument(getOriginalDocument());
 		super.store(sPath);
 		setDocument(memory);
 	}
 
-	private synchronized FilterSet getFilters() {
-		return maFilters;
-	}
-
 	public synchronized int countFilters() {
-		return maFilters.size();
+		return _filters.size();
 	}
 
 	public synchronized String getFilter(int i) {
-		return maFilters.get(i).getValue();
+		return _filters.get(i).getValue();
 	}
 
 	public synchronized String removeFilter(int i) {
@@ -299,20 +297,6 @@ public class FilteredDoc extends DUNIDDoc {
 		String sRemovedFilter = getFilters().set(i, filter).getValue();
 		applyFilters();
 		return sRemovedFilter;
-	}
-
-	public synchronized void setFilters(FilterSet filters)
-			throws IllegalFilterException {
-		if (filters == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid FiltersSet.");
-		}
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
-		getFilters().clear();
-		getFilters().addAll(filters);
-		applyFilters();
 	}
 
 	/**
@@ -416,16 +400,19 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void nodeInstered(MutationEvent evt) {
 		super.nodeInstered(evt);
+		// TODO : insert node into original document
 	}
 
 	@Override
 	protected void nodeRemoved(MutationEvent evt) {
 		super.nodeRemoved(evt);
+		// TODO : remove node into original document
 	}
 
 	@Override
 	protected void nodeTextChanged(MutationEvent evt) {
 		super.nodeTextChanged(evt);
+		// TODO : modify node text into original document
 	}
 
 	/**

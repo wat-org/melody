@@ -13,6 +13,7 @@ import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.ex.MelodyConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
+import com.wat.melody.core.nativeplugin.foreach.ForeachThread;
 
 /**
  * 
@@ -36,11 +37,11 @@ public class Call extends Ref implements ITask {
 	private static final short INTERRUPTED = 2;
 	private static final short CRITICAL = 4;
 
-	private List<Ref> maCallRefs;
+	private List<Ref> _callRefs;
 
-	private short miState;
-	private ThreadGroup moThreadGroup;
-	private MelodyConsolidatedException moExceptionsSet;
+	private short _state;
+	private ThreadGroup _threadGroup;
+	private MelodyConsolidatedException _exceptionsSet;
 
 	/**
 	 * <p>
@@ -110,7 +111,7 @@ public class Call extends Ref implements ITask {
 				throw new CallException(Messages.bind(
 						Messages.CallEx_MISSING_ORDERS, ORDERS_ATTR, REF));
 			}
-			if (pm.getSequenceDescriptor().getFileFullPath() != null) {
+			if (pm.getSequenceDescriptor().getSourceFile() != null) {
 				continue;
 			}
 			try {
@@ -124,19 +125,19 @@ public class Call extends Ref implements ITask {
 	}
 
 	private short markState(short s) {
-		return miState |= s;
+		return _state |= s;
 	}
 
 	private boolean isFailed() {
-		return FAILED == (miState & FAILED);
+		return FAILED == (_state & FAILED);
 	}
 
 	private boolean isInterrupted() {
-		return INTERRUPTED == (miState & INTERRUPTED);
+		return INTERRUPTED == (_state & INTERRUPTED);
 	}
 
 	private boolean isCritical() {
-		return CRITICAL == (miState & CRITICAL);
+		return CRITICAL == (_state & CRITICAL);
 	}
 
 	/**
@@ -310,7 +311,7 @@ public class Call extends Ref implements ITask {
 	}
 
 	private List<Ref> getCallRefs() {
-		return maCallRefs;
+		return _callRefs;
 	}
 
 	private List<Ref> setCallRefs(List<Ref> cr) {
@@ -319,32 +320,30 @@ public class Call extends Ref implements ITask {
 					+ "Must be a valid List<Ref>.");
 		}
 		List<Ref> previous = getCallRefs();
-		maCallRefs = cr;
+		_callRefs = cr;
 		return previous;
 	}
 
+	/**
+	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
+	 *         managed by this object.
+	 */
 	protected ThreadGroup getThreadGroup() {
-		return moThreadGroup;
+		return _threadGroup;
 	}
 
 	private ThreadGroup setThreadGroup(ThreadGroup tg) {
 		// Can be null
 		ThreadGroup previous = getThreadGroup();
-		moThreadGroup = tg;
+		_threadGroup = tg;
 		return previous;
 	}
 
 	/**
-	 * <p>
-	 * Get the list of exceptions that append during the processing of this
-	 * object.
-	 * </p>
-	 * 
-	 * @return the list of exceptions that append during the processing of this
-	 *         object.
+	 * @return the exceptions that append during the processing of this object.
 	 */
 	private MelodyConsolidatedException getExceptionsSet() {
-		return moExceptionsSet;
+		return _exceptionsSet;
 	}
 
 	private MelodyConsolidatedException setExceptionsSet(
@@ -356,7 +355,7 @@ public class Call extends Ref implements ITask {
 					+ ".");
 		}
 		MelodyConsolidatedException previous = getExceptionsSet();
-		moExceptionsSet = cex;
+		_exceptionsSet = cex;
 		return previous;
 	}
 

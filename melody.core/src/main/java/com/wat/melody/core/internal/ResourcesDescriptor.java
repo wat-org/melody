@@ -37,8 +37,8 @@ import com.wat.melody.common.xpath.XPathExpander;
 public class ResourcesDescriptor extends FilteredDoc implements
 		IResourcesDescriptor {
 
-	private TargetDescriptor moTargetDescriptor;
-	private List<DUNIDDoc> moDUNIDDocList;
+	private TargetDescriptor _targetDescriptor;
+	private List<DUNIDDoc> _DUNIDDocList;
 
 	/**
 	 * <p>
@@ -83,21 +83,22 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	private TargetDescriptor getTargetDescriptor() {
-		return moTargetDescriptor;
+		return _targetDescriptor;
 	}
 
 	private TargetDescriptor setTargetDescriptor(TargetDescriptor td) {
 		if (td == null) {
 			throw new IllegalArgumentException("nul: Not accepted. "
-					+ "Must be a valid TargetDescriptor.");
+					+ "Must be a valid "
+					+ TargetDescriptor.class.getCanonicalName() + ".");
 		}
 		TargetDescriptor previous = getTargetDescriptor();
-		moTargetDescriptor = td;
+		_targetDescriptor = td;
 		return previous;
 	}
 
 	private List<DUNIDDoc> getDUNIDDocList() {
-		return moDUNIDDocList;
+		return _DUNIDDocList;
 	}
 
 	private List<DUNIDDoc> setDUNIDDocList(List<DUNIDDoc> srds) {
@@ -106,7 +107,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ "Must be a valid List<DUNIDDoc>.");
 		}
 		List<DUNIDDoc> previous = getDUNIDDocList();
-		moDUNIDDocList = srds;
+		_DUNIDDocList = srds;
 		return previous;
 	}
 
@@ -115,7 +116,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		StringBuilder str = new StringBuilder("");
 		str.append("resources-Descriptors:{ ");
 		for (DUNIDDoc rd : getDUNIDDocList()) {
-			str.append(rd.getFileFullPath() + ", ");
+			str.append(rd.getSourceFile() + ", ");
 		}
 		str.append("}, resources-filters:{ ");
 		for (int i = 0; i < countFilters(); i++) {
@@ -142,9 +143,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized List<Node> evaluateTargets(String xpath)
+	public synchronized List<Element> evaluateTargets(String xpath)
 			throws XPathExpressionException {
-		List<Node> targets = new ArrayList<Node>();
+		List<Element> targets = new ArrayList<Element>();
 		// Evaluate expression in the current document
 		synchronized (getDocument()) {
 			NodeList nl = evaluateAsNodeList(xpath);
@@ -154,12 +155,12 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					// TODO: externalize error message
 					throw new XPathExpressionException(
 							Messages.bind(
-									"''{0}'': Not accepted. This expression target - at least - a ''{1}'' node. Since this expression doesn''t only targets Element Node, such value is not accepted.",
+									"''{0}'': Not accepted. This expression target - at least - a ''{1}'' node. Since this expression doesn''t only targets Element Node, such expression is not accepted.",
 									xpath, Doc.parseNodeType(nl.item(i))));
 				}
-				if (getTargetDescriptor().getElement(
-						getDUNID((Element) nl.item(i))) != null) {
-					targets.add(nl.item(i));
+				Element n = (Element) nl.item(i);
+				if (getTargetDescriptor().getElement(getDUNID(n)) != null) {
+					targets.add(n);
 				}
 			}
 		}
@@ -231,7 +232,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// Search the doc in the list
 		while (++i < getDUNIDDocList().size()) {
 			DUNIDDoc d = getDUNIDDocList().get(i);
-			if (d.getFileFullPath().equals(sPath)) {
+			if (d.getSourceFile().equals(sPath)) {
 				break;
 			}
 		}
@@ -259,11 +260,31 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		return true;
 	}
 
+	/**
+	 * <p>
+	 * Store all {@link Document} this object contains (see {@link #add(String)}
+	 * ).
+	 * </p>
+	 */
 	@Override
 	public synchronized void store() {
 		for (DUNIDDoc d : getDUNIDDocList()) {
 			d.store();
 		}
+	}
+
+	/**
+	 * <p>
+	 * Due to the nature of this object, this operation is not supported.
+	 * </p>
+	 * 
+	 * @throws RuntimeException
+	 *             all time.
+	 */
+	public synchronized void store(String path) {
+		throw new RuntimeException("It is not possible to store a "
+				+ ResourcesDescriptor.class.getCanonicalName()
+				+ " at a custom location.");
 	}
 
 	@Override
@@ -289,14 +310,17 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	protected void nodeInstered(MutationEvent evt) {
 		super.nodeInstered(evt);
+		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
 
 	protected void nodeRemoved(MutationEvent evt) {
 		super.nodeRemoved(evt);
+		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
 
 	protected void nodeTextChanged(MutationEvent evt) {
 		super.nodeTextChanged(evt);
+		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
 
 	/**

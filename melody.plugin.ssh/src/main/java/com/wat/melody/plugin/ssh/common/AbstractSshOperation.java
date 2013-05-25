@@ -77,8 +77,8 @@ public abstract class AbstractSshOperation implements ITask {
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
-	private ISshUserDatas moUserDatas;
-	private ISshConnectionDatas moCnxDatas;
+	private ISshUserDatas _userDatas;
+	private ISshConnectionDatas _cnxDatas;
 
 	public AbstractSshOperation() {
 		setUserDatas(new SshUserDatas());
@@ -86,22 +86,22 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	private ISshUserDatas getUserDatas() {
-		return moUserDatas;
+		return _userDatas;
 	}
 
 	private ISshUserDatas setUserDatas(ISshUserDatas ud) {
 		ISshUserDatas previous = getUserDatas();
-		moUserDatas = ud;
+		_userDatas = ud;
 		return previous;
 	}
 
 	private ISshConnectionDatas getConnectionDatas() {
-		return moCnxDatas;
+		return _cnxDatas;
 	}
 
 	private ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd) {
 		ISshConnectionDatas previous = getConnectionDatas();
-		moCnxDatas = cd;
+		_cnxDatas = cd;
 		return previous;
 	}
 

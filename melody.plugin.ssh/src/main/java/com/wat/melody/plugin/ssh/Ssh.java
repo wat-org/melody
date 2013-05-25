@@ -54,13 +54,13 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 	 */
 	public static final String REQUIRETTY_ATTR = "requiretty";
 
-	private String msCommandToExecute;
-	private String msDescription;
-	private boolean mbRequiretty;
+	private String _commandToExecute;
+	private String _description;
+	private boolean _requiretty;
 
 	public Ssh() {
 		super();
-		msCommandToExecute = "";
+		_commandToExecute = "";
 		setDescription("[exec ssh]");
 		setRequiretty(false);
 	}
@@ -100,28 +100,28 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 	}
 
 	public String getCommandToExecute() {
-		return msCommandToExecute;
+		return _commandToExecute;
 	}
 
 	public String getDescription() {
-		return msDescription;
+		return _description;
 	}
 
 	@Attribute(name = DESCRIPTION_ATTR)
 	public String setDescription(String d) {
 		String previous = getDescription();
-		msDescription = d;
+		_description = d;
 		return previous;
 	}
 
 	public boolean getRequiretty() {
-		return mbRequiretty;
+		return _requiretty;
 	}
 
 	@Attribute(name = REQUIRETTY_ATTR)
 	public boolean setRequiretty(boolean requiretty) {
 		boolean previous = getRequiretty();
-		mbRequiretty = requiretty;
+		_requiretty = requiretty;
 		return previous;
 	}
 
@@ -136,7 +136,7 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 					Messages.SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR,
 					Exec.COMMAND_ATTR, Exec.FILE_ATTR));
 		} else if (is.getCommand() != null) {
-			msCommandToExecute += is.getCommand() + "\n";
+			_commandToExecute += is.getCommand() + "\n";
 		} else if (is.getFile() != null) {
 			try {
 				String fileContent = null;
@@ -156,7 +156,7 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 					fileContent = new String(Files.readAllBytes(Paths.get(is
 							.getFile().toString())));
 				}
-				msCommandToExecute += fileContent + "\n";
+				_commandToExecute += fileContent + "\n";
 			} catch (IOException Ex) {
 				throw new SshException(Messages.bind(
 						Messages.SshEx_READ_IO_ERROR, is.getFile()), Ex);
@@ -178,7 +178,7 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid DeclareVariable.");
 		}
-		msCommandToExecute += "declare " + p.getName() + "=" + p.getValue()
+		_commandToExecute += "declare " + p.getName() + "=" + p.getValue()
 				+ "\n";
 	}
 
@@ -188,7 +188,7 @@ public class Ssh extends AbstractSshConnectionManagedOperation {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid DeclareVariable.");
 		}
-		msCommandToExecute += "export " + p.getName() + "=" + p.getValue()
+		_commandToExecute += "export " + p.getName() + "=" + p.getValue()
 				+ "\n";
 	}
 

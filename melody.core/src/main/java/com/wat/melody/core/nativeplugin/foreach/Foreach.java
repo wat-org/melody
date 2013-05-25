@@ -1,11 +1,13 @@
 package com.wat.melody.core.nativeplugin.foreach;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
@@ -35,11 +37,13 @@ public class Foreach implements ITask, ITaskContainer {
 	 */
 	public static final String ITEMS_ATTR = "items";
 
+	// TODO : rename item-name
 	/**
 	 * The 'itemName' XML attribute of the Foreach Task
 	 */
 	public static final String ITEMNAME_ATTR = "itemName";
 
+	// TODO : rename max-par
 	/**
 	 * The 'maxpar' XML attribute of the Foreach Task
 	 */
@@ -54,9 +58,9 @@ public class Foreach implements ITask, ITaskContainer {
 
 	private String _items = null;
 	private PropertyName _itemName = null;
-	private List<Node> _targets = null;
+	private List<Element> _targets = null;
 	private int _maxPar = 0;
-	private List<Node> _innerTasks;
+	private Set<Element> _innerTasks;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
@@ -64,7 +68,7 @@ public class Foreach implements ITask, ITaskContainer {
 	private MelodyConsolidatedException _exceptionsSet;
 
 	public Foreach() {
-		setInnerTasks(new ArrayList<Node>());
+		setInnerTasks(new LinkedHashSet<Element>());
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
@@ -73,24 +77,19 @@ public class Foreach implements ITask, ITaskContainer {
 
 	/**
 	 * <p>
-	 * Register the given Task (in its native Node format) as an inner Task of
-	 * this object.
+	 * Register the given task (in its native {@link Element} format) as an
+	 * inner-task of this object.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given node is already registered.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	@Override
-	public void registerInnerTask(Node n) {
+	public void registerInnerTask(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
-		}
-		if (_innerTasks.contains(n)) {
-			throw new IllegalArgumentException(n.getNodeName()
-					+ ": Not accepted. " + "Node already present in list.");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
 		_innerTasks.add(n);
 	}
@@ -128,8 +127,6 @@ public class Foreach implements ITask, ITaskContainer {
 	 *             the processing was interrupted.
 	 * @throws Throwable
 	 *             if an unmanaged error occurred during the processing.
-	 * 
-	 * @see {@link ForeachThread}
 	 */
 	@Override
 	public void doProcessing() throws ForeachException, InterruptedException {
@@ -165,7 +162,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 * </p>
 	 */
 	private void initializeForeachThreads() {
-		for (Node target : getTargets()) {
+		for (Element target : getTargets()) {
 			PropertiesSet ps = Melody.getContext().getProperties().copy();
 			// Add the property '<ItemName>=<XPath position of currentItem>', so
 			// that '§[<ItemName>]§' will be expanded with the item's XPath
@@ -273,13 +270,8 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get the name of the property which will contains the XPath position of
-	 * the current Target.
-	 * </p>
-	 * 
 	 * @return the name of the property which will contains the XPath position
-	 *         of the current Target.
+	 *         of the Target.
 	 */
 	private PropertyName getItemName() {
 		return _itemName;
@@ -315,10 +307,6 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get the XPath expression which selects Targets.
-	 * </p>
-	 * 
 	 * @return the XPath expression which selects Targets.
 	 */
 	private String getItems() {
@@ -363,33 +351,24 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get the targets selected by the XPath Expression which stands in
-	 * {@link #getItems()}.
-	 * </p>
-	 * 
 	 * @return the targets selected by the XPath Expression which stands in
 	 *         {@link #getItems()}.
 	 */
-	private List<Node> getTargets() {
+	private List<Element> getTargets() {
 		return _targets;
 	}
 
-	private List<Node> setTargets(List<Node> targets) {
+	private List<Element> setTargets(List<Element> targets) {
 		if (targets == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Node>.");
+					+ "Must be a valid List<Element>.");
 		}
-		List<Node> previous = getTargets();
+		List<Element> previous = getTargets();
 		_targets = targets;
 		return previous;
 	}
 
 	/**
-	 * <p>
-	 * Get the maximum number of thread this object can run simultaneously.
-	 * </p>
-	 * 
 	 * @return the maximum number of thread this object can run simultaneously.
 	 *         0 means there is no limit.
 	 */
@@ -422,32 +401,24 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get all inner-tasks (in their native {@link Node} format) of this task.
-	 * </p>
-	 * 
-	 * @return all inner-task (in their native {@link Node} format).
+	 * @return all inner-task (in their native {@link Element} format).
 	 */
-	protected List<Node> getInnerTasks() {
+	protected Set<Element> getInnerTasks() {
 		return _innerTasks;
 	}
 
-	private List<Node> setInnerTasks(List<Node> innerTasks) {
+	private Set<Element> setInnerTasks(Set<Element> innerTasks) {
 		if (innerTasks == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Node>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
 		}
-		List<Node> previous = getInnerTasks();
+		Set<Element> previous = getInnerTasks();
 		_innerTasks = innerTasks;
 		return previous;
 	}
 
 	/**
-	 * <p>
-	 * Get the {@link ThreadGroup} which holds all {@link ForeachThread} managed
-	 * by this object.
-	 * </p>
-	 * 
 	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
 	 *         managed by this object.
 	 */
@@ -463,11 +434,7 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get the all the {@link ForeachThread} managed by this object.
-	 * </p>
-	 * 
-	 * @return the all the {@link ForeachThread} managed by this object.
+	 * @return all the {@link ForeachThread} managed by this object.
 	 */
 	protected List<ForeachThread> getThreadsList() {
 		return _threadsList;
@@ -484,13 +451,7 @@ public class Foreach implements ITask, ITaskContainer {
 	}
 
 	/**
-	 * <p>
-	 * Get the list of exceptions that append during the processing of this
-	 * object.
-	 * </p>
-	 * 
-	 * @return the list of exceptions that append during the processing of this
-	 *         object.
+	 * @return the exceptions that append during the processing of this object.
 	 */
 	private MelodyConsolidatedException getExceptionsSet() {
 		return _exceptionsSet;

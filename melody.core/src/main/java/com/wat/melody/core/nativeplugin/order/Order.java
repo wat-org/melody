@@ -1,11 +1,12 @@
 package com.wat.melody.core.nativeplugin.order;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IFirstLevelTask;
@@ -43,61 +44,64 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 
 	/**
 	 * <p>
-	 * Search the Order whose name is equal to the given input {@link OrderName}
-	 * .
+	 * Search the order whose name is equal to the given {@link OrderName}.
 	 * </p>
 	 * 
 	 * @param order
-	 *            is the given input {@link OrderName}.
-	 * @param SD
-	 *            is the Sequence Descriptor to search in.
+	 *            is the given {@link OrderName} to search.
+	 * @param sd
+	 *            is the {@link ISequenceDescriptor} to search in.
 	 * 
-	 * @return the Order Element <code>Node</code> whose name match the given
-	 *         input {@link OrderName}.
+	 * @return the found order (in its native {@link Element} format), or
+	 *         <tt>null</tt> if no order {@link Element} match the given
+	 *         {@link OrderName}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <tt>null</tt>.
+	 *             if the given {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link ISequenceDescriptor} is
-	 *             <tt>null</tt>.
+	 *             if the given {@link ISequenceDescriptor} is <tt>null</tt>.
 	 */
-	public static Node findOrder(OrderName order, ISequenceDescriptor SD) {
-		NodeList nl = findOrders(order, SD);
+	public static Element findOrder(OrderName order, ISequenceDescriptor sd) {
+		NodeList nl = findOrders(order, sd);
 		if (nl.getLength() == 0) {
 			return null;
 		} else {
-			return nl.item(0);
+			return (Element) nl.item(0);
 		}
 	}
 
 	/**
 	 * <p>
-	 * Search all Orders whose name are equal to the given input
-	 * {@link OrderName} .
+	 * Search for all orders whose name is equal to the given {@link OrderName}.
+	 * </p>
+	 * 
+	 * <p>
+	 * This method is used to detect orders which have the same name.
 	 * </p>
 	 * 
 	 * @param order
-	 *            is the given input {@link OrderName}.
+	 *            is the given {@link OrderName} to search.
 	 * @param sd
-	 *            is the Sequence Descriptor to search in.
+	 *            is the {@link ISequenceDescriptor} to search in.
 	 * 
-	 * @return the Order Element <code>NodeList</code> whose name match the
-	 *         given input {@link OrderName}.
+	 * @return a {@link NodeList}, which contains all found orders (in their
+	 *         native {@link Element} format).
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link OrderName} is <tt>null</tt>.
+	 *             if the given {@link OrderName} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link ISequenceDescriptor} is
-	 *             <tt>null</tt>.
+	 *             if the given {@link ISequenceDescriptor} is <tt>null</tt>.
 	 */
 	public static NodeList findOrders(OrderName order, ISequenceDescriptor sd) {
 		if (sd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid SequenceDescriptor.");
+					+ "Must be a valid "
+					+ ISequenceDescriptor.class.getCanonicalName() + ".");
 		}
 		if (order == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an Order).");
+					+ "Must be a valid " + OrderName.class.getCanonicalName()
+					+ ".");
 		}
 		try {
 			return sd.evaluateAsNodeList("/*/" + ORDER + "[@" + NAME_ATTR
@@ -114,21 +118,23 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 
 	private OrderName _orderName = null;
 	private String _description = null;
-	private List<Node> _innerTasks;
+	private Set<Element> _innerTasks;
 
 	public Order() {
-		setInnerTasks(new ArrayList<Node>());
+		setInnerTasks(new LinkedHashSet<Element>());
 	}
 
 	/**
 	 * <p>
-	 * Search for order whose name is equal to the given {@link OrderName}.
+	 * Search the order whose name is equal to the given {@link OrderName}.
 	 * </p>
 	 * 
 	 * @param order
 	 *            is the given {@link OrderName} to search.
 	 * 
-	 * @return the found order (in its native {@link Node} format).
+	 * @return the found order (in its native {@link Element} format), or
+	 *         <tt>null</tt> if no order {@link Element} match the given
+	 *         {@link OrderName}.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link OrderName} is <tt>null</tt>.
@@ -136,20 +142,25 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 *             if the underlying {@link ISequenceDescriptor} is
 	 *             <tt>null</tt>.
 	 */
-	public Node findOrder(OrderName order) throws IllegalOrderException {
+	public Element findOrder(OrderName order) throws IllegalOrderException {
 		return findOrder(order, Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor());
 	}
 
 	/**
 	 * <p>
-	 * Search for order whose name are equal to the given {@link OrderName}.
+	 * Search for all orders whose name is equal to the given {@link OrderName}.
+	 * </p>
+	 * 
+	 * <p>
+	 * This method is used to detect orders which have the same name.
 	 * </p>
 	 * 
 	 * @param order
 	 *            is the given {@link OrderName} to search.
 	 * 
-	 * @return the found orders (in their native {@link Node} format).
+	 * @return a {@link NodeList}, which contains all found orders (in their
+	 *         native {@link Element} format).
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link OrderName} is <tt>null</tt>.
@@ -164,24 +175,19 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 
 	/**
 	 * <p>
-	 * Register the given Task (in its native Node format) as an inner-task of
-	 * this object.
+	 * Register the given task (in its native {@link Element} format) as an
+	 * inner-task of this object.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given node is already registered.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	@Override
-	public void registerInnerTask(Node n) {
+	public void registerInnerTask(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
-		}
-		if (_innerTasks.contains(n)) {
-			throw new IllegalArgumentException(n.getNodeName()
-					+ ": Not accepted. " + "Node already present in list.");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
 		_innerTasks.add(n);
 	}
@@ -206,7 +212,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	@Override
 	public void doProcessing() throws OrderException, InterruptedException {
 		try {
-			for (Node n : getInnerTasks()) {
+			for (Element n : getInnerTasks()) {
 				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
@@ -283,33 +289,31 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 	 *             if the given value is <tt>null</tt>.
 	 */
 	@Attribute(name = DESCRIPTION_ATTR)
-	public String setDescription(String v) {
-		if (v == null) {
+	public String setDescription(String description) {
+		if (description == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		String previous = getDescription();
-		_description = v;
+		_description = description;
 		return previous;
 	}
 
 	/**
-	 * <p>
-	 * Get all inner-tasks (in their native {@link Node} format) of this task.
-	 * </p>
-	 * 
-	 * @return all inner-task (in their native {@link Node} format).
+	 * @return all inner-task (in their native {@link Element} format).
 	 */
-	private List<Node> getInnerTasks() {
+	private Set<Element> getInnerTasks() {
 		return _innerTasks;
 	}
 
-	private List<Node> setInnerTasks(List<Node> innerTasks) {
+	private Set<Element> setInnerTasks(Set<Element> innerTasks) {
 		if (innerTasks == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Node>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
 		}
-		List<Node> previous = getInnerTasks();
+		Set<Element> previous = getInnerTasks();
 		_innerTasks = innerTasks;
 		return previous;
 	}

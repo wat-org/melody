@@ -201,7 +201,7 @@ public abstract class LibVirtCloud {
 			throw new RuntimeException(Ex);
 		}
 		if (!sRam.matches("^" + SIZE_PATTERN + "$")) {
-			throw new RuntimeException(sizeconf.getFileFullPath()
+			throw new RuntimeException(sizeconf.getSourceFile()
 					+ ": instance type '" + type
 					+ "' have an invalid ram attribute. '" + sRam
 					+ "' doesn't match pattern '" + SIZE_PATTERN + "'.");

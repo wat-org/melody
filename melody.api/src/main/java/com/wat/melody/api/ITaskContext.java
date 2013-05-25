@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.event.TaskCreatedEvent;
 import com.wat.melody.api.event.TaskFinishedEvent;
@@ -27,34 +27,22 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 public interface ITaskContext {
 
 	/**
-	 * <p>
-	 * Get the {@link IProcessorManager} associated to this {@link ITask}.
-	 * </p>
-	 * 
 	 * @return the {@link IProcessorManager} associated to this {@link ITask}.
 	 * 
 	 */
 	public IProcessorManager getProcessorManager();
 
 	/**
-	 * <p>
-	 * Get the {@link PropertiesSet} associated to this {@link ITask}.
-	 * </p>
-	 * 
 	 * @return the {@link PropertiesSet} associated to this {@link ITask}.
 	 * 
 	 */
 	public PropertiesSet getProperties();
 
 	/**
-	 * <p>
-	 * Get the {@link Node} which was used to create this {@link ITask}.
-	 * </p>
-	 * 
-	 * @return the {@link Node} associated to this {@link ITask}.
+	 * @return the {@link Element} associated to this {@link ITask}.
 	 * 
 	 */
-	public Node getNode();
+	public Element getRelatedElement();
 
 	/**
 	 * <p>
@@ -62,19 +50,17 @@ public interface ITaskContext {
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * If the {@link IProcessorManager} is running, this call will return
-	 * immediately ; <BR/>
-	 * * If the {@link IProcessorManager} is paused, this call will be blocked
-	 * until the processing is either resumed or stopped ; <BR/>
-	 * * If the {@link IProcessorManager} is stopped, an
-	 * {@link InterruptedException} will be raised, telling to the current
-	 * thread to stop as soon as possible ; <BR/>
-	 * </i>
+	 * <ul>
+	 * <li>If the {@link IProcessorManager} is either running or stopped, this
+	 * call will return immediately ;</li>
+	 * <li>If the {@link IProcessorManager} is paused, this call will be blocked
+	 * until the processing is either resumed or stopped ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @throws InterruptedException
-	 *             if the {@link IProcessorManager} was interrupted. Means that
-	 *             {@link ITask} must cleanly stop processing as soon as
+	 *             if the {@link IProcessorManager} is stopping. Means that the
+	 *             current thread must cleanly stop processing as soon as
 	 *             possible.
 	 */
 	public void handleProcessorStateUpdates() throws InterruptedException;
@@ -123,7 +109,7 @@ public interface ITaskContext {
 
 	/**
 	 * <p>
-	 * Create an {@link ITask} object based on the given {@link Node} and
+	 * Create an {@link ITask} object based on the given {@link Element} and
 	 * processes it.
 	 * </p>
 	 * <p>
@@ -137,7 +123,7 @@ public interface ITaskContext {
 	 * </p>
 	 * 
 	 * @param n
-	 *            is a Task (in its native {@link Node} format) to create and
+	 *            is a Task (in its native {@link Element} format) to create and
 	 *            process.
 	 * 
 	 * @throws TaskException
@@ -150,11 +136,12 @@ public interface ITaskContext {
 	 *             Means the caller must cleanly stop processing as soon as
 	 *             possible.
 	 */
-	public void processTask(Node n) throws TaskException, InterruptedException;
+	public void processTask(Element n) throws TaskException,
+			InterruptedException;
 
 	/**
 	 * <p>
-	 * Create an {@link ITask} object based on the given {@link Node} and
+	 * Create an {@link ITask} object based on the given {@link Element} and
 	 * processes it.
 	 * </p>
 	 * <p>
@@ -168,7 +155,7 @@ public interface ITaskContext {
 	 * </p>
 	 * 
 	 * @param n
-	 *            is a Task (in its native {@link Node} format) to create and
+	 *            is a Task (in its native {@link Element} format) to create and
 	 *            process.
 	 * @param ps
 	 *            is a specific set of variables which will be used during
@@ -184,7 +171,7 @@ public interface ITaskContext {
 	 *             Means the caller must cleanly stop processing as soon as
 	 *             possible.
 	 */
-	public void processTask(Node n, PropertiesSet ps) throws TaskException,
+	public void processTask(Element n, PropertiesSet ps) throws TaskException,
 			InterruptedException;
 
 	/**

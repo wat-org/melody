@@ -3,7 +3,7 @@ package com.wat.melody.core.internal;
 import java.io.File;
 import java.io.IOException;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.Messages;
@@ -27,9 +27,9 @@ import com.wat.melody.core.nativeplugin.order.Order;
  */
 public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 
-	private PropertiesSet moProperties;
-	private OrderNameSet maOrders;
-	private File msBaseDir;
+	private PropertiesSet _properties = new PropertiesSet();
+	private OrderNameSet _orders = new OrderNameSet();
+	private File _baseDir = null;
 
 	/**
 	 * <p>
@@ -51,21 +51,6 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	 */
 	public SequenceDescriptor() {
 		super();
-		initOrders();
-		initBaseDir();
-		initProperties();
-	}
-
-	private void initOrders() {
-		maOrders = new OrderNameSet();
-	}
-
-	private void initBaseDir() {
-		msBaseDir = null;
-	}
-
-	private void initProperties() {
-		moProperties = new PropertiesSet();
 	}
 
 	@Override
@@ -100,11 +85,11 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	@Override
 	public void load(ISequenceDescriptor sd) throws IllegalOrderException {
 		try {
-			setFileFullPath(sd.getFileFullPath());
+			setSourceFile(sd.getSourceFile());
 		} catch (IllegalFileException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
 					+ "setting the Doc File Path to " + "'"
-					+ sd.getFileFullPath() + "'. "
+					+ sd.getSourceFile() + "'. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced. "
 					+ "Or an external event made the file no more "
@@ -141,20 +126,26 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	}
 
 	@Override
-	public void addOrder(OrderName v) throws IllegalOrderException {
-		if (getOrders().contains(v)) {
-			throw new IllegalOrderException(Messages.bind(
-					Messages.OrderEx_DUPLICATE, v, Order.ORDER));
+	public void addOrder(OrderName order) throws IllegalOrderException {
+		if (order == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + OrderName.class.getCanonicalName()
+					+ ".");
 		}
-		validateOrder(v);
-		maOrders.add(v);
+		if (getOrders().contains(order)) {
+			throw new IllegalOrderException(Messages.bind(
+					Messages.OrderEx_DUPLICATE, order, Order.ORDER));
+		}
+		validateOrder(order);
+		_orders.add(order);
 	}
 
 	@Override
 	public void addOrders(OrderNameSet orders) throws IllegalOrderException {
 		if (orders == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid OrderNameSet.");
+					+ "Must be a valid "
+					+ OrderNameSet.class.getCanonicalName() + ".");
 		}
 		for (OrderName o : orders) {
 			addOrder(o);
@@ -165,93 +156,97 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	public OrderName setOrder(int i, OrderName order)
 			throws IllegalOrderException {
 		validateOrder(order);
-		return maOrders.set(i, order);
+		return _orders.set(i, order);
 	}
 
 	@Override
 	public int countOrders() {
-		return maOrders.size();
+		return _orders.size();
 	}
 
 	@Override
 	public OrderName getOrder(int i) {
-		return maOrders.get(i);
+		return _orders.get(i);
 	}
 
 	@Override
 	public void clearOrders() {
-		maOrders.clear();
+		_orders.clear();
 	}
 
 	private void validateOrders(OrderNameSet orders)
 			throws IllegalOrderException {
 		if (orders == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid OrderNameSet.");
+					+ "Must be a valid "
+					+ OrderNameSet.class.getCanonicalName() + ".");
 		}
 		for (OrderName v : orders) {
 			validateOrder(v);
 		}
 	}
 
-	private void validateOrder(OrderName v) throws IllegalOrderException {
-		if (v == null) {
+	private void validateOrder(OrderName order) throws IllegalOrderException {
+		if (order == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid OrderName.");
+					+ "Must be a valid " + OrderName.class.getCanonicalName()
+					+ ".");
 		}
-		if (getDocument() != null && Order.findOrder(v, this) == null) {
+		if (getDocument() != null && Order.findOrder(order, this) == null) {
 			throw new IllegalOrderException(Messages.bind(
-					Messages.OrderEx_UNDEF, v));
+					Messages.OrderEx_UNDEF, order));
 		}
 	}
 
 	@Override
-	public Node getRoot() {
+	public Element getRoot() {
 		if (getDocument() == null) {
 			return null;
 		}
-		return getDocument().getFirstChild();
+		return (Element) getDocument().getFirstChild();
 	}
 
 	private OrderNameSet getOrders() {
-		return maOrders;
+		return _orders;
 	}
 
 	@Override
 	public void setOrders(OrderNameSet orders) throws IllegalOrderException {
 		validateOrders(orders);
-		maOrders = orders;
+		_orders = orders;
 	}
 
 	@Override
 	public File getBaseDir() {
-		return msBaseDir;
+		return _baseDir;
 	}
 
 	@Override
-	public File setBaseDir(File v) throws IllegalDirectoryException {
-		if (v == null) {
+	public File setBaseDir(File dir) throws IllegalDirectoryException {
+		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a Directory Path).");
+					+ "Must be a valid " + File.class.getCanonicalName()
+					+ " (a Directory Path).");
 		}
-		FS.validateDirExists(v.getAbsolutePath());
+		FS.validateDirExists(dir.getAbsolutePath());
 		File previous = getBaseDir();
-		msBaseDir = v;
+		_baseDir = dir;
 		return previous;
 	}
 
 	@Override
 	public PropertiesSet getProperties() {
-		return moProperties;
+		return _properties;
 	}
 
 	@Override
 	public void setProperties(PropertiesSet ps) {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid PropertiesSet.");
+					+ "Must be a valid "
+					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
-		moProperties = ps;
+		_properties = ps;
 	}
 
 }

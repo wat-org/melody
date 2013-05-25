@@ -1,9 +1,10 @@
 package com.wat.melody.core.nativeplugin.synchronize;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
@@ -30,27 +31,30 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	 */
 	public static final String SYNCHRONIZE = "synchronize";
 
+	// TODO : rename lock-id
 	/**
 	 * The 'lock' XML attribute of the 'synchronize' XML element
 	 */
 	public static final String LOCK_ID_ATTR = "lockId";
+
 	/**
 	 * The 'scope' XML attribute of the 'synchronize' XML element
 	 */
 	public static final String SCOPE_ATTR = "scope";
 
+	// TODO : rename max-par
 	/**
 	 * The 'maxPar' XML attribute of the 'synchronize' XML element
 	 */
 	public static final String MAXPAR_ATTR = "maxPar";
 
-	private List<Node> _innerTasks;
+	private Set<Element> _innerTasks;
 	private LockId _lockId;
 	private LockScope _lockScope;
 	private MaxPar _maxPar;
 
 	public Synchronize() {
-		setInnerTask(new ArrayList<Node>());
+		setInnerTask(new LinkedHashSet<Element>());
 		setLockId(LockId.DEFAULT_LOCK_ID);
 		setLockScope(LockScope.CURRENT);
 		setMaxPar(MaxPar.SEQUENTIAL);
@@ -58,26 +62,21 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 
 	/**
 	 * <p>
-	 * Register the given Task (in its native Node format) as an inner-task of
-	 * this object.
+	 * Register the given task (in its native {@link Element} format) as an
+	 * inner-task of this object.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given node is already registered.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	@Override
-	public void registerInnerTask(Node n) throws TaskException {
+	public void registerInnerTask(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
-		if (getInnerTask().contains(n)) {
-			throw new IllegalArgumentException(n.getNodeName()
-					+ ": Not accepted. " + "Node already present in list.");
-		}
-		getInnerTask().add(n);
+		_innerTasks.add(n);
 	}
 
 	@Override
@@ -111,7 +110,7 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	@Override
 	public void doRun() throws SynchronizeException, InterruptedException {
 		try {
-			for (Node n : getInnerTask()) {
+			for (Element n : getInnerTask()) {
 				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
@@ -123,24 +122,20 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	}
 
 	/**
-	 * <p>
-	 * Get all inner-tasks (in their native {@link Node} format) of this task.
-	 * </p>
-	 * 
-	 * @return all inner-task (in their native {@link Node} format).
+	 * @return all inner-task (in their native {@link Element} format).
 	 */
-	private List<Node> getInnerTask() {
+	private Set<Element> getInnerTask() {
 		return _innerTasks;
 	}
 
-	private List<Node> setInnerTask(List<Node> nodes) {
-		if (nodes == null) {
+	private Set<Element> setInnerTask(Set<Element> innerTasks) {
+		if (innerTasks == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ Node.class.getCanonicalName() + ">.");
+					+ Element.class.getCanonicalName() + ">.");
 		}
-		List<Node> previous = getInnerTask();
-		_innerTasks = nodes;
+		Set<Element> previous = getInnerTask();
+		_innerTasks = innerTasks;
 		return previous;
 	}
 

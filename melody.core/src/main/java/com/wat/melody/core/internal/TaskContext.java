@@ -3,7 +3,7 @@ package com.wat.melody.core.internal;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITaskContext;
@@ -23,19 +23,19 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
  */
 public class TaskContext implements ITaskContext {
 
-	private Node moNode;
-	private PropertiesSet moProperties;
-	private ProcessorManager moProcessorManager;
+	private Element _relatedElement;
+	private PropertiesSet _propertiesSet;
+	private ProcessorManager _processorManager;
 
-	public TaskContext(Node n, PropertiesSet ps, ProcessorManager p) {
+	public TaskContext(Element n, PropertiesSet ps, ProcessorManager p) {
 		setProcessorManager(p);
 		setProperties(ps);
-		setNode(n);
+		setRelatedElement(n);
 	}
 
 	@Override
 	public IProcessorManager getProcessorManager() {
-		return moProcessorManager;
+		return _processorManager;
 	}
 
 	private ProcessorManager setProcessorManager(ProcessorManager pm) {
@@ -44,14 +44,14 @@ public class TaskContext implements ITaskContext {
 					+ "Must be a valid "
 					+ ProcessorManager.class.getCanonicalName() + ".");
 		}
-		ProcessorManager previous = moProcessorManager;
-		moProcessorManager = pm;
+		ProcessorManager previous = _processorManager;
+		_processorManager = pm;
 		return previous;
 	}
 
 	@Override
 	public PropertiesSet getProperties() {
-		return moProperties;
+		return _propertiesSet;
 	}
 
 	private PropertiesSet setProperties(PropertiesSet ps) {
@@ -61,33 +61,34 @@ public class TaskContext implements ITaskContext {
 					+ PropertiesSet.class.getCanonicalName() + ".");
 		}
 		PropertiesSet previous = getProperties();
-		moProperties = ps;
+		_propertiesSet = ps;
 		return previous;
 	}
 
 	@Override
-	public Node getNode() {
-		return moNode;
+	public Element getRelatedElement() {
+		return _relatedElement;
 	}
 
-	private Node setNode(Node n) {
+	private Element setRelatedElement(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
-		Node previous = getNode();
-		moNode = n;
+		Element previous = getRelatedElement();
+		_relatedElement = n;
 		return previous;
 	}
 
 	@Override
 	public void handleProcessorStateUpdates() throws InterruptedException {
-		moProcessorManager.handleProcessorStateUpdates();
+		_processorManager.handleProcessorStateUpdates();
 	}
 
 	@Override
 	public String expand(String sToExpand) throws ExpressionSyntaxException {
-		return XPathExpander.expand(sToExpand, moProcessorManager
+		return XPathExpander.expand(sToExpand, _processorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
 				getProperties());
 	}
@@ -95,25 +96,26 @@ public class TaskContext implements ITaskContext {
 	@Override
 	public String expand(Path fileToExpand) throws ExpressionSyntaxException,
 			IOException, IllegalFileException {
-		return XPathExpander.expand(fileToExpand, moProcessorManager
+		return XPathExpander.expand(fileToExpand, _processorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
 				getProperties());
 	}
 
 	@Override
-	public void processTask(Node n) throws TaskException, InterruptedException {
+	public void processTask(Element n) throws TaskException,
+			InterruptedException {
 		processTask(n, getProperties());
 	}
 
 	@Override
-	public void processTask(Node n, PropertiesSet ps) throws TaskException,
+	public void processTask(Element n, PropertiesSet ps) throws TaskException,
 			InterruptedException {
-		moProcessorManager.createAndProcessTask(n, ps);
+		_processorManager.createAndProcessTask(n, ps);
 	}
 
 	@Override
 	public IProcessorManager createSubProcessorManager() {
-		return moProcessorManager.createSubProcessorManager(getProperties());
+		return _processorManager.createSubProcessorManager(getProperties());
 	}
 
 }

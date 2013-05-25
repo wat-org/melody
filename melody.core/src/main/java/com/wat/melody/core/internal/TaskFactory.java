@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -357,36 +359,29 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Identify the Class which correspond to the given node. This node
-	 * represents an {@link ITask}, in its native {@link Node} format
+	 * Identify the Class which correspond to the given task (in its native
+	 * {@link Element} format).
 	 * </p>
 	 * 
 	 * @param n
-	 *            is an element node, which represent an {@link ITask}, in its
-	 *            native {@link Node} format.
+	 *            is a task (in its native {@link Element} format).
 	 * 
-	 * @return the Class which correspond to the given node.
+	 * @return the Class which correspond to the given task.
 	 * 
 	 * @throws TaskFactoryException
-	 *             if the element node name doesn't match any registered task.
+	 *             if the given {@link element} is doesn't represent an
+	 *             {@link ITask}.
 	 * @throws TaskFactoryException
 	 *             if the Task hierarchy is not valid.
 	 * @throws IllegalArgumentException
-	 *             if a the given {@link Node} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if a the given {@link Node} is not an XML Element.
-	 * 
+	 *             if a the given {@link Element} is <tt>null</tt>.
 	 */
-	public Class<? extends ITask> identifyTask(Node n)
+	public Class<? extends ITask> identifyTask(Element n)
 			throws TaskFactoryException {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node (an "
-					+ ITask.class.getCanonicalName() + ").");
-		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(n.getNodeType()
-					+ ": Not accepted. " + "Must be a valid XML Elment node.");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ").");
 		}
 
 		Class<? extends ITask> c = findTaskClass(n);
@@ -396,21 +391,21 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Search for the Registered Task Class which match the given Node.
+	 * Search for the Class which correspond the given task (in its native
+	 * {@link Element} format).
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Node} which represent an {@link ITask} in it
-	 *            native format.
+	 *            is a task (in its native {@link Element} format).
 	 * 
 	 * @return a {@link Class} object, which can be use to instantiate an
 	 *         {@link ITask}.
 	 * 
 	 * @throws TaskFactoryException
-	 *             if the given {@link Node} is doesn't represent a valid
+	 *             if the given {@link element} is doesn't represent an
 	 *             {@link ITask}.
 	 */
-	private Class<? extends ITask> findTaskClass(Node n)
+	private Class<? extends ITask> findTaskClass(Element n)
 			throws TaskFactoryException {
 		String sSimpleName = n.getNodeName();
 		if (!getRegisteredTasks().contains(sSimpleName)) {
@@ -422,14 +417,14 @@ public class TaskFactory {
 
 	private void validateTaskHierarchy(Class<?> c, Node parentNode)
 			throws TaskFactoryException {
+		// parentNode can be a DOCUMENT_NODE or an ELEMENT_NODE
 		Class<?> p = null;
-		if (parentNode != null
-				&& parentNode.getNodeType() != Node.DOCUMENT_NODE) {
+		if (parentNode != null && parentNode.getNodeType() == Node.ELEMENT_NODE) {
 			try {
-				p = findTaskClass(parentNode);
+				p = findTaskClass((Element) parentNode);
 			} catch (TaskFactoryException Ex) {
 				throw new RuntimeException("Unexpected error while searching "
-						+ "the Task Class which match the Node ["
+						+ "the Task Class which match the Element Node ["
 						+ Doc.getNodeLocation(parentNode) + "]. "
 						+ "Because this Task already been created, "
 						+ "such error cannot happened. "
@@ -458,7 +453,7 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Create a new Task, based on the given element node.
+	 * Create a new {@link ITask}, based on the given task.
 	 * </p>
 	 * 
 	 * <p>
@@ -471,13 +466,12 @@ public class TaskFactory {
 	 * </p>
 	 * 
 	 * @param c
-	 *            is the class of the Task to create.
+	 *            is the class of the {@link ITask} to create.
 	 * @param n
-	 *            is an element node, which represent the Task to create, in its
-	 *            native {@link Node} format.
+	 *            is the task to create (in its native {@link Element} format).
 	 * @param ps
-	 *            is a PropertiesSet, which will be used during attribute's
-	 *            value's expansion.
+	 *            is a {@link PropertiesSet}, which will be used during
+	 *            attribute's value's expansion.
 	 * 
 	 * @return a new object that implement Task.
 	 * 
@@ -501,14 +495,12 @@ public class TaskFactory {
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Class} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if a the given {@link Node} is <tt>null</tt>.
+	 *             if a the given {@link Element} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if a the {@link PropertiesSet} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if a the given {@link Node} is not an XML Element.
 	 * 
 	 */
-	public ITask newTask(Class<? extends ITask> c, Node n, PropertiesSet ps)
+	public ITask newTask(Class<? extends ITask> c, Element n, PropertiesSet ps)
 			throws TaskFactoryException {
 		if (c == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -516,17 +508,13 @@ public class TaskFactory {
 		}
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node (an "
-					+ ITask.class.getCanonicalName() + ").");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ PropertiesSet.class.getCanonicalName() + ".");
-		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(n.getNodeType()
-					+ ": Not accepted. " + "Must be a valid XML Elment node.");
 		}
 
 		ITask t = null;
@@ -564,7 +552,7 @@ public class TaskFactory {
 			return;
 		}
 		for (int i = 0; i < attrs.getLength(); i++) {
-			Node attr = attrs.item(i);
+			Attr attr = (Attr) attrs.item(i);
 			String sAttrName = attr.getNodeName();
 			Method m = findSetMethod(base.getClass(), sAttrName);
 			if (m != null) {
@@ -619,12 +607,12 @@ public class TaskFactory {
 			return;
 		}
 		for (int i = 0; i < nestedNodes.getLength(); i++) {
-			Node n = nestedNodes.item(i);
-			if (n.getNodeType() != Node.ELEMENT_NODE) {
+			if (nestedNodes.item(i).getNodeType() != Node.ELEMENT_NODE) {
 				continue;
 			}
+			Element n = (Element) nestedNodes.item(i);
 			if (addNestedElement(base, n) || createNestedElement(base, n)
-					|| addNodeNestedElement(base, n)) {
+					|| registerInnerTask(base, n)) {
 				continue;
 			}
 			throw new TaskFactoryException(Messages.bind(
@@ -656,7 +644,7 @@ public class TaskFactory {
 		}
 	}
 
-	private boolean addNestedElement(Object base, Node n)
+	private boolean addNestedElement(Object base, Element n)
 			throws TaskFactoryException {
 		Method m = findAddMethod(base.getClass(), n.getNodeName());
 		if (m == null) {
@@ -702,7 +690,7 @@ public class TaskFactory {
 		return true;
 	}
 
-	private boolean createNestedElement(Object base, Node n)
+	private boolean createNestedElement(Object base, Element n)
 			throws TaskFactoryException {
 		Method m = findCreateMethod(base.getClass(), n.getNodeName());
 		if (m == null) {
@@ -736,7 +724,7 @@ public class TaskFactory {
 		return true;
 	}
 
-	private boolean addNodeNestedElement(Object base, Node n)
+	private boolean registerInnerTask(Object base, Element n)
 			throws TaskFactoryException {
 		if (!implementsInterface(base.getClass(), ITaskContainer.class)) {
 			return false;
@@ -749,7 +737,7 @@ public class TaskFactory {
 		return true;
 	}
 
-	private void setMember(Object base, Method m, Class<?> param, Node attr,
+	private void setMember(Object base, Method m, Class<?> param, Attr attr,
 			String sAttrVal) throws TaskFactoryException {
 		String sAttrName = attr.getNodeName();
 		Object o = null;

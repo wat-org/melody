@@ -80,7 +80,7 @@ public class ProcessorManagerLoader {
 	public static final String RESOURCES_FILTERS = "resourcesFilters";
 	public static final String TARGETS_FILTERS = "targetFilters";
 
-	private IProcessorManager moProcessorManager;
+	private IProcessorManager _processorManager;
 
 	private static final String CONSOLE_APPENDER = "console";
 
@@ -100,7 +100,7 @@ public class ProcessorManagerLoader {
 	 * @return the inner {@link IProcessorManager} object.
 	 */
 	public IProcessorManager getProcessorManager() {
-		return moProcessorManager;
+		return _processorManager;
 	}
 
 	/**
@@ -117,10 +117,11 @@ public class ProcessorManagerLoader {
 	private IProcessorManager setProcessorManager(IProcessorManager pm) {
 		if (pm == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid IProcessorManager.");
+					+ "Must be a valid "
+					+ IProcessorManager.class.getCanonicalName() + ".");
 		}
 		IProcessorManager previous = getProcessorManager();
-		moProcessorManager = pm;
+		_processorManager = pm;
 		return previous;
 	}
 
@@ -299,7 +300,7 @@ public class ProcessorManagerLoader {
 			}
 
 			// ensure a sequence descriptor have beenF loaded
-			if (getProcessorManager().getSequenceDescriptor().getFileFullPath() == null) {
+			if (getProcessorManager().getSequenceDescriptor().getSourceFile() == null) {
 				throw new CommandLineParsingException(Messages.CmdEx_MISSING_SD);
 			}
 
@@ -1038,7 +1039,7 @@ public class ProcessorManagerLoader {
 			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().setOrders(
-					OrderNameSet.parseOrdersSet(val));
+					OrderNameSet.parseOrderNameSet(val));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ORDERS), Ex);

@@ -2,7 +2,7 @@ package com.wat.melody.core.nativeplugin.foreach;
 
 import java.lang.Thread.State;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
@@ -260,7 +260,7 @@ public class ForeachThread implements Runnable {
 	 */
 	public void run() {
 		try {
-			for (Node n : getForeach().getInnerTasks()) {
+			for (Element n : getForeach().getInnerTasks()) {
 				Melody.getContext().processTask(n, getPropertiesSet());
 			}
 		} catch (Throwable Ex) {

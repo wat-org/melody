@@ -11,6 +11,9 @@ import com.wat.melody.common.xml.Doc;
  */
 public class NodeRelatedException extends IllegalDocException {
 
+	/*
+	 * TODO : generaliser l'usage de cette exception
+	 */
 	private static final long serialVersionUID = -8978423233111135477L;
 
 	private Node moErrorNode = null;

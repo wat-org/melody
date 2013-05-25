@@ -16,75 +16,71 @@ public class OrderNameSet extends ArrayList<OrderName> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link OrderNameSet} object.
+	 * Convert the given <tt>String</tt> to an {@link OrderNameSet} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>OrderName(','OrderName)*</code>. <BR/>
-	 * * Each OrderName must be a valid {@link OrderNameSet} (see
-	 * {@link OrderName#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>Input <tt>String</tt> must respect the following pattern :
+	 * <code>/ordername}(,ordername)* /</code> ;</li>
+	 * <li>Each ordername must be a valid {@link OrderName} (see
+	 * {@link OrderName#parseString(String)}) ;</li>
+	 * </ul>
 	 * 
-	 * @param sOrderNames
-	 *            is the given <code>String</code> to convert.
+	 * @param orders
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>OrderNameSet</code> object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @return an {@link OrderNameSet} object, whose equal to the given
+	 *         <tt>String</tt>.
 	 * 
 	 * 
 	 * @throws IllegalOrderNameSetException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>OrderNameSet</code>.
+	 *             if the given <tt>String</tt> is not a valid
+	 *             {@link OrderNameSet}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	public static OrderNameSet parseOrdersSet(String sOrderNames)
+	public static OrderNameSet parseOrderNameSet(String orders)
 			throws IllegalOrderNameSetException {
-		return new OrderNameSet(sOrderNames);
+		return new OrderNameSet(orders);
 	}
 
 	/**
 	 * <p>
-	 * Create an empty <code>OrdersSet</code>.
+	 * Create an empty {@link OrderNameSet}.
 	 * </p>
 	 */
 	public OrderNameSet() {
 		super();
 	}
 
-	public OrderNameSet(String sOrderName) throws IllegalOrderNameSetException {
+	public OrderNameSet(String orders) throws IllegalOrderNameSetException {
 		super();
-		setOrdersSet(sOrderName);
+		setOrdersSet(orders);
 	}
 
-	public void setOrdersSet(String sOrderNames)
-			throws IllegalOrderNameSetException {
-		if (sOrderNames == null) {
+	public void setOrdersSet(String orders) throws IllegalOrderNameSetException {
+		if (orders == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an "
-					+ OrderNameSet.class.getCanonicalName() + ").");
+					+ "Must be a valid "
+					+ OrderNameSet.class.getCanonicalName() + ".");
 		}
 		clear();
-		for (String order : sOrderNames.split(",")) {
+		for (String order : orders.split(",")) {
 			order = order.trim();
 			if (order.length() == 0) {
 				throw new IllegalOrderNameSetException(Messages.bind(
-						Messages.OrderNameSetEx_EMPTY_ORDER_NAME, sOrderNames));
+						Messages.OrderNameSetEx_EMPTY_ORDER_NAME, orders));
 			}
 			try {
 				add(OrderName.parseString(order));
 			} catch (IllegalOrderNameException Ex) {
-				throw new IllegalOrderNameSetException(
-						Messages.bind(
-								Messages.OrderNameSetEx_INVALID_ORDER_NAME,
-								sOrderNames), Ex);
+				throw new IllegalOrderNameSetException(Messages.bind(
+						Messages.OrderNameSetEx_INVALID_ORDER_NAME, orders), Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalOrderNameSetException(Messages.bind(
-					Messages.OrderNameSetEx_EMPTY, sOrderNames));
+					Messages.OrderNameSetEx_EMPTY, orders));
 		}
 	}
 }

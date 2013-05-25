@@ -33,6 +33,7 @@ public class Ref {
 	 */
 	public static final String ORDERS_ATTR = "orders";
 
+	// TODO : rename sequence-descriptor
 	/**
 	 * The 'sequenceDescriptor' XML attribute
 	 */
@@ -43,9 +44,9 @@ public class Ref {
 	 */
 	public static final String PARAM = "param";
 
-	private Call moRelatedCall;
-	private String moSDPath;
-	private List<IProcessorManager> maIProcessorManagers;
+	private Call _relatedCall;
+	private String _SDPath;
+	private List<IProcessorManager> _processorManagers;
 
 	protected Ref() {
 		this(null);
@@ -174,18 +175,18 @@ public class Ref {
 	}
 
 	private Call getRelatedCall() {
-		return moRelatedCall;
+		return _relatedCall;
 	}
 
 	protected Call setRelatedCall(Call c) {
 		// Can be null
 		Call previous = getRelatedCall();
-		moRelatedCall = c;
+		_relatedCall = c;
 		return previous;
 	}
 
 	protected List<IProcessorManager> getIProcessorManagers() {
-		return maIProcessorManagers;
+		return _processorManagers;
 	}
 
 	private void setIProcessorManagers(List<IProcessorManager> o) {
@@ -194,11 +195,11 @@ public class Ref {
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ IProcessorManager.class.getCanonicalName() + ">.");
 		}
-		maIProcessorManagers = o;
+		_processorManagers = o;
 	}
 
 	private String getSDPath() {
-		return moSDPath;
+		return _SDPath;
 	}
 
 	private String setSDPath(String sPath) {
@@ -208,7 +209,7 @@ public class Ref {
 					+ "path).");
 		}
 		String previous = getSDPath();
-		moSDPath = sPath;
+		_SDPath = sPath;
 		return previous;
 	}
 

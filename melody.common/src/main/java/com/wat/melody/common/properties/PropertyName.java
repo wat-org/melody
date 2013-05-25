@@ -11,20 +11,20 @@ public class PropertyName {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link PropertyName} object.
+	 * Convert the given <tt>String</tt> to an {@link PropertyName} object.
 	 * </p>
 	 * 
 	 * @param propertyName
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link PropertyName} object, whose equal to the given input
-	 *         <code>String</code>.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalPropertyNameException
-	 *             if the given input <code>String</code> is not a valid
+	 *             if the given input <tt>String</tt> is not a valid
 	 *             {@link PropertyName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static PropertyName parseString(String propertyName)
 			throws IllegalPropertyNameException {
@@ -36,7 +36,7 @@ public class PropertyName {
 	 */
 	public static final String PATTERN = "\\w+([.]\\w+)*";
 
-	private String msValue;
+	private String _value;
 
 	public PropertyName(String propertyName)
 			throws IllegalPropertyNameException {
@@ -45,7 +45,7 @@ public class PropertyName {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class PropertyName {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	private String setValue(String propertyName)
@@ -78,7 +78,7 @@ public class PropertyName {
 					Messages.PropertyNameEx_INVALID, propertyName, PATTERN));
 		}
 		String previous = getValue();
-		msValue = propertyName;
+		_value = propertyName;
 		return previous;
 	}
 }

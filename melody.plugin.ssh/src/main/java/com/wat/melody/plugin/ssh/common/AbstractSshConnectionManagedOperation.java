@@ -47,7 +47,7 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	 */
 	public static final String MGMT_MASTER_KEY_ATTR = "mgmt-master-key";
 
-	private ISshUserDatas moMgmtUserDatas;
+	private ISshUserDatas _mgmtUserDatas;
 
 	public AbstractSshConnectionManagedOperation() {
 		super();
@@ -55,12 +55,12 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	}
 
 	private ISshUserDatas getMgmtUserDatas() {
-		return moMgmtUserDatas;
+		return _mgmtUserDatas;
 	}
 
 	private ISshUserDatas setMgmtUserDatas(ISshUserDatas ud) {
 		ISshUserDatas previous = getMgmtUserDatas();
-		moMgmtUserDatas = ud;
+		_mgmtUserDatas = ud;
 		return previous;
 	}
 

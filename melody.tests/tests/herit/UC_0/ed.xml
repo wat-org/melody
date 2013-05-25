@@ -2,9 +2,9 @@
 <models>
 	<model name="my_model">
 		<packages>
-			<package name="pck1" arch="x386"/>
-			<package name="pck2" arch="x386"/>
-			<package name="pck3" arch="x386"/>
+			<package arch="x386" name="pck1"/>
+			<package arch="x386" name="pck2"/>
+			<package arch="x386" name="pck3"/>
 		</packages>		
 	</model>
 </models>
@@ -13,7 +13,7 @@
 	
 		<FRONTS>
 		
-			<instance IP_priv="123.123.123.123" name="dev-web1" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.123" herit="./environment/models/model[@name='my_model']" name="dev-web1">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>
@@ -29,7 +29,7 @@
 				</fwrules>
 			</instance>
 			
-			<instance IP_priv="123.123.123.124" name="dev-web2" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.124" herit="./environment/models/model[@name='my_model']" name="dev-web2">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>
@@ -47,7 +47,7 @@
 		
 		<DBS>
 		
-			<instance IP_priv="123.123.123.125" name="dev-db1" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.125" herit="./environment/models/model[@name='my_model']" name="dev-db1">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>
@@ -69,7 +69,7 @@
 	
 		<FRONTS>
 		
-			<instance IP_priv="123.123.123.123" name="rec-web1" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.123" herit="./environment/models/model[@name='my_model']" name="rec-web1">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>
@@ -85,7 +85,7 @@
 				</fwrules>
 			</instance>
 			
-			<instance IP_priv="123.123.123.124" name="rec-web2" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.124" herit="./environment/models/model[@name='my_model']" name="rec-web2">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>
@@ -103,7 +103,7 @@
 		
 		<DBS>
 		
-			<instance IP_priv="123.123.123.125" name="rec-db1" herit="./environment/models/model[@name='my_model']">
+			<instance IP_priv="123.123.123.125" herit="./environment/models/model[@name='my_model']" name="rec-db1">
 				<region>eu-west-1</region>
 				<imageId>ami-59d0e22d</imageId>
 				<instanceType>t1.micro</instanceType>

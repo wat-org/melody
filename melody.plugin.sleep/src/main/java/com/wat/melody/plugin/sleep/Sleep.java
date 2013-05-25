@@ -26,7 +26,7 @@ public class Sleep implements ITask {
 	 */
 	public static final String MILLIS_ATTR = "millis";
 
-	private SleepTimeout moTimeout;
+	private SleepTimeout _timeout;
 
 	public Sleep() {
 		setTimeout(SleepTimeout.DEFAULT_VALUE);
@@ -52,7 +52,7 @@ public class Sleep implements ITask {
 	}
 
 	private SleepTimeout getTimeout() {
-		return moTimeout;
+		return _timeout;
 	}
 
 	@Attribute(name = MILLIS_ATTR)
@@ -62,7 +62,7 @@ public class Sleep implements ITask {
 					+ "Must be a valid "
 					+ SleepTimeout.class.getCanonicalName() + ".");
 		}
-		return moTimeout = v;
+		return _timeout = v;
 	}
 
 }

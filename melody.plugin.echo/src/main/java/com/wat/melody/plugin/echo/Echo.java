@@ -46,6 +46,7 @@ public class Echo implements ITask {
 	 */
 	public static final String APPEND_ATTR = "append";
 
+	// TODO : rename create-parent-directory
 	/**
 	 * The 'createParentDir' XML attribute of the 'echo' XML element
 	 */
@@ -56,11 +57,11 @@ public class Echo implements ITask {
 	 */
 	public static final String SEVERITY_ATTR = "severity";
 
-	private String msMessage;
-	private File moFile;
-	private boolean mbAppend;
-	private boolean mbCreateParentDir;
-	private LogThreshold moSeverity;
+	private String _message;
+	private File _file;
+	private boolean _append;
+	private boolean _createParentDir;
+	private LogThreshold _severity;
 
 	public Echo() {
 		setMessage("");
@@ -71,7 +72,7 @@ public class Echo implements ITask {
 	}
 
 	private void initFile() {
-		moFile = null;
+		_file = null;
 	}
 
 	@Override
@@ -177,19 +178,19 @@ public class Echo implements ITask {
 	}
 
 	private String getMessage() {
-		return msMessage;
+		return _message;
 	}
 
 	@Attribute(name = MESSAGE_ATTR)
 	public String setMessage(String v) {
 		// can be null
 		String previous = getMessage();
-		msMessage = v;
+		_message = v;
 		return previous;
 	}
 
 	private File getFile() {
-		return moFile;
+		return _file;
 	}
 
 	@Attribute(name = FILE_ATTR, description = "The '" + FILE_ATTR
@@ -201,41 +202,41 @@ public class Echo implements ITask {
 			IllegalDirectoryException {
 		FS.validateFilePath(f.getPath());
 		File previous = getFile();
-		moFile = f;
+		_file = f;
 		return previous;
 	}
 
 	private boolean getAppend() {
-		return mbAppend;
+		return _append;
 	}
 
 	@Attribute(name = APPEND_ATTR)
 	public boolean setAppend(boolean b) {
 		boolean previous = getAppend();
-		mbAppend = b;
+		_append = b;
 		return previous;
 	}
 
 	private boolean getCreateParentDir() {
-		return mbCreateParentDir;
+		return _createParentDir;
 	}
 
 	@Attribute(name = CREATE_PARENT_DIR_ATTR)
 	public boolean setCreateParentDir(boolean b) {
 		boolean previous = getCreateParentDir();
-		mbCreateParentDir = b;
+		_createParentDir = b;
 		return previous;
 	}
 
 	public LogThreshold getSeverity() {
-		return moSeverity;
+		return _severity;
 	}
 
 	@Attribute(name = SEVERITY_ATTR)
 	public LogThreshold setSeverity(LogThreshold l) {
 		// can be null
 		LogThreshold previous = getSeverity();
-		moSeverity = l;
+		_severity = l;
 		return previous;
 	}
 

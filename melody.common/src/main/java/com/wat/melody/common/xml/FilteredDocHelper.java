@@ -188,9 +188,6 @@ public class FilteredDocHelper {
 	 *            All its herited parents will be imported too.
 	 */
 	protected static void importHeritedParentNode(Document dest, Element toClone) {
-		if (toClone.getNodeType() != Node.ELEMENT_NODE) {
-			return;
-		}
 		Element parent = null;
 		try {
 			parent = resolvHeritAttr(toClone, null);

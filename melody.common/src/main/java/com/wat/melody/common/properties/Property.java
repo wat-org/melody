@@ -38,7 +38,7 @@ public class Property {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a <code>Property</code> object.
+	 * Convert the given <tt>String</tt> to a {@link Property} object.
 	 * </p>
 	 * 
 	 * <p>
@@ -48,17 +48,17 @@ public class Property {
 	 * </p>
 	 * 
 	 * @param v
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <code>Property</code> object, whose 'name' is equal to the Name
-	 *         part of the given <code>String</code> and whose 'value' is equal
-	 *         to the Value part of the given <code>String</code>.
+	 * @return a {@link Property} object, whose 'name' is equal to the Name part
+	 *         of the given <tt>String</tt> and whose 'value' is equal to the
+	 *         Value part of the given <tt>String</tt>.
 	 * 
 	 * @throws IllegalPropertyException
-	 *             if the given <code>String</code> doesn't respect the pattern
+	 *             if the given <tt>String</tt> doesn't respect the pattern
 	 *             "^\\w+([.]\\w+)*=.*$".
 	 * @throws IllegalArgumentException
-	 *             if the given <code>String</code> is null.
+	 *             if the given <tt>String</tt> is null.
 	 * 
 	 */
 	public static Property parseProperty(String v)
@@ -66,24 +66,21 @@ public class Property {
 		return new Property(v);
 	}
 
-	private PropertyName msName;
-	private String msValue;
-	private String msComment;
+	private PropertyName _name = null;
+	private String _value = null;
+	private String _comment = null;
 
 	/**
 	 * <p>
-	 * Creates an empty <code>Property</code>.
+	 * Creates an empty {@link Property}.
 	 * </p>
 	 */
 	public Property() {
-		initName();
-		initValue();
-		initComment();
 	}
 
 	/**
 	 * <p>
-	 * Creates an <code>Property</code> object, based on the given values.
+	 * Creates an {@link Property} object, based on the given values.
 	 * </p>
 	 * 
 	 * <p>
@@ -94,7 +91,7 @@ public class Property {
 	 * </p>
 	 * 
 	 * @param name
-	 *            is the name of the <code>Property</code> object.
+	 *            is the name of the {@link Property} object.
 	 * @param value
 	 *            is the value corresponding to the key.
 	 * 
@@ -115,11 +112,11 @@ public class Property {
 
 	/**
 	 * <p>
-	 * Creates an <code>Property</code> object, based on the given values.
+	 * Creates an {@link Property} object, based on the given values.
 	 * </p>
 	 * 
 	 * @param name
-	 *            is the key of the <code>Property</code> object.
+	 *            is the key of the {@link Property} object.
 	 * @param value
 	 *            is the value corresponding to the key.
 	 * @param comment
@@ -136,27 +133,22 @@ public class Property {
 	 */
 	public Property(String name, String value, String comment)
 			throws IllegalPropertyException {
-		this();
-		setName(name);
-		setValue(value);
+		this(name, value);
 		setComment(comment);
 	}
 
 	/**
 	 * <p>
-	 * Creates an <code>Property</code> object, based on the given values.
+	 * Creates an {@link Property} object, based on the given values.
 	 * </p>
 	 * 
 	 * @param name
-	 *            is the key of the <code>Property</code> object.
+	 *            is the key of the {@link Property} object.
 	 * @param value
 	 *            is the value corresponding to the key.
 	 * @param comment
 	 *            is a comment.
 	 * 
-	 * @throws IllegalPropertyException
-	 *             if the the given <code>key</code> doesn't respect the pattern
-	 *             "^\\w+([.]\\w+)*$".
 	 * @throws IllegalArgumentException
 	 *             if the given <code>key</code> is null.
 	 * @throws IllegalArgumentException
@@ -172,46 +164,43 @@ public class Property {
 
 	/**
 	 * <p>
-	 * Create a <code>Property</code> object based on the the given
-	 * <code>String</code>.
+	 * Create a {@link Property} object based on the the given <tt>String</tt>.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> The given <code>String</code> must be composed of a Name part,
-	 * followed by the equal character ('='), followed by the Value part. <BR/>
+	 * <i> The given <tt>String</tt> must be composed of a Name part, followed
+	 * by the equal character ('='), followed by the Value part. <BR/>
 	 * More formally : <BR/>
-	 * * The given <code>String</code> must satisfied the following pattern :
+	 * * The given <tt>String</tt> must satisfied the following pattern :
 	 * <code>"^\\w+([.]\\w+)*=.*$"</code>. <BR/>
 	 * * It implies that space character (<code>' '</code>) are forbidden in the
 	 * Name part. <BR/>
 	 * * It implies that comma character (<code>','</code>) are forbidden in the
 	 * Name part. <BR/>
-	 * * It implies the Name part cannot be an empty <code>String</code>. <BR/>
-	 * * It implies the given <code>String</code> cannot an empty
-	 * <code>String</code>. <BR/>
+	 * * It implies the Name part cannot be an empty <tt>String</tt>. <BR/>
+	 * * It implies the given <tt>String</tt> cannot an empty <tt>String</tt>. <BR/>
 	 * </i>
 	 * </p>
 	 * 
 	 * @param v
-	 *            is the given <code>String</code>.
+	 *            is the given <tt>String</tt>.
 	 * 
-	 * @return a <code>Property</code> object, whose 'name' is equal to the Name
-	 *         part of the given <code>String</code> and whose 'value' is equal
-	 *         to the Value part of the given <code>String</code>.
+	 * @return a {@link Property} object, whose 'name' is equal to the Name part
+	 *         of the given <tt>String</tt> and whose 'value' is equal to the
+	 *         Value part of the given <tt>String</tt>.
 	 * 
 	 * @throws IllegalPropertyException
-	 *             if the given <code>String</code> doesn't respect the pattern
+	 *             if the given <tt>String</tt> doesn't respect the pattern
 	 *             "^\\w+([.]\\w+)*=.*$".
 	 * @throws IllegalArgumentException
-	 *             if the given <code>String</code> is null.
+	 *             if the given <tt>String</tt> is null.
 	 * 
 	 */
 	public Property(String v) throws IllegalPropertyException {
 		this();
 		if (v == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a "
-					+ Property.class.getCanonicalName() + ").");
+					+ "Must be a valid String.");
 		}
 		if (v.trim().length() == 0) {
 			throw new IllegalPropertyException(Messages.bind(
@@ -225,30 +214,19 @@ public class Property {
 		setValue(v.substring(split + 1));
 	}
 
-	private void initName() {
-		msName = null;
-	}
-
-	private void initValue() {
-		msValue = null;
-	}
-
-	private void initComment() {
-		msComment = null;
-	}
-
 	public PropertyName getName() {
-		return msName;
+		return _name;
 	}
 
 	@Attribute(name = NAME_ATTR, mandatory = true)
 	public PropertyName setName(PropertyName n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid PropertyName.");
+					+ "Must be a valid "
+					+ PropertyName.class.getCanonicalName() + ".");
 		}
 		PropertyName previous = getName();
-		msName = n;
+		_name = n;
 		return previous;
 	}
 
@@ -265,7 +243,7 @@ public class Property {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	@Attribute(name = VALUE_ATTR, mandatory = true)
@@ -275,18 +253,18 @@ public class Property {
 					+ "Must be a valid String (a PropertyValue).");
 		}
 		String previous = getValue();
-		msValue = v;
+		_value = v;
 		return previous;
 	}
 
 	public String getComment() {
-		return msComment;
+		return _comment;
 	}
 
 	@Attribute(name = COMMENT_ATTR)
 	public String setComment(String v) {
 		String previous = getComment();
-		msComment = v;
+		_comment = v;
 		return previous;
 	}
 

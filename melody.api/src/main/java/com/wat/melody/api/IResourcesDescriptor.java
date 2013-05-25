@@ -97,13 +97,13 @@ public interface IResourcesDescriptor {
 
 	/**
 	 * <p>
-	 * Get the Node whose match the given {@link DUNID}.
+	 * Get the {@link Element} whose match the given {@link DUNID}.
 	 * </p>
 	 * 
 	 * @param melodyID
 	 *            is the {@link DUNID} to search.
 	 * 
-	 * @return the {@link Node} whose match the given {@link DUNID} if found,
+	 * @return the {@link Element} whose match the given {@link DUNID} if found,
 	 *         <code>null</code> otherwise.
 	 * 
 	 * @throws IllegalArgumentException
@@ -122,20 +122,20 @@ public interface IResourcesDescriptor {
 
 	/**
 	 * <p>
-	 * Returns all {@link Node}s whose match the given XPath Expression from all
-	 * eligible targets.
+	 * Returns all {@link Element}s whose match the given XPath Expression from
+	 * all eligible targets.
 	 * </p>
 	 * 
 	 * @param xpath
 	 *            is the XPath Expression to evaluate.
 	 * 
-	 * @return all {@link Node}s whose match the given XPath Expression from all
-	 *         eligible targets.
+	 * @return all {@link Element}s whose match the given XPath Expression from
+	 *         all eligible targets.
 	 * 
 	 * @throws XPathExpressionException
 	 *             if the given XPath Expression is not valid.
 	 */
-	public List<Node> evaluateTargets(String xpath)
+	public List<Element> evaluateTargets(String xpath)
 			throws XPathExpressionException;
 
 	public String getFilter(int i);

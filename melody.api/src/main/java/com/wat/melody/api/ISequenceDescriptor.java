@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -78,7 +79,7 @@ public interface ISequenceDescriptor {
 	 */
 	public void load(ISequenceDescriptor sd) throws IllegalOrderException;
 
-	public String getFileFullPath();
+	public String getSourceFile();
 
 	public String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException;
@@ -89,7 +90,7 @@ public interface ISequenceDescriptor {
 	public Node evaluateAsNode(String sXPathExpr)
 			throws XPathExpressionException;
 
-	public Node getRoot();
+	public Element getRoot();
 
 	public File getBaseDir();
 

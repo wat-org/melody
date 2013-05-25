@@ -40,6 +40,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	 */
 	public static final String UPLOAD = "upload";
 
+	// TODO : rename to max-par
 	/**
 	 * The 'maxpar' XML Attribute
 	 */
@@ -50,11 +51,11 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<Resources> maResourcesList;
-	private int miMaxPar;
+	private List<Resources> _resourcesList;
+	private int _maxPar;
 
-	private List<SimpleResource> maSimpleResourcesList;
-	private ITaskContext moTaskContext;
+	private List<SimpleResource> _simpleResourcesList;
+	private ITaskContext _taskContext;
 
 	public Upload() {
 		super();
@@ -177,7 +178,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	}
 
 	public List<Resources> getResourcesList() {
-		return maResourcesList;
+		return _resourcesList;
 	}
 
 	public List<Resources> setResourcesList(List<Resources> resources) {
@@ -186,7 +187,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 					+ "Must be a valid List<Resources>.");
 		}
 		List<Resources> previous = getResourcesList();
-		maResourcesList = resources;
+		_resourcesList = resources;
 		return previous;
 	}
 
@@ -196,7 +197,7 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 	}
 
 	public int getMaxPar() {
-		return miMaxPar;
+		return _maxPar;
 	}
 
 	@Attribute(name = MAXPAR_ATTR)
@@ -206,12 +207,12 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 					Messages.UploadEx_INVALID_MAXPAR_ATTR, iMaxPar));
 		}
 		int previous = getMaxPar();
-		miMaxPar = iMaxPar;
+		_maxPar = iMaxPar;
 		return previous;
 	}
 
 	protected List<SimpleResource> getSimpleResourcesList() {
-		return maSimpleResourcesList;
+		return _simpleResourcesList;
 	}
 
 	private List<SimpleResource> setSimpleResourcesList(List<SimpleResource> aft) {
@@ -220,17 +221,17 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 					+ "Must be a valid List<SimpleResource>.");
 		}
 		List<SimpleResource> previous = getSimpleResourcesList();
-		maSimpleResourcesList = aft;
+		_simpleResourcesList = aft;
 		return previous;
 	}
 
 	private ITaskContext getContext() {
-		return moTaskContext;
+		return _taskContext;
 	}
 
 	private ITaskContext setContext(ITaskContext tc) {
 		ITaskContext previous = getContext();
-		moTaskContext = tc;
+		_taskContext = tc;
 		return previous;
 	}
 

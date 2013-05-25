@@ -1,10 +1,11 @@
 package com.wat.melody.core.nativeplugin.sequence;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
@@ -53,10 +54,10 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	private File _baseDir = null;
 	private OrderName _defaultOrder = null;
 	private String _description = null;
-	private List<Node> _innerTasks;
+	private Set<Element> _innerTasks;
 
 	public Sequence() {
-		setInnerTasks(new ArrayList<Node>());
+		setInnerTasks(new LinkedHashSet<Element>());
 	}
 
 	/**
@@ -93,24 +94,19 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 
 	/**
 	 * <p>
-	 * Register the given Task (in its native Node format) as an inner-task of
-	 * this object.
+	 * Register the given task (in its native {@link Element} format) as an
+	 * inner-task of this object.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given node is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given node is already registered.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	@Override
-	public void registerInnerTask(Node n) {
+	public void registerInnerTask(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
-		}
-		if (_innerTasks.contains(n)) {
-			throw new IllegalArgumentException(n.getNodeName()
-					+ ": Not accepted. " + "Node already present in list.");
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
 		}
 		_innerTasks.add(n);
 	}
@@ -151,7 +147,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 
 	private void processOrder(OrderName order) throws TaskException,
 			InterruptedException {
-		for (Node n : getInnerTasks()) {
+		for (Element n : getInnerTasks()) {
 			if (n.getNodeName().equalsIgnoreCase(Order.class.getSimpleName())
 					&& n.getAttributes().getNamedItem(Order.NAME_ATTR)
 							.getNodeValue().equals(order.getValue())) {
@@ -258,7 +254,8 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	public String setDescription(String description) {
 		if (description == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		String previous = getDescription();
 		_description = description;
@@ -266,22 +263,19 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	}
 
 	/**
-	 * <p>
-	 * Get all inner-tasks (in their native {@link Node} format) of this task.
-	 * </p>
-	 * 
-	 * @return all inner-task (in their native {@link Node} format).
+	 * @return all inner-task (in their native {@link Element} format).
 	 */
-	private List<Node> getInnerTasks() {
+	private Set<Element> getInnerTasks() {
 		return _innerTasks;
 	}
 
-	private List<Node> setInnerTasks(List<Node> innerTasks) {
+	private Set<Element> setInnerTasks(Set<Element> innerTasks) {
 		if (innerTasks == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Node>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
 		}
-		List<Node> previous = getInnerTasks();
+		Set<Element> previous = getInnerTasks();
 		_innerTasks = innerTasks;
 		return previous;
 	}

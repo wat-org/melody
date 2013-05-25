@@ -17,6 +17,8 @@ import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.events.MutationEvent;
 
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.xml.exception.DUNIDDocException;
 import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
@@ -223,6 +225,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 		target.addEventListener("DOMNodeRemoved", this, true);
 		target.addEventListener("DOMNodeInserted", this, true);
 		return super.setDocument(d);
+		// TODO : should raise its own event on document modification
 	}
 
 	@Override
@@ -296,7 +299,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 		NodeList nl = findDUNIDs(getDocument());
 		if (nl.getLength() != 0) {
 			throw new DUNIDDocException(nl.item(0), Messages.bind(
-					Messages.DUNIDDocEx_FOUND_DUNID_ATTR, getFileFullPath()));
+					Messages.DUNIDDocEx_FOUND_DUNID_ATTR, getSourceFile()));
 		}
 
 		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());
@@ -304,27 +307,35 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 	/**
 	 * <p>
-	 * Store this object at the location that was used to load it.
+	 * Store this object into the given file.
 	 * </p>
 	 * 
 	 * <ul>
 	 * <li>Will remove all added {link #DUNID_ATTR} XML Attributes ;</li>
 	 * </ul>
-	 */
-	public synchronized void store() {
-		store(getFileFullPath());
-	}
-
-	/**
-	 * <p>
-	 * Store this object at the given location.
-	 * </p>
 	 * 
-	 * <ul>
-	 * <li>Will remove all added {link #DUNID_ATTR} XML Attributes ;</li>
-	 * </ul>
+	 * @param path
+	 *            is a file path, which specifies where the given
+	 *            {@link Document} will be stored.
+	 * 
+	 * @throws IllegalFileException
+	 *             if the given path points to a directory.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non readable file.
+	 * @throws IllegalFileException
+	 *             if the given path points to a non writable file.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a readable
+	 *             directory.
+	 * @throws IllegalDirectoryException
+	 *             if the given file's parent directory is not a writable
+	 *             directory.
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
 	 */
-	public synchronized void store(String sPath) {
+	@Override
+	public synchronized void store(String sPath) throws IllegalFileException,
+			IllegalDirectoryException {
 		if (!hasChanged()) {
 			return;
 		}

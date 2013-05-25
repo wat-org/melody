@@ -7,7 +7,7 @@ import javax.xml.xpath.XPath;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IPlugInConfigurations;
@@ -396,9 +396,9 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	private boolean isSameSequenceDescriptorAsParent() {
 		return isSubPM()
-				&& getSequenceDescriptor().getFileFullPath().equals(
+				&& getSequenceDescriptor().getSourceFile().equals(
 						getParentProcessorManager().getSequenceDescriptor()
-								.getFileFullPath());
+								.getSourceFile());
 	}
 
 	public IProcessorManager createSubProcessorManager(PropertiesSet ps) {
@@ -458,7 +458,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				+ isPreserveTemporaryFilesModeEnable());
 		str.append(", run-dry-mode-enabled:" + isRunDryModeEnable());
 		str.append(", sequence-descriptor-filepath:"
-				+ getSequenceDescriptor().getFileFullPath());
+				+ getSequenceDescriptor().getSourceFile());
 		str.append(", orders:{ ");
 		for (int i = 0; i < getSequenceDescriptor().countOrders(); i++)
 			str.append(getSequenceDescriptor().getOrder(i) + ", ");
@@ -492,7 +492,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		}
 		// If the Sequence Descriptor File Path is not provided => raise an
 		// error
-		if (getSequenceDescriptor().getFileFullPath() == null) {
+		if (getSequenceDescriptor().getSourceFile() == null) {
 			throw new ProcessorManagerConfigurationException(Messages.bind(
 					Messages.ProcMgrEx_UNDEF_MANDOTORY_DIRECTIVE,
 					"Sequence Descriptor Path"));
@@ -773,13 +773,13 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		} catch (InterruptedException Ex) {
 			InterruptedException e = new InterruptedException(Messages.bind(
 					Messages.ProcMgrEx_PROCESS_FINAL_STATE, State.INTERRUPTED,
-					getSequenceDescriptor().getFileFullPath()));
+					getSequenceDescriptor().getSourceFile()));
 			fireProcessorFinishedEvent(State.INTERRUPTED, e);
 			setFinalError(e);
 		} catch (TaskException Ex) {
 			ProcessorException e = new ProcessorException(Messages.bind(
 					Messages.ProcMgrEx_PROCESS_FINAL_STATE, State.FAILED,
-					getSequenceDescriptor().getFileFullPath()), Ex);
+					getSequenceDescriptor().getSourceFile()), Ex);
 			fireProcessorFinishedEvent(State.FAILED, e);
 			if (isSameSequenceDescriptorAsParent()) {
 				setFinalError(Ex);
@@ -789,7 +789,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		} catch (Throwable Ex) {
 			ProcessorException e = new ProcessorException(Messages.bind(
 					Messages.ProcMgrEx_PROCESS_FINAL_STATE, State.CRITICAL,
-					getSequenceDescriptor().getFileFullPath()), Ex);
+					getSequenceDescriptor().getSourceFile()), Ex);
 			fireProcessorFinishedEvent(State.CRITICAL, e);
 			setFinalError(e);
 		} finally {
@@ -829,12 +829,12 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		}
 	}
 
-	protected void createAndProcessTask(Node n, PropertiesSet ps)
+	protected void createAndProcessTask(Element n, PropertiesSet ps)
 			throws TaskException, InterruptedException {
 		processTask(newTask(n, ps));
 	}
 
-	protected ITask newTask(Node n, PropertiesSet ps) throws TaskException {
+	protected ITask newTask(Element n, PropertiesSet ps) throws TaskException {
 		boolean pushed = false;
 		try {
 			Class<? extends ITask> c = getTaskFactory().identifyTask(n);
@@ -880,17 +880,19 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			task.doProcessing();
 			fireTaskFinishedEvent(task, State.SUCCESS, null);
 		} catch (InterruptedException Ex) {
-			InterruptedException e = new InterruptedException(Messages.bind(
-					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
-							.getSimpleName().toLowerCase(), State.INTERRUPTED,
-					Doc.getNodeLocation(Melody.getContext().getNode())));
+			InterruptedException e = new InterruptedException(
+					Messages.bind(Messages.TaskEx_PROCESS_FINAL_STATE, task
+							.getClass().getSimpleName().toLowerCase(),
+							State.INTERRUPTED, Doc.getNodeLocation(Melody
+									.getContext().getRelatedElement())));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);
 			throw e;
 		} catch (TaskException Ex) {
 			TaskException e = new TaskException(Messages.bind(
 					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
-							.getSimpleName().toLowerCase(), State.FAILED,
-					Doc.getNodeLocation(Melody.getContext().getNode())), Ex);
+							.getSimpleName().toLowerCase(), State.FAILED, Doc
+							.getNodeLocation(Melody.getContext()
+									.getRelatedElement())), Ex);
 			fireTaskFinishedEvent(task, State.FAILED, e);
 			if (Ex instanceof SequenceException) {
 				throw Ex;
@@ -900,8 +902,9 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		} catch (Throwable Ex) {
 			TaskException e = new TaskException(Messages.bind(
 					Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
-							.getSimpleName().toLowerCase(), State.CRITICAL,
-					Doc.getNodeLocation(Melody.getContext().getNode())), Ex);
+							.getSimpleName().toLowerCase(), State.CRITICAL, Doc
+							.getNodeLocation(Melody.getContext()
+									.getRelatedElement())), Ex);
 			fireTaskFinishedEvent(task, State.CRITICAL, e);
 			throw e;
 		} finally {

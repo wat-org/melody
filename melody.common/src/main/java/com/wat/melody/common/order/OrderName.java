@@ -11,20 +11,20 @@ public class OrderName {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link OrderName} object.
+	 * Convert the given <tt>String</tt> to an {@link OrderName} object.
 	 * </p>
 	 * 
 	 * @param sOrderName
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>OrderName</code> object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link OrderName} object, whose equal to the given input
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalOrderNameException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>OrderName</code>.
+	 *             if the given input <tt>String</tt> is not a valid
+	 *             {@link OrderName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static OrderName parseString(String sOrderName)
 			throws IllegalOrderNameException {
@@ -36,7 +36,7 @@ public class OrderName {
 	 */
 	public static final String PATTERN = "\\w+([.]\\w+)*";
 
-	private String msValue;
+	private String _value;
 
 	public OrderName(String sOrderName) throws IllegalOrderNameException {
 		setValue(sOrderName);
@@ -44,7 +44,7 @@ public class OrderName {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class OrderName {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sOrderName) throws IllegalOrderNameException {
@@ -77,7 +77,7 @@ public class OrderName {
 					Messages.OrderNameEx_INVALID, sOrderName, PATTERN));
 		}
 		String previous = toString();
-		msValue = sOrderName;
+		_value = sOrderName;
 		return previous;
 	}
 

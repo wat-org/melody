@@ -29,6 +29,7 @@ public class SetEDAttrValue implements ITask {
 	 */
 	public static final String ITEMS_ATTR = "items";
 
+	// TODO : rename new-value
 	/**
 	 * The 'newValue' XML attribute of the 'SetEDAttrValue' XML element
 	 */
