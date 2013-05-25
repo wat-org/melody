@@ -63,13 +63,13 @@
 	<order name="startJbossMasFarm1">
 		<echo message="startJbossMasFarm1 1"/>
 		<foreach	items="//server"
-				itemName="item"
-				maxpar="2">
+				item-name="item"
+				max-par="2">
 			<echo message="startJbossMasFarm1 1 / §[§[item]§/@hostname]§"/>
 			<sleep millis="1000"/>
 			<foreach	items="§[item]§/module"
-					itemName="item2"
-					maxpar="0">
+					item-name="item2"
+					max-par="0">
 				<ssh
 					login="ec2-user"
 					host="§[§[item]§/@ip]§"

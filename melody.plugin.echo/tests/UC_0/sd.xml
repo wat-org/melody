@@ -14,6 +14,6 @@
 		<echo severity="WARNING" file="out.log" append="true"/>
 		<echo severity="WARNING"/>
 		<echo />
-		<echo message="message 8" severity="WARNING" file="will_be_created/out.log" createparentdir="yes" append="true"/>
+		<echo message="message 8" severity="WARNING" file="will_be_created/out.log" create-parent-directory="yes" append="true"/>
 	</order>
 </sequence>

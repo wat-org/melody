@@ -7,10 +7,10 @@
 
 	<order name="do">
 
-		<setEDAttrValue items="§[svr]§/@IP_priv" newValue=""/>
+		<setEDAttrValue items="§[svr]§/@IP_priv" new-value=""/>
 		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
 
-		<setEDAttrValue items="§[svr]§/@IP_priv" newValue="§[ip]§"/>
+		<setEDAttrValue items="§[svr]§/@IP_priv" new-value="§[ip]§"/>
 		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
 
 	</order>

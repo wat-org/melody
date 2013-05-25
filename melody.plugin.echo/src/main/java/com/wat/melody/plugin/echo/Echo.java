@@ -46,11 +46,10 @@ public class Echo implements ITask {
 	 */
 	public static final String APPEND_ATTR = "append";
 
-	// TODO : rename create-parent-directory
 	/**
-	 * The 'createParentDir' XML attribute of the 'echo' XML element
+	 * The 'create-parent-directory' XML attribute of the 'echo' XML element
 	 */
-	public static final String CREATE_PARENT_DIR_ATTR = "createParentDir";
+	public static final String CREATE_PARENT_DIR_ATTR = "create-parent-directory";
 
 	/**
 	 * The 'severity' XML attribute of the 'echo' XML element

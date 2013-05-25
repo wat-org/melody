@@ -8,14 +8,14 @@
 
 	<order name="test">
 <!--		<call	orders="startJbossMapiFarm1, startJbossMapiFarm2"
-			sequenceDescriptor="sd.xml" >
+			sequence-descriptor="sd.xml" >
 		</call>
 -->		
 		<call>
 			<ref	orders="startJbossMapiFarm1, startLDAP, startRSA"
-				sequenceDescriptor="sd1.xml" />
+				sequence-descriptor="sd1.xml" />
 			<ref	orders="startauth"
-				sequenceDescriptor="sd2.xml">
+				sequence-descriptor="sd2.xml">
 				<param	name="param1" value="aaaaaaaaa"/>
 				<param	name="test" value="bidon"/>
 			</ref>
@@ -24,7 +24,7 @@
 		<call orders="order1, order2" >
 			<param	name="param1" value="iiiiiiiiiiii"/>
 			<ref	orders="startJbossMasFarm1"
-				sequenceDescriptor="sd1.xml" />
+				sequence-descriptor="sd1.xml" />
 		</call>
 
 		<!--
@@ -33,7 +33,7 @@
 		-->		
 		<call>
 			<ref	orders="caca"
-				sequenceDescriptor="seqgfdgduence.xml" />
+				sequence-descriptor="seqgfdgduence.xml" />
 		</call>
 	</order>
 

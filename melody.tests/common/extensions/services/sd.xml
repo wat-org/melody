@@ -7,13 +7,13 @@
 		<echo message="Starting services ..." />
 
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					itemName="srv" >
+					item-name="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
 			
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;on&quot;]')"
-						itemName="service"
-						maxpar="1">
+						item-name="service"
+						max-par="1">
 				<property name="servicename" value="§[§[service]§/@name]§" />
 						
 				<ssh description="[start_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
@@ -32,13 +32,13 @@
 		<echo message="Stopping services ..." />
 
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					itemName="srv" >
+					item-name="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
 			
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;off&quot;]')"
-						itemName="service"
-						maxpar="1">
+						item-name="service"
+						max-par="1">
 				<property name="servicename" value="§[§[service]§/@name]§" />
 						
 				<ssh description="[stop_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >

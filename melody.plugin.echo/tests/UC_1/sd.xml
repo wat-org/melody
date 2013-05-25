@@ -16,7 +16,7 @@
 		<echo />
 		<!--
 		this task will fail 
-		because the folder "not_exists2" doesn't exists and the attribute "createparentdir" is not defined
+		because the folder "not_exists2" doesn't exists and the attribute "create-parent-directory" is not defined
 		-->		
 		<echo message="message 8" severity="WARNING" file="not_exists2/out.log" append="true"/>
 	</order>

@@ -10,7 +10,7 @@
 
 		<echo message="Transfering files to 'IP:§[IP]§' ..."/>
 
-		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" maxpar="10" >
+		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
 			<resources
 				match="**"
 				dirModifiers="770"

@@ -33,11 +33,10 @@ public class Ref {
 	 */
 	public static final String ORDERS_ATTR = "orders";
 
-	// TODO : rename sequence-descriptor
 	/**
-	 * The 'sequenceDescriptor' XML attribute
+	 * The 'sequence-descriptor' XML attribute
 	 */
-	public static final String SD_ATTR = "sequenceDescriptor";
+	public static final String SD_ATTR = "sequence-descriptor";
 
 	/**
 	 * The 'param' XML Nested Elment

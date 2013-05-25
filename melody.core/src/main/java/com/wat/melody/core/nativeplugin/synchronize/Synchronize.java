@@ -31,22 +31,20 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	 */
 	public static final String SYNCHRONIZE = "synchronize";
 
-	// TODO : rename lock-id
 	/**
-	 * The 'lock' XML attribute of the 'synchronize' XML element
+	 * The 'lock-id' XML attribute of the 'synchronize' XML element
 	 */
-	public static final String LOCK_ID_ATTR = "lockId";
+	public static final String LOCK_ID_ATTR = "lock-id";
 
 	/**
 	 * The 'scope' XML attribute of the 'synchronize' XML element
 	 */
 	public static final String SCOPE_ATTR = "scope";
 
-	// TODO : rename max-par
 	/**
-	 * The 'maxPar' XML attribute of the 'synchronize' XML element
+	 * The 'max-par' XML attribute of the 'synchronize' XML element
 	 */
-	public static final String MAXPAR_ATTR = "maxPar";
+	public static final String MAXPAR_ATTR = "max-par";
 
 	private Set<Element> _innerTasks;
 	private LockId _lockId;

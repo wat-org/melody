@@ -6,8 +6,8 @@
 	<order name="do">
 
 		<foreach	items="//instance"
-					itemName="srv"
-					maxpar="1">
+					item-name="srv"
+					max-par="1">
 		
 			<property name="name" value="§[§[srv]§/@name]§"/>
 			<property name="ip" value="§[§[srv]§/@IP_priv]§"/>
@@ -15,7 +15,7 @@
 			<echo message="instance '§[name]§' as IP '§[ip]§'"/>
 
 			<foreach	items="§[srv]§/*"
-						itemName="nested_node">
+						item-name="nested_node">
 				<property name="nested_node_name" value="§[node-name(§[nested_node]§)]§"/>
 				<property name="nested_node_text" value="§[§[nested_node]§/text()]§"/>
 				<echo message="§[nested_node_name]§ : §[nested_node_text]§"/>

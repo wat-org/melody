@@ -50,7 +50,7 @@ public class MelodyException extends Exception {
 	 *       Error 2 : [file:./melody.tests/tests/call/UC_1/sd2.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
 	 *           Caused by : [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67, attribute:sequenceDescriptor] XML Attribute 'sequenceDescriptor' set &lt;FAILED&gt;.
+	 *           Caused by : [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
 	 *           Caused by : './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
 	 *       Error 3 : [file:./melody.tests/tests/call/UC_1/sd3.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
@@ -59,7 +59,7 @@ public class MelodyException extends Exception {
 	 *       Error 4 : [file:./melody.tests/tests/call/UC_1/sd4.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
 	 *           Caused by : [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
-	 *           Caused by : The mandatory XML Attribute 'itemName' is missing. To solve this issue, declare the missing XML Attribute.
+	 *           Caused by : The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
 	 * </pre>
 	 * 
 	 * </p>
@@ -121,7 +121,7 @@ public class MelodyException extends Exception {
 	 *       Error 2 : [file:./melody.tests/tests/call/UC_1/sd2.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
 	 *           Caused by : [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67, attribute:sequenceDescriptor] XML Attribute 'sequenceDescriptor' set &lt;FAILED&gt;.
+	 *           Caused by : [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
 	 *           Caused by : './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
 	 *       Error 3 : [file:./melody.tests/tests/call/UC_1/sd3.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
@@ -130,7 +130,7 @@ public class MelodyException extends Exception {
 	 *       Error 4 : [file:./melody.tests/tests/call/UC_1/sd4.xml] Processing finished &lt;FAILED&gt;.
 	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
 	 *           Caused by : [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
-	 *           Caused by : The mandatory XML Attribute 'itemName' is missing. To solve this issue, declare the missing XML Attribute.
+	 *           Caused by : The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
 	 * </pre>
 	 * 
 	 * </p>

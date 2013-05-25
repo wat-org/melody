@@ -6,8 +6,8 @@
 	<order name="do">
 
 		<foreach	items="//instance"
-					itemName="srv"
-					maxpar="1">
+					item-name="srv"
+					max-par="1">
 		
 			<property name="ip" value="§[§[srv]§/@IP_priv]§"/>
 			<property name="name" value="§[§[srv]§/@name]§"/>
@@ -15,7 +15,7 @@
 			<echo message="instance '§[name]§' as IP '§[ip]§'"/>
 
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/package')"
-						itemName="pkg">
+						item-name="pkg">
 				<property name="pkgname" value="§[§[pkg]§/@name]§"/>
 				<property name="pkgarch" value="§[§[pkg]§/@arch]§"/>
 

@@ -36,15 +36,14 @@ public class Upload extends AbstractSshConnectionManagedOperation implements
 		TemplatingHandler {
 
 	/**
-	 * The 'scp' XML element used in the Sequence Descriptor
+	 * The 'upload' XML element used in the Sequence Descriptor
 	 */
 	public static final String UPLOAD = "upload";
 
-	// TODO : rename to max-par
 	/**
-	 * The 'maxpar' XML Attribute
+	 * The 'max-par' XML Attribute
 	 */
-	public static final String MAXPAR_ATTR = "maxpar";
+	public static final String MAXPAR_ATTR = "max-par";
 
 	/**
 	 * The 'resources' XML Nested Element

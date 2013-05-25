@@ -29,11 +29,10 @@ public class SetEDAttrValue implements ITask {
 	 */
 	public static final String ITEMS_ATTR = "items";
 
-	// TODO : rename new-value
 	/**
 	 * The 'newValue' XML attribute of the 'SetEDAttrValue' XML element
 	 */
-	public static final String NEW_VALUE_ATTR = "newValue";
+	public static final String NEW_VALUE_ATTR = "new-value";
 
 	private String _items = null;
 	private String _newValue = null;
@@ -46,6 +45,12 @@ public class SetEDAttrValue implements ITask {
 	public void validate() throws SetEDAttrValueException {
 	}
 
+	/**
+	 * <p>
+	 * Assign the given value (attribute 'new-value') to attributes which match
+	 * the given expression (attribute 'items').
+	 * </p>
+	 */
 	@Override
 	public void doProcessing() throws SetEDAttrValueException,
 			InterruptedException {
@@ -67,7 +72,8 @@ public class SetEDAttrValue implements ITask {
 	public void setItems(String items) throws SetEDAttrValueException {
 		if (items == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		if (items.trim().length() == 0) {
 			throw new SetEDAttrValueException(Messages.bind(
@@ -101,7 +107,8 @@ public class SetEDAttrValue implements ITask {
 	public String setNewValue(String v) {
 		if (v == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		String previous = getNewValue();
 		_newValue = v;
@@ -115,7 +122,8 @@ public class SetEDAttrValue implements ITask {
 	private void setAttributesToUpdate(NodeList nl) {
 		if (nl == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid NodeList (a XML Attribute list).");
+					+ "Must be a valid " + NodeList.class.getCanonicalName()
+					+ ".");
 		}
 		_attributesToUpdate = nl;
 	}

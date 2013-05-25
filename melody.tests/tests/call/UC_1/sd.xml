@@ -6,13 +6,13 @@
 	<order name="test">
 		<call orders="order1, order2">
 			<ref	orders="order1"
-				sequenceDescriptor="sd1.xml" />
+				sequence-descriptor="sd1.xml" />
 			<ref	orders="order1"
-				sequenceDescriptor="sd2.xml" />
+				sequence-descriptor="sd2.xml" />
 			<ref	orders="order1"
-				sequenceDescriptor="sd3.xml" />
+				sequence-descriptor="sd3.xml" />
 			<ref	orders="order1"
-				sequenceDescriptor="sd4.xml" />
+				sequence-descriptor="sd4.xml" />
 		</call>
 	</order>
 

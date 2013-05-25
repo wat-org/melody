@@ -37,17 +37,15 @@ public class Foreach implements ITask, ITaskContainer {
 	 */
 	public static final String ITEMS_ATTR = "items";
 
-	// TODO : rename item-name
 	/**
-	 * The 'itemName' XML attribute of the Foreach Task
+	 * The 'item-name' XML attribute of the Foreach Task
 	 */
-	public static final String ITEMNAME_ATTR = "itemName";
+	public static final String ITEMNAME_ATTR = "item-name";
 
-	// TODO : rename max-par
 	/**
-	 * The 'maxpar' XML attribute of the Foreach Task
+	 * The 'max-par' XML attribute of the Foreach Task
 	 */
-	public static final String MAXPAR_ATTR = "maxpar";
+	public static final String MAXPAR_ATTR = "max-par";
 
 	public static final short NEW = 16;
 	public static final short RUNNING = 8;
@@ -164,8 +162,9 @@ public class Foreach implements ITask, ITaskContainer {
 	private void initializeForeachThreads() {
 		for (Element target : getTargets()) {
 			PropertiesSet ps = Melody.getContext().getProperties().copy();
-			// Add the property '<ItemName>=<XPath position of currentItem>', so
-			// that '§[<ItemName>]§' will be expanded with the item's XPath
+			// Add the property '<item-name>=<XPath position of currentItem>',
+			// so
+			// that '§[<item-name>]§' will be expanded with the item's XPath
 			// position
 			Property p = new Property(getItemName(),
 					Doc.getXPathPosition(target), null);

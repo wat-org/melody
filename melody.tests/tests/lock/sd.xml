@@ -9,8 +9,8 @@
 
 	<order name="do1">
 
-		<foreach items="//instance" itemName="srv">
-			<synchronize maxpar="1">
+		<foreach items="//instance" item-name="srv">
+			<synchronize max-par="1">
 				<echo message="§[srv]§" />
 				<sleep millis="2000" />
 			</synchronize>
@@ -20,8 +20,8 @@
 
 	<order name="do2">
 
-		<foreach items="//instance" itemName="srv">
-			<synchronize maxpar="1">
+		<foreach items="//instance" item-name="srv">
+			<synchronize max-par="1">
 				<echo message="§[srv]§" />
 				<sleep millis="2000" />
 			</synchronize>

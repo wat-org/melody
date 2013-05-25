@@ -8,7 +8,7 @@
 		<echo message="Transfering files to all remote systems ..."/>
 
 		<foreach	items="//instance[exists(@instance-id)]"
-					itemName="svr">
+					item-name="svr">
 
 			<property name="IP" value="§[melody:getManagementNetworkHost(§[svr]§)]§"/>
 			<property name="application" value="myApp"/>
@@ -17,7 +17,7 @@
 
 			<echo message="+ Transfering files to 'IP:§[IP]§' ..."/>
 
-			<upload host="§[IP]§" login="couille" keypair-name="§[melody:getHeritedAttributeValue(§[svr]§, 'keypair-name')]§" maxpar="10" >
+			<upload host="§[IP]§" login="couille" keypair-name="§[melody:getHeritedAttributeValue(§[svr]§, 'keypair-name')]§" max-par="10" >
 			<!--
 			'resources' XML Nested Element allow to select files.
 			Select files will be transfered on the remote computer.

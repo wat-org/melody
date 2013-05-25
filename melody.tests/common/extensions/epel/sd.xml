@@ -7,7 +7,7 @@
 		<echo message="Deploying EPEL repository..." />
 
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/packages/*[@repo=&quot;epel&quot;]'))) ]"
-					itemName="srv" >
+					item-name="srv" >
 			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
 		

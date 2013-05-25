@@ -152,11 +152,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			// Search for resulting nodes in the eligible targets
 			for (int i = 0; i < nl.getLength(); i++) {
 				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
-					// TODO: externalize error message
-					throw new XPathExpressionException(
-							Messages.bind(
-									"''{0}'': Not accepted. This expression target - at least - a ''{1}'' node. Since this expression doesn''t only targets Element Node, such expression is not accepted.",
-									xpath, Doc.parseNodeType(nl.item(i))));
+					throw new XPathExpressionException(Messages.bind(
+							Messages.TargetEx_NOT_MATCH_ELEMENT, xpath,
+							Doc.parseNodeType(nl.item(i))));
 				}
 				Element n = (Element) nl.item(i);
 				if (getTargetDescriptor().getElement(getDUNID(n)) != null) {
@@ -332,12 +330,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Document d = getOwnerDUNIDDoc(dunid).getDocument();
-		Element n = (Element) getElement(d, dunid);
+		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the target descriptor
-		d = getTargetDescriptor().getDocument();
-		n = (Element) getElement(d, dunid);
+		n = getTargetDescriptor().getElement(dunid);
 		if (n == null) {
 			// This DUNID may not be in the target descriptor
 			return;
@@ -354,12 +350,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Document d = getOwnerDUNIDDoc(dunid).getDocument();
-		Element n = (Element) getElement(d, dunid);
+		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
 		n.removeAttribute(evt.getAttrName());
 		// Modify the target descriptor
-		d = getTargetDescriptor().getDocument();
-		n = (Element) getElement(d, dunid);
+		n = getTargetDescriptor().getElement(dunid);
 		if (n == null) {
 			// This DUNID may not be in the target descriptor
 			return;
@@ -376,12 +370,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Document d = getOwnerDUNIDDoc(dunid).getDocument();
-		Element n = (Element) getElement(d, dunid);
+		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the target descriptor
-		d = getTargetDescriptor().getDocument();
-		n = (Element) getElement(d, dunid);
+		n = getTargetDescriptor().getElement(dunid);
 		if (n == null) {
 			// This DUNID may not be in the target descriptor
 			return;

@@ -35,15 +35,12 @@ public class FilteredDoc extends DUNIDDoc {
 			Element toImport, boolean importChilds) {
 		if (toImport == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid Node.");
-		}
-		if (toImport.getNodeType() != Node.ELEMENT_NODE) {
-			throw new IllegalArgumentException(toImport.getNodeName()
-					+ ": Not accepted. " + "Must be valid Element Node.");
+					+ "Must be valid " + Element.class.getCanonicalName() + ".");
 		}
 		if (dest == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Document.");
+					+ "Must be valid " + Document.class.getCanonicalName()
+					+ ".");
 		}
 
 		Node imported = getElement(dest, getDUNID(toImport));
@@ -400,19 +397,19 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void nodeInstered(MutationEvent evt) {
 		super.nodeInstered(evt);
-		// TODO : insert node into original document
+		// TODO : modify original document
 	}
 
 	@Override
 	protected void nodeRemoved(MutationEvent evt) {
 		super.nodeRemoved(evt);
-		// TODO : remove node into original document
+		// TODO : modify original document
 	}
 
 	@Override
 	protected void nodeTextChanged(MutationEvent evt) {
 		super.nodeTextChanged(evt);
-		// TODO : modify node text into original document
+		// TODO : modify original document
 	}
 
 	/**
