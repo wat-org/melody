@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><environment>
+<models>
+	<model name="second_model">
+		<packages>
+			<package name="pck1" arch="x386"/>
+			<package name="pck2" arch="x386"/>
+			<package name="pck3" arch="x386"/>
+		</packages>		
+	</model>
+	<model name="third_model">
+		<packages>
+			<package name="pck1" arch="x386"/>
+			<package name="pck2" arch="x386"/>
+			<package name="pck3" arch="x386"/>
+		</packages>		
+	</model>
+	<model name="fourth_model">
+		<packages>
+			<package name="pck1" arch="x386"/>
+			<package name="pck2" arch="x386"/>
+			<package name="pck3" arch="x386"/>
+		</packages>		
+	</model>
+</models>
+</environment>

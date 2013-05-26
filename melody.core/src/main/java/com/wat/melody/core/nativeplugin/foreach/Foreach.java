@@ -13,7 +13,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.ex.MelodyConsolidatedException;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
@@ -63,14 +63,14 @@ public class Foreach implements ITask, ITaskContainer {
 	private short _state;
 	private ThreadGroup _threadGroup;
 	private List<ForeachThread> _threadsList;
-	private MelodyConsolidatedException _exceptionsSet;
+	private ConsolidatedException _exceptionsSet;
 
 	public Foreach() {
 		setInnerTasks(new LinkedHashSet<Element>());
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
-		setExceptionsSet(new MelodyConsolidatedException());
+		setExceptionsSet(new ConsolidatedException());
 	}
 
 	/**
@@ -452,19 +452,17 @@ public class Foreach implements ITask, ITaskContainer {
 	/**
 	 * @return the exceptions that append during the processing of this object.
 	 */
-	private MelodyConsolidatedException getExceptionsSet() {
+	private ConsolidatedException getExceptionsSet() {
 		return _exceptionsSet;
 	}
 
-	private MelodyConsolidatedException setExceptionsSet(
-			MelodyConsolidatedException cex) {
+	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ MelodyConsolidatedException.class.getCanonicalName()
-					+ ".");
+					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		MelodyConsolidatedException previous = getExceptionsSet();
+		ConsolidatedException previous = getExceptionsSet();
 		_exceptionsSet = cex;
 		return previous;
 	}

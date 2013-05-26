@@ -16,6 +16,7 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.events.MutationEvent;
 
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -175,8 +176,8 @@ public class DUNIDDoc extends Doc implements EventListener {
 		}
 	}
 
-	private int miIndex;
-	private boolean mbHasChanged;
+	private int _index;
+	private boolean _hasChanged;
 
 	public DUNIDDoc() {
 		this(0);
@@ -189,7 +190,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 	}
 
 	public int getIndex() {
-		return miIndex;
+		return _index;
 	}
 
 	private int setIndex(int index) {
@@ -198,34 +199,47 @@ public class DUNIDDoc extends Doc implements EventListener {
 					+ "Must be a positive integer or zero.");
 		}
 		int previous = getIndex();
-		miIndex = index;
+		_index = index;
 		return previous;
 	}
 
 	private boolean hasChanged() {
-		return mbHasChanged;
+		return _hasChanged;
 	}
 
 	private boolean setHasChanged(boolean hasChanged) {
 		boolean previous = hasChanged();
-		mbHasChanged = hasChanged;
+		_hasChanged = hasChanged;
 		return previous;
 	}
 
 	private void markHasChanged() {
-		mbHasChanged = true;
+		_hasChanged = true;
 	}
 
 	@Override
 	protected Document setDocument(Document d) {
+		super.setDocument(d);
 		// Listen to all modifications performed on the underlying doc
-		EventTarget target = (EventTarget) d;
+		startListening();
+		// TODO : should raise its own event on document modification
+		return getDocument();
+	}
+
+	protected void startListening() {
+		EventTarget target = (EventTarget) getDocument();
 		target.addEventListener("DOMAttrModified", this, true);
 		target.addEventListener("DOMCharacterDataModified", this, true);
 		target.addEventListener("DOMNodeRemoved", this, true);
 		target.addEventListener("DOMNodeInserted", this, true);
-		return super.setDocument(d);
-		// TODO : should raise its own event on document modification
+	}
+
+	protected void stopListening() {
+		EventTarget target = (EventTarget) getDocument();
+		target.removeEventListener("DOMAttrModified", this, true);
+		target.removeEventListener("DOMCharacterDataModified", this, true);
+		target.removeEventListener("DOMNodeRemoved", this, true);
+		target.removeEventListener("DOMNodeInserted", this, true);
 	}
 
 	@Override
@@ -251,33 +265,51 @@ public class DUNIDDoc extends Doc implements EventListener {
 			} else if (evt.getType().equals("DOMNodeRemoved")) {
 				nodeRemoved(e);
 			}
+		} catch (MelodyException Ex) {
+			log.error(new MelodyException("An error occurred while "
+					+ "performing event propagation.", Ex).toString());
 		} catch (Throwable Ex) {
-			log.error(new MelodyException("Unexpected error while performing "
-					+ "event propagation.", Ex).toString());
+			log.fatal(new MelodyException("An unexpected error occurred while "
+					+ "performing event propagation.", Ex).toString());
 		}
 	}
 
-	protected void nodeInstered(MutationEvent evt) {
+	protected void nodeInstered(MutationEvent evt) throws MelodyException {
+		/*
+		 * TODO : add a dunid attribute to the node (and its child)
+		 * 
+		 * throw an error if dunid attribute already exists in the node.
+		 * 
+		 * How many event are propagated if a Node with many child is inserted ?
+		 */
 		markHasChanged();
 	}
 
-	protected void nodeRemoved(MutationEvent evt) {
+	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
 		markHasChanged();
 	}
 
-	protected void nodeTextChanged(MutationEvent evt) {
+	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
 		markHasChanged();
 	}
 
-	protected void attributeInserted(MutationEvent evt) {
+	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		markHasChanged();
 	}
 
-	protected void attributeRemoved(MutationEvent evt) {
+	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
+		if (evt.getAttrName().equals(DUNID_ATTR)) {
+			throw new NodeRelatedException((Node) evt.getTarget(),
+					Messages.bind(Messages.DUNIDDocEx_DUNID_DEL, DUNID_ATTR));
+		}
 		markHasChanged();
 	}
 
-	protected void attributeModified(MutationEvent evt) {
+	protected void attributeModified(MutationEvent evt) throws MelodyException {
+		if (evt.getAttrName().equals(DUNID_ATTR)) {
+			throw new NodeRelatedException((Node) evt.getTarget(),
+					Messages.bind(Messages.DUNIDDocEx_DUNID_MOD, DUNID_ATTR));
+		}
 		markHasChanged();
 	}
 
@@ -298,12 +330,18 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 		NodeList nl = findDUNIDs(getDocument());
 		if (nl.getLength() != 0) {
-			throw new IllegalDocException(new NodeRelatedException(nl,
-					Messages.bind(Messages.DUNIDDocEx_FOUND_DUNID_ATTR,
-							getSourceFile(), DUNID_ATTR)));
+			ConsolidatedException causes = new ConsolidatedException(
+					Messages.bind(Messages.DUNIDDocEx_FOUND_DUNID_RESUME,
+							DUNID_ATTR));
+			for (Node node : new NodeCollection(nl)) {
+				causes.addCause(new NodeRelatedException(node, Messages.bind(
+						Messages.DUNIDDocEx_FOUND_DUNID, DUNID_ATTR)));
+			}
+			throw new IllegalDocException(causes);
 		}
-
+		stopListening();
 		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());
+		startListening();
 	}
 
 	/**

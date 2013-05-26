@@ -7,6 +7,7 @@ public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "com.wat.melody.core.nativeplugin.order.messages";
 
 	public static String OrderEx_DUPLICATE_NAME;
+	public static String OrderEx_DUPLICATE_NAME_RESUME;
 
 	public static String OrderEx_INTERRUPTED;
 

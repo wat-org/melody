@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.wat.melody.common.ex.MelodyConsolidatedException;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
@@ -37,7 +37,7 @@ class UploaderMultiThread {
 	private short miState;
 	private ThreadGroup moThreadGroup;
 	private List<UploaderThread> maThreadsList;
-	private MelodyConsolidatedException moExceptionsSet;
+	private ConsolidatedException moExceptionsSet;
 
 	protected UploaderMultiThread(SshSession session, List<SimpleResource> r,
 			int maxPar, TemplatingHandler th) {
@@ -49,7 +49,7 @@ class UploaderMultiThread {
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<UploaderThread>());
-		setExceptionsSet(new MelodyConsolidatedException());
+		setExceptionsSet(new ConsolidatedException());
 	}
 
 	protected void upload() throws UploaderException, InterruptedException {
@@ -264,19 +264,17 @@ class UploaderMultiThread {
 		return previous;
 	}
 
-	private MelodyConsolidatedException getExceptionsSet() {
+	private ConsolidatedException getExceptionsSet() {
 		return moExceptionsSet;
 	}
 
-	private MelodyConsolidatedException setExceptionsSet(
-			MelodyConsolidatedException cex) {
+	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ MelodyConsolidatedException.class.getCanonicalName()
-					+ ".");
+					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		MelodyConsolidatedException previous = getExceptionsSet();
+		ConsolidatedException previous = getExceptionsSet();
 		moExceptionsSet = cex;
 		return previous;
 	}

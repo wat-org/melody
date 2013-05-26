@@ -400,19 +400,19 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	@Override
-	protected void nodeInstered(MutationEvent evt) {
+	protected void nodeInstered(MutationEvent evt) throws MelodyException {
 		super.nodeInstered(evt);
 		// TODO : modify original document
 	}
 
 	@Override
-	protected void nodeRemoved(MutationEvent evt) {
+	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
 		super.nodeRemoved(evt);
 		// TODO : modify original document
 	}
 
 	@Override
-	protected void nodeTextChanged(MutationEvent evt) {
+	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
 		super.nodeTextChanged(evt);
 		// TODO : modify original document
 	}
@@ -422,7 +422,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * original document
 	 */
 	@Override
-	protected void attributeInserted(MutationEvent evt) {
+	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		super.attributeInserted(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
@@ -443,7 +443,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * original document
 	 */
 	@Override
-	protected void attributeRemoved(MutationEvent evt) {
+	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
 		super.attributeRemoved(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
@@ -464,7 +464,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * original document
 	 */
 	@Override
-	protected void attributeModified(MutationEvent evt) {
+	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		super.attributeModified(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);

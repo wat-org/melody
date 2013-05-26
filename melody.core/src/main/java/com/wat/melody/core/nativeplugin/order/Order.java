@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.IFirstLevelTask;
@@ -17,7 +18,10 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.xml.NodeCollection;
+import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.core.nativeplugin.order.exception.OrderException;
 
 /**
@@ -254,19 +258,25 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ ".");
 		}
 
-		int count = findOrders(name).getLength();
+		NodeList nl = findOrders(name);
+		int count = nl.getLength();
 		if (count == 0) {
 			throw new RuntimeException("Unexpected error while detecting "
 					+ "duplicate order name. No order whose name is equal "
-					+ "to " + name + " were found."
+					+ "to '" + name + "' were found."
 					+ "Because such order exists, such error cannot "
 					+ "happened."
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced. ");
 		} else if (count > 1) {
-			throw new OrderException(Messages.bind(
-					Messages.OrderEx_DUPLICATE_NAME, new Object[] { name,
-							ORDER, NAME_ATTR }));
+			ConsolidatedException causes = new ConsolidatedException(
+					Messages.bind(Messages.OrderEx_DUPLICATE_NAME_RESUME,
+							new Object[] { name, ORDER, NAME_ATTR }));
+			for (Node node : new NodeCollection(nl)) {
+				causes.addCause(new SimpleNodeRelatedException(node, Messages
+						.bind(Messages.OrderEx_DUPLICATE_NAME, name)));
+			}
+			throw new OrderException(causes);
 		}
 		OrderName previous = getName();
 		_orderName = name;

@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -131,30 +132,31 @@ public class FilteredDocHelper {
 					.getFirstChild());
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(herit, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH, xpath), Ex);
+					Messages.HeritAttrEx_INVALID_XPATH, xpath), Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new NodeRelatedException(herit, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_MANYNODEMATCH,
-					xpath));
+			ConsolidatedException causes = new ConsolidatedException(
+					Messages.bind(Messages.HeritAttrEx_MATCH_RESUME, xpath));
+			for (Node node : new NodeCollection(nl)) {
+				causes.addCause(new NodeRelatedException(node,
+						Messages.HeritAttrEx_MATCH));
+			}
+			throw new NodeRelatedException(herit, causes);
 		} else if (nl.getLength() == 0) {
 			throw new NodeRelatedException(herit, Messages.bind(
-					Messages.FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH,
-					xpath));
+					Messages.HeritAttrEx_NO_MATCH, xpath));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(
-					herit,
-					Messages.bind(
-							Messages.FilteredDocEx_INVALID_HERIT_ATTR_NOTANELEMENTMATCH,
-							xpath, Doc.parseNodeType(nl.item(0))));
+			throw new NodeRelatedException(herit, Messages.bind(
+					Messages.HeritAttrEx_DONT_MATCH_ELEMENT, xpath,
+					Doc.parseNodeType(nl.item(0))));
 		}
 		Element parent = (Element) nl.item(0);
 
 		if (circle != null) {
 			if (circle.contains(parent)) {
 				throw new NodeRelatedException(herit, Messages.bind(
-						Messages.FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF,
+						Messages.HeritAttrEx_CIRCULAR_REF,
 						printCircularReferences(circle)));
 			}
 			circle.add(parent);

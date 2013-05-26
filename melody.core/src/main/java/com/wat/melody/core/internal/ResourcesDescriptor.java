@@ -306,17 +306,17 @@ public class ResourcesDescriptor extends FilteredDoc implements
 				.evaluateAsNode(expr, getDocument().getFirstChild());
 	}
 
-	protected void nodeInstered(MutationEvent evt) {
+	protected void nodeInstered(MutationEvent evt) throws MelodyException {
 		super.nodeInstered(evt);
 		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
 
-	protected void nodeRemoved(MutationEvent evt) {
+	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
 		super.nodeRemoved(evt);
 		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
 
-	protected void nodeTextChanged(MutationEvent evt) {
+	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
 		super.nodeTextChanged(evt);
 		// TODO : Modify the DUNIDDoc and the target descriptor
 	}
@@ -325,7 +325,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * An attribute have been inserted in the current document => modify the
 	 * original DUNIDDoc and the target descriptor
 	 */
-	protected void attributeInserted(MutationEvent evt) {
+	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		super.attributeInserted(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
@@ -345,7 +345,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * An attribute have been removed in the current document => modify the
 	 * original DUNIDDoc and the target descriptor
 	 */
-	protected void attributeRemoved(MutationEvent evt) {
+	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
 		super.attributeRemoved(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
@@ -365,7 +365,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * An attribute have been modified in the current document => modify the
 	 * original DUNIDDoc and the target descriptor
 	 */
-	protected void attributeModified(MutationEvent evt) {
+	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		super.attributeModified(evt);
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);

@@ -10,7 +10,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
-import com.wat.melody.common.ex.MelodyConsolidatedException;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 import com.wat.melody.core.nativeplugin.foreach.ForeachThread;
@@ -41,7 +41,7 @@ public class Call extends Ref implements ITask {
 
 	private short _state;
 	private ThreadGroup _threadGroup;
-	private MelodyConsolidatedException _exceptionsSet;
+	private ConsolidatedException _exceptionsSet;
 
 	/**
 	 * <p>
@@ -55,7 +55,7 @@ public class Call extends Ref implements ITask {
 		setCallRefs(new ArrayList<Ref>());
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setExceptionsSet(new MelodyConsolidatedException());
+		setExceptionsSet(new ConsolidatedException());
 	}
 
 	/**
@@ -342,19 +342,17 @@ public class Call extends Ref implements ITask {
 	/**
 	 * @return the exceptions that append during the processing of this object.
 	 */
-	private MelodyConsolidatedException getExceptionsSet() {
+	private ConsolidatedException getExceptionsSet() {
 		return _exceptionsSet;
 	}
 
-	private MelodyConsolidatedException setExceptionsSet(
-			MelodyConsolidatedException cex) {
+	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ MelodyConsolidatedException.class.getCanonicalName()
-					+ ".");
+					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		MelodyConsolidatedException previous = getExceptionsSet();
+		ConsolidatedException previous = getExceptionsSet();
 		_exceptionsSet = cex;
 		return previous;
 	}

@@ -4,7 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.common.ex.MelodyConsolidatedException;
+import com.wat.melody.common.ex.ConsolidatedException;
 
 /**
  * 
@@ -56,7 +56,7 @@ abstract class BaseInstanceController implements InstanceController {
 
 	protected void fireInstanceCreated() throws OperationException,
 			InterruptedException {
-		MelodyConsolidatedException cex = new MelodyConsolidatedException();
+		ConsolidatedException cex = new ConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
 			try {
 				listener.onInstanceCreated();
@@ -71,7 +71,7 @@ abstract class BaseInstanceController implements InstanceController {
 
 	protected void fireInstanceDestroyed() throws OperationException,
 			InterruptedException {
-		MelodyConsolidatedException cex = new MelodyConsolidatedException();
+		ConsolidatedException cex = new ConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
 			try {
 				listener.onInstanceDestroyed();
@@ -86,7 +86,7 @@ abstract class BaseInstanceController implements InstanceController {
 
 	protected void fireInstanceStarted() throws OperationException,
 			InterruptedException {
-		MelodyConsolidatedException cex = new MelodyConsolidatedException();
+		ConsolidatedException cex = new ConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
 			try {
 				listener.onInstanceStarted();
@@ -101,7 +101,7 @@ abstract class BaseInstanceController implements InstanceController {
 
 	protected void fireInstanceStopped() throws OperationException,
 			InterruptedException {
-		MelodyConsolidatedException cex = new MelodyConsolidatedException();
+		ConsolidatedException cex = new ConsolidatedException();
 		for (InstanceControllerListener listener : getListeners()) {
 			try {
 				listener.onInstanceStopped();
