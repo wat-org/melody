@@ -256,11 +256,17 @@ public abstract class NetworkManagementHelper {
 	 *             if the given {@link List} of Instance {@link Node} is
 	 *             <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the Management Network Device Selector of an Instance
-	 *             {@link Node} is not a valid XPath expression.
+	 *             if any instance's Management Network Device Selector is not a
+	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if any Instance {@link Node} has no Management Network Device
-	 *             {@link Node}.
+	 *             if any instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if any instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if any instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 */
 	public static List<Element> findManagementNetworkDeviceNode(
 			List<Element> instanceNodes) throws NodeRelatedException {
@@ -297,10 +303,17 @@ public abstract class NetworkManagementHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the Management Network Device Selector is not a valid
-	 *             XPath expression.
+	 *             if the instance's Management Network Device Selector is not a
+	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 */
 	public static Element findManagementNetworkDeviceNode(Element instanceNode)
 			throws NodeRelatedException {
@@ -332,10 +345,17 @@ public abstract class NetworkManagementHelper {
 	 *         Instance {@link Node}.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the Management Network Device Selector is not a valid
-	 *             XPath expression.
+	 *             if the instance's Management Network Device Selector is not a
+	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 */
 	public static Element getManagementNetworkDeviceNode(Element instanceNode,
 			Element mgmtNode) throws NodeRelatedException {
@@ -461,10 +481,17 @@ public abstract class NetworkManagementHelper {
 	 * @return the Instance's Management Network Device {@link Host}.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the Instance's Management Network Device Selector is not a
+	 *             if the instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 * @throws NodeRelatedException
 	 *             if the Instance's Management Network Device {@link Node}
 	 *             doesn't have a attribute equal to the Instance's Management
@@ -578,10 +605,17 @@ public abstract class NetworkManagementHelper {
 	 *         one.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the Instance's Management Network Device Selector is not a
+	 *             if the instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 */
 	public static Attr getManagementNetworkHostNode(Element instanceNode,
 			Element mgmtNode) throws NodeRelatedException {
@@ -1188,10 +1222,17 @@ public abstract class NetworkManagementHelper {
 	 *         {@link NetworkDeviceName}.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the Instance's Management Network Device Selector is not a
+	 *             if the instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 * @throws NodeRelatedException
 	 *             if the Instance's Management Network Device
 	 *             {@link NetworkDeviceName} doesn't have a 'device' attribute.
@@ -1305,10 +1346,17 @@ public abstract class NetworkManagementHelper {
 	 *         doens't have one.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the Instance's Management Network Device Selector is not a
+	 *             if the instance's Management Network Device Selector is not a
 	 *             valid XPath expression.
 	 * @throws NodeRelatedException
-	 *             if no Management Network Device {@link Node} can be found.
+	 *             if the instance's Management Network Device Selector selects
+	 *             no {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector selects
+	 *             too many {@link Element}.
+	 * @throws NodeRelatedException
+	 *             if the instance's Management Network Device Selector doesn't
+	 *             select an {@link Element}.
 	 */
 	public static Attr getManagementNetworkDeviceNameNode(Element instanceNode,
 			Element mgmtNode) throws NodeRelatedException {

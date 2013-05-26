@@ -1,6 +1,9 @@
 package com.wat.melody.common.xml.exception;
 
+import java.util.Set;
+
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.xml.Doc;
 
@@ -26,8 +29,35 @@ public class SimpleNodeRelatedException extends NodeRelatedException {
 		super(errorNode, msg, cause);
 	}
 
-	public String getErrorNodeLocationAsString() {
-		return Doc.getNodeLocation(getErrorNode()).toString();
+	public SimpleNodeRelatedException(Set<Node> errorNodes, String msg) {
+		super(errorNodes, msg);
+	}
+
+	public SimpleNodeRelatedException(Set<Node> errorNodes, Throwable cause) {
+		super(errorNodes, cause);
+	}
+
+	public SimpleNodeRelatedException(Set<Node> errorNodes, String msg,
+			Throwable cause) {
+		super(errorNodes, msg, cause);
+	}
+
+	public SimpleNodeRelatedException(NodeList errorNodes, String msg) {
+		super(errorNodes, msg);
+	}
+
+	public SimpleNodeRelatedException(NodeList errorNodes, Throwable cause) {
+		super(errorNodes, cause);
+	}
+
+	public SimpleNodeRelatedException(NodeList errorNodes, String msg,
+			Throwable cause) {
+		super(errorNodes, msg, cause);
+	}
+
+	@Override
+	public String getErrorNodeLocationAsString(Node errorNode) {
+		return Doc.getNodeLocation(errorNode).toString();
 	}
 
 }

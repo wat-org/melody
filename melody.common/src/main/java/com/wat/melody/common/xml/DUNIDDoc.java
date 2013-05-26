@@ -298,7 +298,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 		NodeList nl = findDUNIDs(getDocument());
 		if (nl.getLength() != 0) {
-			throw new IllegalDocException(new NodeRelatedException(nl.item(0),
+			throw new IllegalDocException(new NodeRelatedException(nl,
 					Messages.bind(Messages.DUNIDDocEx_FOUND_DUNID_ATTR,
 							getSourceFile(), DUNID_ATTR)));
 		}
