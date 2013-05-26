@@ -4,8 +4,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.api.Melody;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 public class XPathHelper {
@@ -26,12 +26,12 @@ public class XPathHelper {
 	 * @return the value of the first attribute found, where all XPath
 	 *         Expression have been expanded.
 	 * 
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the given attribute's value cannot be expanded (e.g.
 	 *             contains an invalid XPath Expression).
 	 */
 	public static String getHeritedAttributeValue(Element n, String sAttrName)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		return getHeritedAttributeValue(n, sAttrName, true);
 	}
 
@@ -52,13 +52,13 @@ public class XPathHelper {
 	 *         expanded or not, regarding the value of the third boolean
 	 *         argument.
 	 * 
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the given attribute's value cannot be expanded (e.g.
-	 *             contains an invalid XPath Expression). This should not
+	 *             contains an invalid XPath Expression). This should never
 	 *             happened if the third boolean argument is <tt>false</tt>.
 	 */
 	public static String getHeritedAttributeValue(Element n, String sAttrName,
-			boolean expand) throws ResourcesDescriptorException {
+			boolean expand) throws NodeRelatedException {
 		Node attr = FilteredDocHelper.getHeritedAttribute(n, sAttrName);
 		if (attr == null) {
 			return null;
@@ -70,7 +70,7 @@ public class XPathHelper {
 		try {
 			return Melody.getContext().expand(v);
 		} catch (ExpressionSyntaxException Ex) {
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 

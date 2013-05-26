@@ -11,10 +11,6 @@ public class IllegalPropertyNameException extends MelodyException {
 
 	private static final long serialVersionUID = -2309872605328438369L;
 
-	public IllegalPropertyNameException() {
-		super();
-	}
-
 	public IllegalPropertyNameException(String msg) {
 		super(msg);
 	}

@@ -12,10 +12,6 @@ public class AwsPlugInConfigurationException extends
 
 	private static final long serialVersionUID = 983212356657786543L;
 
-	public AwsPlugInConfigurationException() {
-		super();
-	}
-
 	public AwsPlugInConfigurationException(String msg) {
 		super(msg);
 	}

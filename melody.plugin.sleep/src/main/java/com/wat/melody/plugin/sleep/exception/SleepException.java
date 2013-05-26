@@ -11,10 +11,6 @@ public class SleepException extends TaskException {
 
 	private static final long serialVersionUID = -3249870968709874655L;
 
-	public SleepException() {
-		super();
-	}
-
 	public SleepException(String msg) {
 		super(msg);
 	}

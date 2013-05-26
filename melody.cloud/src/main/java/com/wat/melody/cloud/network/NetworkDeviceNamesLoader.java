@@ -4,11 +4,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
@@ -58,7 +58,7 @@ public class NetworkDeviceNamesLoader {
 	}
 
 	private NetworkDeviceName loadDeviceName(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -68,7 +68,7 @@ public class NetworkDeviceNamesLoader {
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					DEVICE_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
@@ -94,13 +94,13 @@ public class NetworkDeviceNamesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code> or is
 	 *             not an element {@link Node}.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a Network
 	 *             Device {@link Node} is not valid, multiple Network Device
 	 *             Name declare with the same name).
 	 */
 	public NetworkDeviceNameList load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		NodeList nl = NetworkManagementHelper.findNetworkDeviceNodeByName(
 				instanceNode, null);
 
@@ -109,7 +109,7 @@ public class NetworkDeviceNamesLoader {
 			Element n = (Element) nl.item(i);
 			NetworkDeviceName netDevName = loadDeviceName(n);
 			if (netDevName == null) {
-				throw new ResourcesDescriptorException(n, Messages.bind(
+				throw new NodeRelatedException(n, Messages.bind(
 						Messages.NetworkDevLoaderEx_MISSING_ATTR,
 						DEVICE_NAME_ATTR));
 			}
@@ -117,7 +117,7 @@ public class NetworkDeviceNamesLoader {
 			try {
 				dl.addNetworkDevice(netDevName);
 			} catch (IllegalNetworkDeviceNameListException Ex) {
-				throw new ResourcesDescriptorException(n,
+				throw new NodeRelatedException(n,
 						Messages.NetworkDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}

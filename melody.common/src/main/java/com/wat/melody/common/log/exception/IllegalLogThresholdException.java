@@ -11,10 +11,6 @@ public class IllegalLogThresholdException extends MelodyException {
 
 	private static final long serialVersionUID = -8436032157406321050L;
 
-	public IllegalLogThresholdException() {
-		super();
-	}
-
 	public IllegalLogThresholdException(String msg) {
 		super(msg);
 	}

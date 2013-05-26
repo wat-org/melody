@@ -11,10 +11,6 @@ public class SynchronizeException extends TaskException {
 
 	private static final long serialVersionUID = -289644684016806644L;
 
-	public SynchronizeException() {
-		super();
-	}
-
 	public SynchronizeException(String msg) {
 		super(msg);
 	}

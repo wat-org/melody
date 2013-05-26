@@ -4,11 +4,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
@@ -50,7 +50,7 @@ public class DiskDevicesLoader {
 	}
 
 	private DiskDeviceName loadDeviceName(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, DEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -59,12 +59,12 @@ public class DiskDevicesLoader {
 			return DiskDeviceName.parseString(v);
 		} catch (IllegalDiskDeviceNameException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n, DEVICE_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
 	private DiskDeviceSize loadDeviceSize(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, SIZE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -73,12 +73,12 @@ public class DiskDevicesLoader {
 			return DiskDeviceSize.parseString(v);
 		} catch (IllegalDiskDeviceSizeException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n, SIZE_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
 	private Boolean loadDeleteOnTermination(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n,
 				DELETEONTERMINATION_ATTR);
 		if (v == null || v.length() == 0) {
@@ -87,8 +87,7 @@ public class DiskDevicesLoader {
 		return Boolean.parseBoolean(v);
 	}
 
-	private Boolean loadRootDevice(Element n)
-			throws ResourcesDescriptorException {
+	private Boolean loadRootDevice(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, ROOTDEVICE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -122,13 +121,13 @@ public class DiskDevicesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code> or is
 	 *             not an element {@link Node}.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a Disk Device
 	 *             {@link Node} is not valid, multiple root device are found,
 	 *             multiple device declare with the same name).
 	 */
 	public DiskDeviceList load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		NodeList nl = DiskManagementHelper.findDiskDevices(instanceNode);
 
 		DiskDeviceList dl = new DiskDeviceList();
@@ -136,7 +135,7 @@ public class DiskDevicesLoader {
 			Element n = (Element) nl.item(i);
 			DiskDeviceName devname = loadDeviceName(n);
 			if (devname == null) {
-				throw new ResourcesDescriptorException(n, Messages.bind(
+				throw new NodeRelatedException(n, Messages.bind(
 						Messages.DiskDevLoaderEx_MISSING_ATTR, DEVICE_ATTR));
 			}
 			DiskDeviceSize devsize = loadDeviceSize(n);
@@ -147,7 +146,7 @@ public class DiskDevicesLoader {
 				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
 						isroot));
 			} catch (IllegalDiskDeviceListException Ex) {
-				throw new ResourcesDescriptorException(n,
+				throw new NodeRelatedException(n,
 						Messages.DiskDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}

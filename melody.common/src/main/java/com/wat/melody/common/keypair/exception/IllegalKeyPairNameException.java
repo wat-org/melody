@@ -11,10 +11,6 @@ public class IllegalKeyPairNameException extends MelodyException {
 
 	private static final long serialVersionUID = -3854435676065529965L;
 
-	public IllegalKeyPairNameException() {
-		super();
-	}
-
 	public IllegalKeyPairNameException(String msg) {
 		super(msg);
 	}

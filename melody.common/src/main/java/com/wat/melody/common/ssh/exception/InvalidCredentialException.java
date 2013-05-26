@@ -9,10 +9,6 @@ public class InvalidCredentialException extends SshSessionException {
 
 	private static final long serialVersionUID = -2945679655497676554L;
 
-	public InvalidCredentialException() {
-		super();
-	}
-
 	public InvalidCredentialException(String msg) {
 		super(msg);
 	}

@@ -7,8 +7,8 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDoc;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * <p>
@@ -43,7 +43,7 @@ public final class GetHeritedAttribute implements XPathFunction {
 		try {
 			return XPathHelper.getHeritedAttributeValue((Element) arg0,
 					(String) arg1);
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
 	}

@@ -11,10 +11,6 @@ public class IllegalVolumeAttachmentStateException extends MelodyException {
 
 	private static final long serialVersionUID = -112345389964589949L;
 
-	public IllegalVolumeAttachmentStateException() {
-		super();
-	}
-
 	public IllegalVolumeAttachmentStateException(String msg) {
 		super(msg);
 	}

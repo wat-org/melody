@@ -2,10 +2,10 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -59,7 +59,7 @@ public class UpdateNetworkDevices extends AbstractOperation {
 		try {
 			setNetworkDeviceList(new NetworkDeviceNamesLoader()
 					.load(getTargetElement()));
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new LibVirtException(Ex);
 		}
 	}

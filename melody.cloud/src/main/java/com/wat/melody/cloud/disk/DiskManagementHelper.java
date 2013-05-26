@@ -6,8 +6,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -108,12 +108,12 @@ public abstract class DiskManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the disk Devices Selector (found in the Disk Device
 	 *             Management {@link Node}) is not a valid XPath Expression.
 	 */
 	public static NodeList findDiskDevices(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String sAllDiskDevSelector = findDiskDevicesSelector(instanceNode);
 		try {
 			return FilteredDocHelper.getHeritedContent(instanceNode,
@@ -122,7 +122,7 @@ public abstract class DiskManagementHelper {
 			Node mgmtNode = findDiskManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					DISK_DEVICE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
+			throw new NodeRelatedException(attr, Messages.bind(
 					Messages.DiskMgmtEx_INVALID_DISK_DEVICES_SELECTOR,
 					sAllDiskDevSelector), Ex);
 		}

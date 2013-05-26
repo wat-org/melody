@@ -12,7 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.systool.SysTool;
-import com.wat.melody.common.xml.exception.FilteredDocException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 
 /**
@@ -25,15 +25,16 @@ public class FilteredDocHelper {
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
 		String refNodesXpr = Doc.getXPathPosition(n);
-		Node ctx = n.getOwnerDocument().getFirstChild();
+		Element ctx = (Element) n.getOwnerDocument().getFirstChild();
 		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
 		while (true) {
 			try {
 				n = resolvHeritAttr(n, circle);
-			} catch (FilteredDocException Ex) {
+			} catch (NodeRelatedException Ex) {
 				throw new RuntimeException("Unexecpted error while resolving "
-						+ "herited attribute. "
+						+ "herited parents of the Element ["
+						+ Doc.getNodeLocation(n) + "]. "
 						+ "Because all herited attributes have already been "
 						+ "validated, such error cannot happened. "
 						+ "Source code has certainly been modified and "
@@ -66,9 +67,10 @@ public class FilteredDocHelper {
 		Element parent = null;
 		try {
 			parent = resolvHeritAttr(n, circle);
-		} catch (FilteredDocException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
-					+ "herited attribute. "
+					+ "herited parents of the Element ["
+					+ Doc.getNodeLocation(n) + "]. "
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -82,39 +84,40 @@ public class FilteredDocHelper {
 
 	/**
 	 * <p>
-	 * Find the herited parent of the given {@link Node}.
+	 * Find the herited parent of the given {@link Element}.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Node} to find its herited parent.
+	 *            is an {@link Element}.
 	 * @param circle
-	 *            is the list of all already visited herited {@link Node}s It is
-	 *            used to detect circular references. If <tt>null</tt>, circular
-	 *            references will not be detected.
+	 *            is the list of all already visited herited {@link Element}s.
+	 *            It is used to detect circular references. If <tt>null</tt>,
+	 *            circular references will not be detected.
 	 * 
-	 * @throws FilteredDocException
+	 * @throws NodeRelatedException
 	 *             if the content of the {@link FilteredDoc#HERIT_ATTR} XML
-	 *             Attribute of the given {@link Node} is not a valid XPath
+	 *             Attribute of the given {@link Element} is not a valid XPath
 	 *             Expression.
-	 * @throws FilteredDocException
+	 * @throws NodeRelatedException
 	 *             if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
-	 *             {@link Node} match no herited parent {@link Node}.
-	 * @throws FilteredDocException
+	 *             {@link Element} match no herited parent {@link Element}.
+	 * @throws NodeRelatedException
 	 *             if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
-	 *             {@link Node} match multiple herited parent {@link Node}s.
-	 * @throws FilteredDocException
-	 *             if, once resolved, the herited parent {@link Node} have
+	 *             {@link Element} match multiple herited parent {@link Element}
+	 *             s.
+	 * @throws NodeRelatedException
+	 *             if, once resolved, the herited parent {@link Element} have
 	 *             already been visited (e.g. a circular reference hae been
 	 *             detected).
 	 */
 	protected static Element resolvHeritAttr(Element n, List<Element> circle)
-			throws FilteredDocException {
+			throws NodeRelatedException {
 		if (n == null) {
 			return null;
 		}
-		Node herit = n.getAttributes().getNamedItem(FilteredDoc.HERIT_ATTR);
+		Attr herit = n.getAttributeNode(FilteredDoc.HERIT_ATTR);
 		if (herit == null) {
 			return null;
 		}
@@ -127,20 +130,20 @@ public class FilteredDocHelper {
 			nl = XPathExpander.evaluateAsNodeList(xpath, n.getOwnerDocument()
 					.getFirstChild());
 		} catch (XPathExpressionException Ex) {
-			throw new FilteredDocException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Messages.bind(
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_XPATH, xpath), Ex);
 		}
 		if (nl.getLength() > 1) {
-			throw new FilteredDocException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Messages.bind(
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_MANYNODEMATCH,
 					xpath));
 		} else if (nl.getLength() == 0) {
-			throw new FilteredDocException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Messages.bind(
 					Messages.FilteredDocEx_INVALID_HERIT_ATTR_NONODEMATCH,
 					xpath));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new FilteredDocException(
+			throw new NodeRelatedException(
 					herit,
 					Messages.bind(
 							Messages.FilteredDocEx_INVALID_HERIT_ATTR_NOTANELEMENTMATCH,
@@ -150,7 +153,7 @@ public class FilteredDocHelper {
 
 		if (circle != null) {
 			if (circle.contains(parent)) {
-				throw new FilteredDocException(herit, Messages.bind(
+				throw new NodeRelatedException(herit, Messages.bind(
 						Messages.FilteredDocEx_INVALID_HERIT_ATTR_CIRCULARREF,
 						printCircularReferences(circle)));
 			}
@@ -165,35 +168,40 @@ public class FilteredDocHelper {
 			for (Element n : circularRefStack) {
 				Element h = resolvHeritAttr(n, null);
 				str.append(SysTool.NEW_LINE);
-				str.append("  Node ");
+				str.append("  Element ");
 				str.append("[" + Doc.getNodeLocation(n).toFullString() + "]");
-				str.append(" herits of Node ");
+				str.append(" has parent Element ");
 				str.append("[" + Doc.getNodeLocation(h).toFullString() + "]");
 			}
-		} catch (FilteredDocException ignored) {
+		} catch (NodeRelatedException ignored) {
+			/*
+			 * circularRefStack contains already visited Element, so this error
+			 * shouldn't raise
+			 */
 		}
 		return str.toString();
 	}
 
 	/**
 	 * <p>
-	 * Import the given {@link Node} and all of its herited parents into the
-	 * given {@link Document}.
+	 * Import the given {@link Element} and all its herited parents
+	 * {@link Element} into the given {@link Document}.
 	 * </p>
 	 * 
 	 * @param dest
-	 *            is the {@link Document} to import {@link Node}s in.
+	 *            is a {@link Document}.
 	 * @param toClone
-	 *            is the {@link Node} to import in the given {@link Document}.
-	 *            All its herited parents will be imported too.
+	 *            is an {@link Element}. All its herited parents {@link Element}
+	 *            will be imported in the given {@link Document}.
 	 */
 	protected static void importHeritedParentNode(Document dest, Element toClone) {
 		Element parent = null;
 		try {
 			parent = resolvHeritAttr(toClone, null);
-		} catch (FilteredDocException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
-					+ "herited attribute. "
+					+ "herited parents of the Element ["
+					+ Doc.getNodeLocation(toClone) + "]. "
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -214,14 +222,14 @@ public class FilteredDocHelper {
 	 * @param doc
 	 *            is the {@link Document} to validate.
 	 * 
-	 * @throws FilteredDocException
-	 *             if the given {@link Document} contains {@link Node}s which
+	 * @throws NodeRelatedException
+	 *             if the given {@link Document} contains {@link Element}s which
 	 *             contains an invalid {@link #HERIT_ATTR} XML attribute
 	 *             (circular ref, invalid xpath expr, no target, multiple
 	 *             targets).
 	 */
 	protected static void validateParentHeritedNodes(Document doc)
-			throws FilteredDocException {
+			throws NodeRelatedException {
 		NodeList nl = findNodeWithHeritAttr(doc);
 		if (nl.getLength() == 0) {
 			return;
@@ -233,14 +241,14 @@ public class FilteredDocHelper {
 
 	/**
 	 * <p>
-	 * Find all {@link Node}s which contains an {@link #HERIT_ATTR} XML
+	 * Find all {@link Element}s which contains an {@link #HERIT_ATTR} XML
 	 * attribute in the given {@link Document}.
 	 * </p>
 	 * 
 	 * @param doc
 	 *            is the {@link Document} to search in.
 	 * 
-	 * @return a {@link NodeList}, where each item is a {@link Node} which
+	 * @return a {@link NodeList}, where each item is an {@link Element} which
 	 *         contains an {@link #HERIT_ATTR} XML attribute.
 	 */
 	public static NodeList findNodeWithHeritAttr(Document doc) {
@@ -260,27 +268,27 @@ public class FilteredDocHelper {
 	/**
 	 * <p>
 	 * Validate content of {@link #HERIT_ATTR} XML attribute of the the given
-	 * {@link Node} and of all its herted parents.
+	 * {@link Element} and of all its herted parents.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Node} to validate.
+	 *            is the {@link Element} to validate.
 	 * 
-	 * @throws FilteredDocException
-	 *             if the given {@link Node} or one of its herited parents
+	 * @throws NodeRelatedException
+	 *             if the given {@link Element} or one of its herited parents
 	 *             contains an invalid {@link #HERIT_ATTR} XML attribute
 	 *             (circular ref, invalid xpath expr, no target, multiple
 	 *             targets).
 	 */
 	private static void validateHeritAttr(Element n)
-			throws FilteredDocException {
+			throws NodeRelatedException {
 		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
 		validateHeritAttr(n, circle);
 	}
 
 	private static void validateHeritAttr(Element n, List<Element> circle)
-			throws FilteredDocException {
+			throws NodeRelatedException {
 		Element parent = resolvHeritAttr(n, circle);
 		if (parent == null) {
 			return;

@@ -11,10 +11,6 @@ public class IllegalPropertiesSetFileFormatException extends MelodyException {
 
 	private static final long serialVersionUID = 7894651384798200660L;
 
-	public IllegalPropertiesSetFileFormatException() {
-		super();
-	}
-
 	public IllegalPropertiesSetFileFormatException(String msg) {
 		super(msg);
 	}

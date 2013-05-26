@@ -11,10 +11,6 @@ public class IllegalCompressionLevelException extends MelodyException {
 
 	private static final long serialVersionUID = -5322698659365904245L;
 
-	public IllegalCompressionLevelException() {
-		super();
-	}
-
 	public IllegalCompressionLevelException(String msg) {
 		super(msg);
 	}

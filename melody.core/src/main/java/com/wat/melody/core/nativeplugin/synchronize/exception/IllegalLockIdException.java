@@ -11,10 +11,6 @@ public class IllegalLockIdException extends MelodyException {
 
 	private static final long serialVersionUID = -389644684016806644L;
 
-	public IllegalLockIdException() {
-		super();
-	}
-
 	public IllegalLockIdException(String msg) {
 		super(msg);
 	}

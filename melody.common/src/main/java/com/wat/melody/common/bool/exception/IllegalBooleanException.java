@@ -11,10 +11,6 @@ public class IllegalBooleanException extends MelodyException {
 
 	private static final long serialVersionUID = -1979876535323789041L;
 
-	public IllegalBooleanException() {
-		super();
-	}
-
 	public IllegalBooleanException(String msg) {
 		super(msg);
 	}

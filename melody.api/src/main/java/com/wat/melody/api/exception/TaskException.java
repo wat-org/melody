@@ -11,10 +11,6 @@ public class TaskException extends MelodyException {
 
 	private static final long serialVersionUID = -5014891251658746878L;
 
-	public TaskException() {
-		super();
-	}
-
 	public TaskException(String msg) {
 		super(msg);
 	}

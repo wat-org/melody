@@ -9,10 +9,6 @@ public class MelodyInterruptedException extends InterruptedException {
 
 	private static final long serialVersionUID = -6989878652124536814L;
 
-	public MelodyInterruptedException() {
-		super();
-	}
-
 	public MelodyInterruptedException(String msg) {
 		super(msg);
 	}

@@ -11,10 +11,6 @@ public class LibVirtKeyPairRepositoryException extends MelodyException {
 
 	private static final long serialVersionUID = -2453656458767974644L;
 
-	public LibVirtKeyPairRepositoryException() {
-		super();
-	}
-
 	public LibVirtKeyPairRepositoryException(String msg) {
 		super(msg);
 	}

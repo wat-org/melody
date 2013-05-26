@@ -11,10 +11,6 @@ public class IllegalDiskDeviceSizeException extends MelodyException {
 
 	private static final long serialVersionUID = -498798794399809871L;
 
-	public IllegalDiskDeviceSizeException() {
-		super();
-	}
-
 	public IllegalDiskDeviceSizeException(String msg) {
 		super(msg);
 	}

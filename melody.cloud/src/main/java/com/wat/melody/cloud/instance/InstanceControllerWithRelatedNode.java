@@ -3,7 +3,6 @@ package com.wat.melody.cloud.instance;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceDatas;
@@ -14,6 +13,7 @@ import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * <p>
@@ -216,7 +216,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		try {
 			netDevices = new NetworkDeviceNamesLoader()
 					.load(getRelatedElement());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}
 		for (NetworkDeviceName netDev : netDevices) {
@@ -272,7 +272,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		try {
 			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
 					getRelatedElement(), nd.getValue());
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}
 		return (netDevs == null || netDevs.getLength() == 0) ? null

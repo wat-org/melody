@@ -11,10 +11,6 @@ public class CallException extends TaskException {
 
 	private static final long serialVersionUID = -5014891251658746878L;
 
-	public CallException() {
-		super();
-	}
-
 	public CallException(String msg) {
 		super(msg);
 	}

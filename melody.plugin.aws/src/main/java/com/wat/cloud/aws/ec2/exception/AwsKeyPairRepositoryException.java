@@ -11,10 +11,6 @@ public class AwsKeyPairRepositoryException extends MelodyException {
 
 	private static final long serialVersionUID = -324324323564787949L;
 
-	public AwsKeyPairRepositoryException() {
-		super();
-	}
-
 	public AwsKeyPairRepositoryException(String msg) {
 		super(msg);
 	}

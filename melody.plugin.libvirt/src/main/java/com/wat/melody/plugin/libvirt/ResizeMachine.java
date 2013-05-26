@@ -4,10 +4,10 @@ import java.util.Arrays;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Common;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -60,7 +60,7 @@ public class ResizeMachine extends AbstractOperation {
 						Common.INSTANCETYPE_ATTR, getTargetElementLocation()),
 						Ex);
 			}
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new LibVirtException(Ex);
 		}
 

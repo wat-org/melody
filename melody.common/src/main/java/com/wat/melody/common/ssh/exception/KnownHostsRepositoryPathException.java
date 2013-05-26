@@ -11,10 +11,6 @@ public class KnownHostsRepositoryPathException extends MelodyException {
 
 	private static final long serialVersionUID = -6546544324324455305L;
 
-	public KnownHostsRepositoryPathException() {
-		super();
-	}
-
 	public KnownHostsRepositoryPathException(String msg) {
 		super(msg);
 	}

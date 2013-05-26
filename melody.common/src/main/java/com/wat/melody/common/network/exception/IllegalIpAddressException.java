@@ -11,10 +11,6 @@ public class IllegalIpAddressException extends MelodyException {
 
 	private static final long serialVersionUID = -2134468800998532632L;
 
-	public IllegalIpAddressException() {
-		super();
-	}
-
 	public IllegalIpAddressException(String msg) {
 		super(msg);
 	}

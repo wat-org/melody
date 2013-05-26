@@ -11,10 +11,6 @@ public class OperationException extends MelodyException {
 
 	private static final long serialVersionUID = -234576345399879809L;
 
-	public OperationException() {
-		super();
-	}
-
 	public OperationException(String msg) {
 		super(msg);
 	}

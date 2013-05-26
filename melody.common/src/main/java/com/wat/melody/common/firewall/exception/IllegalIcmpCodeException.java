@@ -11,10 +11,6 @@ public class IllegalIcmpCodeException extends MelodyException {
 
 	private static final long serialVersionUID = -1879868754653432549L;
 
-	public IllegalIcmpCodeException() {
-		super();
-	}
-
 	public IllegalIcmpCodeException(String msg) {
 		super(msg);
 	}

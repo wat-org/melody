@@ -4,10 +4,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -49,39 +49,38 @@ public abstract class ManagementNetworkDatasLoader {
 	}
 
 	protected ManagementNetworkMethod loadMgmtMethod(Element mgmtNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkMethod(mgmtNode);
 	}
 
 	protected boolean loadMgmtEnable(Element mgmtNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkEnable(mgmtNode);
 	}
 
 	protected ManagementNetworkEnableTimeout loadMgmtEnableTimeout(
-			Element mgmtNode) throws ResourcesDescriptorException {
+			Element mgmtNode) throws NodeRelatedException {
 		return NetworkManagementHelper
 				.getManagementNetworkEnableTimeout(mgmtNode);
 	}
 
 	protected NetworkDeviceName loadMgmtNetDev(Element instanceNode,
-			Element mgmtNode) throws ResourcesDescriptorException {
+			Element mgmtNode) throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkDeviceName(
 				instanceNode, mgmtNode);
 	}
 
 	protected Host loadMgmtHost(Element instanceNode, Element mgmtNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkHost(instanceNode,
 				mgmtNode);
 	}
 
-	protected Port loadMgmtPort(Element mgmtNode)
-			throws ResourcesDescriptorException {
+	protected Port loadMgmtPort(Element mgmtNode) throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkPort(mgmtNode);
 	}
 
 	public abstract ManagementNetworkDatas load(Element instanceNode)
-			throws ResourcesDescriptorException;
+			throws NodeRelatedException;
 
 }

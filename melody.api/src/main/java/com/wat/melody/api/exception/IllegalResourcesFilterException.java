@@ -11,10 +11,6 @@ public class IllegalResourcesFilterException extends IllegalFilterException {
 
 	private static final long serialVersionUID = -2498706541654205817L;
 
-	public IllegalResourcesFilterException() {
-		super();
-	}
-
 	public IllegalResourcesFilterException(String msg) {
 		super(msg);
 	}

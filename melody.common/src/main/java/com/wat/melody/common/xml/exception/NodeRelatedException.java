@@ -2,6 +2,7 @@ package com.wat.melody.common.xml.exception;
 
 import org.w3c.dom.Node;
 
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.xml.Doc;
 
 /**
@@ -9,14 +10,14 @@ import com.wat.melody.common.xml.Doc;
  * @author Guillaume Cornet
  * 
  */
-public class NodeRelatedException extends IllegalDocException {
+public class NodeRelatedException extends MelodyException {
 
 	/*
-	 * TODO : generaliser l'usage de cette exception
+	 * TODO : add the possibility to have more than one error node
 	 */
 	private static final long serialVersionUID = -8978423233111135477L;
 
-	private Node moErrorNode = null;
+	private Node _errorNode = null;
 
 	public NodeRelatedException(Node errorNode, String msg) {
 		super(msg);
@@ -34,7 +35,7 @@ public class NodeRelatedException extends IllegalDocException {
 	}
 
 	public Node getErrorNode() {
-		return moErrorNode;
+		return _errorNode;
 	}
 
 	private void setErrorNode(Node errorNode) {
@@ -42,7 +43,7 @@ public class NodeRelatedException extends IllegalDocException {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
 		}
-		moErrorNode = errorNode;
+		_errorNode = errorNode;
 	}
 
 	public String getErrorNodeLocationAsString() {

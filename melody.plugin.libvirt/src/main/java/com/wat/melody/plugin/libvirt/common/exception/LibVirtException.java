@@ -11,10 +11,6 @@ public class LibVirtException extends TaskException {
 
 	private static final long serialVersionUID = 2682456725717679884L;
 
-	public LibVirtException() {
-		super();
-	}
-
 	public LibVirtException(String msg) {
 		super(msg);
 	}

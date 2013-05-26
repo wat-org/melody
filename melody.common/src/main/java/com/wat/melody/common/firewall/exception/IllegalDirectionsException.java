@@ -11,10 +11,6 @@ public class IllegalDirectionsException extends MelodyException {
 
 	private static final long serialVersionUID = -2133143253890955249L;
 
-	public IllegalDirectionsException() {
-		super();
-	}
-
 	public IllegalDirectionsException(String msg) {
 		super(msg);
 	}

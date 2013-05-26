@@ -12,10 +12,6 @@ public class LibVirtPlugInConfigurationException extends
 
 	private static final long serialVersionUID = 983212356657786543L;
 
-	public LibVirtPlugInConfigurationException() {
-		super();
-	}
-
 	public LibVirtPlugInConfigurationException(String msg) {
 		super(msg);
 	}

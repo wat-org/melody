@@ -19,9 +19,9 @@ import org.w3c.dom.events.MutationEvent;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.xml.exception.DUNIDDocException;
 import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 
 /**
@@ -283,14 +283,14 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 	/**
 	 * <p>
-	 * Raise an exception if one or more XML Element have a {@link #DUNID_ATTR}
-	 * XML Attribute. {@link #DUNID_ATTR} XML Attribute is a reserved attribute,
-	 * necessary for internal usage.
+	 * Raise an exception if - at least - one {@link Element} have a
+	 * {@link #DUNID_ATTR} XML Attribute. {@link #DUNID_ATTR} XML Attribute is a
+	 * reserved attribute, necessary for internal usage.
 	 * </p>
 	 * 
-	 * @throws DUNIDDocException
-	 *             if one or more XML Element have a {@link #DUNID_ATTR} XML
-	 *             Attribute.
+	 * @throws IllegalDocException
+	 *             if -at least - one {@link Element} have a {@link #DUNID_ATTR}
+	 *             XML Attribute.
 	 */
 	@Override
 	protected synchronized void validateContent() throws IllegalDocException {
@@ -298,8 +298,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 		NodeList nl = findDUNIDs(getDocument());
 		if (nl.getLength() != 0) {
-			throw new DUNIDDocException(nl.item(0), Messages.bind(
-					Messages.DUNIDDocEx_FOUND_DUNID_ATTR, getSourceFile()));
+			throw new IllegalDocException(new NodeRelatedException(nl.item(0),
+					Messages.bind(Messages.DUNIDDocEx_FOUND_DUNID_ATTR,
+							getSourceFile(), DUNID_ATTR)));
 		}
 
 		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());

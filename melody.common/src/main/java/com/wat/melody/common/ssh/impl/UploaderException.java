@@ -11,10 +11,6 @@ public class UploaderException extends SshSessionException {
 
 	private static final long serialVersionUID = -2376809764497676654L;
 
-	public UploaderException() {
-		super();
-	}
-
 	public UploaderException(String msg) {
 		super(msg);
 	}

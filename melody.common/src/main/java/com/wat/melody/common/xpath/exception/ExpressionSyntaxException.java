@@ -14,10 +14,6 @@ public class ExpressionSyntaxException extends MelodyException {
 	 */
 	private static final long serialVersionUID = -4894096879684300065L;
 
-	public ExpressionSyntaxException() {
-		super();
-	}
-
 	public ExpressionSyntaxException(String msg) {
 		super(msg);
 	}

@@ -11,10 +11,6 @@ public class IllegalTimeoutException extends MelodyException {
 
 	private static final long serialVersionUID = -5876554487532240905L;
 
-	public IllegalTimeoutException() {
-		super();
-	}
-
 	public IllegalTimeoutException(String msg) {
 		super(msg);
 	}

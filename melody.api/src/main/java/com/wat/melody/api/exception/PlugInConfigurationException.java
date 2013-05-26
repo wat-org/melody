@@ -11,10 +11,6 @@ public class PlugInConfigurationException extends MelodyException {
 
 	private static final long serialVersionUID = -1212312432454365602L;
 
-	public PlugInConfigurationException() {
-		super();
-	}
-
 	public PlugInConfigurationException(String msg) {
 		super(msg);
 	}

@@ -11,10 +11,6 @@ public class NetworkManagementException extends MelodyException {
 
 	private static final long serialVersionUID = -498763289964378909L;
 
-	public NetworkManagementException() {
-		super();
-	}
-
 	public NetworkManagementException(String msg) {
 		super(msg);
 	}

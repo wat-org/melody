@@ -11,10 +11,6 @@ public class IllegalOrderException extends MelodyException {
 
 	private static final long serialVersionUID = -1658406468403640602L;
 
-	public IllegalOrderException() {
-		super();
-	}
-
 	public IllegalOrderException(String msg) {
 		super(msg);
 	}

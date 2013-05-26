@@ -3,7 +3,7 @@ package com.wat.melody.cloud.network;
 import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -44,7 +44,7 @@ public abstract class NetworkManagerFactory {
 						+ "Source code has certainly been modified and a "
 						+ "bug have been introduced.");
 			}
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			return null;
 		}
 	}

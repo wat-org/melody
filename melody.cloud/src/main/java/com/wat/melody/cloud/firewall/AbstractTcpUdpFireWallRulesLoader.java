@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexFireWallRule;
 import com.wat.melody.common.firewall.Direction;
@@ -16,6 +15,7 @@ import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
@@ -38,8 +38,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 */
 	public static final String TO_PORTS_ATTR = "to-ports";
 
-	protected PortRanges loadFromPorts(Element n)
-			throws ResourcesDescriptorException {
+	protected PortRanges loadFromPorts(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -49,12 +48,11 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		} catch (IllegalPortRangesException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					FROM_PORTS_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected PortRanges loadToPorts(Element n)
-			throws ResourcesDescriptorException {
+	protected PortRanges loadToPorts(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TO_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -63,7 +61,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
@@ -98,13 +96,13 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code> or is
 	 *             not an element {@link Node}.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		NodeList nl = findFwRuleNodes(instanceNode);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
@@ -138,7 +136,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	}
 
 	public abstract NodeList findFwRuleNodes(Element instanceNode)
-			throws ResourcesDescriptorException;
+			throws NodeRelatedException;
 
 	public abstract ComplexFireWallRule newFwRule(IpRanges fromIpRanges,
 			PortRanges fromPortRanges, IpRanges toIpRanges,

@@ -11,10 +11,6 @@ public class IllegalHostException extends MelodyException {
 
 	private static final long serialVersionUID = -1287076452458742159L;
 
-	public IllegalHostException() {
-		super();
-	}
-
 	public IllegalHostException(String msg) {
 		super(msg);
 	}

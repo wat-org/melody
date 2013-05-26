@@ -11,10 +11,6 @@ public class IllegalMaxParException extends MelodyException {
 
 	private static final long serialVersionUID = -489644684016806644L;
 
-	public IllegalMaxParException() {
-		super();
-	}
-
 	public IllegalMaxParException(String msg) {
 		super(msg);
 	}

@@ -14,7 +14,6 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
@@ -22,6 +21,7 @@ import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -67,7 +67,7 @@ public abstract class AbstractOperation implements ITask,
 		try {
 			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
 					Common.REGION_ATTR);
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new LibVirtException(Ex);
 		}
 		try {

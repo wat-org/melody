@@ -5,11 +5,11 @@ import java.util.List;
 import javax.xml.xpath.XPathFunction;
 import javax.xml.xpath.XPathFunctionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -41,13 +41,13 @@ public class GetNetworkDeviceByName implements XPathFunction {
 		if (arg1 == null) {
 			arg1val = null;
 		} else {
-			if (arg1 instanceof Node) {
-				arg1val = ((Node) arg1).getNodeValue();
+			if (arg1 instanceof Attr) {
+				arg1val = ((Attr) arg1).getValue();
 			} else if (arg1 instanceof String) {
 				arg1val = (String) arg1;
 			} else {
 				throw new XPathFunctionException("null: Not accepted. " + NAME
-						+ "() expects a String or a Node as second argument.");
+						+ "() expects a String or an Attr as second argument.");
 			}
 		}
 		try {
@@ -58,7 +58,7 @@ public class GetNetworkDeviceByName implements XPathFunction {
 				return NetworkManagementHelper.findNetworkDeviceNodeByName(
 						(List<Element>) arg0, arg1val);
 			}
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
 	}

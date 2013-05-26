@@ -6,8 +6,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -132,13 +132,13 @@ public abstract class FireWallManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the TCP FireWall Rules Selector (found in the FireWall
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
 	public static NodeList findTcpFireWallRules(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String sAllFWRulesSelector = findTcpFireWallRulesSelector(instanceNode);
 		try {
 			return FilteredDocHelper.getHeritedContent(instanceNode,
@@ -147,7 +147,7 @@ public abstract class FireWallManagementHelper {
 			Node mgmtNode = findFireWallManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_TCP_RULE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
+			throw new NodeRelatedException(attr, Messages.bind(
 					Messages.FWRulesMgmtEx_INVALID_TCP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}
@@ -178,13 +178,13 @@ public abstract class FireWallManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the UCP FireWall Rules Selector (found in the FireWall
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
 	public static NodeList findUdpFireWallRules(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String sAllFWRulesSelector = findUdpFireWallRulesSelector(instanceNode);
 		try {
 			return FilteredDocHelper.getHeritedContent(instanceNode,
@@ -193,7 +193,7 @@ public abstract class FireWallManagementHelper {
 			Node mgmtNode = findFireWallManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_UDP_RULE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
+			throw new NodeRelatedException(attr, Messages.bind(
 					Messages.FWRulesMgmtEx_INVALID_UDP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}
@@ -224,13 +224,13 @@ public abstract class FireWallManagementHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the ICMP FireWall Rules Selector (found in the FireWall
 	 *             Rule Management {@link Node}) is not a valid XPath
 	 *             Expression.
 	 */
 	public static NodeList findIcmpFireWallRules(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String sAllFWRulesSelector = findIcmpFireWallRulesSelector(instanceNode);
 		try {
 			return FilteredDocHelper.getHeritedContent(instanceNode,
@@ -239,7 +239,7 @@ public abstract class FireWallManagementHelper {
 			Node mgmtNode = findFireWallManagementNode(instanceNode);
 			Node attr = mgmtNode.getAttributes().getNamedItem(
 					FIREWALL_ICMP_RULE_NODES_SELECTOR_ATTRIBUTE);
-			throw new ResourcesDescriptorException(attr, Messages.bind(
+			throw new NodeRelatedException(attr, Messages.bind(
 					Messages.FWRulesMgmtEx_INVALID_ICMP_FWRULES_SELECTOR,
 					sAllFWRulesSelector), Ex);
 		}

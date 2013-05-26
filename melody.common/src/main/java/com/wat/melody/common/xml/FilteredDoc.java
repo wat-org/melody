@@ -16,8 +16,8 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
-import com.wat.melody.common.xml.exception.FilteredDocException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -218,27 +218,32 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * <p>
-	 * Raise an exception if one or more XML Element have an invalid
+	 * Raise an exception if - at least - one {@link Element} have an invalid
 	 * {@link #HERIT_ATTR} XML Attribute. {@link #HERIT_ATTR} XML Attribute is a
-	 * reserved attribute, which allow to define node heritage.
+	 * reserved attribute, which allow to define heritage between
+	 * {@link Element} s.
 	 * </p>
 	 * 
-	 * @throws FilteredDocException
-	 *             one or more XML Element have an invalid {@link #HERIT_ATTR}
-	 *             XML Attribute (match no nodes, match multiple node, doesn't
-	 *             contains a valid xpath expression, circular ref).
+	 * @throws IllegalDocException
+	 *             if - at least - one {@link Element} have an invalid
+	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
+	 *             multiple node, doesn't contains a valid xpath expression,
+	 *             circular ref).
 	 * @throws IllegalDocException
 	 *             {@inheritDoc}
 	 */
 	@Override
-	protected synchronized void validateContent() throws IllegalDocException,
-			FilteredDocException {
+	protected synchronized void validateContent() throws IllegalDocException {
 		super.validateContent();
 		validateHeritAttrs();
 	}
 
-	protected void validateHeritAttrs() throws FilteredDocException {
-		FilteredDocHelper.validateParentHeritedNodes(getDocument());
+	protected void validateHeritAttrs() throws IllegalDocException {
+		try {
+			FilteredDocHelper.validateParentHeritedNodes(getDocument());
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalDocException(Ex);
+		}
 	}
 
 	public synchronized void store(String sPath) throws IllegalFileException,

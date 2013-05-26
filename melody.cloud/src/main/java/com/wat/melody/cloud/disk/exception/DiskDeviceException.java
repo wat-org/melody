@@ -11,10 +11,6 @@ public class DiskDeviceException extends MelodyException {
 
 	private static final long serialVersionUID = -168997524679997771L;
 
-	public DiskDeviceException() {
-		super();
-	}
-
 	public DiskDeviceException(String msg) {
 		super(msg);
 	}

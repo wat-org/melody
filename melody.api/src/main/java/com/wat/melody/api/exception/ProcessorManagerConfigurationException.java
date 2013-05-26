@@ -11,10 +11,6 @@ public class ProcessorManagerConfigurationException extends MelodyException {
 
 	private static final long serialVersionUID = 6549841630840684077L;
 
-	public ProcessorManagerConfigurationException() {
-		super();
-	}
-
 	public ProcessorManagerConfigurationException(String msg) {
 		super(msg);
 	}

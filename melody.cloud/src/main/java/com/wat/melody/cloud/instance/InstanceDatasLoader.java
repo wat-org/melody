@@ -3,13 +3,13 @@ package com.wat.melody.cloud.instance;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
@@ -94,7 +94,7 @@ public class InstanceDatasLoader {
 	public InstanceDatasLoader() {
 	}
 
-	private String loadRegion(Element n) throws ResourcesDescriptorException {
+	private String loadRegion(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, REGION_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -103,7 +103,7 @@ public class InstanceDatasLoader {
 	}
 
 	private InstanceType loadInstanceType(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, INSTANCETYPE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -113,11 +113,11 @@ public class InstanceDatasLoader {
 		} catch (IllegalInstanceTypeException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					INSTANCETYPE_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private String loadImageId(Element n) throws ResourcesDescriptorException {
+	private String loadImageId(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, IMAGEID_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -126,7 +126,7 @@ public class InstanceDatasLoader {
 	}
 
 	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Element n)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_REPO_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -136,12 +136,11 @@ public class InstanceDatasLoader {
 		} catch (KeyPairRepositoryPathException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_REPO_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private KeyPairName loadKeyPairName(Element n)
-			throws ResourcesDescriptorException {
+	private KeyPairName loadKeyPairName(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, KEYPAIR_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -151,12 +150,11 @@ public class InstanceDatasLoader {
 		} catch (IllegalKeyPairNameException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private String loadPassphrase(Element n)
-			throws ResourcesDescriptorException {
+	private String loadPassphrase(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, PASSPHRASE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -164,7 +162,7 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private String loadSite(Element n) throws ResourcesDescriptorException {
+	private String loadSite(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, SITE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -172,8 +170,7 @@ public class InstanceDatasLoader {
 		return v;
 	}
 
-	private Long loadCreateTimeout(Element n)
-			throws ResourcesDescriptorException {
+	private Long loadCreateTimeout(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_CREATE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -183,12 +180,11 @@ public class InstanceDatasLoader {
 		} catch (NumberFormatException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private Long loadDeleteTimeout(Element n)
-			throws ResourcesDescriptorException {
+	private Long loadDeleteTimeout(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_DELETE_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -198,11 +194,11 @@ public class InstanceDatasLoader {
 		} catch (NumberFormatException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private Long loadStopTimeout(Element n) throws ResourcesDescriptorException {
+	private Long loadStopTimeout(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_STOP_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -212,12 +208,11 @@ public class InstanceDatasLoader {
 		} catch (NumberFormatException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	private Long loadStartTimeout(Element n)
-			throws ResourcesDescriptorException {
+	private Long loadStartTimeout(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TIMEOUT_START_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -227,12 +222,11 @@ public class InstanceDatasLoader {
 		} catch (NumberFormatException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n,
 					KEYPAIR_NAME_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	public InstanceDatas load(Element instanceNode)
-			throws ResourcesDescriptorException {
+	public InstanceDatas load(Element instanceNode) throws NodeRelatedException {
 		String region = loadRegion(instanceNode);
 		InstanceType type = loadInstanceType(instanceNode);
 		String imageId = loadImageId(instanceNode);

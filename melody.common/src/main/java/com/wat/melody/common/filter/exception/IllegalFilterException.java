@@ -11,10 +11,6 @@ public class IllegalFilterException extends MelodyException {
 
 	private static final long serialVersionUID = -1879447098410368880L;
 
-	public IllegalFilterException() {
-		super();
-	}
-
 	public IllegalFilterException(String msg) {
 		super(msg);
 	}

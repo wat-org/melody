@@ -11,10 +11,6 @@ public class ForeachException extends TaskException {
 
 	private static final long serialVersionUID = -9171652048964086465L;
 
-	public ForeachException() {
-		super();
-	}
-
 	public ForeachException(String msg) {
 		super(msg);
 	}

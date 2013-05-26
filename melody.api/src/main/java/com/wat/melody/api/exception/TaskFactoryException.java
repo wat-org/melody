@@ -11,10 +11,6 @@ public class TaskFactoryException extends MelodyException {
 
 	private static final long serialVersionUID = -8384841123110684061L;
 
-	public TaskFactoryException() {
-		super();
-	}
-
 	public TaskFactoryException(String msg) {
 		super(msg);
 	}

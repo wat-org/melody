@@ -11,10 +11,6 @@ public class EchoException extends TaskException {
 
 	private static final long serialVersionUID = -7407890905648241668L;
 
-	public EchoException() {
-		super();
-	}
-
 	public EchoException(String msg) {
 		super(msg);
 	}

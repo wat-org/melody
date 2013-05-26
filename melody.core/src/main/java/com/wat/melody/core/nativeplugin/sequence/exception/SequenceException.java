@@ -11,10 +11,6 @@ public class SequenceException extends TaskException {
 
 	private static final long serialVersionUID = -987402390468572904L;
 
-	public SequenceException() {
-		super();
-	}
-
 	public SequenceException(String msg) {
 		super(msg);
 	}

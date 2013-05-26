@@ -7,8 +7,8 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -39,7 +39,7 @@ public class GetManagementNetworkHost implements XPathFunction {
 				return NetworkManagementHelper
 						.findManagementNetworkHostNode((List<Element>) arg0);
 			}
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new XPathFunctionException(Ex);
 		}
 	}

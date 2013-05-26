@@ -11,10 +11,6 @@ public class IllegalNetworkDeviceNameRefException extends MelodyException {
 
 	private static final long serialVersionUID = -2378988735678776532L;
 
-	public IllegalNetworkDeviceNameRefException() {
-		super();
-	}
-
 	public IllegalNetworkDeviceNameRefException(String msg) {
 		super(msg);
 	}

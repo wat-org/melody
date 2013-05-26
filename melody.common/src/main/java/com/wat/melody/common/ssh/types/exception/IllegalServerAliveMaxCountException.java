@@ -11,10 +11,6 @@ public class IllegalServerAliveMaxCountException extends MelodyException {
 
 	private static final long serialVersionUID = -1133593963741240905L;
 
-	public IllegalServerAliveMaxCountException() {
-		super();
-	}
-
 	public IllegalServerAliveMaxCountException(String msg) {
 		super(msg);
 	}

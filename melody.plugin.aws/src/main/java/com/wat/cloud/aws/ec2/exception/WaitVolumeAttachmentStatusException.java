@@ -22,6 +22,7 @@ public class WaitVolumeAttachmentStatusException extends MelodyException {
 	public WaitVolumeAttachmentStatusException(DiskDevice disk,
 			String sVolumeId, int iAttachmentIndex,
 			VolumeAttachmentState expectedState, long timeout) {
+		super((String)null);
 		if (disk == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + DiskDevice.class.getCanonicalName()
@@ -73,4 +74,11 @@ public class WaitVolumeAttachmentStatusException extends MelodyException {
 	public long getTimeout() {
 		return _timeout;
 	}
+	
+	@Override
+	public String getMessage() {
+		//TODO : return a message which contains WaitVolumeAttachmentStatusException details
+		return "TODO";
+	}
+	
 }

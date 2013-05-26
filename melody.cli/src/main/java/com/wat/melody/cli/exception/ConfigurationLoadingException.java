@@ -11,10 +11,6 @@ public class ConfigurationLoadingException extends MelodyException {
 
 	private static final long serialVersionUID = 1597821304849804204L;
 
-	public ConfigurationLoadingException() {
-		super();
-	}
-
 	public ConfigurationLoadingException(String msg) {
 		super(msg);
 	}

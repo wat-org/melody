@@ -2,11 +2,11 @@ package com.wat.melody.cloud.network;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -17,7 +17,7 @@ public class WinRmManagementNetworkDatasLoader extends
 		ManagementNetworkDatasLoader {
 
 	public WinRmManagementNetworkDatas load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		log.debug(Messages.bind(Messages.NetMgmtMsg_INTRO,
 				Doc.getNodeLocation(instanceNode).toFullString()));
 

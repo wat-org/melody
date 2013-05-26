@@ -20,6 +20,7 @@ public class WaitVolumeStatusException extends MelodyException {
 
 	public WaitVolumeStatusException(DiskDevice disk, String sVolumeId,
 			VolumeState expectedState, long timeout) {
+		super((String) null);
 		if (disk == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + DiskDevice.class.getCanonicalName()
@@ -61,4 +62,12 @@ public class WaitVolumeStatusException extends MelodyException {
 	public long getTimeout() {
 		return _timeout;
 	}
+
+	@Override
+	public String getMessage() {
+		// TODO : return a message which contains WaitVolumeStatusException
+		// details
+		return "TODO";
+	}
+
 }

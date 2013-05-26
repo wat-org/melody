@@ -11,10 +11,6 @@ public class IllegalPortException extends MelodyException {
 
 	private static final long serialVersionUID = -6435793678766540892L;
 
-	public IllegalPortException() {
-		super();
-	}
-
 	public IllegalPortException(String msg) {
 		super(msg);
 	}

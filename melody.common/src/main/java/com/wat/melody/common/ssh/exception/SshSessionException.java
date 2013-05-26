@@ -11,10 +11,6 @@ public class SshSessionException extends MelodyException {
 
 	private static final long serialVersionUID = -187654436787636985L;
 
-	public SshSessionException() {
-		super();
-	}
-
 	public SshSessionException(String msg) {
 		super(msg);
 	}

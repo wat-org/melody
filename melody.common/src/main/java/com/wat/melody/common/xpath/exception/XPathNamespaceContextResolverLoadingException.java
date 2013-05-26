@@ -12,10 +12,6 @@ public class XPathNamespaceContextResolverLoadingException extends
 
 	private static final long serialVersionUID = -2314321324233653202L;
 
-	public XPathNamespaceContextResolverLoadingException() {
-		super();
-	}
-
 	public XPathNamespaceContextResolverLoadingException(String msg) {
 		super(msg);
 	}

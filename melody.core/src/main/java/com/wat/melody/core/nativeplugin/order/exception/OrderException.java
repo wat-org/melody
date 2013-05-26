@@ -11,10 +11,6 @@ public class OrderException extends TaskException {
 
 	private static final long serialVersionUID = -5014916546516159138L;
 
-	public OrderException() {
-		super();
-	}
-
 	public OrderException(String msg) {
 		super(msg);
 	}

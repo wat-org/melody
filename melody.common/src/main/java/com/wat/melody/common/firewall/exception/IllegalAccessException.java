@@ -11,10 +11,6 @@ public class IllegalAccessException extends MelodyException {
 
 	private static final long serialVersionUID = -3214321446579432249L;
 
-	public IllegalAccessException() {
-		super();
-	}
-
 	public IllegalAccessException(String msg) {
 		super(msg);
 	}

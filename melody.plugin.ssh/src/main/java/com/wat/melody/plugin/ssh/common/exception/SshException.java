@@ -11,10 +11,6 @@ public class SshException extends TaskException {
 
 	private static final long serialVersionUID = -4894613206084760465L;
 
-	public SshException() {
-		super();
-	}
-
 	public SshException(String msg) {
 		super(msg);
 	}

@@ -11,7 +11,6 @@ import com.wat.cloud.aws.ec2.AwsKeyPairRepository;
 import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
@@ -19,6 +18,7 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
@@ -146,7 +146,7 @@ public class NewMachine extends AbstractOperation {
 			if (v != null) {
 				setPassphrase(v);
 			}
-		} catch (ResourcesDescriptorException Ex) {
+		} catch (NodeRelatedException Ex) {
 			throw new AwsException(Ex);
 		}
 

@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexIcmpFireWallRule;
 import com.wat.melody.common.firewall.Direction;
@@ -18,6 +17,7 @@ import com.wat.melody.common.firewall.exception.IllegalIcmpCodesException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypesException;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
@@ -39,8 +39,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 */
 	public static final String CODES_ATTR = "codes";
 
-	protected IcmpTypes loadIcmpTypes(Element n)
-			throws ResourcesDescriptorException {
+	protected IcmpTypes loadIcmpTypes(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, TYPES_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -49,12 +48,11 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 			return IcmpTypes.parseString(v);
 		} catch (IllegalIcmpTypesException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n, TYPES_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected IcmpCodes loadIcmpCodes(Element n)
-			throws ResourcesDescriptorException {
+	protected IcmpCodes loadIcmpCodes(Element n) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(n, CODES_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
@@ -63,7 +61,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 			return IcmpCodes.parseString(v);
 		} catch (IllegalIcmpCodesException Ex) {
 			Node attr = FilteredDocHelper.getHeritedAttribute(n, CODES_ATTR);
-			throw new ResourcesDescriptorException(attr, Ex);
+			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
@@ -98,13 +96,13 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code> or is
 	 *             not an element {@link Node}.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		NodeList nl = FireWallManagementHelper
 				.findIcmpFireWallRules(instanceNode);
 

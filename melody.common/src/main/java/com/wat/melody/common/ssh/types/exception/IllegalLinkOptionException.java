@@ -11,10 +11,6 @@ public class IllegalLinkOptionException extends MelodyException {
 
 	private static final long serialVersionUID = -439052267794870342L;
 
-	public IllegalLinkOptionException() {
-		super();
-	}
-
 	public IllegalLinkOptionException(String msg) {
 		super(msg);
 	}

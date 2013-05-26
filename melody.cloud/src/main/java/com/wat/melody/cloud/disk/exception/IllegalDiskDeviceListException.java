@@ -11,10 +11,6 @@ public class IllegalDiskDeviceListException extends MelodyException {
 
 	private static final long serialVersionUID = -268994527679997771L;
 
-	public IllegalDiskDeviceListException() {
-		super();
-	}
-
 	public IllegalDiskDeviceListException(String msg) {
 		super(msg);
 	}

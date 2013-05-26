@@ -12,10 +12,6 @@ public class SshPlugInConfigurationException extends
 
 	private static final long serialVersionUID = -154395565432121233L;
 
-	public SshPlugInConfigurationException() {
-		super();
-	}
-
 	public SshPlugInConfigurationException(String msg) {
 		super(msg);
 	}

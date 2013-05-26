@@ -11,10 +11,6 @@ public class IllegalProtocolException extends MelodyException {
 
 	private static final long serialVersionUID = -3742148613234532249L;
 
-	public IllegalProtocolException() {
-		super();
-	}
-
 	public IllegalProtocolException(String msg) {
 		super(msg);
 	}

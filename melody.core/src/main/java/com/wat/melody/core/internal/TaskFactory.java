@@ -26,15 +26,16 @@ import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.event.State;
+import com.wat.melody.api.exception.AttributeRelatedException;
+import com.wat.melody.api.exception.NestedElementRelatedException;
 import com.wat.melody.api.exception.TaskException;
-import com.wat.melody.api.exception.TaskFactoryAttributeException;
 import com.wat.melody.api.exception.TaskFactoryException;
-import com.wat.melody.api.exception.TaskFactoryNestedElementException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 /**
@@ -560,19 +561,23 @@ public class TaskFactory {
 				try {
 					sAttrVal = Melody.getContext().expand(attr.getNodeValue());
 				} catch (ExpressionSyntaxException Ex) {
-					throw new TaskFactoryAttributeException(attr, m,
-							Messages.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
-									sAttrName, State.FAILED), Ex);
+					throw new TaskFactoryException(
+							new AttributeRelatedException(attr, m,
+									Messages.bind(
+											Messages.TaskFactoryEx_EXPAND_ATTR,
+											sAttrName, State.FAILED), Ex));
 				} catch (Throwable Ex) {
-					throw new TaskFactoryAttributeException(attr, m,
-							Messages.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
-									sAttrName, State.CRITICAL), Ex);
+					throw new TaskFactoryException(
+							new AttributeRelatedException(attr, m,
+									Messages.bind(
+											Messages.TaskFactoryEx_EXPAND_ATTR,
+											sAttrName, State.CRITICAL), Ex));
 				}
 				setMember(base, m, m.getParameterTypes()[0], attr, sAttrVal);
 			} else {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_INVALID_ATTR, sAttrName,
-						Doc.getNodeLocation(attr)));
+				throw new TaskFactoryException(
+						new SimpleNodeRelatedException(attr, Messages.bind(
+								Messages.TaskFactoryEx_INVALID_ATTR, sAttrName)));
 			}
 		}
 		detectsUndefinedMandatoryAttributes(base.getClass(), attrs);
@@ -615,9 +620,9 @@ public class TaskFactory {
 					|| registerInnerTask(base, n)) {
 				continue;
 			}
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_INVALID_NE, n.getNodeName(),
-					Doc.getNodeLocation(n)));
+			throw new TaskFactoryException(new SimpleNodeRelatedException(n,
+					Messages.bind(Messages.TaskFactoryEx_INVALID_NE,
+							n.getNodeName())));
 		}
 		detectsUndefinedMandatoryNestedElements(base.getClass(), nestedNodes);
 	}
@@ -678,13 +683,13 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
-					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.FAILED), Ex);
+			throw new TaskFactoryException(new NestedElementRelatedException(n,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
+							.getNodeName().toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
-					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.CRITICAL), Ex);
+			throw new TaskFactoryException(new NestedElementRelatedException(n,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
+							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
@@ -712,13 +717,13 @@ public class TaskFactory {
 			setAllMembers(o, n.getAttributes(), n.getNodeName());
 			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
-					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.FAILED), Ex);
+			throw new TaskFactoryException(new NestedElementRelatedException(n,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
+							.getNodeName().toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryNestedElementException(n, m, Messages.bind(
-					Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.CRITICAL), Ex);
+			throw new TaskFactoryException(new NestedElementRelatedException(n,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
+							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
@@ -753,13 +758,13 @@ public class TaskFactory {
 				o = createNewObject(param, sAttrVal);
 			}
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryAttributeException(attr, m,
-					Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
-							sAttrName, State.FAILED), Ex);
+			throw new TaskFactoryException(new AttributeRelatedException(attr,
+					m, Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
+							sAttrName, State.FAILED), Ex));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryAttributeException(attr, m, Messages.bind(
-					Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
-					State.CRITICAL), Ex);
+			throw new TaskFactoryException(new AttributeRelatedException(attr,
+					m, Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
+							sAttrName, State.CRITICAL), Ex));
 		}
 
 		try {
@@ -770,13 +775,13 @@ public class TaskFactory {
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
-			throw new TaskFactoryAttributeException(attr, m, Messages.bind(
-					Messages.TaskFactoryEx_SET_ATTR, sAttrName, State.FAILED),
-					Ex.getCause());
+			throw new TaskFactoryException(new AttributeRelatedException(attr,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_ATTR,
+							sAttrName, State.FAILED), Ex.getCause()));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryAttributeException(attr, m,
-					Messages.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
-							State.CRITICAL), Ex);
+			throw new TaskFactoryException(new AttributeRelatedException(attr,
+					m, Messages.bind(Messages.TaskFactoryEx_SET_ATTR,
+							sAttrName, State.CRITICAL), Ex));
 		}
 	}
 

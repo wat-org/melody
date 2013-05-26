@@ -11,10 +11,6 @@ public class ResourceException extends MelodyException {
 
 	private static final long serialVersionUID = -2131244434324870342L;
 
-	public ResourceException() {
-		super();
-	}
-
 	public ResourceException(String msg) {
 		super(msg);
 	}

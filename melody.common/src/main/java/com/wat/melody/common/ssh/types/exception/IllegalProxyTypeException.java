@@ -11,10 +11,6 @@ public class IllegalProxyTypeException extends MelodyException {
 
 	private static final long serialVersionUID = -2133590963741240905L;
 
-	public IllegalProxyTypeException() {
-		super();
-	}
-
 	public IllegalProxyTypeException(String msg) {
 		super(msg);
 	}

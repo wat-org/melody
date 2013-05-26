@@ -11,10 +11,6 @@ public class AwsException extends TaskException {
 
 	private static final long serialVersionUID = 7682456925787679884L;
 
-	public AwsException() {
-		super();
-	}
-
 	public AwsException(String msg) {
 		super(msg);
 	}

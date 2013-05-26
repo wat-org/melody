@@ -3,7 +3,6 @@ package com.wat.melody.cloud.firewall;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.wat.melody.api.exception.ResourcesDescriptorException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
@@ -12,6 +11,7 @@ import com.wat.melody.common.firewall.IcmpTypes;
 import com.wat.melody.common.firewall.NetworkDeviceNameRef;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * 
@@ -68,13 +68,13 @@ public class FireWallRulesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <code>null</code> or is
 	 *             not an element {@link Node}.
-	 * @throws ResourcesDescriptorException
+	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceNode)
-			throws ResourcesDescriptorException {
+			throws NodeRelatedException {
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		fwrs.merge(new TcpFireWallRulesLoader().load(instanceNode));
 		fwrs.merge(new UdpFireWallRulesLoader().load(instanceNode));

@@ -11,10 +11,6 @@ public class IllegalPortRangesException extends MelodyException {
 
 	private static final long serialVersionUID = -6332148643239879792L;
 
-	public IllegalPortRangesException() {
-		super();
-	}
-
 	public IllegalPortRangesException(String msg) {
 		super(msg);
 	}

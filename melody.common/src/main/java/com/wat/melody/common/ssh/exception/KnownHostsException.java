@@ -11,10 +11,6 @@ public class KnownHostsException extends MelodyException {
 
 	private static final long serialVersionUID = -2998553237876325454L;
 
-	public KnownHostsException() {
-		super();
-	}
-
 	public KnownHostsException(String msg) {
 		super(msg);
 	}

@@ -11,10 +11,6 @@ public class IllegalInstanceStateException extends MelodyException {
 
 	private static final long serialVersionUID = -768976338086997771L;
 
-	public IllegalInstanceStateException() {
-		super();
-	}
-
 	public IllegalInstanceStateException(String msg) {
 		super(msg);
 	}

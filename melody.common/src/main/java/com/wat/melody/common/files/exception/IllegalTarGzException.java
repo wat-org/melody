@@ -9,10 +9,6 @@ public class IllegalTarGzException extends IllegalFileException {
 
 	private static final long serialVersionUID = -1986465413587462515L;
 
-	public IllegalTarGzException() {
-		super();
-	}
-
 	public IllegalTarGzException(String msg) {
 		super(msg);
 	}
