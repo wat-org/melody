@@ -63,11 +63,4 @@ public class WaitVolumeStatusException extends MelodyException {
 		return _timeout;
 	}
 
-	@Override
-	public String getMessage() {
-		// TODO : return a message which contains WaitVolumeStatusException
-		// details
-		return "TODO";
-	}
-
 }
