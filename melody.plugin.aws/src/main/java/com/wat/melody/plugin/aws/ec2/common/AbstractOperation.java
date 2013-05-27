@@ -187,7 +187,7 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	/**
-	 * @return the targeted {@link Node}.
+	 * @return the targeted {@link Element}.
 	 */
 	public Element getTargetElement() {
 		return _targetElement;
@@ -205,8 +205,8 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	/**
-	 * @return the Aws Instance Id which is registered in the targeted Node (can
-	 *         be <code>null</code>).
+	 * @return the Aws Instance Id which is registered in the targeted Element
+	 *         Node (can be <code>null</code>).
 	 */
 	protected String getInstanceId() {
 		return _instanceId;
@@ -250,8 +250,8 @@ abstract public class AbstractOperation implements ITask,
 		if (target == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XPath Expression, which "
-					+ "selects a sole XML Element node in the Resources "
-					+ "Descriptor.");
+					+ "selects a unique XML Element node in the Resources "
+					+ "Descriptor).");
 		}
 
 		NodeList nl = null;

@@ -6,9 +6,12 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.core.nativeplugin.setEDAttrValue.messages";
 
-	public static String SetEDAttrEx_UPDATE_ED_ITEMS_EMPTY;
-	public static String SetEDAttrEx_UPDATE_ED_ITEMS_INVALID_XPATH;
-	public static String SetEDAttrEx_UPDATE_ED_ITEMS_INVALID_TARGET;
+	public static String TargetAttrEx_NOT_XPATH;
+	public static String TargetAttrEx_MATCH_NO_NODE;
+	public static String TargetAttrEx_MATCH_MANY_NODES;
+	public static String TargetAttrEx_NOT_MATCH_ELEMENT;
+
+	public static String AttributeAttrEx_EMPTY;
 
 	static {
 		// initialize resource bundle

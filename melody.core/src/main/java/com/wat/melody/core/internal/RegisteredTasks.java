@@ -11,7 +11,7 @@ import com.wat.melody.core.nativeplugin.foreach.Foreach;
 import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.core.nativeplugin.sequence.Sequence;
-import com.wat.melody.core.nativeplugin.setEDAttrValue.SetEDAttrValue;
+import com.wat.melody.core.nativeplugin.setEDAttrValue.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.synchronize.Synchronize;
 
 /**
@@ -54,7 +54,8 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	/**
 	 * <p>
 	 * Contain all native Task Java Classes : {@link Sequence}, {@link Order},
-	 * {@link Call}, {@link Foreach}, {@link Property}, {@link SetEDAttrValue}.
+	 * {@link Call}, {@link Foreach}, {@link Property},
+	 * {@link SetAttributeValue}.
 	 * </p>
 	 * 
 	 */
@@ -65,7 +66,7 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 		put(Foreach.class);
 		put(Synchronize.class);
 		put(Property.class);
-		put(SetEDAttrValue.class);
+		put(SetAttributeValue.class);
 	}
 
 	@Override

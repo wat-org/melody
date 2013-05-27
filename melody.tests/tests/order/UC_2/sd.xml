@@ -3,20 +3,16 @@
 
 <sequence default="duplicate">
 
-	<order name="do">
-
-		<property name="svr" value="/environment/serverAWS/FRONTS/instance[1]"/>
-
-		<setEDAttrValue items="§[svr]§/@IP_priv" new-value=""/>
-		<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
-
-		<setEDAttrValue items="§[svr]§/@IP_priv" new-value="123.123.123.123"/>
-		<echo message="instance §[§[svr]§/@name]§} / IP:§[§[svr]§/@IP_priv]§"/>
-
-	</order>
+	<property name="ip" value="123.1232.123.123"/>
 
 	<order name="duplicate">
-		<echo/>	
+		<foreach items="//instance" item-name="svr">
+			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value=""/>
+			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
+	
+			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value="§[ip]§"/>
+			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
+		</foreach>
 	</order>
 
 	<order name="duplicate">

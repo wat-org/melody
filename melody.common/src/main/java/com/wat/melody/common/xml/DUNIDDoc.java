@@ -280,7 +280,13 @@ public class DUNIDDoc extends Doc implements EventListener {
 		 * 
 		 * throw an error if dunid attribute already exists in the node.
 		 * 
-		 * How many event are propagated if a Node with many child is inserted ?
+		 * Q : How many event are propagated if a Node with many child is
+		 * inserted ?
+		 * 
+		 * A : One, for the inserted element. None for its child.
+		 * 
+		 * How to deal with filtered Doc ? Should we insert the Node in the
+		 * original doc and reload filter ?
 		 */
 		markHasChanged();
 	}

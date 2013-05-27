@@ -7,19 +7,19 @@ import com.wat.melody.api.exception.TaskException;
  * @author Guillaume Cornet
  * 
  */
-public class SetEDAttrValueException extends TaskException {
+public class SetAttributeValueException extends TaskException {
 
 	private static final long serialVersionUID = -189644684016806644L;
 
-	public SetEDAttrValueException(String msg) {
+	public SetAttributeValueException(String msg) {
 		super(msg);
 	}
 
-	public SetEDAttrValueException(Throwable cause) {
+	public SetAttributeValueException(Throwable cause) {
 		super(cause);
 	}
 
-	public SetEDAttrValueException(String msg, Throwable cause) {
+	public SetAttributeValueException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
