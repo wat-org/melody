@@ -1,4 +1,4 @@
-package com.wat.melody.core.nativeplugin.setEDAttrValue.exception;
+package com.wat.melody.core.nativeplugin.attributes.exception;
 
 import com.wat.melody.api.exception.TaskException;
 

@@ -1,4 +1,4 @@
-package com.wat.melody.core.nativeplugin.setEDAttrValue;
+package com.wat.melody.core.nativeplugin.attributes;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -11,7 +11,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.core.nativeplugin.setEDAttrValue.exception.SetAttributeValueException;
+import com.wat.melody.core.nativeplugin.attributes.exception.SetAttributeValueException;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class SetAttributeValue implements ITask {
 	public static final String TARGET_ATTRIBUTE_NAME_ATTR = "attribute";
 
 	/**
-	 * The 'newValue' XML attribute of the 'SetAttributeValue' XML element
+	 * The 'new-value' XML attribute of the 'SetAttributeValue' XML element
 	 */
 	public static final String NEW_VALUE_ATTR = "new-value";
 
@@ -67,14 +67,6 @@ public class SetAttributeValue implements ITask {
 		synchronized (getTargetElement().getOwnerDocument()) {
 			getTargetElement().setAttribute(getTargetAttributeName(),
 					getNewValue());
-
-			// Document d = getTargetElement().getOwnerDocument();
-			// Element e = d.createElement("salut");
-			// e.appendChild(d.createElement("node1"));
-			// e.appendChild(d.createElement("node2"));
-			// e.appendChild(d.createElement("node3"));
-			// e.appendChild(d.createElement("node4"));
-			// getTargetElement().appendChild(e);
 		}
 	}
 

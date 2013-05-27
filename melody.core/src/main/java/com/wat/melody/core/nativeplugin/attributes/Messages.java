@@ -1,4 +1,4 @@
-package com.wat.melody.core.nativeplugin.setEDAttrValue;
+package com.wat.melody.core.nativeplugin.attributes;
 
 import org.eclipse.osgi.util.NLS;
 

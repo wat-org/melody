@@ -6,12 +6,12 @@ import java.util.Hashtable;
 
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
 import com.wat.melody.core.nativeplugin.foreach.Foreach;
 import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.core.nativeplugin.sequence.Sequence;
-import com.wat.melody.core.nativeplugin.setEDAttrValue.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.synchronize.Synchronize;
 
 /**
