@@ -97,6 +97,14 @@ public class FilteredDoc extends DUNIDDoc {
 		return previous;
 	}
 
+	/**
+	 * <p>
+	 * In order to make this object consistent, {@link #applyFilters()} must be
+	 * called after every modification of the returned object.
+	 * </p>
+	 * 
+	 * @return this object's {@link FilterSet}.
+	 */
 	private synchronized FilterSet getFilters() {
 		return _filters;
 	}
@@ -252,6 +260,14 @@ public class FilteredDoc extends DUNIDDoc {
 		setDocument(getOriginalDocument());
 		super.store(sPath);
 		setDocument(memory);
+	}
+
+	/**
+	 * @return a shallow copy of this object's {@link FilterSet} (The elements
+	 *         themselves are not copied).
+	 */
+	public synchronized FilterSet getFilterSet() {
+		return (FilterSet) _filters.clone();
 	}
 
 	public synchronized int countFilters() {

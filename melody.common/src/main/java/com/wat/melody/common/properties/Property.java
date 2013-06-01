@@ -214,6 +214,11 @@ public class Property {
 		setValue(v.substring(split + 1));
 	}
 
+	@Override
+	public String toString() {
+		return getName() + "=" + getValue();
+	}
+
 	public PropertyName getName() {
 		return _name;
 	}

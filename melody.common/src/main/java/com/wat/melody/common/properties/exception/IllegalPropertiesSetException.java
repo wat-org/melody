@@ -7,19 +7,19 @@ import com.wat.melody.common.ex.MelodyException;
  * @author Guillaume Cornet
  * 
  */
-public class IllegalPropertiesSetFileFormatException extends MelodyException {
+public class IllegalPropertiesSetException extends MelodyException {
 
 	private static final long serialVersionUID = 7894651384798200660L;
 
-	public IllegalPropertiesSetFileFormatException(String msg) {
+	public IllegalPropertiesSetException(String msg) {
 		super(msg);
 	}
 
-	public IllegalPropertiesSetFileFormatException(Throwable cause) {
+	public IllegalPropertiesSetException(Throwable cause) {
 		super(cause);
 	}
 
-	public IllegalPropertiesSetFileFormatException(String msg, Throwable cause) {
+	public IllegalPropertiesSetException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

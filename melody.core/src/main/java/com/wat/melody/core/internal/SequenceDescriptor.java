@@ -54,6 +54,19 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("source-file:");
+		str.append(getSourceFile());
+		str.append(", orders:");
+		str.append(getOrders());
+		str.append(", properties:");
+		str.append(getProperties());
+		str.append(" }");
+		return str.toString();
+	}
+
+	@Override
 	public void load(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalOrderException, IOException {
 		try {

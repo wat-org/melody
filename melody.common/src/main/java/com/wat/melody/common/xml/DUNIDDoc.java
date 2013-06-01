@@ -1,5 +1,8 @@
 package com.wat.melody.common.xml;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.logging.Log;
@@ -127,8 +130,8 @@ public class DUNIDDoc extends Doc implements EventListener {
 		Attr a = n.getAttributeNode(DUNID_ATTR);
 		if (a == null) {
 			throw new RuntimeException("Unexpected error while retrieving the "
-					+ "'" + DUNID_ATTR + "' XML Attribute of the element node "
-					+ "which position is '" + getXPathPosition(n) + "'. "
+					+ "'" + DUNID_ATTR + "' XML Attribute of the XML Element "
+					+ "[" + getNodeLocation(n).toFullString() + "]. "
 					+ "Since a '" + DUNID_ATTR + "' XML Attribute have been "
 					+ "previously added to all Node by the Melody's Engine, "
 					+ "such error can't happened. "
@@ -140,9 +143,10 @@ public class DUNIDDoc extends Doc implements EventListener {
 			return DUNID.parseString(sDunid);
 		} catch (IllegalDUNIDException Ex) {
 			throw new RuntimeException("Unexecpted error while creating a "
-					+ "DUNID based on the value '" + sDunid + "'. Since this "
-					+ "value have been retrieved from the '" + DUNID_ATTR
-					+ "' XML Attribute, which have been automaticaly "
+					+ "DUNID based on the value '" + sDunid + "' from the "
+					+ "'" + DUNID_ATTR + "' XML Attribute of the XML Element "
+					+ "[" + getNodeLocation(n).toFullString() + "]"
+					+ ". Since this value have been automaticaly "
 					+ "created by this object, such error cannot happened. "
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
@@ -178,6 +182,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 	private int _index;
 	private boolean _hasChanged;
+	private Set<DocListener> _listeners;
 
 	public DUNIDDoc() {
 		this(0);
@@ -187,6 +192,13 @@ public class DUNIDDoc extends Doc implements EventListener {
 		super();
 		setIndex(index);
 		setHasChanged(false);
+		setListeners(new LinkedHashSet<DocListener>());
+	}
+
+	@Override
+	public String toString() {
+		return "{" + "file:" + getSourceFile() + ", index:" + getIndex()
+				+ ", modified:" + hasChanged() + "}";
 	}
 
 	public int getIndex() {
@@ -217,13 +229,134 @@ public class DUNIDDoc extends Doc implements EventListener {
 		_hasChanged = true;
 	}
 
+	public Set<DocListener> getListeners() {
+		return _listeners;
+	}
+
+	public Set<DocListener> setListeners(Set<DocListener> l) {
+		if (l == null) {
+			throw new IllegalArgumentException("null: Not accepted."
+					+ "Must be a valid " + Set.class.getCanonicalName() + "<"
+					+ DocListener.class.getCanonicalName() + ">.");
+		}
+		Set<DocListener> previous = _listeners;
+		_listeners = l;
+		return previous;
+	}
+
 	@Override
 	protected Document setDocument(Document d) {
 		super.setDocument(d);
 		// Listen to all modifications performed on the underlying doc
 		startListening();
-		// TODO : should raise its own event on document modification
 		return getDocument();
+	}
+
+	public boolean addListener(DocListener l) {
+		if (l == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + DocListener.class.getCanonicalName()
+					+ ".");
+		}
+		return _listeners.add(l);
+	}
+
+	public boolean removeListener(DocListener l) {
+		if (l == null) {
+			throw new IllegalArgumentException("null: Not accepted."
+					+ "Must be a valid " + DocListener.class.getCanonicalName()
+					+ ".");
+		}
+		return _listeners.remove(l);
+	}
+
+	private void fireNodeInsertedEvent(MutationEvent evt)
+			throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.nodeInstered(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
+	}
+
+	private void fireNodeRemovedEvent(MutationEvent evt) throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.nodeRemoved(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
+	}
+
+	private void fireNodeTextChangedEvent(MutationEvent evt)
+			throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.nodeTextChanged(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
+	}
+
+	private void fireAttributeInsertedEvent(MutationEvent evt)
+			throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.attributeInserted(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
+	}
+
+	private void fireAttributeRemovedEvent(MutationEvent evt)
+			throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.attributeRemoved(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
+	}
+
+	private void fireAttributeModifiedEvent(MutationEvent evt)
+			throws MelodyException {
+		ConsolidatedException cex = new ConsolidatedException();
+		for (DocListener l : getListeners()) {
+			try {
+				l.attributeModified(evt);
+			} catch (MelodyException Ex) {
+				cex.addCause(Ex);
+			}
+		}
+		if (cex.countCauses() != 0) {
+			throw cex;
+		}
 	}
 
 	protected void startListening() {
@@ -247,30 +380,40 @@ public class DUNIDDoc extends Doc implements EventListener {
 		if (!(evt instanceof MutationEvent)) {
 			return;
 		}
+		MutationEvent e = (MutationEvent) evt;
 		try {
-			MutationEvent e = (MutationEvent) evt;
 			if (evt.getType().equals("DOMAttrModified")) {
 				if (e.getNewValue() == null) {
 					attributeRemoved(e);
+					fireAttributeRemovedEvent(e);
 				} else if (e.getPrevValue() == null) {
 					attributeInserted(e);
+					fireAttributeInsertedEvent(e);
 				} else if (!e.getNewValue().equals(e.getPrevValue())) {
 					attributeModified(e);
+					fireAttributeModifiedEvent(e);
 				}
 			} else if (evt.getType().equals("DOMNodeInserted")
 					&& evt.getTarget() instanceof Text) {
 				nodeTextChanged(e);
+				fireNodeTextChangedEvent(e);
 			} else if (evt.getType().equals("DOMNodeInserted")) {
 				nodeInstered(e);
+				fireNodeInsertedEvent(e);
 			} else if (evt.getType().equals("DOMNodeRemoved")) {
 				nodeRemoved(e);
+				fireNodeRemovedEvent(e);
 			}
 		} catch (MelodyException Ex) {
-			log.error(new MelodyException("An error occurred while "
-					+ "performing event propagation.", Ex).toString());
+			log.fatal(new MelodyException(Messages.bind(
+					Messages.DUNIDDocEx_FORBIDDEN_OP,
+					getNodeLocation((Node) e.getTarget()).toFullString()), Ex)
+					.toString());
 		} catch (Throwable Ex) {
-			log.fatal(new MelodyException("An unexpected error occurred while "
-					+ "performing event propagation.", Ex).toString());
+			log.fatal(new MelodyException(Messages.bind(
+					Messages.DUNIDDocEx_UNEXPECTED_ERR,
+					getNodeLocation((Node) e.getTarget()).toFullString()), Ex)
+					.toString());
 		}
 	}
 
@@ -314,7 +457,8 @@ public class DUNIDDoc extends Doc implements EventListener {
 	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		if (evt.getAttrName().equals(DUNID_ATTR)) {
 			throw new NodeRelatedException((Node) evt.getTarget(),
-					Messages.bind(Messages.DUNIDDocEx_DUNID_MOD, DUNID_ATTR));
+					Messages.bind(Messages.DUNIDDocEx_DUNID_MOD, DUNID_ATTR,
+							evt.getNewValue()));
 		}
 		markHasChanged();
 	}
@@ -345,6 +489,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 			}
 			throw new IllegalDocException(causes);
 		}
+		// When adding DUNID attributes, we don't want to listen/raise events
 		stopListening();
 		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());
 		startListening();

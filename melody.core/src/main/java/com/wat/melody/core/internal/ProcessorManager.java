@@ -445,26 +445,27 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	@Override
 	public String toString() {
-		StringBuilder str = new StringBuilder("");
+		StringBuilder str = new StringBuilder("{ ");
 		// Mandatory Configuration Directive
-		str.append("{");
-		str.append(" working-folder-path:" + getWorkingFolderPath());
-		str.append(", max-concurrent-thread:" + getMaxSimultaneousStep());
-		str.append(", hardkill-timeout:" + getHardKillTimeout());
+		str.append("working-folder-path:");
+		str.append(getWorkingFolderPath());
+		str.append(", max-concurrent-thread:");
+		str.append(getMaxSimultaneousStep());
+		str.append(", hardkill-timeout:");
+		str.append(getHardKillTimeout());
+		str.append(", sequence-descriptor:");
+		str.append(getSequenceDescriptor());
 
 		// Optional Configuration Directive
-		str.append(", " + getResourcesDescriptor().toString());
-		str.append(", batch-mode-enabled:" + isBatchModeEnable());
-		str.append(", preserve-temp-resources-mode-enabled:"
-				+ isPreserveTemporaryFilesModeEnable());
-		str.append(", run-dry-mode-enabled:" + isRunDryModeEnable());
-		str.append(", sequence-descriptor-filepath:"
-				+ getSequenceDescriptor().getSourceFile());
-		str.append(", orders:{ ");
-		for (int i = 0; i < getSequenceDescriptor().countOrders(); i++)
-			str.append(getSequenceDescriptor().getOrder(i) + ", ");
-		str.append("} ");
-		str.append("}");
+		str.append(", resource-descriptor:");
+		str.append(getResourcesDescriptor());
+		str.append(", batch-mode-enabled:");
+		str.append(isBatchModeEnable());
+		str.append(", preserve-temp-resources-mode-enabled:");
+		str.append(isPreserveTemporaryFilesModeEnable());
+		str.append(", run-dry-mode-enabled:");
+		str.append(isRunDryModeEnable());
+		str.append(" }");
 		return str.toString();
 	}
 
@@ -500,11 +501,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		}
 	}
 
-	private void setStopRequested(boolean bStopRequested) {
+	private synchronized void setStopRequested(boolean bStopRequested) {
 		_stopRequested = bStopRequested;
 	}
 
-	private void setPauseRequested(boolean bPauseRequested) {
+	private synchronized void setPauseRequested(boolean bPauseRequested) {
 		_pauseRequested = bPauseRequested;
 	}
 
@@ -667,7 +668,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public List<IProcessorListener> setListeners(List<IProcessorListener> l) {
 		if (l == null) {
 			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid List<"
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ IProcessorListener.class.getCanonicalName() + ">.");
 		}
 		List<IProcessorListener> previous = _listeners;

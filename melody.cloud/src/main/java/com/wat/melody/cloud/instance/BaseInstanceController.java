@@ -27,7 +27,9 @@ abstract class BaseInstanceController implements InstanceController {
 			Set<InstanceControllerListener> listeners) {
 		if (listeners == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Set<InstanceControllerListener>.");
+					+ "Must be a valid " + Set.class.getCanonicalName() + "<"
+					+ InstanceControllerListener.class.getCanonicalName()
+					+ ">.");
 		}
 		Set<InstanceControllerListener> previous = getListeners();
 		_listeners = listeners;

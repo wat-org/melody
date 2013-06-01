@@ -13,6 +13,8 @@ public class Messages extends NLS {
 
 	public static String DUNIDDocEx_FOUND_DUNID;
 	public static String DUNIDDocEx_FOUND_DUNID_RESUME;
+	public static String DUNIDDocEx_FORBIDDEN_OP;
+	public static String DUNIDDocEx_UNEXPECTED_ERR;
 	public static String DUNIDDocEx_DUNID_DEL;
 	public static String DUNIDDocEx_DUNID_MOD;
 

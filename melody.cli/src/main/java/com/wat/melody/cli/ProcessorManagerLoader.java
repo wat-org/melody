@@ -37,7 +37,7 @@ import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
-import com.wat.melody.common.properties.exception.IllegalPropertiesSetFileFormatException;
+import com.wat.melody.common.properties.exception.IllegalPropertiesSetException;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
@@ -739,7 +739,7 @@ public class ProcessorManagerLoader {
 
 			registerAllPlugIns(oProps);
 			loadAllPlugInsConfiguration(oProps);
-		} catch (IllegalFileException | IllegalPropertiesSetFileFormatException
+		} catch (IllegalFileException | IllegalPropertiesSetException
 				| ConfigurationLoadingException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_GENERIC_GLOBAL_CONF_LOAD, gcfPath), Ex);
@@ -1305,7 +1305,7 @@ public class ProcessorManagerLoader {
 		} catch (IllegalFileException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NVF_PLUGINS_DIRECTIVE, pcd, pcf), Ex);
-		} catch (IllegalPropertiesSetFileFormatException Ex) {
+		} catch (IllegalPropertiesSetException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NVPS_PLUGINS_DIRECTIVE, pcd, pcf), Ex);
 		}

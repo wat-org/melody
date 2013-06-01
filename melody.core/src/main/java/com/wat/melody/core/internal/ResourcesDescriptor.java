@@ -113,20 +113,14 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	@Override
 	public String toString() {
-		StringBuilder str = new StringBuilder("");
-		str.append("resources-Descriptors:{ ");
-		for (DUNIDDoc rd : getDUNIDDocList()) {
-			str.append(rd.getSourceFile() + ", ");
-		}
-		str.append("}, resources-filters:{ ");
-		for (int i = 0; i < countFilters(); i++) {
-			str.append(getFilter(i) + ", ");
-		}
-		str.append("}, target-filter:{ ");
-		for (int i = 0; i < countTargetsFilters(); i++) {
-			str.append(getTargetsFilter(i) + ", ");
-		}
-		str.append("}");
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("resources-descriptors:");
+		str.append(getDUNIDDocList());
+		str.append(", resources-filters:");
+		str.append(getFilterSet());
+		str.append(", target-filter:");
+		str.append(getTargetDescriptor().getFilterSet());
+		str.append(" }");
 		return str.toString();
 	}
 
