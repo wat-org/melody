@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.core.nativeplugin.attributes.RemoveAttribute;
 import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
 import com.wat.melody.core.nativeplugin.foreach.Foreach;
@@ -55,7 +56,7 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	 * <p>
 	 * Contain all native Task Java Classes : {@link Sequence}, {@link Order},
 	 * {@link Call}, {@link Foreach}, {@link Property},
-	 * {@link SetAttributeValue}.
+	 * {@link SetAttributeValue}, {@link RemoveAttribute}.
 	 * </p>
 	 * 
 	 */
@@ -67,6 +68,7 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 		put(Synchronize.class);
 		put(Property.class);
 		put(SetAttributeValue.class);
+		put(RemoveAttribute.class);
 	}
 
 	@Override

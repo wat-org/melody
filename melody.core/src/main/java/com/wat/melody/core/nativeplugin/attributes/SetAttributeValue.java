@@ -6,11 +6,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.core.nativeplugin.attributes.common.AttributeName;
+import com.wat.melody.core.nativeplugin.attributes.common.Messages;
 import com.wat.melody.core.nativeplugin.attributes.exception.SetAttributeValueException;
 
 /**
@@ -41,7 +42,7 @@ public class SetAttributeValue implements ITask {
 	public static final String NEW_VALUE_ATTR = "new-value";
 
 	private String _target = null;
-	private String _targetAttributeName = null;
+	private AttributeName _targetAttributeName = null;
 	private String _newValue = null;
 	private Element _targetElement = null;
 
@@ -65,14 +66,9 @@ public class SetAttributeValue implements ITask {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		synchronized (getTargetElement().getOwnerDocument()) {
-			getTargetElement().setAttribute(getTargetAttributeName(),
-					getNewValue());
+			getTargetElement().setAttribute(
+					getTargetAttributeName().getValue(), getNewValue());
 		}
-	}
-
-	public IResourcesDescriptor getRD() {
-		return Melody.getContext().getProcessorManager()
-				.getResourcesDescriptor();
 	}
 
 	/**
@@ -86,7 +82,7 @@ public class SetAttributeValue implements ITask {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
-					+ " (the targeted AWS Instance Element Node).");
+					+ " (the targeted XML Element Node).");
 		}
 		Element previous = getTargetElement();
 		_targetElement = n;
@@ -105,13 +101,14 @@ public class SetAttributeValue implements ITask {
 		if (target == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XPath Expression, which "
-					+ "selects a unique XML Element node in the Resources "
+					+ "selects a unique XML Element Node in the Resources "
 					+ "Descriptor).");
 		}
 
 		NodeList nl = null;
 		try {
-			nl = getRD().evaluateAsNodeList(target);
+			nl = Melody.getContext().getProcessorManager()
+					.getResourcesDescriptor().evaluateAsNodeList(target);
 		} catch (XPathExpressionException Ex) {
 			throw new SetAttributeValueException(Messages.bind(
 					Messages.TargetAttrEx_NOT_XPATH, target));
@@ -136,28 +133,19 @@ public class SetAttributeValue implements ITask {
 		return previous;
 	}
 
-	public String getTargetAttributeName() {
+	public AttributeName getTargetAttributeName() {
 		return _targetAttributeName;
 	}
 
 	@Attribute(name = TARGET_ATTRIBUTE_NAME_ATTR, mandatory = true)
-	public String setTargetAttributeName(String name)
+	public AttributeName setTargetAttributeName(AttributeName name)
 			throws SetAttributeValueException {
 		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ AttributeName.class.getCanonicalName() + ".");
 		}
-		if (name.trim().length() == 0) {
-			throw new SetAttributeValueException(Messages.bind(
-					Messages.AttributeAttrEx_EMPTY, name));
-		}
-		/*
-		 * FIXME : should match an attribute name pattern
-		 * 
-		 * for example, 'space' are forbidden
-		 */
-		String previous = getTargetAttributeName();
+		AttributeName previous = getTargetAttributeName();
 		_targetAttributeName = name;
 		return previous;
 	}
