@@ -173,7 +173,7 @@ public class ProcessorManagerLoader {
 	 * 
 	 * <li><code>-T < Filter ></code></li> Add the given Filter to the Target
 	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#addTargetsFilter(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#addTargetFilter(String)}) ;</BR>
 	 * 
 	 * <li><code>-o < Order ></code></li> Add the given Order to the Sequence
 	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
@@ -520,7 +520,7 @@ public class ProcessorManagerLoader {
 		}
 		try {
 			IProcessorManager pm = getProcessorManager();
-			pm.getResourcesDescriptor().addTargetsFilter(
+			pm.getResourcesDescriptor().addTargetFilter(
 					Filter.parseFilter(cmdLine[i]));
 		} catch (MelodyException Ex) {
 			throw new CommandLineParsingException(Messages.bind(
@@ -1166,8 +1166,8 @@ public class ProcessorManagerLoader {
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
 			IProcessorManager pm = getProcessorManager();
-			pm.getResourcesDescriptor().addTargetsFilter(
-					Filter.parseFilter(val));
+			pm.getResourcesDescriptor()
+					.addTargetFilter(Filter.parseFilter(val));
 		} catch (ConfigurationLoadingException | IllegalFilterException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, f), Ex);

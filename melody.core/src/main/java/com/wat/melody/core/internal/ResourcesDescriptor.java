@@ -376,8 +376,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized String removeFilter(int i) {
-		String sRemovedFilter = super.removeFilter(i);
+	public synchronized Filter removeFilter(int i) {
+		Filter sRemovedFilter = super.removeFilter(i);
 		try {
 			getTargetDescriptor().load(this);
 		} catch (IllegalTargetFilterException Ex) {
@@ -421,11 +421,11 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized void setFilters(FilterSet filters)
+	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
 		try {
-			super.setFilters(filters);
+			super.setFilterSet(filters);
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
@@ -457,45 +457,50 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized int countTargetsFilters() {
+	public FilterSet getTargetFilterSet() {
+		return getTargetDescriptor().getFilterSet();
+	}
+
+	@Override
+	public synchronized int countTargetFilters() {
 		return getTargetDescriptor().countFilters();
 	}
 
 	@Override
-	public synchronized String getTargetsFilter(int i) {
+	public synchronized String getTargetFilter(int i) {
 		return getTargetDescriptor().getFilter(i);
 	}
 
 	@Override
-	public synchronized String removeTargetsFilter(int i) {
+	public synchronized Filter removeTargetFilter(int i) {
 		return getTargetDescriptor().removeFilter(i);
 	}
 
 	@Override
-	public synchronized void clearTargetsFilters() {
+	public synchronized void clearTargetFilters() {
 		getTargetDescriptor().clearFilters();
 	}
 
 	@Override
-	public synchronized String setTargetsFilter(int i, Filter filter)
+	public synchronized String setTargetFilter(int i, Filter filter)
 			throws IllegalTargetFilterException {
 		return getTargetDescriptor().setFilter(i, filter);
 	}
 
 	@Override
-	public synchronized void setTargetsFilters(FilterSet filters)
+	public synchronized void setTargetFilterSet(FilterSet filters)
 			throws IllegalTargetFilterException {
-		getTargetDescriptor().setFilters(filters);
+		getTargetDescriptor().setFilterSet(filters);
 	}
 
 	@Override
-	public synchronized void addTargetsFilter(Filter filter)
+	public synchronized void addTargetFilter(Filter filter)
 			throws IllegalTargetFilterException {
 		getTargetDescriptor().addFilter(filter);
 	}
 
 	@Override
-	public synchronized void addTargetsFilters(FilterSet filters)
+	public synchronized void addTargetFilters(FilterSet filters)
 			throws IllegalTargetFilterException {
 		getTargetDescriptor().addFilters(filters);
 	}

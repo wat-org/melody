@@ -76,10 +76,11 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	private Document _originalDoc = null;
-	private FilterSet _filters = new FilterSet();
+	private FilterSet _filters;
 
 	public FilteredDoc() {
 		super();
+		setFilters(new FilterSet());
 	}
 
 	protected Document getOriginalDocument() {
@@ -109,19 +110,15 @@ public class FilteredDoc extends DUNIDDoc {
 		return _filters;
 	}
 
-	public synchronized void setFilters(FilterSet filters)
-			throws IllegalFilterException {
+	private synchronized FilterSet setFilters(FilterSet filters) {
 		if (filters == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + FilterSet.class.getCanonicalName()
 					+ ".");
 		}
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
-		getFilters().clear();
-		getFilters().addAll(filters);
-		applyFilters();
+		FilterSet previous = getFilters();
+		_filters = filters;
+		return previous;
 	}
 
 	protected Document cloneOriginalDocument() {
@@ -264,10 +261,26 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * @return a shallow copy of this object's {@link FilterSet} (The elements
-	 *         themselves are not copied).
+	 *         themselves are not copied; If the returned {@link FilterSet} is
+	 *         modified, this object's {@link FilterSet} will not be modified).
 	 */
 	public synchronized FilterSet getFilterSet() {
 		return (FilterSet) _filters.clone();
+	}
+
+	public synchronized void setFilterSet(FilterSet filters)
+			throws IllegalFilterException {
+		if (filters == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + FilterSet.class.getCanonicalName()
+					+ ".");
+		}
+		if (getOriginalDocument() != null) {
+			setDocument(cloneOriginalDocument());
+		}
+		getFilters().clear();
+		getFilters().addAll(filters);
+		applyFilters();
 	}
 
 	public synchronized int countFilters() {
@@ -278,11 +291,11 @@ public class FilteredDoc extends DUNIDDoc {
 		return _filters.get(i).getValue();
 	}
 
-	public synchronized String removeFilter(int i) {
+	public synchronized Filter removeFilter(int i) {
 		if (getOriginalDocument() != null) {
 			setDocument(cloneOriginalDocument());
 		}
-		String sRemovedFilter = getFilters().remove(i).getValue();
+		Filter sRemovedFilter = getFilters().remove(i);
 		try {
 			applyFilters();
 		} catch (IllegalFilterException Ex) {

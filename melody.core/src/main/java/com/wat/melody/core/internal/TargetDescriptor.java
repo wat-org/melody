@@ -60,10 +60,10 @@ public class TargetDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public synchronized void setFilters(FilterSet filters)
+	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalTargetFilterException {
 		try {
-			super.setFilters(filters);
+			super.setFilterSet(filters);
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalTargetFilterException(Ex);
 		}

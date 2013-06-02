@@ -138,6 +138,13 @@ public interface IResourcesDescriptor {
 	public List<Element> evaluateTargets(String xpath)
 			throws XPathExpressionException;
 
+	/**
+	 * @return a shallow copy of this object's {@link FilterSet} (The elements
+	 *         themselves are not copied; If the returned {@link FilterSet} is
+	 *         modified, this object's {@link FilterSet} will not be modified).
+	 */
+	public FilterSet getFilterSet();
+
 	public String getFilter(int i);
 
 	public void addFilter(Filter filter)
@@ -152,34 +159,42 @@ public interface IResourcesDescriptor {
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException;
 
-	public void setFilters(FilterSet filters)
+	public void setFilterSet(FilterSet filters)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException;
 
-	public String removeFilter(int i);
+	public Filter removeFilter(int i);
 
 	public void clearFilters();
 
 	public int countFilters();
 
-	public String getTargetsFilter(int i);
+	/**
+	 * @return a shallow copy of this object's Target {@link FilterSet} (The
+	 *         elements themselves are not copied; If the returned
+	 *         {@link FilterSet} is modified, this object's Target
+	 *         {@link FilterSet} will not be modified).
+	 */
+	public FilterSet getTargetFilterSet();
 
-	public void addTargetsFilter(Filter filter)
+	public String getTargetFilter(int i);
+
+	public void addTargetFilter(Filter filter)
 			throws IllegalTargetFilterException;
 
-	public void addTargetsFilters(FilterSet filters)
+	public void addTargetFilters(FilterSet filters)
 			throws IllegalTargetFilterException;
 
-	public String setTargetsFilter(int i, Filter filter)
+	public String setTargetFilter(int i, Filter filter)
 			throws IllegalFilterException;
 
-	public void setTargetsFilters(FilterSet filters)
+	public void setTargetFilterSet(FilterSet filters)
 			throws IllegalTargetFilterException;
 
-	public String removeTargetsFilter(int i);
+	public Filter removeTargetFilter(int i);
 
-	public void clearTargetsFilters();
+	public void clearTargetFilters();
 
-	public int countTargetsFilters();
+	public int countTargetFilters();
 
 }
