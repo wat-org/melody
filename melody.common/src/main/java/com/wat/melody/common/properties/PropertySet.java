@@ -18,7 +18,7 @@ import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
- * {@link PropertiesSet} holds Properties (e.g. a list of key/value elements).
+ * {@link PropertySet} holds Properties (e.g. a list of key/value elements).
  * </p>
  * <p>
  * Each key and its corresponding value is a <tt>String</tt>.
@@ -29,29 +29,29 @@ import com.wat.melody.common.systool.SysTool;
  * resolution process is called <b>expansion</b>.
  * 
  * <p>
- * Properties hold by a {@link PropertiesSet} object can be initialized from a
+ * Properties hold by a {@link PropertySet} object can be initialized from a
  * file using the method {@link #load(String)}.
  * </p>
  * <p>
- * A property hold by a {@link PropertiesSet} object can be <b>set</b> using the
+ * A property hold by a {@link PropertySet} object can be <b>set</b> using the
  * method {@link #put(String, String)}.
  * </p>
  * <p>
- * A property hold by a {@link PropertiesSet} object can be <b>get</b> using the
+ * A property hold by a {@link PropertySet} object can be <b>get</b> using the
  * method {@link #get(String)}. The variable part of the Configuration
  * Directive's value will be expanded.
  * </p>
  * 
  * <p>
  * <i> This class is thread-safe, meaning that multiple threads can share the
- * same {@link PropertiesSet} object without the need for external
+ * same {@link PropertySet} object without the need for external
  * synchronization. </i>
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class PropertiesSet {
+public class PropertySet {
 
 	public static final String COMMENT_PATTERN = "^\\s*#.*$";
 	public static final String EMPTY_STRING_PATTERN = "^\\s*$";
@@ -61,15 +61,15 @@ public class PropertiesSet {
 
 	/**
 	 * <p>
-	 * Creates an empty {@link PropertiesSet}.
+	 * Creates an empty {@link PropertySet}.
 	 * </p>
 	 */
-	public PropertiesSet() {
+	public PropertySet() {
 	}
 
 	/**
 	 * <p>
-	 * Creates a new {@link PropertiesSet} which holds all properties defined in
+	 * Creates a new {@link PropertySet} which holds all properties defined in
 	 * the file pointed by the given path (see {@link #load(String)} ).
 	 * </p>
 	 * 
@@ -104,7 +104,7 @@ public class PropertiesSet {
 	 * @see {@link #load(String)}
 	 * 
 	 */
-	public PropertiesSet(String sFilePath) throws IllegalFileException,
+	public PropertySet(String sFilePath) throws IllegalFileException,
 			IllegalPropertiesSetException, IOException {
 		this();
 		load(sFilePath);
@@ -132,7 +132,7 @@ public class PropertiesSet {
 	 *         used to load (via {@link load(String)}) this object.
 	 * 
 	 */
-	public String getFilePath() {
+	public String getSourceFile() {
 		return _sourceFile;
 	}
 
@@ -461,8 +461,35 @@ public class PropertiesSet {
 	}
 
 	@Override
+	public int hashCode() {
+		return getProperties().hashCode() + getSourceFile().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return getProperties().toString();
+	}
+
+	@Override
+	public boolean equals(Object anObject) {
+		if (this == anObject) {
+			return true;
+		}
+		if (anObject instanceof PropertySet) {
+			PropertySet ps = (PropertySet) anObject;
+			return getProperties().equals(ps.getProperties())
+					&& getSourceFile().equals(ps.getSourceFile());
+		}
+		return false;
+	}
+
+	/**
+	 * <p>
+	 * Remove all elements holds by this objects.
+	 * </p>
+	 */
+	public synchronized void clear() {
+		getProperties().clear();
 	}
 
 	/**
@@ -474,7 +501,6 @@ public class PropertiesSet {
 	 * 
 	 * @throws NullPointerException
 	 *             if the requested key is <tt>null</tt>.
-	 * 
 	 */
 	public synchronized boolean containsKey(String key) {
 		return getProperties().containsKey(key);
@@ -486,7 +512,6 @@ public class PropertiesSet {
 	 * 
 	 * @return the previous value of the given {@link Property}, or
 	 *         <tt>null</tt> if it did not have one.
-	 * 
 	 */
 	public synchronized Property put(Property p) {
 		return getProperties().put(p.getName().getValue(), p);
@@ -498,7 +523,6 @@ public class PropertiesSet {
 	 * 
 	 * @return the <tt>String</tt> value corresponding to the specified key, or
 	 *         <tt>null</tt> if it did not have one.
-	 * 
 	 */
 	public synchronized String get(String key) {
 		if (!containsKey(key)) {
@@ -513,7 +537,6 @@ public class PropertiesSet {
 	 * 
 	 * @return the {@link Property} corresponding to the specified key, or
 	 *         <tt>null</tt> if it did not have one.
-	 * 
 	 */
 	public synchronized Property getProperty(String key) {
 		if (!containsKey(key)) {
@@ -528,7 +551,6 @@ public class PropertiesSet {
 	 * 
 	 * @return the previous value of the specified key, or <tt>null</tt> if it
 	 *         did not have one.
-	 * 
 	 */
 	public synchronized String remove(String key) {
 		if (!containsKey(key)) {
@@ -539,15 +561,14 @@ public class PropertiesSet {
 
 	/**
 	 * <p>
-	 * Put all {@link Property} hold by the given {@link PropertiesSet} into
-	 * this object.
+	 * Put all {@link Property} hold by the given {@link PropertySet} into this
+	 * object.
 	 * </p>
 	 * 
 	 * @param ps
-	 *            is a {@link PropertiesSet} into this object.
-	 * 
+	 *            is a {@link PropertySet} into this object.
 	 */
-	public synchronized void putAll(PropertiesSet ps) {
+	public synchronized void putAll(PropertySet ps) {
 		if (ps == null) {
 			return;
 		}
@@ -557,21 +578,13 @@ public class PropertiesSet {
 	}
 
 	/**
-	 * <p>
-	 * Duplicate this {@link PropertiesSet}.
-	 * </p>
-	 * 
-	 * <ul>
-	 * <li>Keys and values are not duplicated ;</li>
-	 * <li>The duplicated {@link PropertiesSet} can be modified (add, remove
-	 * keys) without impact one this object ;</li>
-	 * </ul>
-	 * 
-	 * @return A {@link PropertiesSet} object, which is the copy of this object.
-	 * 
+	 * @return A shallow copy of this object's (element themselves are not
+	 *         copied; If the returned {@link PropertySet} is modified, this
+	 *         object will not be modified).
 	 */
-	public synchronized PropertiesSet copy() {
-		PropertiesSet copy = new PropertiesSet();
+	@Override
+	public synchronized PropertySet clone() {
+		PropertySet copy = new PropertySet();
 		for (Property p : getProperties().values()) {
 			copy.put(p);
 		}

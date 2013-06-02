@@ -407,10 +407,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized String setFilter(int i, Filter filter)
+	public synchronized Filter setFilter(int i, Filter filter)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException {
-		String sRemovedFilter;
+		Filter sRemovedFilter;
 		try {
 			sRemovedFilter = super.setFilter(i, filter);
 		} catch (IllegalFilterException Ex) {
@@ -482,7 +482,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized String setTargetFilter(int i, Filter filter)
+	public synchronized Filter setTargetFilter(int i, Filter filter)
 			throws IllegalTargetFilterException {
 		return getTargetDescriptor().setFilter(i, filter);
 	}

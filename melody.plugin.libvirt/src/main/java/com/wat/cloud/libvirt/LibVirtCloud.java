@@ -43,8 +43,8 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -335,7 +335,7 @@ public abstract class LibVirtCloud {
 		}
 
 		// preparation de la variabilisation du XML
-		PropertiesSet vars = new PropertiesSet();
+		PropertySet vars = new PropertySet();
 		try {
 			Doc ddoc = getDomainXMLDesc(d);
 			// pour chaque disque a supprimer
@@ -441,7 +441,7 @@ public abstract class LibVirtCloud {
 			// recuperation du storage pool
 			StoragePool sp = d.getConnect().storagePoolLookupByName("default");
 			// preparation de la variabilisation des template XML
-			PropertiesSet vars = new PropertiesSet();
+			PropertySet vars = new PropertySet();
 			vars.put(new Property("vmName", d.getName()));
 			vars.put(new Property("allocation", "0"));
 			// pour chaque disque
@@ -531,7 +531,7 @@ public abstract class LibVirtCloud {
 
 			// Search network device @mac
 			String mac = getDomainMacAddress(d, netdev);
-			PropertiesSet vars = new PropertiesSet();
+			PropertySet vars = new PropertySet();
 			vars.put(new Property("vmMacAddr", mac));
 
 			// Detach the network device
@@ -584,7 +584,7 @@ public abstract class LibVirtCloud {
 			createSecurityGroup(cnx, sSGName, sSGDesc);
 
 			// Create a network filter for the network device
-			PropertiesSet vars = new PropertiesSet();
+			PropertySet vars = new PropertySet();
 			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
 			vars.put(new Property("vmName", sInstanceId));
 			vars.put(new Property("sgName", sSGName));
@@ -1005,7 +1005,7 @@ public abstract class LibVirtCloud {
 		}
 	}
 
-	private static void createNetworkFilter(Domain d, PropertiesSet ps) {
+	private static void createNetworkFilter(Domain d, PropertySet ps) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Domain.class.getCanonicalName()
@@ -1176,7 +1176,7 @@ public abstract class LibVirtCloud {
 			createSecurityGroup(cnx, sSGName, sSGDesc);
 
 			Path ddt = getImageDomainDescriptor(sImageId);
-			PropertiesSet ps = new PropertiesSet();
+			PropertySet ps = new PropertySet();
 			Domain domain = null;
 			String sInstanceId = null;
 			// Defines domain

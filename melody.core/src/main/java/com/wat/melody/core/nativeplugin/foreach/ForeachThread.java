@@ -9,7 +9,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.MelodyThread;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 
 /**
  * <p>
@@ -21,7 +21,7 @@ import com.wat.melody.common.properties.PropertiesSet;
  */
 public class ForeachThread implements Runnable {
 
-	private PropertiesSet _propertiesSet;
+	private PropertySet _propertiesSet;
 	private Foreach _foreach;
 	private MelodyThread _thread;
 	private Throwable _finalError;
@@ -45,18 +45,18 @@ public class ForeachThread implements Runnable {
 	 *            is the {@link Foreach} Task which contains all inner-task to
 	 *            proceed.
 	 * @param ps
-	 *            is a dedicated {@link PropertiesSet}, which will be used
-	 *            during {@link Foreach} inner-task variable's expansion.
+	 *            is a dedicated {@link PropertySet}, which will be used during
+	 *            {@link Foreach} inner-task variable's expansion.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Foreach} Task is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link PropertiesSet} Task is <tt>null</tt>.
+	 *             if the given {@link PropertySet} Task is <tt>null</tt>.
 	 * 
 	 * @see {@link #run()}
 	 * @see {@link #startProcessing()}
 	 */
-	public ForeachThread(Foreach p, PropertiesSet ps) {
+	public ForeachThread(Foreach p, PropertySet ps) {
 		setPropertiesSet(ps);
 		setForeach(p);
 		setFinalError(null);
@@ -268,28 +268,28 @@ public class ForeachThread implements Runnable {
 		}
 	}
 
-	private PropertiesSet getPropertiesSet() {
+	private PropertySet getPropertiesSet() {
 		return _propertiesSet;
 	}
 
 	/**
 	 * <p>
-	 * Set the {@link PropertiesSet} of this object, which contains the
+	 * Set the {@link PropertySet} of this object, which contains the
 	 * appropriate 'item' definition.
 	 * </p>
 	 * 
 	 * @param a
-	 *            is the {@link PropertiesSet} to set.
+	 *            is the {@link PropertySet} to set.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link PropertiesSet} is <tt>null</tt>.
+	 *             if the given {@link PropertySet} is <tt>null</tt>.
 	 * 
 	 */
-	private void setPropertiesSet(PropertiesSet ps) {
+	private void setPropertiesSet(PropertySet ps) {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
 		_propertiesSet = ps;
 	}

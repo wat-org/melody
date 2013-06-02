@@ -9,7 +9,7 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
@@ -24,10 +24,10 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 public class TaskContext implements ITaskContext {
 
 	private Element _relatedElement;
-	private PropertiesSet _propertiesSet;
+	private PropertySet _propertiesSet;
 	private ProcessorManager _processorManager;
 
-	public TaskContext(Element n, PropertiesSet ps, ProcessorManager p) {
+	public TaskContext(Element n, PropertySet ps, ProcessorManager p) {
 		setProcessorManager(p);
 		setProperties(ps);
 		setRelatedElement(n);
@@ -50,17 +50,17 @@ public class TaskContext implements ITaskContext {
 	}
 
 	@Override
-	public PropertiesSet getProperties() {
+	public PropertySet getProperties() {
 		return _propertiesSet;
 	}
 
-	private PropertiesSet setProperties(PropertiesSet ps) {
+	private PropertySet setProperties(PropertySet ps) {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
-		PropertiesSet previous = getProperties();
+		PropertySet previous = getProperties();
 		_propertiesSet = ps;
 		return previous;
 	}
@@ -108,7 +108,7 @@ public class TaskContext implements ITaskContext {
 	}
 
 	@Override
-	public void processTask(Element n, PropertiesSet ps) throws TaskException,
+	public void processTask(Element n, PropertySet ps) throws TaskException,
 			InterruptedException {
 		_processorManager.createAndProcessTask(n, ps);
 	}

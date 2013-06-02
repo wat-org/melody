@@ -50,7 +50,7 @@ public class TargetDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public synchronized String setFilter(int i, Filter filter)
+	public synchronized Filter setFilter(int i, Filter filter)
 			throws IllegalTargetFilterException {
 		try {
 			return super.setFilter(i, filter);

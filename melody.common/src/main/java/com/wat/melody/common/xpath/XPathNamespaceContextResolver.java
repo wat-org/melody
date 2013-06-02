@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.xml.namespace.NamespaceContext;
 
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
 /**
@@ -32,19 +32,19 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 	/**
 	 * <p>
 	 * Load the Custom NameSpaces definitions described by the given
-	 * properties's list from the given {@link PropertiesSet}.
+	 * properties's list from the given {@link PropertySet}.
 	 * </p>
 	 * 
 	 * @param ps
 	 *            contains Custom XPath NameSpace definitions to load.
 	 * @param properties
-	 *            indicates the properties - in the given {@link PropertiesSet}
-	 *            - which contain the Custom NameSpace definitions to load.
+	 *            indicates the properties - in the given {@link PropertySet} -
+	 *            which contain the Custom NameSpace definitions to load.
 	 * 
 	 * @throws XPathNamespaceContextResolverLoadingException
 	 *             if a Custom NameSpace definition is invalid.
 	 */
-	public void loadDefinitions(PropertiesSet ps, String... properties)
+	public void loadDefinitions(PropertySet ps, String... properties)
 			throws XPathNamespaceContextResolverLoadingException {
 		if (ps == null) {
 			return;
@@ -66,7 +66,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		}
 	}
 
-	public void loadDefinition(PropertiesSet ps, String key)
+	public void loadDefinition(PropertySet ps, String key)
 			throws XPathNamespaceContextResolverLoadingException {
 		try {
 			String namespace = loadNamespace(ps, key);
@@ -84,7 +84,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		getNamespaceDefinition().put(name, uri);
 	}
 
-	private String loadNamespace(PropertiesSet ps, String key)
+	private String loadNamespace(PropertySet ps, String key)
 			throws XPathNamespaceContextResolverLoadingException {
 		int lastIndexOfDot = key.lastIndexOf('.') + 1;
 		if (lastIndexOfDot >= key.length()) {
@@ -103,7 +103,7 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		return namespaceName;
 	}
 
-	private String loadNamespaceURI(PropertiesSet ps, String key)
+	private String loadNamespaceURI(PropertySet ps, String key)
 			throws XPathNamespaceContextResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_NAMESPACE_URI)) {

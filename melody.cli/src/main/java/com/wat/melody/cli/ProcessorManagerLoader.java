@@ -35,8 +35,8 @@ import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.log.exception.IllegalLogThresholdException;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
-import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetException;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
@@ -611,7 +611,7 @@ public class ProcessorManagerLoader {
 	 * </p>
 	 * <p>
 	 * The Global Configuration File must be a properties set, as defined in by
-	 * the {@link PropertiesSet} class.
+	 * the {@link PropertySet} class.
 	 * </p>
 	 * <p>
 	 * Global Configuration File's available Configuration Directives are :
@@ -713,7 +713,7 @@ public class ProcessorManagerLoader {
 	public void loadGlobalConfigurationFile(String gcfPath)
 			throws ConfigurationLoadingException, IOException {
 		try {
-			PropertiesSet oProps = new PropertiesSet(gcfPath);
+			PropertySet oProps = new PropertySet(gcfPath);
 
 			// Mandatory Configuration Directives
 			loadLoggingVariablesToSubstitute(oProps);
@@ -746,7 +746,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadLoggingVariablesToSubstitute(PropertiesSet oProps)
+	private void loadLoggingVariablesToSubstitute(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(LOGGING_VARIABLES_TO_SUBSTITUTE)) {
 			return;
@@ -770,8 +770,8 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadLoggingVariableToSubstitute(PropertiesSet oProps,
-			String vtsd) throws ConfigurationLoadingException {
+	private void loadLoggingVariableToSubstitute(PropertySet oProps, String vtsd)
+			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(vtsd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, vtsd));
@@ -789,7 +789,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadLoggingConfigFile(PropertiesSet oProps)
+	private void loadLoggingConfigFile(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(LOGGING_CONFIG_FILE)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -809,7 +809,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadProcessorManagerClass(PropertiesSet oProps)
+	private void loadProcessorManagerClass(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(PROCESSOR_MANAGER_CLASS)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -835,7 +835,7 @@ public class ProcessorManagerLoader {
 
 	}
 
-	private void loadWorkingFolderPath(PropertiesSet oProps)
+	private void loadWorkingFolderPath(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(WORKING_FOLDER_PATH)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -856,7 +856,7 @@ public class ProcessorManagerLoader {
 
 	}
 
-	private void loadMaxPar(PropertiesSet oProps)
+	private void loadMaxPar(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(MAX_SIMULTANEOUS_STEP)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -882,7 +882,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadHardKillTimeout(PropertiesSet oProps)
+	private void loadHardKillTimeout(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(HARD_KILL_TIMEOUT)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -907,7 +907,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadResourcesDescriptors(PropertiesSet oProps)
+	private void loadResourcesDescriptors(PropertySet oProps)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(RESOURCES_DESCRIPTORS)) {
 			return;
@@ -931,7 +931,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadResourcesDescriptor(PropertiesSet oProps, String rdd)
+	private void loadResourcesDescriptor(PropertySet oProps, String rdd)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(rdd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -957,7 +957,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadBatchMode(PropertiesSet oProps)
+	private void loadBatchMode(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(BATCH_MODE)) {
 			return;
@@ -972,7 +972,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadPreserveTmpFileMode(PropertiesSet oProps)
+	private void loadPreserveTmpFileMode(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(PRESERVE_TEMPORARY_FILES_MODE)) {
 			return;
@@ -988,7 +988,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadRunDryMode(PropertiesSet oProps)
+	private void loadRunDryMode(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(RUN_DRY_MODE)) {
 			return;
@@ -1003,7 +1003,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadSequenceDescriptor(PropertiesSet oProps)
+	private void loadSequenceDescriptor(PropertySet oProps)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(SEQUENCE_DESCRIPTOR_FILE_PATH)) {
 			return;
@@ -1026,7 +1026,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadOrderNames(PropertiesSet oProps)
+	private void loadOrderNames(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(ORDERS)) {
 			return;
@@ -1038,7 +1038,7 @@ public class ProcessorManagerLoader {
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
 			IProcessorManager pm = getProcessorManager();
-			pm.getSequenceDescriptor().setOrders(
+			pm.getSequenceDescriptor().addOrders(
 					OrderNameSet.parseOrderNameSet(val));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -1046,7 +1046,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadProperties(PropertiesSet oProps)
+	private void loadProperties(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(PROPERTIES)) {
 			return;
@@ -1070,7 +1070,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadProperty(PropertiesSet oProps, String p)
+	private void loadProperty(PropertySet oProps, String p)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(p)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -1080,7 +1080,7 @@ public class ProcessorManagerLoader {
 		pm.getSequenceDescriptor().addProperty(oProps.getProperty(p));
 	}
 
-	private void loadResourcesFilters(PropertiesSet oProps)
+	private void loadResourcesFilters(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(RESOURCES_FILTERS)) {
 			return;
@@ -1107,7 +1107,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadResourcesFilter(PropertiesSet oProps, String f)
+	private void loadResourcesFilter(PropertySet oProps, String f)
 			throws ConfigurationLoadingException, IllegalTargetFilterException {
 		if (!oProps.containsKey(f)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -1129,7 +1129,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadTargetsFilters(PropertiesSet oProps)
+	private void loadTargetsFilters(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(TARGETS_FILTERS)) {
 			return;
@@ -1153,7 +1153,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadTargetsFilter(PropertiesSet oProps, String f)
+	private void loadTargetsFilter(PropertySet oProps, String f)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(f)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -1174,7 +1174,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void registerAllPlugIns(PropertiesSet oProps)
+	private void registerAllPlugIns(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(TASK_DIRECTIVES)) {
 			return;
@@ -1192,12 +1192,12 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void registerAllPlugInClasses(PropertiesSet oProps, String pi)
+	private void registerAllPlugInClasses(PropertySet oProps, String pi)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pi)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, TASK_DIRECTIVES,
-					pi, oProps.getFilePath()));
+					pi, oProps.getSourceFile()));
 		}
 		String pics = oProps.get(pi);
 		if (pics.trim().length() == 0) {
@@ -1214,7 +1214,7 @@ public class ProcessorManagerLoader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void registerPlugInClass(PropertiesSet oProps, String pi, String pic)
+	private void registerPlugInClass(PropertySet oProps, String pi, String pic)
 			throws ConfigurationLoadingException {
 		IProcessorManager pm = getProcessorManager();
 		IRegisteredTasks rts = pm.getRegisteredTasks();
@@ -1249,7 +1249,7 @@ public class ProcessorManagerLoader {
 		rts.put(c);
 	}
 
-	private void loadAllPlugInsConfiguration(PropertiesSet oProps)
+	private void loadAllPlugInsConfiguration(PropertySet oProps)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(PLUGIN_CONF_DIRECTIVES)) {
 			return;
@@ -1269,10 +1269,10 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadPlugInConfiguration(PropertiesSet oProps, String pcd)
+	private void loadPlugInConfiguration(PropertySet oProps, String pcd)
 			throws ConfigurationLoadingException, IOException {
 		String pcf = loadPlugInConfigurationDirective(oProps, pcd);
-		PropertiesSet pcps = loadPlugInConfigurationFile(oProps, pcd, pcf);
+		PropertySet pcps = loadPlugInConfigurationFile(oProps, pcd, pcf);
 		String pcc = findPlugInConfigurationClassName(oProps, pcd, pcps);
 		Class<? extends IPlugInConfiguration> c = convertPlugInConfigurationClass(
 				pcps, pcc);
@@ -1280,12 +1280,12 @@ public class ProcessorManagerLoader {
 		registerPlugInConfiguration(pc);
 	}
 
-	private String loadPlugInConfigurationDirective(PropertiesSet oProps,
+	private String loadPlugInConfigurationDirective(PropertySet oProps,
 			String pcd) throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pcd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_PLUGINS_DIRECTIVE,
-					PLUGIN_CONF_DIRECTIVES, pcd, oProps.getFilePath()));
+					PLUGIN_CONF_DIRECTIVES, pcd, oProps.getSourceFile()));
 		}
 		String pcf = oProps.get(pcd);
 		if (pcf.trim().length() == 0) {
@@ -1296,12 +1296,12 @@ public class ProcessorManagerLoader {
 		return pcf;
 	}
 
-	private PropertiesSet loadPlugInConfigurationFile(PropertiesSet oProps,
+	private PropertySet loadPlugInConfigurationFile(PropertySet oProps,
 			String pcd, String pcf) throws ConfigurationLoadingException,
 			IOException {
-		PropertiesSet pcps = null;
+		PropertySet pcps = null;
 		try {
-			pcps = new PropertiesSet(pcf);
+			pcps = new PropertySet(pcf);
 		} catch (IllegalFileException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NVF_PLUGINS_DIRECTIVE, pcd, pcf), Ex);
@@ -1312,53 +1312,54 @@ public class ProcessorManagerLoader {
 		return pcps;
 	}
 
-	private String findPlugInConfigurationClassName(PropertiesSet oProps,
-			String pcd, PropertiesSet pcps)
-			throws ConfigurationLoadingException {
+	private String findPlugInConfigurationClassName(PropertySet oProps,
+			String pcd, PropertySet pcps) throws ConfigurationLoadingException {
 		if (!pcps.containsKey(IPlugInConfiguration.PLUGIN_CONF_CLASS)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_PCC_DIRECTIVE, pcd,
-					pcps.getFilePath(), IPlugInConfiguration.PLUGIN_CONF_CLASS));
+					pcps.getSourceFile(),
+					IPlugInConfiguration.PLUGIN_CONF_CLASS));
 		}
 		String pcc = pcps.get(IPlugInConfiguration.PLUGIN_CONF_CLASS);
 		if (pcc.trim().length() == 0) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_EMPTY_PCC_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath()));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile()));
 		}
 		return pcc;
 	}
 
 	@SuppressWarnings("unchecked")
 	private Class<? extends IPlugInConfiguration> convertPlugInConfigurationClass(
-			PropertiesSet pcps, String pcc)
-			throws ConfigurationLoadingException {
+			PropertySet pcps, String pcc) throws ConfigurationLoadingException {
 		Class<? extends IPlugInConfiguration> c = null;
 		try {
 			c = (Class<? extends IPlugInConfiguration>) Class.forName(pcc);
 		} catch (ClassNotFoundException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_CNF_CONF_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					pcc));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile(), pcc));
 		} catch (NoClassDefFoundError Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_NCDF_CONF_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					pcc, Ex.getMessage().replaceAll("/", ".")));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile(), pcc,
+					Ex.getMessage().replaceAll("/", ".")));
 		}
 		IProcessorManager pm = getProcessorManager();
 		if (pm.getPluginConfigurations().contains(c)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					c));
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile(), c));
 		}
 		return c;
 	}
 
 	private IPlugInConfiguration instanciatePlugInConfiguration(
-			PropertiesSet pcps, Class<? extends IPlugInConfiguration> c)
+			PropertySet pcps, Class<? extends IPlugInConfiguration> c)
 			throws ConfigurationLoadingException {
 		IPlugInConfiguration pc = null;
 		try {
@@ -1367,20 +1368,21 @@ public class ProcessorManagerLoader {
 				| IllegalAccessException | ClassCastException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_IS_CONF_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					c.getClass().getCanonicalName(),
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile(), c.getClass().getCanonicalName(),
 					IPlugInConfiguration.class.getCanonicalName()));
 		} catch (InvocationTargetException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_IE_CONF_DIRECTIVE,
-					IPlugInConfiguration.PLUGIN_CONF_CLASS, pcps.getFilePath(),
-					c.getClass().getCanonicalName()), Ex.getCause());
+					IPlugInConfiguration.PLUGIN_CONF_CLASS,
+					pcps.getSourceFile(), c.getClass().getCanonicalName()),
+					Ex.getCause());
 		}
 		try {
 			pc.load(pcps);
 		} catch (PlugInConfigurationException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
-					Messages.ConfEx_GENERIC_PLUGIN_LOAD, pcps.getFilePath()),
+					Messages.ConfEx_GENERIC_PLUGIN_LOAD, pcps.getSourceFile()),
 					Ex);
 		}
 		return pc;
@@ -1391,7 +1393,7 @@ public class ProcessorManagerLoader {
 		pm.getPluginConfigurations().put(pc);
 	}
 
-	private void loadAllXPathNamespaceDefinitions(PropertiesSet oProps)
+	private void loadAllXPathNamespaceDefinitions(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(XPATH_NAMESPACE_DIRECTIVES)) {
 			return;
@@ -1411,7 +1413,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadXPathNamespaceDefinitions(PropertiesSet oProps, String nscd)
+	private void loadXPathNamespaceDefinitions(PropertySet oProps, String nscd)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(nscd)) {
 			throw new ConfigurationLoadingException(Messages.bind(
@@ -1432,7 +1434,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadAllXPathFunctionDefinitions(PropertiesSet oProps)
+	private void loadAllXPathFunctionDefinitions(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(XPATH_FUNCTION_DIRECTIVES)) {
 			return;
@@ -1452,7 +1454,7 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void loadXPathFunctionDefinitions(PropertiesSet oProps, String fcd)
+	private void loadXPathFunctionDefinitions(PropertySet oProps, String fcd)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(fcd)) {
 			throw new ConfigurationLoadingException(Messages.bind(

@@ -3,7 +3,7 @@ package com.wat.melody.common.xpath;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPathFunction;
 
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
@@ -23,12 +23,12 @@ public class XPathResolver {
 		setXPathFunctionResolver(functionResolver);
 	}
 
-	public void loadNamespaceDefinitions(PropertiesSet ps, String... properties)
+	public void loadNamespaceDefinitions(PropertySet ps, String... properties)
 			throws XPathNamespaceContextResolverLoadingException {
 		getXPathNamespaceContextResolver().loadDefinitions(ps, properties);
 	}
 
-	public void loadNamespaceDefinition(PropertiesSet ps, String property)
+	public void loadNamespaceDefinition(PropertySet ps, String property)
 			throws XPathNamespaceContextResolverLoadingException {
 		getXPathNamespaceContextResolver().loadDefinition(ps, property);
 	}
@@ -38,12 +38,12 @@ public class XPathResolver {
 		getXPathNamespaceContextResolver().addDefinition(namespace, uri);
 	}
 
-	public void loadFunctionDefinitions(PropertiesSet ps, String... properties)
+	public void loadFunctionDefinitions(PropertySet ps, String... properties)
 			throws XPathFunctionResolverLoadingException {
 		getXPathFunctionResolver().loadDefinitions(ps, properties);
 	}
 
-	public void loadFunctionDefinition(PropertiesSet ps, String property)
+	public void loadFunctionDefinition(PropertySet ps, String property)
 			throws XPathFunctionResolverLoadingException {
 		getXPathFunctionResolver().loadDefinition(ps, property);
 	}

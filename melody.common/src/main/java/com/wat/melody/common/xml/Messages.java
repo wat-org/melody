@@ -22,6 +22,7 @@ public class Messages extends NLS {
 	public static String DocEx_INVALID_XML_SYNTAX;
 	public static String DocEx_INVALID_XML_DATA;
 
+	public static String FilteredDocEx_DUPLICATE;
 	public static String FilteredDocEx_INCORRECT_XPATH;
 	public static String FilteredDocEx_TOO_RSTRICTIVE;
 	public static String FilteredDocEx_MUST_TARGET_ELEMENT;

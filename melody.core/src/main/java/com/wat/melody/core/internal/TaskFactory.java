@@ -33,7 +33,7 @@ import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
@@ -471,7 +471,7 @@ public class TaskFactory {
 	 * @param n
 	 *            is the task to create (in its native {@link Element} format).
 	 * @param ps
-	 *            is a {@link PropertiesSet}, which will be used during
+	 *            is a {@link PropertySet}, which will be used during
 	 *            attribute's value's expansion.
 	 * 
 	 * @return a new object that implement Task.
@@ -498,10 +498,10 @@ public class TaskFactory {
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Element} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if a the {@link PropertiesSet} is <tt>null</tt>.
+	 *             if a the {@link PropertySet} is <tt>null</tt>.
 	 * 
 	 */
-	public ITask newTask(Class<? extends ITask> c, Element n, PropertiesSet ps)
+	public ITask newTask(Class<? extends ITask> c, Element n, PropertySet ps)
 			throws TaskFactoryException {
 		if (c == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -514,8 +514,8 @@ public class TaskFactory {
 		}
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
 
 		ITask t = null;

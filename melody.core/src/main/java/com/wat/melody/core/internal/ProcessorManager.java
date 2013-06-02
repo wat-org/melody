@@ -38,7 +38,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionResolver;
@@ -402,7 +402,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 								.getSourceFile());
 	}
 
-	public IProcessorManager createSubProcessorManager(PropertiesSet ps) {
+	public IProcessorManager createSubProcessorManager(PropertySet ps) {
 		ProcessorManager dest = new ProcessorManager();
 		dest.setParentProcessorManager(this);
 		dest.setRegisteredTasks(getRegisteredTasks());
@@ -438,7 +438,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		dest.setBatchMode(isBatchModeEnable());
 		dest.setRunDryMode(isRunDryModeEnable());
 		dest.setPreserveTemporaryFilesMode(isPreserveTemporaryFilesModeEnable());
-		dest.getSequenceDescriptor().setProperties(ps.copy());
+		dest.getSequenceDescriptor().setPropertySet(ps.clone());
 
 		return dest;
 	}
@@ -815,7 +815,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private void processSequenceDescriptor() throws TaskException,
 			InterruptedException {
 		createAndProcessTask(getSequenceDescriptor().getRoot(),
-				getSequenceDescriptor().getProperties());
+				getSequenceDescriptor().getPropertySet());
 	}
 
 	private void deleteTemporaryResources() {
@@ -835,20 +835,20 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		}
 	}
 
-	protected void createAndProcessTask(Element n, PropertiesSet ps)
+	protected void createAndProcessTask(Element n, PropertySet ps)
 			throws TaskException, InterruptedException {
 		processTask(newTask(n, ps));
 	}
 
-	protected ITask newTask(Element n, PropertiesSet ps) throws TaskException {
+	protected ITask newTask(Element n, PropertySet ps) throws TaskException {
 		boolean pushed = false;
 		try {
 			Class<? extends ITask> c = getTaskFactory().identifyTask(n);
 			// Duplicate the PropertiesSet, so the Task can work with its own
 			// PropertiesSet
 			// Doesn't apply to ITask which implements IShareProperties
-			PropertiesSet ownPs = TaskFactory.implementsInterface(c,
-					IShareProperties.class) ? ps : ps.copy();
+			PropertySet ownPs = TaskFactory.implementsInterface(c,
+					IShareProperties.class) ? ps : ps.clone();
 			Melody.pushContext(new TaskContext(n, ownPs, this));
 			pushed = true;
 			ITask t = getTaskFactory().newTask(c, n, ps);

@@ -147,15 +147,11 @@ public interface IResourcesDescriptor {
 
 	public String getFilter(int i);
 
-	public void addFilter(Filter filter)
-			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException;
-
 	public void addFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException;
 
-	public String setFilter(int i, Filter filter)
+	public void addFilter(Filter filter)
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException;
 
@@ -163,9 +159,13 @@ public interface IResourcesDescriptor {
 			throws IllegalResourcesFilterException,
 			IllegalTargetFilterException;
 
-	public Filter removeFilter(int i);
+	public Filter setFilter(int i, Filter filter)
+			throws IllegalResourcesFilterException,
+			IllegalTargetFilterException;
 
 	public void clearFilters();
+
+	public Filter removeFilter(int i);
 
 	public int countFilters();
 
@@ -179,21 +179,21 @@ public interface IResourcesDescriptor {
 
 	public String getTargetFilter(int i);
 
-	public void addTargetFilter(Filter filter)
-			throws IllegalTargetFilterException;
-
 	public void addTargetFilters(FilterSet filters)
 			throws IllegalTargetFilterException;
 
-	public String setTargetFilter(int i, Filter filter)
-			throws IllegalFilterException;
+	public void addTargetFilter(Filter filter)
+			throws IllegalTargetFilterException;
 
 	public void setTargetFilterSet(FilterSet filters)
 			throws IllegalTargetFilterException;
 
-	public Filter removeTargetFilter(int i);
+	public Filter setTargetFilter(int i, Filter filter)
+			throws IllegalFilterException;
 
 	public void clearTargetFilters();
+
+	public Filter removeTargetFilter(int i);
 
 	public int countTargetFilters();
 

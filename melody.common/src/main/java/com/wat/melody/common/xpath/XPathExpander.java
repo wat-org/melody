@@ -17,8 +17,8 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.PropertyName;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
@@ -288,7 +288,7 @@ public abstract class XPathExpander {
 	 *             if fileToExpand is <tt>null</tt>.
 	 */
 	public static String expand(Path fileToExpand, Node ctx,
-			PropertiesSet properties) throws XPathExpressionSyntaxException,
+			PropertySet properties) throws XPathExpressionSyntaxException,
 			IOException, IllegalFileException {
 		if (fileToExpand == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -354,7 +354,7 @@ public abstract class XPathExpander {
 	 *             if a Melody Expression cannot be expanded because it is not a
 	 *             valid X2Path Expression.
 	 */
-	public static String expand(String expr, Node ctx, PropertiesSet vars)
+	public static String expand(String expr, Node ctx, PropertySet vars)
 			throws XPathExpressionSyntaxException {
 		if (expr == null) {
 			return null;
@@ -409,7 +409,7 @@ public abstract class XPathExpander {
 	}
 
 	private static String resolvedXPathExpression(String expr, Node ctx,
-			PropertiesSet vars) throws XPathExpressionSyntaxException {
+			PropertySet vars) throws XPathExpressionSyntaxException {
 		// Expand Nested Expression
 		expr = expand(expr, ctx, vars);
 		expr = expr.trim();

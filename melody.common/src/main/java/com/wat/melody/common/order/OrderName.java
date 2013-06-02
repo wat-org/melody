@@ -43,6 +43,11 @@ public class OrderName {
 	}
 
 	@Override
+	public int hashCode() {
+		return _value.hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return _value;
 	}

@@ -268,6 +268,48 @@ public class FilteredDoc extends DUNIDDoc {
 		return (FilterSet) _filters.clone();
 	}
 
+	public synchronized String getFilter(int i) {
+		return _filters.get(i).getValue();
+	}
+
+	public synchronized void addFilters(FilterSet filters)
+			throws IllegalFilterException {
+		if (filters == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid FiltersSet.");
+		}
+		for (Filter filter : filters) {
+			addFilter(filter);
+		}
+	}
+
+	/**
+	 * @param filter
+	 *            is a XPath Expression to add to this object's
+	 *            {@link FilterSet}.
+	 * 
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} is not a valid XPath expression.
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} is already included in this
+	 *             object's {@link FilterSet}.
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} doesn't match any {@link Node}s.
+	 */
+	public synchronized void addFilter(Filter filter)
+			throws IllegalFilterException {
+		if (filter == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Filter.");
+		}
+		if (getFilters().contains(filter)) {
+			throw new IllegalFilterException(Messages.bind(
+					Messages.FilteredDocEx_DUPLICATE, filter));
+		}
+		getFilters().add(filter);
+		applyFilter(filter);
+	}
+
 	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalFilterException {
 		if (filters == null) {
@@ -275,20 +317,29 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Must be a valid " + FilterSet.class.getCanonicalName()
 					+ ".");
 		}
+		clearFilters();
+		addFilters(filters);
+	}
+
+	public synchronized Filter setFilter(int i, Filter filter)
+			throws IllegalFilterException {
+		if (filter == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid Filter.");
+		}
+		if (getOriginalDocument() != null) {
+			setDocument(cloneOriginalDocument());
+		}
+		Filter sRemovedFilter = getFilters().set(i, filter);
+		applyFilters();
+		return sRemovedFilter;
+	}
+
+	public synchronized void clearFilters() {
 		if (getOriginalDocument() != null) {
 			setDocument(cloneOriginalDocument());
 		}
 		getFilters().clear();
-		getFilters().addAll(filters);
-		applyFilters();
-	}
-
-	public synchronized int countFilters() {
-		return _filters.size();
-	}
-
-	public synchronized String getFilter(int i) {
-		return _filters.get(i).getValue();
 	}
 
 	public synchronized Filter removeFilter(int i) {
@@ -309,56 +360,26 @@ public class FilteredDoc extends DUNIDDoc {
 		return sRemovedFilter;
 	}
 
-	public synchronized void clearFilters() {
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
-		getFilters().clear();
-	}
-
-	public synchronized String setFilter(int i, Filter filter)
-			throws IllegalFilterException {
-		if (filter == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Filter.");
-		}
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
-		String sRemovedFilter = getFilters().set(i, filter).getValue();
-		applyFilters();
-		return sRemovedFilter;
+	public synchronized int countFilters() {
+		return _filters.size();
 	}
 
 	/**
-	 * 
-	 * @param filter
-	 *            is a XPath Expression to add to the FilterSet owned by this
-	 *            object.
+	 * <p>
+	 * Reduce this object to the {@link Node}s whose match the
+	 * {@link FiltersSet}.
+	 * </p>
 	 * 
 	 * @throws IllegalFilterException
-	 *             if the filter is not a valid XPath expression.
+	 *             if one {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
-	 *             if the filter doesn't match any nodes.
+	 *             if one {@link Filter} of the {@link FilterSet} doesn't match
+	 *             any {@link Node}s.
 	 */
-	public synchronized void addFilter(Filter filter)
-			throws IllegalFilterException {
-		if (filter == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Filter.");
+	protected synchronized void applyFilters() throws IllegalFilterException {
+		for (Filter filter : getFilters()) {
+			applyFilter(filter);
 		}
-		getFilters().add(filter);
-		applyFilter(filter);
-	}
-
-	public synchronized void addFilters(FilterSet filters)
-			throws IllegalFilterException {
-		if (filters == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid FiltersSet.");
-		}
-		getFilters().addAll(filters);
-		applyFilters();
 	}
 
 	/**
@@ -370,6 +391,8 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @param filter
 	 *            is an XPath Expression, which match some {@link Node}s.
 	 * 
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
 	 *             if the given {@link Filter} doesn't match any {@link Node}s.
 	 */
@@ -410,22 +433,6 @@ public class FilteredDoc extends DUNIDDoc {
 		}
 
 		setDocument(oFilteredDoc);
-	}
-
-	/**
-	 * <p>
-	 * Reduce this object to the {@link Node}s whose match the
-	 * {@link FiltersSet}.
-	 * </p>
-	 * 
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} of the {@link FilterSet} doesn't match
-	 *             any {@link Node}s.
-	 */
-	protected synchronized void applyFilters() throws IllegalFilterException {
-		for (Filter filter : getFilters()) {
-			applyFilter(filter);
-		}
 	}
 
 	@Override

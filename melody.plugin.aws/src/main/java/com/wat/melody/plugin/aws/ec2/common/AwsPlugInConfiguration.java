@@ -17,7 +17,7 @@ import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationException;
 
 /**
@@ -80,13 +80,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public void load(PropertiesSet ps) throws AwsPlugInConfigurationException {
+	public void load(PropertySet ps) throws AwsPlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
-		setFilePath(ps.getFilePath());
+		setFilePath(ps.getSourceFile());
 
 		loadAccessKey(ps);
 		loadSecretKey(ps);
@@ -106,7 +106,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		validate();
 	}
 
-	private void loadAccessKey(PropertiesSet ps)
+	private void loadAccessKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_ACCESS_KEY)) {
 			throw new AwsPlugInConfigurationException(Messages.bind(
@@ -120,7 +120,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadSecretKey(PropertiesSet ps)
+	private void loadSecretKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_SECRET_KEY)) {
 			throw new AwsPlugInConfigurationException(Messages.bind(
@@ -134,7 +134,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadConnectionTimeout(PropertiesSet ps)
+	private void loadConnectionTimeout(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_CONNECTION_TIMEOUT)) {
 			return;
@@ -148,7 +148,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadSocketTimeout(PropertiesSet ps)
+	private void loadSocketTimeout(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_READ_TIMEOUT)) {
 			return;
@@ -161,7 +161,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMaxErrorRetry(PropertiesSet ps)
+	private void loadMaxErrorRetry(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_CONNECTION_RETRY)) {
 			return;
@@ -175,7 +175,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMaxConnections(PropertiesSet ps)
+	private void loadMaxConnections(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_MAX_CONNECTION)) {
 			return;
@@ -188,7 +188,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadSocketSendBufferSizeHints(PropertiesSet ps)
+	private void loadSocketSendBufferSizeHints(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_SEND_BUFFER_SIZE_HINT)) {
 			return;
@@ -202,7 +202,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadSocketReceiveBufferSizeHints(PropertiesSet ps)
+	private void loadSocketReceiveBufferSizeHints(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_RECEIVE_BUFFER_SIZE_HINTS)) {
 			return;
@@ -217,7 +217,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProtocol(PropertiesSet ps)
+	private void loadProtocol(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROTOCOL)) {
 			return;
@@ -230,7 +230,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadUserAgent(PropertiesSet ps)
+	private void loadUserAgent(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_USER_AGENT)) {
 			return;
@@ -243,7 +243,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyHost(PropertiesSet ps)
+	private void loadProxyHost(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_HOST)) {
 			return;
@@ -256,7 +256,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyPort(PropertiesSet ps)
+	private void loadProxyPort(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_PORT)) {
 			return;
@@ -269,7 +269,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyUsername(PropertiesSet ps)
+	private void loadProxyUsername(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_USERNAME)) {
 			return;
@@ -282,7 +282,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyPassword(PropertiesSet ps)
+	private void loadProxyPassword(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_PROXY_PASSWORD)) {
 			return;

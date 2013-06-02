@@ -15,7 +15,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.ssh.IKnownHostsRepository;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.exception.KnownHostsException;
@@ -121,13 +121,13 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public void load(PropertiesSet ps) throws PlugInConfigurationException {
+	public void load(PropertySet ps) throws PlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
-		setFilePath(ps.getFilePath());
+		setFilePath(ps.getSourceFile());
 
 		loadKeyPairRepo(ps);
 		loadKeyPairSize(ps);
@@ -151,7 +151,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		validate();
 	}
 
-	private void loadKeyPairRepo(PropertiesSet ps)
+	private void loadKeyPairRepo(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KEYPAIR_REPO)) {
 			return;
@@ -164,7 +164,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadKeyPairSize(PropertiesSet ps)
+	private void loadKeyPairSize(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KEYPAIR_SIZE)) {
 			return;
@@ -177,7 +177,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadKnownHosts(PropertiesSet ps)
+	private void loadKnownHosts(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(KNOWN_HOSTS)) {
 			return;
@@ -190,7 +190,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadCompressionLevel(PropertiesSet ps)
+	private void loadCompressionLevel(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(COMPRESSION_LEVEL)) {
 			return;
@@ -203,7 +203,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadCompressionType(PropertiesSet ps)
+	private void loadCompressionType(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(COMPRESSION_TYPE)) {
 			return;
@@ -216,7 +216,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadConnectionTimeout(PropertiesSet ps)
+	private void loadConnectionTimeout(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(CONNECTION_TIMEOUT)) {
 			return;
@@ -229,7 +229,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadReadTimeout(PropertiesSet ps)
+	private void loadReadTimeout(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(READ_TIMEOUT)) {
 			return;
@@ -242,7 +242,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadServerAliveCountMax(PropertiesSet ps)
+	private void loadServerAliveCountMax(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(SERVER_ALIVE_MAX_COUNT)) {
 			return;
@@ -256,7 +256,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadServerAliveInterval(PropertiesSet ps)
+	private void loadServerAliveInterval(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(SERVER_ALIVE_INTERVAL)) {
 			return;
@@ -270,7 +270,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyType(PropertiesSet ps)
+	private void loadProxyType(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_TYPE)) {
 			return;
@@ -283,7 +283,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyHost(PropertiesSet ps)
+	private void loadProxyHost(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_HOST)) {
 			return;
@@ -296,7 +296,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadProxyPort(PropertiesSet ps)
+	private void loadProxyPort(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(PROXY_PORT)) {
 			return;
@@ -309,7 +309,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMgmtEnable(PropertiesSet ps)
+	private void loadMgmtEnable(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(MGMT_ENABLE)) {
 			return;
@@ -322,7 +322,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMgmtMasterUser(PropertiesSet ps)
+	private void loadMgmtMasterUser(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(MGMT_LOGIN)) {
 			return;
@@ -335,7 +335,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMgmtMasterKey(PropertiesSet ps)
+	private void loadMgmtMasterKey(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(MGMT_KEYPAIRNAME)) {
 			return;
@@ -348,7 +348,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	private void loadMgmtMasterPass(PropertiesSet ps)
+	private void loadMgmtMasterPass(PropertySet ps)
 			throws SshPlugInConfigurationException {
 		if (!ps.containsKey(MGMT_PASSWORD)) {
 			return;

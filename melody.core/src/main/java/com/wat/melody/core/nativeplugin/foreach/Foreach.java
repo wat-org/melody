@@ -14,9 +14,9 @@ import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.ConsolidatedException;
-import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.core.nativeplugin.foreach.exception.ForeachException;
 
@@ -161,7 +161,7 @@ public class Foreach implements ITask, ITaskContainer {
 	 */
 	private void initializeForeachThreads() {
 		for (Element target : getTargets()) {
-			PropertiesSet ps = Melody.getContext().getProperties().copy();
+			PropertySet ps = Melody.getContext().getProperties().clone();
 			// Add the property '<item-name>=<XPath position of currentItem>',
 			// so
 			// that '§[<item-name>]§' will be expanded with the item's XPath

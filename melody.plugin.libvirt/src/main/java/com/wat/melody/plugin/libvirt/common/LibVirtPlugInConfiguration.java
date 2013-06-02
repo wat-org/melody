@@ -12,7 +12,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtPlugInConfigurationException;
 
 /**
@@ -108,14 +108,13 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	}
 
 	@Override
-	public void load(PropertiesSet ps)
-			throws LibVirtPlugInConfigurationException {
+	public void load(PropertySet ps) throws LibVirtPlugInConfigurationException {
 		if (ps == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ PropertiesSet.class.getCanonicalName() + ".");
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ ".");
 		}
-		setFilePath(ps.getFilePath());
+		setFilePath(ps.getSourceFile());
 
 		// load and validate each configuration directives
 		loadEndpointEnabled(ps);
@@ -127,7 +126,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		validate();
 	}
 
-	private void loadEndpointEnabled(PropertiesSet ps)
+	private void loadEndpointEnabled(PropertySet ps)
 			throws LibVirtPlugInConfigurationException {
 		if (!ps.containsKey(ENDPOINT_ENABLED)) {
 			return;
@@ -140,7 +139,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private void loadEndpointSecured(PropertiesSet ps)
+	private void loadEndpointSecured(PropertySet ps)
 			throws LibVirtPlugInConfigurationException {
 		if (!ps.containsKey(ENDPOINT_SECURED)) {
 			return;
@@ -153,7 +152,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private void loadEndpointListenIp(PropertiesSet ps)
+	private void loadEndpointListenIp(PropertySet ps)
 			throws LibVirtPlugInConfigurationException {
 		if (!ps.containsKey(ENDPOINT_LISTEN_IP)) {
 			return;
@@ -166,7 +165,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private void loadEndpointListenPort(PropertiesSet ps)
+	private void loadEndpointListenPort(PropertySet ps)
 			throws LibVirtPlugInConfigurationException {
 		if (!ps.containsKey(ENDPOINT_LISTEN_PORT)) {
 			return;
@@ -180,7 +179,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private void loadEndpointContextRoot(PropertiesSet ps)
+	private void loadEndpointContextRoot(PropertySet ps)
 			throws LibVirtPlugInConfigurationException {
 		if (!ps.containsKey(ENDPOINT_CONTEXT_ROOT)) {
 			return;

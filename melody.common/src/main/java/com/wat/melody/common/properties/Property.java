@@ -215,8 +215,26 @@ public class Property {
 	}
 
 	@Override
+	public int hashCode() {
+		return getName().hashCode() + getValue().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return getName() + "=" + getValue();
+	}
+
+	@Override
+	public boolean equals(Object anObject) {
+		if (this == anObject) {
+			return true;
+		}
+		if (anObject instanceof Property) {
+			Property ps = (Property) anObject;
+			return getName().equals(ps.getName())
+					&& getValue().equals(ps.getValue());
+		}
+		return false;
 	}
 
 	public PropertyName getName() {

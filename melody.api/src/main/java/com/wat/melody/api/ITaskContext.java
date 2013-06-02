@@ -12,7 +12,7 @@ import com.wat.melody.api.event.TaskStartedEvent;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.order.OrderNameSet;
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 /**
@@ -33,10 +33,10 @@ public interface ITaskContext {
 	public IProcessorManager getProcessorManager();
 
 	/**
-	 * @return the {@link PropertiesSet} associated to this {@link ITask}.
+	 * @return the {@link PropertySet} associated to this {@link ITask}.
 	 * 
 	 */
-	public PropertiesSet getProperties();
+	public PropertySet getProperties();
 
 	/**
 	 * @return the {@link Element} associated to this {@link ITask}.
@@ -171,7 +171,7 @@ public interface ITaskContext {
 	 *             Means the caller must cleanly stop processing as soon as
 	 *             possible.
 	 */
-	public void processTask(Element n, PropertiesSet ps) throws TaskException,
+	public void processTask(Element n, PropertySet ps) throws TaskException,
 			InterruptedException;
 
 	/**

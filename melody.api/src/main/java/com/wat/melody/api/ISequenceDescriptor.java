@@ -14,8 +14,8 @@ import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
-import com.wat.melody.common.properties.PropertiesSet;
 import com.wat.melody.common.properties.Property;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 
 /**
@@ -96,27 +96,39 @@ public interface ISequenceDescriptor {
 
 	public File setBaseDir(File v) throws IllegalDirectoryException;
 
-	public PropertiesSet getProperties();
+	public PropertySet getPropertySet();
 
-	public void setProperties(PropertiesSet ps);
-
-	public void addProperties(PropertiesSet ps);
+	public void addProperties(PropertySet ps);
 
 	public Property addProperty(Property p);
 
-	public void addOrder(OrderName v) throws IllegalOrderException;
+	public void setPropertySet(PropertySet ps);
+
+	public void clearProperties();
+
+	/**
+	 * @return a shallow copy of this object's {@link OrderNameSet} (The
+	 *         elements themselves are not copied; If the returned
+	 *         {@link OrderNameSet} is modified, this object's
+	 *         {@link OrderNameSet} will not be modified).
+	 */
+	public OrderNameSet getOrderSet();
+
+	public OrderName getOrder(int i);
 
 	public void addOrders(OrderNameSet orders) throws IllegalOrderException;
+
+	public void addOrder(OrderName v) throws IllegalOrderException;
+
+	public void setOrderSet(OrderNameSet orders) throws IllegalOrderException;
 
 	public OrderName setOrder(int i, OrderName order)
 			throws IllegalOrderException;
 
-	public void setOrders(OrderNameSet orders) throws IllegalOrderException;
+	public void clearOrders();
+
+	public OrderName removeOrder(int i);
 
 	public int countOrders();
-
-	public OrderName getOrder(int i);
-
-	public void clearOrders();
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathFunction;
 
-import com.wat.melody.common.properties.PropertiesSet;
+import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 
 /**
@@ -33,19 +33,19 @@ public class XPathFunctionResolver implements
 	/**
 	 * <p>
 	 * Load the Custom XPath Function definitions described by the given
-	 * properties's list from the given {@link PropertiesSet}.
+	 * properties's list from the given {@link PropertySet}.
 	 * </p>
 	 * 
 	 * @param ps
 	 *            contains Custom XPath Function definitions to load.
 	 * @param properties
-	 *            indicates the properties - in the given {@link PropertiesSet}
-	 *            - which contain the Custom XPath Function definitions to load.
+	 *            indicates the properties - in the given {@link PropertySet} -
+	 *            which contain the Custom XPath Function definitions to load.
 	 * 
 	 * @throws XPathFunctionResolverLoadingException
 	 *             if a Custom XPath Function definition is invalid.
 	 */
-	public void loadDefinitions(PropertiesSet ps, String... properties)
+	public void loadDefinitions(PropertySet ps, String... properties)
 			throws XPathFunctionResolverLoadingException {
 		if (ps == null) {
 			return;
@@ -67,7 +67,7 @@ public class XPathFunctionResolver implements
 		}
 	}
 
-	public void loadDefinition(PropertiesSet ps, String key)
+	public void loadDefinition(PropertySet ps, String key)
 			throws XPathFunctionResolverLoadingException {
 		try {
 			String funcName = loadFunctionName(ps, key);
@@ -88,7 +88,7 @@ public class XPathFunctionResolver implements
 				new XPathFunctionDefinition(namespace, name, arity, function));
 	}
 
-	private String loadFunctionName(PropertiesSet ps, String key)
+	private String loadFunctionName(PropertySet ps, String key)
 			throws XPathFunctionResolverLoadingException {
 		String functionName = null;
 		if (ps.containsKey(key + SUFFIX_NAME)) {
@@ -120,7 +120,7 @@ public class XPathFunctionResolver implements
 		}
 	}
 
-	private String loadFunctionNamespace(PropertiesSet ps, String key)
+	private String loadFunctionNamespace(PropertySet ps, String key)
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_NAMESPACE_URI)) {
@@ -144,7 +144,7 @@ public class XPathFunctionResolver implements
 	}
 
 	@SuppressWarnings("unchecked")
-	private XPathFunction loadFunctionClass(PropertiesSet ps, String key)
+	private XPathFunction loadFunctionClass(PropertySet ps, String key)
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_CLASS)) {
@@ -190,7 +190,7 @@ public class XPathFunctionResolver implements
 		}
 	}
 
-	private int loadFunctionArity(PropertiesSet ps, String key)
+	private int loadFunctionArity(PropertySet ps, String key)
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_ARITY)) {
