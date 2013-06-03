@@ -154,7 +154,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 	}
 
 	// Add a DUNID Attribute to all child of the given Node
-	private static void addDUNIDToNodeAndChildNodes(Node n, int index) {
+	private static void addDUNIDToNodeAndChildNodes(Node n) {
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			return;
 		}
@@ -167,7 +167,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 			DUNID sDunid;
 			Element oIsDunidAlreadyInserted;
 			do {
-				sDunid = new DUNID(index);
+				sDunid = new DUNID();
 				oIsDunidAlreadyInserted = getElement(e.getOwnerDocument(),
 						sDunid);
 			} while (oIsDunidAlreadyInserted != null);
@@ -176,43 +176,23 @@ public class DUNIDDoc extends Doc implements EventListener {
 		}
 		// Repeat it for child Nodes
 		for (int i = 0; i < n.getChildNodes().getLength(); i++) {
-			addDUNIDToNodeAndChildNodes(e.getChildNodes().item(i), index);
+			addDUNIDToNodeAndChildNodes(e.getChildNodes().item(i));
 		}
 	}
 
-	private int _index;
 	private boolean _hasChanged;
 	private Set<DocListener> _listeners;
 
 	public DUNIDDoc() {
-		this(0);
-	}
-
-	public DUNIDDoc(int index) {
 		super();
-		setIndex(index);
 		setHasChanged(false);
 		setListeners(new LinkedHashSet<DocListener>());
 	}
 
 	@Override
 	public String toString() {
-		return "{" + "file:" + getSourceFile() + ", index:" + getIndex()
-				+ ", modified:" + hasChanged() + "}";
-	}
-
-	public int getIndex() {
-		return _index;
-	}
-
-	private int setIndex(int index) {
-		if (index < 0) {
-			throw new IllegalArgumentException(index + ": Not accpeted. "
-					+ "Must be a positive integer or zero.");
-		}
-		int previous = getIndex();
-		_index = index;
-		return previous;
+		return "{ " + "file:" + getSourceFile() + ", modified:" + hasChanged()
+				+ " }";
 	}
 
 	private boolean hasChanged() {
@@ -491,7 +471,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 		}
 		// When adding DUNID attributes, we don't want to listen/raise events
 		stopListening();
-		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild(), getIndex());
+		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild());
 		startListening();
 	}
 

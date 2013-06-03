@@ -1,5 +1,6 @@
 package com.wat.melody.common.xml;
 
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 
 /**
@@ -32,7 +33,7 @@ public class DUNID {
 	 *             if the given input {@link String} is not a valid
 	 *             {@link DUNID} .
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link String} is <code>null</code>.
+	 *             if the given input {@link String} is <tt>null</tt>.
 	 */
 	public static DUNID parseString(String sDunid) throws IllegalDUNIDException {
 		return new DUNID(sDunid);
@@ -41,15 +42,14 @@ public class DUNID {
 	/**
 	 * The pattern this object must satisfied.
 	 */
-	public static final String PATTERN = "[0-9]+\\|" + "[0-9a-zA-Z]{8}-"
-			+ "[0-9a-zA-Z]{4}-" + "[0-9a-zA-Z]{4}-" + "[0-9a-zA-Z]{4}-"
-			+ "[0-9a-zA-Z]{12}";
+	public static final String PATTERN = "[0-9a-zA-Z]{8}-" + "[0-9a-zA-Z]{4}-"
+			+ "[0-9a-zA-Z]{4}-" + "[0-9a-zA-Z]{4}-" + "[0-9a-zA-Z]{12}";
 
-	private String msValue;
+	private String _value;
 
-	public DUNID(int index) {
+	public DUNID() {
 		try {
-			setValue(index + "|" + java.util.UUID.randomUUID().toString());
+			setValue(SysTool.newUUID().toString());
 		} catch (IllegalDUNIDException Ex) {
 			throw new RuntimeException("Unexecpted error while creating "
 					+ "a new DUNID. "
@@ -65,8 +65,13 @@ public class DUNID {
 	}
 
 	@Override
+	public int hashCode() {
+		return _value.hashCode();
+	}
+
+	@Override
 	public String toString() {
-		return getValue();
+		return _value;
 	}
 
 	@Override
@@ -82,13 +87,13 @@ public class DUNID {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sDunid) throws IllegalDUNIDException {
 		if (sDunid == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DUNID.");
+					+ "Must be a valid String (a DUNID).");
 		}
 		if (sDunid.trim().length() == 0) {
 			throw new IllegalDUNIDException(Messages.bind(
@@ -98,21 +103,8 @@ public class DUNID {
 					Messages.DUNIDEx_INVALID, sDunid, PATTERN));
 		}
 		String previous = getValue();
-		msValue = sDunid;
+		_value = sDunid;
 		return previous;
-	}
-
-	public int getDID() {
-		int pos = getValue().indexOf('|');
-		if (pos == -1) {
-			throw new RuntimeException("Unexecpted error while retrieving the "
-					+ "index part of a DUNID. "
-					+ "Since this DUNID have been automaticaly created, such "
-					+ "error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
-		return Integer.parseInt(getValue().substring(0, pos));
 	}
 
 }

@@ -62,7 +62,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element root = getOriginalDocument().createElement("resources");
 		getOriginalDocument().appendChild(root);
 		// Add it an DUNIND XML attribute
-		root.setAttribute(DUNID_ATTR, new DUNID(0).getValue());
+		root.setAttribute(DUNID_ATTR, new DUNID().getValue());
 		// The Current Document is a clone of the Original Document
 		setDocument(cloneOriginalDocument());
 		// Build a new TargetDescriptor
@@ -159,22 +159,16 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		return targets;
 	}
 
-	private int getNextDUNIDDocIndex() {
-		if (getDUNIDDocList().size() == 0) {
-			return 1;
-		}
-		return getDUNIDDocList().get(getDUNIDDocList().size() - 1).getIndex() + 1;
-	}
-
-	private DUNIDDoc getOwnerDUNIDDoc(DUNID dunid) {
-		int did = dunid.getDID();
+	private DUNIDDoc getOwnerDUNIDDoc(Element e) {
+		String sourcefile = Doc.getNodeLocation(e).getSource();
 		for (DUNIDDoc d : getDUNIDDocList()) {
-			if (d.getIndex() == did) {
+			if (d.getSourceFile().equals(sourcefile)) {
 				return d;
 			}
 		}
 		throw new RuntimeException("Unexecpted error while searching a "
-				+ "DUNIDDoc." + "No DUNIDDoc match the given DID. "
+				+ "DUNIDDoc." + "'" + sourcefile
+				+ "' doesn't match any DUNIDDoc. "
 				+ "Source code has certainly been modified and "
 				+ "a bug have been introduced.");
 	}
@@ -185,7 +179,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			IllegalResourcesFilterException, IOException {
 		try {
 			// Add in the list
-			DUNIDDoc d = new DUNIDDoc(getNextDUNIDDocIndex());
+			DUNIDDoc d = new DUNIDDoc();
 			d.setXPath(getXPath());
 			d.load(sPath);
 			getDUNIDDocList().add(d);
@@ -324,7 +318,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
+		Element n = getOwnerDUNIDDoc(t).getElement(dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the target descriptor
 		n = getTargetDescriptor().getElement(dunid);
@@ -344,7 +338,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
+		Element n = getOwnerDUNIDDoc(t).getElement(dunid);
 		n.removeAttribute(evt.getAttrName());
 		// Modify the target descriptor
 		n = getTargetDescriptor().getElement(dunid);
@@ -364,7 +358,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = getDUNID(t);
 		// Modify the DUNIDDoc
-		Element n = getOwnerDUNIDDoc(dunid).getElement(dunid);
+		Element n = getOwnerDUNIDDoc(t).getElement(dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the target descriptor
 		n = getTargetDescriptor().getElement(dunid);

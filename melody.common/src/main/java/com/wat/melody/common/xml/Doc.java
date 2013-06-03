@@ -359,9 +359,10 @@ public class Doc {
 	 */
 	public void load(String path) throws MelodyException, IllegalDocException,
 			IllegalFileException, IOException {
-		setSourceFile(path);
+		File file = new File(path);
+		setSourceFile(file.toString());
 		try {
-			setDocument(parse(new File(path)));
+			setDocument(parse(file));
 		} catch (SAXParseException Ex) {
 			throw new IllegalDocException(Messages.bind(
 					Messages.DocEx_INVALID_XML_SYNTAX_AT, new Object[] { path,
