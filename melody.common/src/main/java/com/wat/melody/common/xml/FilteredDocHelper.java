@@ -21,11 +21,11 @@ import com.wat.melody.common.xpath.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-public class FilteredDocHelper {
+public abstract class FilteredDocHelper {
 
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
-		String refNodesXpr = Doc.getXPathPosition(n);
+		String refNodesXpr = DocHelper.getXPathPosition(n);
 		Element ctx = (Element) n.getOwnerDocument().getFirstChild();
 		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
@@ -35,7 +35,7 @@ public class FilteredDocHelper {
 			} catch (NodeRelatedException Ex) {
 				throw new RuntimeException("Unexecpted error while resolving "
 						+ "herited parents of the Element ["
-						+ Doc.getNodeLocation(n) + "]. "
+						+ DocHelper.getNodeLocation(n) + "]. "
 						+ "Because all herited attributes have already been "
 						+ "validated, such error cannot happened. "
 						+ "Source code has certainly been modified and "
@@ -44,7 +44,7 @@ public class FilteredDocHelper {
 			if (n == null) {
 				break;
 			}
-			refNodesXpr += " | " + Doc.getXPathPosition(n);
+			refNodesXpr += " | " + DocHelper.getXPathPosition(n);
 		}
 		return XPathExpander.evaluateAsNodeList("for $n in " + refNodesXpr
 				+ " " + "return $n" + expr, ctx);
@@ -71,7 +71,7 @@ public class FilteredDocHelper {
 		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
 					+ "herited parents of the Element ["
-					+ Doc.getNodeLocation(n) + "]. "
+					+ DocHelper.getNodeLocation(n) + "]. "
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -149,7 +149,7 @@ public class FilteredDocHelper {
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
 			throw new NodeRelatedException(herit, Messages.bind(
 					Messages.HeritAttrEx_DONT_MATCH_ELEMENT, xpath,
-					Doc.parseNodeType(nl.item(0))));
+					DocHelper.parseNodeType(nl.item(0))));
 		}
 		Element parent = (Element) nl.item(0);
 
@@ -171,9 +171,11 @@ public class FilteredDocHelper {
 				Element h = resolvHeritAttr(n, null);
 				str.append(SysTool.NEW_LINE);
 				str.append("  Element ");
-				str.append("[" + Doc.getNodeLocation(n).toFullString() + "]");
+				str.append("[" + DocHelper.getNodeLocation(n).toFullString()
+						+ "]");
 				str.append(" has parent Element ");
-				str.append("[" + Doc.getNodeLocation(h).toFullString() + "]");
+				str.append("[" + DocHelper.getNodeLocation(h).toFullString()
+						+ "]");
 			}
 		} catch (NodeRelatedException ignored) {
 			/*
@@ -203,7 +205,7 @@ public class FilteredDocHelper {
 		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
 					+ "herited parents of the Element ["
-					+ Doc.getNodeLocation(toClone) + "]. "
+					+ DocHelper.getNodeLocation(toClone) + "]. "
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -212,7 +214,7 @@ public class FilteredDocHelper {
 		if (parent == null) {
 			return;
 		}
-		FilteredDoc.importNodeIntoFilteredDocument(dest, parent, true);
+		importNodeIntoFilteredDocument(dest, parent, true);
 	}
 
 	/**
@@ -296,6 +298,51 @@ public class FilteredDocHelper {
 			return;
 		}
 		validateHeritAttr(parent, circle);
+	}
+
+	protected static Node importNodeIntoFilteredDocument(Document dest,
+			Element toImport, boolean importChilds) {
+		if (toImport == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid " + Element.class.getCanonicalName() + ".");
+		}
+		if (dest == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid " + Document.class.getCanonicalName()
+					+ ".");
+		}
+
+		Node imported = DUNIDDocHelper.getElement(dest,
+				DUNIDDocHelper.getDUNID(toImport));
+		if (imported != null) {
+			return imported;
+		}
+
+		Node destParent = dest;
+		if (toImport.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
+			destParent = importNodeIntoFilteredDocument(dest,
+					(Element) toImport.getParentNode(), false);
+		}
+		imported = cloneNodesAndChilds(dest, toImport, importChilds);
+		destParent.appendChild(imported);
+
+		return imported;
+	}
+
+	private static Node cloneNodesAndChilds(Document dest, Node toClone,
+			boolean cloneChilds) {
+		if (toClone.getNodeType() == Node.ELEMENT_NODE) {
+			FilteredDocHelper.importHeritedParentNode(dest, (Element) toClone);
+		}
+
+		Node copy = dest.importNode(toClone, false);
+		if (cloneChilds) {
+			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
+				Node child = toClone.getChildNodes().item(i);
+				copy.appendChild(cloneNodesAndChilds(dest, child, true));
+			}
+		}
+		return copy;
 	}
 
 }

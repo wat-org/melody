@@ -3,7 +3,7 @@ package com.wat.melody.common.xml.exception;
 import org.w3c.dom.Node;
 
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 
 /**
  * 
@@ -49,7 +49,7 @@ public class NodeRelatedException extends MelodyException {
 	}
 
 	public String getErrorNodeLocationAsString() {
-		return Doc.getNodeLocation(getErrorNode()).toFullString();
+		return DocHelper.getNodeLocation(getErrorNode()).toFullString();
 	}
 
 }

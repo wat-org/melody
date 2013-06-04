@@ -20,6 +20,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
@@ -112,12 +113,64 @@ public abstract class XPathExpander {
 			throws XPathExpressionException {
 		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
 		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
-		XPath xpath = Doc.retrieveXPath(d);
+		XPath xpath = DocHelper.retrieveXPath(d);
 		if (xpath == null) {
 			xpath = newXPath(null);
 		}
 		synchronized (d) {
 			return (String) xpath.evaluate(expr, ctx, XPathConstants.STRING);
+		}
+	}
+
+	/**
+	 * <p>
+	 * Evaluate XPath expression as a {@link NodeList}, in the given context
+	 * (XPath 2.0 supported).
+	 * </p>
+	 * 
+	 * <p>
+	 * During the evaluation, the given context's owner {@link Document} is
+	 * synchronized, preventing concurrent access to the owner {@link Document},
+	 * which is not thread safe (because of xerces).
+	 * </p>
+	 * 
+	 * <p>
+	 * The given context {@link Node}'s owner {@link Document} can contain an
+	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
+	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
+	 * {@link XPath} object will perform the evaluation of the given XPath
+	 * Expression. This {@link XPath} can contains custom namespaces and custom
+	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
+	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
+	 * custom namespaces and custom functions used in the given XPath Expression
+	 * will be evaluated successfully. If this {@link XPath} object is
+	 * <tt>null</tt>, a default one will be used, which will not be able to
+	 * evaluate custom namespaces and custom functions.
+	 * </p>
+	 * 
+	 * @param expr
+	 *            is the XPath 2.0 expression to evaluate.
+	 * @param ctx
+	 *            is the evaluation context (can be a {@link Document} or a
+	 *            {@link Node}.
+	 * 
+	 * @return the evaluated expression, as a {@link Node}.
+	 * 
+	 * @throws XPathExpressionException
+	 *             if the given expression is not a valid XPath 2.0 expression.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 */
+	public static NodeList evaluateAsNodeList(String expr, Node ctx)
+			throws XPathExpressionException {
+		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
+		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
+		XPath xpath = DocHelper.retrieveXPath(d);
+		if (xpath == null) {
+			xpath = newXPath(null);
+		}
+		synchronized (d) {
+			return (NodeList) xpath.evaluate(expr, ctx, XPathConstants.NODESET);
 		}
 	}
 
@@ -160,63 +213,11 @@ public abstract class XPathExpander {
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
 	 */
-	public static NodeList evaluateAsNodeList(String expr, Node ctx)
-			throws XPathExpressionException {
-		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
-		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
-		XPath xpath = Doc.retrieveXPath(d);
-		if (xpath == null) {
-			xpath = newXPath(null);
-		}
-		synchronized (d) {
-			return (NodeList) xpath.evaluate(expr, ctx, XPathConstants.NODESET);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Evaluate XPath expression as a {@link NodeList}, in the given context
-	 * (XPath 2.0 supported).
-	 * </p>
-	 * 
-	 * <p>
-	 * During the evaluation, the given context's owner {@link Document} is
-	 * synchronized, preventing concurrent access to the owner {@link Document},
-	 * which is not thread safe (because of xerces).
-	 * </p>
-	 * 
-	 * <p>
-	 * The given context {@link Node}'s owner {@link Document} can contain an
-	 * {@link XPath} object (see {@link Doc#storeXPath(Document, XPath)} and
-	 * {@link Doc#retrieveXPath(Document)}). If not <tt>null</tt>, this
-	 * {@link XPath} object will perform the evaluation of the given XPath
-	 * Expression. This {@link XPath} can contains custom namespaces and custom
-	 * functions (see {@link XPath#setNamespaceContext(NamespaceContext)} and
-	 * {@link XPath#setXPathFunctionResolver(XPathFunctionResolver)}), so that
-	 * custom namespaces and custom functions used in the given XPath Expression
-	 * will be evaluated successfully. If this {@link XPath} object is
-	 * <tt>null</tt>, a default one will be used, which will not be able to
-	 * evaluate custom namespaces and custom functions.
-	 * </p>
-	 * 
-	 * @param expr
-	 *            is the XPath 2.0 expression to evaluate.
-	 * @param ctx
-	 *            is the evaluation context (can be a {@link Document} or a
-	 *            {@link Node}.
-	 * 
-	 * @return the evaluated expression, as a {@link NodeList}.
-	 * 
-	 * @throws XPathExpressionException
-	 *             if the given expression is not a valid XPath 2.0 expression.
-	 * @throws NullPointerException
-	 *             if the given expression is <tt>null</tt>.
-	 */
 	public static Node evaluateAsNode(String expr, Node ctx)
 			throws XPathExpressionException {
 		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
 		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
-		XPath xpath = Doc.retrieveXPath(d);
+		XPath xpath = DocHelper.retrieveXPath(d);
 		if (xpath == null) {
 			xpath = newXPath(null);
 		}

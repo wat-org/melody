@@ -2,7 +2,7 @@ package com.wat.melody.common.xml.exception;
 
 import org.w3c.dom.Node;
 
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 
 /**
  * 
@@ -28,7 +28,7 @@ public class SimpleNodeRelatedException extends NodeRelatedException {
 
 	@Override
 	public String getErrorNodeLocationAsString() {
-		return Doc.getNodeLocation(getErrorNode()).toString();
+		return DocHelper.getNodeLocation(getErrorNode()).toString();
 	}
 
 }

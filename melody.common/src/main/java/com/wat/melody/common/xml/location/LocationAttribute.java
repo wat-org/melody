@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 
 /**
  * <p>
@@ -37,7 +38,7 @@ public class LocationAttribute extends LocationAbstract implements Location {
 					+ "Must be a valid " + Attr.class.getCanonicalName() + ".");
 		}
 		if (n.getNodeType() != Node.ATTRIBUTE_NODE) {
-			throw new IllegalArgumentException(Doc.parseNodeType(n)
+			throw new IllegalArgumentException(DocHelper.parseNodeType(n)
 					+ ": Not accepted. " + "Must be a valid "
 					+ Attr.class.getCanonicalName() + ".");
 		}

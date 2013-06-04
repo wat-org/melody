@@ -34,7 +34,7 @@ import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.properties.PropertySet;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
@@ -426,7 +426,7 @@ public class TaskFactory {
 			} catch (TaskFactoryException Ex) {
 				throw new RuntimeException("Unexpected error while searching "
 						+ "the Task Class which match the Element Node ["
-						+ Doc.getNodeLocation(parentNode) + "]. "
+						+ DocHelper.getNodeLocation(parentNode) + "]. "
 						+ "Because this Task already been created, "
 						+ "such error cannot happened. "
 						+ "Source code has certainly been modified and a bug "

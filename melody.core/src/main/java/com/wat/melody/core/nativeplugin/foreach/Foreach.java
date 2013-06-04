@@ -17,7 +17,7 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.properties.PropertySet;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.core.nativeplugin.foreach.exception.ForeachException;
 
 /**
@@ -167,7 +167,7 @@ public class Foreach implements ITask, ITaskContainer {
 			// that '§[<item-name>]§' will be expanded with the item's XPath
 			// position
 			Property p = new Property(getItemName(),
-					Doc.getXPathPosition(target), null);
+					DocHelper.getXPathPosition(target), null);
 			ps.put(p);
 			ForeachThread ft = new ForeachThread(this, ps);
 			if (!getThreadsList().add(ft)) {

@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
@@ -18,8 +18,8 @@ public class SshManagementNetworkDatasLoader extends
 
 	public SshManagementNetworkDatas load(Element instanceNode)
 			throws NodeRelatedException {
-		log.debug(Messages.bind(Messages.NetMgmtMsg_INTRO,
-				Doc.getNodeLocation(instanceNode).toFullString()));
+		log.debug(Messages.bind(Messages.NetMgmtMsg_INTRO, DocHelper
+				.getNodeLocation(instanceNode).toFullString()));
 
 		Element mgmtNode = NetworkManagementHelper
 				.findNetworkManagementNode(instanceNode);

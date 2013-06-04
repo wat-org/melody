@@ -3,14 +3,10 @@ package com.wat.melody.common.xml;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -23,12 +19,18 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.common.xpath.XPathExpander;
 
 /**
+ * <p>
+ * A {@link DUNIDDoc} is a {@link Document}, where an ID is added to each
+ * {@link Element}. It exposes method to query {@link Element} by this ID.
+ * </p>
+ * 
+ * <p>
+ * <b>DUNID</b> stands for <b>D</b>ocument <b>UN</b>ique <b>ID</b>entifier.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -38,147 +40,6 @@ public class DUNIDDoc extends Doc implements EventListener {
 	private static Log log = LogFactory.getLog(DUNIDDoc.class);
 
 	public static final String DUNID_ATTR = "__DUNID__";
-
-	/**
-	 * <p>
-	 * Find all {@link Node}s which contains a {@link #DUNID_ATTR} XML attribute
-	 * in the given {@link Document}.
-	 * </p>
-	 * 
-	 * @param d
-	 *            is the {@link Document} to search in.
-	 * 
-	 * @return a {@link NodeList}, where each item is a {@link Node} which
-	 *         contains a {@link #DUNID_ATTR} XML attribute.
-	 */
-	public static NodeList findDUNIDs(Document d) {
-		try {
-			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
-					+ DUNID_ATTR + ") ]", d);
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexecpted error while evaluating "
-					+ "an XPath Expression. "
-					+ "Since the XPath expression to evaluate is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Find the {@link Element} whose {@link #DUNID_ATTR} XML attribute is equal
-	 * to the given {@link DUNID}.
-	 * </p>
-	 * 
-	 * @param d
-	 *            is the {@link Document} to search in.
-	 * @param dunid
-	 *            is the {@link DUNID} to search.
-	 * 
-	 * @return the {@link Element} whose {@link #DUNID_ATTR} XML attribute is
-	 *         equal to the given input {@link DUNID}, or <tt>null</tt> if such
-	 *         {@link Element} cannot be found.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given given {@link Document} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <tt>null</tt>.
-	 */
-	public static Element getElement(Document d, DUNID dunid) {
-		if (d == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Document.");
-		}
-		if (dunid == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DUNID.");
-		}
-		try {
-			return (Element) XPathExpander.evaluateAsNode("//*[@" + DUNID_ATTR
-					+ "='" + dunid.getValue() + "']", d);
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexecpted error while evaluating "
-					+ "an XPath Expression. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Get the {@link DUNID} of the given {@link Node}.
-	 * </p>
-	 * 
-	 * @param n
-	 *            is a {@link Node}.
-	 * @return the {@link DUNID} of the given {@link Node}, found in the
-	 *         {@link #DUNID_ATTR} XML Attribute.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Node} is <tt>null</tt>.
-	 * @throws RuntimeException
-	 *             if the given {@link Node} doens't have any
-	 *             {@link #DUNID_ATTR} attribute, or if the value found in the
-	 *             {@link #DUNID_ATTR} is not a valid {@link DUNID}.
-	 */
-	public synchronized static DUNID getDUNID(Element n) {
-		if (n == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Node.");
-		}
-		Attr a = n.getAttributeNode(DUNID_ATTR);
-		if (a == null) {
-			throw new RuntimeException("Unexpected error while retrieving the "
-					+ "'" + DUNID_ATTR + "' XML Attribute of the XML Element "
-					+ "[" + getNodeLocation(n).toFullString() + "]. "
-					+ "Since a '" + DUNID_ATTR + "' XML Attribute have been "
-					+ "previously added to all Node by the Melody's Engine, "
-					+ "such error can't happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
-		String sDunid = a.getValue();
-		try {
-			return DUNID.parseString(sDunid);
-		} catch (IllegalDUNIDException Ex) {
-			throw new RuntimeException("Unexecpted error while creating a "
-					+ "DUNID based on the value '" + sDunid + "' from the "
-					+ "'" + DUNID_ATTR + "' XML Attribute of the XML Element "
-					+ "[" + getNodeLocation(n).toFullString() + "]"
-					+ ". Since this value have been automaticaly "
-					+ "created by this object, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	// Add a DUNID Attribute to all child of the given Node
-	private static void addDUNIDToNodeAndChildNodes(Node n) {
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			return;
-		}
-		Element e = (Element) n;
-		NamedNodeMap oAttrList = e.getAttributes();
-
-		// If the Node doesn't have a DUNID attribute
-		if (oAttrList.getNamedItem(DUNID_ATTR) == null) {
-			// Search a Unique DUNID
-			DUNID sDunid;
-			Element oIsDunidAlreadyInserted;
-			do {
-				sDunid = new DUNID();
-				oIsDunidAlreadyInserted = getElement(e.getOwnerDocument(),
-						sDunid);
-			} while (oIsDunidAlreadyInserted != null);
-			// Add the DUNID attribute to the Node
-			e.setAttribute(DUNID_ATTR, sDunid.getValue());
-		}
-		// Repeat it for child Nodes
-		for (int i = 0; i < n.getChildNodes().getLength(); i++) {
-			addDUNIDToNodeAndChildNodes(e.getChildNodes().item(i));
-		}
-	}
 
 	private boolean _hasChanged;
 	private Set<DocListener> _listeners;
@@ -386,44 +247,57 @@ public class DUNIDDoc extends Doc implements EventListener {
 			}
 		} catch (MelodyException Ex) {
 			log.fatal(new MelodyException(Messages.bind(
-					Messages.DUNIDDocEx_FORBIDDEN_OP,
-					getNodeLocation((Node) e.getTarget()).toFullString()), Ex)
-					.toString());
+					Messages.DUNIDDocEx_FORBIDDEN_OP, DocHelper
+							.getNodeLocation((Node) e.getTarget())
+							.toFullString()), Ex).toString());
 		} catch (Throwable Ex) {
 			log.fatal(new MelodyException(Messages.bind(
-					Messages.DUNIDDocEx_UNEXPECTED_ERR,
-					getNodeLocation((Node) e.getTarget()).toFullString()), Ex)
-					.toString());
+					Messages.DUNIDDocEx_UNEXPECTED_ERR, DocHelper
+							.getNodeLocation((Node) e.getTarget())
+							.toFullString()), Ex).toString());
 		}
 	}
 
+	protected String getSmartMsg() {
+		return getSourceFile();
+	}
+
 	protected void nodeInstered(MutationEvent evt) throws MelodyException {
-		/*
-		 * TODO : add a dunid attribute to the node (and its child)
-		 * 
-		 * throw an error if dunid attribute already exists in the node.
-		 * 
-		 * Q : How many event are propagated if a Node with many child is
-		 * inserted ?
-		 * 
-		 * A : One, for the inserted element. None for its child.
-		 * 
-		 * How to deal with filtered Doc ? Should we insert the Node in the
-		 * original doc and reload filter ?
-		 */
+		Element t = (Element) evt.getTarget();
+		// ensure the node (and its child) have a dunid attribute
+		stopListening();
+		DUNIDDocHelper.addDUNID(t);
+		startListening();
+
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_NODE_INSERTED,
+				getSmartMsg(), ((Element) evt.getTarget()).getNodeName()));
 	}
 
 	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_NODE_REMOVED,
+				getSmartMsg(), ((Element) evt.getTarget()).getNodeName()));
 	}
 
 	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_NODE_TEXT_CHANGED,
+				getSmartMsg(), ((Text) evt.getTarget()).getParentNode()
+						.getNodeName(), ((Text) evt.getTarget())
+						.getTextContent()));
 	}
 
 	protected void attributeInserted(MutationEvent evt) throws MelodyException {
+		if (evt.getAttrName().equals(DUNID_ATTR)) {
+			throw new NodeRelatedException((Node) evt.getTarget(),
+					Messages.bind(Messages.DUNIDDocEx_DUNID_ADD, DUNID_ATTR,
+							evt.getNewValue()));
+		}
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_ATTRIBUTE_INSERTED,
+				getSmartMsg(), ((Element) evt.getTarget()).getNodeName(),
+				evt.getNewValue()));
 	}
 
 	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
@@ -432,6 +306,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 					Messages.bind(Messages.DUNIDDocEx_DUNID_DEL, DUNID_ATTR));
 		}
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_ATTRIBUTE_REMOVED,
+				getSmartMsg(), ((Element) evt.getTarget()).getNodeName(),
+				evt.getPrevValue()));
 	}
 
 	protected void attributeModified(MutationEvent evt) throws MelodyException {
@@ -441,24 +318,22 @@ public class DUNIDDoc extends Doc implements EventListener {
 							evt.getNewValue()));
 		}
 		markHasChanged();
+		log.debug(Messages.bind(Messages.DUNIDDocMsg_ATTRIBUTE_MODIFIED,
+				getSmartMsg(), ((Element) evt.getTarget()).getNodeName(),
+				evt.getPrevValue(), evt.getNewValue()));
 	}
 
 	/**
-	 * <p>
-	 * Raise an exception if - at least - one {@link Element} have a
-	 * {@link #DUNID_ATTR} XML Attribute. {@link #DUNID_ATTR} XML Attribute is a
-	 * reserved attribute, necessary for internal usage.
-	 * </p>
-	 * 
 	 * @throws IllegalDocException
-	 *             if -at least - one {@link Element} have a {@link #DUNID_ATTR}
-	 *             XML Attribute.
+	 *             if one or more {@link Element}s have a {@link #DUNID_ATTR}
+	 *             XML Attribute. {@link #DUNID_ATTR} XML Attribute is a
+	 *             reserved attribute, necessary for internal usage.
 	 */
 	@Override
 	protected synchronized void validateContent() throws IllegalDocException {
 		super.validateContent();
 
-		NodeList nl = findDUNIDs(getDocument());
+		NodeList nl = DUNIDDocHelper.findDUNIDs(getDocument());
 		if (nl.getLength() != 0) {
 			ConsolidatedException causes = new ConsolidatedException(
 					Messages.bind(Messages.DUNIDDocEx_FOUND_DUNID_RESUME,
@@ -471,7 +346,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 		}
 		// When adding DUNID attributes, we don't want to listen/raise events
 		stopListening();
-		addDUNIDToNodeAndChildNodes(getDocument().getFirstChild());
+		DUNIDDocHelper.addDUNID(getDocument().getFirstChild());
 		startListening();
 	}
 
@@ -485,8 +360,8 @@ public class DUNIDDoc extends Doc implements EventListener {
 	 * </ul>
 	 * 
 	 * @param path
-	 *            is a file path, which specifies where the given
-	 *            {@link Document} will be stored.
+	 *            is a file path, which specifies where this object will be
+	 *            stored.
 	 * 
 	 * @throws IllegalFileException
 	 *             if the given path points to a directory.
@@ -510,33 +385,27 @@ public class DUNIDDoc extends Doc implements EventListener {
 			return;
 		}
 		Document doc = (Document) getDocument().cloneNode(true);
-		NodeList nl = findDUNIDs(doc);
+		NodeList nl = DUNIDDocHelper.findDUNIDs(doc);
 		for (int i = 0; i < nl.getLength(); i++) {
 			((Element) nl.item(i)).removeAttribute(DUNID_ATTR);
 		}
-		super.store(doc, sPath);
+		DocHelper.store(doc, sPath);
 	}
 
 	/**
-	 * <p>
-	 * Find the {@link Node} whose {@link #DUNID_ATTR} XML attribute is equal to
-	 * the given {@link DUNID}.
-	 * </p>
-	 * 
 	 * @param dunid
-	 *            is the {@link DUNID} to search.
+	 *            is the {@link DUNID} to search, or <tt>null</tt>.
 	 * 
-	 * @return the {@link Node} whose {@link #DUNID_ATTR} XML attribute is equal
-	 *         to the given input {@link DUNID}, or <tt>null</tt> if such
-	 *         {@link Node} cannot be found.
+	 * @return the {@link Element} whose {@link #DUNID_ATTR} XML attribute is
+	 *         equal to the given input {@link DUNID}, or <tt>null</tt> if such
+	 *         {@link Element} cannot be found or if the given {@link DUNID} is
+	 *         <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if this object have not been loaded yet.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <tt>null</tt>.
 	 */
 	public synchronized Element getElement(DUNID dunid) {
-		return getElement(getDocument(), dunid);
+		return DUNIDDocHelper.getElement(getDocument(), dunid);
 	}
 
 }

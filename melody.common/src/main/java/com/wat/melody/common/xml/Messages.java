@@ -2,6 +2,8 @@ package com.wat.melody.common.xml;
 
 import org.eclipse.osgi.util.NLS;
 
+import com.wat.melody.common.systool.SysTool;
+
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.xml.messages";
@@ -15,8 +17,15 @@ public class Messages extends NLS {
 	public static String DUNIDDocEx_FOUND_DUNID_RESUME;
 	public static String DUNIDDocEx_FORBIDDEN_OP;
 	public static String DUNIDDocEx_UNEXPECTED_ERR;
+	public static String DUNIDDocEx_DUNID_ADD;
 	public static String DUNIDDocEx_DUNID_DEL;
 	public static String DUNIDDocEx_DUNID_MOD;
+	public static String DUNIDDocMsg_NODE_INSERTED;
+	public static String DUNIDDocMsg_NODE_REMOVED;
+	public static String DUNIDDocMsg_NODE_TEXT_CHANGED;
+	public static String DUNIDDocMsg_ATTRIBUTE_INSERTED;
+	public static String DUNIDDocMsg_ATTRIBUTE_REMOVED;
+	public static String DUNIDDocMsg_ATTRIBUTE_MODIFIED;
 
 	public static String DocEx_INVALID_XML_SYNTAX_AT;
 	public static String DocEx_INVALID_XML_SYNTAX;
@@ -36,6 +45,14 @@ public class Messages extends NLS {
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+	}
+
+	public static String bind(String message, Object... bindings) {
+		for (int i = 0; i < bindings.length; i++) {
+			bindings[i] = bindings[i].toString().replaceAll(SysTool.NEW_LINE,
+					SysTool.NEW_LINE + "  ");
+		}
+		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {

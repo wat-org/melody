@@ -20,7 +20,7 @@ import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
@@ -122,7 +122,7 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	public String getTargetElementLocation() {
-		return Doc.getNodeLocation(getTargetElement()).toFullString();
+		return DocHelper.getNodeLocation(getTargetElement()).toFullString();
 	}
 
 	public AwsPlugInConfiguration getAwsPlugInConfiguration()
@@ -274,7 +274,7 @@ abstract public class AbstractOperation implements ITask,
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			throw new AwsException(Messages.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH,
-					target, Doc.parseNodeType(n)));
+					target, DocHelper.parseNodeType(n)));
 		}
 		setTargetElement((Element) n);
 		try {

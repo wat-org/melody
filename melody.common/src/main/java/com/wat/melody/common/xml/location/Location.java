@@ -22,7 +22,7 @@ public interface Location {
 	/**
 	 * @return the file path used to parse the owner {@link Doc} of the given
 	 *         {@link Node}, or <tt>null</tt> if the given {@link Node} is not
-	 *         originated form a {@link Doc} .
+	 *         originated form a {@link Doc}.
 	 */
 	public String getSource();
 
@@ -30,7 +30,7 @@ public interface Location {
 	 * @return the line number where the given {@link Node} was located at parse
 	 *         time if the given {@link Node} is originated form a {@link Doc},
 	 *         or <tt>null</tt> if the given {@link Node} is not originated form
-	 *         a {@link Doc} .
+	 *         a {@link Doc}.
 	 */
 	public Integer getLine();
 
@@ -40,7 +40,7 @@ public interface Location {
 	 *         {@link Doc}, or <tt>null</tt> if the given {@link Node} is not
 	 *         originated form a {@link Doc}.
 	 */
-	public int getColumn();
+	public Integer getColumn();
 
 	/**
 	 * @return the location data (line number and column number) of the given
@@ -51,7 +51,7 @@ public interface Location {
 
 	/**
 	 * @return the full location data (source file, line number and column
-	 *         number) of the given {@link Node}..
+	 *         number) of the given {@link Node}.
 	 */
 	public String toFullString();
 

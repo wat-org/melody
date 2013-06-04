@@ -209,7 +209,7 @@ class MySAXHandler extends DefaultHandler2 {
 					+ "a bug have been introduced.", Ex);
 		}
 		setParser(parser);
-		setDocument(Doc.newDocument());
+		setDocument(DocHelper.newDocument());
 	}
 
 	public SAXParser getParser() {

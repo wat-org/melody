@@ -68,7 +68,7 @@ public class OrderName {
 		return _value;
 	}
 
-	public String setValue(String sOrderName) throws IllegalOrderNameException {
+	private String setValue(String sOrderName) throws IllegalOrderNameException {
 		if (sOrderName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "

@@ -8,6 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.events.MutationEvent;
 
 import com.wat.melody.common.ex.MelodyException;
@@ -20,6 +21,10 @@ import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
+ * <p>
+ * A {@link FilteredDoc} holds a {@link Document}. It exposes methods to select
+ * a subset of this {@link Document}.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -31,50 +36,6 @@ public class FilteredDoc extends DUNIDDoc {
 	 */
 	public static final String HERIT_ATTR = "herit";
 
-	protected static Node importNodeIntoFilteredDocument(Document dest,
-			Element toImport, boolean importChilds) {
-		if (toImport == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid " + Element.class.getCanonicalName() + ".");
-		}
-		if (dest == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid " + Document.class.getCanonicalName()
-					+ ".");
-		}
-
-		Node imported = getElement(dest, getDUNID(toImport));
-		if (imported != null) {
-			return imported;
-		}
-
-		Node destParent = dest;
-		if (toImport.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
-			destParent = importNodeIntoFilteredDocument(dest,
-					(Element) toImport.getParentNode(), false);
-		}
-		imported = cloneNodesAndChilds(dest, toImport, importChilds);
-		destParent.appendChild(imported);
-
-		return imported;
-	}
-
-	private static Node cloneNodesAndChilds(Document dest, Node toClone,
-			boolean cloneChilds) {
-		if (toClone.getNodeType() == Node.ELEMENT_NODE) {
-			FilteredDocHelper.importHeritedParentNode(dest, (Element) toClone);
-		}
-
-		Node copy = dest.importNode(toClone, false);
-		if (cloneChilds) {
-			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
-				Node child = toClone.getChildNodes().item(i);
-				copy.appendChild(cloneNodesAndChilds(dest, child, true));
-			}
-		}
-		return copy;
-	}
-
 	private Document _originalDoc = null;
 	private FilterSet _filters;
 
@@ -83,6 +44,10 @@ public class FilteredDoc extends DUNIDDoc {
 		setFilters(new FilterSet());
 	}
 
+	/**
+	 * @return the {@link Document} used to load this object, where no
+	 *         {@link Filter} apply.
+	 */
 	protected Document getOriginalDocument() {
 		return _originalDoc;
 	}
@@ -121,19 +86,22 @@ public class FilteredDoc extends DUNIDDoc {
 		return previous;
 	}
 
+	/**
+	 * @return a copy of this object's original {@link Document}.
+	 */
 	protected Document cloneOriginalDocument() {
 		return (Document) getOriginalDocument().cloneNode(true);
 	}
 
 	/**
 	 * <p>
-	 * Load this object based on the content of the file points by the given
-	 * path.
+	 * Load the content of the xml file points by the given path into this
+	 * object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Will also apply filters. </i>
-	 * </p>
+	 * <ul>
+	 * <li>Will apply filters ;</li>
+	 * </ul>
 	 * 
 	 * @param sPath
 	 * 
@@ -142,7 +110,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @throws IllegalFileException
 	 *             {@inheritDoc}
 	 * @throws IllegalFilterException
-	 *             if a filter is not valid or doesn't match any nodes.
+	 *             {@inheritDoc}
 	 * @throws IOException
 	 *             {@inheritDoc}
 	 */
@@ -167,11 +135,11 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * <p>
-	 * Load this object based on the given {@link DUNIDDoc}.
+	 * Load the given {@link DUNIDDoc} into this object.
 	 * </p>
 	 * 
 	 * <ul>
-	 * <li>Will also apply filters ;</li>
+	 * <li>Will apply filters ;</li>
 	 * <li>Further modification of this object doesn't affect the given
 	 * {@link DUNIDDoc} ;</li>
 	 * </ul>
@@ -179,7 +147,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @param doc
 	 * 
 	 * @throws IllegalFilterException
-	 *             if a filter is not valid or doesn't match any nodes.
+	 *             {@inheritDoc}
 	 */
 	public synchronized void load(DUNIDDoc doc) throws IllegalFilterException {
 		super.load(doc);
@@ -199,7 +167,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @param doc
 	 * 
 	 * @throws IllegalFilterException
-	 *             if a filter is not valid or doesn't match any nodes.
+	 *             {@inheritDoc}
 	 * @throws IllegalDocException
 	 *             {@inheritDoc}
 	 * @throws IOException
@@ -222,18 +190,13 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	/**
-	 * <p>
-	 * Raise an exception if - at least - one {@link Element} have an invalid
-	 * {@link #HERIT_ATTR} XML Attribute. {@link #HERIT_ATTR} XML Attribute is a
-	 * reserved attribute, which allow to define heritage between
-	 * {@link Element} s.
-	 * </p>
-	 * 
 	 * @throws IllegalDocException
-	 *             if - at least - one {@link Element} have an invalid
+	 *             if one or more {@link Element}s have an invalid
 	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
 	 *             multiple node, doesn't contains a valid xpath expression,
-	 *             circular ref).
+	 *             circular ref). {@link #HERIT_ATTR} XML Attribute is a
+	 *             reserved attribute, which allow to define heritage between
+	 *             {@link Element}s.
 	 * @throws IllegalDocException
 	 *             {@inheritDoc}
 	 */
@@ -268,15 +231,44 @@ public class FilteredDoc extends DUNIDDoc {
 		return (FilterSet) _filters.clone();
 	}
 
-	public synchronized String getFilter(int i) {
-		return _filters.get(i).getValue();
+	/**
+	 * @param i
+	 *            is the position in this object's {@link FilterSet} of the
+	 *            requested {@link Filter}.
+	 * 
+	 * @return the {@link Filter} which is located at the given position.
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 *             if the given position is out of this object's
+	 *             {@link FilterSet}'s range.
+	 */
+	public synchronized Filter getFilter(int i) {
+		return _filters.get(i);
 	}
 
+	/**
+	 * @param filters
+	 *            is a {@link FilterSet} to add to this object's
+	 *            {@link FilterSet}.
+	 * 
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} is already included in this object's
+	 *             {@link FilterSet}.
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} is not a valid XPath expression.
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} doesn't match any {@link Node}s.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link FilterSet} is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if one {@link FilterSet} is <tt>null</tt>.
+	 */
 	public synchronized void addFilters(FilterSet filters)
 			throws IllegalFilterException {
 		if (filters == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid FiltersSet.");
+					+ "Must be a valid " + FilterSet.class.getCanonicalName()
+					+ ".");
 		}
 		for (Filter filter : filters) {
 			addFilter(filter);
@@ -285,22 +277,25 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * @param filter
-	 *            is a XPath Expression to add to this object's
+	 *            is an XPath Expression to add to this object's
 	 *            {@link FilterSet}.
 	 * 
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
 	 *             if the given {@link Filter} is already included in this
 	 *             object's {@link FilterSet}.
 	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} is not a valid XPath expression.
+	 * @throws IllegalFilterException
 	 *             if the given {@link Filter} doesn't match any {@link Node}s.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Filter} is <tt>null</tt>.
 	 */
 	public synchronized void addFilter(Filter filter)
 			throws IllegalFilterException {
 		if (filter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Filter.");
+					+ "Must be a valid " + Filter.class.getCanonicalName()
+					+ ".");
 		}
 		if (getFilters().contains(filter)) {
 			throw new IllegalFilterException(Messages.bind(
@@ -310,6 +305,23 @@ public class FilteredDoc extends DUNIDDoc {
 		applyFilter(filter);
 	}
 
+	/**
+	 * @param filters
+	 *            is a {@link FilterSet} to set in this object's
+	 *            {@link FilterSet}.
+	 * 
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} is already included in this object's
+	 *             {@link FilterSet}.
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} is not a valid XPath expression.
+	 * @throws IllegalFilterException
+	 *             if one {@link Filter} doesn't match any {@link Node}s.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link FilterSet} is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if one {@link FilterSet} is <tt>null</tt>.
+	 */
 	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalFilterException {
 		if (filters == null) {
@@ -321,11 +333,30 @@ public class FilteredDoc extends DUNIDDoc {
 		addFilters(filters);
 	}
 
+	/**
+	 * @param i
+	 *            is the position in this object's {@link FilterSet} to place
+	 *            the given {@link Filter}.
+	 * @param filter
+	 *            is an XPath Expression to place in this object's
+	 *            {@link FilterSet}.
+	 * 
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} is not a valid XPath expression.
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} doesn't match any {@link Node}s.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Filter} is <tt>null</tt>.
+	 * @throws IndexOutOfBoundsException
+	 *             if the given position is out of this object's
+	 *             {@link FilterSet}'s range.
+	 */
 	public synchronized Filter setFilter(int i, Filter filter)
 			throws IllegalFilterException {
 		if (filter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Filter.");
+					+ "Must be a valid " + Filter.class.getCanonicalName()
+					+ ".");
 		}
 		if (getOriginalDocument() != null) {
 			setDocument(cloneOriginalDocument());
@@ -335,6 +366,11 @@ public class FilteredDoc extends DUNIDDoc {
 		return sRemovedFilter;
 	}
 
+	/**
+	 * <p>
+	 * Remove all {@link Filter} of this object's {@link FilterSet}.
+	 * </p>
+	 */
 	public synchronized void clearFilters() {
 		if (getOriginalDocument() != null) {
 			setDocument(cloneOriginalDocument());
@@ -342,6 +378,18 @@ public class FilteredDoc extends DUNIDDoc {
 		getFilters().clear();
 	}
 
+	/**
+	 * <p>
+	 * Remove the {@link Filter} which is located at the given position.
+	 * </p>
+	 * 
+	 * @param i
+	 *            is the position of the {@link Filter} to remove.
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 *             if the given position is out of this object's
+	 *             {@link FilterSet}'s range.
+	 */
 	public synchronized Filter removeFilter(int i) {
 		if (getOriginalDocument() != null) {
 			setDocument(cloneOriginalDocument());
@@ -360,23 +408,26 @@ public class FilteredDoc extends DUNIDDoc {
 		return sRemovedFilter;
 	}
 
+	/**
+	 * @return the number of{@link Filter} hold by this object's
+	 *         {@link FilterSet}.
+	 */
 	public synchronized int countFilters() {
 		return _filters.size();
 	}
 
 	/**
 	 * <p>
-	 * Reduce this object to the {@link Node}s whose match the
+	 * Reduce this object to the subset {@link Node}s whose match the
 	 * {@link FiltersSet}.
 	 * </p>
 	 * 
 	 * @throws IllegalFilterException
 	 *             if one {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
-	 *             if one {@link Filter} of the {@link FilterSet} doesn't match
-	 *             any {@link Node}s.
+	 *             if one {@link Filter} doesn't match any {@link Node}s.
 	 */
-	protected synchronized void applyFilters() throws IllegalFilterException {
+	public synchronized void applyFilters() throws IllegalFilterException {
 		for (Filter filter : getFilters()) {
 			applyFilter(filter);
 		}
@@ -384,7 +435,7 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * <p>
-	 * Reduce this object to the {@link Node}s whose match the given
+	 * Reduce this object to the subset {@link Node}s whose match the given
 	 * {@link Filter}.
 	 * </p>
 	 * 
@@ -403,7 +454,8 @@ public class FilteredDoc extends DUNIDDoc {
 		}
 		if (filter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Filter.");
+					+ "Must be a valid " + Filter.class.getCanonicalName()
+					+ ".");
 		}
 
 		NodeList nl;
@@ -422,35 +474,81 @@ public class FilteredDoc extends DUNIDDoc {
 			if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
 				throw new IllegalFilterException(Messages.bind(
 						Messages.FilteredDocEx_MUST_TARGET_ELEMENT,
-						filter.getValue(), Doc.parseNodeType(nl.item(i))));
+						filter.getValue(), DocHelper.parseNodeType(nl.item(i))));
 			}
 		}
 
-		Document oFilteredDoc = newDocument();
+		Document oFilteredDoc = DocHelper.newDocument();
 		for (int i = 0; i < nl.getLength(); i++) {
-			importNodeIntoFilteredDocument(oFilteredDoc, (Element) nl.item(i),
-					true);
+			FilteredDocHelper.importNodeIntoFilteredDocument(oFilteredDoc,
+					(Element) nl.item(i), true);
 		}
 
 		setDocument(oFilteredDoc);
 	}
 
+	/**
+	 * A element node have been inserted in the current document => modify the
+	 * original document.
+	 */
 	@Override
 	protected void nodeInstered(MutationEvent evt) throws MelodyException {
 		super.nodeInstered(evt);
-		// TODO : modify original document
+		// the inserted node
+		Element t = (Element) evt.getTarget();
+		// its next sibling
+		Node s = t.getNextSibling();
+		while (s != null && s.getNodeType() != Node.ELEMENT_NODE) {
+			s = s.getNextSibling();
+		}
+		DUNID sdunid = DUNIDDocHelper.getDUNID((Element) s);
+		// its parent node
+		Element p = (Element) t.getParentNode();
+		DUNID pdunid = DUNIDDocHelper.getDUNID(p);
+		// insert the node in the original doc
+		Document d = getOriginalDocument();
+		Element pori = DUNIDDocHelper.getElement(d, pdunid);
+		pori.insertBefore(d.importNode(t, true),
+				DUNIDDocHelper.getElement(d, sdunid));
+		// TODO : how to applyFilters ?
 	}
 
+	/**
+	 * An element node have been removed in the current document => modify the
+	 * original document
+	 */
 	@Override
 	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
 		super.nodeRemoved(evt);
-		// TODO : modify original document
+		// the removed node
+		Element t = (Element) evt.getTarget();
+		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
+		// its parent node
+		Element p = (Element) t.getParentNode();
+		DUNID pdunid = DUNIDDocHelper.getDUNID(p);
+		// remove the node in the original doc
+		Document d = getOriginalDocument();
+		Element pori = DUNIDDocHelper.getElement(d, pdunid);
+		pori.removeChild(DUNIDDocHelper.getElement(d, tdunid));
+		// TODO : how to applyFilters ?
 	}
 
+	/**
+	 * The text of an element node have been modified in the current document =>
+	 * modify the original document
+	 */
 	@Override
 	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
 		super.nodeTextChanged(evt);
-		// TODO : modify original document
+		// the changed node
+		Text t = (Text) evt.getTarget();
+		// its parent node
+		Element e = (Element) t.getParentNode();
+		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// change the node in the original doc
+		Element eori = DUNIDDocHelper.getElement(getOriginalDocument(), edunid);
+		eori.setTextContent(t.getTextContent());
+		// TODO : how to applyFilters ?
 	}
 
 	/**
@@ -460,17 +558,11 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		super.attributeInserted(evt);
+		// the target element
 		Element t = (Element) evt.getTarget();
-		DUNID dunid = getDUNID(t);
-		Element n = (Element) getElement(getOriginalDocument(), dunid);
-		if (n == null) {
-			throw new RuntimeException("Unexecpted error while searching the "
-					+ "node '" + dunid + "' in the Original Document. "
-					+ "This is error is raised because the Current Document "
-					+ "and the Original Document are not consistent. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
+		DUNID dunid = DUNIDDocHelper.getDUNID(t);
+		// insert the attribute in the original doc
+		Element n = DUNIDDocHelper.getElement(getOriginalDocument(), dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 
@@ -481,17 +573,11 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
 		super.attributeRemoved(evt);
+		// the target element
 		Element t = (Element) evt.getTarget();
-		DUNID dunid = getDUNID(t);
-		Element n = (Element) getElement(getOriginalDocument(), dunid);
-		if (n == null) {
-			throw new RuntimeException("Unexecpted error while searching the "
-					+ "node '" + dunid + "' in the Original Document. "
-					+ "This is error is raised because the Current Document "
-					+ "and the Original Document are not consistent. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
+		DUNID dunid = DUNIDDocHelper.getDUNID(t);
+		// remove the attribute in the original doc
+		Element n = DUNIDDocHelper.getElement(getOriginalDocument(), dunid);
 		n.removeAttribute(evt.getAttrName());
 	}
 
@@ -502,17 +588,11 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		super.attributeModified(evt);
+		// the target element
 		Element t = (Element) evt.getTarget();
-		DUNID dunid = getDUNID(t);
-		Element n = (Element) getElement(getOriginalDocument(), dunid);
-		if (n == null) {
-			throw new RuntimeException("Unexecpted error while searching the "
-					+ "node '" + dunid + "' in the Original Document. "
-					+ "This is error is raised because the Current Document "
-					+ "and the Original Document are not consistent. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
+		DUNID dunid = DUNIDDocHelper.getDUNID(t);
+		// modify the attribute in the original doc
+		Element n = DUNIDDocHelper.getElement(getOriginalDocument(), dunid);
 		n.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 

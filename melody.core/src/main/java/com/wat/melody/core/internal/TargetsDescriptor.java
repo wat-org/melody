@@ -17,7 +17,7 @@ import com.wat.melody.common.xpath.XPathExpander;
  * @author Guillaume Cornet
  * 
  */
-public class TargetDescriptor extends FilteredDoc {
+public class TargetsDescriptor extends FilteredDoc {
 
 	public synchronized void load(ResourcesDescriptor doc)
 			throws IllegalTargetFilterException {
@@ -47,6 +47,11 @@ public class TargetDescriptor extends FilteredDoc {
 			throws XPathExpressionException {
 		return XPathExpander
 				.evaluateAsNode(expr, getDocument().getFirstChild());
+	}
+
+	@Override
+	protected String getSmartMsg() {
+		return "targets-descriptor  ";
 	}
 
 	@Override

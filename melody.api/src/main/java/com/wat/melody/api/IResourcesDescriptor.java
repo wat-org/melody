@@ -33,6 +33,11 @@ public interface IResourcesDescriptor {
 	 * Add the given xml file to the resources managed by this object.
 	 * </p>
 	 * 
+	 * @return <tt>true</tt> it the given file was successfully added from the
+	 *         resources managed by this object, or <tt>false</tt> in any other
+	 *         case (the given file is <tt>null</tt>, the given file is already
+	 *         managed by this object).
+	 * 
 	 * @throws IllegalFileException
 	 *             if a the given xml file is not a valid file.
 	 * @throws IllegalDocException
@@ -47,17 +52,18 @@ public interface IResourcesDescriptor {
 	 * @throws IOException
 	 *             if I/O error occurred.
 	 */
-	public void add(String sPath) throws IllegalDocException,
+	public boolean add(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalTargetFilterException,
 			IllegalResourcesFilterException, IOException;
 
 	/**
-	 * <p>
-	 * Remove the given xml file to the resources managed by this object.
-	 * </p>
+	 * @param sPath
+	 *            is the path of a previously added (see {@link #add(String)})
+	 *            xml file.
 	 * 
 	 * @return <tt>true</tt> it the given file was found and successfully
-	 *         removed, or <tt>false</tt> in any other case.
+	 *         removed from the resources managed by this object, or
+	 *         <tt>false</tt> in any other case.
 	 * 
 	 * @throws IllegalDocException
 	 *             if, once the given file remove, the resulting resources are
@@ -75,41 +81,23 @@ public interface IResourcesDescriptor {
 	public void store();
 
 	/**
-	 * <p>
-	 * Get the {@link DUNID} of the given {@link Element}.
-	 * </p>
-	 * 
 	 * @param n
-	 *            is a {@link Element} owned by this object.
+	 *            is an {@link Element}.
 	 * 
-	 * @return the {@link DUNID} of the given {@link Element}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Element} is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Element} is not owned by this object.
-	 * @throws RuntimeException
-	 *             if the given {@link Element} doesn't have a {@link DUNID}
-	 *             attribute, or if the attribute's value is not valid
-	 *             {@link DUNID}.
+	 * @return the {@link DUNID} of the given {@link Element}, or <tt>null</tt>
+	 *         if the given {@link Element} is <tt>null</tt>.
 	 */
 	public DUNID getMelodyID(Element n);
 
 	/**
-	 * <p>
-	 * Get the {@link Element} whose match the given {@link DUNID}.
-	 * </p>
-	 * 
-	 * @param melodyID
+	 * @param melodyId
 	 *            is the {@link DUNID} to search.
 	 * 
 	 * @return the {@link Element} whose match the given {@link DUNID} if found,
-	 *         <code>null</code> otherwise.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DUNID} is <code>null</code>.
+	 *         or <tt>null</tt> if such {@link Element} cannot be found or if
+	 *         the given {@link DUNID} is <tt>null</tt>..
 	 */
-	public Element getElement(DUNID melodyID);
+	public Element getElement(DUNID melodyId);
 
 	public String evaluateAsString(String sXPathExpr)
 			throws XPathExpressionException;
@@ -121,13 +109,8 @@ public interface IResourcesDescriptor {
 			throws XPathExpressionException;
 
 	/**
-	 * <p>
-	 * Returns all {@link Element}s whose match the given XPath Expression from
-	 * all eligible targets.
-	 * </p>
-	 * 
 	 * @param xpath
-	 *            is the XPath Expression to evaluate.
+	 *            is an XPath Expression.
 	 * 
 	 * @return all {@link Element}s whose match the given XPath Expression from
 	 *         all eligible targets.
@@ -145,7 +128,7 @@ public interface IResourcesDescriptor {
 	 */
 	public FilterSet getFilterSet();
 
-	public String getFilter(int i);
+	public Filter getFilter(int i);
 
 	public void addFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
@@ -177,7 +160,7 @@ public interface IResourcesDescriptor {
 	 */
 	public FilterSet getTargetFilterSet();
 
-	public String getTargetFilter(int i);
+	public Filter getTargetFilter(int i);
 
 	public void addTargetFilters(FilterSet filters)
 			throws IllegalTargetFilterException;

@@ -2,57 +2,58 @@ package com.wat.melody.common.xml.location;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 import com.wat.melody.common.xml.Doc;
 import com.wat.melody.common.xml.DocHelper;
 
 /**
  * <p>
- * Give access to an {@link Element}'s location data.
+ * Give access to a {@link text}'s location data.
  * </p>
  * 
  * <p>
- * If the {@link Element} used to build this object is not originated from a
+ * If the {@link text} used to build this object is not originated from a
  * {@link Doc}, this object will not be able to provide reliable informations.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class LocationElement extends LocationAbstract implements Location {
+public class LocationText extends LocationAbstract implements Location {
 
-	public LocationElement(Element e) {
+	public LocationText(Text e) {
 		super(e);
 	}
 
 	@Override
-	protected Element getNode() {
-		return (Element) super.getNode();
+	protected Text getNode() {
+		return (Text) super.getNode();
 	}
 
 	@Override
-	protected Element setNode(Node n) {
+	protected Text setNode(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Element.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid " + Text.class.getCanonicalName() + ".");
 		}
-		if (n.getNodeType() != Node.ELEMENT_NODE) {
+		if (n.getNodeType() != Node.TEXT_NODE) {
 			throw new IllegalArgumentException(DocHelper.parseNodeType(n)
 					+ ": Not accepted. " + "Must be a valid "
-					+ Element.class.getCanonicalName() + ".");
+					+ Text.class.getCanonicalName() + ".");
 		}
-		return (Element) super.setNode(n);
+		return (Text) super.setNode(n);
 	}
 
 	@Override
 	public String toString() {
-		return "line:" + getLine() + ", column:" + getColumn();
+		return "line:" + getLine() + ", column:" + getColumn()
+				+ ", text-content";
 	}
 
 	@Override
 	public Element getRelatedElement() {
-		return getNode();
+		return (Element) getNode().getParentNode();
 	}
 
 }

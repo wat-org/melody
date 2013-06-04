@@ -65,7 +65,7 @@ public class Filter {
 		return _value;
 	}
 
-	public String setValue(String filter) throws IllegalFilterException {
+	private String setValue(String filter) throws IllegalFilterException {
 		if (filter == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Filter).");

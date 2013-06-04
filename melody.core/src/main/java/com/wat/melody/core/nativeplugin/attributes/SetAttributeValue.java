@@ -9,7 +9,7 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.core.nativeplugin.attributes.common.AttributeName;
 import com.wat.melody.core.nativeplugin.attributes.common.Messages;
 import com.wat.melody.core.nativeplugin.attributes.exception.SetAttributeValueException;
@@ -125,7 +125,7 @@ public class SetAttributeValue implements ITask {
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
 			throw new SetAttributeValueException(Messages.bind(
 					Messages.TargetAttrEx_NOT_MATCH_ELEMENT, target,
-					Doc.parseNodeType(n)));
+					DocHelper.parseNodeType(n)));
 		}
 		setTargetElement((Element) n);
 		String previous = getTarget();

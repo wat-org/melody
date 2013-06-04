@@ -57,7 +57,7 @@ public abstract class LocationAbstract implements Location {
 	}
 
 	@Override
-	public int getColumn() {
+	public Integer getColumn() {
 		Object col = getRelatedElement().getUserData(Parser.COLUMN_NUMBER);
 		return (col == null) ? null : (Integer) col;
 	}
