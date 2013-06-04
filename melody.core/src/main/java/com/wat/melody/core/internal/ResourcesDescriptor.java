@@ -17,7 +17,7 @@ import org.w3c.dom.events.MutationEvent;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
-import com.wat.melody.api.exception.IllegalTargetFilterException;
+import com.wat.melody.api.exception.IllegalTargetsFilterException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
@@ -58,21 +58,20 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 */
 	public ResourcesDescriptor() {
 		super();
-		// Build a new empty OriginalDocument
-		setOriginalDocument(DocHelper.newDocument());
-		// Add a first XML Element called root
-		Element root = getOriginalDocument().createElement("resources");
-		getOriginalDocument().appendChild(root);
-		// Add it an DUNIND XML attribute
-		root.setAttribute(DUNID_ATTR, new DUNID().getValue());
-		// The Current Document is a clone of the Original Document
-		setDocument(cloneOriginalDocument());
+		try {
+			loadFromXML("<resources/>");
+		} catch (IllegalDocException | IllegalFilterException | IOException Ex) {
+			throw new RuntimeException("Unexecpted error while initializing "
+					+ "the " + ResourcesDescriptor.class.getSimpleName() + ". "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
 		// Build a new targets descriptor
 		setTargetsDescriptor(new TargetsDescriptor());
 		// Load it with this object
 		try {
 			getTargetsDescriptor().load(this);
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new RuntimeException("Unexecpted error while initializing "
 					+ "the " + TargetsDescriptor.class.getSimpleName() + ". "
 					+ "Because no Filters have been defined yet, such error "
@@ -106,7 +105,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	private List<DUNIDDoc> setDUNIDDocList(List<DUNIDDoc> srds) {
 		if (srds == null) {
 			throw new IllegalArgumentException("nul: Not accepted. "
-					+ "Must be a valid List<DUNIDDoc>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ DUNIDDoc.class.getCanonicalName() + ">.");
 		}
 		List<DUNIDDoc> previous = getDUNIDDocList();
 		_DUNIDDocList = srds;
@@ -164,16 +164,52 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		return targets;
 	}
 
+	/**
+	 * @param sPath
+	 *            is the path of the {@link DUNIDDoc} to search. Can be
+	 *            <tt>null</tt>.
+	 * 
+	 * @return the {@link DUNIDDoc} which have been loaded from the given file,
+	 *         or <tt>null</tt> if the given path is <tt>null</tt>.
+	 */
 	private DUNIDDoc findDUNIDDoc(String sPath) {
-		for (DUNIDDoc d : getDUNIDDocList()) {
-			if (d.getSourceFile().equals(sPath)) {
-				return d;
+		Integer i = findDUNIDDocIndex(sPath);
+		return i == null ? null : getDUNIDDocList().get(i);
+	}
+
+	/**
+	 * @param sPath
+	 *            is the path of the {@link DUNIDDoc} to search. Can be
+	 *            <tt>null</tt>.
+	 * 
+	 * @return the index of the {@link DUNIDDoc} within this object's
+	 *         {@link DUNIDDoc} list, which have been loaded from the given
+	 *         file, or <tt>null</tt> if the given path is <tt>null</tt>.
+	 */
+	private Integer findDUNIDDocIndex(String sPath) {
+		for (int i = 0; i < getDUNIDDocList().size(); i++) {
+			if (getDUNIDDocList().get(i).getSourceFile().equals(sPath)) {
+				return i;
 			}
 		}
 		return null;
 	}
 
+	/**
+	 * @param e
+	 *            is an {@link Element} Node.
+	 * 
+	 * @return the {@link DUNIDDoc} which contains the given {@link Element}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Element} is <tt>null</tt>.
+	 */
 	private DUNIDDoc getOwnerDUNIDDoc(Element e) {
+		if (e == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
+		}
 		String sourcefile = DocHelper.getNodeLocation(e).getSource();
 		DUNIDDoc found = findDUNIDDoc(sourcefile);
 		if (found != null) {
@@ -186,17 +222,31 @@ public class ResourcesDescriptor extends FilteredDoc implements
 				+ "a bug have been introduced.");
 	}
 
+	/**
+	 * @param sPath
+	 *            is the path of an xml file to add to this object's resources.
+	 * 
+	 * @return <tt>true</tt> if the given xml file have been successfully added
+	 *         to this object's resources.
+	 * 
+	 * @throws IllegalFileException
+	 *             if the given path doesn't point to a valid file.
+	 * @throws IllegalDocException
+	 *             if the given file is not valid (not a xml file, invalid
+	 *             content).
+	 * @throws IllegalResourcesFilterException
+	 *             if a {@link Filter} is not valid.
+	 * @throws IllegalTargetsFilterException
+	 *             if a {@link Filter} is not valid.
+	 */
 	@Override
 	public synchronized boolean add(String sPath) throws IllegalDocException,
-			IllegalFileException, IllegalTargetFilterException,
+			IllegalFileException, IllegalTargetsFilterException,
 			IllegalResourcesFilterException, IOException {
+		if (findDUNIDDoc(sPath) != null) {
+			return false;
+		}
 		try {
-			if (sPath == null) {
-				return false;
-			}
-			if (findDUNIDDoc(sPath) != null) {
-				return false;
-			}
 			// Add in the list
 			DUNIDDoc d = new DUNIDDoc();
 			d.setXPath(getXPath());
@@ -207,7 +257,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					d.getDocument().getFirstChild(), true);
 			getOriginalDocument().getFirstChild().appendChild(n);
 			// Rebuild
-			setDocument(cloneOriginalDocument());
+			restoreOriginalDocument();
 			validateHeritAttrs();
 			applyFilters();
 		} catch (IllegalFilterException Ex) {
@@ -227,23 +277,28 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		return true;
 	}
 
+	/**
+	 * @param sPath
+	 *            is the path of an xml file to remove from this object's
+	 *            resources.
+	 * 
+	 * @return <tt>true</tt> if the given xml file have been successfully
+	 *         removed from this object's resources.
+	 * 
+	 * @throws IllegalDocException
+	 *             if this object's resources are no more valid after removal
+	 *             (invalid content).
+	 * @throws IllegalResourcesFilterException
+	 *             if a {@link Filter} is not valid.
+	 * @throws IllegalTargetsFilterException
+	 *             if a {@link Filter} is not valid.
+	 */
 	@Override
 	public synchronized boolean remove(String sPath)
 			throws IllegalDocException, IllegalResourcesFilterException,
-			IllegalTargetFilterException {
-		if (sPath == null) {
-			return false;
-		}
-		int i = -1;
-		// Search the doc in the list
-		while (++i < getDUNIDDocList().size()) {
-			DUNIDDoc d = getDUNIDDocList().get(i);
-			if (d.getSourceFile().equals(sPath)) {
-				break;
-			}
-		}
-		if (i > getDUNIDDocList().size()) {
-			// Not found
+			IllegalTargetsFilterException {
+		Integer i = findDUNIDDocIndex(sPath);
+		if (i == null) {
 			return false;
 		}
 		// Remove from list
@@ -253,13 +308,13 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		base.removeChild(base.getChildNodes().item(i));
 		try {
 			// Rebuild
-			setDocument(cloneOriginalDocument());
+			restoreOriginalDocument();
 			validateHeritAttrs();
 			applyFilters();
-		} catch (IllegalDocException Ex) {
-			throw Ex;
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
+		} catch (IllegalDocException Ex) {
+			throw Ex;
 		}
 		// Update targets descriptor
 		getTargetsDescriptor().load(this);
@@ -268,8 +323,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	/**
 	 * <p>
-	 * Store all {@link Document} this object contains (see {@link #add(String)}
-	 * ).
+	 * Store all this object's resources (see {@link #add(String)}).
 	 * </p>
 	 */
 	@Override
@@ -285,7 +339,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * </p>
 	 * 
 	 * @throws RuntimeException
-	 *             all time.
+	 *             every time.
 	 */
 	public synchronized void store(String path) {
 		throw new RuntimeException("It is not possible to store a "
@@ -457,7 +511,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		Filter sRemovedFilter = super.removeFilter(i);
 		try {
 			getTargetsDescriptor().load(this);
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new RuntimeException("Unexecpted error in Target "
 					+ "Descriptor while removing a filter. "
 					+ "Because all filters have already been removed, "
@@ -473,7 +527,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		super.clearFilters();
 		try {
 			getTargetsDescriptor().load(this);
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new RuntimeException("Unexecpted error in Target "
 					+ "Descriptor while clearing all Resources Filters. "
 					+ "Because there are no more filters, it is impossible "
@@ -486,7 +540,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized Filter setFilter(int i, Filter filter)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException {
+			IllegalTargetsFilterException {
 		Filter sRemovedFilter;
 		try {
 			sRemovedFilter = super.setFilter(i, filter);
@@ -500,7 +554,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException {
+			IllegalTargetsFilterException {
 		try {
 			super.setFilterSet(filters);
 		} catch (IllegalFilterException Ex) {
@@ -512,7 +566,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized void addFilter(Filter filter)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException {
+			IllegalTargetsFilterException {
 		try {
 			super.addFilter(filter);
 		} catch (IllegalFilterException Ex) {
@@ -524,7 +578,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public synchronized void addFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException {
+			IllegalTargetsFilterException {
 		try {
 			super.addFilters(filters);
 		} catch (IllegalFilterException Ex) {
@@ -560,25 +614,25 @@ public class ResourcesDescriptor extends FilteredDoc implements
 
 	@Override
 	public synchronized Filter setTargetFilter(int i, Filter filter)
-			throws IllegalTargetFilterException {
+			throws IllegalTargetsFilterException {
 		return getTargetsDescriptor().setFilter(i, filter);
 	}
 
 	@Override
 	public synchronized void setTargetFilterSet(FilterSet filters)
-			throws IllegalTargetFilterException {
+			throws IllegalTargetsFilterException {
 		getTargetsDescriptor().setFilterSet(filters);
 	}
 
 	@Override
 	public synchronized void addTargetFilter(Filter filter)
-			throws IllegalTargetFilterException {
+			throws IllegalTargetsFilterException {
 		getTargetsDescriptor().addFilter(filter);
 	}
 
 	@Override
 	public synchronized void addTargetFilters(FilterSet filters)
-			throws IllegalTargetFilterException {
+			throws IllegalTargetsFilterException {
 		getTargetsDescriptor().addFilters(filters);
 	}
 

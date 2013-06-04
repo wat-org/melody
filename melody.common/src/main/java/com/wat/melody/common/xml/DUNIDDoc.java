@@ -259,7 +259,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 	}
 
 	protected String getSmartMsg() {
-		return getSourceFile();
+		return "file:" + getSourceFile();
 	}
 
 	protected void nodeInstered(MutationEvent evt) throws MelodyException {

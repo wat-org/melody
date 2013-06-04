@@ -59,13 +59,13 @@ import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
  * object.
  * </p>
  * 
- * <p>
- * <i> * The processing is performed by a dedicated thread, which is created in
- * its own ThreadGroup. <BR/>
- * * This ThreadGroup is a child of the calling thread's parent ThreadGroup,
+ * <ul>
+ * <li>The processing is performed by a dedicated thread, which is created in
+ * its own ThreadGroup ;</li>
+ * <li>This ThreadGroup is a child of the calling thread's parent ThreadGroup,
  * meaning that if the calling thread's parent ThreadGroup is interrupted, the
- * processing dedicated thread will receive the interruption too. </i>
- * </p>
+ * processing dedicated thread will receive the interruption too ;</li>
+ * </ul>
  * 
  * @author Guillaume Cornet
  * 
@@ -152,7 +152,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private TaskFactory setTaskFactory(TaskFactory tf) {
 		if (tf == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid TaskFactory.");
+					+ "Must be a valid " + TaskFactory.class.getCanonicalName()
+					+ ".");
 		}
 		TaskFactory previous = getTaskFactory();
 		_taskFactory = tf;
@@ -302,7 +303,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public SequenceDescriptor setSequenceDescriptor(SequenceDescriptor sd) {
 		if (sd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ISequenceDescriptor.");
+					+ "Must be a valid "
+					+ SequenceDescriptor.class.getCanonicalName() + ".");
 		}
 		SequenceDescriptor previous = _sequenceDescriptor;
 		_sequenceDescriptor = sd;
@@ -317,7 +319,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public ResourcesDescriptor setResourcesDescriptor(ResourcesDescriptor rds) {
 		if (rds == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid IResourcesDescriptor.");
+					+ "Must be a valid "
+					+ ResourcesDescriptor.class.getCanonicalName() + ".");
 		}
 		ResourcesDescriptor previous = getResourcesDescriptor();
 		_resourcesDescriptor = rds;
@@ -341,7 +344,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public PlugInConfigurations setPluginConfigurations(PlugInConfigurations pcs) {
 		if (pcs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Map<String, PropertiesSet>.");
+					+ "Must be a valid "
+					+ PlugInConfigurations.class.getCanonicalName() + ".");
 		}
 		PlugInConfigurations previous = getPluginConfigurations();
 		_pluginConfigurations = pcs;
@@ -368,7 +372,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	private XPathResolver setXPathResolver(XPathResolver xpathResolver) {
-		// can be null
+		if (xpathResolver == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ XPathResolver.class.getCanonicalName() + ".");
+		}
 		XPathResolver previous = getXPathResolver();
 		_xpathResolver = xpathResolver;
 		setXPath(XPathExpander.newXPath(getXPathResolver()));
@@ -455,7 +463,6 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		str.append(getHardKillTimeout());
 		str.append(", sequence-descriptor:");
 		str.append(getSequenceDescriptor());
-
 		// Optional Configuration Directive
 		str.append(", resource-descriptor:");
 		str.append(getResourcesDescriptor());
@@ -471,12 +478,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	/**
 	 * <p>
-	 * Throws a {@link ProcessorManagerConfigurationException} if this object is
-	 * not correctly configured.
-	 * </p>
-	 * <p>
-	 * Should be called after one or more member's update, in order to validate
-	 * this object is correctly configured.
+	 * Validate this object's configuration.
 	 * </p>
 	 * 
 	 * @throws ProcessorManagerConfigurationException
@@ -821,8 +823,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	private void deleteTemporaryResources() {
 		try {
 			if (isPreserveTemporaryFilesModeEnable()) {
-				log.debug("Temporary resources not cleaned "
-						+ "(because 'Preserve Temporary Files Mode' is enabled).");
+				log.debug("Temporary resources not removed "
+						+ "(because 'preserve-temporary-files-mode' is enabled).");
 				return;
 			}
 			if (getWorkingFolderPath() != null) {
@@ -830,7 +832,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			}
 			log.debug("Temporary resources cleaned.");
 		} catch (Throwable Ex) {
-			log.warn(new MelodyException("Fail to delete temporary resources.",
+			log.warn(new MelodyException("Fail to remove temporary resources.",
 					Ex).toString());
 		}
 	}

@@ -20,7 +20,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.ProcessorManagerFactory;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
-import com.wat.melody.api.exception.IllegalTargetFilterException;
+import com.wat.melody.api.exception.IllegalTargetsFilterException;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
 import com.wat.melody.cli.exception.CommandLineParsingException;
@@ -502,7 +502,7 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().addFilter(
 					Filter.parseFilter(cmdLine[i]));
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new CommandLineParsingException(Messages.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'T'), Ex);
 		} catch (MelodyException Ex) {
@@ -555,7 +555,7 @@ public class ProcessorManagerLoader {
 		try {
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().add(cmdLine[i]);
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new CommandLineParsingException(Messages.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'T'), Ex);
 		} catch (IllegalResourcesFilterException Ex) {
@@ -945,7 +945,7 @@ public class ProcessorManagerLoader {
 			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().add(val);
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, TARGETS_FILTERS), Ex);
 		} catch (IllegalResourcesFilterException Ex) {
@@ -1098,7 +1098,7 @@ public class ProcessorManagerLoader {
 				}
 				loadResourcesFilter(oProps, f);
 			}
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, TARGETS_FILTERS), Ex);
 		} catch (ConfigurationLoadingException Ex) {
@@ -1108,7 +1108,7 @@ public class ProcessorManagerLoader {
 	}
 
 	private void loadResourcesFilter(PropertySet oProps, String f)
-			throws ConfigurationLoadingException, IllegalTargetFilterException {
+			throws ConfigurationLoadingException, IllegalTargetsFilterException {
 		if (!oProps.containsKey(f)) {
 			throw new ConfigurationLoadingException(Messages.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, f));
@@ -1121,7 +1121,7 @@ public class ProcessorManagerLoader {
 			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().addFilter(Filter.parseFilter(val));
-		} catch (IllegalTargetFilterException Ex) {
+		} catch (IllegalTargetsFilterException Ex) {
 			throw Ex;
 		} catch (ConfigurationLoadingException | IllegalFilterException Ex) {
 			throw new ConfigurationLoadingException(Messages.bind(

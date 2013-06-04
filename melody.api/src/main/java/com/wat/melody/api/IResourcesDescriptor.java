@@ -10,7 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.api.exception.IllegalResourcesFilterException;
-import com.wat.melody.api.exception.IllegalTargetFilterException;
+import com.wat.melody.api.exception.IllegalTargetsFilterException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
@@ -46,14 +46,14 @@ public interface IResourcesDescriptor {
 	 * @throws IllegalResourcesFilterException
 	 *             if a filter is not valid (no nodes match, invalid XPath
 	 *             Expression).
-	 * @throws IllegalTargetFilterException
+	 * @throws IllegalTargetsFilterException
 	 *             if a target filter is not valid (no nodes match, invalid
 	 *             XPath Expression).
 	 * @throws IOException
 	 *             if I/O error occurred.
 	 */
 	public boolean add(String sPath) throws IllegalDocException,
-			IllegalFileException, IllegalTargetFilterException,
+			IllegalFileException, IllegalTargetsFilterException,
 			IllegalResourcesFilterException, IOException;
 
 	/**
@@ -71,12 +71,12 @@ public interface IResourcesDescriptor {
 	 * @throws IllegalResourcesFilterException
 	 *             if, once the given file remove, a filter is no more valid
 	 *             (e.g. no nodes match).
-	 * @throws IllegalTargetFilterException
+	 * @throws IllegalTargetsFilterException
 	 *             if, once the given file remove, a target filter is no more
 	 *             valid (e.g. no nodes match).
 	 */
 	public boolean remove(String sPath) throws IllegalDocException,
-			IllegalTargetFilterException, IllegalResourcesFilterException;
+			IllegalTargetsFilterException, IllegalResourcesFilterException;
 
 	public void store();
 
@@ -132,19 +132,19 @@ public interface IResourcesDescriptor {
 
 	public void addFilters(FilterSet filters)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException;
+			IllegalTargetsFilterException;
 
 	public void addFilter(Filter filter)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException;
+			IllegalTargetsFilterException;
 
 	public void setFilterSet(FilterSet filters)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException;
+			IllegalTargetsFilterException;
 
 	public Filter setFilter(int i, Filter filter)
 			throws IllegalResourcesFilterException,
-			IllegalTargetFilterException;
+			IllegalTargetsFilterException;
 
 	public void clearFilters();
 
@@ -163,13 +163,13 @@ public interface IResourcesDescriptor {
 	public Filter getTargetFilter(int i);
 
 	public void addTargetFilters(FilterSet filters)
-			throws IllegalTargetFilterException;
+			throws IllegalTargetsFilterException;
 
 	public void addTargetFilter(Filter filter)
-			throws IllegalTargetFilterException;
+			throws IllegalTargetsFilterException;
 
 	public void setTargetFilterSet(FilterSet filters)
-			throws IllegalTargetFilterException;
+			throws IllegalTargetsFilterException;
 
 	public Filter setTargetFilter(int i, Filter filter)
 			throws IllegalFilterException;

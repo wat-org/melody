@@ -31,6 +31,10 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public class FilteredDoc extends DUNIDDoc {
 
+	/*
+	 * TODO : should remove all text Node, in order to free memory and enhance
+	 * xpath queries performance
+	 */
 	/**
 	 * XML attribute of an XML Element, which reference an other XML Element.
 	 */
@@ -87,10 +91,14 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	/**
-	 * @return a copy of this object's original {@link Document}.
+	 * <p>
+	 * Restore this object's original {@link Document}.
+	 * </p>
 	 */
-	protected Document cloneOriginalDocument() {
-		return (Document) getOriginalDocument().cloneNode(true);
+	protected void restoreOriginalDocument() {
+		if (getOriginalDocument() != null) {
+			setDocument((Document) getOriginalDocument().cloneNode(true));
+		}
 	}
 
 	/**
@@ -206,7 +214,16 @@ public class FilteredDoc extends DUNIDDoc {
 		validateHeritAttrs();
 	}
 
-	protected void validateHeritAttrs() throws IllegalDocException {
+	/**
+	 * @throws IllegalDocException
+	 *             if one or more {@link Element}s have an invalid
+	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
+	 *             multiple node, doesn't contains a valid xpath expression,
+	 *             circular ref). {@link #HERIT_ATTR} XML Attribute is a
+	 *             reserved attribute, which allow to define heritage between
+	 *             {@link Element}s.
+	 */
+	public synchronized void validateHeritAttrs() throws IllegalDocException {
 		try {
 			FilteredDocHelper.validateParentHeritedNodes(getDocument());
 		} catch (NodeRelatedException Ex) {
@@ -341,6 +358,8 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is an XPath Expression to place in this object's
 	 *            {@link FilterSet}.
 	 * 
+	 * @return the previous {@link Filter} located at the given position.
+	 * 
 	 * @throws IllegalFilterException
 	 *             if the given {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
@@ -358,9 +377,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Must be a valid " + Filter.class.getCanonicalName()
 					+ ".");
 		}
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
+		restoreOriginalDocument();
 		Filter sRemovedFilter = getFilters().set(i, filter);
 		applyFilters();
 		return sRemovedFilter;
@@ -372,9 +389,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * </p>
 	 */
 	public synchronized void clearFilters() {
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
+		restoreOriginalDocument();
 		getFilters().clear();
 	}
 
@@ -386,14 +401,14 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @param i
 	 *            is the position of the {@link Filter} to remove.
 	 * 
+	 * @return the removed {@link Filter}.
+	 * 
 	 * @throws IndexOutOfBoundsException
 	 *             if the given position is out of this object's
 	 *             {@link FilterSet}'s range.
 	 */
 	public synchronized Filter removeFilter(int i) {
-		if (getOriginalDocument() != null) {
-			setDocument(cloneOriginalDocument());
-		}
+		restoreOriginalDocument();
 		Filter sRemovedFilter = getFilters().remove(i);
 		try {
 			applyFilters();
