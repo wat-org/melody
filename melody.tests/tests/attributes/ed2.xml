@@ -2,9 +2,9 @@
 
 	<instance IP_priv="124.124.124.126" name="machine2">
 		<region>us-west-1</region>
-		<imageId>ami-595622d</imageId>
-		<instanceType>m1.small</instanceType>
-		<keyName>sshkey-gct2</keyName>
+		<image-id>ami-595622d</image-id>
+		<instance-type>m1.small</instance-type>
+		<keypair>sshkey-gct2</keypair>
 	</instance>
 	
 </environment>

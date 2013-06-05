@@ -158,10 +158,6 @@
 	<target name="Attributes_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.tests/tests/attributes/UC_0/mc.properties" />
-			<arg value="-V" />
-			<arg value="ip=124.124.124.126" />
-			<arg value="-T" />
-			<arg value="//instance[@name='machine2']" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

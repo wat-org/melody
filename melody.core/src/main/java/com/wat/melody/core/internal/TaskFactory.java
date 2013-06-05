@@ -332,12 +332,13 @@ public class TaskFactory {
 		return null;
 	}
 
-	private IRegisteredTasks moRegisteredTasks;
+	private IRegisteredTasks _registeredTasks;
 
 	/**
 	 * <p>
-	 * Create a new {@link TaskFactory} instance, which allow to create new
-	 * {@link ITask} from Elements Nodes found in the Sequence Descriptor.
+	 * Create a new {@link TaskFactory} object, which allow to create new
+	 * {@link ITask} objects from {@link Element} Nodes found in the Sequence
+	 * Descriptor.
 	 * </p>
 	 */
 	public TaskFactory() {
@@ -345,16 +346,17 @@ public class TaskFactory {
 	}
 
 	public IRegisteredTasks getRegisteredTasks() {
-		return moRegisteredTasks;
+		return _registeredTasks;
 	}
 
 	public IRegisteredTasks setRegisteredTasks(IRegisteredTasks rg) {
 		if (rg == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid IRegisteredTasks.");
+					+ "Must be a valid "
+					+ IRegisteredTasks.class.getCanonicalName() + ".");
 		}
 		IRegisteredTasks previous = getRegisteredTasks();
-		moRegisteredTasks = rg;
+		_registeredTasks = rg;
 		return previous;
 	}
 

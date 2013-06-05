@@ -2,6 +2,7 @@ package com.wat.melody.core.nativeplugin.attributes;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -9,33 +10,35 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.core.nativeplugin.attributes.common.AttributeName;
 import com.wat.melody.core.nativeplugin.attributes.common.Messages;
 import com.wat.melody.core.nativeplugin.attributes.exception.RemoveAttributeException;
-import com.wat.melody.core.nativeplugin.attributes.exception.SetAttributeValueException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
+@Task(name = RemoveAttribute.REMOVE_ATTRIBUTE)
 public class RemoveAttribute implements ITask {
 
 	/**
-	 * The 'RemoveAttribute' XML element used in the Sequence Descriptor
+	 * Task's name
 	 */
-	public static final String UPDATE_ED_ATTR = "RemoveAttribute";
+	public static final String REMOVE_ATTRIBUTE = "remove-attribute";
 
 	/**
-	 * The 'target' XML attribute of the 'RemoveAttribute' XML element
+	 * Task's attribute, which specifies the targeted {@link Element}.
 	 */
-	public static final String TARGET_ATTR = "target";
+	public static final String TARGET_ELEMENT_ATTR = "target-element";
 
 	/**
-	 * The 'attribute' XML attribute of the 'RemoveAttribute' XML element
+	 * Task's attribute, which specifies the targeted {@link Element}'s
+	 * {@link Attr}.
 	 */
-	public static final String TARGET_ATTRIBUTE_NAME_ATTR = "attribute";
+	public static final String TARGET_ATTRIBUTE_NAME_ATTR = "target-attribute";
 
 	private String _target = null;
 	private AttributeName _targetAttributeName = null;
@@ -56,8 +59,7 @@ public class RemoveAttribute implements ITask {
 	 * </p>
 	 */
 	@Override
-	public void doProcessing() throws RemoveAttributeException,
-			InterruptedException {
+	public void doProcessing() throws InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		synchronized (getTargetElement().getOwnerDocument()) {
@@ -91,7 +93,7 @@ public class RemoveAttribute implements ITask {
 		return _target;
 	}
 
-	@Attribute(name = TARGET_ATTR, mandatory = true)
+	@Attribute(name = TARGET_ELEMENT_ATTR, mandatory = true)
 	public String setTarget(String target) throws RemoveAttributeException {
 		if (target == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -133,8 +135,7 @@ public class RemoveAttribute implements ITask {
 	}
 
 	@Attribute(name = TARGET_ATTRIBUTE_NAME_ATTR, mandatory = true)
-	public AttributeName setTargetAttributeName(AttributeName name)
-			throws SetAttributeValueException {
+	public AttributeName setTargetAttributeName(AttributeName name) {
 		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

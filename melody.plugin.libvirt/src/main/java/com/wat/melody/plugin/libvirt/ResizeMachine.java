@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -19,17 +20,19 @@ import com.wat.melody.xpathextensions.XPathHelper;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = ResizeMachine.RESIZE_MACHINE)
 public class ResizeMachine extends AbstractOperation {
 
 	/**
-	 * The 'ResizeMachine' XML element
+	 * Task's name
 	 */
-	public static final String RESIZE_MACHINE = "ResizeMachine";
+	public static final String RESIZE_MACHINE = "resize-machine";
 
 	/**
-	 * The 'instanceType' XML attribute
+	 * Task's attribute, which specifies the desired type of the targeted
+	 * instance.
 	 */
-	public static final String INSTANCETYPE_ATTR = "instanceType";
+	public static final String INSTANCETYPE_ATTR = "instance-type";
 
 	private InstanceType _instanceType = null;
 

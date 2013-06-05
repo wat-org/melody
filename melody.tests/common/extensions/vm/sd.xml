@@ -8,7 +8,7 @@
 
 		<foreach	items="./environment//instance"
 					item-name="srv" >
-			<newMachine	target="§[srv]§" />
+			<new-machine target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created§[adm_ip]§." />
@@ -30,7 +30,7 @@
 			<property name="id" value="§[§[srv]§/@instance-id]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-			<deleteMachine	target="§[srv]§" />
+			<delete-machine target="§[srv]§" />
 			<echo message="+ virtual machine '§[id]§' destroyed§[adm_ip]§." />
 		</foreach>
 
@@ -44,7 +44,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<startMachine	target="§[srv]§" />
+			<start-machine target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' started (IP: §[adm_ip]§)." />
 		</foreach>
@@ -61,7 +61,7 @@
 					item-name="srv" >
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-			<stopMachine	target="§[srv]§" />
+			<stop-machine target="§[srv]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped§[adm_ip]§." />
 		</foreach>
 
@@ -75,7 +75,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<resizeMachine	target="§[srv]§" instanceType="m1.small" />
+			<resize-machine target="§[srv]§" instance-type="m1.small" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized§[adm_ip]§." />
@@ -89,7 +89,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<updateDiskDevices	target="§[srv]§" />
+			<update-disk-devices target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' disk devices updated§[adm_ip]§." />
@@ -103,7 +103,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<updateNetworkDevices	target="§[srv]§" />
+			<update-network-devices target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' network devices updated§[adm_ip]§." />
@@ -117,7 +117,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<updateFireWall	target="§[srv]§" />
+			<update-firewall target="§[srv]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' fireWall rules updated§[adm_ip]§." />

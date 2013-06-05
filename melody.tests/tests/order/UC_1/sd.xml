@@ -7,10 +7,10 @@
 
 	<order name="duplicate">
 		<foreach items="//instance" item-name="svr">
-			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value=""/>
+			<set-attribute-value target-element="§[svr]§" target-attribute="IP_priv" new-value=""/>
 			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
 	
-			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value="§[ip]§"/>
+			<set-attribute-value target-element="§[svr]§" target-attribute="IP_priv" new-value="§[ip]§"/>
 			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
 		</foreach>
 	</order>

@@ -1,53 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 
+	<global-fwrules>
+		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
+		<rdp access="allow" directions="in" from-ips="all" to-ports="389"/>
+	</global-fwrules>
+
 	<serverAWS>
-	
+
 		<FRONTS>
-		
+
 			<instance IP_priv="123.123.123.123" name="web1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ports="22" protocols="tcp"/>
-					</in>
-					<out>
-						<fwrule access="allow" ports="1521-1531" protocols="tcp,udp" to="§[string-join(//DBS/instance/@IP_priv,',')]§"/>
-					</out>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
-			
+
 			<instance IP_priv="123.123.123.124" name="web2">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ports="22" protocols="tcp"/>
-					</in>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+				</firewall>
 			</instance>
-			
+
 		</FRONTS>
-		
-		
+
+
 		<DBS>
 		
 			<instance IP_priv="123.123.123.125" name="db1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
-					<in>
-						<fwrule access="allow" from="§[string-join(//FRONTS/instance/@IP_priv,',')]§" ports="1521-1531" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ports="22" protocols="tcp"/>
-					</in>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="§[string-join(//FRONTS/instance/@IP_priv,',')]§" to-ports="1521-1531"/>
 				</fwrules>
 			</instance>
 			

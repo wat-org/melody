@@ -7,23 +7,23 @@
 
 	<instances>
 	
-		<instance imageId="ami-3c5f5748" instanceType="t1.micro" keypair-name="id_rsa_aws" name="web-01" region="eu-west-1">
+		<instance image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws" name="web-01" region="eu-west-1">
 			<network-management method="ssh" mgmt-network-device-attribute="nat-ip" port="22"/>
-			<fwrules>
+			<firewall>
 				<tcp herit="./environment/global-fwrules/ssh"/>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="80-443"/>
 				<tcp access="allow" directions="in" from-ips="" to-ports="5555"/>
 				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getManagementNetworkHost(//instance),',')]§" to-ports="1234-"/>
-			</fwrules>
-			<network>
+			</firewall>
+			<network-devices>
 				<interface device-name="eth0"/>
-			</network>
-			<devices>
+			</network-devices>
+			<disk-devices>
 				<disk delete-on-termination="true" device="/dev/sda1" root-device="true"/>
 				<disk delete-on-termination="true" device="/dev/sdb" size="8 G"/>
 				<disk delete-on-termination="true" device="/dev/sdc" size="4 G"/>
 				<disk delete-on-termination="true" device="/dev/sdd" size="20 G"/>
-			</devices>
+			</disk-devices>
 		</instance>
 
 	</instances>

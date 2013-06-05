@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.libvirt.common;
+package com.wat.melody.plugin.aws.ec2.common;
 
 /**
  * 
@@ -21,6 +21,11 @@ public abstract class Common {
 	 * The 'imageId' XML attribute of the LibVirt Instance Node
 	 */
 	public static final String IMAGEID_ATTR = "image-id";
+
+	/**
+	 * The 'availabilityZone' XML attribute of the Aws Instance Node
+	 */
+	public static final String AVAILABILITYZONE_ATTR = "availability-zone";
 
 	/**
 	 * The 'keyName' XML attribute of the LibVirt Instance Node

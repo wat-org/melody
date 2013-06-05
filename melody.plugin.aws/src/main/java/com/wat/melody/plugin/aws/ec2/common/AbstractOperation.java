@@ -7,7 +7,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsInstanceController;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
@@ -35,17 +34,18 @@ abstract public class AbstractOperation implements ITask,
 		NetworkManagerFactoryConfigurationCallback {
 
 	/**
-	 * The 'region' XML attribute
+	 * Task's attribute, which specifies the region where the instance is.
 	 */
 	public static final String REGION_ATTR = "region";
 
 	/**
-	 * The 'target' XML attribute
+	 * Task's attribute, which specifies the {@link Element} which contains the
+	 * instance description.
 	 */
 	public static final String TARGET_ATTR = "target";
 
 	/**
-	 * The 'timeout' XML attribute
+	 * Task's attribute, which specifies the operation timeout.
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
@@ -66,7 +66,7 @@ abstract public class AbstractOperation implements ITask,
 		String v = null;
 		try {
 			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
-					AwsEc2Cloud.REGION_ATTR);
+					Common.REGION_ATTR);
 		} catch (NodeRelatedException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -76,18 +76,16 @@ abstract public class AbstractOperation implements ITask,
 			}
 		} catch (AwsException Ex) {
 			throw new AwsException(Messages.bind(
-					Messages.MachineEx_REGION_ERROR, AwsEc2Cloud.REGION_ATTR,
+					Messages.MachineEx_REGION_ERROR, Common.REGION_ATTR,
 					getTargetElementLocation()), Ex);
 		}
 
 		// Is everything correctly loaded ?
 		if (getRegion() == null) {
-			throw new AwsException(
-					Messages.bind(Messages.MachineEx_MISSING_REGION_ATTR,
-							new Object[] { REGION_ATTR,
-									getClass().getSimpleName().toLowerCase(),
-									AwsEc2Cloud.REGION_ATTR,
-									getTargetElementLocation() }));
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_MISSING_REGION_ATTR, REGION_ATTR,
+					getClass().getSimpleName().toLowerCase(),
+					Common.REGION_ATTR, getTargetElementLocation()));
 		}
 
 		// Initialize AmazonEC2 for the current region

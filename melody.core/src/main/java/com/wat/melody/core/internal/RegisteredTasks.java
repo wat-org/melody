@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.core.nativeplugin.attributes.RemoveAttribute;
 import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
@@ -33,8 +34,8 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	 * @param c
 	 *            is the subject {@link Class} to test.
 	 * 
-	 * @return <code>true</code> if the given subject {@link Class} is a valid
-	 *         {@link ITask}, or <code>false</code> if not.
+	 * @return <tt>true</tt> if the given subject {@link Class} is a valid
+	 *         {@link ITask}, or <tt>false</tt> if not.
 	 */
 	public static boolean isValidTask(Class<? extends ITask> c) {
 		if (!Modifier.isPublic(c.getModifiers())
@@ -58,7 +59,6 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	 * {@link Call}, {@link Foreach}, {@link Property},
 	 * {@link SetAttributeValue}, {@link RemoveAttribute}.
 	 * </p>
-	 * 
 	 */
 	public RegisteredTasks() {
 		put(Sequence.class);
@@ -79,10 +79,17 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 					+ ITask.class.getCanonicalName() + ">.");
 		}
 		if (!isValidTask(c)) {
-			throw new RuntimeException("The given Task Java Class is not a "
-					+ "valid ITask. This class is either not public, abstract "
+			throw new RuntimeException("The given Java Class is not a "
+					+ "valid " + ITask.class.getCanonicalName()
+					+ ". This Java Class is either not public, or abstract "
 					+ "or it as no 0-arg constructor. ");
 		}
+		Task a = c.getAnnotation(Task.class);
+		if (a != null) {
+			// declare an entry TaskAnnotaionName->canonicalCalssName
+			super.put(a.name().toLowerCase(), c);
+		}
+		// declare an entry className->canonicalCalssName
 		return super.put(c.getSimpleName().toLowerCase(), c);
 	}
 
@@ -90,7 +97,8 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	public Class<? extends ITask> get(String taskName) {
 		if (taskName == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid String (a Task Name).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (a Task Name).");
 		}
 		return super.get(taskName.toLowerCase());
 	}
@@ -99,7 +107,8 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	public boolean contains(String taskName) {
 		if (taskName == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid String (a Task Name).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (a Task Name).");
 		}
 		return super.containsKey(taskName.toLowerCase());
 	}

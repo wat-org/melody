@@ -11,6 +11,7 @@ import com.wat.cloud.libvirt.LibVirtKeyPairRepository;
 import com.wat.cloud.libvirt.exception.LibVirtKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
@@ -30,12 +31,13 @@ import com.wat.melody.xpathextensions.XPathHelper;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = NewMachine.NEW_MACHINE)
 public class NewMachine extends AbstractOperation {
 
 	/**
-	 * The 'NewMachine' XML element
+	 * Task's name
 	 */
-	public static final String NEW_MACHINE = "NewMachine";
+	public static final String NEW_MACHINE = "new-machine";
 
 	/*
 	 * TODO : remove all these task attribute, and do a InstanceLoader into
@@ -45,27 +47,31 @@ public class NewMachine extends AbstractOperation {
 	 * TODO : create XPathFunciton to query for instance attributes
 	 */
 	/**
-	 * The 'instanceType' XML attribute
+	 * Task's attribute, which specifies the type of the instance to create.
 	 */
-	public static final String INSTANCETYPE_ATTR = "instanceType";
+	public static final String INSTANCETYPE_ATTR = "instance-type";
 
 	/**
-	 * The 'imageId' XML attribute
+	 * Task's attribute, which specifies the machine image to use for the
+	 * creation of the new instance.
 	 */
-	public static final String IMAGEID_ATTR = "imageId";
+	public static final String IMAGEID_ATTR = "image-id";
 
 	/**
-	 * The 'keyPairName' XML attribute
+	 * Task's attribute, which specifies the key-pair to associate to the new
+	 * instance.
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
 	/**
-	 * The 'passphrase' XML attribute
+	 * Task's attribute, which specifies the pass-phrase of the key-pair
+	 * associated to the new instance.
 	 */
 	public static final String PASSPHRASE_ATTR = "passphrase";
 
 	/**
-	 * The 'keyRepository' XML attribute
+	 * Task's attribute, which specifies the location of the key-pair associated
+	 * to the new instance.
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
@@ -145,25 +151,23 @@ public class NewMachine extends AbstractOperation {
 		// Validate everything is provided.
 		if (getInstanceType() == null) {
 			throw new LibVirtException(Messages.bind(
-					Messages.NewEx_MISSING_INSTANCETYPE_ATTR, new Object[] {
-							NewMachine.INSTANCETYPE_ATTR,
-							NewMachine.NEW_MACHINE, Common.INSTANCETYPE_ATTR,
-							getTargetElementLocation() }));
+					Messages.NewEx_MISSING_INSTANCETYPE_ATTR,
+					NewMachine.INSTANCETYPE_ATTR, NewMachine.NEW_MACHINE,
+					Common.INSTANCETYPE_ATTR, getTargetElementLocation()));
 		}
 
 		if (getImageId() == null) {
 			throw new LibVirtException(Messages.bind(
-					Messages.NewEx_MISSING_IMAGEID_ATTR, new Object[] {
-							NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-							Common.IMAGEID_ATTR, getTargetElementLocation() }));
+					Messages.NewEx_MISSING_IMAGEID_ATTR,
+					NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
+					Common.IMAGEID_ATTR, getTargetElementLocation()));
 		}
 
 		if (getKeyPairName() == null) {
 			throw new LibVirtException(Messages.bind(
-					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR, new Object[] {
-							NewMachine.KEYPAIR_NAME_ATTR,
-							NewMachine.NEW_MACHINE, Common.KEYPAIR_NAME_ATTR,
-							getTargetElementLocation() }));
+					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR,
+					NewMachine.KEYPAIR_NAME_ATTR, NewMachine.NEW_MACHINE,
+					Common.KEYPAIR_NAME_ATTR, getTargetElementLocation()));
 		}
 
 		// Validate task's attributes
@@ -184,9 +188,9 @@ public class NewMachine extends AbstractOperation {
 					getImageId(), getKeyPairName(), getTimeout());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(Messages.bind(
-					Messages.CreateEx_GENERIC_FAIL, new Object[] { getRegion(),
-							getImageId(), getInstanceType(), getKeyPairName(),
-							null, getTargetElementLocation() }), Ex);
+					Messages.CreateEx_GENERIC_FAIL, getRegion(), getImageId(),
+					getInstanceType(), getKeyPairName(), null,
+					getTargetElementLocation()), Ex);
 		}
 	}
 

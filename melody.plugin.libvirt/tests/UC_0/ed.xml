@@ -6,10 +6,10 @@
 	</global-fwrules>
 	
 	<models>
-		<model imageId="RHEL-6.3-minimal" instanceType="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+		<model image-id="RHEL-6.3-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
 			<network-management method="ssh"/>
 			<disk-management disk-devices-selector="//disk"/>
-			<fwrules>
+			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
 				<tcp access="allow" devices-name="eth1" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
 				<tcp herit="./environment/global-fwrules/ssh"/>
@@ -21,33 +21,33 @@
 				<icmp access="allow" codes="6,7" devices-name="eth1" directions="in" from-ips="all" types="3"/>
 				<icmp access="allow" codes="6,7" devices-name="eth2" directions="in" from-ips="all" types="3"/>
 				<icmp access="allow" codes="all" directions="in" from-ips="all" types="0,8"/>
-			</fwrules>
-			<disks>
+			</firewall>
+			<disk-devices>
 				<disk delete-on-termination="true" device="/dev/vda" root-device="true"/>
-			</disks>
+			</disk-devices>
 		</model>
 	</models>
 	
 	<instances>
 		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
-			<network>
+			<network-devices>
 				<interface device-name="eth0"/>
 				<interface device-name="eth1"/>
-			</network>
+			</network-devices>
 		</instance>
 		
 <!--
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">
-			<network>
-				<interface device="eth0"/>
-			</network>
+			<network-devices>
+				<interface device-name="eth0"/>
+			</network-devices>
 		</instance>		
 		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
-			<network>
-				<interface device="eth0" />
-				<interface device="eth4" />
-			</network>
+			<network-devices>
+				<interface device-name="eth0" />
+				<interface device-name="eth4" />
+			</network-devices>
 		</instance>		
 -->
 	</instances>

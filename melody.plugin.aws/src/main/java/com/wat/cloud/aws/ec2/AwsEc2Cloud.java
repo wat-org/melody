@@ -73,36 +73,6 @@ public abstract class AwsEc2Cloud {
 	private static Log log = LogFactory.getLog(AwsEc2Cloud.class);
 
 	/**
-	 * The 'region' XML attribute of the Aws Instance Node
-	 */
-	public static final String REGION_ATTR = "region";
-
-	/**
-	 * The 'instanceType' XML attribute of the Aws Instance Node
-	 */
-	public static final String INSTANCETYPE_ATTR = "instanceType";
-
-	/**
-	 * The 'imageId' XML attribute of the Aws Instance Node
-	 */
-	public static final String IMAGEID_ATTR = "imageId";
-
-	/**
-	 * The 'availabilityZone' XML attribute of the Aws Instance Node
-	 */
-	public static final String AVAILABILITYZONE_ATTR = "availabilityZone";
-
-	/**
-	 * The 'keyName' XML attribute of the Aws Instance Node
-	 */
-	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
-
-	/**
-	 * The 'passphrase' XML attribute of the Aws Instance Node
-	 */
-	public static final String PASSPHRASE_ATTR = "passphrase";
-
-	/**
 	 * <p>
 	 * Validate AWSCredentials and ClientConfiguration of the given
 	 * {@link AmazonEC2}.
@@ -764,7 +734,7 @@ public abstract class AwsEc2Cloud {
 		InstanceState is = null;
 		while ((is = getInstanceState(ec2, sAwsInstanceId)) != state) {
 			log.debug(Messages.bind(Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE,
-					new Object[] { sAwsInstanceId, state, is }));
+					sAwsInstanceId, state, is));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
@@ -774,14 +744,13 @@ public abstract class AwsEc2Cloud {
 			if (left < 0) {
 				log.warn(Messages.bind(
 						Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_FAILED,
-						new Object[] { sAwsInstanceId, state, timeout / 1000 }));
+						sAwsInstanceId, state, timeout / 1000));
 				return false;
 			}
 		}
 		log.info(Messages.bind(
 				Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_SUCCEED,
-				new Object[] { sAwsInstanceId, state,
-						System.currentTimeMillis() - start }));
+				sAwsInstanceId, state, System.currentTimeMillis() - start));
 		return true;
 	}
 
@@ -1489,7 +1458,7 @@ public abstract class AwsEc2Cloud {
 		VolumeState vs = null;
 		while ((vs = getVolumeState(ec2, sAwsVolumeId)) != state) {
 			log.debug(Messages.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_STATE,
-					new Object[] { sAwsVolumeId, state, vs }));
+					sAwsVolumeId, state, vs));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
@@ -1499,13 +1468,13 @@ public abstract class AwsEc2Cloud {
 			if (left < 0) {
 				log.warn(Messages.bind(
 						Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_FAILED,
-						new Object[] { sAwsVolumeId, state, timeout }));
+						sAwsVolumeId, state, timeout));
 				return false;
 			}
 		}
 		log.info(Messages.bind(
-				Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_SUCCEED, new Object[] {
-						sAwsVolumeId, state, timeout }));
+				Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_SUCCEED, sAwsVolumeId,
+				state, timeout));
 		return true;
 	}
 
@@ -1662,7 +1631,7 @@ public abstract class AwsEc2Cloud {
 				iAttachmentIndex)) != state) {
 			log.debug(Messages.bind(
 					Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE,
-					new Object[] { sAwsVolumeId, state, vas }));
+					sAwsVolumeId, state, vas));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
@@ -1672,13 +1641,13 @@ public abstract class AwsEc2Cloud {
 			if (left < 0) {
 				log.warn(Messages
 						.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_FAILED,
-								new Object[] { sAwsVolumeId, state, timeout }));
+								sAwsVolumeId, state, timeout));
 				return false;
 			}
 		}
 		log.info(Messages.bind(
 				Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_SUCCEED,
-				new Object[] { sAwsVolumeId, state, timeout }));
+				sAwsVolumeId, state, timeout));
 		return true;
 	}
 

@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.aws.ec2;
 
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
@@ -11,12 +12,13 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = StartMachine.START_MACHINE)
 public class StartMachine extends AbstractOperation {
 
 	/**
-	 * The 'StartMachine' XML element
+	 * Task's name
 	 */
-	public static final String START_MACHINE = "StartMachine";
+	public static final String START_MACHINE = "start-machine";
 
 	public StartMachine() {
 		super();

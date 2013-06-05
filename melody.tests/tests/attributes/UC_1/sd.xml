@@ -7,13 +7,13 @@
 
 	<order name="do1">
 		<foreach items="//instance" item-name="svr">
-			<setAttributeValue target="§[svr]§" attribute="__DUNID__" new-value="invalid value"/>
+			<set-attribute-value target-element="§[svr]§" target-attribute="__DUNID__" new-value="invalid value"/>
 		</foreach>
 	</order>
 
 	<order name="do2">
 		<foreach items="//instance" item-name="svr">
-			<removeAttribute target="§[svr]§" attribute="__DUNID__"/>
+			<remove-attribute target-element="§[svr]§" target-attribute="__DUNID__"/>
 		</foreach>
 	</order>
 

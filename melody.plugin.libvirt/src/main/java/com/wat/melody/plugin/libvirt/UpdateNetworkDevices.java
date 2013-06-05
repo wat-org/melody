@@ -2,6 +2,7 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceNameList;
 import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
@@ -15,22 +16,25 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = UpdateNetworkDevices.UPDATE_NETWORK_DEVICES)
 public class UpdateNetworkDevices extends AbstractOperation {
 
 	/**
-	 * The 'UpdateNetworkDevices' XML element
+	 * Task's name
 	 */
-	public static final String UPDATE_NETWORK_DEVICES = "UpdateNetworkDevices";
+	public static final String UPDATE_NETWORK_DEVICES = "update-network-devices";
 
 	/**
-	 * The 'detachTimeout' XML attribute
+	 * Task's attribute, which specifies the timeout of the detachment
+	 * operation.
 	 */
-	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
+	public static final String DETACH_TIMEOUT_ATTR = "detach-timeout";
 
 	/**
-	 * The 'attachTimeout' XML attribute
+	 * Task's attribute, which specifies the timeout of the attachment
+	 * operation.
 	 */
-	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
+	public static final String ATTACH_TIMEOUT_ATTR = "attach-timeout";
 
 	private NetworkDeviceNameList _networkDeviceList = null;
 	private long _detachTimeout;

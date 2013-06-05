@@ -11,6 +11,7 @@ import com.wat.cloud.aws.ec2.AwsKeyPairRepository;
 import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
@@ -20,6 +21,7 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
+import com.wat.melody.plugin.aws.ec2.common.Common;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -29,40 +31,46 @@ import com.wat.melody.xpathextensions.XPathHelper;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = NewMachine.NEW_MACHINE)
 public class NewMachine extends AbstractOperation {
 
 	/**
-	 * The 'NewMachine' XML element
+	 * Task's name
 	 */
-	public static final String NEW_MACHINE = "NewMachine";
+	public static final String NEW_MACHINE = "new-machine";
 
 	/**
-	 * The 'instanceType' XML attribute
+	 * Task's attribute, which specifies the type of the instance to create.
 	 */
-	public static final String INSTANCETYPE_ATTR = "instanceType";
+	public static final String INSTANCETYPE_ATTR = "instance-type";
 
 	/**
-	 * The 'imageId' XML attribute
+	 * Task's attribute, which specifies the machine image to use for the
+	 * creation of the new instance.
 	 */
-	public static final String IMAGEID_ATTR = "imageId";
+	public static final String IMAGEID_ATTR = "image-id";
 
 	/**
-	 * The 'availabilityZone' XML attribute
+	 * Task's attribute, which specifies the location where the new instance
+	 * will be located.
 	 */
-	public static final String AVAILABILITYZONE_ATTR = "availabilityZone";
+	public static final String AVAILABILITYZONE_ATTR = "availability-zone";
 
 	/**
-	 * The 'keyPairName' XML attribute
+	 * Task's attribute, which specifies the key-pair to associate to the new
+	 * instance.
 	 */
 	public static final String KEYPAIR_NAME_ATTR = "keypair-name";
 
 	/**
-	 * The 'passphrase' XML attribute
+	 * Task's attribute, which specifies the pass-phrase of the key-pair
+	 * associated to the new instance.
 	 */
 	public static final String PASSPHRASE_ATTR = "passphrase";
 
 	/**
-	 * The 'keyRepository' XML attribute
+	 * Task's attribute, which specifies the location of the key-pair associated
+	 * to the new instance.
 	 */
 	public static final String KEYPAIR_REPO_ATTR = "keypair-repository";
 
@@ -91,7 +99,7 @@ public class NewMachine extends AbstractOperation {
 			String v = null;
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					AwsEc2Cloud.INSTANCETYPE_ATTR);
+					Common.INSTANCETYPE_ATTR);
 			try {
 				if (v != null) {
 					setInstanceType(InstanceType.parseString(v));
@@ -99,24 +107,23 @@ public class NewMachine extends AbstractOperation {
 			} catch (IllegalInstanceTypeException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_INSTANCETYPE_ERROR,
-						AwsEc2Cloud.INSTANCETYPE_ATTR,
-						getTargetElementLocation()), Ex);
+						Common.INSTANCETYPE_ATTR, getTargetElementLocation()),
+						Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n,
-					AwsEc2Cloud.IMAGEID_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n, Common.IMAGEID_ATTR);
 			try {
 				if (v != null) {
 					setImageId(v);
 				}
 			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
-						Messages.NewEx_IMAGEID_ERROR, AwsEc2Cloud.IMAGEID_ATTR,
+						Messages.NewEx_IMAGEID_ERROR, Common.IMAGEID_ATTR,
 						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					AwsEc2Cloud.AVAILABILITYZONE_ATTR);
+					Common.AVAILABILITYZONE_ATTR);
 			try {
 				if (v != null) {
 					setAvailabilityZone(v);
@@ -124,12 +131,12 @@ public class NewMachine extends AbstractOperation {
 			} catch (AwsException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_AVAILABILITYZONE_ERROR,
-						AwsEc2Cloud.AVAILABILITYZONE_ATTR,
+						Common.AVAILABILITYZONE_ATTR,
 						getTargetElementLocation()), Ex);
 			}
 
 			v = XPathHelper.getHeritedAttributeValue(n,
-					AwsEc2Cloud.KEYPAIR_NAME_ATTR);
+					Common.KEYPAIR_NAME_ATTR);
 			try {
 				if (v != null) {
 					setKeyPairName(KeyPairName.parseString(v));
@@ -137,12 +144,11 @@ public class NewMachine extends AbstractOperation {
 			} catch (IllegalKeyPairNameException Ex) {
 				throw new AwsException(Messages.bind(
 						Messages.NewEx_KEYPAIR_NAME_ERROR,
-						AwsEc2Cloud.KEYPAIR_NAME_ATTR,
-						getTargetElementLocation()), Ex);
+						Common.KEYPAIR_NAME_ATTR, getTargetElementLocation()),
+						Ex);
 			}
 
-			v = XPathHelper.getHeritedAttributeValue(n,
-					AwsEc2Cloud.PASSPHRASE_ATTR);
+			v = XPathHelper.getHeritedAttributeValue(n, Common.PASSPHRASE_ATTR);
 			if (v != null) {
 				setPassphrase(v);
 			}
@@ -160,21 +166,21 @@ public class NewMachine extends AbstractOperation {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_INSTANCETYPE_ATTR,
 					NewMachine.INSTANCETYPE_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.INSTANCETYPE_ATTR, getTargetElementLocation()));
+					Common.INSTANCETYPE_ATTR, getTargetElementLocation()));
 		}
 
 		if (getImageId() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_IMAGEID_ATTR,
 					NewMachine.IMAGEID_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.IMAGEID_ATTR, getTargetElementLocation()));
+					Common.IMAGEID_ATTR, getTargetElementLocation()));
 		}
 
 		if (getKeyPairName() == null) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_MISSING_KEYPAIR_NAME_ATTR,
 					NewMachine.KEYPAIR_NAME_ATTR, NewMachine.NEW_MACHINE,
-					AwsEc2Cloud.KEYPAIR_NAME_ATTR, getTargetElementLocation()));
+					Common.KEYPAIR_NAME_ATTR, getTargetElementLocation()));
 		}
 
 		// Validate task's attributes

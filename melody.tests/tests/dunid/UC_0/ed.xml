@@ -1,36 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
+	
+	<global-fwrules __DUNID__="should no declare such attribute">
+		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
+		<rdp access="allow" directions="in" from-ips="all" to-ports="389"/>
+	</global-fwrules>
 
 	<serverAWS __DUNID__="should no declare such attribute">
 	
-		<FRONTS>
+		<FRONTS __DUNID__="should no declare such attribute">
 		
-			<instance IP_priv="123.123.123.123" name="web1">
-				<region __DUNID__="should no declare such attribute">eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-					<out>
-						<fwrule access="allow" ports="1521-1531" protocols="tcp,udp" to="§[string-join(./environment//DBS/instance/@IP_priv,',')]§"/>
-					</out>
-				</fwrules>
+			<instance IP_priv="123.123.123.123" name="web1" region="eu-west-1" image-id="ami-59d0e22d" instance-type="t1.micro" keypair-name="sshkey-gct2">
+				<firewall __DUNID__="should no declare such attribute">
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
-			<instance IP_priv="123.123.123.124" name="web2">
-				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-				</fwrules>
+			<instance IP_priv="123.123.123.124" name="web2" region="eu-west-1" image-id="ami-59d0e22d" instance-type="t1.micro" keypair-name="sshkey-gct2">
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+				</firewall>
 			</instance>
 			
 		</FRONTS>
@@ -38,29 +29,15 @@
 		
 		<DBS __DUNID__="should no declare such attribute">
 		
-			<instance IP_priv="123.123.123.125" name="db1">
-				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule access="allow" from="§[string-join(./environment//FRONTS/instance/@IP_priv,',')]§" ports="1521-1531" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
+			<instance IP_priv="123.123.123.125" name="db1" region="eu-west-1" image-id="ami-59d0e22d" instance-type="t1.micro" keypair-name="sshkey-gct2">
+				<fwrules __DUNID__="should no declare such attribute">
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="§[string-join(//FRONTS/instance/@IP_priv,',')]§" to-ports="1521-1531"/>
 				</fwrules>
 			</instance>
 			
 		</DBS>
 		
 	</serverAWS>
-	
-	<global_fwrules __DUNID__="should no declare such attribute">
-		<!-- pour les machines de types linux -->
-		<in name="SSH" ports="22" protocols="tcp"/>
-		<!-- pour les machines de types windows -->
-		<in name="RDP" ports="3389" protocols="tcp"/>
-	</global_fwrules>
-	
 	
 </environment>

@@ -101,7 +101,7 @@ public abstract class AwsEc2CloudFireWall {
 		ec2.revokeSecurityGroupIngress(revreq);
 		for (SimpleFireWallRule rule : toRevoke) {
 			log.info(Messages.bind(Messages.CommonMsg_REVOKE_FWRULE,
-					new Object[] { i.getImageId(), netdev, rule }));
+					i.getImageId(), netdev, rule));
 		}
 	}
 
@@ -118,7 +118,7 @@ public abstract class AwsEc2CloudFireWall {
 		ec2.authorizeSecurityGroupIngress(authreq);
 		for (SimpleFireWallRule rule : toAuthorize) {
 			log.info(Messages.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
-					new Object[] { i.getImageId(), netdev, rule }));
+					i.getImageId(), netdev, rule));
 		}
 	}
 

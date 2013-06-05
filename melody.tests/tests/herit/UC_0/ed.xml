@@ -15,9 +15,9 @@
 		
 			<instance IP_priv="123.123.123.123" herit="./environment/models/model[@name='my_model']" name="dev-web1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
@@ -31,9 +31,9 @@
 			
 			<instance IP_priv="123.123.123.124" herit="./environment/models/model[@name='my_model']" name="dev-web2">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
@@ -49,9 +49,9 @@
 		
 			<instance IP_priv="123.123.123.125" herit="./environment/models/model[@name='my_model']" name="dev-db1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule access="allow" from="§[string-join(./environment/DEV//FRONTS/instance/@IP_priv,',')]§" ports="1521-1531" protocols="tcp,udp"/>
@@ -71,9 +71,9 @@
 		
 			<instance IP_priv="123.123.123.123" herit="./environment/models/model[@name='my_model']" name="rec-web1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
@@ -87,9 +87,9 @@
 			
 			<instance IP_priv="123.123.123.124" herit="./environment/models/model[@name='my_model']" name="rec-web2">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
@@ -105,9 +105,9 @@
 		
 			<instance IP_priv="123.123.123.125" herit="./environment/models/model[@name='my_model']" name="rec-db1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
 				<fwrules>
 					<in>
 						<fwrule access="allow" from="§[string-join(./environment/REC//FRONTS/instance/@IP_priv,',')]" ports="1521-1531" protocols="tcp,udp"/>

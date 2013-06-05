@@ -2,6 +2,7 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -15,27 +16,31 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = UpdateDiskDevices.UPDATE_DISK_DEVICES)
 public class UpdateDiskDevices extends AbstractOperation {
 
 	/**
-	 * The 'UpdateDiskDevices' XML element
+	 * Task's name
 	 */
-	public static final String UPDATE_DISK_DEVICES = "UpdateDiskDevices";
+	public static final String UPDATE_DISK_DEVICES = "update-disk-devices";
 
 	/**
-	 * The 'detachTimeout' XML attribute
+	 * Task's attribute, which specifies the timeout of the detachment
+	 * operation.
 	 */
-	public static final String DETACH_TIMEOUT_ATTR = "detachTimeout";
+	public static final String DETACH_TIMEOUT_ATTR = "detach-timeout";
 
 	/**
-	 * The 'createTimeout' XML attribute
+	 * Task's attribute, which specifies the timeout of the disk device's
+	 * creation operation.
 	 */
-	public static final String CREATE_TIMEOUT_ATTR = "createTimeout";
+	public static final String CREATE_TIMEOUT_ATTR = "create-timeout";
 
 	/**
-	 * The 'attachTimeout' XML attribute
+	 * Task's attribute, which specifies the timeout of the attachment
+	 * operation.
 	 */
-	public static final String ATTACH_TIMEOUT_ATTR = "attachTimeout";
+	public static final String ATTACH_TIMEOUT_ATTR = "attach-timeout";
 
 	private DiskDeviceList _diskDeviceList = null;
 	private long _detachTimeout;

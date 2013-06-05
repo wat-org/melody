@@ -35,17 +35,18 @@ public abstract class AbstractOperation implements ITask,
 		NetworkManagerFactoryConfigurationCallback {
 
 	/**
-	 * The 'region' XML attribute
+	 * Task's attribute, which specifies the region where the instance is.
 	 */
 	public static final String REGION_ATTR = "region";
 
 	/**
-	 * The 'target' XML attribute
+	 * Task's attribute, which specifies the {@link Element} which contains the
+	 * instance description.
 	 */
 	public static final String TARGET_ATTR = "target";
 
 	/**
-	 * The 'timeout' XML attribute
+	 * Task's attribute, which specifies the operation timeout.
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
@@ -83,10 +84,9 @@ public abstract class AbstractOperation implements ITask,
 		// Is everything correctly loaded ?
 		if (getRegion() == null) {
 			throw new LibVirtException(Messages.bind(
-					Messages.MachineEx_MISSING_REGION_ATTR, new Object[] {
-							REGION_ATTR,
-							getClass().getSimpleName().toLowerCase(),
-							Common.REGION_ATTR, getTargetElementLocation() }));
+					Messages.MachineEx_MISSING_REGION_ATTR, REGION_ATTR,
+					getClass().getSimpleName().toLowerCase(),
+					Common.REGION_ATTR, getTargetElementLocation()));
 		}
 
 		// Keep the Connection in a dedicated member

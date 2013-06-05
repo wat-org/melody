@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
+	
+	<global-fwrules>
+		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
+		<rdp access="allow" directions="in" from-ips="all" to-ports="389"/>
+	</global-fwrules>
+
 <DEV>
 	<serverAWS>
 	
@@ -6,31 +12,26 @@
 		
 			<instance IP_priv="123.123.123.123" name="dev-web1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-					<out>
-						<fwrule access="allow" ports="1521-1531" protocols="tcp,udp" to="§[string-join(./environment/DEV//DBS/instance/@IP_priv,',')]§"/>
-					</out>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(./environment/DEV//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 			<instance IP_priv="123.123.123.124" name="dev-web2">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(./environment/DEV//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 		</FRONTS>
@@ -40,15 +41,13 @@
 		
 			<instance IP_priv="123.123.123.125" name="dev-db1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule access="allow" from="§[string-join(./environment/DEV//FRONTS/instance/@IP_priv,',')]§" ports="1521-1531" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" to-ports="1521-1531" from-ips="§[string-join(./environment/REC//FRONTS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 		</DBS>
@@ -62,31 +61,26 @@
 		
 			<instance IP_priv="123.123.123.123" name="rec-web1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-					<out>
-						<fwrule access="allow" ports="1521-1531" protocols="tcp,udp" to="§[string-join(./environment/REC//DBS/instance/@IP_priv,',')]§"/>
-					</out>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(./environment/REC//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 			<instance IP_priv="123.123.123.124" name="rec-web2">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule from="all" ports="80,443" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" from-ips="all" to-ports="80,443"/>
+					<tcp access="allow" directions="out" to-ports="1521-1531" to-ips="§[string-join(./environment/REC//DBS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 		</FRONTS>
@@ -96,15 +90,13 @@
 		
 			<instance IP_priv="123.123.123.125" name="rec-db1">
 				<region>eu-west-1</region>
-				<imageId>ami-59d0e22d</imageId>
-				<instanceType>t1.micro</instanceType>
-				<keyName>sshkey-gct2</keyName>
-				<fwrules>
-					<in>
-						<fwrule access="allow" from="§[string-join(./environment/REC//FRONTS/instance/@IP_priv,',')]" ports="1521-1531" protocols="tcp,udp"/>
-						<fwrule access="allow" from="all" ref="./environment/global_fwrules/in[@name='SSH']"/>
-					</in>
-				</fwrules>
+				<image-id>ami-59d0e22d</image-id>
+				<instance-type>t1.micro</instance-type>
+				<keypair>sshkey-gct2</keypair>
+				<firewall>
+					<tcp herit="./environment/global-fwrules/ssh"/>
+					<tcp access="allow" directions="in" to-ports="1521-1531" from-ips="§[string-join(./environment/REC//FRONTS/instance/@IP_priv,',')]§"/>
+				</firewall>
 			</instance>
 			
 		</DBS>
@@ -112,12 +104,4 @@
 	</serverAWS>
 </REC>	
 
-	<global_fwrules>
-		<!-- pour les machines de types linux -->
-		<in name="SSH" ports="22" protocols="tcp"/>
-		<!-- pour les machines de types windows -->
-		<in name="RDP" ports="3389" protocols="tcp"/>
-	</global_fwrules>
-	
-	
 </environment>

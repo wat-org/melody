@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -11,12 +12,13 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * @author Guillaume Cornet
  * 
  */
+@Task(name = StopMachine.STOP_MACHINE)
 public class StopMachine extends AbstractOperation {
 
 	/**
-	 * The 'StopMachine' XML element
+	 * Task's name
 	 */
-	public static final String STOP_MACHINE = "StopMachine";
+	public static final String STOP_MACHINE = "stop-machine";
 
 	public StopMachine() {
 		super();
