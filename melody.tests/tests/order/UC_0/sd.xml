@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<sequence default="do">
+<sequence default="do_not_exits">
 
 	<property name="ip" value="123.1232.123.123"/>
 

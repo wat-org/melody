@@ -155,11 +155,27 @@
 		</java>
 	</target>
 
+	<target name="Attributes_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.tests/tests/attributes/UC_0/mc.properties" />
+			<arg value="-V" />
+			<arg value="ip=124.124.124.126" />
+			<arg value="-T" />
+			<arg value="//instance[@name='machine2']" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Attributes_UC1">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="./melody.tests/tests/attributes/UC_1/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
 	<target name="Order_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.tests/tests/order/UC_0/mc.properties" />
-			<arg value="-V" />
-			<arg value="ip=124.124.124.126" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -167,13 +183,6 @@
 	<target name="Order_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="./melody.tests/tests/order/UC_1/mc.properties" />
-			<classpath refid="classpathElements" />
-		</java>
-	</target>
-
-	<target name="Order_UC2">
-		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/order/UC_2/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -317,6 +326,6 @@
 		</java>
 	</target>
 
-	<target name="all" depends="Call_UC0,Call_UC1,Call_UC3,Foreach_UC0,Filter_UC0,Filter_UC1,Filter_UC2,Filter_UC3,Param_UC0,Param_UC1,Param_UC2,Order_UC0,Order_UC1,Order_UC2,Herit_UC0,Herit_UC1,Herit_UC2,Herit_UC3,Lock,Dunid_UC0,Dunid_UC1" />
+	<target name="all" depends="Call_UC0,Call_UC1,Call_UC3,Foreach_UC0,Filter_UC0,Filter_UC1,Filter_UC2,Filter_UC3,Param_UC0,Param_UC1,Param_UC2,Attributes_UC0,Attributes_UC1,Order_UC0,Order_UC1,Herit_UC0,Herit_UC1,Herit_UC2,Herit_UC3,Lock,Dunid_UC0,Dunid_UC1" />
 
 </project>

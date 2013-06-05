@@ -17,6 +17,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -31,10 +32,6 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public class FilteredDoc extends DUNIDDoc {
 
-	/*
-	 * TODO : should remove all text Node, in order to free memory and enhance
-	 * xpath queries performance
-	 */
 	/**
 	 * XML attribute of an XML Element, which reference an other XML Element.
 	 */
@@ -88,6 +85,25 @@ public class FilteredDoc extends DUNIDDoc {
 		FilterSet previous = getFilters();
 		_filters = filters;
 		return previous;
+	}
+
+	public String fulldump() {
+		StringBuilder str = new StringBuilder();
+		str.append("[");
+		str.append(getSmartMsg());
+		str.append("]");
+		str.append(SysTool.NEW_LINE);
+		str.append("|--- current document:");
+		str.append(SysTool.NEW_LINE + "| ");
+		str.append(dump().replaceAll(SysTool.NEW_LINE, SysTool.NEW_LINE + "| "));
+		str.append(SysTool.NEW_LINE);
+		str.append("|");
+		str.append(SysTool.NEW_LINE);
+		str.append("|--- original document:");
+		str.append(SysTool.NEW_LINE + "| ");
+		str.append(DocHelper.dump(getOriginalDocument()).replaceAll(
+				SysTool.NEW_LINE, SysTool.NEW_LINE + "| "));
+		return str.toString();
 	}
 
 	/**
@@ -443,6 +459,13 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             if one {@link Filter} doesn't match any {@link Node}s.
 	 */
 	public synchronized void applyFilters() throws IllegalFilterException {
+		// Remove all Text node
+		// improve xpath query performance and reduce memory usage.
+		stopListening();
+		FilteredDocHelper.removeTextNode((Element) getDocument()
+				.getFirstChild());
+		startListening();
+		// apply filters
 		for (Filter filter : getFilters()) {
 			applyFilter(filter);
 		}
@@ -450,17 +473,20 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * <p>
-	 * Reduce this object to the subset {@link Node}s whose match the given
+	 * Reduce this object to the subset {@link Element}s whose match the given
 	 * {@link Filter}.
 	 * </p>
 	 * 
 	 * @param filter
-	 *            is an XPath Expression, which match some {@link Node}s.
+	 *            is an XPath Expression, which match some {@link Element}s.
 	 * 
 	 * @throws IllegalFilterException
 	 *             if the given {@link Filter} is not a valid XPath expression.
 	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} doesn't match any {@link Node}s.
+	 *             if the given {@link Filter} match no {@link Node}s.
+	 * @throws IllegalFilterException
+	 *             if the given {@link Filter} match a {@link Node} which is not
+	 *             an {@link Element}.
 	 */
 	private synchronized void applyFilter(Filter filter)
 			throws IllegalFilterException {
@@ -495,8 +521,8 @@ public class FilteredDoc extends DUNIDDoc {
 
 		Document oFilteredDoc = DocHelper.newDocument();
 		for (int i = 0; i < nl.getLength(); i++) {
-			FilteredDocHelper.importNodeIntoFilteredDocument(oFilteredDoc,
-					(Element) nl.item(i), true);
+			FilteredDocHelper.insertElement(oFilteredDoc, (Element) nl.item(i),
+					true);
 		}
 
 		setDocument(oFilteredDoc);
@@ -507,8 +533,8 @@ public class FilteredDoc extends DUNIDDoc {
 	 * original document.
 	 */
 	@Override
-	protected void nodeInstered(MutationEvent evt) throws MelodyException {
-		super.nodeInstered(evt);
+	protected void elementInstered(MutationEvent evt) throws MelodyException {
+		super.elementInstered(evt);
 		// the inserted node
 		Element t = (Element) evt.getTarget();
 		// its next sibling
@@ -533,8 +559,8 @@ public class FilteredDoc extends DUNIDDoc {
 	 * original document
 	 */
 	@Override
-	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
-		super.nodeRemoved(evt);
+	protected void elementRemoved(MutationEvent evt) throws MelodyException {
+		super.elementRemoved(evt);
 		// the removed node
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
@@ -545,25 +571,60 @@ public class FilteredDoc extends DUNIDDoc {
 		Document d = getOriginalDocument();
 		Element pori = DUNIDDocHelper.getElement(d, pdunid);
 		pori.removeChild(DUNIDDocHelper.getElement(d, tdunid));
-		// TODO : how to applyFilters ?
 	}
 
 	/**
-	 * The text of an element node have been modified in the current document =>
-	 * modify the original document
+	 * A leaf text node have been inserted in the current document => modify the
+	 * original document
 	 */
 	@Override
-	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
-		super.nodeTextChanged(evt);
+	protected void textLeafInserted(MutationEvent evt) throws MelodyException {
+		super.textLeafInserted(evt);
 		// the changed node
 		Text t = (Text) evt.getTarget();
 		// its parent node
 		Element e = (Element) t.getParentNode();
 		DUNID edunid = DUNIDDocHelper.getDUNID(e);
-		// change the node in the original doc
+		// insert the text node in the original doc
 		Element eori = DUNIDDocHelper.getElement(getOriginalDocument(), edunid);
+		// It is assume that the Element is a leaf, so setTextContent is OK
 		eori.setTextContent(t.getTextContent());
-		// TODO : how to applyFilters ?
+	}
+
+	/**
+	 * A leaf text node have been removed in the current document => modify the
+	 * original document
+	 */
+	@Override
+	protected void textLeafRemoved(MutationEvent evt) throws MelodyException {
+		super.textLeafRemoved(evt);
+		// the changed node
+		Text t = (Text) evt.getTarget();
+		// its parent node
+		Element e = (Element) t.getParentNode();
+		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// remove the text node in the original doc
+		Element eori = DUNIDDocHelper.getElement(getOriginalDocument(), edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.removeChild(eori.getFirstChild());
+	}
+
+	/**
+	 * The content of a leaf text node have been modified in the current
+	 * document => modify the original document
+	 */
+	@Override
+	protected void textLeafModified(MutationEvent evt) throws MelodyException {
+		super.textLeafModified(evt);
+		// the changed node
+		Text t = (Text) evt.getTarget();
+		// its parent node
+		Element e = (Element) t.getParentNode();
+		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// modify the text node in the original doc
+		Element eori = DUNIDDocHelper.getElement(getOriginalDocument(), edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.getFirstChild().setNodeValue(t.getTextContent());
 	}
 
 	/**

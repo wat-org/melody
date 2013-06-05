@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<sequence default="duplicate">
+<sequence default="do">
 
 	<property name="ip" value="123.1232.123.123"/>
 
-	<order name="duplicate">
+	<order name="do">
 		<foreach items="//instance" item-name="svr">
 			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value=""/>
 			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
@@ -13,10 +13,6 @@
 			<setAttributeValue target="§[svr]§" attribute="IP_priv" new-value="§[ip]§"/>
 			<echo message="instance §[§[svr]§/@name]§ / IP:§[§[svr]§/@IP_priv]§"/>
 		</foreach>
-	</order>
-
-	<order name="duplicate">
-		<echo/>	
 	</order>
 
 </sequence>

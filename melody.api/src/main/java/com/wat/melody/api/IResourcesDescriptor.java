@@ -78,6 +78,10 @@ public interface IResourcesDescriptor {
 	public boolean remove(String sPath) throws IllegalDocException,
 			IllegalTargetsFilterException, IllegalResourcesFilterException;
 
+	public String dump();
+
+	public String fulldump();
+
 	public void store();
 
 	/**

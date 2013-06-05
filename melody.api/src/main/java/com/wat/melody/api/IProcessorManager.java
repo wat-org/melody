@@ -1,7 +1,5 @@
 package com.wat.melody.api;
 
-import java.util.List;
-
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
@@ -254,9 +252,5 @@ public interface IProcessorManager {
 	public boolean addListener(IProcessorListener l);
 
 	public boolean removeListener(IProcessorListener l);
-
-	public List<IProcessorListener> getListeners();
-
-	public List<IProcessorListener> setListeners(List<IProcessorListener> l);
 
 }

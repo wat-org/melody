@@ -92,30 +92,18 @@ public abstract class DUNIDDocHelper {
 		}
 		Attr a = n.getAttributeNode(DUNIDDoc.DUNID_ATTR);
 		if (a == null) {
-			throw new RuntimeException("Unexpected error while retrieving the "
-					+ "'" + DUNIDDoc.DUNID_ATTR
-					+ "' XML Attribute of the XML Element " + "["
-					+ DocHelper.getNodeLocation(n).toFullString() + "]. "
-					+ "Since a '" + DUNIDDoc.DUNID_ATTR
-					+ "' XML Attribute have been "
-					+ "previously added to all Node by the Melody's Engine, "
-					+ "such error can't happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
+			throw new RuntimeException("The XML Element " + "["
+					+ DocHelper.getNodeLocation(n).toFullString() + "] has no "
+					+ "'" + DUNIDDoc.DUNID_ATTR + "' XML Attribute.");
 		}
 		String sDunid = a.getValue();
 		try {
 			return DUNID.parseString(sDunid);
 		} catch (IllegalDUNIDException Ex) {
-			throw new RuntimeException("Unexecpted error while creating a "
-					+ "DUNID based on the value '" + sDunid + "' from the "
-					+ "'" + DUNIDDoc.DUNID_ATTR
-					+ "' XML Attribute of the XML Element " + "["
-					+ DocHelper.getNodeLocation(n).toFullString() + "]"
-					+ ". Since this value have been automaticaly "
-					+ "created by this object, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
+			throw new RuntimeException("The XML Element " + "["
+					+ DocHelper.getNodeLocation(n).toFullString() + "] has a "
+					+ "'" + DUNIDDoc.DUNID_ATTR + "' XML Attribute equals to '"
+					+ sDunid + "', which is not valid.", Ex);
 		}
 	}
 

@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.location.Location;
 import com.wat.melody.common.xml.location.LocationFactory;
 
@@ -204,7 +205,11 @@ public abstract class DocHelper {
 				t.setOutputProperty(OutputKeys.INDENT, "yes");
 				t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 				t.transform(new DOMSource(d), new StreamResult(sw));
-				return sw.toString();
+				String s = sw.toString();
+				if (s.endsWith(SysTool.NEW_LINE)) {
+					s = s.substring(0, s.length() - SysTool.NEW_LINE.length());
+				}
+				return s;
 			}
 		} catch (TransformerException Ex) {
 			throw new RuntimeException("Error while dumping XML document.", Ex);

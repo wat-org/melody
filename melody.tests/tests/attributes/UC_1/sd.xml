@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="do">
+
+	<property name="ip" value="123.1232.123.123"/>
+
+	<order name="do1">
+		<foreach items="//instance" item-name="svr">
+			<setAttributeValue target="§[svr]§" attribute="__DUNID__" new-value="invalid value"/>
+		</foreach>
+	</order>
+
+	<order name="do2">
+		<foreach items="//instance" item-name="svr">
+			<removeAttribute target="§[svr]§" attribute="__DUNID__"/>
+		</foreach>
+	</order>
+
+	<order name="do">
+		<call orders="do1,do2"/>
+	</order>
+
+</sequence>

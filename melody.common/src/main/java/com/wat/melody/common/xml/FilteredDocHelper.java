@@ -10,6 +10,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.systool.SysTool;
@@ -23,6 +24,20 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public abstract class FilteredDocHelper {
 
+	/**
+	 * <p>
+	 * Retrieve {@link Node}s which match the given relative XPath expression,
+	 * above the given {@link Element} and all its herited parents.
+	 * </p>
+	 * 
+	 * @param n
+	 *            is an {@link Element}.
+	 * @param sAttrName
+	 *            is a relative XPath expression.
+	 * 
+	 * @return {@link Node}s which match the given relative XPath expression,
+	 *         above the given {@link Element} and all its herited parents.
+	 */
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
 		String refNodesXpr = DocHelper.getXPathPosition(n);
@@ -35,7 +50,7 @@ public abstract class FilteredDocHelper {
 			} catch (NodeRelatedException Ex) {
 				throw new RuntimeException("Unexecpted error while resolving "
 						+ "herited parents of the Element ["
-						+ DocHelper.getNodeLocation(n) + "]. "
+						+ DocHelper.getNodeLocation(n).toFullString() + "]. "
 						+ "Because all herited attributes have already been "
 						+ "validated, such error cannot happened. "
 						+ "Source code has certainly been modified and "
@@ -50,6 +65,21 @@ public abstract class FilteredDocHelper {
 				+ " " + "return $n" + expr, ctx);
 	}
 
+	/**
+	 * <p>
+	 * Search the given attribute value in the given {@link Element} and all its
+	 * herited parents.
+	 * </p>
+	 * 
+	 * @param n
+	 *            is an {@link Element}.
+	 * @param sAttrName
+	 *            is the attribute name to search.
+	 * 
+	 * @return the value of the given attribute if found, or <tt>null</tt> if
+	 *         the given attribute was not found in given {@link Element} and
+	 *         all its herited parents.
+	 */
 	public static Attr getHeritedAttribute(Element n, String sAttrName) {
 		List<Element> circle = new ArrayList<Element>();
 		circle.add(n);
@@ -71,7 +101,7 @@ public abstract class FilteredDocHelper {
 		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
 					+ "herited parents of the Element ["
-					+ DocHelper.getNodeLocation(n) + "]. "
+					+ DocHelper.getNodeLocation(n).toFullString() + "]. "
 					+ "Because all herited attributes have already been "
 					+ "validated, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -170,12 +200,11 @@ public abstract class FilteredDocHelper {
 			for (Element n : circularRefStack) {
 				Element h = resolvHeritAttr(n, null);
 				str.append(SysTool.NEW_LINE);
-				str.append("  Element ");
-				str.append("[" + DocHelper.getNodeLocation(n).toFullString()
-						+ "]");
-				str.append(" has parent Element ");
-				str.append("[" + DocHelper.getNodeLocation(h).toFullString()
-						+ "]");
+				str.append("  Element [");
+				str.append(DocHelper.getNodeLocation(n).toFullString());
+				str.append("] has parent Element [");
+				str.append(DocHelper.getNodeLocation(h).toFullString());
+				str.append("]");
 			}
 		} catch (NodeRelatedException ignored) {
 			/*
@@ -184,37 +213,6 @@ public abstract class FilteredDocHelper {
 			 */
 		}
 		return str.toString();
-	}
-
-	/**
-	 * <p>
-	 * Import the given {@link Element} and all its herited parents
-	 * {@link Element} into the given {@link Document}.
-	 * </p>
-	 * 
-	 * @param dest
-	 *            is a {@link Document}.
-	 * @param toClone
-	 *            is an {@link Element}. All its herited parents {@link Element}
-	 *            will be imported in the given {@link Document}.
-	 */
-	protected static void importHeritedParentNode(Document dest, Element toClone) {
-		Element parent = null;
-		try {
-			parent = resolvHeritAttr(toClone, null);
-		} catch (NodeRelatedException Ex) {
-			throw new RuntimeException("Unexecpted error while resolving "
-					+ "herited parents of the Element ["
-					+ DocHelper.getNodeLocation(toClone) + "]. "
-					+ "Because all herited attributes have already been "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		if (parent == null) {
-			return;
-		}
-		importNodeIntoFilteredDocument(dest, parent, true);
 	}
 
 	/**
@@ -235,9 +233,6 @@ public abstract class FilteredDocHelper {
 	protected static void validateParentHeritedNodes(Document doc)
 			throws NodeRelatedException {
 		NodeList nl = findNodeWithHeritAttr(doc);
-		if (nl.getLength() == 0) {
-			return;
-		}
 		for (int i = 0; i < nl.getLength(); i++) {
 			validateHeritAttr((Element) nl.item(i));
 		}
@@ -300,8 +295,30 @@ public abstract class FilteredDocHelper {
 		validateHeritAttr(parent, circle);
 	}
 
-	protected static Node importNodeIntoFilteredDocument(Document dest,
-			Element toImport, boolean importChilds) {
+	/**
+	 * <p>
+	 * Insert the given {@link Element}'s into the given destination
+	 * {@link Document}.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Insert all the given {@link Element}'s parent {@link Element}s in the
+	 * given destination {@link Document} ;</li>
+	 * <li>Insert the given {@link Element}'s child if specified ;</li>
+	 * <li>Insert all herited parent {@link Element} ;</li>
+	 * </ul>
+	 * 
+	 * @param dest
+	 *            is the destination {@link Document}.
+	 * @param toImport
+	 *            is the {@link Element} to import (it mustn't be owned by the
+	 *            given {@link Document}).
+	 * @param importChilds
+	 * 
+	 * @return the inserted {@link Element}.
+	 */
+	protected static Element insertElement(Document dest, Element toImport,
+			boolean importChilds) {
 		if (toImport == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be valid " + Element.class.getCanonicalName() + ".");
@@ -315,34 +332,118 @@ public abstract class FilteredDocHelper {
 		Node imported = DUNIDDocHelper.getElement(dest,
 				DUNIDDocHelper.getDUNID(toImport));
 		if (imported != null) {
-			return imported;
+			return (Element) imported;
 		}
 
-		Node destParent = dest;
+		Node importedParent = dest;
 		if (toImport.getParentNode().getNodeType() == Node.ELEMENT_NODE) {
-			destParent = importNodeIntoFilteredDocument(dest,
+			importedParent = insertElement(dest,
 					(Element) toImport.getParentNode(), false);
 		}
-		imported = cloneNodesAndChilds(dest, toImport, importChilds);
-		destParent.appendChild(imported);
 
+		imported = importNodeSubTree(dest, toImport, importChilds);
+		importedParent.appendChild(imported);
+		return (Element) imported;
+	}
+
+	/**
+	 * <p>
+	 * Import the given {@link Node}'s into the given destination
+	 * {@link Document}.
+	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Insert all herited parent {@link Element}s in the given destination
+	 * {@link Document} ;</li>
+	 * <li>Import the given {@link Node}'s child if specified ;</li>
+	 * </ul>
+	 * 
+	 * @param dest
+	 *            is the destination {@link Document}.
+	 * @param toImport
+	 *            is the {@link Node} to import (it mustn't be owned by the
+	 *            given destination {@link Document}).
+	 * @param importChilds
+	 * 
+	 * @return the imported {@link Node}.
+	 */
+	private static Node importNodeSubTree(Document dest, Node toImport,
+			boolean importChilds) {
+		if (toImport.getNodeType() == Node.ELEMENT_NODE) {
+			insertHeritedParents(dest, (Element) toImport);
+		}
+
+		Node imported = dest.importNode(toImport, false);
+		if (importChilds) {
+			for (int i = 0; i < toImport.getChildNodes().getLength(); i++) {
+				Node child = toImport.getChildNodes().item(i);
+				imported.appendChild(importNodeSubTree(dest, child, true));
+			}
+		}
 		return imported;
 	}
 
-	private static Node cloneNodesAndChilds(Document dest, Node toClone,
-			boolean cloneChilds) {
-		if (toClone.getNodeType() == Node.ELEMENT_NODE) {
-			FilteredDocHelper.importHeritedParentNode(dest, (Element) toClone);
+	/**
+	 * <p>
+	 * Insert the given {@link Element}'s herited parents {@link Element} into
+	 * the given destination {@link Document}.
+	 * </p>
+	 * 
+	 * @param dest
+	 *            is the destination {@link Document}.
+	 * @param toClone
+	 *            is an {@link Element} (it mustn't be owned by the given
+	 *            destination {@link Document}).
+	 */
+	private static void insertHeritedParents(Document dest, Element toClone) {
+		Element parent = null;
+		try {
+			parent = resolvHeritAttr(toClone, null);
+		} catch (NodeRelatedException Ex) {
+			throw new RuntimeException("Unexecpted error while resolving "
+					+ "herited parents of the Element ["
+					+ DocHelper.getNodeLocation(toClone).toFullString() + "]. "
+					+ "Because all herited attributes have already been "
+					+ "validated, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
 		}
+		if (parent == null) {
+			return;
+		}
+		insertElement(dest, parent, true);
+	}
 
-		Node copy = dest.importNode(toClone, false);
-		if (cloneChilds) {
-			for (int i = 0; i < toClone.getChildNodes().getLength(); i++) {
-				Node child = toClone.getChildNodes().item(i);
-				copy.appendChild(cloneNodesAndChilds(dest, child, true));
+	/**
+	 * <p>
+	 * Remove 'useless' {@link Text} {@link Node}s from the given tree, starting
+	 * at the given {@link Element}.
+	 * </p>
+	 * 
+	 * <p>
+	 * 'useless' {@link Text} {@link Node}s are :
+	 * <ul>
+	 * <li>{@link Text} {@link Node}s which are not leaves ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param e
+	 *            is the starting {@link Element}.
+	 */
+	protected static void removeTextNode(Element e) {
+		NodeList childs = e.getChildNodes();
+		if (childs.getLength() == 1
+				&& childs.item(0).getNodeType() == Node.TEXT_NODE) {
+			return;
+		}
+		for (int i = childs.getLength() - 1; i >= 0; i--) {
+			Node child = childs.item(i);
+			if (child.getNodeType() == Node.ELEMENT_NODE) {
+				removeTextNode((Element) child);
+			} else if (child.getNodeType() == Node.TEXT_NODE) {
+				e.removeChild(child);
 			}
 		}
-		return copy;
 	}
 
 }

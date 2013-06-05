@@ -23,6 +23,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.DUNIDDoc;
 import com.wat.melody.common.xml.DUNIDDocHelper;
@@ -123,6 +124,26 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		str.append(", target-filter:");
 		str.append(getTargetsDescriptor().getFilterSet());
 		str.append(" }");
+		return str.toString();
+	}
+
+	@Override
+	public String fulldump() {
+		StringBuilder str = new StringBuilder();
+		str.append(super.fulldump().replaceAll(SysTool.NEW_LINE,
+				SysTool.NEW_LINE + "  "));
+		str.append(SysTool.NEW_LINE);
+		str.append(SysTool.NEW_LINE);
+		str.append(getTargetsDescriptor().fulldump().replaceAll(
+				SysTool.NEW_LINE, SysTool.NEW_LINE + "  "));
+		str.append(SysTool.NEW_LINE);
+		str.append(SysTool.NEW_LINE);
+		for (DUNIDDoc doc : getDUNIDDocList()) {
+			str.append(doc.fulldump().replaceAll(SysTool.NEW_LINE,
+					SysTool.NEW_LINE + "  "));
+			str.append(SysTool.NEW_LINE);
+			str.append(SysTool.NEW_LINE);
+		}
 		return str.toString();
 	}
 
@@ -377,8 +398,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * An element node have been inserted in the current document => modify the
 	 * original DUNIDDoc and the targets descriptor
 	 */
-	protected void nodeInstered(MutationEvent evt) throws MelodyException {
-		super.nodeInstered(evt);
+	protected void elementInstered(MutationEvent evt) throws MelodyException {
+		super.elementInstered(evt);
 		// the inserted node
 		Element t = (Element) evt.getTarget();
 		// its next sibling
@@ -408,8 +429,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * An element node have been removed in the current document => modify the
 	 * original DUNIDDoc and the targets descriptor
 	 */
-	protected void nodeRemoved(MutationEvent evt) throws MelodyException {
-		super.nodeRemoved(evt);
+	protected void elementRemoved(MutationEvent evt) throws MelodyException {
+		super.elementRemoved(evt);
 		// the removed node
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
@@ -429,11 +450,11 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	/**
-	 * The text of an element node have been changed in the current document =>
-	 * modify the original DUNIDDoc and the targets descriptor
+	 * A leaf text node have been inserted in the current document => modify the
+	 * original DUNIDDoc and the targets descriptor
 	 */
-	protected void nodeTextChanged(MutationEvent evt) throws MelodyException {
-		super.nodeTextChanged(evt);
+	protected void textLeafInserted(MutationEvent evt) throws MelodyException {
+		super.textLeafInserted(evt);
 		// the changed node
 		Text t = (Text) evt.getTarget();
 		// its parent element
@@ -442,11 +463,59 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// Modify the targets descriptor
 		Element eori = getTargetsDescriptor().getElement(edunid);
 		if (eori != null) { // changed node is in the targets descriptor
+			// It is assume that the Element is a leaf, so setTextContent is OK
 			eori.setTextContent(t.getTextContent());
 		}
 		// Modify the DUNIDDoc
 		eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so setTextContent is OK
 		eori.setTextContent(t.getTextContent());
+	}
+
+	/**
+	 * A leaf text node have been removed in the current document => modify the
+	 * original DUNIDDoc and the targets descriptor
+	 */
+	protected void textLeafRemoved(MutationEvent evt) throws MelodyException {
+		super.textLeafRemoved(evt);
+		// the changed node
+		Text t = (Text) evt.getTarget();
+		// its parent element
+		Element e = (Element) t.getParentNode();
+		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// Modify the targets descriptor
+		Element eori = getTargetsDescriptor().getElement(edunid);
+		if (eori != null) { // changed node is in the targets descriptor
+			// It is assume that the Element is a leaf, so getFirstChild is OK
+			eori.removeChild(eori.getFirstChild());
+		}
+		// Modify the DUNIDDoc
+		eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.removeChild(eori.getFirstChild());
+	}
+
+	/**
+	 * The content of a leaf text node have been modified in the current
+	 * document => modify the original DUNIDDoc and the targets descriptor
+	 */
+	protected void textLeafModified(MutationEvent evt) throws MelodyException {
+		super.textLeafModified(evt);
+		// the changed node
+		Text t = (Text) evt.getTarget();
+		// its parent element
+		Element e = (Element) t.getParentNode();
+		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// Modify the targets descriptor
+		Element eori = getTargetsDescriptor().getElement(edunid);
+		if (eori != null) { // changed node is in the targets descriptor
+			// It is assume that the Element is a leaf, so getFirstChild is OK
+			eori.getFirstChild().setNodeValue(t.getTextContent());
+		}
+		// Modify the DUNIDDoc
+		eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.getFirstChild().setNodeValue(t.getTextContent());
 	}
 
 	/**

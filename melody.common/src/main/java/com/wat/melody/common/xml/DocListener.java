@@ -11,11 +11,15 @@ import com.wat.melody.common.ex.MelodyException;
  */
 public interface DocListener {
 
-	public void nodeInstered(MutationEvent evt) throws MelodyException;
+	public void elementInstered(MutationEvent evt) throws MelodyException;
 
-	public void nodeRemoved(MutationEvent evt) throws MelodyException;
+	public void elementRemoved(MutationEvent evt) throws MelodyException;
 
-	public void nodeTextChanged(MutationEvent evt) throws MelodyException;
+	public void textLeafInserted(MutationEvent evt) throws MelodyException;
+
+	public void textLeafRemoved(MutationEvent evt) throws MelodyException;
+
+	public void textLeafModified(MutationEvent evt) throws MelodyException;
 
 	public void attributeInserted(MutationEvent evt) throws MelodyException;
 
