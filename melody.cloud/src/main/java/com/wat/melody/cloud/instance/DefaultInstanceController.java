@@ -233,7 +233,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		disksToRemove = target.delta(current);
 
 		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
-				getInstanceId(), target, disksToAdd, disksToRemove));
+				getInstanceId(), current, target, disksToAdd, disksToRemove));
 
 		detachAndDeleteInstanceDiskDevices(disksToRemove, detachTimeout);
 		createAndAttachDiskInstanceDevices(disksToAdd, createTimeout,
@@ -285,7 +285,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		toRemove = target.delta(current);
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
-				getInstanceId(), target, toAdd, toRemove));
+				getInstanceId(), current, target, toAdd, toRemove));
 
 		detachInstanceNetworkDevices(toRemove, detachTimeout);
 		attachInstanceNetworkDevices(toAdd, attachTimeout);
@@ -325,8 +325,10 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			FireWallRules toAdd = current.delta(expected);
 			FireWallRules toRemove = expected.delta(current);
 
-			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
-					getInstanceId(), netdev, expected, toAdd, toRemove));
+			log.info(Messages
+					.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
+							getInstanceId(), netdev, current, expected, toAdd,
+							toRemove));
 
 			revokeInstanceFireWallRules(netdev, toRemove);
 			authorizeInstanceFireWallRules(netdev, toAdd);

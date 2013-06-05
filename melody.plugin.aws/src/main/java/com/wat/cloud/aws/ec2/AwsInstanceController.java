@@ -124,16 +124,15 @@ public class AwsInstanceController extends DefaultInstanceController implements
 
 	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
-		return AwsEc2Cloud.getInstanceDisks(getConnection(), getInstance());
+		return AwsEc2CloudDisk.getInstanceDisks(getConnection(), getInstance());
 	}
 
 	@Override
-	public void detachAndDeleteInstanceDiskDevices(
-			DiskDeviceList disksToRemove, long detachTimeout)
-			throws OperationException, InterruptedException {
+	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove,
+			long detachTimeout) throws OperationException, InterruptedException {
 		try {
-			AwsEc2Cloud.detachAndDeleteDiskDevices(getConnection(),
-					getInstance(), disksToRemove, detachTimeout);
+			AwsEc2CloudDisk.detachAndDeleteDiskDevices(getConnection(),
+					getInstance(), toRemove, detachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_DETACH, Ex.getVolumeId(),
@@ -142,14 +141,13 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public void createAndAttachDiskInstanceDevices(DiskDeviceList disksToAdd,
+	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd,
 			long createTimeout, long attachTimeout) throws OperationException,
 			InterruptedException {
 		String sAZ = getInstance().getPlacement().getAvailabilityZone();
 		try {
-			AwsEc2Cloud.createAndAttachDiskDevices(getConnection(),
-					getInstanceId(), sAZ, disksToAdd, createTimeout,
-					attachTimeout);
+			AwsEc2CloudDisk.createAndAttachDiskDevices(getConnection(),
+					getInstanceId(), sAZ, toAdd, createTimeout, attachTimeout);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_CREATE, Ex.getVolumeId(),
@@ -164,35 +162,34 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	@Override
 	public void updateInstanceDiskDevicesDeleteOnTerminationFlag(
 			DiskDeviceList diskList) {
-		AwsEc2Cloud.updateDeleteOnTerminationFlag(getConnection(),
+		AwsEc2CloudDisk.updateDeleteOnTerminationFlag(getConnection(),
 				getInstanceId(), diskList);
 	}
 
 	@Override
 	public NetworkDeviceNameList getInstanceNetworkDevices() {
-		return AwsEc2Cloud.getNetworkDevices(getConnection(), getInstance());
+		return AwsEc2CloudNetwork.getNetworkDevices(getConnection(),
+				getInstance());
 	}
 
 	@Override
-	public void detachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
-			throws OperationException, InterruptedException {
-		AwsEc2Cloud.detachNetworkDevices(getConnection(), getInstance(),
-				netDevivesToRemove, detachTimeout);
+	public void detachInstanceNetworkDevices(NetworkDeviceNameList toRemove,
+			long detachTimeout) throws OperationException, InterruptedException {
+		AwsEc2CloudNetwork.detachNetworkDevices(getConnection(), getInstance(),
+				toRemove, detachTimeout);
 	}
 
 	@Override
-	public void attachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
-			throws OperationException, InterruptedException {
-		AwsEc2Cloud.attachNetworkDevices(getConnection(), getInstance(),
-				netDevivesToAdd, attachTimeout);
+	public void attachInstanceNetworkDevices(NetworkDeviceNameList toAdd,
+			long attachTimeout) throws OperationException, InterruptedException {
+		AwsEc2CloudNetwork.attachNetworkDevices(getConnection(), getInstance(),
+				toAdd, attachTimeout);
 	}
 
 	@Override
 	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
 			NetworkDeviceName netdev) {
-		return AwsEc2Cloud.getNetworkDeviceDatas(getConnection(),
+		return AwsEc2CloudNetwork.getNetworkDeviceDatas(getConnection(),
 				this.getInstance(), netdev);
 	}
 

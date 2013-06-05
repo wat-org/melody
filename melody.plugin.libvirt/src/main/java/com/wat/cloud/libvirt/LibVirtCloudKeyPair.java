@@ -237,7 +237,7 @@ public abstract class LibVirtCloudKeyPair {
 	 */
 	public static String getInstancePublicKey(String instanceIp) {
 		try {
-			String keypairname = LibVirtCloud.netconf
+			String keypairname = LibVirtCloudNetwork.netconf
 					.evaluateAsString("/network/ip/dhcp/host[ @ip='"
 							+ instanceIp + "' ]/@keypair-name");
 			if (keypairname == null || keypairname.trim().length() == 0) {
@@ -250,13 +250,14 @@ public abstract class LibVirtCloudKeyPair {
 	}
 
 	protected static void associateKeyPairToInstance(Domain d, KeyPairName kpn) {
-		String mac = LibVirtCloud.getDomainMacAddress(d, LibVirtCloud.eth0);
-		String ip = LibVirtCloud.getDomainIpAddress(mac);
+		String mac = LibVirtCloudNetwork.getDomainMacAddress(d,
+				LibVirtCloudNetwork.eth0);
+		String ip = LibVirtCloudNetwork.getDomainIpAddress(mac);
 		String dName = null;
 		Element n = null;
 		try {
 			dName = d.getName();
-			n = (Element) LibVirtCloud.netconf
+			n = (Element) LibVirtCloudNetwork.netconf
 					.evaluateAsNode("/network/ip/dhcp/host[ @ip='" + ip + "' ]");
 		} catch (LibvirtException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
@@ -268,19 +269,20 @@ public abstract class LibVirtCloudKeyPair {
 		log.trace("Associating public-key '" + kpn + "' to domain '" + dName
 				+ "' ...");
 		n.setAttribute("keypair-name", kpn.getValue());
-		LibVirtCloud.netconf.store();
+		LibVirtCloudNetwork.netconf.store();
 		log.debug("Public-key '" + kpn + "' associated to domain '" + dName
 				+ "'.");
 	}
 
 	protected static void deassociateKeyPairToInstance(Domain d) {
-		String mac = LibVirtCloud.getDomainMacAddress(d, LibVirtCloud.eth0);
-		String ip = LibVirtCloud.getDomainIpAddress(mac);
+		String mac = LibVirtCloudNetwork.getDomainMacAddress(d,
+				LibVirtCloudNetwork.eth0);
+		String ip = LibVirtCloudNetwork.getDomainIpAddress(mac);
 		String dName = null;
 		Element n = null;
 		try {
 			dName = d.getName();
-			n = (Element) LibVirtCloud.netconf
+			n = (Element) LibVirtCloudNetwork.netconf
 					.evaluateAsNode("/network/ip/dhcp/host[ @ip='" + ip
 							+ "' and exists(@keypair-name)]");
 		} catch (LibvirtException | XPathExpressionException Ex) {
@@ -291,7 +293,7 @@ public abstract class LibVirtCloudKeyPair {
 		}
 		log.trace("De-associating KeyPair to domain '" + dName + "' ...");
 		n.removeAttribute("keypair-name");
-		LibVirtCloud.netconf.store();
+		LibVirtCloudNetwork.netconf.store();
 		log.debug("KeyPair de-associated to domain '" + dName + "'.");
 	}
 

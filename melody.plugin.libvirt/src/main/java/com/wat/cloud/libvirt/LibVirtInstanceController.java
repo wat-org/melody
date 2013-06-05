@@ -72,13 +72,13 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	@Override
 	public void destroyInstance(long destroyTimeout) throws OperationException,
 			InterruptedException {
-		LibVirtCloud.deleteInstance(this.getInstance());
+		LibVirtCloud.deleteInstance(getInstance());
 	}
 
 	@Override
 	public void startInstance(long startTimeout) throws OperationException,
 			InterruptedException {
-		if (!LibVirtCloud.startInstance(this.getInstance(), startTimeout)) {
+		if (!LibVirtCloud.startInstance(getInstance(), startTimeout)) {
 			throw new OperationException(Messages.bind(
 					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
 		}
@@ -87,7 +87,7 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	@Override
 	public void stopInstance(long stopTimeout) throws OperationException,
 			InterruptedException {
-		if (!LibVirtCloud.stopInstance(this.getInstance(), stopTimeout)) {
+		if (!LibVirtCloud.stopInstance(getInstance(), stopTimeout)) {
 			throw new OperationException(Messages.bind(Messages.StopEx_TIMEOUT,
 					getInstanceId(), stopTimeout));
 		}
@@ -96,7 +96,7 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	@Override
 	public void resizeInstance(InstanceType targetType)
 			throws OperationException, InterruptedException {
-		if (!LibVirtCloud.resizeInstance(this.getInstance(), targetType)) {
+		if (!LibVirtCloud.resizeInstance(getInstance(), targetType)) {
 			throw new OperationException(Messages.bind(
 					Messages.ResizeEx_FAILED, getInstanceId(),
 					getInstanceType(), targetType));
@@ -105,22 +105,20 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 
 	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
-		return LibVirtCloud.getDiskDevices(this.getInstance());
+		return LibVirtCloudDisk.getDiskDevices(getInstance());
 	}
 
 	@Override
-	public void detachAndDeleteInstanceDiskDevices(
-			DiskDeviceList disksToRemove, long detachTimeout)
-			throws OperationException, InterruptedException {
-		LibVirtCloud.detachAndDeleteDiskDevices(this.getInstance(),
-				disksToRemove);
+	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove,
+			long detachTimeout) throws OperationException, InterruptedException {
+		LibVirtCloudDisk.detachAndDeleteDiskDevices(getInstance(), toRemove);
 	}
 
 	@Override
-	public void createAndAttachDiskInstanceDevices(DiskDeviceList disksToAdd,
+	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd,
 			long createTimeout, long attachTimeout) throws OperationException,
 			InterruptedException {
-		LibVirtCloud.createAndAttachDiskDevices(this.getInstance(), disksToAdd);
+		LibVirtCloudDisk.createAndAttachDiskDevices(getInstance(), toAdd);
 	}
 
 	@Override
@@ -134,47 +132,47 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 
 	@Override
 	public NetworkDeviceNameList getInstanceNetworkDevices() {
-		return LibVirtCloud.getNetworkDevices(this.getInstance());
+		return LibVirtCloudNetwork.getNetworkDevices(getInstance());
 	}
 
 	@Override
-	public void detachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
-			throws OperationException, InterruptedException {
-		for (NetworkDeviceName netDev : netDevivesToRemove) {
-			LibVirtCloud.detachNetworkDevice(this.getInstance(), netDev);
+	public void detachInstanceNetworkDevices(NetworkDeviceNameList toRemove,
+			long detachTimeout) throws OperationException, InterruptedException {
+		for (NetworkDeviceName netDev : toRemove) {
+			LibVirtCloudNetwork.detachNetworkDevice(getInstance(), netDev);
 		}
 	}
 
 	@Override
-	public void attachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
-			throws OperationException, InterruptedException {
-		for (NetworkDeviceName netDev : netDevivesToAdd) {
-			LibVirtCloud.attachNetworkDevice(this.getInstance(), netDev);
+	public void attachInstanceNetworkDevices(NetworkDeviceNameList toAdd,
+			long attachTimeout) throws OperationException, InterruptedException {
+		for (NetworkDeviceName netDev : toAdd) {
+			LibVirtCloudNetwork.attachNetworkDevice(getInstance(), netDev);
 		}
 	}
 
 	@Override
 	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
 			NetworkDeviceName netdev) {
-		return LibVirtCloud.getNetworkDeviceDatas(this.getInstance(), netdev);
+		return LibVirtCloudNetwork.getNetworkDeviceDatas(getInstance(), netdev);
 	}
 
+	@Override
 	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return LibVirtCloudFireWall
-				.getFireWallRules(this.getInstance(), netDev);
+		return LibVirtCloudFireWall.getFireWallRules(getInstance(), netDev);
 	}
 
+	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toRevoke) throws OperationException {
-		LibVirtCloudFireWall.revokeFireWallRules(this.getInstance(), netDev,
+		LibVirtCloudFireWall.revokeFireWallRules(getInstance(), netDev,
 				toRevoke);
 	}
 
+	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toAutorize) throws OperationException {
-		LibVirtCloudFireWall.authorizeFireWallRules(this.getInstance(), netDev,
+		LibVirtCloudFireWall.authorizeFireWallRules(getInstance(), netDev,
 				toAutorize);
 	}
 
