@@ -5,9 +5,9 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.NetworkDeviceNamesLoader;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDevicesLoader;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
@@ -135,12 +135,9 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	}
 
 	@Override
-	public void ensureInstanceDiskDevicesAreUpToDate(
-			DiskDeviceList diskDeviceList, long createTimeout,
-			long attachTimeout, long detachTimeout) throws OperationException,
-			InterruptedException {
-		getInstance().ensureInstanceDiskDevicesAreUpToDate(diskDeviceList,
-				createTimeout, attachTimeout, detachTimeout);
+	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
+			throws OperationException, InterruptedException {
+		getInstance().ensureInstanceDiskDevicesAreUpToDate(list);
 	}
 
 	@Override
@@ -149,29 +146,21 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	}
 
 	@Override
-	public void ensureInstanceNetworkDevicesAreUpToDate(
-			NetworkDeviceNameList networkDeviceList, long attachTimeout,
-			long detachTimeout) throws OperationException, InterruptedException {
-		getInstance().ensureInstanceNetworkDevicesAreUpToDate(
-				networkDeviceList, attachTimeout, detachTimeout);
+	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
+			throws OperationException, InterruptedException {
+		getInstance().ensureInstanceNetworkDevicesAreUpToDate(list);
 	}
 
 	@Override
-	public NetworkDeviceNameList getInstanceNetworkDevices() {
+	public NetworkDeviceList getInstanceNetworkDevices() {
 		return getInstance().getInstanceNetworkDevices();
 	}
 
 	@Override
-	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
-			NetworkDeviceName netdev) {
-		return getInstance().getInstanceNetworkDeviceDatas(netdev);
-	}
-
-	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FireWallRulesPerDevice fireWallRules) throws OperationException,
+			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException {
-		getInstance().ensureInstanceFireWallRulesAreUpToDate(fireWallRules);
+		getInstance().ensureInstanceFireWallRulesAreUpToDate(list);
 	}
 
 	@Override
@@ -212,24 +201,19 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	public void onInstanceStopped() throws OperationException,
 			InterruptedException {
 		fireInstanceStopped();
-		NetworkDeviceNameList netDevices = null;
+		NetworkDeviceList netDevices = null;
 		try {
-			netDevices = new NetworkDeviceNamesLoader()
-					.load(getRelatedElement());
+			netDevices = new NetworkDevicesLoader().load(getRelatedElement());
 		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}
-		for (NetworkDeviceName netDev : netDevices) {
-			Element d = getNetworkDeviceNode(netDev);
-			if (d == null) {
-				// The instance node could have no such network device node
-				continue;
-			}
+		for (NetworkDevice nd : netDevices) {
+			Element d = getNetworkDeviceElement(nd);
 			synchronized (getRelatedElement().getOwnerDocument()) {
-				removeData(d, NetworkDeviceNamesLoader.IP_ATTR);
-				removeData(d, NetworkDeviceNamesLoader.FQDN_ATTR);
-				removeData(d, NetworkDeviceNamesLoader.NAT_IP_ATTR);
-				removeData(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR);
+				removeData(d, NetworkDevicesLoader.IP_ATTR);
+				removeData(d, NetworkDevicesLoader.FQDN_ATTR);
+				removeData(d, NetworkDevicesLoader.NAT_IP_ATTR);
+				removeData(d, NetworkDevicesLoader.NAT_FQDN_ATTR);
 			}
 		}
 	}
@@ -237,19 +221,17 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	@Override
 	public void onInstanceStarted() throws OperationException,
 			InterruptedException {
-		for (NetworkDeviceName netDevice : getInstanceNetworkDevices()) {
-			Element d = getNetworkDeviceNode(netDevice);
+		for (NetworkDevice nd : getInstanceNetworkDevices()) {
+			Element d = getNetworkDeviceElement(nd);
 			if (d == null) {
 				// The instance node could have no such network device node
 				continue;
 			}
-			NetworkDeviceDatas ndd = getInstanceNetworkDeviceDatas(netDevice);
 			synchronized (getRelatedElement().getOwnerDocument()) {
-				setData(d, NetworkDeviceNamesLoader.IP_ATTR, ndd.getIP());
-				setData(d, NetworkDeviceNamesLoader.FQDN_ATTR, ndd.getFQDN());
-				setData(d, NetworkDeviceNamesLoader.NAT_IP_ATTR, ndd.getNatIP());
-				setData(d, NetworkDeviceNamesLoader.NAT_FQDN_ATTR,
-						ndd.getNatFQDN());
+				setData(d, NetworkDevicesLoader.IP_ATTR, nd.getIP());
+				setData(d, NetworkDevicesLoader.FQDN_ATTR, nd.getFQDN());
+				setData(d, NetworkDevicesLoader.NAT_IP_ATTR, nd.getNatIP());
+				setData(d, NetworkDevicesLoader.NAT_FQDN_ATTR, nd.getNatFQDN());
 			}
 		}
 		fireInstanceStarted();
@@ -266,12 +248,13 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		netdev.removeAttribute(sAttr);
 	}
 
-	private Element getNetworkDeviceNode(NetworkDeviceName nd)
+	private Element getNetworkDeviceElement(NetworkDevice netdev)
 			throws OperationException {
 		NodeList netDevs = null;
 		try {
 			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
-					getRelatedElement(), nd.getValue());
+					getRelatedElement(), netdev.getNetworkDeviceName()
+							.getValue());
 		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}

@@ -15,7 +15,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 
 	private static final long serialVersionUID = 799928265740695276L;
 
-	private DiskDevice moRootDevice;
+	private DiskDevice _rootDevice;
 
 	public DiskDeviceList() {
 		super();
@@ -50,7 +50,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 	}
 
 	public DiskDevice getRootDevice() {
-		return moRootDevice;
+		return _rootDevice;
 	}
 
 	private DiskDevice setRootDevice(DiskDevice dd) {
@@ -61,7 +61,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 					+ "flag is false.");
 		}
 		DiskDevice previous = getRootDevice();
-		moRootDevice = dd;
+		_rootDevice = dd;
 		return previous;
 	}
 
@@ -121,7 +121,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		if (target.size() == 0) {
 			throw new DiskDeviceException(Messages.bind(
 					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
-					DiskDevicesLoader.DEVICE_ATTR, getRootDevice()
+					DiskDevicesLoader.DEVICE_NAME_ATTR, getRootDevice()
 							.getDiskDeviceName()));
 		}
 		if (target.getRootDevice() == null) {

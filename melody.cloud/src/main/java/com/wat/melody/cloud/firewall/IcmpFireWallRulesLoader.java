@@ -11,7 +11,6 @@ import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.IcmpCodes;
 import com.wat.melody.common.firewall.IcmpTypes;
-import com.wat.melody.common.firewall.NetworkDeviceNameRef;
 import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodesException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypesException;
@@ -28,53 +27,53 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Node, which define the icmp type of the icmp Fw
-	 * Rule.
+	 * XML attribute of a FwRule Element Node, which define the icmp type of the
+	 * icmp Fw Rule.
 	 */
 	public static final String TYPES_ATTR = "types";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the icmp code of the icmp Fw
-	 * Rule.
+	 * XML attribute of a FwRule Element Node, which define the icmp code of the
+	 * icmp Fw Rule.
 	 */
 	public static final String CODES_ATTR = "codes";
 
-	protected IcmpTypes loadIcmpTypes(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, TYPES_ATTR);
+	protected IcmpTypes loadIcmpTypes(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, TYPES_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IcmpTypes.parseString(v);
 		} catch (IllegalIcmpTypesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, TYPES_ATTR);
+			Node attr = FilteredDocHelper.getHeritedAttribute(e, TYPES_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected IcmpCodes loadIcmpCodes(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, CODES_ATTR);
+	protected IcmpCodes loadIcmpCodes(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, CODES_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IcmpCodes.parseString(v);
 		} catch (IllegalIcmpCodesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, CODES_ATTR);
+			Node attr = FilteredDocHelper.getHeritedAttribute(e, CODES_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
 	/**
 	 * <p>
-	 * Find the ICMP FireWall Rule {@link Node}s of the given Instance
-	 * {@link Node} and convert it into a {@link FireWallRulesPerDevice}.
+	 * Find the ICMP FireWall Rule {@link Element}s of the given Instance
+	 * {@link Element} and convert it into a {@link FireWallRulesPerDevice}.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>An ICMP FireWall Rule <code>Node</code> must have the attributes :
+	 * An ICMP FireWall Rule {@link Element} must have the attributes :
 	 * <ul>
-	 * <li>devices-name : which should contains {@link NetworkDeviceNameRef} ;</li>
+	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
 	 * <li>to-ips : which should contains {@link IpRanges} :</li>
 	 * <li>codes : which should contains {@link IcmpTypes} ;</li>
@@ -82,36 +81,33 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * <li>directions : which should contains {@link Directions} ;</li>
 	 * <li>allow : which should contains {@link Access} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
-	 * another FireWall Rule <code>Node</code>, which attributes will be used as
-	 * source ;</li>
+	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>
-	 * </i>
 	 * </p>
 	 * 
-	 * @param instanceNode
-	 *            is an Instance {@link Node}.
+	 * @param instanceElmt
+	 *            is an Instance {@link Element}.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code> or is
-	 *             not an element {@link Node}.
+	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
-	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
+	 *             {@link Element}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Element instanceNode)
+	public FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException {
 		NodeList nl = FireWallManagementHelper
-				.findIcmpFireWallRules(instanceNode);
+				.findIcmpFireWallRules(instanceElmt);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (int i = 0; i < nl.getLength(); i++) {
-			Element n = (Element) nl.item(i);
-			Directions dirs = loadDirection(n);
-			IpRanges fromIps = loadFromIps(n);
-			IpRanges toIps = loadToIps(n);
+			Element e = (Element) nl.item(i);
+			Directions dirs = loadDirection(e);
+			IpRanges fromIps = loadFromIps(e);
+			IpRanges toIps = loadToIps(e);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
@@ -126,10 +122,10 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 					continue;
 				}
 			}
-			IcmpTypes types = loadIcmpTypes(n);
-			IcmpCodes codes = loadIcmpCodes(n);
-			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(n);
-			Access access = loadAccess(n);
+			IcmpTypes types = loadIcmpTypes(e);
+			IcmpCodes codes = loadIcmpCodes(e);
+			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(e);
+			Access access = loadAccess(e);
 			fwrs.merge(refs, new ComplexIcmpFireWallRule(fromIps, toIps, types,
 					codes, dirs, access));
 		}

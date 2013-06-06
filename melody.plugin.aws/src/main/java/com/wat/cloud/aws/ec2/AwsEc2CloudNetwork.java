@@ -11,9 +11,9 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.Instance;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 
@@ -26,39 +26,43 @@ public class AwsEc2CloudNetwork {
 
 	private static Log log = LogFactory.getLog(AwsEc2CloudNetwork.class);
 
-	public static NetworkDeviceNameList getNetworkDevices(AmazonEC2 ec2,
-			Instance i) {
+	/**
+	 * @param i
+	 *            is an {@link Instance}.
+	 * 
+	 * @return a {@link NetworkDeviceList}, which contains the
+	 *         {@link NetworkDevice}s of the given {@link Instance}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Instance} is <tt>null</tt>.
+	 */
+	public static NetworkDeviceList getNetworkDevices(Instance i) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
 		/*
-		 * always reply [eth0], because, using Aws Ec2, only 1 network device
-		 * can be allocated.
+		 * always return [eth0] : with Aws Ec2, only 1 network device (e.g.
+		 * eth0) can be allocated.
 		 */
-		NetworkDeviceNameList netdevs = new NetworkDeviceNameList();
-		NetworkDeviceName eth0 = null;
+		NetworkDeviceList netdevs = new NetworkDeviceList();
 		try {
-			eth0 = NetworkDeviceName.parseString("eth0");
-			netdevs.addNetworkDevice(eth0);
-		} catch (IllegalNetworkDeviceNameException
-				| IllegalNetworkDeviceNameListException Ex) {
+			netdevs.addNetworkDevice(new NetworkDevice(eth0, null, i
+					.getPrivateIpAddress(), i.getPrivateDnsName(), i
+					.getPublicIpAddress(), i.getPublicDnsName(), null, null));
+		} catch (IllegalNetworkDeviceListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 		return netdevs;
 	}
 
-	public static NetworkDeviceDatas getNetworkDeviceDatas(AmazonEC2 ec2,
-			Instance i, NetworkDeviceName netdev) {
-		/*
-		 * always get datas of eth0, because, using Aws Ec2, only eth0 is
-		 * available.
-		 */
-		return new NetworkDeviceDatas(null, i.getPrivateIpAddress(),
-				i.getPrivateDnsName(), i.getPublicIpAddress(),
-				i.getPublicDnsName());
-	}
-
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
-			NetworkDeviceNameList toRemove, long detachTimeout)
-			throws InterruptedException {
-		for (NetworkDeviceName netdev : toRemove) {
+			NetworkDeviceList toRemove) throws InterruptedException {
+		if (toRemove == null) {
+			return;
+		}
+		for (NetworkDevice netdev : toRemove) {
 			log.info(Messages.bind(
 					Messages.CommonMsg_DETACH_NOTWORK_DEVICE_NOT_SUPPORTED,
 					i.getImageId(), netdev));
@@ -66,9 +70,11 @@ public class AwsEc2CloudNetwork {
 	}
 
 	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
-			NetworkDeviceNameList toAdd, long attachTimeout)
-			throws InterruptedException {
-		for (NetworkDeviceName netdev : toAdd) {
+			NetworkDeviceList toAdd) throws InterruptedException {
+		if (toAdd == null) {
+			return;
+		}
+		for (NetworkDevice netdev : toAdd) {
 			log.info(Messages.bind(
 					Messages.CommonMsg_ATTACH_NOTWORK_DEVICE_NOT_SUPPORTED,
 					i.getImageId(), netdev));
@@ -78,7 +84,8 @@ public class AwsEc2CloudNetwork {
 	public static String getSecurityGroup(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
 		/*
-		 * always retrieve the security group associated to eth0.
+		 * always return the security group associated to eth0 : with Aws Ec2,
+		 * only 1 network device (e.g. eth0) can be allocated.
 		 */
 		return i.getSecurityGroups().get(0).getGroupName();
 	}
@@ -95,19 +102,13 @@ public class AwsEc2CloudNetwork {
 
 	/**
 	 * <p>
-	 * Create an AWS Security Group with the given name and description.
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * The newly created AWS Security Group is empty (e.g. contains no
-	 * ingress permissions).<BR/>
-	 * </i>
+	 * Create an empty AWS Security Group with the given name and description.
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sSGName
+	 * @param sgname
 	 *            is the name of the AWS Security Group to create.
-	 * @param sSGDesc
+	 * @param sgdesc
 	 *            is the associated description.
 	 * 
 	 * @throws AmazonServiceException
@@ -116,28 +117,29 @@ public class AwsEc2CloudNetwork {
 	 * @throws AmazonClientException
 	 *             if the operation fails.
 	 * @throws IllegalArgumentException
-	 *             if ec2 is <code>null</code>.
+	 *             if ec2 is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if sSGName is <code>null</code>.
+	 *             if the given Security Group name is <tt>null</tt> or empty.
 	 */
-	protected static void createSecurityGroup(AmazonEC2 ec2, String sSGName,
-			String sSGDesc) {
+	protected static void createSecurityGroup(AmazonEC2 ec2, String sgname,
+			String sgdesc) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
-		if (sSGName == null || sSGName.trim().length() == 0) {
-			throw new IllegalArgumentException(sSGName + ": Not accepted. "
-					+ "Must be a String (an AWS Security Group name).");
+		if (sgname == null || sgname.trim().length() == 0) {
+			throw new IllegalArgumentException(sgname + ": Not accepted. "
+					+ "Must be a String (an AWS Security Group Name).");
 		}
 
 		CreateSecurityGroupRequest csgreq = null;
-		csgreq = new CreateSecurityGroupRequest(sSGName, sSGDesc);
+		csgreq = new CreateSecurityGroupRequest(sgname, sgdesc);
 
 		try {
-			log.trace("Creating Security Group '" + sSGName + "' ...");
+			log.trace("Creating Security Group '" + sgname + "' ...");
 			ec2.createSecurityGroup(csgreq);
-			log.debug("Security Group '" + sSGName + "' created.");
+			log.debug("Security Group '" + sgname + "' created.");
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
 				throw new RuntimeException("Unexpected error while creating "
@@ -158,16 +160,15 @@ public class AwsEc2CloudNetwork {
 	 * Delete the AWS Security Group which match the given name.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * If the given name doesn't match any AWS Security Group Name, does
-	 * nothing.<BR/>
-	 * <i> * The AWS Security must not be 'in use', otherwise, an
-	 * {@link AmazonServiceException} will be generated.<BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>If the given name doesn't match any AWS Security Group Name, does
+	 * nothing ;</li>
+	 * <li>The AWS Security must not be 'in use', otherwise, an
+	 * {@link AmazonServiceException} will be generated ;</li>
+	 * </ul>
 	 * 
 	 * @param ec2
-	 * @param sSGName
+	 * @param sgname
 	 *            is the name of the AWS Security Group to delete.
 	 * 
 	 * @throws AmazonServiceException
@@ -175,33 +176,41 @@ public class AwsEc2CloudNetwork {
 	 * @throws AmazonClientException
 	 *             if the operation fails.
 	 * @throws IllegalArgumentException
-	 *             if ec2 is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if sSGName is <code>null</code> or an empty
-	 *             <code>String</code>.
+	 *             if ec2 is <tt>null</tt>.
 	 */
-	protected static void deleteSecurityGroup(AmazonEC2 ec2, String sSGName) {
+	protected static void deleteSecurityGroup(AmazonEC2 ec2, String sgname) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
-		if (sSGName == null || sSGName.length() == 0) {
+		if (sgname == null || sgname.length() == 0) {
 			return;
 		}
 
 		DeleteSecurityGroupRequest dsgreq = new DeleteSecurityGroupRequest();
-		dsgreq.withGroupName(sSGName);
+		dsgreq.withGroupName(sgname);
 
 		try {
-			log.trace("Deleting Security Group '" + sSGName + "' ...");
+			log.trace("Deleting Security Group '" + sgname + "' ...");
 			ec2.deleteSecurityGroup(dsgreq);
-			log.debug("Security Group '" + sSGName + "' deleted.");
+			log.debug("Security Group '" + sgname + "' deleted.");
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return;
 			} else {
 				throw Ex;
 			}
+		}
+	}
+
+	protected static NetworkDeviceName eth0 = createNetworkDeviceName("eth0");
+
+	private static NetworkDeviceName createNetworkDeviceName(String n) {
+		try {
+			return NetworkDeviceName.parseString(n);
+		} catch (IllegalNetworkDeviceNameException Ex) {
+			throw new RuntimeException(Ex);
 		}
 	}
 

@@ -49,7 +49,7 @@ abstract public class AbstractOperation implements ITask,
 	 */
 	public static final String TIMEOUT_ATTR = "timeout";
 
-	private AmazonEC2 _ec2 = null;
+	private AmazonEC2 _cloudConnection = null;
 	private InstanceController _instance = null;
 	private String _instanceId = null;
 	private Element _targetElement = null;
@@ -89,7 +89,8 @@ abstract public class AbstractOperation implements ITask,
 		}
 
 		// Initialize AmazonEC2 for the current region
-		setEc2(getAwsPlugInConfiguration().getAmazonEC2(getRegion()));
+		setCloudConnection(getAwsPlugInConfiguration().getCloudConnection(
+				getRegion()));
 
 		setInstance(createInstance());
 	}
@@ -111,7 +112,7 @@ abstract public class AbstractOperation implements ITask,
 	 * {@link AwsInstanceController}.
 	 */
 	public InstanceController newAwsInstanceController() {
-		return new AwsInstanceController(getEc2(), getInstanceId());
+		return new AwsInstanceController(getCloudConnection(), getInstanceId());
 	}
 
 	public IResourcesDescriptor getRD() {
@@ -155,17 +156,18 @@ abstract public class AbstractOperation implements ITask,
 		}
 	}
 
-	protected AmazonEC2 getEc2() {
-		return _ec2;
+	protected AmazonEC2 getCloudConnection() {
+		return _cloudConnection;
 	}
 
-	private AmazonEC2 setEc2(AmazonEC2 ec2) {
+	private AmazonEC2 setCloudConnection(AmazonEC2 ec2) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
-		AmazonEC2 previous = getEc2();
-		_ec2 = ec2;
+		AmazonEC2 previous = getCloudConnection();
+		_cloudConnection = ec2;
 		return previous;
 	}
 
@@ -203,8 +205,8 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	/**
-	 * @return the Aws Instance Id which is registered in the targeted Element
-	 *         Node (can be <code>null</code>).
+	 * @return the Instance Id which is registered in the targeted Element Node
+	 *         (can be <code>null</code>).
 	 */
 	protected String getInstanceId() {
 		return _instanceId;
@@ -214,25 +216,6 @@ abstract public class AbstractOperation implements ITask,
 		// can be null, if no AWS instance have been created yet
 		String previous = getInstanceId();
 		_instanceId = instanceID;
-		return previous;
-	}
-
-	public String getRegion() {
-		return _region;
-	}
-
-	@Attribute(name = REGION_ATTR)
-	public String setRegion(String region) throws AwsException {
-		if (region == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS Region Name).");
-		}
-		if (getAwsPlugInConfiguration().getAmazonEC2(region) == null) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_REGION_ATTR, region));
-		}
-		String previous = getRegion();
-		this._region = region;
 		return previous;
 	}
 
@@ -283,6 +266,25 @@ abstract public class AbstractOperation implements ITask,
 		}
 		String previous = getTarget();
 		_target = target;
+		return previous;
+	}
+
+	public String getRegion() {
+		return _region;
+	}
+
+	@Attribute(name = REGION_ATTR)
+	public String setRegion(String region) throws AwsException {
+		if (region == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String (an AWS Region Name).");
+		}
+		if (getAwsPlugInConfiguration().getCloudConnection(region) == null) {
+			throw new AwsException(Messages.bind(
+					Messages.MachineEx_INVALID_REGION_ATTR, region));
+		}
+		String previous = getRegion();
+		this._region = region;
 		return previous;
 	}
 

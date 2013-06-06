@@ -138,7 +138,7 @@ public class KeyPairRepository implements IFileBased {
 	 *             this Repository.
 	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase) throws IOException {
+			KeyPairSize size, String passphrase) throws IOException {
 		if (containsKeyPair(keyPairName)) {
 			return getKeyPair(keyPairName, passphrase);
 		}
@@ -152,7 +152,7 @@ public class KeyPairRepository implements IFileBased {
 		}
 		log.trace(Messages.bind(Messages.KeyPairRepoMsg_GENKEY_BEGIN,
 				keyPairName, getKeyPairRepositoryPath()));
-		keyGen.initialize(size, new SecureRandom());
+		keyGen.initialize(size.getValue(), new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
 				kp, passphrase);

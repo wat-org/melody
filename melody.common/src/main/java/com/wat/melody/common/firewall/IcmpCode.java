@@ -27,13 +27,13 @@ public class IcmpCode {
 	}
 
 	/**
+	 * @param iIcmpCode
 	 * 
-	 * @param sIcmpCode
-	 * 
-	 * @return
+	 * @return an {@link IcmpCode} object, which is equal to the given
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	public static IcmpCode parseInt(int iIcmpCode)
 			throws IllegalIcmpCodeException {
@@ -43,12 +43,15 @@ public class IcmpCode {
 	/**
 	 * @param sIcmpCode
 	 * 
-	 * @return
+	 * @return an {@link IcmpCode} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
+	 * @throws IllegalIcmpCodeException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static IcmpCode parseString(String sIcmpCode)
 			throws IllegalIcmpCodeException {
@@ -58,13 +61,10 @@ public class IcmpCode {
 	private int _value;
 
 	/**
-	 * 
-	 * @param sIcmpCode
-	 * 
-	 * @return
+	 * @param iIcmpCode
 	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	public IcmpCode(int iIcmpCode) throws IllegalIcmpCodeException {
 		setIcmpCode(iIcmpCode);
@@ -73,12 +73,12 @@ public class IcmpCode {
 	/**
 	 * @param sIcmpCode
 	 * 
-	 * @return
-	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
+	 * @throws IllegalIcmpCodeException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public IcmpCode(String sIcmpCode) throws IllegalIcmpCodeException {
 		setIcmpCode(sIcmpCode);
@@ -100,14 +100,13 @@ public class IcmpCode {
 			return true;
 		}
 		if (anObject instanceof IcmpCode) {
-			IcmpCode IcmpCode = (IcmpCode) anObject;
-			return getValue() == IcmpCode.getValue();
+			IcmpCode icmpCode = (IcmpCode) anObject;
+			return getValue() == icmpCode.getValue();
 		}
 		return false;
 	}
 
 	/**
-	 * 
 	 * @return the IcmpCode's value.
 	 */
 	public int getValue() {
@@ -115,13 +114,12 @@ public class IcmpCode {
 	}
 
 	/**
+	 * @param iIcmpCode
 	 * 
-	 * @param sIcmpCode
-	 * 
-	 * @return
+	 * @return the previous IcmpCode's value.
 	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	private int setIcmpCode(int iIcmpCode) throws IllegalIcmpCodeException {
 		if (iIcmpCode < -1) {
@@ -136,12 +134,14 @@ public class IcmpCode {
 	/**
 	 * @param sIcmpCode
 	 * 
-	 * @return
+	 * @return the previous IcmpCode's value.
 	 * 
 	 * @throws IllegalIcmpCodeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
+	 * @throws IllegalIcmpCodeException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	private int setIcmpCode(String sIcmpCode) throws IllegalIcmpCodeException {
 		if (sIcmpCode == null) {

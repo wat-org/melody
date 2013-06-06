@@ -11,7 +11,7 @@ public class Messages extends NLS {
 	public static String MgmtNetworkMethodEx_EMPTY;
 	public static String MgmtNetworkMethodEx_INVALID;
 
-	public static String NetworkDeviceNameListEx_DEVICE_ALREADY_DEFINE;
+	public static String NetworkDeviceListEx_DEVICE_ALREADY_DEFINE;
 
 	public static String NetworkDevLoaderEx_MISSING_ATTR;
 	public static String NetworkDevLoaderEx_GENERIC_ERROR;
@@ -27,10 +27,10 @@ public class Messages extends NLS {
 
 	public static String NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED;
 
-	public static String NetMgmtEx_NO_MGMT_NODE;
-	public static String NetMgmtEx_MGMT_NETWORK_NODE_SELECTOR_NOT_MATCH_NODE;
 	public static String NetMgmtEx_MISSING_ATTR;
 	public static String NetMgmtEx_INVALID_ATTR;
+	public static String NetMgmtEx_NO_MGMT_NODE;
+	public static String NetMgmtEx_MGMT_NETWORK_NODE_SELECTOR_NOT_MATCH_NODE;
 	public static String NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_SELECTOR;
 	public static String NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE;
 	public static String NetMgmtEx_NO_MGMT_NETWORK_DEVICE;

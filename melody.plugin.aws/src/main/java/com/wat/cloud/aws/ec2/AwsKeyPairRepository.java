@@ -10,6 +10,7 @@ import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.KeyPairSize;
 
 /**
  * <p>
@@ -92,8 +93,8 @@ public class AwsKeyPairRepository {
 	}
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase) throws AwsKeyPairRepositoryException,
-			IOException {
+			KeyPairSize size, String passphrase)
+			throws AwsKeyPairRepositoryException, IOException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);

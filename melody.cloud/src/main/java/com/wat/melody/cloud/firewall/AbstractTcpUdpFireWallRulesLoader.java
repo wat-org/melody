@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.firewall.Access;
@@ -9,7 +9,6 @@ import com.wat.melody.common.firewall.ComplexFireWallRule;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
-import com.wat.melody.common.firewall.NetworkDeviceNameRef;
 import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.network.IpRanges;
 import com.wat.melody.common.network.PortRanges;
@@ -27,54 +26,54 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Node, which define the source ports of the Fw
-	 * Rule.
+	 * XML attribute of a FwRule Element Node, which define the source ports of
+	 * the Fw Rule.
 	 */
 	public static final String FROM_PORTS_ATTR = "from-ports";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the destination ports of the
-	 * Fw Rule.
+	 * XML attribute of a FwRule Element Node, which define the destination
+	 * ports of the Fw Rule.
 	 */
 	public static final String TO_PORTS_ATTR = "to-ports";
 
-	protected PortRanges loadFromPorts(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, FROM_PORTS_ATTR);
+	protected PortRanges loadFromPorts(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, FROM_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
 					FROM_PORTS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected PortRanges loadToPorts(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, TO_PORTS_ATTR);
+	protected PortRanges loadToPorts(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, TO_PORTS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return PortRanges.parseString(v);
 		} catch (IllegalPortRangesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, TO_PORTS_ATTR);
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e, TO_PORTS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
 	/**
 	 * <p>
-	 * Find the TCP/UDP FireWall Rule {@link Node}s of the given Instance
-	 * {@link Node} and convert it into a {@link FireWallRulesPerDevice}.
+	 * Find the TCP/UDP FireWall Rule {@link Element}s of the given Instance
+	 * {@link Element} and convert it into a {@link FireWallRulesPerDevice}.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i>A TCP/UDP FireWall Rule <code>Node</code> must have the attributes :
+	 * A TCP/UDP FireWall Rule {@link Element} must have the attributes :
 	 * <ul>
-	 * <li>devices-name : which should contains {@link NetworkDeviceNameRef} ;</li>
+	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
 	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>to-ips : which should contains {@link IpRanges} :</li>
@@ -82,35 +81,32 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * <li>directions : which should contains {@link Directions} ;</li>
 	 * <li>allow : which should contains {@link Access} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
-	 * another FireWall Rule <code>Node</code>, which attributes will be used as
-	 * source ;</li>
+	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>
-	 * </i>
 	 * </p>
 	 * 
-	 * @param instanceNode
-	 *            is an Instance {@link Node}.
+	 * @param instanceElmt
+	 *            is an Instance {@link Element}.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <code>null</code> or is
-	 *             not an element {@link Node}.
+	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
-	 *             {@link Node}'s attribute is not valid, or the 'herit' XML
+	 *             {@link Element}'s attribute is not valid, or the 'herit' XML
 	 *             attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Element instanceNode)
+	public FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException {
-		NodeList nl = findFwRuleNodes(instanceNode);
+		NodeList nl = findFwRuleNodes(instanceElmt);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (int i = 0; i < nl.getLength(); i++) {
-			Element n = (Element) nl.item(i);
-			Directions dirs = loadDirection(n);
-			IpRanges fromIps = loadFromIps(n);
-			IpRanges toIps = loadToIps(n);
+			Element e = (Element) nl.item(i);
+			Directions dirs = loadDirection(e);
+			IpRanges fromIps = loadFromIps(e);
+			IpRanges toIps = loadToIps(e);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
@@ -125,17 +121,17 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 					continue;
 				}
 			}
-			PortRanges fromPorts = loadFromPorts(n);
-			PortRanges toPorts = loadToPorts(n);
-			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(n);
-			Access access = loadAccess(n);
+			PortRanges fromPorts = loadFromPorts(e);
+			PortRanges toPorts = loadToPorts(e);
+			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(e);
+			Access access = loadAccess(e);
 			fwrs.merge(refs,
 					newFwRule(fromIps, fromPorts, toIps, toPorts, dirs, access));
 		}
 		return fwrs;
 	}
 
-	public abstract NodeList findFwRuleNodes(Element instanceNode)
+	public abstract NodeList findFwRuleNodes(Element instanceElmt)
 			throws NodeRelatedException;
 
 	public abstract ComplexFireWallRule newFwRule(IpRanges fromIpRanges,

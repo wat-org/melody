@@ -127,7 +127,7 @@ public class AwsEc2CloudDisk {
 				Boolean isroot = devname.getValue().equals(
 						i.getRootDeviceName());
 				disks.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
-						isroot));
+						isroot, null, null, null));
 			}
 		} catch (IllegalDiskDeviceNameException
 				| IllegalDiskDeviceSizeException
@@ -506,9 +506,6 @@ public class AwsEc2CloudDisk {
 	 *            the Aws Instance which is the Disk onwer.
 	 * @param volumes
 	 *            contains the {@link DiskDeviceList} to detach and delete.
-	 * @param detachTimeout
-	 *            is the maximum time to wait for the detach operation to
-	 *            complete. 0 means ifinite.
 	 * 
 	 * @throws WaitVolumeStatusException
 	 *             if a volume is not detached in the given timeout.
@@ -520,13 +517,11 @@ public class AwsEc2CloudDisk {
 	 *             if ec2 is <code>null</code>.
 	 * @throws IllegalArgumentException
 	 *             if volumeList is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if timeout is a negative long.
 	 * @throws InterruptedException
 	 *             if the current thread is interrupted during this call.
 	 */
 	public static void detachAndDeleteDiskDevices(AmazonEC2 ec2,
-			Instance instance, DiskDeviceList volumes, long detachTimeout)
+			Instance instance, DiskDeviceList volumes)
 			throws InterruptedException, WaitVolumeStatusException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -545,9 +540,11 @@ public class AwsEc2CloudDisk {
 			detvres = ec2.detachVolume(detvreq);
 			String volumeId = detvres.getAttachment().getVolumeId();
 			if (!waitUntilVolumeStatusBecomes(ec2, volumeId,
-					VolumeState.AVAILABLE, detachTimeout, 5000)) {
+					VolumeState.AVAILABLE, disk.getDetachTimeout()
+							.getTimeoutInMillis(), 5000)) {
 				throw new WaitVolumeStatusException(disk, volumeId,
-						VolumeState.AVAILABLE, detachTimeout);
+						VolumeState.AVAILABLE, disk.getDetachTimeout()
+								.getTimeoutInMillis());
 			}
 			// Delete volume if deleteOnTermination is true
 			if (disk.isDeletedOnTermination()) {
@@ -579,12 +576,6 @@ public class AwsEc2CloudDisk {
 	 *            the {@link Volume}s will be created.
 	 * @param diskList
 	 *            contains the {@link DiskDevice}s to create and attach.
-	 * @param createTimeout
-	 *            is the maximum time to wait for the create operation to
-	 *            complete. 0 means ifinite.
-	 * @param attachTimeout
-	 *            is the maximum time to wait for the attach operation to
-	 *            complete. 0 means ifinite.
 	 * 
 	 * @throws WaitVolumeStatusException
 	 *             if a new volume is not available in the given timeout.
@@ -603,14 +594,11 @@ public class AwsEc2CloudDisk {
 	 *             if sAZ is <code>null</code> or an empty <code>String</code>.
 	 * @throws IllegalArgumentException
 	 *             if volumeList is <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if timeout is a negative long.
 	 * @throws InterruptedException
 	 *             if the current thread is interrupted during this call.
 	 */
 	public static void createAndAttachDiskDevices(AmazonEC2 ec2,
-			String sAwsInstanceId, String sAZ, DiskDeviceList diskList,
-			long createTimeout, long attachTimeout)
+			String sAwsInstanceId, String sAZ, DiskDeviceList diskList)
 			throws InterruptedException, WaitVolumeStatusException,
 			WaitVolumeAttachmentStatusException {
 		if (ec2 == null) {
@@ -636,9 +624,11 @@ public class AwsEc2CloudDisk {
 			cvreq.withSize(disk.getSize());
 			String sVolId = ec2.createVolume(cvreq).getVolume().getVolumeId();
 			if (!waitUntilVolumeStatusBecomes(ec2, sVolId,
-					VolumeState.AVAILABLE, createTimeout, 2000)) {
+					VolumeState.AVAILABLE, disk.getCreateTimeout()
+							.getTimeoutInMillis(), 2000)) {
 				throw new WaitVolumeStatusException(disk, sVolId,
-						VolumeState.AVAILABLE, createTimeout);
+						VolumeState.AVAILABLE, disk.getCreateTimeout()
+								.getTimeoutInMillis());
 			}
 			// Attach volume
 			AttachVolumeRequest avreq = new AttachVolumeRequest();
@@ -651,9 +641,11 @@ public class AwsEc2CloudDisk {
 			 * stay in state 'attaching' forever.
 			 */
 			if (!waitUntilVolumeAttachmentStatusBecomes(ec2, sVolId, 0,
-					VolumeAttachmentState.ATTACHED, attachTimeout, 2000)) {
+					VolumeAttachmentState.ATTACHED, disk.getAttachTimeout()
+							.getTimeoutInMillis(), 2000)) {
 				throw new WaitVolumeAttachmentStatusException(disk, sVolId, 0,
-						VolumeAttachmentState.ATTACHED, attachTimeout);
+						VolumeAttachmentState.ATTACHED, disk.getAttachTimeout()
+								.getTimeoutInMillis());
 			}
 		}
 	}

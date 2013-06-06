@@ -1,7 +1,10 @@
 package com.wat.melody.cloud.instance;
 
+import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.KeyPairSize;
+import com.wat.melody.common.timeout.GenericTimeout;
 
 /**
  * 
@@ -10,52 +13,98 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
  */
 public class InstanceDatas {
 
+	private InstanceDatasValidator _validator;
 	private String _region;
-	private InstanceType _instanceType;
+	private String _site;
 	private String _imageId;
+	private InstanceType _instanceType;
 	private KeyPairRepositoryPath _keyPairRepositoryPath;
 	private KeyPairName _keyPairName;
 	private String _passphrase;
-	private String _site;
-	private Long _createTimeout;
-	private Long _deleteTimeout;
-	private Long _startTimeout;
-	private Long _stopTimeout;
+	private KeyPairSize _keyPairSize;
+	private GenericTimeout _createTimeout;
+	private GenericTimeout _deleteTimeout;
+	private GenericTimeout _startTimeout;
+	private GenericTimeout _stopTimeout;
 
-	public InstanceDatas(String region, InstanceType type, String imageId,
+	public InstanceDatas(InstanceDatasValidator validator, String region,
+			String site, String imageId, InstanceType type,
 			KeyPairRepositoryPath kprp, KeyPairName kpn, String passphrase,
-			String site, Long createTimeout, Long deleteTimeout,
-			Long startTimeout, Long stopTimeout) {
+			KeyPairSize kps, GenericTimeout createTimeout,
+			GenericTimeout deleteTimeout, GenericTimeout startTimeout,
+			GenericTimeout stopTimeout) throws IllegalInstanceDatasException {
+		setValidator(validator);
+		// first set 'region', because members may need it to perform validation
 		setRegion(region);
-		setInstanceType(type);
+		setSite(site);
 		setImageId(imageId);
+		setInstanceType(type);
 		setKeyPairRepositoryPath(kprp);
 		setKeyPairName(kpn);
 		setPassphrase(passphrase);
-		setSite(site);
+		setKeyPairSize(kps);
 		setCreateTimeout(createTimeout);
 		setDeleteTimeout(deleteTimeout);
 		setStartTimeout(startTimeout);
 		setStopTimeout(stopTimeout);
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("region:");
+		str.append(getRegion());
+		str.append(", site:");
+		str.append(getSite());
+		str.append(", image-id:");
+		str.append(getImageId());
+		str.append(", instance-type:");
+		str.append(getInstanceType());
+		str.append(", keypair-reposiroty:");
+		str.append(getKeyPairRepositoryPath());
+		str.append(", keypair-name:");
+		str.append(getKeyPairName());
+		str.append(", passphrase:");
+		str.append(getPassphrase());
+		str.append(", keypair-size:");
+		str.append(getKeyPairSize());
+		str.append(" }");
+		return str.toString();
+	}
+
+	public InstanceDatasValidator getValidator() {
+		return _validator;
+	}
+
+	private InstanceDatasValidator setValidator(InstanceDatasValidator validator) {
+		if (validator == null) {
+			throw new IllegalArgumentException("null: Not accpeted. "
+					+ "Must be a valid "
+					+ InstanceDatasValidator.class.getCanonicalName() + ".");
+		}
+		InstanceDatasValidator previous = getValidator();
+		_validator = validator;
+		return previous;
+	}
+
 	public String getRegion() {
 		return _region;
 	}
 
-	private String setRegion(String region) {
+	private String setRegion(String region)
+			throws IllegalInstanceDatasException {
 		String previous = getRegion();
-		_region = region;
+		_region = getValidator().validateRegion(this, region);
 		return previous;
 	}
 
-	public InstanceType getInstanceType() {
-		return _instanceType;
+	public String getSite() {
+		return _site;
 	}
 
-	private InstanceType setInstanceType(InstanceType instanceType) {
-		InstanceType previous = getInstanceType();
-		_instanceType = instanceType;
+	private String setSite(String site) throws IllegalInstanceDatasException {
+		String previous = getSite();
+		_site = getValidator().validateSite(this, site);
 		return previous;
 	}
 
@@ -63,9 +112,21 @@ public class InstanceDatas {
 		return _imageId;
 	}
 
-	private String setImageId(String imageId) {
+	private String setImageId(String imageId)
+			throws IllegalInstanceDatasException {
 		String previous = getImageId();
-		_imageId = imageId;
+		_imageId = getValidator().validateImageId(this, imageId);
+		return previous;
+	}
+
+	public InstanceType getInstanceType() {
+		return _instanceType;
+	}
+
+	private InstanceType setInstanceType(InstanceType instanceType)
+			throws IllegalInstanceDatasException {
+		InstanceType previous = getInstanceType();
+		_instanceType = getValidator().validateInstanceType(this, instanceType);
 		return previous;
 	}
 
@@ -74,9 +135,11 @@ public class InstanceDatas {
 	}
 
 	private KeyPairRepositoryPath setKeyPairRepositoryPath(
-			KeyPairRepositoryPath keyPairRepository) {
+			KeyPairRepositoryPath keyPairRepository)
+			throws IllegalInstanceDatasException {
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		_keyPairRepositoryPath = keyPairRepository;
+		_keyPairRepositoryPath = getValidator().validateKeyPairRepositoryPath(
+				this, keyPairRepository);
 		return previous;
 	}
 
@@ -84,9 +147,10 @@ public class InstanceDatas {
 		return _keyPairName;
 	}
 
-	private KeyPairName setKeyPairName(KeyPairName keyPairName) {
+	private KeyPairName setKeyPairName(KeyPairName keyPairName)
+			throws IllegalInstanceDatasException {
 		KeyPairName previous = getKeyPairName();
-		_keyPairName = keyPairName;
+		_keyPairName = getValidator().validateKeyPairName(this, keyPairName);
 		return previous;
 	}
 
@@ -94,59 +158,65 @@ public class InstanceDatas {
 		return _passphrase;
 	}
 
-	private String setPassphrase(String passphrase) {
+	private String setPassphrase(String passphrase)
+			throws IllegalInstanceDatasException {
 		String previous = getPassphrase();
-		_passphrase = passphrase;
+		_passphrase = getValidator().validatePassphrase(this, passphrase);
 		return previous;
 	}
 
-	public String getSite() {
-		return _site;
+	public KeyPairSize getKeyPairSize() {
+		return _keyPairSize;
 	}
 
-	private String setSite(String site) {
-		String previous = getSite();
-		_site = site;
+	private KeyPairSize setKeyPairSize(KeyPairSize keyPairSize)
+			throws IllegalInstanceDatasException {
+		KeyPairSize previous = getKeyPairSize();
+		_keyPairSize = getValidator().validateKeyPairSize(this, keyPairSize);
 		return previous;
 	}
 
-	public Long getCreateTimeout() {
+	public GenericTimeout getCreateTimeout() {
 		return _createTimeout;
 	}
 
-	private Long setCreateTimeout(Long timeout) {
-		Long previous = getCreateTimeout();
-		_createTimeout = timeout;
+	private GenericTimeout setCreateTimeout(GenericTimeout timeout)
+			throws IllegalInstanceDatasException {
+		GenericTimeout previous = getCreateTimeout();
+		_createTimeout = getValidator().validateCreateTimeout(this, timeout);
 		return previous;
 	}
 
-	public Long getDeleteTimeout() {
+	public GenericTimeout getDeleteTimeout() {
 		return _deleteTimeout;
 	}
 
-	private Long setDeleteTimeout(Long timeout) {
-		Long previous = getDeleteTimeout();
-		_deleteTimeout = timeout;
+	private GenericTimeout setDeleteTimeout(GenericTimeout timeout)
+			throws IllegalInstanceDatasException {
+		GenericTimeout previous = getDeleteTimeout();
+		_deleteTimeout = getValidator().validateDeleteTimeout(this, timeout);
 		return previous;
 	}
 
-	public Long getStartTimeout() {
+	public GenericTimeout getStartTimeout() {
 		return _startTimeout;
 	}
 
-	private Long setStartTimeout(Long timeout) {
-		Long previous = getStartTimeout();
-		_startTimeout = timeout;
+	private GenericTimeout setStartTimeout(GenericTimeout timeout)
+			throws IllegalInstanceDatasException {
+		GenericTimeout previous = getStartTimeout();
+		_startTimeout = getValidator().validateStartTimeout(this, timeout);
 		return previous;
 	}
 
-	public Long getStopTimeout() {
+	public GenericTimeout getStopTimeout() {
 		return _stopTimeout;
 	}
 
-	private Long setStopTimeout(Long timeout) {
-		Long previous = getStopTimeout();
-		_stopTimeout = timeout;
+	private GenericTimeout setStopTimeout(GenericTimeout timeout)
+			throws IllegalInstanceDatasException {
+		GenericTimeout previous = getStopTimeout();
+		_stopTimeout = getValidator().validateStopTimeout(this, timeout);
 		return previous;
 	}
 

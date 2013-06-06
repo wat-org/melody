@@ -25,8 +25,8 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.keypair.KeyPairName;
 
 /**
@@ -730,8 +730,7 @@ public abstract class AwsEc2Cloud {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a " + Instance.class.getCanonicalName() + ".");
 		}
-		NetworkDeviceNameList netdevs = AwsEc2CloudNetwork.getNetworkDevices(
-				ec2, i);
+		NetworkDeviceList netdevs = AwsEc2CloudNetwork.getNetworkDevices(i);
 
 		TerminateInstancesRequest tireq = null;
 		tireq = new TerminateInstancesRequest();
@@ -743,9 +742,10 @@ public abstract class AwsEc2Cloud {
 			return waitUntilInstanceStatusBecomes(ec2, i.getInstanceId(),
 					InstanceState.TERMINATED, timeout, 0);
 		} finally {
-			for (NetworkDeviceName netdev : netdevs) {
-				AwsEc2CloudNetwork.deleteSecurityGroup(ec2,
-						AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev));
+			for (NetworkDevice netdev : netdevs) {
+				String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i,
+						netdev.getNetworkDeviceName());
+				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgname);
 			}
 		}
 	}

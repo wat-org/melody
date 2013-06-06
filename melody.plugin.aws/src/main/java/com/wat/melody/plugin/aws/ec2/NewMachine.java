@@ -187,14 +187,14 @@ public class NewMachine extends AbstractOperation {
 		// AZ must be validated AFTER the Aws Region is known
 		// AZ can be null
 		if (getAvailabilityZoneFullName() != null
-				&& !AwsEc2Cloud.availabilityZoneExists(getEc2(),
+				&& !AwsEc2Cloud.availabilityZoneExists(getCloudConnection(),
 						getAvailabilityZoneFullName())) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_INVALID_AVAILABILITYZONE_ATTR,
 					getAvailabilityZone(), getRegion()));
 		}
 		// imageId must be validated AFTER the Aws Region is known
-		if (!AwsEc2Cloud.imageIdExists(getEc2(), getImageId())) {
+		if (!AwsEc2Cloud.imageIdExists(getCloudConnection(), getImageId())) {
 			throw new AwsException(Messages.bind(
 					Messages.NewEx_INVALID_IMAGEID_ATTR, getImageId(),
 					getRegion()));
@@ -225,7 +225,7 @@ public class NewMachine extends AbstractOperation {
 	@Override
 	public InstanceController newAwsInstanceController() {
 		// create AwsInstanceControllerWithKeyPairManagement class ?
-		return new AwsInstanceController(getEc2(), getInstanceId()) {
+		return new AwsInstanceController(getCloudConnection(), getInstanceId()) {
 
 			public String createInstance(InstanceType type, String site,
 					String imageId, KeyPairName keyPairName, long createTimeout)

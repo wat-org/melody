@@ -1,7 +1,6 @@
 package com.wat.melody.plugin.aws.ec2;
 
 import com.wat.melody.api.Melody;
-import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.DiskDevicesLoader;
@@ -24,43 +23,10 @@ public class UpdateDiskDevices extends AbstractOperation {
 	 */
 	public static final String UPDATE_DISK_DEVICES = "update-disk-devices";
 
-	/**
-	 * Task's attribute, which specifies the timeout of the detachment
-	 * operation.
-	 */
-	public static final String DETACH_TIMEOUT_ATTR = "detach-timeout";
-
-	/**
-	 * Task's attribute, which specifies the timeout of the disk device's
-	 * creation operation.
-	 */
-	public static final String CREATE_TIMEOUT_ATTR = "create-timeout";
-
-	/**
-	 * Task's attribute, which specifies the timeout of the attachment
-	 * operation.
-	 */
-	public static final String ATTACH_TIMEOUT_ATTR = "attach-timeout";
-
 	private DiskDeviceList _diskDeviceList = null;
-	private long _detachTimeout;
-	private long _createTimeout;
-	private long _attachTimeout;
 
 	public UpdateDiskDevices() {
 		super();
-		try {
-			setDetachTimeout(getTimeout());
-			setCreateTimeout(getTimeout());
-			setAttachTimeout(getTimeout());
-		} catch (AwsException Ex) {
-			throw new RuntimeException("Unexpected error while setting "
-					+ "timeouts. "
-					+ "Because this value comes from the parent class, such "
-					+ "error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		}
 	}
 
 	@Override
@@ -81,12 +47,10 @@ public class UpdateDiskDevices extends AbstractOperation {
 
 		try {
 			getInstance().ensureInstanceDiskDevicesAreUpToDate(
-					getDiskDeviceList(), getCreateTimeout(),
-					getAttachTimeout(), getDetachTimeout());
+					getDiskDeviceList());
 		} catch (OperationException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateDiskDevEx_GENERIC_FAIL,
-					getTargetElementLocation()), Ex);
+			throw new AwsException(new NodeRelatedException(getTargetElement(),
+					Messages.UpdateDiskDevEx_GENERIC_FAIL, Ex));
 		}
 	}
 
@@ -102,51 +66,6 @@ public class UpdateDiskDevices extends AbstractOperation {
 		}
 		DiskDeviceList previous = getDiskDeviceList();
 		_diskDeviceList = dd;
-		return previous;
-	}
-
-	public long getDetachTimeout() {
-		return _detachTimeout;
-	}
-
-	@Attribute(name = DETACH_TIMEOUT_ATTR)
-	public long setDetachTimeout(long timeout) throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getDetachTimeout();
-		_detachTimeout = timeout;
-		return previous;
-	}
-
-	public long getCreateTimeout() {
-		return _createTimeout;
-	}
-
-	@Attribute(name = CREATE_TIMEOUT_ATTR)
-	public long setCreateTimeout(long timeout) throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getCreateTimeout();
-		_createTimeout = timeout;
-		return previous;
-	}
-
-	public long getAttachTimeout() {
-		return _attachTimeout;
-	}
-
-	@Attribute(name = ATTACH_TIMEOUT_ATTR)
-	public long setAttachTimeout(long timeout) throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getAttachTimeout();
-		_attachTimeout = timeout;
 		return previous;
 	}
 

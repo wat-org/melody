@@ -9,7 +9,9 @@ import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
+import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -52,9 +54,24 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 				.getPluginConfiguration(SshPlugInConfiguration.class);
 	}
 
+	private static KeyPairSize createKeyPairSize(int size) {
+		try {
+			return KeyPairSize.parseInt(size);
+		} catch (IllegalKeyPairSizeException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a KeyPairSize with value '" + size + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
 	// CONFIGURATION DIRECTIVES DEFAULT VALUES
 	public static final String DEFAULT_KNOWNHOSTS = ".ssh/known_hosts";
 	public static final String DEFAULT_KEYPAIR_REPO = ".ssh/";
+	public static final KeyPairSize DEFAULT_KEYPAIR_SIZE = createKeyPairSize(2048);
+	public static final boolean DEFAULT_MGMT_ENABLE = true;
 
 	// MANDATORY CONFIGURATION DIRECTIVE
 
@@ -82,9 +99,9 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 
 	private String _configurationFilePath;
 	private KeyPairRepositoryPath _keyPairRepo;
-	private int _keyPairSize = 2048;
+	private KeyPairSize _keyPairSize = DEFAULT_KEYPAIR_SIZE;
 	private ISshSessionConfiguration _sshSessionConfiguration;
-	private Boolean _mgmtEnable = true;
+	private Boolean _mgmtEnable = DEFAULT_MGMT_ENABLE;
 	private String _mgmtLogin;
 	private KeyPairName _mgmtKeyPairName;
 	private String _mgmtPassword;
@@ -383,7 +400,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ KeyPairRepositoryPath.class.getCanonicalName()
-					+ " (the KeyPair Repository Path).");
+					+ " (the default KeyPair Repository Path).");
 		}
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
 		_keyPairRepo = keyPairRepoPath;
@@ -395,7 +412,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + File.class.getCanonicalName()
-					+ " (the KeyPair Repository Path).");
+					+ " (the default KeyPair Repository Path).");
 		}
 		if (!keyPairRepoPath.isAbsolute()) {
 			// Resolve from this configuration File's parent location
@@ -415,7 +432,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the KeyPair Repository Path).");
+					+ " (the default KeyPair Repository Path).");
 		}
 		if (val.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
@@ -424,37 +441,36 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		return setKeyPairRepositoryPath(new File(val));
 	}
 
-	public int getKeyPairSize() {
+	public KeyPairSize getKeyPairSize() {
 		return _keyPairSize;
 	}
 
-	public int setKeyPairSize(int ival) {
-		if (ival < 1024) {
-			throw new IllegalArgumentException(Messages.bind(
-					Messages.ConfEx_INVALID_KEYPAIR_SIZE, ival));
+	public KeyPairSize setKeyPairSize(KeyPairSize keyPairSize) {
+		if (keyPairSize == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairSize.class.getCanonicalName()
+					+ ".");
 		}
-		int previous = getKeyPairSize();
-		_keyPairSize = ival;
+		KeyPairSize previous = getKeyPairSize();
+		_keyPairSize = keyPairSize;
 		return previous;
 	}
 
-	public int setKeyPairSize(String val)
+	public KeyPairSize setKeyPairSize(String val)
 			throws SshPlugInConfigurationException {
 		if (val == null) {
-			throw new IllegalArgumentException(Messages.bind(
-					Messages.ConfEx_INVALID_KEYPAIR_SIZE, val));
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the default KeyPair Size).");
 		}
 		if (val.trim().length() == 0) {
 			throw new SshPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
 		try {
-			return setKeyPairSize(Integer.parseInt(val));
-		} catch (NumberFormatException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_KEYPAIR_SIZE, val));
-		} catch (IllegalArgumentException Ex) {
-			throw new SshPlugInConfigurationException(Ex.getMessage());
+			return setKeyPairSize(KeyPairSize.parseString(val));
+		} catch (IllegalKeyPairSizeException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -475,8 +491,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		if (keyPairRepoPath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ KnownHostsRepositoryPath.class.getCanonicalName()
-					+ " (the KnownHosts Repository Path).");
+					+ KnownHostsRepositoryPath.class.getCanonicalName() + ".");
 		}
 		return setKnownHosts(KnownHostsRepository
 				.getKnownHostsRepository(keyPairRepoPath));
@@ -498,8 +513,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 			return setKnownHosts(new KnownHostsRepositoryPath(
 					knownHosts.getPath()));
 		} catch (KnownHostsRepositoryPathException | KnownHostsException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
-					Messages.ConfEx_INVALID_KNOWNHOSTS, knownHosts), Ex);
+			throw new SshPlugInConfigurationException(Ex);
 		}
 	}
 
@@ -744,7 +758,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	public KeyPairName setMgmtMasterKey(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
 					+ " (the management user's keypair name).");
 		}
 		KeyPairName previous = getManagementKeyPairName();

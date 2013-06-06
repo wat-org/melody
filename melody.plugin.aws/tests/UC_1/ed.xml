@@ -15,9 +15,9 @@
 				<tcp access="allow" directions="out" to-ips="§[string-join(melody:getManagementNetworkHost(//DB//instance),',')]§" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
-				<disk delete-on-termination="true" device="/dev/sda1" root-device="true"/>
-				<disk delete-on-termination="true" device="/dev/sdb" size="1 G"/>
-				<disk delete-on-termination="true" device="/dev/sdc" size="2 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
+				<disk delete-on-termination="true" device-name="/dev/sdb" size="1 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sdc" size="2 G"/>
 			</disk-devices>
 		</model>
 	
@@ -28,9 +28,9 @@
 				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getManagementNetworkHost(//WEB//instance),',')]§" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
-				<disk delete-on-termination="true" device="/dev/sda1" root-device="true"/>
-				<disk delete-on-termination="true" device="/dev/sdb" size="10 G"/>
-				<disk delete-on-termination="true" device="/dev/sdc" size="20 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
+				<disk delete-on-termination="true" device-name="/dev/sdb" size="10 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sdc" size="20 G"/>
 			</disk-devices>
 		</model>
 			
@@ -43,7 +43,7 @@
 					<tcp access="allow" directions="in" from-ips="all" to-ports="8080,8443"/>
 				</disk-devices>
 				<disk-devices>
-					<disk delete-on-termination="true" device="/dev/sdd" size="1 G"/>
+					<disk delete-on-termination="true" device-name="/dev/sdd" size="1 G"/>
 				</disk-devices>
 				<network-devices>
 					<interface device-name="eth0"/>

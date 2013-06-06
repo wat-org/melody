@@ -19,9 +19,9 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 public class UdpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 
 	@Override
-	public NodeList findFwRuleNodes(Element instanceNode)
+	public NodeList findFwRuleNodes(Element instanceElmt)
 			throws NodeRelatedException {
-		return FireWallManagementHelper.findUdpFireWallRules(instanceNode);
+		return FireWallManagementHelper.findUdpFireWallRules(instanceElmt);
 	}
 
 	@Override

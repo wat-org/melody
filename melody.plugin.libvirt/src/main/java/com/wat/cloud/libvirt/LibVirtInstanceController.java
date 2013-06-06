@@ -8,8 +8,8 @@ import com.wat.melody.cloud.instance.DefaultInstanceController;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -109,15 +109,14 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	}
 
 	@Override
-	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove,
-			long detachTimeout) throws OperationException, InterruptedException {
+	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove)
+			throws OperationException, InterruptedException {
 		LibVirtCloudDisk.detachAndDeleteDiskDevices(getInstance(), toRemove);
 	}
 
 	@Override
-	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd,
-			long createTimeout, long attachTimeout) throws OperationException,
-			InterruptedException {
+	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd)
+			throws OperationException, InterruptedException {
 		LibVirtCloudDisk.createAndAttachDiskDevices(getInstance(), toAdd);
 	}
 
@@ -131,48 +130,42 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	}
 
 	@Override
-	public NetworkDeviceNameList getInstanceNetworkDevices() {
+	public NetworkDeviceList getInstanceNetworkDevices() {
 		return LibVirtCloudNetwork.getNetworkDevices(getInstance());
 	}
 
 	@Override
-	public void detachInstanceNetworkDevices(NetworkDeviceNameList toRemove,
-			long detachTimeout) throws OperationException, InterruptedException {
-		for (NetworkDeviceName netDev : toRemove) {
-			LibVirtCloudNetwork.detachNetworkDevice(getInstance(), netDev);
+	public void detachInstanceNetworkDevices(NetworkDeviceList toRemove)
+			throws OperationException, InterruptedException {
+		for (NetworkDevice netdev : toRemove) {
+			LibVirtCloudNetwork.detachNetworkDevice(getInstance(), netdev);
 		}
 	}
 
 	@Override
-	public void attachInstanceNetworkDevices(NetworkDeviceNameList toAdd,
-			long attachTimeout) throws OperationException, InterruptedException {
-		for (NetworkDeviceName netDev : toAdd) {
-			LibVirtCloudNetwork.attachNetworkDevice(getInstance(), netDev);
+	public void attachInstanceNetworkDevices(NetworkDeviceList toAdd)
+			throws OperationException, InterruptedException {
+		for (NetworkDevice netdev : toAdd) {
+			LibVirtCloudNetwork.attachNetworkDevice(getInstance(), netdev);
 		}
 	}
 
 	@Override
-	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
-			NetworkDeviceName netdev) {
-		return LibVirtCloudNetwork.getNetworkDeviceDatas(getInstance(), netdev);
+	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netdev) {
+		return LibVirtCloudFireWall.getFireWallRules(getInstance(), netdev);
 	}
 
 	@Override
-	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return LibVirtCloudFireWall.getFireWallRules(getInstance(), netDev);
-	}
-
-	@Override
-	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
+	public void revokeInstanceFireWallRules(NetworkDeviceName netdev,
 			FireWallRules toRevoke) throws OperationException {
-		LibVirtCloudFireWall.revokeFireWallRules(getInstance(), netDev,
+		LibVirtCloudFireWall.revokeFireWallRules(getInstance(), netdev,
 				toRevoke);
 	}
 
 	@Override
-	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
+	public void authorizeInstanceFireWallRules(NetworkDeviceName netdev,
 			FireWallRules toAutorize) throws OperationException {
-		LibVirtCloudFireWall.authorizeFireWallRules(getInstance(), netDev,
+		LibVirtCloudFireWall.authorizeFireWallRules(getInstance(), netdev,
 				toAutorize);
 	}
 

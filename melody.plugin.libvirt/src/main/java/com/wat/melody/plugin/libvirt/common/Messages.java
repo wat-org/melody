@@ -11,23 +11,16 @@ public class Messages extends NLS {
 	public static String ConfEx_EMPTY_DIRECTIVE;
 	public static String ConfEx_INVALID_ENDPOINT_CONTEXT_ROOT;
 
-	public static String MachineEx_MISSING_REGION_ATTR;
-	public static String MachineEx_REGION_ERROR;
-	public static String MachineEx_INVALID_TIMEOUT_ATTR;
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_XPATH;
 	public static String MachineEx_INVALID_TARGET_ATTR_NO_NODE_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_MANY_NODES_MATCH;
 	public static String MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH;
-	public static String MachineEx_ENABLE_MANAGEMENT_ERROR;
-	public static String MachineEx_DISABLE_MANAGEMENT_ERROR;
-
-	public static String NewEx_MISSING_IMAGEID_ATTR;
-	public static String NewEx_IMAGEID_ERROR;
-	public static String NewEx_INVALID_IMAGEID_ATTR;
-	public static String NewEx_MISSING_INSTANCETYPE_ATTR;
-	public static String NewEx_INSTANCETYPE_ERROR;
-	public static String NewEx_MISSING_KEYPAIR_NAME_ATTR;
-	public static String NewEx_KEYPAIR_NAME_ERROR;
+	public static String MachineEx_MISSING_REGION_ATTR;
+	public static String MachineEx_INVALID_REGION_ATTR;
+	public static String MachineEx_MISSING_INSTANCETYPE_ATTR;
+	public static String MachineEx_MISSING_IMAGEID_ATTR;
+	public static String MachineEx_INVALID_IMAGEID_ATTR;
+	public static String MachineEx_MISSING_KEYPAIR_NAME_ATTR;
 
 	public static String CreateEx_GENERIC_FAIL;
 
@@ -37,9 +30,6 @@ public class Messages extends NLS {
 
 	public static String StopEx_GENERIC_FAIL;
 
-	public static String ResizeEx_MISSING_INSTANCETYPE_ATTR;
-	public static String ResizeEx_INSTANCETYPE_ERROR;
-	public static String ResizeEx_INVALID_INSTANCETYPE_ATTR;
 	public static String ResizeEx_GENERIC_FAIL;
 
 	public static String UpdateDiskDevEx_GENERIC_FAIL;

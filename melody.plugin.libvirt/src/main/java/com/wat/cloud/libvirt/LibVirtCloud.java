@@ -27,7 +27,8 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -608,15 +609,17 @@ public abstract class LibVirtCloud {
 			LibVirtCloudKeyPair.deassociateKeyPairToInstance(d);
 
 			// Release network devices
-			NetworkDeviceNameList netdevs = LibVirtCloudNetwork
+			NetworkDeviceList netdevs = LibVirtCloudNetwork
 					.getNetworkDevices(d);
-			for (NetworkDeviceName netdev : netdevs) {
-				String sSGName = LibVirtCloudNetwork
-						.getSecurityGroup(d, netdev);
+			for (NetworkDevice netdev : netdevs) {
+				NetworkDeviceName devname = netdev.getNetworkDeviceName();
+				String sSGName = LibVirtCloudNetwork.getSecurityGroup(d,
+						devname);
 				// Destroy the network filter
-				LibVirtCloudNetwork.deleteNetworkFilter(d, netdev);
+				LibVirtCloudNetwork.deleteNetworkFilter(d, devname);
 				// Release the @mac
-				String mac = LibVirtCloudNetwork.getDomainMacAddress(d, netdev);
+				String mac = LibVirtCloudNetwork
+						.getDomainMacAddress(d, devname);
 				LibVirtCloudNetwork.unregisterMacAddress(mac);
 				// Destroy the security group
 				LibVirtCloudNetwork.deleteSecurityGroup(cnx, sSGName);

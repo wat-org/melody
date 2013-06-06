@@ -19,10 +19,10 @@
 				<interface device-name="eth0"/>
 			</network-devices>
 			<disk-devices>
-				<disk delete-on-termination="true" device="/dev/sda1" root-device="true"/>
-				<disk delete-on-termination="true" device="/dev/sdb" size="8 G"/>
-				<disk delete-on-termination="true" device="/dev/sdc" size="4 G"/>
-				<disk delete-on-termination="true" device="/dev/sdd" size="20 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
+				<disk delete-on-termination="true" device-name="/dev/sdb" size="8 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sdc" size="4 G"/>
+				<disk delete-on-termination="true" device-name="/dev/sdd" size="20 G"/>
 			</disk-devices>
 		</instance>
 

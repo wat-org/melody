@@ -61,7 +61,7 @@ public abstract class LibVirtCloudDisk {
 				Boolean delonterm = true;
 				Boolean isroot = devname.getValue().equals("/dev/vda");
 				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
-						isroot));
+						isroot, null, null, null));
 			}
 			if (dl.size() == 0) {
 				throw new RuntimeException("Failed to build Domain '"

@@ -11,6 +11,7 @@ import com.wat.cloud.libvirt.exception.LibVirtKeyPairRepositoryException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.KeyPairSize;
 
 /**
  * <p>
@@ -93,7 +94,7 @@ public class LibVirtKeyPairRepository {
 	}
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			int size, String passphrase)
+			KeyPairSize size, String passphrase)
 			throws LibVirtKeyPairRepositoryException, IOException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,

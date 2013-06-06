@@ -35,32 +35,49 @@ public class Port {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link Port} object.
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must be an Integer, higher or equal to
-	 * <code>MIN_PORT</code> and lower or equal to <code>MAX_PORT</code>. <BR/>
-	 * </i>
+	 * Convert the given <tt>int</tt> to a {@link Port} object.
 	 * </p>
 	 * 
 	 * @param sPort
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>int</tt> to convert.
 	 * 
-	 * @return a <code>Port</code> object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link Port} object, whose equal to the given <tt>int</tt>.
 	 * 
 	 * @throws IllegalPortException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>Port</code>.
+	 *             if the given <tt>int</tt> is lower than {@link #MIN}.
+	 * @throws IllegalPortException
+	 *             if the given <tt>int</tt> is higher than {@link #MAX}.
+	 */
+	public static Port parseInt(int iPort) throws IllegalPortException {
+		return new Port(iPort);
+	}
+
+	/**
+	 * <p>
+	 * Convert the given <tt>String</tt> to a {@link Port} object.
+	 * </p>
+	 * 
+	 * @param sPort
+	 *            is the given <tt>String</tt> to convert.
+	 * 
+	 * @return a {@link Port} object, whose equal to the given <tt>String</tt>.
+	 * 
+	 * @throws IllegalPortException
+	 *             if the given <tt>String</tt> is not an <tt>Integer</tt>.
+	 * @throws IllegalPortException
+	 *             if the given <tt>String</tt> is lower than {@link #MIN}.
+	 * @throws IllegalPortException
+	 *             if the given <tt>String</tt> is higher than {@link #MAX}.
+	 * @throws IllegalPortException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static Port parseString(String sPort) throws IllegalPortException {
 		return new Port(sPort);
 	}
 
-	private int miValue;
+	private int _value;
 
 	public Port(String sPort) throws IllegalPortException {
 		setValue(sPort);
@@ -77,7 +94,7 @@ public class Port {
 
 	@Override
 	public String toString() {
-		return String.valueOf(miValue);
+		return String.valueOf(_value);
 	}
 
 	@Override
@@ -93,10 +110,10 @@ public class Port {
 	}
 
 	public int getValue() {
-		return miValue;
+		return _value;
 	}
 
-	public int setValue(int iPort) throws IllegalPortException {
+	private int setValue(int iPort) throws IllegalPortException {
 		if (iPort < _MIN) {
 			throw new IllegalPortException(Messages.bind(Messages.PortEx_LOW,
 					new Object[] { iPort, _MIN, _MAX }));
@@ -105,11 +122,11 @@ public class Port {
 					new Object[] { iPort, _MIN, _MAX }));
 		}
 		int previous = getValue();
-		miValue = iPort;
+		_value = iPort;
 		return previous;
 	}
 
-	public int setValue(String sPort) throws IllegalPortException {
+	private int setValue(String sPort) throws IllegalPortException {
 		if (sPort == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "

@@ -1,7 +1,7 @@
 package com.wat.melody.xpathextensions;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -12,16 +12,16 @@ public class XPathHelper {
 
 	/**
 	 * <p>
-	 * Look for given attribute in the Node and its herited parents. Return the
-	 * value of the first attribute found, where all XPath Expression have been
-	 * expanded.
+	 * Look for given attribute in the given {@link Element} and its herited
+	 * parents. Return the value of the first attribute found, where all XPath
+	 * Expression have been expanded.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Node} to search in.
+	 *            is the {@link Element} to search in.
 	 * @param sAttrName
 	 *            is the name of the attribute to found in the given
-	 *            {@link Node} and its herited parents.
+	 *            {@link Element} and its herited parents.
 	 * 
 	 * @return the value of the first attribute found, where all XPath
 	 *         Expression have been expanded.
@@ -37,16 +37,17 @@ public class XPathHelper {
 
 	/**
 	 * <p>
-	 * Look for given attribute in the Node and its herited parents. Return the
-	 * value of the first attribute found. The returned value is expanded or
-	 * not, regarding the value of the third boolean argument.
+	 * Look for given attribute in the given {@link Element} and its herited
+	 * parents. Return the value of the first attribute found. The returned
+	 * value is expanded or not, regarding the value of the third boolean
+	 * argument.
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Node} to search in.
+	 *            is the {@link Element} to search in.
 	 * @param sAttrName
 	 *            is the name of the attribute to found in the given
-	 *            {@link Node} and its herited parents.
+	 *            {@link Element} and its herited parents.
 	 * 
 	 * @return the value of the first attribute found. The returned value is
 	 *         expanded or not, regarding the value of the third boolean
@@ -59,11 +60,11 @@ public class XPathHelper {
 	 */
 	public static String getHeritedAttributeValue(Element n, String sAttrName,
 			boolean expand) throws NodeRelatedException {
-		Node attr = FilteredDocHelper.getHeritedAttribute(n, sAttrName);
+		Attr attr = FilteredDocHelper.getHeritedAttribute(n, sAttrName);
 		if (attr == null) {
 			return null;
 		}
-		String v = attr.getNodeValue();
+		String v = attr.getValue();
 		if (!expand || v == null) {
 			return v;
 		}

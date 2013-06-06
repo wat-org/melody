@@ -9,6 +9,10 @@ public class Messages extends NLS {
 	public static String KeyPairNameEx_EMPTY;
 	public static String KeyPairNameEx_INVALID;
 
+	public static String KeyPairSizeEx_EMPTY;
+	public static String KeyPairSizeEx_NOT_A_NUMBER;
+	public static String KeyPairSizeEx_TOO_SMALL;
+
 	public static String KeyPairRepoPathEx_INVALID_REPO_PATH;
 	public static String KeyPairRepoPathEx_FAILED_TO_CREATE_REPO;
 
@@ -16,7 +20,7 @@ public class Messages extends NLS {
 	public static String KeyPairRepoMsg_GENKEY_END;
 	public static String KeyPairRepoMsg_DELKEY_BEGIN;
 	public static String KeyPairRepoMsg_DELKEY_END;
-	
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

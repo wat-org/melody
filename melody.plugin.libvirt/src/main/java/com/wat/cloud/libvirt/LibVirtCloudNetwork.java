@@ -16,9 +16,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.instance.InstanceState;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
-import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceNameListException;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
@@ -56,30 +56,35 @@ public abstract class LibVirtCloudNetwork {
 		return doc;
 	}
 
-	public static NetworkDeviceNameList getNetworkDevices(Domain d) {
+	public static NetworkDeviceList getNetworkDevices(Domain d) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Domain.class.getCanonicalName()
 					+ ".");
 		}
 		try {
-			NetworkDeviceNameList ndl = new NetworkDeviceNameList();
+			NetworkDeviceList ndl = new NetworkDeviceList();
 			Doc doc = LibVirtCloud.getDomainXMLDesc(d);
 			NodeList nl = doc.evaluateAsNodeList("/domain/devices/interface"
 					+ "[@type='network']/filterref/@filter");
 			for (int i = 0; i < nl.getLength(); i++) {
 				String filter = nl.item(i).getNodeValue();
 				NetworkDeviceName netdev = getNetworkDeviceNameFromNetworkFilter(filter);
-				ndl.addNetworkDevice(netdev);
+				String mac = getDomainMacAddress(d, netdev);
+				String ip = getDomainIpAddress(mac);
+				String fqdn = getDomainDnsName(mac);
+				ndl.addNetworkDevice(new NetworkDevice(netdev, mac, ip, fqdn,
+						null, null, null, null));
 			}
 			if (ndl.size() == 0) {
 				throw new RuntimeException("Failed to build Domain '"
-						+ d.getName()
-						+ "' Network Device List. No Network Device found ");
+						+ d.getName() + "' Network Device List. "
+						+ "No Network Device found."
+						+ "There whould be at least one network device eth0.");
 			}
 			return ndl;
 		} catch (XPathExpressionException | LibvirtException
-				| IllegalNetworkDeviceNameListException Ex) {
+				| IllegalNetworkDeviceListException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -89,7 +94,7 @@ public abstract class LibVirtCloudNetwork {
 			+ "<source network='default'/>"
 			+ "</interface>";
 
-	public static void detachNetworkDevice(Domain d, NetworkDeviceName netdev) {
+	public static void detachNetworkDevice(Domain d, NetworkDevice netdev) {
 		if (netdev == null) {
 			return;
 		}
@@ -100,28 +105,28 @@ public abstract class LibVirtCloudNetwork {
 		}
 
 		try {
-			String sSGName = getSecurityGroup(d, netdev);
+			NetworkDeviceName devname = netdev.getNetworkDeviceName();
+			String sSGName = getSecurityGroup(d, devname);
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			String netDevName = netdev.getValue();
 
 			// Search network device @mac
-			String mac = getDomainMacAddress(d, netdev);
+			String mac = getDomainMacAddress(d, devname);
 			PropertySet vars = new PropertySet();
 			vars.put(new Property("vmMacAddr", mac));
 
 			// Detach the network device
-			log.trace("Detaching Network Device '" + netDevName
-					+ "' on Domain '" + sInstanceId + "' ...");
+			log.trace("Detaching Network Device '" + devname + "' on Domain '"
+					+ sInstanceId + "' ...");
 			int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
 					: 2;
 			d.detachDeviceFlags(XPathExpander.expand(
 					DETACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
-			log.debug("Network Device '" + netDevName
-					+ "' detached on Domain '" + sInstanceId + "'.");
+			log.debug("Network Device '" + devname + "' detached on Domain '"
+					+ sInstanceId + "'.");
 
 			// Destroy the network filter
-			deleteNetworkFilter(d, netdev);
+			deleteNetworkFilter(d, devname);
 
 			// Release the @mac
 			unregisterMacAddress(mac);
@@ -141,7 +146,7 @@ public abstract class LibVirtCloudNetwork {
 			+ "<filterref filter='§[vmName]§-§[eth]§-nwfilter'/>"
 			+ "</interface>";
 
-	public static void attachNetworkDevice(Domain d, NetworkDeviceName netdev) {
+	public static void attachNetworkDevice(Domain d, NetworkDevice netdev) {
 		if (netdev == null) {
 			return;
 		}
@@ -154,7 +159,7 @@ public abstract class LibVirtCloudNetwork {
 		try {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			String netDevName = netdev.getValue();
+			NetworkDeviceName devname = netdev.getNetworkDeviceName();
 			// Create a security group
 			String sSGName = newSecurityGroupName();
 			String sSGDesc = getSecurityGroupDescription();
@@ -165,43 +170,25 @@ public abstract class LibVirtCloudNetwork {
 			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
 			vars.put(new Property("vmName", sInstanceId));
 			vars.put(new Property("sgName", sSGName));
-			vars.put(new Property("eth", netDevName));
+			vars.put(new Property("eth", devname.getValue()));
 
 			// Create a network filter for the network device
 			createNetworkFilter(d, vars);
 
 			// Attach the network device
-			log.trace("Attaching Network Device '" + netDevName
-					+ "' on Domain '" + sInstanceId + "' ... MacAddress is '"
+			log.trace("Attaching Network Device '" + devname + "' on Domain '"
+					+ sInstanceId + "' ... MacAddress is '"
 					+ vars.getProperty("vmMacAddr").getValue() + "'.");
 			int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
 					: 2;
 			d.attachDeviceFlags(XPathExpander.expand(
 					ATTACH_NETWORK_DEVICE_XML_SNIPPET, null, vars), flag);
-			log.debug("Network Device '" + netDevName
-					+ "' attached on Domain '" + sInstanceId + "'.");
+			log.debug("Network Device '" + devname + "' attached on Domain '"
+					+ sInstanceId + "'.");
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
-	}
-
-	public static NetworkDeviceDatas getNetworkDeviceDatas(Domain d,
-			NetworkDeviceName netdev) {
-		if (d == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
-					+ ".");
-		}
-		if (netdev == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ NetworkDeviceName.class.getCanonicalName() + ".");
-		}
-
-		String mac = getDomainMacAddress(d, netdev);
-		return new NetworkDeviceDatas(mac, getDomainIpAddress(mac),
-				getDomainDnsName(mac), null, null);
 	}
 
 	public static String getDomainMacAddress(Domain d, NetworkDeviceName netdev) {

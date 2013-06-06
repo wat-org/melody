@@ -19,7 +19,8 @@ public class ProcessorException extends MelodyException {
 	}
 
 	public ProcessorException(String file, Throwable cause) {
-		super(cause.getMessage(), cause != null ? cause.getCause() : null);
+		super((cause != null) ? cause.getMessage() : null,
+				(cause != null) ? cause.getCause() : null);
 		setSourceFile(file);
 	}
 
@@ -43,7 +44,8 @@ public class ProcessorException extends MelodyException {
 
 	@Override
 	public String getMessage() {
-		return "[file:" + getSourceFile() + "] " + super.getMessage();
+		String msg = super.getMessage();
+		return "[file:" + getSourceFile() + "] " + (msg != null ? msg : "");
 	}
 
 }

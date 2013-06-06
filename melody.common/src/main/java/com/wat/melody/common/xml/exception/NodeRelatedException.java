@@ -22,7 +22,8 @@ public class NodeRelatedException extends MelodyException {
 	}
 
 	public NodeRelatedException(Node errorNode, Throwable cause) {
-		super(cause.getMessage(), cause != null ? cause.getCause() : null);
+		super((cause != null) ? cause.getMessage() : null,
+				(cause != null) ? cause.getCause() : null);
 		setErrorNode(errorNode);
 	}
 
@@ -45,7 +46,9 @@ public class NodeRelatedException extends MelodyException {
 
 	@Override
 	public String getMessage() {
-		return "[" + getErrorNodeLocationAsString() + "] " + super.getMessage();
+		String msg = super.getMessage();
+		return "[" + getErrorNodeLocationAsString() + "] "
+				+ (msg != null ? msg : "");
 	}
 
 	public String getErrorNodeLocationAsString() {

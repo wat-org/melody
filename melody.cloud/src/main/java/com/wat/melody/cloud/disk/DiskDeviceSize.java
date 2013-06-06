@@ -191,7 +191,7 @@ public class DiskDeviceSize {
 	private int setSize(String size) throws IllegalDiskDeviceSizeException {
 		if (size == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a String (a linux Disk Device size)");
+					+ "Must be a String (a Disk Device Size)");
 		}
 		if (size.trim().length() == 0) {
 			throw new IllegalDiskDeviceSizeException(Messages.bind(

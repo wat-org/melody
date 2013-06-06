@@ -2,8 +2,7 @@ package com.wat.melody.cloud.instance;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -50,24 +49,18 @@ public interface InstanceController {
 	public void ensureInstanceSizing(InstanceType targetType)
 			throws OperationException, InterruptedException;
 
-	public void ensureInstanceDiskDevicesAreUpToDate(
-			DiskDeviceList diskDeviceList, long createTimeout,
-			long attachTimeout, long detachTimeout) throws OperationException,
-			InterruptedException;
+	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
+			throws OperationException, InterruptedException;
 
 	public DiskDeviceList getInstanceDiskDevices();
 
-	public void ensureInstanceNetworkDevicesAreUpToDate(
-			NetworkDeviceNameList networkDeviceList, long attachTimeout,
-			long detachTimeout) throws OperationException, InterruptedException;
+	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
+			throws OperationException, InterruptedException;
 
-	public NetworkDeviceNameList getInstanceNetworkDevices();
-
-	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
-			NetworkDeviceName netdev);
+	public NetworkDeviceList getInstanceNetworkDevices();
 
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FireWallRulesPerDevice fireWallRules) throws OperationException,
+			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException;
 
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,

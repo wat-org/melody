@@ -33,12 +33,12 @@ public class Exec {
 	 */
 	public static final String COMMAND_ATTR = "command";
 
-	private String msCommand;
-	private File msFile;
-	private boolean mbTemplate;
+	private String _command;
+	private File _file;
+	private boolean _template;
 
 	public String getCommand() {
-		return msCommand;
+		return _command;
 	}
 
 	@Attribute(name = COMMAND_ATTR)
@@ -48,12 +48,12 @@ public class Exec {
 					+ "Must be a String (a shell command).");
 		}
 		String previous = getCommand();
-		msCommand = c;
+		_command = c;
 		return previous;
 	}
 
 	public File getFile() {
-		return msFile;
+		return _file;
 	}
 
 	@Attribute(name = FILE_ATTR)
@@ -64,18 +64,18 @@ public class Exec {
 		}
 		FS.validateFileExists(c.toString());
 		File previous = getFile();
-		msFile = c;
+		_file = c;
 		return previous;
 	}
 
 	public boolean getTemplate() {
-		return mbTemplate;
+		return _template;
 	}
 
 	@Attribute(name = TEMPLATE_ATTR)
 	public boolean setTemplate(boolean c) throws IllegalFileException {
 		boolean previous = getTemplate();
-		mbTemplate = c;
+		_template = c;
 		return previous;
 	}
 

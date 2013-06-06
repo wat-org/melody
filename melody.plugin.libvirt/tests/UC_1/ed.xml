@@ -12,9 +12,9 @@
 				<tcp herit="./environment/global-fwrules/ssh"/>
 			</firewall>
 			<disk-devices>
-				<disk delete-on-termination="true" device="/dev/vda" root-device="true"/>
-				<disk delete-on-termination="true" device="/dev/vdb" size="3 G"/>
-				<disk delete-on-termination="true" device="/dev/vdc" size="6 G"/>
+				<disk delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
+				<disk delete-on-termination="true" device-name="/dev/vdb" size="3 G"/>
+				<disk delete-on-termination="true" device-name="/dev/vdc" size="6 G"/>
 			</disk-devices>
 		</model>
 	</models>
@@ -28,9 +28,9 @@
 			<devices>
 				<if device-name="eth0"/>
 				<if device-name="eth1"/>
-				<disque delete-on-termination="true" device="/dev/vda" root-device="true"/>
-				<disque delete-on-termination="true" device="/dev/vdb" size="3 G"/>
-				<disque delete-on-termination="true" device="/dev/vdc" size="6 G"/>
+				<disque delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
+				<disque delete-on-termination="true" device-name="/dev/vdb" size="3 G"/>
+				<disque delete-on-termination="true" device-name="/dev/vdc" size="6 G"/>
 			</devices>
 			<parefeu>
 				<tcp herit="./environment/global-fwrules/ssh"/>

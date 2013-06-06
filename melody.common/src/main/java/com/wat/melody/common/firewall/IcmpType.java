@@ -27,13 +27,12 @@ public class IcmpType {
 	}
 
 	/**
+	 * @param iIcmpType
 	 * 
-	 * @param sIcmpType
-	 * 
-	 * @return
+	 * @return an {@link IcmpType}, which is equal to the given <tt>int</tt>.
 	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	public static IcmpType parseInt(int iIcmpType)
 			throws IllegalIcmpTypeException {
@@ -43,12 +42,14 @@ public class IcmpType {
 	/**
 	 * @param sIcmpType
 	 * 
-	 * @return
+	 * @return an {@link IcmpType}, which is equal to the given <tt>String</tt>.
 	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is empty.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static IcmpType parseString(String sIcmpType)
 			throws IllegalIcmpTypeException {
@@ -58,13 +59,10 @@ public class IcmpType {
 	private int _value;
 
 	/**
-	 * 
-	 * @param sIcmpType
-	 * 
-	 * @return
+	 * @param iIcmpType
 	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	public IcmpType(int iIcmpType) throws IllegalIcmpTypeException {
 		setIcmpType(iIcmpType);
@@ -73,12 +71,12 @@ public class IcmpType {
 	/**
 	 * @param sIcmpType
 	 * 
-	 * @return
-	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is empty.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public IcmpType(String sIcmpType) throws IllegalIcmpTypeException {
 		setIcmpType(sIcmpType);
@@ -100,14 +98,13 @@ public class IcmpType {
 			return true;
 		}
 		if (anObject instanceof IcmpType) {
-			IcmpType IcmpType = (IcmpType) anObject;
-			return getValue() == IcmpType.getValue();
+			IcmpType icmpType = (IcmpType) anObject;
+			return getValue() == icmpType.getValue();
 		}
 		return false;
 	}
 
 	/**
-	 * 
 	 * @return the IcmpType's value.
 	 */
 	public int getValue() {
@@ -115,13 +112,12 @@ public class IcmpType {
 	}
 
 	/**
+	 * @param iIcmpType
 	 * 
-	 * @param sIcmpType
-	 * 
-	 * @return
+	 * @return the previous IcmpType's value.
 	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < -1.
 	 */
 	private int setIcmpType(int iIcmpType) throws IllegalIcmpTypeException {
 		if (iIcmpType < -1) {
@@ -136,12 +132,14 @@ public class IcmpType {
 	/**
 	 * @param sIcmpType
 	 * 
-	 * @return
+	 * @return the previous IcmpType's value.
 	 * 
 	 * @throws IllegalIcmpTypeException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < -1.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is empty.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	private int setIcmpType(String sIcmpType) throws IllegalIcmpTypeException {
 		if (sIcmpType == null) {

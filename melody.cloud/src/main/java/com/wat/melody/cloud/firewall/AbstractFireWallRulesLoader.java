@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.firewall;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Directions;
@@ -24,102 +24,104 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public abstract class AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Node, which define the name of the device to
-	 * attache the Fw Rule to.
+	 * XML attribute of a FwRule Element Node, which define the name of the
+	 * device to attache the Fw Rule to.
 	 */
 	public static final String DEVICES_NAME_ATTR = "devices-name";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the source ips of the Fw
-	 * Rule.
+	 * XML attribute of a FwRule Element Node, which define the source ips of
+	 * the Fw Rule.
 	 */
 	public static final String FROM_IPS_ATTR = "from-ips";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the destination ips of the
-	 * Fw Rule.
+	 * XML attribute of a FwRule Element Node, which define the destination ips
+	 * of the Fw Rule.
 	 */
 	public static final String TO_IPS_ATTR = "to-ips";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the directions of the flow.
+	 * XML attribute of a FwRule Element Node, which define the directions of
+	 * the flow.
 	 */
 	public static final String DIRECTIONS_ATTR = "directions";
 
 	/**
-	 * XML attribute of a FwRule Node, which define the action to perform.
+	 * XML attribute of a FwRule Element Node, which define the action to
+	 * perform.
 	 */
 	public static final String ACCESS_ATTR = "access";
 
-	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Element n)
+	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, DEVICES_NAME_ATTR);
+		String v = XPathHelper.getHeritedAttributeValue(e, DEVICES_NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return NetworkDeviceNameRefs.ALL;
 		}
 		try {
 			return NetworkDeviceNameRefs.parseString(v);
 		} catch (IllegalNetworkDeviceNameRefsException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
 					DEVICES_NAME_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected IpRanges loadFromIps(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, FROM_IPS_ATTR);
+	protected IpRanges loadFromIps(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, FROM_IPS_ATTR);
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e, FROM_IPS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected IpRanges loadToIps(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, TO_IPS_ATTR);
+	protected IpRanges loadToIps(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return IpRanges.parseString(v);
 		} catch (IllegalIpRangesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, TO_IPS_ATTR);
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e, TO_IPS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected Directions loadDirection(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, DIRECTIONS_ATTR);
+	protected Directions loadDirection(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, DIRECTIONS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Directions.parseString(v);
 		} catch (IllegalDirectionsException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n,
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
 					DIRECTIONS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	protected Access loadAccess(Element n) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(n, ACCESS_ATTR);
+	protected Access loadAccess(Element e) throws NodeRelatedException {
+		String v = XPathHelper.getHeritedAttributeValue(e, ACCESS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
 		try {
 			return Access.parseString(v);
 		} catch (IllegalAccessException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(n, ACCESS_ATTR);
+			Attr attr = FilteredDocHelper.getHeritedAttribute(e, ACCESS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}
 
-	public abstract FireWallRulesPerDevice load(Element instanceNode)
+	public abstract FireWallRulesPerDevice load(Element instanceElement)
 			throws NodeRelatedException;
 
 }

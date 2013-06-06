@@ -53,7 +53,7 @@ public abstract class NetworkManagementHelper {
 	 * Default XPath Expression to select Network Devices.
 	 */
 	public static final String DEFAULT_NETOWRK_DEVICE_NODES_SELECTOR = "//"
-			+ NetworkDeviceNamesLoader.INTERFACE_NE;
+			+ NetworkDevicesLoader.INTERFACE_NE;
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -65,7 +65,7 @@ public abstract class NetworkManagementHelper {
 	 * Default XPath Expression to select Network Device Management Node
 	 */
 	public static final String DEFAULT_NETOWRK_MGMT_DEVICE_NODE_CRITERIA = "@"
-			+ NetworkDeviceNamesLoader.DEVICE_NAME_ATTR + "='eth0'";
+			+ NetworkDevicesLoader.DEVICE_NAME_ATTR + "='eth0'";
 
 	/**
 	 * XML attribute of the Network Device Management Node, which contains the
@@ -81,35 +81,24 @@ public abstract class NetworkManagementHelper {
 	public static final String DEFAULT_NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR = "ip";
 
 	/**
-	 * <p>
-	 * Return the {@link List} of Network Device Management {@link Node} related
-	 * to the given {@link List} of Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNode
-	 *            is a {@link List} of Instance {@link Node}.
+	 *            is a {@link List} of Instance {@link Element}.
 	 * 
-	 * @return <ul>
-	 *         <li>The Network Device Management {@link Node} related to the
-	 *         given Instance {@link Node}, if one Network Device Management
-	 *         {@link Node} is found ;</li>
-	 *         <li>The last Network Device Management {@link Node} related to
-	 *         the given Instance {@link Node}, if multiple Network Device
-	 *         Management {@link Node} were found ;</li>
-	 *         </ul>
+	 * @return a {@link List} of Network Device Management {@link Element}
+	 *         related to the given {@link List} of Instance {@link Element}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link List} of Instance {@link Node} is
+	 *             if the given {@link List} of Instance {@link Element} is
 	 *             <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if any Instance {@link Node} has no Network Device Management
-	 *             {@link Node}.
+	 *             if any Instance {@link Element} has no Network Device
+	 *             Management {@link Element}.
 	 */
 	public static List<Element> findNetworkManagementNode(
 			List<Element> instanceNodes) throws NodeRelatedException {
 		if (instanceNodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List of Instance Node.");
+					+ "Must be a valid List of Instance Element.");
 		}
 		List<Element> hl = new ArrayList<Element>();
 		for (Element instanceNode : instanceNodes) {
@@ -119,27 +108,25 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Device Management {@link Node} related to the given
-	 * Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNode
-	 *            is an Instance {@link Node}.
+	 *            is an Instance {@link Element}.
 	 * 
 	 * @return <ul>
-	 *         <li>The Network Device Management {@link Node} related to the
-	 *         given Instance {@link Node}, if one Network Device Management
-	 *         {@link Node} is found ;</li>
-	 *         <li>The last Network Device Management {@link Node} related to
-	 *         the given Instance {@link Node}, if multiple Network Device
-	 *         Management {@link Node} were found ;</li>
+	 *         <li>The Network Device Management {@link Element} related to the
+	 *         given Instance {@link Element}, if one Network Device Management
+	 *         {@link Element} is found ;</li>
+	 *         <li>The last Network Device Management {@link Element} related to
+	 *         the given Instance {@link Element}, if multiple Network Device
+	 *         Management {@link Element} were found ;</li>
 	 *         </ul>
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Node} is <tt>null</tt>.
+	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if no Network Device Management {@link Node} can be found.
+	 *             if no Network Device Management {@link Element} can be found.
+	 * @throws NodeRelatedException
+	 *             if Network Device Management Selector doesn't select an
+	 *             {@link Element}.
 	 */
 	public static Element findNetworkManagementNode(Element instanceNode)
 			throws NodeRelatedException {
@@ -1119,7 +1106,7 @@ public abstract class NetworkManagementHelper {
 		String sAllNetDevSelector = getNetworkDevicesSelector(mgmtNode);
 		String sNetDevCriteria = "";
 		if (netDevName != null) {
-			sNetDevCriteria = "[@" + NetworkDeviceNamesLoader.DEVICE_NAME_ATTR
+			sNetDevCriteria = "[@" + NetworkDevicesLoader.DEVICE_NAME_ATTR
 					+ "='" + netDevName + "']";
 		}
 		String sNetDevSelector = "." + sAllNetDevSelector + sNetDevCriteria;
@@ -1248,13 +1235,13 @@ public abstract class NetworkManagementHelper {
 		} catch (NullPointerException Ex) {
 			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
-			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
+			String attr = NetworkDevicesLoader.DEVICE_NAME_ATTR;
 			throw new NodeRelatedException(netNode, Messages.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			Element netNode = getManagementNetworkDeviceNode(instanceNode,
 					mgmtNode);
-			String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
+			String attr = NetworkDevicesLoader.DEVICE_NAME_ATTR;
 			throw new NodeRelatedException(netNode, Messages.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
@@ -1361,7 +1348,7 @@ public abstract class NetworkManagementHelper {
 	public static Attr getManagementNetworkDeviceNameNode(Element instanceNode,
 			Element mgmtNode) throws NodeRelatedException {
 		Element netNode = getManagementNetworkDeviceNode(instanceNode, mgmtNode);
-		String attr = NetworkDeviceNamesLoader.DEVICE_NAME_ATTR;
+		String attr = NetworkDevicesLoader.DEVICE_NAME_ATTR;
 		return netNode.getAttributeNode(attr);
 	}
 

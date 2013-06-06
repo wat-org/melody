@@ -23,7 +23,7 @@
 				<icmp access="allow" codes="all" directions="in" from-ips="all" types="0,8"/>
 			</firewall>
 			<disk-devices>
-				<disk delete-on-termination="true" device="/dev/vda" root-device="true"/>
+				<disk delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
 			</disk-devices>
 		</model>
 	</models>

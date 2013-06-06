@@ -6,7 +6,8 @@ import org.apache.commons.logging.LogFactory;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -199,10 +200,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			long timeout, long sleepfirst) throws InterruptedException;
 
 	@Override
-	public void ensureInstanceDiskDevicesAreUpToDate(
-			DiskDeviceList diskDeviceList, long createTimeout,
-			long attachTimeout, long detachTimeout) throws OperationException,
-			InterruptedException {
+	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
+			throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateDiskDevMsg_NO_INSTANCE);
 		} else if (!instanceExists()) {
@@ -212,13 +211,11 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
-			updateInstanceDiskDevices(diskDeviceList, createTimeout,
-					attachTimeout, detachTimeout);
+			updateInstanceDiskDevices(list);
 		}
 	}
 
-	public void updateInstanceDiskDevices(DiskDeviceList target,
-			long createTimeout, long attachTimeout, long detachTimeout)
+	public void updateInstanceDiskDevices(DiskDeviceList target)
 			throws OperationException, InterruptedException {
 		DiskDeviceList current = getInstanceDiskDevices();
 		try {
@@ -235,28 +232,26 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
 				getInstanceId(), current, target, disksToAdd, disksToRemove));
 
-		detachAndDeleteInstanceDiskDevices(disksToRemove, detachTimeout);
-		createAndAttachDiskInstanceDevices(disksToAdd, createTimeout,
-				attachTimeout);
+		detachAndDeleteInstanceDiskDevices(disksToRemove);
+		createAndAttachDiskInstanceDevices(disksToAdd);
 
 		updateInstanceDiskDevicesDeleteOnTerminationFlag(target);
 	}
 
 	public abstract void detachAndDeleteInstanceDiskDevices(
-			DiskDeviceList disksToRemove, long detachTimeout)
-			throws OperationException, InterruptedException;
+			DiskDeviceList disksToRemove) throws OperationException,
+			InterruptedException;
 
 	public abstract void createAndAttachDiskInstanceDevices(
-			DiskDeviceList disksToAdd, long createTimeout, long attachTimeout)
-			throws OperationException, InterruptedException;
+			DiskDeviceList disksToAdd) throws OperationException,
+			InterruptedException;
 
 	public abstract void updateInstanceDiskDevicesDeleteOnTerminationFlag(
 			DiskDeviceList diskList);
 
 	@Override
-	public void ensureInstanceNetworkDevicesAreUpToDate(
-			NetworkDeviceNameList networkDeviceList, long attachTimeout,
-			long detachTimeout) throws OperationException, InterruptedException {
+	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
+			throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
 			fireInstanceStopped();
 			log.warn(Messages.UpdateNetDevMsg_NO_INSTANCE);
@@ -267,41 +262,39 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateNetDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
-			updateInstanceNetworkDevices(networkDeviceList, attachTimeout,
-					detachTimeout);
+			updateInstanceNetworkDevices(list);
 			if (instanceRuns()) {
 				fireInstanceStarted();
 			}
 		}
 	}
 
-	public void updateInstanceNetworkDevices(NetworkDeviceNameList target,
-			long detachTimeout, long attachTimeout) throws OperationException,
-			InterruptedException {
-		NetworkDeviceNameList current = getInstanceNetworkDevices();
-		NetworkDeviceNameList toAdd = null;
-		NetworkDeviceNameList toRemove = null;
+	public void updateInstanceNetworkDevices(NetworkDeviceList target)
+			throws OperationException, InterruptedException {
+		NetworkDeviceList current = getInstanceNetworkDevices();
+		NetworkDeviceList toAdd = null;
+		NetworkDeviceList toRemove = null;
 		toAdd = current.delta(target);
 		toRemove = target.delta(current);
 
 		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
 				getInstanceId(), current, target, toAdd, toRemove));
 
-		detachInstanceNetworkDevices(toRemove, detachTimeout);
-		attachInstanceNetworkDevices(toAdd, attachTimeout);
+		detachInstanceNetworkDevices(toRemove);
+		attachInstanceNetworkDevices(toAdd);
 	}
 
 	public abstract void detachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToRemove, long detachTimeout)
-			throws OperationException, InterruptedException;
+			NetworkDeviceList netDevivesToRemove) throws OperationException,
+			InterruptedException;
 
 	public abstract void attachInstanceNetworkDevices(
-			NetworkDeviceNameList netDevivesToAdd, long attachTimeout)
-			throws OperationException, InterruptedException;
+			NetworkDeviceList netDevivesToAdd) throws OperationException,
+			InterruptedException;
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FireWallRulesPerDevice fireWallRules) throws OperationException,
+			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateFireWallMsg_NO_INSTANCE);
@@ -312,26 +305,26 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateFireWallEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
-			updateInstanceFireWallRules(fireWallRules);
+			updateInstanceFireWallRules(list);
 		}
 	}
 
 	public void updateInstanceFireWallRules(FireWallRulesPerDevice target)
 			throws OperationException, InterruptedException {
-		NetworkDeviceNameList netdevs = getInstanceNetworkDevices();
-		for (NetworkDeviceName netdev : netdevs) {
-			FireWallRules current = getInstanceFireWallRules(netdev);
-			FireWallRules expected = target.getFireWallRules(netdev);
+		NetworkDeviceList netdevs = getInstanceNetworkDevices();
+		for (NetworkDevice netdev : netdevs) {
+			NetworkDeviceName devname = netdev.getNetworkDeviceName();
+			FireWallRules current = getInstanceFireWallRules(devname);
+			FireWallRules expected = target.getFireWallRules(devname);
 			FireWallRules toAdd = current.delta(expected);
 			FireWallRules toRemove = expected.delta(current);
 
-			log.info(Messages
-					.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
-							getInstanceId(), netdev, current, expected, toAdd,
-							toRemove));
+			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
+					getInstanceId(), devname, current, expected, toAdd,
+					toRemove));
 
-			revokeInstanceFireWallRules(netdev, toRemove);
-			authorizeInstanceFireWallRules(netdev, toAdd);
+			revokeInstanceFireWallRules(devname, toRemove);
+			authorizeInstanceFireWallRules(devname, toAdd);
 		}
 	}
 

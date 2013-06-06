@@ -3,6 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
@@ -29,11 +30,11 @@ public class StopMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsStoped(getTimeout());
+			getInstance().ensureInstanceIsStoped(
+					getInstanceDatas().getStopTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.StopEx_GENERIC_FAIL, getTargetElementLocation()),
-					Ex);
+			throw new LibVirtException(new NodeRelatedException(
+					getTargetElement(), Messages.StopEx_GENERIC_FAIL, Ex));
 		}
 	}
 

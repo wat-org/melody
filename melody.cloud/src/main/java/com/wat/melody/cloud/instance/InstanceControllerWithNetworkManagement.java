@@ -6,8 +6,7 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.NetworkManager;
 import com.wat.melody.cloud.network.NetworkManagerFactory;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
@@ -173,12 +172,9 @@ public class InstanceControllerWithNetworkManagement extends
 	}
 
 	@Override
-	public void ensureInstanceDiskDevicesAreUpToDate(
-			DiskDeviceList diskDeviceList, long createTimeout,
-			long attachTimeout, long detachTimeout) throws OperationException,
-			InterruptedException {
-		getInstance().ensureInstanceDiskDevicesAreUpToDate(diskDeviceList,
-				createTimeout, attachTimeout, detachTimeout);
+	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
+			throws OperationException, InterruptedException {
+		getInstance().ensureInstanceDiskDevicesAreUpToDate(list);
 	}
 
 	@Override
@@ -187,29 +183,21 @@ public class InstanceControllerWithNetworkManagement extends
 	}
 
 	@Override
-	public void ensureInstanceNetworkDevicesAreUpToDate(
-			NetworkDeviceNameList networkDeviceList, long attachTimeout,
-			long detachTimeout) throws OperationException, InterruptedException {
-		getInstance().ensureInstanceNetworkDevicesAreUpToDate(
-				networkDeviceList, attachTimeout, detachTimeout);
+	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
+			throws OperationException, InterruptedException {
+		getInstance().ensureInstanceNetworkDevicesAreUpToDate(list);
 	}
 
 	@Override
-	public NetworkDeviceNameList getInstanceNetworkDevices() {
+	public NetworkDeviceList getInstanceNetworkDevices() {
 		return getInstance().getInstanceNetworkDevices();
 	}
 
 	@Override
-	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
-			NetworkDeviceName netdev) {
-		return getInstance().getInstanceNetworkDeviceDatas(netdev);
-	}
-
-	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
-			FireWallRulesPerDevice fireWallRules) throws OperationException,
+			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException {
-		getInstance().ensureInstanceFireWallRulesAreUpToDate(fireWallRules);
+		getInstance().ensureInstanceFireWallRulesAreUpToDate(list);
 	}
 
 	@Override

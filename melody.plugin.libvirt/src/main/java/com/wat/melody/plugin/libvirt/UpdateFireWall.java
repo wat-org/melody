@@ -49,9 +49,9 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 		try {
 			getInstance().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
 		} catch (OperationException Ex) {
-			throw new LibVirtException(Messages.bind(
-					Messages.UpdateFireWallEx_GENERIC_FAIL,
-					getTargetElementLocation()), Ex);
+			throw new LibVirtException(new NodeRelatedException(
+					getTargetElement(), Messages.UpdateFireWallEx_GENERIC_FAIL,
+					Ex));
 		}
 	}
 

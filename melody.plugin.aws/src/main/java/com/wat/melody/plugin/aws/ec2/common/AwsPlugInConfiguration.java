@@ -58,11 +58,11 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	private String _accessKey;
 	private String _secretKey;
 	private ClientConfiguration _clientConfiguration;
-	private Map<String, AmazonEC2> _ec2Pool;
+	private Map<String, AmazonEC2> _connectionPool;
 
 	public AwsPlugInConfiguration() {
 		setCC(new ClientConfiguration());
-		setPooledEc2s(new Hashtable<String, AmazonEC2>());
+		setConnectionPool(new Hashtable<String, AmazonEC2>());
 	}
 
 	@Override
@@ -329,18 +329,20 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		return previous;
 	}
 
-	public Map<String, AmazonEC2> getPooledEc2s() {
-		return _ec2Pool;
+	public Map<String, AmazonEC2> getConnectionPool() {
+		return _connectionPool;
 	}
 
-	public Map<String, AmazonEC2> setPooledEc2s(Map<String, AmazonEC2> ec2s) {
+	public Map<String, AmazonEC2> setConnectionPool(Map<String, AmazonEC2> ec2s) {
 		if (ec2s == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Map<String, AmazonEC2> (a map which "
+					+ "Must be a valid " + Map.class.getCanonicalName() + "<"
+					+ String.class.getCanonicalName() + ", "
+					+ AmazonEC2.class.getCanonicalName() + "> (a map which "
 					+ "contains pooled AmazonEc2, by region).");
 		}
-		Map<String, AmazonEC2> previous = getPooledEc2s();
-		_ec2Pool = ec2s;
+		Map<String, AmazonEC2> previous = getConnectionPool();
+		_connectionPool = ec2s;
 		return previous;
 	}
 
@@ -743,11 +745,6 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	/**
-	 * <p>
-	 * Get a {@link AmazonEC2} object which is already configured for the
-	 * requested region.
-	 * </p>
-	 * 
 	 * @param region
 	 *            is the requested region.
 	 * 
@@ -760,24 +757,24 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 * @throws AmazonClientException
 	 *             if the operation fails.
 	 */
-	public AmazonEC2 getAmazonEC2(String region) {
+	public AmazonEC2 getCloudConnection(String region) {
 		if (region == null) {
 			return null;
 		}
-		AmazonEC2 ec2 = null;
-		if (getPooledEc2s().containsKey(region)) {
-			ec2 = getPooledEc2s().get(region);
+		AmazonEC2 connect = null;
+		if (getConnectionPool().containsKey(region)) {
+			connect = getConnectionPool().get(region);
 		}
-		if (ec2 == null) {
-			ec2 = new AmazonEC2Client(this, getCC());
-			String ep = AwsEc2Cloud.getEndpoint(ec2, region);
+		if (connect == null) {
+			connect = new AmazonEC2Client(this, getCC());
+			String ep = AwsEc2Cloud.getEndpoint(connect, region);
 			if (ep == null) {
 				return null;
 			}
-			ec2.setEndpoint(ep);
-			getPooledEc2s().put(region, ec2);
+			connect.setEndpoint(ep);
+			getConnectionPool().put(region, connect);
 		}
-		return ec2;
+		return connect;
 	}
 
 }

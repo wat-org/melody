@@ -10,8 +10,7 @@ import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
-import com.wat.melody.cloud.network.NetworkDeviceDatas;
-import com.wat.melody.cloud.network.NetworkDeviceNameList;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -128,11 +127,11 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove,
-			long detachTimeout) throws OperationException, InterruptedException {
+	public void detachAndDeleteInstanceDiskDevices(DiskDeviceList toRemove)
+			throws OperationException, InterruptedException {
 		try {
 			AwsEc2CloudDisk.detachAndDeleteDiskDevices(getConnection(),
-					getInstance(), toRemove, detachTimeout);
+					getInstance(), toRemove);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_DETACH, Ex.getVolumeId(),
@@ -141,13 +140,12 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd,
-			long createTimeout, long attachTimeout) throws OperationException,
-			InterruptedException {
+	public void createAndAttachDiskInstanceDevices(DiskDeviceList toAdd)
+			throws OperationException, InterruptedException {
 		String sAZ = getInstance().getPlacement().getAvailabilityZone();
 		try {
 			AwsEc2CloudDisk.createAndAttachDiskDevices(getConnection(),
-					getInstanceId(), sAZ, toAdd, createTimeout, attachTimeout);
+					getInstanceId(), sAZ, toAdd);
 		} catch (WaitVolumeStatusException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.UpdateDiskDevEx_CREATE, Ex.getVolumeId(),
@@ -167,30 +165,22 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	@Override
-	public NetworkDeviceNameList getInstanceNetworkDevices() {
-		return AwsEc2CloudNetwork.getNetworkDevices(getConnection(),
-				getInstance());
+	public NetworkDeviceList getInstanceNetworkDevices() {
+		return AwsEc2CloudNetwork.getNetworkDevices(getInstance());
 	}
 
 	@Override
-	public void detachInstanceNetworkDevices(NetworkDeviceNameList toRemove,
-			long detachTimeout) throws OperationException, InterruptedException {
+	public void detachInstanceNetworkDevices(NetworkDeviceList toRemove)
+			throws OperationException, InterruptedException {
 		AwsEc2CloudNetwork.detachNetworkDevices(getConnection(), getInstance(),
-				toRemove, detachTimeout);
+				toRemove);
 	}
 
 	@Override
-	public void attachInstanceNetworkDevices(NetworkDeviceNameList toAdd,
-			long attachTimeout) throws OperationException, InterruptedException {
+	public void attachInstanceNetworkDevices(NetworkDeviceList toAdd)
+			throws OperationException, InterruptedException {
 		AwsEc2CloudNetwork.attachNetworkDevices(getConnection(), getInstance(),
-				toAdd, attachTimeout);
-	}
-
-	@Override
-	public NetworkDeviceDatas getInstanceNetworkDeviceDatas(
-			NetworkDeviceName netdev) {
-		return AwsEc2CloudNetwork.getNetworkDeviceDatas(getConnection(),
-				this.getInstance(), netdev);
+				toAdd);
 	}
 
 	@Override

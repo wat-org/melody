@@ -216,7 +216,6 @@ public class FireWallRulesPerDevice extends
 	}
 
 	/**
-	 * 
 	 * @param netdev
 	 * 
 	 * @return the {@link FireWallRules} associated to the given

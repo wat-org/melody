@@ -11,20 +11,20 @@ public class KeyPairName {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link KeyPairName} object.
+	 * Convert the given <tt>String</tt> to an {@link KeyPairName} object.
 	 * </p>
 	 * 
 	 * @param sKeyPairName
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link KeyPairName} object, whose equal to the given input
-	 *         <code>String</code>.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalKeyPairNameException
-	 *             if the given input <code>String</code> is not a valid
+	 *             if the given input <tt>String</tt> is not a valid
 	 *             {@link KeyPairName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static KeyPairName parseString(String sKeyPairName)
 			throws IllegalKeyPairNameException {
@@ -34,9 +34,9 @@ public class KeyPairName {
 	/**
 	 * The pattern a KeyPairName must satisfy.
 	 */
-	public static final String PATTERN = "[.\\d\\w-_\\[\\]\\{\\}\\(\\)\\\\ \"']+";
+	public static final String PATTERN = "[.\\d\\w-_/\\[\\]\\{\\}\\(\\)\\\\ \"']+";
 
-	private String msValue;
+	private String _value;
 
 	public KeyPairName(String sKeyPairName) throws IllegalKeyPairNameException {
 		setValue(sKeyPairName);
@@ -44,7 +44,7 @@ public class KeyPairName {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class KeyPairName {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sKeyPairName)
@@ -78,7 +78,7 @@ public class KeyPairName {
 					Messages.KeyPairNameEx_INVALID, sKeyPairName, PATTERN));
 		}
 		String previous = toString();
-		msValue = sKeyPairName;
+		_value = sKeyPairName;
 		return previous;
 	}
 

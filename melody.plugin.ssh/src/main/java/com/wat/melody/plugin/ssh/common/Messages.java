@@ -9,8 +9,6 @@ public class Messages extends NLS {
 	public static String ConfEx_MISSING_DIRECTIVE;
 	public static String ConfEx_INVALID_DIRECTIVE;
 	public static String ConfEx_EMPTY_DIRECTIVE;
-	public static String ConfEx_INVALID_KNOWNHOSTS;
-	public static String ConfEx_INVALID_KEYPAIR_SIZE;
 
 	public static String SshEx_MISSING_PASSWORD_OR_PK_ATTR;
 	public static String SshEx_MISSING_MGMT_LOGIN_ATTR;

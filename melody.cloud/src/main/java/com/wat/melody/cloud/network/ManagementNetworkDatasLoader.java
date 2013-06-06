@@ -20,9 +20,9 @@ public abstract class ManagementNetworkDatasLoader {
 			.getLog(ManagementNetworkDatasLoader.class);
 
 	/**
-	 * XML attribute of the Network Device Management Node, which indicate if
-	 * the Network Device Management feature should be used or not for the
-	 * related Instance.
+	 * XML attribute of the Network Device Management Element Node, which
+	 * indicate if the Network Device Management feature should be used or not
+	 * for the related Instance.
 	 */
 	public static final String ENABLE_ATTR = "enable";
 
@@ -33,54 +33,55 @@ public abstract class ManagementNetworkDatasLoader {
 	public static final String ENABLE_TIMEOUT_ATTR = "enable-timeout";
 
 	/**
-	 * XML attribute of the Network Device Management Node, which indicate the
-	 * Network Device Management feature's Management Method to use for the
-	 * related Instance.
+	 * XML attribute of the Network Device Management Element Node, which
+	 * indicate the Network Device Management feature's Management Method to use
+	 * for the related Instance.
 	 */
 	public static final String METHOD_ATTR = "method";
 
 	/**
-	 * XML attribute of the Network Device Management Node, which indicate the
-	 * Network Device Management feature's Port to use for the related Instance.
+	 * XML attribute of the Network Device Management Element Node, which
+	 * indicate the Network Device Management feature's Port to use for the
+	 * related Instance.
 	 */
 	public static final String PORT_ATTR = "port";
 
 	public ManagementNetworkDatasLoader() {
 	}
 
-	protected ManagementNetworkMethod loadMgmtMethod(Element mgmtNode)
+	protected ManagementNetworkMethod loadMgmtMethod(Element mgmtElmt)
 			throws NodeRelatedException {
-		return NetworkManagementHelper.getManagementNetworkMethod(mgmtNode);
+		return NetworkManagementHelper.getManagementNetworkMethod(mgmtElmt);
 	}
 
-	protected boolean loadMgmtEnable(Element mgmtNode)
+	protected boolean loadMgmtEnable(Element mgmtElmt)
 			throws NodeRelatedException {
-		return NetworkManagementHelper.getManagementNetworkEnable(mgmtNode);
+		return NetworkManagementHelper.getManagementNetworkEnable(mgmtElmt);
 	}
 
 	protected ManagementNetworkEnableTimeout loadMgmtEnableTimeout(
-			Element mgmtNode) throws NodeRelatedException {
+			Element mgmtElmt) throws NodeRelatedException {
 		return NetworkManagementHelper
-				.getManagementNetworkEnableTimeout(mgmtNode);
+				.getManagementNetworkEnableTimeout(mgmtElmt);
 	}
 
 	protected NetworkDeviceName loadMgmtNetDev(Element instanceNode,
-			Element mgmtNode) throws NodeRelatedException {
+			Element mgmtElmt) throws NodeRelatedException {
 		return NetworkManagementHelper.getManagementNetworkDeviceName(
-				instanceNode, mgmtNode);
+				instanceNode, mgmtElmt);
 	}
 
-	protected Host loadMgmtHost(Element instanceNode, Element mgmtNode)
+	protected Host loadMgmtHost(Element instanceElmt, Element mgmtElmt)
 			throws NodeRelatedException {
-		return NetworkManagementHelper.getManagementNetworkHost(instanceNode,
-				mgmtNode);
+		return NetworkManagementHelper.getManagementNetworkHost(instanceElmt,
+				mgmtElmt);
 	}
 
-	protected Port loadMgmtPort(Element mgmtNode) throws NodeRelatedException {
-		return NetworkManagementHelper.getManagementNetworkPort(mgmtNode);
+	protected Port loadMgmtPort(Element mgmtElmt) throws NodeRelatedException {
+		return NetworkManagementHelper.getManagementNetworkPort(mgmtElmt);
 	}
 
-	public abstract ManagementNetworkDatas load(Element instanceNode)
+	public abstract ManagementNetworkDatas load(Element instanceElmt)
 			throws NodeRelatedException;
 
 }

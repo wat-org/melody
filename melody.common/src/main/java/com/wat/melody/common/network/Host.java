@@ -14,30 +14,35 @@ public class Host {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link Host} object.
+	 * Convert the given <tt>String</tt> to an {@link Host} object.
 	 * </p>
 	 * 
 	 * @param sHost
-	 *            is the given <code>String</code> to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return an {@link Host} object, whose equal to the given input
-	 *         <code>String</code>.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalHostException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link Host} (e.g. : is neither an ipv4, nor an ipv6, nor an
-	 *             hostname, nor a full qualified domain name).
+	 *             if the given <tt>String</tt> is not a valid {@link Host}
+	 *             (e.g. : is neither an ipv4, nor an ipv6, nor an hostname, nor
+	 *             a full qualified domain name).
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static Host parseString(String sHost) throws IllegalHostException {
 		return new Host(sHost);
 	}
 
-	private InetAddress moInetAddress;
+	private InetAddress _inetAddress;
 
 	public Host(String sHost) throws IllegalHostException {
 		setValue(sHost);
+	}
+
+	@Override
+	public int hashCode() {
+		return getAddress().hashCode();
 	}
 
 	@Override
@@ -45,16 +50,28 @@ public class Host {
 		return getAddress();
 	}
 
+	@Override
+	public boolean equals(Object anObject) {
+		if (this == anObject) {
+			return true;
+		}
+		if (anObject instanceof Host) {
+			Host host = (Host) anObject;
+			return getAddress().equals(host.getAddress());
+		}
+		return false;
+	}
+
 	public String getName() {
-		return moInetAddress.getHostName();
+		return _inetAddress.getHostName();
 	}
 
 	public String getAddress() {
-		return moInetAddress.getHostAddress();
+		return _inetAddress.getHostAddress();
 	}
 
 	private InetAddress getValue() {
-		return moInetAddress;
+		return _inetAddress;
 	}
 
 	private InetAddress setValue(String sHost) throws IllegalHostException {
@@ -69,7 +86,7 @@ public class Host {
 		}
 		InetAddress previous = getValue();
 		try {
-			moInetAddress = InetAddress.getByName(sHost);
+			_inetAddress = InetAddress.getByName(sHost);
 		} catch (UnknownHostException Ex) {
 			throw new IllegalHostException(Messages.bind(
 					Messages.HostEx_INVALID, sHost), Ex);

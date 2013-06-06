@@ -1,5 +1,11 @@
 package com.wat.melody.plugin.libvirt.common;
 
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.libvirt.Connect;
+import org.libvirt.LibvirtException;
+
 import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
@@ -41,9 +47,9 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	private static Port createPort(String port) {
+	private static Port createPort(int port) {
 		try {
-			return Port.parseString(port);
+			return Port.parseInt(port);
 		} catch (IllegalPortException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a Port with value '" + port + "'. "
@@ -71,19 +77,18 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	public static final boolean DEFAULT_ENDPOINT_ENABLED = true;
 	public static final boolean DEFAULT_ENDPOINT_SECURED = false;
 	public static final Host DEFAULT_ENDPOINT_LISTEN_IP = createHost("0.0.0.0");
-	public static final Port DEFAULT_ENDPOINT_LISTEN_PORT = createPort("6060");
+	public static final Port DEFAULT_ENDPOINT_LISTEN_PORT = createPort(6060);
 	public static final ContextRoot DEFAULT_ENDPOINT_CONTEXT_ROOT = createContextRoot("LibVirtCloudServices");
 
-	// MANDATORY CONFIGURATION DIRECTIVE
+	// OPTIONNAL CONFIGURATION DIRECTIVE
 	public static final String ENDPOINT_ENABLED = "endpoint.enabled";
 	public static final String ENDPOINT_SECURED = "endpoint.secured";
 	public static final String ENDPOINT_LISTEN_IP = "endpoint.listen.ip";
 	public static final String ENDPOINT_LISTEN_PORT = "endpoint.listen.port";
 	public static final String ENDPOINT_CONTEXT_ROOT = "endpoint.contextroot";
 
-	// OPTIONNAL CONFIGURATION DIRECTIVE
-
 	private String _configurationFilePath;
+	private Map<String, Connect> _connectionPool;
 	private boolean _endpointEnabled = DEFAULT_ENDPOINT_ENABLED;
 	private boolean _endpointSecured = DEFAULT_ENDPOINT_SECURED;
 	private Host _endpointListenIp = DEFAULT_ENDPOINT_LISTEN_IP;
@@ -91,6 +96,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	private ContextRoot _endpointContextRoot = DEFAULT_ENDPOINT_CONTEXT_ROOT;
 
 	public LibVirtPlugInConfiguration() {
+		setConnectionPool(new Hashtable<String, Connect>());
 	}
 
 	@Override
@@ -205,6 +211,23 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
+	public Map<String, Connect> getConnectionPool() {
+		return _connectionPool;
+	}
+
+	public Map<String, Connect> setConnectionPool(Map<String, Connect> ec2s) {
+		if (ec2s == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Map.class.getCanonicalName() + "<"
+					+ String.class.getCanonicalName() + ", "
+					+ Connect.class.getCanonicalName() + "> (a map which "
+					+ "contains pooled LibVirt Connection, by region).");
+		}
+		Map<String, Connect> previous = getConnectionPool();
+		_connectionPool = ec2s;
+		return previous;
+	}
+
 	public boolean getEndpointEnabled() {
 		return _endpointEnabled;
 	}
@@ -311,6 +334,33 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		} catch (IllegalContextRootException Ex) {
 			throw new LibVirtPlugInConfigurationException(Ex);
 		}
+	}
+
+	/**
+	 * @param region
+	 *            is the requested region.
+	 * 
+	 * @return a {@link Connect} object which is already configured for the
+	 *         requested region, or <tt>null</tt> if the requested region is not
+	 *         valid.
+	 */
+	public Connect getCloudConnection(String region) {
+		if (region == null) {
+			return null;
+		}
+		Connect connect = null;
+		if (getConnectionPool().containsKey(region)) {
+			connect = getConnectionPool().get(region);
+		}
+		if (connect == null) {
+			try {
+				connect = new Connect(region);
+			} catch (LibvirtException Ex) {
+				return null;
+			}
+			getConnectionPool().put(region, connect);
+		}
+		return connect;
 	}
 
 }
