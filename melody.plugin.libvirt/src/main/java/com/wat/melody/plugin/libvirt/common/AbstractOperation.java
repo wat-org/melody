@@ -20,13 +20,9 @@ import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatas;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.InstanceDatasValidator;
-import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.common.keypair.KeyPairName;
-import com.wat.melody.common.keypair.KeyPairRepositoryPath;
-import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.DocHelper;
@@ -72,15 +68,14 @@ public abstract class AbstractOperation implements ITask,
 	public static final String TIMEOUT_ATTR = "timeout";
 
 	private String _target = null;
-	private Element _targetElement = null;
+	private Element _targetElmt = null;
 	private String _instanceId = null;
-	private InstanceDatas _instanceDatas = null;
 	private Connect _cloudConnection = null;
 	private InstanceController _instance = null;
-	private GenericTimeout _defaultTimeout;
+	private InstanceDatas _instanceDatas = null;
+	private GenericTimeout _defaultTimeout = createTimeout(90000);
 
 	public AbstractOperation() {
-		setDefaultTimeout(createTimeout(90000));
 	}
 
 	@Override
@@ -100,7 +95,7 @@ public abstract class AbstractOperation implements ITask,
 		setInstance(createInstance());
 	}
 
-	public InstanceController createInstance() throws LibVirtException {
+	protected InstanceController createInstance() throws LibVirtException {
 		InstanceController instance = newLibVirtInstanceController();
 		instance = new InstanceControllerWithRelatedNode(instance,
 				getTargetElement());
@@ -116,17 +111,17 @@ public abstract class AbstractOperation implements ITask,
 	 * Can be override by subclasses to provide enhanced behavior of the
 	 * {@link AwsInstanceController}.
 	 */
-	public InstanceController newLibVirtInstanceController() {
+	protected InstanceController newLibVirtInstanceController() {
 		return new LibVirtInstanceController(getCloudConnection(),
 				getInstanceId());
 	}
 
-	public IResourcesDescriptor getRD() {
+	protected IResourcesDescriptor getRD() {
 		return Melody.getContext().getProcessorManager()
 				.getResourcesDescriptor();
 	}
 
-	public LibVirtPlugInConfiguration getLibVirtPlugInConfiguration()
+	protected LibVirtPlugInConfiguration getLibVirtPlugInConfiguration()
 			throws LibVirtException {
 		try {
 			return LibVirtPlugInConfiguration.get(Melody.getContext()
@@ -136,7 +131,7 @@ public abstract class AbstractOperation implements ITask,
 		}
 	}
 
-	public SshPlugInConfiguration getSshPlugInConfiguration()
+	protected SshPlugInConfiguration getSshPlugInConfiguration()
 			throws LibVirtException {
 		try {
 			return SshPlugInConfiguration.get(Melody.getContext()
@@ -159,158 +154,124 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	@Override
-	public String validateRegion(InstanceDatas datas, String region)
+	public void validateAndTransform(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
-		if (region == null) {
+		try {
+			validateRegion(datas);
+			validateSite(datas);
+			validateImageId(datas);
+			validateInstanceType(datas);
+			validateKeyPairRepositoryPath(datas);
+			validateKeyPairName(datas);
+			validateKeyPairSize(datas);
+			validatePassphrase(datas);
+			validateCreateTimeout(datas);
+			validateDeleteTimeout(datas);
+			validateStartTimeout(datas);
+			validateStopTimeout(datas);
+		} catch (LibVirtException Ex) {
+			throw new IllegalInstanceDatasException(Ex);
+		}
+	}
+
+	protected void validateRegion(InstanceDatas datas)
+			throws IllegalInstanceDatasException, LibVirtException {
+		if (datas.getRegion() == null) {
 			throw new IllegalInstanceDatasException(Messages.bind(
 					Messages.MachineEx_MISSING_REGION_ATTR,
 					InstanceDatasLoader.REGION_ATTR));
 		}
-		LibVirtPlugInConfiguration conf;
-		try {
-			conf = getLibVirtPlugInConfiguration();
-		} catch (LibVirtException Ex) {
-			throw new IllegalInstanceDatasException(Ex);
-		}
-		if (conf.getCloudConnection(region) == null) {
+		if (getLibVirtPlugInConfiguration().getCloudConnection(
+				datas.getRegion()) == null) {
 			throw new IllegalInstanceDatasException(Messages.bind(
-					Messages.MachineEx_INVALID_REGION_ATTR, region));
+					Messages.MachineEx_INVALID_REGION_ATTR, datas.getRegion()));
 		}
-		return region;
 	}
 
-	public String validateSite(InstanceDatas datas, String site)
-			throws IllegalInstanceDatasException {
+	protected void validateSite(InstanceDatas datas) {
 		// can be null
-		return site;
 	}
 
-	@Override
-	public String validateImageId(InstanceDatas datas, String imageId)
+	protected void validateImageId(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
-		if (imageId == null) {
+		if (datas.getImageId() == null) {
 			throw new IllegalInstanceDatasException(Messages.bind(
 					Messages.MachineEx_MISSING_IMAGEID_ATTR,
 					InstanceDatasLoader.IMAGEID_ATTR));
 		}
-		if (!LibVirtCloud.imageIdExists(imageId)) {
+		if (!LibVirtCloud.imageIdExists(datas.getImageId())) {
 			throw new IllegalInstanceDatasException(Messages.bind(
-					Messages.MachineEx_INVALID_IMAGEID_ATTR, imageId,
-					datas.getRegion()));
+					Messages.MachineEx_INVALID_IMAGEID_ATTR,
+					datas.getImageId(), datas.getRegion()));
 		}
-		return imageId;
 	}
 
-	@Override
-	public InstanceType validateInstanceType(InstanceDatas datas,
-			InstanceType instanceType) throws IllegalInstanceDatasException {
-		if (instanceType != null) {
-			return instanceType;
-		}
-		throw new IllegalInstanceDatasException(Messages.bind(
-				Messages.MachineEx_MISSING_INSTANCETYPE_ATTR,
-				InstanceDatasLoader.INSTANCETYPE_ATTR));
-	}
-
-	@Override
-	public KeyPairRepositoryPath validateKeyPairRepositoryPath(
-			InstanceDatas datas, KeyPairRepositoryPath keyPairRepositoryPath)
+	protected void validateInstanceType(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
-		if (keyPairRepositoryPath != null) {
-			return keyPairRepositoryPath;
-		}
-		try {
-			// Get the default value
-			return getSshPlugInConfiguration().getKeyPairRepositoryPath();
-		} catch (LibVirtException Ex) {
-			throw new IllegalInstanceDatasException(Ex);
+		if (datas.getInstanceType() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_INSTANCETYPE_ATTR,
+					InstanceDatasLoader.INSTANCETYPE_ATTR));
 		}
 	}
 
-	@Override
-	public KeyPairName validateKeyPairName(InstanceDatas datas,
-			KeyPairName keyPairName) throws IllegalInstanceDatasException {
-		if (keyPairName != null) {
-			return keyPairName;
+	protected void validateKeyPairRepositoryPath(InstanceDatas datas)
+			throws LibVirtException {
+		if (datas.getKeyPairRepositoryPath() == null) {
+			datas.setKeyPairRepositoryPath(getSshPlugInConfiguration()
+					.getKeyPairRepositoryPath());
 		}
-		throw new IllegalInstanceDatasException(Messages.bind(
-				Messages.MachineEx_MISSING_KEYPAIR_NAME_ATTR,
-				InstanceDatasLoader.KEYPAIR_NAME_ATTR));
 	}
 
-	@Override
-	public String validatePassphrase(InstanceDatas datas, String passphrase)
+	protected void validateKeyPairName(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
+		if (datas.getKeyPairName() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_KEYPAIR_NAME_ATTR,
+					InstanceDatasLoader.KEYPAIR_NAME_ATTR));
+		}
+	}
+
+	protected void validatePassphrase(InstanceDatas datas) {
 		// can be null
-		return passphrase;
 	}
 
-	@Override
-	public KeyPairSize validateKeyPairSize(InstanceDatas datas,
-			KeyPairSize keyPairSize) throws IllegalInstanceDatasException {
-		if (keyPairSize != null) {
-			return keyPairSize;
-		}
-		try {
-			// Get the default value
-			return getSshPlugInConfiguration().getKeyPairSize();
-		} catch (LibVirtException Ex) {
-			throw new IllegalInstanceDatasException(Ex);
+	protected void validateKeyPairSize(InstanceDatas datas)
+			throws LibVirtException {
+		if (datas.getKeyPairSize() == null) {
+			datas.setKeyPairSize(getSshPlugInConfiguration().getKeyPairSize());
 		}
 	}
 
-	@Override
-	public GenericTimeout validateCreateTimeout(InstanceDatas datas,
-			GenericTimeout createTimeout) throws IllegalInstanceDatasException {
-		if (createTimeout != null) {
-			return createTimeout;
-		}
-		return getDefaultTimeout();
-	}
-
-	@Override
-	public GenericTimeout validateDeleteTimeout(InstanceDatas datas,
-			GenericTimeout destroyTimeout) throws IllegalInstanceDatasException {
-		if (destroyTimeout != null) {
-			return destroyTimeout;
-		}
-		try {
-			return GenericTimeout.parseLong(getDefaultTimeout()
-					.getTimeoutInMillis() * 2);
-		} catch (IllegalTimeoutException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the 'timeout-delete' to "
-					+ (getDefaultTimeout().getTimeoutInMillis() * 2) + ". "
-					+ "Because this value is hardocded, suche error cannot "
-					+ "happened. "
-					+ "Source code has certainly been modified and a bug "
-					+ "have been introduced.", Ex);
+	protected void validateCreateTimeout(InstanceDatas datas) {
+		if (datas.getCreateTimeout() == null) {
+			datas.setCreateTimeout(getDefaultTimeout());
 		}
 	}
 
-	@Override
-	public GenericTimeout validateStartTimeout(InstanceDatas datas,
-			GenericTimeout startTimeout) throws IllegalInstanceDatasException {
-		if (startTimeout == null) {
-			return getDefaultTimeout();
+	protected void validateDeleteTimeout(InstanceDatas datas) {
+		if (datas.getDeleteTimeout() == null) {
+			datas.setDeleteTimeout(getDefaultTimeout().factor(2));
 		}
-		return startTimeout;
 	}
 
-	@Override
-	public GenericTimeout validateStopTimeout(InstanceDatas datas,
-			GenericTimeout stopTimeout) throws IllegalInstanceDatasException {
-		if (stopTimeout == null) {
-			return getDefaultTimeout();
+	protected void validateStartTimeout(InstanceDatas datas) {
+		if (datas.getStartTimeout() == null) {
+			datas.setStartTimeout(getDefaultTimeout());
 		}
-		return stopTimeout;
+	}
+
+	protected void validateStopTimeout(InstanceDatas datas) {
+		if (datas.getStopTimeout() != null) {
+			datas.setStopTimeout(getDefaultTimeout());
+		}
 	}
 
 	public InstanceDatas getInstanceDatas() {
 		return _instanceDatas;
 	}
 
-	private InstanceDatas setInstanceDatas(InstanceDatas instanceDatas) {
+	protected InstanceDatas setInstanceDatas(InstanceDatas instanceDatas) {
 		if (instanceDatas == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -325,7 +286,7 @@ public abstract class AbstractOperation implements ITask,
 		return _defaultTimeout;
 	}
 
-	private GenericTimeout setDefaultTimeout(GenericTimeout timeout) {
+	protected GenericTimeout setDefaultTimeout(GenericTimeout timeout) {
 		if (timeout == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -340,7 +301,7 @@ public abstract class AbstractOperation implements ITask,
 		return _cloudConnection;
 	}
 
-	private Connect setCloudConnection(Connect cnx) {
+	protected Connect setCloudConnection(Connect cnx) {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName()
@@ -355,7 +316,7 @@ public abstract class AbstractOperation implements ITask,
 		return _instance;
 	}
 
-	public InstanceController setInstance(InstanceController instance) {
+	protected InstanceController setInstance(InstanceController instance) {
 		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -370,25 +331,25 @@ public abstract class AbstractOperation implements ITask,
 	 * @return the targeted {@link Element}.
 	 */
 	public Element getTargetElement() {
-		return _targetElement;
+		return _targetElmt;
 	}
 
-	public Element setTargetElement(Element n) {
+	protected Element setTargetElement(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ " (the targeted LibVirt Instance Element Node).");
 		}
 		Element previous = getTargetElement();
-		_targetElement = n;
+		_targetElmt = n;
 		return previous;
 	}
 
 	/**
 	 * @return the Instance Id which is registered in the targeted Element Node
-	 *         (can be <code>null</code>).
+	 *         (can be <tt>null</tt>).
 	 */
-	protected String getInstanceId() {
+	public String getInstanceId() {
 		return _instanceId;
 	}
 

@@ -56,11 +56,11 @@ public class UpdateNetworkDevices extends AbstractOperation {
 		}
 	}
 
-	private NetworkDeviceList getNetworkDeviceList() {
+	protected NetworkDeviceList getNetworkDeviceList() {
 		return _networkDeviceList;
 	}
 
-	private NetworkDeviceList setNetworkDeviceList(NetworkDeviceList fwrs) {
+	protected NetworkDeviceList setNetworkDeviceList(NetworkDeviceList fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

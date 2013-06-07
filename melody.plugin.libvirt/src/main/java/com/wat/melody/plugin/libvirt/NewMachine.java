@@ -57,7 +57,7 @@ public class NewMachine extends AbstractOperation {
 	 *         KeyPair Management features.
 	 */
 	@Override
-	public InstanceController newLibVirtInstanceController() {
+	protected InstanceController newLibVirtInstanceController() {
 		// create LibVirtInstanceControllerWithKeyPairManagement class ?
 		return new LibVirtInstanceController(getCloudConnection(),
 				getInstanceId()) {

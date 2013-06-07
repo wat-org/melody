@@ -13,7 +13,6 @@ import com.wat.melody.common.timeout.GenericTimeout;
  */
 public class InstanceDatas {
 
-	private InstanceDatasValidator _validator;
 	private String _region;
 	private String _site;
 	private String _imageId;
@@ -33,8 +32,6 @@ public class InstanceDatas {
 			KeyPairSize kps, GenericTimeout createTimeout,
 			GenericTimeout deleteTimeout, GenericTimeout startTimeout,
 			GenericTimeout stopTimeout) throws IllegalInstanceDatasException {
-		setValidator(validator);
-		// first set 'region', because members may need it to perform validation
 		setRegion(region);
 		setSite(site);
 		setImageId(imageId);
@@ -47,6 +44,7 @@ public class InstanceDatas {
 		setDeleteTimeout(deleteTimeout);
 		setStartTimeout(startTimeout);
 		setStopTimeout(stopTimeout);
+		validator.validateAndTransform(this);
 	}
 
 	@Override
@@ -72,152 +70,100 @@ public class InstanceDatas {
 		return str.toString();
 	}
 
-	public InstanceDatasValidator getValidator() {
-		return _validator;
-	}
-
-	private InstanceDatasValidator setValidator(InstanceDatasValidator validator) {
-		if (validator == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid "
-					+ InstanceDatasValidator.class.getCanonicalName() + ".");
-		}
-		InstanceDatasValidator previous = getValidator();
-		_validator = validator;
-		return previous;
-	}
-
 	public String getRegion() {
 		return _region;
 	}
 
-	private String setRegion(String region)
-			throws IllegalInstanceDatasException {
-		String previous = getRegion();
-		_region = getValidator().validateRegion(this, region);
-		return previous;
+	public void setRegion(String region) {
+		_region = region;
 	}
 
 	public String getSite() {
 		return _site;
 	}
 
-	private String setSite(String site) throws IllegalInstanceDatasException {
-		String previous = getSite();
-		_site = getValidator().validateSite(this, site);
-		return previous;
+	public void setSite(String site) {
+		_site = site;
 	}
 
 	public String getImageId() {
 		return _imageId;
 	}
 
-	private String setImageId(String imageId)
-			throws IllegalInstanceDatasException {
-		String previous = getImageId();
-		_imageId = getValidator().validateImageId(this, imageId);
-		return previous;
+	public void setImageId(String imageId) {
+		_imageId = imageId;
 	}
 
 	public InstanceType getInstanceType() {
 		return _instanceType;
 	}
 
-	private InstanceType setInstanceType(InstanceType instanceType)
-			throws IllegalInstanceDatasException {
-		InstanceType previous = getInstanceType();
-		_instanceType = getValidator().validateInstanceType(this, instanceType);
-		return previous;
+	public void setInstanceType(InstanceType instanceType) {
+		_instanceType = instanceType;
 	}
 
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
 		return _keyPairRepositoryPath;
 	}
 
-	private KeyPairRepositoryPath setKeyPairRepositoryPath(
-			KeyPairRepositoryPath keyPairRepository)
-			throws IllegalInstanceDatasException {
-		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		_keyPairRepositoryPath = getValidator().validateKeyPairRepositoryPath(
-				this, keyPairRepository);
-		return previous;
+	public void setKeyPairRepositoryPath(KeyPairRepositoryPath keyPairRepository) {
+		_keyPairRepositoryPath = keyPairRepository;
 	}
 
 	public KeyPairName getKeyPairName() {
 		return _keyPairName;
 	}
 
-	private KeyPairName setKeyPairName(KeyPairName keyPairName)
-			throws IllegalInstanceDatasException {
-		KeyPairName previous = getKeyPairName();
-		_keyPairName = getValidator().validateKeyPairName(this, keyPairName);
-		return previous;
+	public void setKeyPairName(KeyPairName keyPairName) {
+		_keyPairName = keyPairName;
 	}
 
 	public String getPassphrase() {
 		return _passphrase;
 	}
 
-	private String setPassphrase(String passphrase)
-			throws IllegalInstanceDatasException {
-		String previous = getPassphrase();
-		_passphrase = getValidator().validatePassphrase(this, passphrase);
-		return previous;
+	public void setPassphrase(String passphrase) {
+		_passphrase = passphrase;
 	}
 
 	public KeyPairSize getKeyPairSize() {
 		return _keyPairSize;
 	}
 
-	private KeyPairSize setKeyPairSize(KeyPairSize keyPairSize)
-			throws IllegalInstanceDatasException {
-		KeyPairSize previous = getKeyPairSize();
-		_keyPairSize = getValidator().validateKeyPairSize(this, keyPairSize);
-		return previous;
+	public void setKeyPairSize(KeyPairSize keyPairSize) {
+		_keyPairSize = keyPairSize;
 	}
 
 	public GenericTimeout getCreateTimeout() {
 		return _createTimeout;
 	}
 
-	private GenericTimeout setCreateTimeout(GenericTimeout timeout)
-			throws IllegalInstanceDatasException {
-		GenericTimeout previous = getCreateTimeout();
-		_createTimeout = getValidator().validateCreateTimeout(this, timeout);
-		return previous;
+	public void setCreateTimeout(GenericTimeout timeout) {
+		_createTimeout = timeout;
 	}
 
 	public GenericTimeout getDeleteTimeout() {
 		return _deleteTimeout;
 	}
 
-	private GenericTimeout setDeleteTimeout(GenericTimeout timeout)
-			throws IllegalInstanceDatasException {
-		GenericTimeout previous = getDeleteTimeout();
-		_deleteTimeout = getValidator().validateDeleteTimeout(this, timeout);
-		return previous;
+	public void setDeleteTimeout(GenericTimeout timeout) {
+		_deleteTimeout = timeout;
 	}
 
 	public GenericTimeout getStartTimeout() {
 		return _startTimeout;
 	}
 
-	private GenericTimeout setStartTimeout(GenericTimeout timeout)
-			throws IllegalInstanceDatasException {
-		GenericTimeout previous = getStartTimeout();
-		_startTimeout = getValidator().validateStartTimeout(this, timeout);
-		return previous;
+	public void setStartTimeout(GenericTimeout timeout) {
+		_startTimeout = timeout;
 	}
 
 	public GenericTimeout getStopTimeout() {
 		return _stopTimeout;
 	}
 
-	private GenericTimeout setStopTimeout(GenericTimeout timeout)
-			throws IllegalInstanceDatasException {
-		GenericTimeout previous = getStopTimeout();
-		_stopTimeout = getValidator().validateStopTimeout(this, timeout);
-		return previous;
+	public void setStopTimeout(GenericTimeout timeout) {
+		_stopTimeout = timeout;
 	}
 
 }

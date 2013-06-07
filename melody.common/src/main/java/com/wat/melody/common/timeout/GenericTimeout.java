@@ -10,65 +10,67 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 public class GenericTimeout implements Timeout {
 
 	/**
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return a {@link GenericTimeout}, which is equal to the given
+	 *         <tt>long</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public static GenericTimeout parseLong(long iTimeout)
+	public static GenericTimeout parseLong(long timeout)
 			throws IllegalTimeoutException {
-		return new GenericTimeout(iTimeout);
+		return new GenericTimeout(timeout);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return a {@link GenericTimeout}, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt>.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	public static GenericTimeout parseString(String sTimeout)
+	public static GenericTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
-		return new GenericTimeout(sTimeout);
+		return new GenericTimeout(timeout);
 	}
 
 	private long _timeout;
 
 	/**
-	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public GenericTimeout(long iTimeout) throws IllegalTimeoutException {
-		setTimeout(iTimeout);
+	public GenericTimeout(long timeout) throws IllegalTimeoutException {
+		setTimeout(timeout);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt>.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	public GenericTimeout(String sTimeout) throws IllegalTimeoutException {
-		setTimeout(sTimeout);
+	public GenericTimeout(String timeout) throws IllegalTimeoutException {
+		setTimeout(timeout);
 	}
 
 	@Override
@@ -94,67 +96,95 @@ public class GenericTimeout implements Timeout {
 	}
 
 	/**
-	 * 
-	 * @return the timeout in seconds.
+	 * @return the timeout, in seconds.
 	 */
 	public long getTimeout() {
 		return _timeout / 1000;
 	}
 
 	/**
-	 * 
-	 * @return the timeout in milliseconds.
+	 * @return the timeout, in milliseconds.
 	 */
 	public long getTimeoutInMillis() {
 		return _timeout;
 	}
 
 	/**
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return the previous timeout value, before the operation.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	private long setTimeout(long iTimeout) throws IllegalTimeoutException {
-		if (iTimeout < 0) {
+	private long setTimeout(long timeout) throws IllegalTimeoutException {
+		if (timeout < 0) {
 			throw new IllegalTimeoutException(Messages.bind(
-					Messages.TimeoutEx_NEGATIVE, iTimeout));
+					Messages.TimeoutEx_NEGATIVE, timeout));
 		}
 		long previous = getTimeout();
-		_timeout = iTimeout;
+		_timeout = timeout;
 		return previous;
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return the previous timeout value, before the operation.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
+	 *             if the given <tt>String</tt> is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt>.
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	private long setTimeout(String sTimeout) throws IllegalTimeoutException {
-		if (sTimeout == null) {
+	private long setTimeout(String timeout) throws IllegalTimeoutException {
+		if (timeout == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Timeout.class.getCanonicalName() + ").");
 		}
-		if (sTimeout.trim().length() == 0) {
+		if (timeout.trim().length() == 0) {
 			throw new IllegalTimeoutException(Messages.bind(
-					Messages.TimeoutEx_EMPTY, sTimeout));
+					Messages.TimeoutEx_EMPTY, timeout));
 		}
 		try {
-			return setTimeout(Long.parseLong(sTimeout));
+			return setTimeout(Long.parseLong(timeout));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalTimeoutException(Messages.bind(
-					Messages.TimeoutEx_NOT_A_NUMBER, sTimeout));
+					Messages.TimeoutEx_NOT_A_NUMBER, timeout));
+		}
+	}
+
+	/**
+	 * @param ratio
+	 *            represents a ratiu.
+	 * 
+	 * @return a {@link GenericTimeout} object, which is equal to this object's
+	 *         timeout value multiplied by the given ratio.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             is the given <tt>float</tt> is negative or 0.
+	 */
+	public GenericTimeout factor(float ratio) {
+		if (ratio < 0) {
+			throw new IllegalArgumentException(ratio + ": Not accepted. "
+					+ "Must be postive.");
+		}
+		try {
+			return new GenericTimeout((long) (getTimeoutInMillis() * ratio));
+		} catch (IllegalTimeoutException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a " + GenericTimeout.class.getCanonicalName() + " to "
+					+ (long) (getTimeoutInMillis() * ratio) + ". "
+					+ "Because the given timeout is valid, such error cannot "
+					+ "happened. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
 		}
 	}
 

@@ -55,11 +55,11 @@ public class UpdateFireWall extends AbstractOperation implements ITask {
 		}
 	}
 
-	private FireWallRulesPerDevice getFwRules() {
+	protected FireWallRulesPerDevice getFwRules() {
 		return _rulesPerDevice;
 	}
 
-	private FireWallRulesPerDevice setFwRules(FireWallRulesPerDevice fwrs) {
+	protected FireWallRulesPerDevice setFwRules(FireWallRulesPerDevice fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

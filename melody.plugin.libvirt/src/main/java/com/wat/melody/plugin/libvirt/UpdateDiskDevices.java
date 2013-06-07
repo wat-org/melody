@@ -55,11 +55,11 @@ public class UpdateDiskDevices extends AbstractOperation {
 		}
 	}
 
-	private DiskDeviceList getDiskDeviceList() {
+	protected DiskDeviceList getDiskDeviceList() {
 		return _diskDeviceList;
 	}
 
-	private DiskDeviceList setDiskDeviceList(DiskDeviceList dd) {
+	protected DiskDeviceList setDiskDeviceList(DiskDeviceList dd) {
 		if (dd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
