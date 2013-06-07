@@ -252,7 +252,7 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	protected void validateStopTimeout(InstanceDatas datas) {
-		if (datas.getStopTimeout() != null) {
+		if (datas.getStopTimeout() == null) {
 			datas.setStopTimeout(getDefaultTimeout());
 		}
 	}

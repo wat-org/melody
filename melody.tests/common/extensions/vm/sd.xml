@@ -27,7 +27,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<property name="id" value="§[§[srv]§/@instance-id]§" />
+			<property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<delete-machine target="§[srv]§" />
@@ -75,7 +75,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<resize-machine target="§[srv]§" instance-type="m1.small" />
+			<resize-machine target="§[srv]§"/>
 			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized§[adm_ip]§." />

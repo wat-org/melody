@@ -68,7 +68,6 @@ public abstract class NetworkManagementHelper {
 			+ NetworkDevicesLoader.DEVICE_NAME_ATTR + "='eth0'";
 
 	/**
-	 * XML attribute of the Network Device Management Node, which contains the
 	 * XML attribute of the Network Device Management Node which select the Host
 	 * to manage.
 	 */
@@ -163,15 +162,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Management Network Device Selector of the given Network Device
-	 * Management {@link Node}.
-	 * </p>
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}, or <tt>null</tt>.
 	 * 
-	 * @return the concatenation of :
+	 * @return the Management Network Device Selector, which is the
+	 *         concatenation of :
 	 *         <ul>
 	 *         <li>The Network Devices Selector of the given Network Device
 	 *         Management {@link Node} (see
@@ -196,15 +191,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Management Network Device Attribute Selector of the given
-	 * Network Device Management {@link Node}.
-	 * </p>
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}, or <tt>null</tt>.
 	 * 
-	 * @return <ul>
+	 * @return the Management Network Device Attribute Selector, which is :
+	 *         <ul>
 	 *         <li>The content of the
 	 *         {@link #NETWORK_MGMT_DEVICE_ATTRIBUTE_SELECTOR_ATTR} XML
 	 *         Attribute of the given Network Device Management {@link Node} ;</li>
@@ -228,11 +219,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the {@link List} of Management Network Device {@link Node} related
-	 * to the given {@link List} of Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * 
@@ -276,11 +262,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Management Network Device {@link Node} related to the given
-	 * Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
@@ -315,11 +296,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Management Network Device {@link Node} related to the given
-	 * Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
@@ -384,7 +360,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * 
@@ -423,7 +398,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
@@ -456,7 +430,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
@@ -507,7 +480,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * 
@@ -549,7 +521,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
@@ -578,7 +549,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
@@ -612,7 +582,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
@@ -643,7 +612,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -680,12 +648,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
-	 * @return the Instance's Network Device Management {@link Port} attribute
-	 *         as a {@link Node}, or <tt>null</tt> if it doesn't have one.
+	 * @return the Instance's Network Device Management {@link Port}
+	 *         {@link Attr}, or <tt>null</tt> if it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
@@ -700,12 +667,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
-	 * @return the Network Device Management {@link Port} attribute as a
-	 *         {@link Node}, or <tt>null</tt> if such attribute cannot be found.
+	 * @return the Network Device Management {@link Port} {@link Attr}, or
+	 *         <tt>null</tt> if such attribute cannot be found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
@@ -721,11 +687,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the default management port, regarding the
-	 * {@link ManagementNetworkMethod}.
-	 * </p>
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -768,7 +729,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
@@ -797,7 +757,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -833,13 +792,12 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
 	 * @return the Instance's Network Device Management
-	 *         {@link ManagementNetworkMethod} attribute as a {@link Node}, or
-	 *         <tt>null</tt> it doesn't have one.
+	 *         {@link ManagementNetworkMethod} {@link Attr}, or <tt>null</tt> it
+	 *         doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
@@ -854,13 +812,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
 	 * @return the Network Device Management {@link ManagementNetworkMethod}
-	 *         Attribute as a {@link Node}, or <tt>null</tt> if such attribute
-	 *         cannot be found.
+	 *         {@link Attr}, or <tt>null</tt> it doesn't have one.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Device Management {@link Node} is
@@ -876,7 +832,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
@@ -904,7 +859,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -932,14 +886,12 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Devices Selector of the given Instance {@link Node}.
-	 * </p>
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
-	 * @return <ul>
+	 * @return the Network Devices Selector of the given Instance {@link Node},
+	 *         which is :
+	 *         <ul>
 	 *         <li>The content of the
 	 *         {@link #NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE} XML Attribute of
 	 *         the given Instance's Network Device Management {@link Node} ;</li>
@@ -967,15 +919,11 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Devices Selector of the given Network Device
-	 * Management {@link Node}.
-	 * </p>
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
-	 * @return <ul>
+	 * @return the Network Devices Selector, which is :
+	 *         <ul>
 	 *         <li>The content of the
 	 *         {@link #NETWORK_DEVICE_NODES_SELECTOR_ATTRIBUTE} XML Attribute of
 	 *         the given Network Device Management {@link Node} ;</li>
@@ -998,26 +946,23 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Device {@link Node} of each Instance {@link Node} of
-	 * the given list, whose Device Name match the given name.
-	 * </p>
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * @param netDevName
 	 *            is the requested network device name.
 	 * 
 	 * @return The Network Device {@link Node} of each given Instance
-	 *         {@link Node}, whose "device" XML Attribute's content is equal to
-	 *         the given name.
+	 *         {@link Node}, whose 'device-name' XML Attribute's content is
+	 *         equal to the given network device name, or all the Network Device
+	 *         {@link Node} of each given Instance {@link Node} if the given
+	 *         network device name is <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link List} of Instance {@link Node} is
 	 *             <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if any Network Devices Selector (found in the Network Device
-	 *             Management {@link Node} of the instance) is not a valid XPath
+	 *             Management {@link Node} of an instance) is not a valid XPath
 	 *             Expression.
 	 */
 	public static List<Element> findNetworkDeviceNodeByName(
@@ -1038,21 +983,16 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Device {@link Node} of the given Instance {@link Node}
-	 * whose Device Name match the given network device name.
-	 * </p>
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
-	 * @param netDevName
+	 * @param devname
 	 *            is the requested network device name.
 	 * 
 	 * @return The Network Device {@link Node} of the given Instance
-	 *         {@link Node}, whose "device" XML Attribute's content is equal to
-	 *         the given network device name, or all Network Device {@link Node}
-	 *         s of the given Instance {@link Node} if the given network device
-	 *         name is null.
+	 *         {@link Node}, whose 'device-name' XML Attribute's content is
+	 *         equal to the given network device name, or all the Network Device
+	 *         {@link Node} of the given Instance {@link Node} if the given
+	 *         network device name is <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Node} is <tt>null</tt>.
@@ -1062,7 +1002,7 @@ public abstract class NetworkManagementHelper {
 	 *             XPath Expression.
 	 */
 	public static NodeList findNetworkDeviceNodeByName(Element instanceNode,
-			String netDevName) throws NodeRelatedException {
+			String devname) throws NodeRelatedException {
 		Element mgmtNode = null;
 		try {
 			mgmtNode = findNetworkManagementNode(instanceNode);
@@ -1070,15 +1010,10 @@ public abstract class NetworkManagementHelper {
 			// raised when Network Device Management datas are invalid.
 			// in this situation, we will use default values
 		}
-		return getNetworkDeviceNodeByName(instanceNode, mgmtNode, netDevName);
+		return getNetworkDeviceNodeByName(instanceNode, mgmtNode, devname);
 	}
 
 	/**
-	 * <p>
-	 * Return the Network Device {@link Node} of the given Instance {@link Node}
-	 * whose Device Name match the given name.
-	 * </p>
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * @param mgmtNode
@@ -1086,28 +1021,30 @@ public abstract class NetworkManagementHelper {
 	 *            given Instance {@link Node}, or <tt>null</tt>, if the given
 	 *            Instance {@link Node} has no Network Device Management
 	 *            {@link Node}.
-	 * @param netDevName
+	 * @param devname
 	 *            is the requested network device name.
 	 * 
 	 * @return The Network Device {@link Node} of the given Instance
-	 *         {@link Node}, whose "device" XML Attribute's content is equal to
-	 *         the given name.
+	 *         {@link Node}, whose 'device-name' XML Attribute's content is
+	 *         equal to the given network device name, or all the Network Device
+	 *         {@link Node} of the given Instance {@link Node} if the given
+	 *         network device name is <tt>null</tt>.
 	 * 
 	 * @throws NodeRelatedException
 	 *             if the Network Devices Selector (found in the Network Device
 	 *             Management {@link Node}) is not a valid XPath Expression.
 	 */
 	public static NodeList getNetworkDeviceNodeByName(Element instanceNode,
-			Element mgmtNode, String netDevName) throws NodeRelatedException {
+			Element mgmtNode, String devname) throws NodeRelatedException {
 		if (instanceNode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Instance Node.");
 		}
 		String sAllNetDevSelector = getNetworkDevicesSelector(mgmtNode);
 		String sNetDevCriteria = "";
-		if (netDevName != null) {
+		if (devname != null) {
 			sNetDevCriteria = "[@" + NetworkDevicesLoader.DEVICE_NAME_ATTR
-					+ "='" + netDevName + "']";
+					+ "='" + devname + "']";
 		}
 		String sNetDevSelector = "." + sAllNetDevSelector + sNetDevCriteria;
 		try {
@@ -1123,7 +1060,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * 
@@ -1163,7 +1099,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
@@ -1196,7 +1131,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
@@ -1248,7 +1182,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNodes
 	 *            is a {@link List} of Instance {@link Node}.
 	 * 
@@ -1290,7 +1223,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * 
@@ -1319,7 +1251,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is a {@link Node} which describes an Instance.
 	 * @param mgmtNode
@@ -1353,7 +1284,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
@@ -1381,7 +1311,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -1413,7 +1342,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param instanceNode
 	 *            is an Instance {@link Node}.
 	 * 
@@ -1434,7 +1362,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 
@@ -1456,12 +1383,6 @@ public abstract class NetworkManagementHelper {
 	}
 
 	/**
-	 * <p>
-	 * Return the default {@link ManagementNetworkEnableTimeout} of the given
-	 * Instance's Network Device Management {@link Node}, regarding the given
-	 * Instance's {@link ManagementNetworkMethod}.
-	 * </p>
-	 * 
 	 * @param mgmtNode
 	 *            is a Network Device Management {@link Node}.
 	 * 

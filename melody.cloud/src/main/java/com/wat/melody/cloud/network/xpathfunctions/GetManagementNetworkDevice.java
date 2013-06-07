@@ -22,6 +22,9 @@ public final class GetManagementNetworkDevice implements XPathFunction {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
+		/*
+		 * TODO : use XPathFunctionHelper
+		 */
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}

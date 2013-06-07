@@ -32,19 +32,13 @@ public class Property {
 	public static final String COMMENT_ATTR = "comment";
 
 	/**
-	 * The pattern which a Property String must satisfied
+	 * The pattern this object must satisfy.
 	 */
 	public static final String PATTERN = PropertyName.PATTERN + "=.*";
 
 	/**
 	 * <p>
 	 * Convert the given <tt>String</tt> to a {@link Property} object.
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * Yields exactly the same result as {@link Property#Property(String)}
-	 * . <BR/>
-	 * </i>
 	 * </p>
 	 * 
 	 * @param v
@@ -56,10 +50,13 @@ public class Property {
 	 * 
 	 * @throws IllegalPropertyException
 	 *             if the given <tt>String</tt> doesn't respect the pattern
-	 *             "^\\w+([.]\\w+)*=.*$".
+	 *             {@link #PATTERN}.
+	 * @throws IllegalPropertyException
+	 *             if the Name part of the given <tt>String</tt> is empty.
+	 * @throws IllegalPropertyException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given <tt>String</tt> is null.
-	 * 
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static Property parseProperty(String v)
 			throws IllegalPropertyException {
@@ -79,30 +76,20 @@ public class Property {
 	}
 
 	/**
-	 * <p>
-	 * Creates an {@link Property} object, based on the given values.
-	 * </p>
-	 * 
-	 * <p>
-	 * <i> * Act as {@link Property#Property(String, String, String)}, where
-	 * <code>comment</code> is null, except that it will not throw an
-	 * {@link IllegalArgumentException}. <BR/>
-	 * </i>
-	 * </p>
-	 * 
 	 * @param name
-	 *            is the name of the {@link Property} object.
+	 *            is the name of the {@link Property} object to create.
 	 * @param value
-	 *            is the value corresponding to the key.
+	 *            is the value associated to the given name.
 	 * 
 	 * @throws IllegalPropertyException
-	 *             if the the given <code>key</code> doesn't respect the pattern
-	 *             "^\\w+([.]\\w+)*$".
+	 *             if the given name doesn't respect the pattern
+	 *             {@link #PATTERN}.
+	 * @throws IllegalPropertyException
+	 *             if the given name is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given <code>key</code> is null.
+	 *             if the given name is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given <code>value</code> is null.
-	 * 
+	 *             if the given value is <tt>null</tt>.
 	 */
 	public Property(String name, String value) throws IllegalPropertyException {
 		this();
@@ -111,25 +98,22 @@ public class Property {
 	}
 
 	/**
-	 * <p>
-	 * Creates an {@link Property} object, based on the given values.
-	 * </p>
-	 * 
 	 * @param name
-	 *            is the key of the {@link Property} object.
+	 *            is the name of the {@link Property} object to create.
 	 * @param value
-	 *            is the value corresponding to the key.
+	 *            is the value associated to the given name.
 	 * @param comment
-	 *            is a comment.
+	 *            is a comment associated to the given name.
 	 * 
 	 * @throws IllegalPropertyException
-	 *             if the the given <code>key</code> doesn't respect the pattern
-	 *             "^\\w+([.]\\w+)*$".
+	 *             if the given name doesn't respect the pattern
+	 *             {@link #PATTERN}.
+	 * @throws IllegalPropertyException
+	 *             if the given name is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given <code>key</code> is null.
+	 *             if the given name is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given <code>value</code> is null.
-	 * 
+	 *             if the given value is <tt>null</tt>.
 	 */
 	public Property(String name, String value, String comment)
 			throws IllegalPropertyException {
@@ -138,22 +122,17 @@ public class Property {
 	}
 
 	/**
-	 * <p>
-	 * Creates an {@link Property} object, based on the given values.
-	 * </p>
-	 * 
 	 * @param name
-	 *            is the key of the {@link Property} object.
+	 *            is the name of the {@link Property} object to create.
 	 * @param value
-	 *            is the value corresponding to the key.
+	 *            is the value associated to the given name.
 	 * @param comment
-	 *            is a comment.
+	 *            is a comment associated to the given name.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given <code>key</code> is null.
+	 *             if the given name is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given <code>value</code> is null.
-	 * 
+	 *             if the given value is <tt>null</tt>.
 	 */
 	public Property(PropertyName name, String value, String comment) {
 		this();
@@ -164,26 +143,24 @@ public class Property {
 
 	/**
 	 * <p>
-	 * Create a {@link Property} object based on the the given <tt>String</tt>.
+	 * Create a {@link Property} object, based on the the given <tt>String</tt>.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> The given <tt>String</tt> must be composed of a Name part, followed
-	 * by the equal character ('='), followed by the Value part. <BR/>
-	 * More formally : <BR/>
-	 * * The given <tt>String</tt> must satisfied the following pattern :
-	 * <code>"^\\w+([.]\\w+)*=.*$"</code>. <BR/>
-	 * * It implies that space character (<code>' '</code>) are forbidden in the
-	 * Name part. <BR/>
-	 * * It implies that comma character (<code>','</code>) are forbidden in the
-	 * Name part. <BR/>
-	 * * It implies the Name part cannot be an empty <tt>String</tt>. <BR/>
-	 * * It implies the given <tt>String</tt> cannot an empty <tt>String</tt>. <BR/>
-	 * </i>
+	 * The given <tt>String</tt> must be composed of a Name part, followed by
+	 * the equal character ('='), followed by the Value part. More formally :
+	 * <ul>
+	 * <li>The given <tt>String</tt> must satisfied the pattern {@link #PATTERN}
+	 * ;</li>
+	 * <li>the Name part cannot contains space character (<code>' '</code>),
+	 * comma character ( <code>','</code>) and equal character (<code>'='</code>
+	 * ) ;</li>
+	 * <li>The Name part cannot be an empty <tt>String</tt> ;</li>
+	 * </ul>
 	 * </p>
 	 * 
 	 * @param v
-	 *            is the given <tt>String</tt>.
+	 *            is the <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link Property} object, whose 'name' is equal to the Name part
 	 *         of the given <tt>String</tt> and whose 'value' is equal to the
@@ -191,10 +168,13 @@ public class Property {
 	 * 
 	 * @throws IllegalPropertyException
 	 *             if the given <tt>String</tt> doesn't respect the pattern
-	 *             "^\\w+([.]\\w+)*=.*$".
+	 *             {@link #PATTERN}.
+	 * @throws IllegalPropertyException
+	 *             if the Name part of the given <tt>String</tt> is empty.
+	 * @throws IllegalPropertyException
+	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given <tt>String</tt> is null.
-	 * 
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public Property(String v) throws IllegalPropertyException {
 		this();

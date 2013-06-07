@@ -480,4 +480,5 @@ public abstract class XPathExpander {
 
 		return left + sMsg.substring(absLeft, absRight).trim() + right;
 	}
+
 }

@@ -11,20 +11,22 @@ public class PropertyName {
 
 	/**
 	 * <p>
-	 * Convert the given <tt>String</tt> to an {@link PropertyName} object.
+	 * Convert the given <tt>String</tt> to a {@link PropertyName} object.
 	 * </p>
 	 * 
 	 * @param propertyName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link PropertyName} object, whose equal to the given input
+	 * @return a {@link PropertyName} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalPropertyNameException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link PropertyName}.
+	 *             if the given <tt>String</tt> is empty.
+	 * @throws IllegalPropertyNameException
+	 *             if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static PropertyName parseString(String propertyName)
 			throws IllegalPropertyNameException {
@@ -32,15 +34,20 @@ public class PropertyName {
 	}
 
 	/**
-	 * The pattern which the 'name' must satisfied
+	 * The pattern which this object must satisfy.
 	 */
-	public static final String PATTERN = "\\w+([.]\\w+)*";
+	public static final String PATTERN = "\\w+([.-]\\w+)*";
 
 	private String _value;
 
 	public PropertyName(String propertyName)
 			throws IllegalPropertyNameException {
 		setValue(propertyName);
+	}
+
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
@@ -68,7 +75,8 @@ public class PropertyName {
 			throws IllegalPropertyNameException {
 		if (propertyName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a PropertyName).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		if (propertyName.trim().length() == 0) {
 			throw new IllegalPropertyNameException(Messages.bind(

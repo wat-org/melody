@@ -4,13 +4,9 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
-import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
-import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
-import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
-import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -108,93 +104,37 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadRegion(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, REGION_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		return v;
+		return InstanceDatasHelper.findInstanceRegion(e);
 	}
 
 	private String loadSite(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, SITE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		return v;
+		return InstanceDatasHelper.findInstanceSite(e);
 	}
 
 	private String loadImageId(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, IMAGEID_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		return v;
+		return InstanceDatasHelper.findInstanceImageId(e);
 	}
 
 	private InstanceType loadInstanceType(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, INSTANCETYPE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			return InstanceType.parseString(v);
-		} catch (IllegalInstanceTypeException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					INSTANCETYPE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return InstanceDatasHelper.findInstanceType(e);
 	}
 
 	private KeyPairRepositoryPath loadKeyPairRepositoryPath(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, KEYPAIR_REPO_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			return new KeyPairRepositoryPath(v);
-		} catch (KeyPairRepositoryPathException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					KEYPAIR_REPO_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return InstanceDatasHelper.findInstanceKeyPairRepositoryPath(e);
 	}
 
 	private KeyPairName loadKeyPairName(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, KEYPAIR_NAME_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			return KeyPairName.parseString(v);
-		} catch (IllegalKeyPairNameException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					KEYPAIR_NAME_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return InstanceDatasHelper.findInstanceKeyPairName(e);
 	}
 
 	private String loadPassphrase(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, PASSPHRASE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		return v;
+		return InstanceDatasHelper.findInstancePassphrase(e);
 	}
 
 	private KeyPairSize loadKeyPairSize(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, KEYPAIR_SIZE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
-		try {
-			return KeyPairSize.parseString(v);
-		} catch (IllegalKeyPairSizeException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					KEYPAIR_SIZE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return InstanceDatasHelper.findInstanceKeyPairSize(e);
 	}
 
 	private GenericTimeout loadCreateTimeout(Element e)
