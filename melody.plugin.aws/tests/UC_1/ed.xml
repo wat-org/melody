@@ -38,7 +38,7 @@
 
 	<instances>
 		<WEB>
-			<instance availability-zone="a" herit="./environment/models/model[@name='model-WEB']" name="web-a01">
+			<instance herit="./environment/models/model[@name='model-WEB']" name="web-a01" site="a">
 				<disk-devices>
 					<tcp access="allow" directions="in" from-ips="all" to-ports="8080,8443"/>
 				</disk-devices>
@@ -49,12 +49,12 @@
 					<interface device-name="eth0"/>
 				</network-devices>
 			</instance>	
-			<instance availability-zone="b" herit="./environment/models/model[@name='model-WEB']" name="web-b01">
+			<instance herit="./environment/models/model[@name='model-WEB']" name="web-b01" site="b">
 				<network-devices>
 					<interface device-name="eth0"/>
 				</network-devices>
 			</instance>	
-			<instance availability-zone="c" herit="./environment/models/model[@name='model-WEB']" name="web-c01">
+			<instance herit="./environment/models/model[@name='model-WEB']" name="web-c01" site="c">
 				<network-devices>
 					<interface device-name="eth0"/>
 				</network-devices>

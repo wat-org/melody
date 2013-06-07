@@ -7,6 +7,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsInstanceController;
 import com.wat.melody.api.IResourcesDescriptor;
 import com.wat.melody.api.ITask;
@@ -16,14 +17,18 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
+import com.wat.melody.cloud.instance.InstanceDatas;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
+import com.wat.melody.cloud.instance.InstanceDatasValidator;
+import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
 import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
+import com.wat.melody.common.timeout.GenericTimeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -31,12 +36,20 @@ import com.wat.melody.xpathextensions.XPathHelper;
  * 
  */
 abstract public class AbstractOperation implements ITask,
-		NetworkManagerFactoryConfigurationCallback {
+		InstanceDatasValidator, NetworkManagerFactoryConfigurationCallback {
 
-	/**
-	 * Task's attribute, which specifies the region where the instance is.
-	 */
-	public static final String REGION_ATTR = "region";
+	private static GenericTimeout createTimeout(int timeout) {
+		try {
+			return GenericTimeout.parseLong(timeout);
+		} catch (IllegalTimeoutException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a GenricTimeout with value '" + timeout + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
 
 	/**
 	 * Task's attribute, which specifies the {@link Element} which contains the
@@ -44,58 +57,31 @@ abstract public class AbstractOperation implements ITask,
 	 */
 	public static final String TARGET_ATTR = "target";
 
-	/**
-	 * Task's attribute, which specifies the operation timeout.
-	 */
-	public static final String TIMEOUT_ATTR = "timeout";
-
+	private String _target = null;
+	private Element _targetElmt = null;
+	private String _instanceId = null;
 	private AmazonEC2 _cloudConnection = null;
 	private InstanceController _instance = null;
-	private String _instanceId = null;
-	private Element _targetElement = null;
-	private String _region = null;
-	private String _target = null;
-	private long _timeout = 90000;
+	private InstanceDatas _instanceDatas = null;
+	private GenericTimeout _defaultTimeout = createTimeout(90000);
 
 	public AbstractOperation() {
 	}
 
 	@Override
 	public void validate() throws AwsException {
-		// Initialize task parameters with their default value
-		String v = null;
+		// Build an InstanceDatas with target Element's datas found in the RD
 		try {
-			v = XPathHelper.getHeritedAttributeValue(getTargetElement(),
-					Common.REGION_ATTR);
+			setInstanceDatas(new InstanceDatasLoader().load(getTargetElement(),
+					this));
 		} catch (NodeRelatedException Ex) {
 			throw new AwsException(Ex);
 		}
-		try {
-			if (v != null) {
-				setRegion(v);
-			}
-		} catch (AwsException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_REGION_ERROR, Common.REGION_ATTR,
-					getTargetElementLocation()), Ex);
-		}
-
-		// Is everything correctly loaded ?
-		if (getRegion() == null) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_MISSING_REGION_ATTR, REGION_ATTR,
-					getClass().getSimpleName().toLowerCase(),
-					Common.REGION_ATTR, getTargetElementLocation()));
-		}
-
-		// Initialize AmazonEC2 for the current region
-		setCloudConnection(getAwsPlugInConfiguration().getCloudConnection(
-				getRegion()));
 
 		setInstance(createInstance());
 	}
 
-	public InstanceController createInstance() throws AwsException {
+	protected InstanceController createInstance() throws AwsException {
 		InstanceController instance = newAwsInstanceController();
 		instance = new InstanceControllerWithRelatedNode(instance,
 				getTargetElement());
@@ -111,20 +97,16 @@ abstract public class AbstractOperation implements ITask,
 	 * Can be override by subclasses to provide enhanced behavior of the
 	 * {@link AwsInstanceController}.
 	 */
-	public InstanceController newAwsInstanceController() {
+	protected InstanceController newAwsInstanceController() {
 		return new AwsInstanceController(getCloudConnection(), getInstanceId());
 	}
 
-	public IResourcesDescriptor getRD() {
+	protected IResourcesDescriptor getRD() {
 		return Melody.getContext().getProcessorManager()
 				.getResourcesDescriptor();
 	}
 
-	public String getTargetElementLocation() {
-		return DocHelper.getNodeLocation(getTargetElement()).toFullString();
-	}
-
-	public AwsPlugInConfiguration getAwsPlugInConfiguration()
+	protected AwsPlugInConfiguration getAwsPlugInConfiguration()
 			throws AwsException {
 		try {
 			return AwsPlugInConfiguration.get(Melody.getContext()
@@ -134,7 +116,7 @@ abstract public class AbstractOperation implements ITask,
 		}
 	}
 
-	public SshPlugInConfiguration getSshPlugInConfiguration()
+	protected SshPlugInConfiguration getSshPlugInConfiguration()
 			throws AwsException {
 		try {
 			return SshPlugInConfiguration.get(Melody.getContext()
@@ -156,11 +138,167 @@ abstract public class AbstractOperation implements ITask,
 		}
 	}
 
+	@Override
+	public void validateAndTransform(InstanceDatas datas)
+			throws IllegalInstanceDatasException {
+		try {
+			validateRegion(datas);
+			validateSite(datas);
+			validateImageId(datas);
+			validateInstanceType(datas);
+			validateKeyPairRepositoryPath(datas);
+			validateKeyPairName(datas);
+			validateKeyPairSize(datas);
+			validatePassphrase(datas);
+			validateCreateTimeout(datas);
+			validateDeleteTimeout(datas);
+			validateStartTimeout(datas);
+			validateStopTimeout(datas);
+		} catch (AwsException Ex) {
+			throw new IllegalInstanceDatasException(Ex);
+		}
+	}
+
+	protected void validateRegion(InstanceDatas datas)
+			throws IllegalInstanceDatasException, AwsException {
+		if (datas.getRegion() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_REGION_ATTR,
+					InstanceDatasLoader.REGION_ATTR));
+		}
+		AmazonEC2 connect = getAwsPlugInConfiguration().getCloudConnection(
+				datas.getRegion());
+		if (connect == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_INVALID_REGION_ATTR, datas.getRegion()));
+		}
+		setCloudConnection(connect);
+	}
+
+	protected void validateSite(InstanceDatas datas)
+			throws IllegalInstanceDatasException {
+		if (datas.getSite() == null) {
+			// can be null
+			return;
+		}
+		String az = datas.getRegion() + datas.getSite();
+		if (!AwsEc2Cloud.availabilityZoneExists(getCloudConnection(), az)) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_INVALID_SITE_ATTR, az));
+		}
+		datas.setSite(az);
+	}
+
+	protected void validateImageId(InstanceDatas datas)
+			throws IllegalInstanceDatasException {
+		if (datas.getImageId() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_IMAGEID_ATTR,
+					InstanceDatasLoader.IMAGEID_ATTR));
+		}
+		if (!AwsEc2Cloud
+				.imageIdExists(getCloudConnection(), datas.getImageId())) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_INVALID_IMAGEID_ATTR,
+					datas.getImageId(), datas.getRegion()));
+		}
+	}
+
+	protected void validateInstanceType(InstanceDatas datas)
+			throws IllegalInstanceDatasException {
+		if (datas.getInstanceType() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_INSTANCETYPE_ATTR,
+					InstanceDatasLoader.INSTANCETYPE_ATTR));
+		}
+	}
+
+	protected void validateKeyPairRepositoryPath(InstanceDatas datas)
+			throws AwsException {
+		if (datas.getKeyPairRepositoryPath() == null) {
+			datas.setKeyPairRepositoryPath(getSshPlugInConfiguration()
+					.getKeyPairRepositoryPath());
+		}
+	}
+
+	protected void validateKeyPairName(InstanceDatas datas)
+			throws IllegalInstanceDatasException {
+		if (datas.getKeyPairName() == null) {
+			throw new IllegalInstanceDatasException(Messages.bind(
+					Messages.MachineEx_MISSING_KEYPAIR_NAME_ATTR,
+					InstanceDatasLoader.KEYPAIR_NAME_ATTR));
+		}
+	}
+
+	protected void validatePassphrase(InstanceDatas datas) {
+		// can be null
+	}
+
+	protected void validateKeyPairSize(InstanceDatas datas) throws AwsException {
+		if (datas.getKeyPairSize() == null) {
+			datas.setKeyPairSize(getSshPlugInConfiguration().getKeyPairSize());
+		}
+	}
+
+	protected void validateCreateTimeout(InstanceDatas datas) {
+		if (datas.getCreateTimeout() == null) {
+			datas.setCreateTimeout(getDefaultTimeout());
+		}
+	}
+
+	protected void validateDeleteTimeout(InstanceDatas datas) {
+		if (datas.getDeleteTimeout() == null) {
+			datas.setDeleteTimeout(getDefaultTimeout().factor(2));
+		}
+	}
+
+	protected void validateStartTimeout(InstanceDatas datas) {
+		if (datas.getStartTimeout() == null) {
+			datas.setStartTimeout(getDefaultTimeout());
+		}
+	}
+
+	protected void validateStopTimeout(InstanceDatas datas) {
+		if (datas.getStopTimeout() != null) {
+			datas.setStopTimeout(getDefaultTimeout());
+		}
+	}
+
+	protected InstanceDatas getInstanceDatas() {
+		return _instanceDatas;
+	}
+
+	protected InstanceDatas setInstanceDatas(InstanceDatas instanceDatas) {
+		if (instanceDatas == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ InstanceDatas.class.getCanonicalName() + ".");
+		}
+		InstanceDatas previous = getInstanceDatas();
+		_instanceDatas = instanceDatas;
+		return previous;
+	}
+
+	protected GenericTimeout getDefaultTimeout() {
+		return _defaultTimeout;
+	}
+
+	protected GenericTimeout setDefaultTimeout(GenericTimeout timeout) {
+		if (timeout == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ GenericTimeout.class.getCanonicalName() + ".");
+		}
+		GenericTimeout previous = getDefaultTimeout();
+		_defaultTimeout = timeout;
+		return previous;
+	}
+
 	protected AmazonEC2 getCloudConnection() {
 		return _cloudConnection;
 	}
 
-	private AmazonEC2 setCloudConnection(AmazonEC2 ec2) {
+	protected AmazonEC2 setCloudConnection(AmazonEC2 ec2) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
@@ -171,11 +309,11 @@ abstract public class AbstractOperation implements ITask,
 		return previous;
 	}
 
-	public InstanceController getInstance() {
+	protected InstanceController getInstance() {
 		return _instance;
 	}
 
-	public InstanceController setInstance(InstanceController instance) {
+	protected InstanceController setInstance(InstanceController instance) {
 		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -189,31 +327,31 @@ abstract public class AbstractOperation implements ITask,
 	/**
 	 * @return the targeted {@link Element}.
 	 */
-	public Element getTargetElement() {
-		return _targetElement;
+	protected Element getTargetElement() {
+		return _targetElmt;
 	}
 
-	public Element setTargetElement(Element n) {
+	protected Element setTargetElement(Element n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
-					+ " (the targeted AWS Instance Element Node).");
+					+ " (the targeted Aws Instance Element Node).");
 		}
 		Element previous = getTargetElement();
-		_targetElement = n;
+		_targetElmt = n;
 		return previous;
 	}
 
 	/**
 	 * @return the Instance Id which is registered in the targeted Element Node
-	 *         (can be <code>null</code>).
+	 *         (can be <tt>null</tt>).
 	 */
 	protected String getInstanceId() {
 		return _instanceId;
 	}
 
 	protected String setInstanceId(String instanceID) {
-		// can be null, if no AWS instance have been created yet
+		// can be null, if no Instance have been created yet
 		String previous = getInstanceId();
 		_instanceId = instanceID;
 		return previous;
@@ -266,40 +404,6 @@ abstract public class AbstractOperation implements ITask,
 		}
 		String previous = getTarget();
 		_target = target;
-		return previous;
-	}
-
-	public String getRegion() {
-		return _region;
-	}
-
-	@Attribute(name = REGION_ATTR)
-	public String setRegion(String region) throws AwsException {
-		if (region == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an AWS Region Name).");
-		}
-		if (getAwsPlugInConfiguration().getCloudConnection(region) == null) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_REGION_ATTR, region));
-		}
-		String previous = getRegion();
-		this._region = region;
-		return previous;
-	}
-
-	public long getTimeout() {
-		return _timeout;
-	}
-
-	@Attribute(name = TIMEOUT_ATTR)
-	public long setTimeout(long timeout) throws AwsException {
-		if (timeout < 0) {
-			throw new AwsException(Messages.bind(
-					Messages.MachineEx_INVALID_TIMEOUT_ATTR, timeout));
-		}
-		long previous = getTimeout();
-		_timeout = timeout;
 		return previous;
 	}
 

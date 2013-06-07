@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.libvirt;
 
-import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.firewall.FireWallRulesLoader;
@@ -17,7 +16,7 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * 
  */
 @Task(name = UpdateFireWall.UPDATE_FIREWALL)
-public class UpdateFireWall extends AbstractOperation implements ITask {
+public class UpdateFireWall extends AbstractOperation {
 
 	/**
 	 * Task's name

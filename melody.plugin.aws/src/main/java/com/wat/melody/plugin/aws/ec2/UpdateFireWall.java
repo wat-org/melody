@@ -48,17 +48,17 @@ public class UpdateFireWall extends AbstractOperation {
 		try {
 			getInstance().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
 		} catch (OperationException Ex) {
-			throw new AwsException(Messages.bind(
-					Messages.UpdateFireWallEx_GENERIC_FAIL,
-					getTargetElementLocation()), Ex);
+			throw new AwsException(new NodeRelatedException(getTargetElement(),
+					Messages.UpdateFireWallEx_GENERIC_FAIL, Ex));
+
 		}
 	}
 
-	private FireWallRulesPerDevice getFwRules() {
+	protected FireWallRulesPerDevice getFwRules() {
 		return _rulesPerDevice;
 	}
 
-	private FireWallRulesPerDevice setFwRules(FireWallRulesPerDevice fwrs) {
+	protected FireWallRulesPerDevice setFwRules(FireWallRulesPerDevice fwrs) {
 		if (fwrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "

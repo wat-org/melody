@@ -52,20 +52,10 @@ public abstract class AbstractOperation implements ITask,
 	}
 
 	/**
-	 * Task's attribute, which specifies the region where the instance is.
-	 */
-	public static final String REGION_ATTR = "region";
-
-	/**
 	 * Task's attribute, which specifies the {@link Element} which contains the
 	 * instance description.
 	 */
 	public static final String TARGET_ATTR = "target";
-
-	/**
-	 * Task's attribute, which specifies the operation timeout.
-	 */
-	public static final String TIMEOUT_ATTR = "timeout";
 
 	private String _target = null;
 	private Element _targetElmt = null;
@@ -87,10 +77,6 @@ public abstract class AbstractOperation implements ITask,
 		} catch (NodeRelatedException Ex) {
 			throw new LibVirtException(Ex);
 		}
-
-		// Initialize Cloud Connection
-		setCloudConnection(getLibVirtPlugInConfiguration().getCloudConnection(
-				getInstanceDatas().getRegion()));
 
 		setInstance(createInstance());
 	}
@@ -181,11 +167,15 @@ public abstract class AbstractOperation implements ITask,
 					Messages.MachineEx_MISSING_REGION_ATTR,
 					InstanceDatasLoader.REGION_ATTR));
 		}
-		if (getLibVirtPlugInConfiguration().getCloudConnection(
-				datas.getRegion()) == null) {
+		Connect connect = getLibVirtPlugInConfiguration().getCloudConnection(
+				datas.getRegion());
+		if (connect == null) {
 			throw new IllegalInstanceDatasException(Messages.bind(
 					Messages.MachineEx_INVALID_REGION_ATTR, datas.getRegion()));
 		}
+		// Initialize Cloud Connection
+		setCloudConnection(connect);
+
 	}
 
 	protected void validateSite(InstanceDatas datas) {
@@ -267,7 +257,7 @@ public abstract class AbstractOperation implements ITask,
 		}
 	}
 
-	public InstanceDatas getInstanceDatas() {
+	protected InstanceDatas getInstanceDatas() {
 		return _instanceDatas;
 	}
 
@@ -282,7 +272,7 @@ public abstract class AbstractOperation implements ITask,
 		return previous;
 	}
 
-	public GenericTimeout getDefaultTimeout() {
+	protected GenericTimeout getDefaultTimeout() {
 		return _defaultTimeout;
 	}
 
@@ -312,7 +302,7 @@ public abstract class AbstractOperation implements ITask,
 		return previous;
 	}
 
-	public InstanceController getInstance() {
+	protected InstanceController getInstance() {
 		return _instance;
 	}
 
@@ -330,7 +320,7 @@ public abstract class AbstractOperation implements ITask,
 	/**
 	 * @return the targeted {@link Element}.
 	 */
-	public Element getTargetElement() {
+	protected Element getTargetElement() {
 		return _targetElmt;
 	}
 
@@ -349,14 +339,14 @@ public abstract class AbstractOperation implements ITask,
 	 * @return the Instance Id which is registered in the targeted Element Node
 	 *         (can be <tt>null</tt>).
 	 */
-	public String getInstanceId() {
+	protected String getInstanceId() {
 		return _instanceId;
 	}
 
-	protected String setInstanceId(String sInstanceID) {
+	protected String setInstanceId(String instanceID) {
 		// can be null, if no Instance have been created yet
 		String previous = getInstanceId();
-		_instanceId = sInstanceID;
+		_instanceId = instanceID;
 		return previous;
 	}
 
@@ -372,8 +362,8 @@ public abstract class AbstractOperation implements ITask,
 		if (target == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an XPath Expression, which "
-					+ "selects a sole XML Element node in the Resources "
-					+ "Descriptor.");
+					+ "selects a unique XML Element node in the Resources "
+					+ "Descriptor).");
 		}
 
 		NodeList nl = null;
