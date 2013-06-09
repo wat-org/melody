@@ -16,9 +16,9 @@ public class LoggerOutputStream extends OutputStream {
 
 	private static Log log = LogFactory.getLog(LoggerOutputStream.class);
 
-	protected StringBuffer mBuffer;
-	private String msPrefix;
-	private LogThreshold moLevel;
+	protected StringBuffer _buffer;
+	private String _prefix;
+	private LogThreshold _level;
 
 	public LoggerOutputStream(String sPrefix, LogThreshold level) {
 		setBuffer(new StringBuffer());
@@ -39,7 +39,7 @@ public class LoggerOutputStream extends OutputStream {
 	}
 
 	protected StringBuffer getBuffer() {
-		return mBuffer;
+		return _buffer;
 	}
 
 	protected StringBuffer setBuffer(StringBuffer b) {
@@ -48,12 +48,12 @@ public class LoggerOutputStream extends OutputStream {
 					+ "Must be a valid StringBuffer.");
 		}
 		StringBuffer previous = getBuffer();
-		mBuffer = b;
+		_buffer = b;
 		return previous;
 	}
 
 	protected String getPrefix() {
-		return msPrefix;
+		return _prefix;
 	}
 
 	protected String setPrefix(String sPrefix) {
@@ -62,12 +62,12 @@ public class LoggerOutputStream extends OutputStream {
 					+ "Must be a valid String.");
 		}
 		String previous = getPrefix();
-		msPrefix = sPrefix;
+		_prefix = sPrefix;
 		return previous;
 	}
 
 	protected LogThreshold getLevel() {
-		return moLevel;
+		return _level;
 	}
 
 	protected LogThreshold setLevel(LogThreshold level) {
@@ -76,7 +76,7 @@ public class LoggerOutputStream extends OutputStream {
 					+ "Must be a valid LogThreshold.");
 		}
 		LogThreshold previous = getLevel();
-		moLevel = level;
+		_level = level;
 		return previous;
 	}
 

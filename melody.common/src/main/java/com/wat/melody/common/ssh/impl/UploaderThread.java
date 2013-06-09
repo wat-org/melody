@@ -13,9 +13,9 @@ import com.wat.melody.common.ssh.types.SimpleResource;
  */
 class UploaderThread implements Runnable {
 
-	private UploaderMultiThread moUpload;
-	private Thread moThread;
-	private Throwable moFinalError;
+	private UploaderMultiThread _upload;
+	private Thread _thread;
+	private Throwable _finalError;
 
 	protected UploaderThread(UploaderMultiThread p, int index) {
 		setUploader(p);
@@ -83,7 +83,7 @@ class UploaderThread implements Runnable {
 	}
 
 	private UploaderMultiThread getUploader() {
-		return moUpload;
+		return _upload;
 	}
 
 	private void setUploader(UploaderMultiThread p) {
@@ -92,22 +92,22 @@ class UploaderThread implements Runnable {
 					+ "Must be a valid "
 					+ UploaderMultiThread.class.getCanonicalName() + ".");
 		}
-		moUpload = p;
+		_upload = p;
 	}
 
 	private Thread getThread() {
-		return moThread;
+		return _thread;
 	}
 
 	private Thread setThread(Thread t) {
-		return moThread = t;
+		return _thread = t;
 	}
 
 	protected Throwable getFinalError() {
-		return moFinalError;
+		return _finalError;
 	}
 
 	private Throwable setFinalError(Throwable e) {
-		return moFinalError = e;
+		return _finalError = e;
 	}
 }

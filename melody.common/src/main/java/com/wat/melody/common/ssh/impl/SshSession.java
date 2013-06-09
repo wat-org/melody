@@ -41,29 +41,29 @@ public class SshSession implements ISshSession {
 
 	private Session _session = null;
 
-	private ISshSessionConfiguration moSshSessionConfiguration = null;
-	private ISshUserDatas moSshUserDatas = null;
-	private ISshConnectionDatas moSshConnectionDatas = null;
+	private ISshSessionConfiguration _sshSessionConfiguration = null;
+	private ISshUserDatas _sshUserDatas = null;
+	private ISshConnectionDatas _sshConnectionDatas = null;
 
 	public SshSession() {
 	}
 
 	@Override
 	public ISshSessionConfiguration getSessionConfiguration() {
-		return moSshSessionConfiguration;
+		return _sshSessionConfiguration;
 	}
 
 	@Override
 	public ISshSessionConfiguration setSessionConfiguration(
 			ISshSessionConfiguration sc) {
 		ISshSessionConfiguration previous = getSessionConfiguration();
-		moSshSessionConfiguration = sc;
+		_sshSessionConfiguration = sc;
 		return previous;
 	}
 
 	@Override
 	public ISshUserDatas getUserDatas() {
-		return moSshUserDatas;
+		return _sshUserDatas;
 	}
 
 	@Override
@@ -74,13 +74,13 @@ public class SshSession implements ISshSession {
 					+ ISshUserDatas.class.getCanonicalName() + ".");
 		}
 		ISshUserDatas previous = getUserDatas();
-		moSshUserDatas = ud;
+		_sshUserDatas = ud;
 		return previous;
 	}
 
 	@Override
 	public ISshConnectionDatas getConnectionDatas() {
-		return moSshConnectionDatas;
+		return _sshConnectionDatas;
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class SshSession implements ISshSession {
 					+ ISshConnectionDatas.class.getCanonicalName() + ".");
 		}
 		ISshConnectionDatas previous = getConnectionDatas();
-		moSshConnectionDatas = cd;
+		_sshConnectionDatas = cd;
 		return previous;
 	}
 

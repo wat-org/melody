@@ -22,25 +22,25 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  */
 public class SshSessionConfiguration implements ISshSessionConfiguration {
 
-	private IKnownHostsRepository moKnownHosts;
-	private CompressionLevel miCompressionLevel;
-	private CompressionType msCompressionType;
-	private ConnectionTimeout miConnectionTimeout;
-	private ReadTimeout miReadTimeout;
-	private ServerAliveMaxCount miServerAliveCountMax;
-	private ServerAliveInterval miServerAliveInterval;
-	private ProxyType moProxyType;
-	private Host moProxyHost;
-	private Port moProxyPort;
+	private IKnownHostsRepository _knownHosts;
+	private CompressionLevel _compressionLevel;
+	private CompressionType _compressionType;
+	private ConnectionTimeout _connectionTimeout;
+	private ReadTimeout _readTimeout;
+	private ServerAliveMaxCount _serverAliveCountMax;
+	private ServerAliveInterval _serverAliveInterval;
+	private ProxyType _proxyType;
+	private Host _proxyHost;
+	private Port _proxyPort;
 
 	public SshSessionConfiguration() {
-		miCompressionLevel = CompressionLevel.NONE;
-		msCompressionType = CompressionType.NONE;
+		_compressionLevel = CompressionLevel.NONE;
+		_compressionType = CompressionType.NONE;
 		try {
-			miServerAliveCountMax = ServerAliveMaxCount.parseInt(1);
-			miConnectionTimeout = ConnectionTimeout.parseLong(15000);
-			miReadTimeout = ReadTimeout.parseLong(60000);
-			miServerAliveInterval = ServerAliveInterval.parseLong(10000);
+			_serverAliveCountMax = ServerAliveMaxCount.parseInt(1);
+			_connectionTimeout = ConnectionTimeout.parseLong(15000);
+			_readTimeout = ReadTimeout.parseLong(60000);
+			_serverAliveInterval = ServerAliveInterval.parseLong(10000);
 		} catch (IllegalServerAliveMaxCountException | IllegalTimeoutException Ex) {
 			throw new RuntimeException("Hard coded value is not valid. "
 					+ "Source code have been modified and a bug have "
@@ -49,8 +49,14 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
+	public String toString() {
+		// TODO : write the toString() method of SshSessionConfiguration
+		return "TODO";
+	}
+
+	@Override
 	public IKnownHostsRepository getKnownHosts() {
-		return moKnownHosts;
+		return _knownHosts;
 	}
 
 	@Override
@@ -61,13 +67,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ KnownHostsRepository.class.getCanonicalName() + ".");
 		}
 		IKnownHostsRepository previous = getKnownHosts();
-		moKnownHosts = knownHosts;
+		_knownHosts = knownHosts;
 		return previous;
 	}
 
 	@Override
 	public CompressionLevel getCompressionLevel() {
-		return miCompressionLevel;
+		return _compressionLevel;
 	}
 
 	@Override
@@ -79,13 +85,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ CompressionLevel.class.getCanonicalName() + ".");
 		}
 		CompressionLevel previous = getCompressionLevel();
-		miCompressionLevel = compressionLevel;
+		_compressionLevel = compressionLevel;
 		return previous;
 	}
 
 	@Override
 	public CompressionType getCompressionType() {
-		return msCompressionType;
+		return _compressionType;
 	}
 
 	@Override
@@ -96,13 +102,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ CompressionType.class.getCanonicalName() + ".");
 		}
 		CompressionType previous = getCompressionType();
-		msCompressionType = compressionType;
+		_compressionType = compressionType;
 		return previous;
 	}
 
 	@Override
 	public Timeout getConnectionTimeout() {
-		return miConnectionTimeout;
+		return _connectionTimeout;
 	}
 
 	@Override
@@ -113,13 +119,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ ConnectionTimeout.class.getCanonicalName() + ".");
 		}
 		Timeout previous = getConnectionTimeout();
-		miConnectionTimeout = ival;
+		_connectionTimeout = ival;
 		return previous;
 	}
 
 	@Override
 	public Timeout getReadTimeout() {
-		return miReadTimeout;
+		return _readTimeout;
 	}
 
 	@Override
@@ -130,13 +136,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ ".");
 		}
 		Timeout previous = getReadTimeout();
-		miReadTimeout = ival;
+		_readTimeout = ival;
 		return previous;
 	}
 
 	@Override
 	public ServerAliveMaxCount getServerAliveCountMax() {
-		return miServerAliveCountMax;
+		return _serverAliveCountMax;
 	}
 
 	@Override
@@ -147,13 +153,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ ServerAliveMaxCount.class.getCanonicalName() + ".");
 		}
 		ServerAliveMaxCount previous = getServerAliveCountMax();
-		miServerAliveCountMax = ival;
+		_serverAliveCountMax = ival;
 		return previous;
 	}
 
 	@Override
 	public Timeout getServerAliveInterval() {
-		return miServerAliveInterval;
+		return _serverAliveInterval;
 	}
 
 	@Override
@@ -164,13 +170,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ ServerAliveInterval.class.getCanonicalName() + ".");
 		}
 		Timeout previous = getServerAliveInterval();
-		miServerAliveInterval = ival;
+		_serverAliveInterval = ival;
 		return previous;
 	}
 
 	@Override
 	public ProxyType getProxyType() {
-		return moProxyType;
+		return _proxyType;
 	}
 
 	@Override
@@ -181,13 +187,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ ".");
 		}
 		ProxyType previous = getProxyType();
-		moProxyType = val;
+		_proxyType = val;
 		return previous;
 	}
 
 	@Override
 	public Host getProxyHost() {
-		return moProxyHost;
+		return _proxyHost;
 	}
 
 	@Override
@@ -197,13 +203,13 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ "Must be a valid " + Host.class.getCanonicalName() + ".");
 		}
 		Host previous = getProxyHost();
-		moProxyHost = val;
+		_proxyHost = val;
 		return previous;
 	}
 
 	@Override
 	public Port getProxyPort() {
-		return moProxyPort;
+		return _proxyPort;
 	}
 
 	@Override
@@ -213,7 +219,7 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
 		}
 		Port previous = getProxyPort();
-		moProxyPort = port;
+		_proxyPort = port;
 		return previous;
 	}
 

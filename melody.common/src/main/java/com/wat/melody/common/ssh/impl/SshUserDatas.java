@@ -12,82 +12,91 @@ import com.wat.melody.common.ssh.ISshUserDatas;
  */
 public class SshUserDatas implements ISshUserDatas {
 
-	private String msLogin;
-	private String msPassword;
-	private KeyPairRepositoryPath moKeyPairRepository;
-	private KeyPairName moKeyPairName;
+	private String _login;
+	private String _password;
+	private KeyPairRepositoryPath _keyPairRepositoryPath;
+	private KeyPairName _keyPairName;
 
 	@Override
 	public String toString() {
-		return "{ user:"
-				+ getLogin()
-				+ (getPassword() != null ? ", password:" + getPassword() : "")
-				+ (getKeyPairPath() != null ? ", keypair:" + getKeyPairPath()
-						: "") + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("user:");
+		str.append(getLogin());
+		if (getPassword() != null) {
+			str.append(", password:");
+			str.append(getPassword());
+		}
+		if (getKeyPairPath() != null) {
+			str.append(", keypair:");
+			str.append(getKeyPairPath());
+		}
+		str.append(" }");
+		return str.toString();
 	}
 
 	private String getKeyPairPath() {
 		if (getKeyPairName() == null || getKeyPairRepositoryPath() == null) {
 			return null;
 		}
-		return KeyPairRepository.getKeyPairRepository(getKeyPairRepositoryPath())
+		return KeyPairRepository
+				.getKeyPairRepository(getKeyPairRepositoryPath())
 				.getPrivateKeyFile(getKeyPairName()).getPath();
 	}
 
 	@Override
 	public String getLogin() {
-		return msLogin;
+		return _login;
 	}
 
 	@Override
-	public String setLogin(String sLogin) {
-		if (sLogin == null) {
+	public String setLogin(String login) {
+		if (login == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
 		}
-		if (sLogin.trim().length() == 0) {
+		if (login.trim().length() == 0) {
 			throw new IllegalArgumentException(": Not accepted. "
 					+ "Cannot be empty String.");
 		}
 		String previous = getLogin();
-		msLogin = sLogin;
+		_login = login;
 		return previous;
 	}
 
 	@Override
 	public String getPassword() {
-		return msPassword;
+		return _password;
 	}
 
 	@Override
-	public String setPassword(String sPassword) {
+	public String setPassword(String password) {
 		String previous = getPassword();
-		msPassword = sPassword;
+		_password = password;
 		return previous;
 	}
 
 	@Override
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {
-		return moKeyPairRepository;
+		return _keyPairRepositoryPath;
 	}
 
 	@Override
 	public KeyPairRepositoryPath setKeyPairRepositoryPath(
 			KeyPairRepositoryPath keyPairRepository) {
 		KeyPairRepositoryPath previous = getKeyPairRepositoryPath();
-		moKeyPairRepository = keyPairRepository;
+		_keyPairRepositoryPath = keyPairRepository;
 		return previous;
 	}
 
 	@Override
 	public KeyPairName getKeyPairName() {
-		return moKeyPairName;
+		return _keyPairName;
 	}
 
 	@Override
 	public KeyPairName setKeyPairName(KeyPairName keyPairName) {
 		KeyPairName previous = getKeyPairName();
-		moKeyPairName = keyPairName;
+		_keyPairName = keyPairName;
 		return previous;
 	}
 }

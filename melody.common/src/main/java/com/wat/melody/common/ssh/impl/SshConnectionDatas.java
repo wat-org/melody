@@ -11,19 +11,26 @@ import com.wat.melody.common.ssh.ISshConnectionDatas;
  */
 public class SshConnectionDatas implements ISshConnectionDatas {
 
-	private Host moHost = null;
-	private Port moPort = Port.SSH;
-	private Boolean mbTrust = false;
+	private Host _host = null;
+	private Port _port = Port.SSH;
+	private Boolean _trust = false;
 
 	@Override
 	public String toString() {
-		return "{ host:" + getHost() + ", port:" + getPort() + ", trusted:"
-				+ getTrust() + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("host:");
+		str.append(getHost());
+		str.append(", port:");
+		str.append(getPort());
+		str.append(", trusted:");
+		str.append(getTrust());
+		str.append(" }");
+		return str.toString();
 	}
 
 	@Override
 	public Host getHost() {
-		return moHost;
+		return _host;
 	}
 
 	@Override
@@ -33,13 +40,13 @@ public class SshConnectionDatas implements ISshConnectionDatas {
 					+ "Cannot be null.");
 		}
 		Host previous = getHost();
-		moHost = host;
+		_host = host;
 		return previous;
 	}
 
 	@Override
 	public Port getPort() {
-		return moPort;
+		return _port;
 	}
 
 	@Override
@@ -49,19 +56,19 @@ public class SshConnectionDatas implements ISshConnectionDatas {
 					+ "Cannot be null.");
 		}
 		Port previous = getPort();
-		moPort = port;
+		_port = port;
 		return previous;
 	}
 
 	@Override
 	public boolean getTrust() {
-		return mbTrust;
+		return _trust;
 	}
 
 	@Override
 	public boolean setTrust(boolean b) {
 		boolean previous = getTrust();
-		mbTrust = b;
+		_trust = b;
 		return previous;
 	}
 

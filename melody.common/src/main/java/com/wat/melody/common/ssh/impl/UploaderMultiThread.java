@@ -30,14 +30,14 @@ class UploaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<SimpleResource> maSimpleResourcesList;
-	private int miMaxPar;
+	private List<SimpleResource> _simpleResourcesList;
+	private int _maxPar;
 	private TemplatingHandler _templatingHandler;
 
-	private short miState;
-	private ThreadGroup moThreadGroup;
-	private List<UploaderThread> maThreadsList;
-	private ConsolidatedException moExceptionsSet;
+	private short _state;
+	private ThreadGroup _threadGroup;
+	private List<UploaderThread> _threadsList;
+	private ConsolidatedException _exceptionsSet;
 
 	protected UploaderMultiThread(SshSession session, List<SimpleResource> r,
 			int maxPar, TemplatingHandler th) {
@@ -169,19 +169,19 @@ class UploaderMultiThread {
 	}
 
 	protected short markState(short state) {
-		return miState |= state;
+		return _state |= state;
 	}
 
 	private boolean isFailed() {
-		return FAILED == (miState & FAILED);
+		return FAILED == (_state & FAILED);
 	}
 
 	private boolean isInterrupted() {
-		return INTERRUPTED == (miState & INTERRUPTED);
+		return INTERRUPTED == (_state & INTERRUPTED);
 	}
 
 	private boolean isCritical() {
-		return CRITICAL == (miState & CRITICAL);
+		return CRITICAL == (_state & CRITICAL);
 	}
 
 	protected SshSession getSession() {
@@ -200,7 +200,7 @@ class UploaderMultiThread {
 	}
 
 	protected List<SimpleResource> getSimpleResourcesList() {
-		return maSimpleResourcesList;
+		return _simpleResourcesList;
 	}
 
 	private List<SimpleResource> setSimpleResourcesList(List<SimpleResource> aft) {
@@ -210,14 +210,22 @@ class UploaderMultiThread {
 					+ SimpleResource.class.getCanonicalName() + ">.");
 		}
 		List<SimpleResource> previous = getSimpleResourcesList();
-		maSimpleResourcesList = aft;
+		_simpleResourcesList = aft;
 		return previous;
 	}
 
 	protected int getMaxPar() {
-		return miMaxPar;
+		return _maxPar;
 	}
 
+	/**
+	 * @param iMaxPar
+	 *            is the maximum number of {@link UploaderThread} this object
+	 *            can run simultaneously.
+	 * 
+	 * @throws ForeachException
+	 *             if the given value is not >= 1 and < 10.
+	 */
 	private int setMaxPar(int iMaxPar) {
 		if (iMaxPar < 1) {
 			iMaxPar = 1; // security
@@ -225,7 +233,7 @@ class UploaderMultiThread {
 			iMaxPar = 10; // maximum number of opened JSch channel
 		}
 		int previous = getMaxPar();
-		miMaxPar = iMaxPar;
+		_maxPar = iMaxPar;
 		return previous;
 	}
 
@@ -239,19 +247,26 @@ class UploaderMultiThread {
 		return previous;
 	}
 
+	/**
+	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
+	 *         managed by this object.
+	 */
 	protected ThreadGroup getThreadGroup() {
-		return moThreadGroup;
+		return _threadGroup;
 	}
 
 	private ThreadGroup setThreadGroup(ThreadGroup tg) {
 		// Can be null
 		ThreadGroup previous = getThreadGroup();
-		moThreadGroup = tg;
+		_threadGroup = tg;
 		return previous;
 	}
 
+	/**
+	 * @return all the {@link UploaderThread} managed by this object.
+	 */
 	private List<UploaderThread> getThreadsList() {
-		return maThreadsList;
+		return _threadsList;
 	}
 
 	private List<UploaderThread> setThreadsList(List<UploaderThread> aft) {
@@ -260,12 +275,15 @@ class UploaderMultiThread {
 					+ "Must be a valid List<UploadThread>.");
 		}
 		List<UploaderThread> previous = getThreadsList();
-		maThreadsList = aft;
+		_threadsList = aft;
 		return previous;
 	}
 
+	/**
+	 * @return the exceptions that append during the upload.
+	 */
 	private ConsolidatedException getExceptionsSet() {
-		return moExceptionsSet;
+		return _exceptionsSet;
 	}
 
 	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
@@ -275,7 +293,8 @@ class UploaderMultiThread {
 					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
 		ConsolidatedException previous = getExceptionsSet();
-		moExceptionsSet = cex;
+		_exceptionsSet = cex;
 		return previous;
 	}
+
 }
