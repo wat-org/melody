@@ -21,30 +21,30 @@ public abstract class NetworkActivationDatasLoader {
 			.getLog(NetworkActivationDatasLoader.class);
 
 	/**
-	 * XML attribute of the Network Device Management Element Node, which
-	 * indicate if the Network Activation feature should be used or not for the
-	 * related Instance.
+	 * XML attribute of the Network Management Element, which indicate if the
+	 * Network Activation feature should be used or not for the related
+	 * Instance.
 	 */
-	public static final String ACTIVATION_ENABLE_ATTR = "activation-enable";
+	public static final String ACTIVATION_ENABLED_ATTR = "activation-enabled";
 
 	/**
-	 * XML attribute of the Network Device Management Element Node, which
-	 * specifies the Activation Timeout used for the related Instance Network
-	 * Activation operations.
+	 * XML attribute of the Network Management Element, which specifies the
+	 * Activation Timeout used for the related Instance Network Activation
+	 * operations.
 	 */
 	public static final String ACTIVATION_TIMEOUT_ATTR = "activation-timeout";
 
 	/**
-	 * XML attribute of the Network Device Management Element Node, which
-	 * specifies the Activation Protocol used for the related Instance Network
-	 * Activation operations.
+	 * XML attribute of the Network Management Element, which specifies the
+	 * Activation Protocol used for the related Instance Network Activation
+	 * operations.
 	 */
 	public static final String ACTIVATION_PROTOCOL_ATTR = "activation-protocol";
 
 	/**
-	 * XML attribute of the Network Device Management Element Node, which
-	 * specifies the Activation Port used for the related Instance Network
-	 * Activation operations.
+	 * XML attribute of the Network Management Element, which specifies the
+	 * Activation Port used for the related Instance Network Activation
+	 * operations.
 	 */
 	public static final String ACTIVATION_PORT_ATTR = "activation-port";
 
@@ -57,7 +57,7 @@ public abstract class NetworkActivationDatasLoader {
 	}
 
 	protected boolean loadNetworkActivationEnabled(Element mgmtElmt) {
-		return NetworkActivationHelper.getNetworkActivationEnable(mgmtElmt);
+		return NetworkActivationHelper.getNetworkActivationEnabled(mgmtElmt);
 	}
 
 	protected NetworkActivationTimeout loadNetworkActivationTimeout(
@@ -77,7 +77,7 @@ public abstract class NetworkActivationDatasLoader {
 				instanceElmt, mgmtElmt);
 		if (host == null) {
 			Element netElmt = NetworkActivationHelper
-					.getNetworkactivationDeviceElement(instanceElmt, mgmtElmt);
+					.getNetworkActivationDeviceElement(instanceElmt, mgmtElmt);
 			String attr = NetworkActivationHelper
 					.getNetworkActivationHostSelector(mgmtElmt);
 			throw new NodeRelatedException(netElmt, Messages.bind(

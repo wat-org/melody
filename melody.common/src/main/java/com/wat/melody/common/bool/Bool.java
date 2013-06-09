@@ -10,8 +10,8 @@ import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
  */
 public abstract class Bool {
 
-	public static final String TRUE_PATTERN = "(?i)\\s*(true|y(es)?|on)\\s*";
-	public static final String FALSE_PATTERN = "(?i)\\s*(false|n(o)?|off)\\s*";
+	public static final String TRUE_PATTERN = "(?i)\\s*(1|true|y(es)?|on)\\s*";
+	public static final String FALSE_PATTERN = "(?i)\\s*(0|false|n(o)?|off)\\s*";
 
 	/**
 	 * <p>

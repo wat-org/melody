@@ -267,9 +267,8 @@ public class InstanceControllerWithNetworkActivation extends
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceId()));
 
-		NetworkDeviceName netdev = nm.getManagementDatas()
-				.getNetworkDeviceName();
-		Port p = nm.getManagementDatas().getPort();
+		NetworkDeviceName netdev = nm.getDatas().getNetworkDeviceName();
+		Port p = nm.getDatas().getPort();
 		PortRange toPorts = null;
 		try {
 			toPorts = new PortRange(p, p);
@@ -286,7 +285,7 @@ public class InstanceControllerWithNetworkActivation extends
 
 		authorizeInstanceFireWallRules(netdev, rules);
 		try {
-			nm.enableNetworkManagement();
+			nm.enableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
@@ -322,7 +321,7 @@ public class InstanceControllerWithNetworkActivation extends
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceId()));
 		try {
-			nm.disableNetworkManagement();
+			nm.disableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
@@ -333,7 +332,7 @@ public class InstanceControllerWithNetworkActivation extends
 	}
 
 	private NetworkActivator getNetworkManager() {
-		return NetworkActivatorFactory.createNetworkManager(
+		return NetworkActivatorFactory.createNetworkActivator(
 				getNetworkManagerFactoryConfigurationCallback(),
 				getRelatedElement());
 	}

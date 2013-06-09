@@ -3,7 +3,6 @@ package com.wat.melody.cloud.network.activation.winrm;
 import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
-import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
 
 /**
  * <p>
@@ -19,34 +18,35 @@ import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
  */
 public class WinRmNetworkActivator implements NetworkActivator {
 
-	private WinRmNetworkActivationDatas _managementDatas;
+	private WinRmNetworkActivationDatas _activationDatas;
 
 	public WinRmNetworkActivator(WinRmNetworkActivationDatas datas) {
-		setManagementDatas(datas);
+		setDatas(datas);
 	}
 
-	public WinRmNetworkActivationDatas getManagementDatas() {
-		return _managementDatas;
+	public WinRmNetworkActivationDatas getDatas() {
+		return _activationDatas;
 	}
 
-	private void setManagementDatas(WinRmNetworkActivationDatas mi) {
-		if (mi == null) {
+	private void setDatas(WinRmNetworkActivationDatas ad) {
+		if (ad == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SshNetworkActivationDatas.class.getCanonicalName() + ".");
+					+ WinRmNetworkActivationDatas.class.getCanonicalName()
+					+ ".");
 		}
-		_managementDatas = mi;
+		_activationDatas = ad;
 	}
 
 	@Override
-	public void enableNetworkManagement() throws NetworkActivationException,
+	public void enableNetworkActivation() throws NetworkActivationException,
 			InterruptedException {
 		throw new NetworkActivationException(
 				Messages.WinRmNetworkActivatorEx_NOT_SUPPORTED);
 	}
 
 	@Override
-	public void disableNetworkManagement() throws NetworkActivationException {
+	public void disableNetworkActivation() throws NetworkActivationException {
 		throw new NetworkActivationException(
 				Messages.WinRmNetworkActivatorEx_NOT_SUPPORTED);
 	}

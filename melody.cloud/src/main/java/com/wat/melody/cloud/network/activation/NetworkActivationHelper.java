@@ -137,7 +137,7 @@ public abstract class NetworkActivationHelper {
 			Element instanceElmt) throws NodeRelatedException {
 		Element mgmtElmt = NetworkDevicesHelper
 				.findNetworkManagementElement(instanceElmt);
-		return getNetworkactivationDeviceElement(instanceElmt, mgmtElmt);
+		return getNetworkActivationDeviceElement(instanceElmt, mgmtElmt);
 	}
 
 	/**
@@ -168,27 +168,27 @@ public abstract class NetworkActivationHelper {
 	 *             select an {@link Element} ;</li>
 	 *             </ul>
 	 */
-	public static Element getNetworkactivationDeviceElement(
+	public static Element getNetworkActivationDeviceElement(
 			Element instanceElmt, Element mgmtElmt) throws NodeRelatedException {
 		NodeList nl = null;
 		String selector = getNetworkActivationDeviceSelector(mgmtElmt);
 		try {
 			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Messages.bind(
 					Messages.NetworkActivationEx_INVALID_XPATH, selector), Ex);
 		}
 		if (nl != null && nl.getLength() > 1) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Messages.bind(
 					Messages.NetworkActivationEx_TOO_MANY_MATCH, selector,
 					nl.getLength()));
 		}
 		if (nl == null || nl.getLength() == 0) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Messages.bind(
 					Messages.NetworkActivationEx_NO_MATCH, selector));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Messages.bind(
 					Messages.NetworkActivationEx_NOT_MATCH_ELMT, selector, nl
 							.item(0).getNodeType()));
 		}
@@ -266,7 +266,7 @@ public abstract class NetworkActivationHelper {
 	 */
 	public static NetworkDeviceName getNetworkActivationDeviceName(
 			Element instanceElmt, Element mgmtElmt) throws NodeRelatedException {
-		Element netElmt = getNetworkactivationDeviceElement(instanceElmt,
+		Element netElmt = getNetworkActivationDeviceElement(instanceElmt,
 				mgmtElmt);
 		String attr = NetworkDevicesLoader.DEVICE_NAME_ATTR;
 		try {
@@ -352,7 +352,7 @@ public abstract class NetworkActivationHelper {
 	 */
 	public static Host getNetworkActivationHost(Element instanceElmt,
 			Element mgmtElmt) throws NodeRelatedException {
-		Element netElmt = getNetworkactivationDeviceElement(instanceElmt,
+		Element netElmt = getNetworkActivationDeviceElement(instanceElmt,
 				mgmtElmt);
 		String attr = getNetworkActivationHostSelector(mgmtElmt);
 		try {
@@ -468,17 +468,17 @@ public abstract class NetworkActivationHelper {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid Network Management Element.");
 		}
-		NetworkActivationProtocol ac = null;
+		NetworkActivationProtocol ap = null;
 		try {
-			ac = getNetworkActivationProtocol(mgmtElmt);
-			switch (ac) {
+			ap = getNetworkActivationProtocol(mgmtElmt);
+			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_PORT;
 			case WINRM:
 				return WinRmNetworkActivationDatas.DEFAULT_PORT;
 			default:
 				throw new RuntimeException("Unexpected error while branching "
-						+ "on an unknown Activation Protocol '" + ac + "'. "
+						+ "on an unknown Activation Protocol '" + ap + "'. "
 						+ "Source code has certainly been modified and a bug "
 						+ "have been introduced.");
 			}
@@ -572,10 +572,10 @@ public abstract class NetworkActivationHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance is <tt>null</tt>.
 	 */
-	public static boolean isNetworkActivationEnable(Element instanceElmt) {
+	public static boolean isNetworkActivationEnabled(Element instanceElmt) {
 		Element mgmtElmt = NetworkDevicesHelper
 				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationEnable(mgmtElmt);
+		return getNetworkActivationEnabled(mgmtElmt);
 	}
 
 	/**
@@ -589,11 +589,11 @@ public abstract class NetworkActivationHelper {
 	 *         the given Network Management. Or <tt>false</tt> if the given
 	 *         Network Management Element is <tt>null</tt>.
 	 */
-	public static boolean getNetworkActivationEnable(Element mgmtElmt) {
+	public static boolean getNetworkActivationEnabled(Element mgmtElmt) {
 		if (mgmtElmt == null) {
 			return false;
 		}
-		String attr = NetworkActivationDatasLoader.ACTIVATION_ENABLE_ATTR;
+		String attr = NetworkActivationDatasLoader.ACTIVATION_ENABLED_ATTR;
 		try {
 			return Bool.parseString(mgmtElmt.getAttributeNode(attr)
 					.getNodeValue());
@@ -674,17 +674,17 @@ public abstract class NetworkActivationHelper {
 		if (mgmtElmt == null) {
 			return NetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 		}
-		NetworkActivationProtocol mm = null;
+		NetworkActivationProtocol ap = null;
 		try {
-			mm = getNetworkActivationProtocol(mgmtElmt);
-			switch (mm) {
+			ap = getNetworkActivationProtocol(mgmtElmt);
+			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 			case WINRM:
 				return WinRmNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 			default:
 				throw new RuntimeException("Unexpected error while branching "
-						+ "on an unknown management method '" + mm + "'. "
+						+ "on an unknown management method '" + ap + "'. "
 						+ "Source code has certainly been modified and a bug "
 						+ "have been introduced.");
 			}

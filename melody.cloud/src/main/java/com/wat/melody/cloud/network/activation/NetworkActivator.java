@@ -9,19 +9,20 @@ import com.wat.melody.cloud.network.activation.exception.NetworkActivationExcept
  */
 public interface NetworkActivator {
 
-	public NetworkActivationDatas getManagementDatas();
+	public NetworkActivationDatas getDatas();
 
 	/**
 	 * @throws NetworkActivationException
 	 * @throws InterruptedException
 	 */
-	public void enableNetworkManagement() throws NetworkActivationException,
+	public void enableNetworkActivation() throws NetworkActivationException,
 			InterruptedException;
 
 	/**
-	 * 
 	 * @throws NetworkActivationException
+	 * @throws InterruptedException
 	 */
-	public void disableNetworkManagement() throws NetworkActivationException;
+	public void disableNetworkActivation() throws NetworkActivationException,
+			InterruptedException;
 
 }

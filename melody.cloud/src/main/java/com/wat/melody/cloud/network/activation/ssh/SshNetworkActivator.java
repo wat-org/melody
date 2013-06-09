@@ -37,26 +37,26 @@ public class SshNetworkActivator implements NetworkActivator {
 
 	private static Log log = LogFactory.getLog(SshNetworkActivator.class);
 
-	private SshNetworkActivationDatas _managementDatas;
+	private SshNetworkActivationDatas _activationDatas;
 	private ISshSessionConfiguration _configuration;
 
 	public SshNetworkActivator(SshNetworkActivationDatas datas,
 			ISshSessionConfiguration sc) {
 		setConfiguration(sc);
-		setManagementDatas(datas);
+		setDatas(datas);
 	}
 
-	public SshNetworkActivationDatas getManagementDatas() {
-		return _managementDatas;
+	public SshNetworkActivationDatas getDatas() {
+		return _activationDatas;
 	}
 
-	public void setManagementDatas(SshNetworkActivationDatas nmd) {
+	public void setDatas(SshNetworkActivationDatas nmd) {
 		if (nmd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ SshNetworkActivationDatas.class.getCanonicalName() + ".");
 		}
-		_managementDatas = nmd;
+		_activationDatas = nmd;
 	}
 
 	public ISshSessionConfiguration getConfiguration() {
@@ -73,10 +73,10 @@ public class SshNetworkActivator implements NetworkActivator {
 	}
 
 	@Override
-	public void enableNetworkManagement() throws NetworkActivationException,
+	public void enableNetworkActivation() throws NetworkActivationException,
 			InterruptedException {
-		disableNetworkManagement();
-		SshNetworkActivationDatas datas = getManagementDatas();
+		disableNetworkActivation();
+		SshNetworkActivationDatas datas = getDatas();
 		boolean result = false;
 		try {
 			result = addKnownHostsHost(getConfiguration(), datas.getHost(),
@@ -157,8 +157,8 @@ public class SshNetworkActivator implements NetworkActivator {
 	}
 
 	@Override
-	public void disableNetworkManagement() throws NetworkActivationException {
-		SshNetworkActivationDatas datas = getManagementDatas();
+	public void disableNetworkActivation() throws NetworkActivationException {
+		SshNetworkActivationDatas datas = getDatas();
 		getConfiguration().getKnownHosts().remove(datas.getHost());
 		log.debug(Messages.bind(
 				Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE, datas

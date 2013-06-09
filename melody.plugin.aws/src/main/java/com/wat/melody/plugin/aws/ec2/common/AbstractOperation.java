@@ -86,7 +86,7 @@ abstract public class AbstractOperation implements ITask,
 		instance = new InstanceControllerWithRelatedNode(instance,
 				getTargetElement());
 		if (NetworkActivationHelper
-				.isNetworkActivationEnable(getTargetElement())) {
+				.isNetworkActivationEnabled(getTargetElement())) {
 			instance = new InstanceControllerWithNetworkActivation(instance,
 					this, getTargetElement());
 		}
