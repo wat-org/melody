@@ -2,6 +2,7 @@ package com.wat.melody.common.firewall;
 
 import java.util.Arrays;
 
+import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionException;
 
 /**
@@ -15,52 +16,55 @@ public enum Direction {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link Direction} object.
+	 * Convert the given <tt>String</tt> to a {@link Direction} object.
 	 * </p>
 	 * 
-	 * @param sDirection
-	 *            is the given <code>String</code> to convert.
+	 * @param direction
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link Direction} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link Direction} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalDirectionException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link Direction} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalAccessException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a valid
+	 *             {@link Direction} Enumeration Constant ;</li>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             </ul>
 	 */
-	public static Direction parseString(String sDirection)
+	public static Direction parseString(String direction)
 			throws IllegalDirectionException {
-		if (sDirection == null) {
+		if (direction == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ Direction.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(Direction.values()) + " ).");
 		}
-		if (sDirection.trim().length() == 0) {
+		if (direction.trim().length() == 0) {
 			throw new IllegalDirectionException(Messages.bind(
-					Messages.DirectionEx_EMPTY, sDirection));
+					Messages.DirectionEx_EMPTY, direction));
 		}
 		for (Direction c : Direction.class.getEnumConstants()) {
-			if (c.getValue().equalsIgnoreCase(sDirection)) {
+			if (c.getValue().equalsIgnoreCase(direction)) {
 				return c;
 			}
 		}
 		throw new IllegalDirectionException(Messages.bind(
-				Messages.DirectionEx_INVALID, sDirection,
+				Messages.DirectionEx_INVALID, direction,
 				Arrays.asList(Direction.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
-	private Direction(String sDirection) {
-		this.msValue = sDirection;
+	private Direction(String direction) {
+		this._value = direction;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

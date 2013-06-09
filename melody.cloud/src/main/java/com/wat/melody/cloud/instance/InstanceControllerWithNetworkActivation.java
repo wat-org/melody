@@ -7,10 +7,10 @@ import org.w3c.dom.Element;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
-import com.wat.melody.cloud.network.NetworkManager;
-import com.wat.melody.cloud.network.NetworkManagerFactory;
-import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
-import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.cloud.network.activation.NetworkActivator;
+import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
+import com.wat.melody.cloud.network.activation.NetworkActivatorFactory;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -33,19 +33,18 @@ import com.wat.melody.common.network.exception.IllegalPortRangeException;
  * @author Guillaume Cornet
  * 
  */
-public class InstanceControllerWithNetworkManagement extends
+public class InstanceControllerWithNetworkActivation extends
 		BaseInstanceController implements InstanceControllerListener {
 
 	private static Log log = LogFactory
-			.getLog(InstanceControllerWithNetworkManagement.class);
+			.getLog(InstanceControllerWithNetworkActivation.class);
 
 	private InstanceController _instance;
 	private Element _relatedElement;
-	private NetworkManagerFactoryConfigurationCallback _confCB;
+	private NetworkActivatorConfigurationCallback _confCB;
 
-	public InstanceControllerWithNetworkManagement(InstanceController instance,
-			NetworkManagerFactoryConfigurationCallback confCB,
-			Element relatedElement) {
+	public InstanceControllerWithNetworkActivation(InstanceController instance,
+			NetworkActivatorConfigurationCallback confCB, Element relatedElement) {
 		setInstance(instance);
 		setNetworkManagerFactoryConfigurationCallback(confCB);
 		setRelatedElement(relatedElement);
@@ -67,20 +66,19 @@ public class InstanceControllerWithNetworkManagement extends
 		return previous;
 	}
 
-	private NetworkManagerFactoryConfigurationCallback getNetworkManagerFactoryConfigurationCallback() {
+	private NetworkActivatorConfigurationCallback getNetworkManagerFactoryConfigurationCallback() {
 		return _confCB;
 	}
 
-	private NetworkManagerFactoryConfigurationCallback setNetworkManagerFactoryConfigurationCallback(
-			NetworkManagerFactoryConfigurationCallback confCB) {
+	private NetworkActivatorConfigurationCallback setNetworkManagerFactoryConfigurationCallback(
+			NetworkActivatorConfigurationCallback confCB) {
 		if (confCB == null) {
 			throw new IllegalArgumentException(
-					"null: Not accepted."
-							+ "Must be a valid "
-							+ NetworkManagerFactoryConfigurationCallback.class
+					"null: Not accepted. Must be a valid "
+							+ NetworkActivatorConfigurationCallback.class
 									.getCanonicalName() + ".");
 		}
-		NetworkManagerFactoryConfigurationCallback previous = getNetworkManagerFactoryConfigurationCallback();
+		NetworkActivatorConfigurationCallback previous = getNetworkManagerFactoryConfigurationCallback();
 		_confCB = confCB;
 		return previous;
 	}
@@ -262,7 +260,7 @@ public class InstanceControllerWithNetworkManagement extends
 	 */
 	public void enableNetworkManagement() throws OperationException,
 			InterruptedException {
-		NetworkManager nm = getNetworkManager();
+		NetworkActivator nm = getNetworkManager();
 		if (nm == null) {
 			return;
 		}
@@ -289,7 +287,7 @@ public class InstanceControllerWithNetworkManagement extends
 		authorizeInstanceFireWallRules(netdev, rules);
 		try {
 			nm.enableNetworkManagement();
-		} catch (NetworkManagementException Ex) {
+		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceId()), Ex);
@@ -317,7 +315,7 @@ public class InstanceControllerWithNetworkManagement extends
 	 */
 	public void disableNetworkManagement() throws OperationException,
 			InterruptedException {
-		NetworkManager nm = getNetworkManager();
+		NetworkActivator nm = getNetworkManager();
 		if (nm == null) {
 			return;
 		}
@@ -325,7 +323,7 @@ public class InstanceControllerWithNetworkManagement extends
 				getInstanceId()));
 		try {
 			nm.disableNetworkManagement();
-		} catch (NetworkManagementException Ex) {
+		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
 					getInstanceId()), Ex);
@@ -334,8 +332,8 @@ public class InstanceControllerWithNetworkManagement extends
 				getInstanceId()));
 	}
 
-	private NetworkManager getNetworkManager() {
-		return NetworkManagerFactory.createNetworkManager(
+	private NetworkActivator getNetworkManager() {
+		return NetworkActivatorFactory.createNetworkManager(
 				getNetworkManagerFactoryConfigurationCallback(),
 				getRelatedElement());
 	}

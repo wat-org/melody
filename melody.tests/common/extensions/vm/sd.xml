@@ -9,7 +9,7 @@
 		<foreach	items="./environment//instance"
 					item-name="srv" >
 			<new-machine target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created§[adm_ip]§." />
 		</foreach>
@@ -28,7 +28,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<delete-machine target="§[srv]§" />
 			<echo message="+ virtual machine '§[id]§' destroyed§[adm_ip]§." />
@@ -45,7 +45,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<start-machine target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' started (IP: §[adm_ip]§)." />
 		</foreach>
 
@@ -59,7 +59,7 @@
 
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<stop-machine target="§[srv]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped§[adm_ip]§." />
@@ -76,7 +76,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<resize-machine target="§[srv]§"/>
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized§[adm_ip]§." />
 		</foreach>
@@ -90,7 +90,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<update-disk-devices target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' disk devices updated§[adm_ip]§." />
 		</foreach>
@@ -104,7 +104,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<update-network-devices target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' network devices updated§[adm_ip]§." />
 		</foreach>
@@ -118,7 +118,7 @@
 		<foreach	items="./environment//instance[exists(@instance-id)]"
 					item-name="srv" >
 			<update-firewall target="§[srv]§" />
-			<property name="adm_ip" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
+			<property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
 			<echo message="+ virtual machine '§[§[srv]§/@instance-id]§' fireWall rules updated§[adm_ip]§." />
 		</foreach>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * 
@@ -14,7 +15,7 @@ public abstract class XPathFunctionHelper {
 
 	/**
 	 * @param anObject
-	 *            is an object to test.
+	 *            is the object to test.
 	 * 
 	 * @return <tt>true</tt> if the given object is an {@link Element}, or
 	 *         <tt>false</tt> if the given object is not an {@link Element} or
@@ -31,7 +32,7 @@ public abstract class XPathFunctionHelper {
 
 	/**
 	 * @param anObject
-	 *            is an object to test.
+	 *            is the object to test.
 	 * 
 	 * @return <tt>true</tt> if the given object is a {@link List} of
 	 *         {@link Element}, or <tt>false</tt> if the given object is not a
@@ -52,8 +53,42 @@ public abstract class XPathFunctionHelper {
 	}
 
 	/**
+	 * @param nodelist
+	 *            is the object to convert.
+	 * 
+	 * @return a {@link List} of {@link Element}, or <tt>null</tt> if the given
+	 *         {@link NodeList} is <tt>null</tt>.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link NodeList} doesn't contains only
+	 *             {@link Element}.
+	 */
+	public static List<Element> toElementList(NodeList nodeList) {
+		if (nodeList == null) {
+			return null;
+		}
+		List<Element> list = new ArrayList<Element>();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			if (!isElement(nodeList.item(i))) {
+				throw new IllegalArgumentException(nodeList.item(i).getClass()
+						.getCanonicalName()
+						+ ": Not accepted. Cannot be converted to "
+						+ Element.class.getCanonicalName() + ".");
+			}
+			list.add((Element) nodeList.item(i));
+		}
+		return list;
+	}
+
+	/**
+	 * <p>
+	 * This method differs from {@link String#valueOf()} in the way that it will
+	 * return <tt>null</tt> if the given object is <tt>null</tt> (when
+	 * {@link String#valueOf()} will return the <tt>String</tt> 'null').
+	 * </p>
+	 * 
 	 * @param anObject
-	 *            is an object to convert to a <tt>String</tt>.
+	 *            is the object to convert to a <tt>String</tt>.
 	 * 
 	 * @return a <tt>String</tt> if the given object is not <tt>null</tt>, or
 	 *         <tt>null</tt> if the given object is <tt>null</tt>.
@@ -66,8 +101,14 @@ public abstract class XPathFunctionHelper {
 	}
 
 	/**
+	 * <p>
+	 * This method differs from {@link String#valueOf()} in the way that it will
+	 * return <tt>null</tt> if the given object is <tt>null</tt> (when
+	 * {@link String#valueOf()} will return the <tt>String</tt> 'null').
+	 * </p>
+	 * 
 	 * @param anObject
-	 *            is a {@link List} of objects to convert to a {@link List} of
+	 *            is the {@link List} of objects to convert to a {@link List} of
 	 *            <tt>String</tt>s.
 	 * 
 	 * @return a {@link List} of <tt>String</tt> or <tt>null</tt> elements, if

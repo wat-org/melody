@@ -31,13 +31,13 @@ public class GenericTimeout implements Timeout {
 	 * @return a {@link GenericTimeout}, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if the given <tt>String</tt> is < 0.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt>.
 	 * @throws IllegalArgumentException
 	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 */
 	public static GenericTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
@@ -61,13 +61,13 @@ public class GenericTimeout implements Timeout {
 	 * @param timeout
 	 *            represents a timeout value in millis.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if the given <tt>String</tt> is < 0.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt>.
 	 * @throws IllegalArgumentException
 	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 */
 	public GenericTimeout(String timeout) throws IllegalTimeoutException {
 		setTimeout(timeout);
@@ -109,15 +109,6 @@ public class GenericTimeout implements Timeout {
 		return _timeout;
 	}
 
-	/**
-	 * @param timeout
-	 *            represents a timeout value in millis.
-	 * 
-	 * @return the previous timeout value, before the operation.
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
-	 */
 	private long setTimeout(long timeout) throws IllegalTimeoutException {
 		if (timeout < 0) {
 			throw new IllegalTimeoutException(Messages.bind(
@@ -128,20 +119,6 @@ public class GenericTimeout implements Timeout {
 		return previous;
 	}
 
-	/**
-	 * @param timeout
-	 *            represents a timeout value in millis.
-	 * 
-	 * @return the previous timeout value, before the operation.
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if the given <tt>String</tt> is < 0.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt>.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
 	private long setTimeout(String timeout) throws IllegalTimeoutException {
 		if (timeout == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -171,7 +148,7 @@ public class GenericTimeout implements Timeout {
 	 *             is the given <tt>float</tt> is negative or 0.
 	 */
 	public GenericTimeout factor(float ratio) {
-		if (ratio < 0) {
+		if (ratio <= 0) {
 			throw new IllegalArgumentException(ratio + ": Not accepted. "
 					+ "Must be postive.");
 		}

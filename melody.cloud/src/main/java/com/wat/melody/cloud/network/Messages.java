@@ -6,36 +6,37 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cloud.network.messages";
 
-	public static String MgmtNetworkEnableTimeoutEx_INVALID;
+	public static String NetworkActivationTimeoutEx_INVALID;
 
-	public static String MgmtNetworkMethodEx_EMPTY;
-	public static String MgmtNetworkMethodEx_INVALID;
+	public static String NetworkActivationProtocolEx_EMPTY;
+	public static String NetworkActivationProtocolEx_INVALID;
+
+	public static String NetworkActivationEx_INVALID_XPATH;
+	public static String NetworkActivationEx_TOO_MANY_MATCH;
+	public static String NetworkActivationEx_NO_MATCH;
+	public static String NetworkActivationEx_NOT_MATCH_ELMT;
+
+	public static String NetworkActivatorMsg_INTRO;
+	public static String NetworkActivatorMsg_RESUME;
+	public static String NetworkActivatorMsg_FAILED;
+
+	public static String WinRmNetworkActivatorEx_NOT_SUPPORTED;
+
+	public static String SshNetworkActivatorMsg_WAIT_FOR_ENABLEMENT;
+	public static String SshNetworkActivatorMsg_ENABLEMENT_DONE;
+	public static String SshNetworkActivatorMsg_DISABLEMENT_DONE;
+	public static String SshNetworkActivatorEx_ENABLEMENT_TIMEOUT;
 
 	public static String NetworkDeviceListEx_DEVICE_ALREADY_DEFINE;
 
 	public static String NetworkDevLoaderEx_MISSING_ATTR;
 	public static String NetworkDevLoaderEx_GENERIC_ERROR;
 
-	public static String NetMgmtMsg_INTRO;
-	public static String NetMgmtMsg_RESUME;
-	public static String NetMgmtMsg_FAILED;
-
-	public static String SshNetMgrMsg_WAIT_FOR_ENABLEMENT;
-	public static String SshNetMgrMsg_ENABLEMENT_DONE;
-	public static String SshNetMgrMsg_DISABLEMENT_DONE;
-	public static String SshNetMgrEx_ENABLEMENT_TIMEOUT;
-
-	public static String NetMgmtEx_WINRM_MGMT_NOT_SUPPORTED;
-
+	public static String NetMgmtEx_MISSING;
 	public static String NetMgmtEx_MISSING_ATTR;
 	public static String NetMgmtEx_INVALID_ATTR;
-	public static String NetMgmtEx_NO_MGMT_NODE;
-	public static String NetMgmtEx_MGMT_NETWORK_NODE_SELECTOR_NOT_MATCH_NODE;
-	public static String NetMgmtEx_INVALID_MGMT_NETWORK_DEVICE_SELECTOR;
-	public static String NetMgmtEx_TOO_MANY_MGMT_NETWORK_DEVICE;
-	public static String NetMgmtEx_NO_MGMT_NETWORK_DEVICE;
-	public static String NetMgmtEx_MGMT_NETWORK_DEVICE_SELECTOR_NOT_MATCH_NODE;
-	public static String NetMgmtEx_INVALID_NETWORK_DEVICES_SELECTOR;
+	public static String NetMgmtEx_SELECTOR_INVALID_XPATH;
+	public static String NetMgmtEx_SELECTOR_NOT_MATCH_ELMT;
 
 	static {
 		// initialize resource bundle

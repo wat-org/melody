@@ -78,8 +78,7 @@ public abstract class XPathExpander {
 	 * 
 	 * <p>
 	 * During the evaluation, the given context's owner {@link Document} is
-	 * synchronized, preventing concurrent access to the owner {@link Document},
-	 * which is not thread safe (because of xerces).
+	 * synchronized (concurrent access to the DOM tree should use this monitor).
 	 * </p>
 	 * 
 	 * <p>
@@ -100,7 +99,7 @@ public abstract class XPathExpander {
 	 *            is the XPath 2.0 expression to evaluate.
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
-	 *            {@link Node}.
+	 *            {@link Node}).
 	 * 
 	 * @return the evaluated expression, as a <tt>String</tt>.
 	 * 
@@ -108,9 +107,15 @@ public abstract class XPathExpander {
 	 *             if the given expression is not a valid XPath 2.0 expression.
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
 	 */
 	public static String evaluateAsString(String expr, Node ctx)
 			throws XPathExpressionException {
+		if (ctx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+		}
 		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
 		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
 		XPath xpath = DocHelper.retrieveXPath(d);
@@ -130,8 +135,7 @@ public abstract class XPathExpander {
 	 * 
 	 * <p>
 	 * During the evaluation, the given context's owner {@link Document} is
-	 * synchronized, preventing concurrent access to the owner {@link Document},
-	 * which is not thread safe (because of xerces).
+	 * synchronized (concurrent access to the DOM tree should use this monitor).
 	 * </p>
 	 * 
 	 * <p>
@@ -152,7 +156,7 @@ public abstract class XPathExpander {
 	 *            is the XPath 2.0 expression to evaluate.
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
-	 *            {@link Node}.
+	 *            {@link Node}).
 	 * 
 	 * @return the evaluated expression, as a {@link Node}.
 	 * 
@@ -160,9 +164,15 @@ public abstract class XPathExpander {
 	 *             if the given expression is not a valid XPath 2.0 expression.
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
 	 */
 	public static NodeList evaluateAsNodeList(String expr, Node ctx)
 			throws XPathExpressionException {
+		if (ctx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+		}
 		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
 		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
 		XPath xpath = DocHelper.retrieveXPath(d);
@@ -182,8 +192,7 @@ public abstract class XPathExpander {
 	 * 
 	 * <p>
 	 * During the evaluation, the given context's owner {@link Document} is
-	 * synchronized, preventing concurrent access to the owner {@link Document},
-	 * which is not thread safe (because of xerces).
+	 * synchronized (concurrent access to the DOM tree should use this monitor).
 	 * </p>
 	 * 
 	 * <p>
@@ -204,7 +213,7 @@ public abstract class XPathExpander {
 	 *            is the XPath 2.0 expression to evaluate.
 	 * @param ctx
 	 *            is the evaluation context (can be a {@link Document} or a
-	 *            {@link Node}.
+	 *            {@link Node}).
 	 * 
 	 * @return the evaluated expression, as a {@link Node}.
 	 * 
@@ -212,9 +221,15 @@ public abstract class XPathExpander {
 	 *             if the given expression is not a valid XPath 2.0 expression.
 	 * @throws NullPointerException
 	 *             if the given expression is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
 	 */
 	public static Node evaluateAsNode(String expr, Node ctx)
 			throws XPathExpressionException {
+		if (ctx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Node.class.getCanonicalName() + ".");
+		}
 		boolean isDoc = ctx.getNodeType() == Node.DOCUMENT_NODE;
 		Document d = isDoc ? (Document) ctx : ctx.getOwnerDocument();
 		XPath xpath = DocHelper.retrieveXPath(d);

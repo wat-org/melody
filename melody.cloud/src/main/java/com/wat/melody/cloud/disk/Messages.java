@@ -23,7 +23,8 @@ public class Messages extends NLS {
 	public static String DiskDeviceNameEx_EMPTY;
 	public static String DiskDeviceNameEx_INVALID;
 
-	public static String DiskMgmtEx_INVALID_DISK_DEVICES_SELECTOR;
+	public static String DiskMgmtEx_SELECTOR_INVALID_XPATH;
+	public static String DiskMgmtEx_SELECTOR_NOT_MATCH_ELMT;
 
 	static {
 		// initialize resource bundle

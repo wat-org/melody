@@ -1,7 +1,8 @@
 package com.wat.melody.cloud.firewall;
 
+import java.util.List;
+
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexFireWallRule;
@@ -18,10 +19,16 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public class UdpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 
+	/**
+	 * The default value of the XML Nested element of an Instance Element, which
+	 * contains the definition of an UDP FireWall Rule.
+	 */
+	public static final String DEFAULT_UDP_FIREWALL_RULE_ELEMENT = "udp";
+
 	@Override
-	public NodeList findFwRuleNodes(Element instanceElmt)
+	public List<Element> findFwRuleNodes(Element instanceElmt)
 			throws NodeRelatedException {
-		return FireWallManagementHelper.findUdpFireWallRules(instanceElmt);
+		return FireWallRulesHelper.findUdpFireWallRules(instanceElmt);
 	}
 
 	@Override

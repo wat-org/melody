@@ -74,6 +74,108 @@ ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugi
 
 
 ####################################################
+### CUSTOM XPATH FUNCTIONS CONFIGURATION DIRECTIVES
+### needed for custom xpath functions resolution
+
+### List Configuration Directives which will contains Custom XPath NameSpace
+xpath.namespace.directives=xpath.namespace.standard
+
+### Standard XPath NameSpaces
+xpath.namespace.standard=xpath.namespace.melody
+
+xpath.namespace.melody.uri=http://localhost/melody
+
+### List Configuration Directives which will contains Custom XPath Function
+xpath.namespace.directives=xpath.namespace.standard
+
+### Standard XPath NameSpaces
+xpath.namespace.standard=xpath.namespace.melody
+
+xpath.namespace.melody.uri=http://localhost/melody
+
+### List Configuration Directives which will contains Custom XPath Function
+xpath.function.directives=xpath.function.standard
+
+### Standard XPath Functions
+xpath.function.standard=\
+xpath.function.getHeritedAttributeValue,\
+xpath.function.getHeritedContent,\
+xpath.function.getNetworkActivationDeviceElement,\
+xpath.function.getNetworkActivationDeviceName,\
+xpath.function.getNetworkActivationHost,\
+xpath.function.getNetworkActivationPort,\
+xpath.function.getNetworkActivationProtocol,\
+xpath.function.getNetworkDeviceElementByName,\
+xpath.function.getNetworkDeviceElements,\
+xpath.function.getInstanceId,\
+xpath.function.getInstanceImageId,\
+xpath.function.getInstanceKeyPairName,\
+xpath.function.getInstanceRegion,\
+xpath.function.getInstanceSite,\
+xpath.function.getInstanceType
+
+xpath.function.getHeritedAttributeValue.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getHeritedAttributeValue.class=com.wat.melody.xpathextensions.GetHeritedAttribute
+xpath.function.getHeritedAttributeValue.arity=2
+
+xpath.function.getHeritedContent.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getHeritedContent.class=com.wat.melody.xpathextensions.GetHeritedContent
+xpath.function.getHeritedContent.arity=2
+
+xpath.function.getNetworkActivationDeviceElement.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkActivationDeviceElement.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceElement
+xpath.function.getNetworkActivationDeviceElement.arity=1
+
+xpath.function.getNetworkActivationDeviceName.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkActivationDeviceName.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceName
+xpath.function.getNetworkActivationDeviceName.arity=1
+
+xpath.function.getNetworkActivationHost.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkActivationHost.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationHost
+xpath.function.getNetworkActivationHost.arity=1
+
+xpath.function.getNetworkActivationPort.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkActivationPort.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationPort
+xpath.function.getNetworkActivationPort.arity=1
+
+xpath.function.getNetworkActivationProtocol.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkActivationProtocol.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationProtocol
+xpath.function.getNetworkActivationProtocol.arity=1
+
+xpath.function.getNetworkDeviceElementByName.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkDeviceElementByName.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElementByName
+xpath.function.getNetworkDeviceElementByName.arity=2
+
+xpath.function.getNetworkDeviceElements.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getNetworkDeviceElements.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElements
+xpath.function.getNetworkDeviceElements.arity=1
+
+xpath.function.getInstanceId.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceId
+xpath.function.getInstanceId.arity=1
+
+xpath.function.getInstanceImageId.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceImageId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceImageId
+xpath.function.getInstanceImageId.arity=1
+
+xpath.function.getInstanceKeyPairName.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceKeyPairName.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceKeyPairName
+xpath.function.getInstanceKeyPairName.arity=1
+
+xpath.function.getInstanceRegion.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceRegion.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceRegion
+xpath.function.getInstanceRegion.arity=1
+
+xpath.function.getInstanceSite.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceSite.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceSite
+xpath.function.getInstanceSite.arity=1
+
+xpath.function.getInstanceType.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getInstanceType.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceType
+xpath.function.getInstanceType.arity=1
+
+
+####################################################
 ### OPTIONNAL CONFIGURATION DIRECTIVES
 ### Can be override by the command line options
 

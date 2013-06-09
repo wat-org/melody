@@ -1,8 +1,9 @@
 package com.wat.melody.cloud.firewall;
 
+import java.util.List;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexFireWallRule;
@@ -26,14 +27,13 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the source ports of
-	 * the Fw Rule.
+	 * XML attribute of a FireWall Rule Element, which define its source ports.
 	 */
 	public static final String FROM_PORTS_ATTR = "from-ports";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the destination
-	 * ports of the Fw Rule.
+	 * XML attribute of a FireWall Rule Element, which define its destination
+	 * ports.
 	 */
 	public static final String TO_PORTS_ATTR = "to-ports";
 
@@ -71,7 +71,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * </p>
 	 * 
 	 * <p>
-	 * A TCP/UDP FireWall Rule {@link Element} must have the attributes :
+	 * A TCP/UDP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
@@ -86,7 +86,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * </p>
 	 * 
 	 * @param instanceElmt
-	 *            is an Instance {@link Element}.
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
@@ -94,19 +94,17 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
-	 *             {@link Element}'s attribute is not valid, or the 'herit' XML
-	 *             attribute is not valid).
+	 *             {@link Element}'s attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException {
-		NodeList nl = findFwRuleNodes(instanceElmt);
+		List<Element> fireWallRuleElmts = findFwRuleNodes(instanceElmt);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element e = (Element) nl.item(i);
-			Directions dirs = loadDirection(e);
-			IpRanges fromIps = loadFromIps(e);
-			IpRanges toIps = loadToIps(e);
+		for (Element fireWallRuleElmt : fireWallRuleElmts) {
+			Directions dirs = loadDirection(fireWallRuleElmt);
+			IpRanges fromIps = loadFromIps(fireWallRuleElmt);
+			IpRanges toIps = loadToIps(fireWallRuleElmt);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
@@ -121,17 +119,17 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 					continue;
 				}
 			}
-			PortRanges fromPorts = loadFromPorts(e);
-			PortRanges toPorts = loadToPorts(e);
-			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(e);
-			Access access = loadAccess(e);
+			PortRanges fromPorts = loadFromPorts(fireWallRuleElmt);
+			PortRanges toPorts = loadToPorts(fireWallRuleElmt);
+			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(fireWallRuleElmt);
+			Access access = loadAccess(fireWallRuleElmt);
 			fwrs.merge(refs,
 					newFwRule(fromIps, fromPorts, toIps, toPorts, dirs, access));
 		}
 		return fwrs;
 	}
 
-	public abstract NodeList findFwRuleNodes(Element instanceElmt)
+	public abstract List<Element> findFwRuleNodes(Element instanceElmt)
 			throws NodeRelatedException;
 
 	public abstract ComplexFireWallRule newFwRule(IpRanges fromIpRanges,

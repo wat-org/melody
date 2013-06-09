@@ -1,8 +1,9 @@
 package com.wat.melody.cloud.network;
 
+import java.util.List;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -21,56 +22,50 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public class NetworkDevicesLoader {
 
 	/**
-	 * XML Nested element of an Instance Element Node, which contains the
-	 * definition of a Network Device.
+	 * XML Nested element of an Instance Element, which contains the definition
+	 * of a Network Device.
 	 */
-	public static final String INTERFACE_NE = "interface";
+	public static final String DEFAULT_NETWORK_DEVICE_ELEMENT = "interface";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the device
-	 * name of the interface.
+	 * XML attribute of a Network Device Element, which define its name.
 	 */
 	public static final String DEVICE_NAME_ATTR = "device-name";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the mac
-	 * associated to the interface.
+	 * XML attribute of a Network Device Element, which define its mac address.
 	 */
 	public static final String MAC_ATTR = "mac";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the ip
-	 * associated to the interface.
+	 * XML attribute of a Network Device Element, which define its ip.
 	 */
 	public static final String IP_ATTR = "ip";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the fqdn
-	 * associated to the interface.
+	 * XML attribute of a Network Device Element, which define its fqdn.
 	 */
 	public static final String FQDN_ATTR = "fqdn";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the nat-ip
-	 * associated to the interface.
+	 * XML attribute of a Network Device Element, which define its nat-ip.
 	 */
 	public static final String NAT_IP_ATTR = "nat-ip";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which define the nat-fqdn
-	 * associated to the interface.
+	 * XML attribute of a Network Device Element, which define its nat-fqdn.
 	 */
 	public static final String NAT_FQDN_ATTR = "nat-fqdn";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which indicate if the
-	 * timeout of the device attachment operation.
+	 * XML attribute of a Network Device Element, which indicate if the timeout
+	 * of the network device attachment operation.
 	 */
 	public static final String TIMEOUT_ATTACH_ATTR = "timeout-attach";
 
 	/**
-	 * XML attribute of a Network Device Element Node, which indicate if the
-	 * timeout of the device detachment operation.
+	 * XML attribute of a Network Device Element, which indicate if the timeout
+	 * of the network device detachment operation.
 	 */
 	public static final String TIMEOUT_DETACH_ATTR = "timeout-detach";
 
@@ -169,52 +164,60 @@ public class NetworkDevicesLoader {
 	 * </p>
 	 * 
 	 * <p>
-	 * A Network Device {@link Element} must have the attributes : <BR/>
+	 * A Network Device {@link Element} may have the attributes : <BR/>
 	 * <ul>
-	 * <li>device-name : which must contains a {@link NetworkDeviceName} ;</li>
+	 * <li>device-name : (mandatory) which must contains a
+	 * {@link NetworkDeviceName} ;</li>
+	 * <li>ip : which must contains a <tt>String</tt> ;</li>
+	 * <li>fqdn : which must contains a <tt>String</tt> ;</li>
+	 * <li>nat-ip : which must contains a <tt>String</tt> ;</li>
+	 * <li>nat-fqdn : which must contains a <tt>String</tt> ;</li>
+	 * <li>timeout-attach : which should contains a {@link GenericTimeout} ;</li>
+	 * <li>timeout-detach : which should contains a {@link GenericTimeout} ;</li>
+	 * <li>herit : which should contains an XPath Expression which refer to
+	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>
 	 * </p>
 	 * 
 	 * @param instanceElmt
-	 *            is an Instance {@link Element}.
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link NetworkDeviceList} object, which is a collection of
-	 *         {@link NetworkDeviceName}.
+	 *         {@link NetworkDevice}.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <code>null</code>.
+	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the conversion failed (ex : the content of a Network
-	 *             Device {@link Element} is not valid, multiple Network Device
-	 *             Name declare with the same name).
+	 *             if the conversion failed (ex : invalid device name, multiple
+	 *             declaration with the same device name, invalid timeout
+	 *             value).
 	 */
 	public NetworkDeviceList load(Element instanceElmt)
 			throws NodeRelatedException {
-		NodeList nl = NetworkManagementHelper.findNetworkDeviceNodeByName(
-				instanceElmt, null);
+		List<Element> networkDeviceElmts = NetworkDevicesHelper
+				.findNetworkDeviceElements(instanceElmt);
 
 		NetworkDeviceList dl = new NetworkDeviceList();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element e = (Element) nl.item(i);
-			NetworkDeviceName netDevName = loadDeviceName(e);
+		for (Element networkDeviceElmt : networkDeviceElmts) {
+			NetworkDeviceName netDevName = loadDeviceName(networkDeviceElmt);
 			if (netDevName == null) {
-				throw new NodeRelatedException(e, Messages.bind(
-						Messages.NetworkDevLoaderEx_MISSING_ATTR,
-						DEVICE_NAME_ATTR));
+				throw new NodeRelatedException(networkDeviceElmt,
+						Messages.bind(Messages.NetworkDevLoaderEx_MISSING_ATTR,
+								DEVICE_NAME_ATTR));
 			}
-			String mac = loadMac(e);
-			String ip = loadIp(e);
-			String fqdn = loadFqdn(e);
-			String natip = loadNatIp(e);
-			String natfqdn = loadNatFqdn(e);
-			GenericTimeout attachTimeout = loadAttachTimeout(e);
-			GenericTimeout detachTimeout = loadDetachTimeout(e);
+			String mac = loadMac(networkDeviceElmt);
+			String ip = loadIp(networkDeviceElmt);
+			String fqdn = loadFqdn(networkDeviceElmt);
+			String natip = loadNatIp(networkDeviceElmt);
+			String natfqdn = loadNatFqdn(networkDeviceElmt);
+			GenericTimeout attachTimeout = loadAttachTimeout(networkDeviceElmt);
+			GenericTimeout detachTimeout = loadDetachTimeout(networkDeviceElmt);
 
 			try {
 				dl.addNetworkDevice(new NetworkDevice(netDevName, mac, ip,
 						fqdn, natip, natfqdn, attachTimeout, detachTimeout));
 			} catch (IllegalNetworkDeviceListException Ex) {
-				throw new NodeRelatedException(e,
+				throw new NodeRelatedException(networkDeviceElmt,
 						Messages.NetworkDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}

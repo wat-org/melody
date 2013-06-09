@@ -1,8 +1,9 @@
 package com.wat.melody.cloud.disk;
 
+import java.util.List;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
@@ -21,50 +22,48 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public class DiskDevicesLoader {
 
 	/**
-	 * XML Nested element of an Instance Element Node, which contains the
-	 * definition of a Disk Device.
+	 * The default value of the XML Nested element of an Instance Element, which
+	 * contains the definition of a Disk Device.
 	 */
-	public static final String DISK_DEVICE_NE = "disk";
+	public static final String DEFAULT_DISK_DEVICE_ELEMENT = "disk";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which define the name of the
-	 * device.
+	 * XML attribute of a Disk Device Element, which define its name.
 	 */
 	public static final String DEVICE_NAME_ATTR = "device-name";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which define the size of the
-	 * device.
+	 * XML attribute of a Disk Device Element, which define its size.
 	 */
 	public static final String SIZE_ATTR = "size";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which indicate if the device
+	 * XML attribute of a Disk Device Element, which indicate if the device
 	 * should be automatically deleted when the instance is deleted.
 	 */
 	public static final String DELETEONTERMINATION_ATTR = "delete-on-termination";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which indicate if the device
-	 * is the root device.
+	 * XML attribute of a Disk Device Element, which indicate if the device is
+	 * the root device.
 	 */
 	public static final String ROOTDEVICE_ATTR = "root-device";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which indicate if the
-	 * timeout of the device creation operation.
+	 * XML attribute of a Disk Device Element, which indicate if the timeout of
+	 * the device creation operation.
 	 */
 	public static final String TIMEOUT_CREATE_ATTR = "timeout-create";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which indicate if the
-	 * timeout of the device attachment operation.
+	 * XML attribute of a Disk Device Element, which indicate if the timeout of
+	 * the device attachment operation.
 	 */
 	public static final String TIMEOUT_ATTACH_ATTR = "timeout-attach";
 
 	/**
-	 * XML attribute of a Disk Device Element Node, which indicate if the
-	 * timeout of the device detachment operation.
+	 * XML attribute of a Disk Device Element, which indicate if the timeout of
+	 * the device detachment operation.
 	 */
 	public static final String TIMEOUT_DETACH_ATTR = "timeout-detach";
 
@@ -172,8 +171,8 @@ public class DiskDevicesLoader {
 	 * <p>
 	 * A Disk Device {@link Element} may have the attributes :
 	 * <ul>
-	 * <li>device : (mandatory) which should contains a {@link DiskDeviceName}
-	 * (ex: /dev/sda1, /dev/vda) ;</li>
+	 * <li>device-name : (mandatory) which should contains a
+	 * {@link DiskDeviceName} ;</li>
 	 * <li>size : which should contains a {@link DiskDeviceSize} ;</li>
 	 * <li>delete-on-termination : which should contains a <tt>Boolean</tt> ;</li>
 	 * <li>root-device : which should contains a <tt>Boolean</tt> ;</li>
@@ -186,7 +185,7 @@ public class DiskDevicesLoader {
 	 * </p>
 	 * 
 	 * @param instanceElmt
-	 *            is an Instance {@link Element}.
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link DiskDeviceList} object, which is a collection of
 	 *         {@link DiskDevice}.
@@ -194,35 +193,35 @@ public class DiskDevicesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the conversion failed (ex : the content of a Disk Device
-	 *             {@link Element} is not valid, multiple root device are found,
-	 *             multiple device declare with the same name).
+	 *             if the conversion failed (ex : invalid device name, multiple
+	 *             declaration with the same device name, invalid timeout
+	 *             value).
 	 */
 	public DiskDeviceList load(Element instanceElmt)
 			throws NodeRelatedException {
-		NodeList nl = DiskManagementHelper.findDiskDevices(instanceElmt);
+		List<Element> diskDevElmts = DiskDevicesHelper
+				.findDiskDevices(instanceElmt);
 
 		DiskDeviceList dl = new DiskDeviceList();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element e = (Element) nl.item(i);
-			DiskDeviceName devname = loadDeviceName(e);
+		for (Element diskDevElmt : diskDevElmts) {
+			DiskDeviceName devname = loadDeviceName(diskDevElmt);
 			if (devname == null) {
-				throw new NodeRelatedException(e,
+				throw new NodeRelatedException(diskDevElmt,
 						Messages.bind(Messages.DiskDevLoaderEx_MISSING_ATTR,
 								DEVICE_NAME_ATTR));
 			}
-			DiskDeviceSize devsize = loadDeviceSize(e);
-			Boolean delonterm = loadDeleteOnTermination(e);
-			Boolean isroot = loadRootDevice(e);
-			GenericTimeout createTimeout = loadCreateTimeout(e);
-			GenericTimeout attachTimeout = loadAttachTimeout(e);
-			GenericTimeout detachTimeout = loadDetachTimeout(e);
+			DiskDeviceSize devsize = loadDeviceSize(diskDevElmt);
+			Boolean delonterm = loadDeleteOnTermination(diskDevElmt);
+			Boolean isroot = loadRootDevice(diskDevElmt);
+			GenericTimeout createTimeout = loadCreateTimeout(diskDevElmt);
+			GenericTimeout attachTimeout = loadAttachTimeout(diskDevElmt);
+			GenericTimeout detachTimeout = loadDetachTimeout(diskDevElmt);
 
 			try {
 				dl.addDiskDevice(new DiskDevice(devname, devsize, delonterm,
 						isroot, createTimeout, attachTimeout, detachTimeout));
 			} catch (IllegalDiskDeviceListException Ex) {
-				throw new NodeRelatedException(e,
+				throw new NodeRelatedException(diskDevElmt,
 						Messages.DiskDevLoaderEx_GENERIC_ERROR, Ex);
 			}
 		}

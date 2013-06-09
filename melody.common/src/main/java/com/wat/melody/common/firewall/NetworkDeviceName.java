@@ -13,21 +13,23 @@ public class NetworkDeviceName {
 
 	/**
 	 * <p>
-	 * create a new {@link NetworkDeviceName}, with the given name.
+	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceName} object.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
 	 * @param name
-	 *            is the name to assign to this object.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @throws IllegalNetworkDeviceNameException
-	 *             if the given name is invalid.
+	 * @return a {@link NetworkDeviceName} object, which is equal to the given
+	 *         name.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
+	 *             if the given name is <tt>null</tt>.
+	 * @throws IllegalNetworkDeviceNameException
+	 *             <ul>
+	 *             <li>if the given name is empty ;</li>
+	 *             <li>if the given name doesn't match the pattern
+	 *             {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static NetworkDeviceName parseString(String name)
 			throws IllegalNetworkDeviceNameException {
@@ -38,21 +40,20 @@ public class NetworkDeviceName {
 
 	/**
 	 * <p>
-	 * create a new {@link NetworkDeviceName}, with the given name.
+	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceName} object.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
 	 * @param name
-	 *            is the name to assign to this object.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @throws IllegalNetworkDeviceNameException
-	 *             if the given name is invalid.
 	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
+	 *             if the given name is <tt>null</tt>.
+	 * @throws IllegalNetworkDeviceNameException
+	 *             <ul>
+	 *             <li>if the given name is empty ;</li>
+	 *             <li>if the given name doesn't match the pattern
+	 *             {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public NetworkDeviceName(String name)
 			throws IllegalNetworkDeviceNameException {
@@ -85,31 +86,12 @@ public class NetworkDeviceName {
 		return _value;
 	}
 
-	/**
-	 * <p>
-	 * Set the name of this object.
-	 * </p>
-	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
-	 * @param name
-	 *            is the name to assign to this object.
-	 * 
-	 * @return the name of this object, before this operation.
-	 * 
-	 * @throws IllegalNetworkDeviceNameException
-	 *             if the given name is invalid.
-	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
-	 */
 	private String setValue(String name)
 			throws IllegalNetworkDeviceNameException {
 		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a String (a linux Network Device name)");
+					+ "Must be a " + String.class.getCanonicalName()
+					+ " (a Network Device name)");
 		}
 		if (name.trim().length() == 0) {
 			throw new IllegalNetworkDeviceNameException(Messages.bind(

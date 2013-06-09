@@ -1,9 +1,12 @@
-package com.wat.melody.cloud.network;
+package com.wat.melody.cloud.network.activation.ssh;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.wat.melody.cloud.network.exception.NetworkManagementException;
+import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.cloud.network.activation.NetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.NetworkActivator;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
@@ -18,7 +21,7 @@ import com.wat.melody.common.ssh.impl.SshUserDatas;
 
 /**
  * <p>
- * This implementation of the {@link NetworkManager} will :
+ * This implementation of the {@link NetworkActivator} will :
  * <ul>
  * <li>On enablement : add the ip/fqdn of the target system in the known_host
  * file ;</li>
@@ -30,34 +33,34 @@ import com.wat.melody.common.ssh.impl.SshUserDatas;
  * @author Guillaume Cornet
  * 
  */
-public class SshNetworkManager implements NetworkManager {
+public class SshNetworkActivator implements NetworkActivator {
 
-	private static Log log = LogFactory.getLog(SshNetworkManager.class);
+	private static Log log = LogFactory.getLog(SshNetworkActivator.class);
 
-	private SshManagementNetworkDatas moManagementDatas;
-	private ISshSessionConfiguration moConfiguration;
+	private SshNetworkActivationDatas _managementDatas;
+	private ISshSessionConfiguration _configuration;
 
-	public SshNetworkManager(SshManagementNetworkDatas datas,
+	public SshNetworkActivator(SshNetworkActivationDatas datas,
 			ISshSessionConfiguration sc) {
 		setConfiguration(sc);
 		setManagementDatas(datas);
 	}
 
-	public SshManagementNetworkDatas getManagementDatas() {
-		return moManagementDatas;
+	public SshNetworkActivationDatas getManagementDatas() {
+		return _managementDatas;
 	}
 
-	public void setManagementDatas(SshManagementNetworkDatas nmd) {
+	public void setManagementDatas(SshNetworkActivationDatas nmd) {
 		if (nmd == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SshManagementNetworkDatas.class.getCanonicalName() + ".");
+					+ SshNetworkActivationDatas.class.getCanonicalName() + ".");
 		}
-		moManagementDatas = nmd;
+		_managementDatas = nmd;
 	}
 
 	public ISshSessionConfiguration getConfiguration() {
-		return moConfiguration;
+		return _configuration;
 	}
 
 	private void setConfiguration(ISshSessionConfiguration sc) {
@@ -66,29 +69,30 @@ public class SshNetworkManager implements NetworkManager {
 					+ "Must be a valid "
 					+ ISshSessionConfiguration.class.getCanonicalName() + ".");
 		}
-		moConfiguration = sc;
+		_configuration = sc;
 	}
 
 	@Override
-	public void enableNetworkManagement() throws NetworkManagementException,
+	public void enableNetworkManagement() throws NetworkActivationException,
 			InterruptedException {
 		disableNetworkManagement();
-		SshManagementNetworkDatas datas = getManagementDatas();
+		SshNetworkActivationDatas datas = getManagementDatas();
 		boolean result = false;
 		try {
 			result = addKnownHostsHost(getConfiguration(), datas.getHost(),
-					datas.getPort(), datas.getEnablementTimeout()
+					datas.getPort(), datas.getActivationTimeout()
 							.getTimeoutInMillis());
 		} catch (SshSessionException Ex) {
-			throw new NetworkManagementException(Ex);
+			throw new NetworkActivationException(Ex);
 		}
 		if (result == false) {
-			throw new NetworkManagementException(Messages.bind(
-					Messages.SshNetMgrEx_ENABLEMENT_TIMEOUT,
-					ManagementNetworkDatasLoader.ENABLE_TIMEOUT_ATTR));
+			throw new NetworkActivationException(Messages.bind(
+					Messages.SshNetworkActivatorEx_ENABLEMENT_TIMEOUT,
+					NetworkActivationDatasLoader.ACTIVATION_TIMEOUT_ATTR));
 		}
-		log.debug(Messages.bind(Messages.SshNetMgrMsg_ENABLEMENT_DONE, datas
-				.getHost().getAddress(), datas.getHost().getName()));
+		log.debug(Messages.bind(
+				Messages.SshNetworkActivatorMsg_ENABLEMENT_DONE, datas
+						.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 	public static boolean addKnownHostsHost(ISshSessionConfiguration sc,
@@ -134,7 +138,8 @@ public class SshNetworkManager implements NetworkManager {
 					session.disconnect();
 				}
 			}
-			log.debug(Messages.bind(Messages.SshNetMgrMsg_WAIT_FOR_ENABLEMENT,
+			log.debug(Messages.bind(
+					Messages.SshNetworkActivatorMsg_WAIT_FOR_ENABLEMENT,
 					host.getAddress(), port.getValue()));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
@@ -152,11 +157,12 @@ public class SshNetworkManager implements NetworkManager {
 	}
 
 	@Override
-	public void disableNetworkManagement() throws NetworkManagementException {
-		SshManagementNetworkDatas datas = getManagementDatas();
+	public void disableNetworkManagement() throws NetworkActivationException {
+		SshNetworkActivationDatas datas = getManagementDatas();
 		getConfiguration().getKnownHosts().remove(datas.getHost());
-		log.debug(Messages.bind(Messages.SshNetMgrMsg_DISABLEMENT_DONE, datas
-				.getHost().getAddress(), datas.getHost().getName()));
+		log.debug(Messages.bind(
+				Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE, datas
+						.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 }

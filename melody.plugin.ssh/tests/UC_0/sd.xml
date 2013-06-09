@@ -10,7 +10,7 @@
 		<foreach	items="//instance[exists(@instance-id)]"
 					item-name="svr">
 
-			<property name="IP" value="§[melody:getManagementNetworkHost(§[svr]§)]§"/>
+			<property name="IP" value="§[melody:getNetworkActivationHost(§[svr]§)]§"/>
 			<property name="application" value="myApp"/>
 			<property name="module" value="myMod"/>
 			<property name="instance" value="myInst"/>

@@ -15,52 +15,55 @@ public enum Access {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link Access} object.
+	 * Convert the given <tt>String</tt> to an {@link Access} object.
 	 * </p>
 	 * 
-	 * @param sAccess
-	 *            is the given <code>String</code> to convert.
+	 * @param access
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link Access} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link Access} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalAccessException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link Access} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalAccessException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a valid
+	 *             {@link Access} Enumeration Constant ;</li>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             </ul>
 	 */
-	public static Access parseString(String sAccess)
+	public static Access parseString(String access)
 			throws IllegalAccessException {
-		if (sAccess == null) {
+		if (access == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ Access.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(Access.values()) + " ).");
 		}
-		if (sAccess.trim().length() == 0) {
+		if (access.trim().length() == 0) {
 			throw new IllegalAccessException(Messages.bind(
-					Messages.AccessEx_EMPTY, sAccess));
+					Messages.AccessEx_EMPTY, access));
 		}
 		for (Access c : Access.class.getEnumConstants()) {
-			if (c.getValue().equalsIgnoreCase(sAccess)) {
+			if (c.getValue().equalsIgnoreCase(access)) {
 				return c;
 			}
 		}
 		throw new IllegalAccessException(Messages.bind(
-				Messages.AccessEx_INVALID, sAccess,
+				Messages.AccessEx_INVALID, access,
 				Arrays.asList(Access.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
-	private Access(String sAccess) {
-		this.msValue = sAccess;
+	private Access(String access) {
+		this._value = access;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

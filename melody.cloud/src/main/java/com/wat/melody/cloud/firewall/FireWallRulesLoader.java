@@ -30,7 +30,7 @@ public class FireWallRulesLoader {
 	 * Rule.
 	 * </p>
 	 * <p>
-	 * A TCP and UDP FireWall Rule {@link Element} must have the attributes :
+	 * A TCP and UDP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
@@ -44,7 +44,7 @@ public class FireWallRulesLoader {
 	 * </ul>
 	 * </p>
 	 * <p>
-	 * An ICMP FireWall Rule {@link Element} must have the attributes :
+	 * An ICMP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
@@ -59,7 +59,7 @@ public class FireWallRulesLoader {
 	 * </p>
 	 * 
 	 * @param instanceElmt
-	 *            is an Instance {@link Element}.
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
@@ -67,8 +67,7 @@ public class FireWallRulesLoader {
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
-	 *             {@link Element}'s attribute is not valid, or the 'herit' XML
-	 *             attribute is not valid).
+	 *             {@link Element}'s attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException {

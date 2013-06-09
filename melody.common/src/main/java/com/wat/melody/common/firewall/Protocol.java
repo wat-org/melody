@@ -2,6 +2,7 @@ package com.wat.melody.common.firewall;
 
 import java.util.Arrays;
 
+import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
 
 /**
@@ -15,48 +16,51 @@ public enum Protocol {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link Protocol} object.
+	 * Convert the given <tt>String</tt> to a {@link Protocol} object.
 	 * </p>
 	 * 
-	 * @param sProtocol
-	 *            is the given <code>String</code> to convert.
+	 * @param protocol
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>Protocol</code> object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a <tt>Protocol</tt> object, whose equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalProtocolException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>Protocol</code> Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalAccessException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a valid
+	 *             {@link Protocol} Enumeration Constant ;</li>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             </ul>
 	 */
-	public static Protocol parseString(String sProtocol)
+	public static Protocol parseString(String protocol)
 			throws IllegalProtocolException {
-		if (sProtocol == null) {
+		if (protocol == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Protocol.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(Protocol.values()) + ").");
 		}
-		if (sProtocol.trim().length() == 0) {
+		if (protocol.trim().length() == 0) {
 			throw new IllegalProtocolException(Messages.bind(
-					Messages.ProtocolEx_EMPTY, sProtocol));
+					Messages.ProtocolEx_EMPTY, protocol));
 		}
 		for (Protocol c : Protocol.class.getEnumConstants()) {
-			if (c.getValue().equalsIgnoreCase(sProtocol)) {
+			if (c.getValue().equalsIgnoreCase(protocol)) {
 				return c;
 			}
 		}
 		throw new IllegalProtocolException(Messages.bind(
-				Messages.ProtocolEx_INVALID, sProtocol,
+				Messages.ProtocolEx_INVALID, protocol,
 				Arrays.asList(Protocol.values())));
 	}
 
 	private final String _value;
 
-	private Protocol(String sProtocol) {
-		this._value = sProtocol;
+	private Protocol(String protocol) {
+		this._value = protocol;
 	}
 
 	public String getValue() {

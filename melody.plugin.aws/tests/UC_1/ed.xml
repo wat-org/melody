@@ -8,11 +8,11 @@
 	<models>
 	
 		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
-			<network-management method="ssh" port="22" mgmt-network-device-attribute="nat-ip"/>
+			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="80-443"/>
 				<tcp herit="./environment/global-fwrules/ssh"/>
-				<tcp access="allow" directions="out" to-ips="§[string-join(melody:getManagementNetworkHost(//DB//instance),',')]§" to-ports="1421"/>
+				<tcp access="allow" directions="out" to-ips="§[string-join(melody:getNetworkActivationHost(//DB//instance),',')]§" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
 				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
@@ -22,10 +22,10 @@
 		</model>
 	
 		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
-			<network-management method="ssh" port="22" mgmt-network-device-attribute="nat-ip"/>
+			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp herit="./environment/global-fwrules/ssh"/>
-				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getManagementNetworkHost(//WEB//instance),',')]§" to-ports="1421"/>
+				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getNetworkActivationHost(//WEB//instance),',')]§" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
 				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>

@@ -8,8 +8,8 @@
 
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					item-name="srv" >
-			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
+			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 			
 			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/package')"
 						item-name="pkg"

@@ -2,12 +2,12 @@
 
 	<global-fwrules>
 		<!-- This melody expression is crazy (because it mentioned §[srv]§, which is defined in the sequence descriptor), but it works -->
-		<ssh access="allow" devices-name="§[melody:getManagementNetworkDeviceName(§[srv]§)]§" directions="in" from-ips="all" to-ports="22"/>
+		<ssh access="allow" devices-name="§[ melody:getNetworkActivationDeviceName(§[srv]§) ]§" directions="in" from-ips="all" to-ports="22"/>
 	</global-fwrules>
 	
 	<models>
 		<model image-id="RHEL-6.3-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
-			<network-management method="ssh"/>
+			<network-management activation-protocol="ssh"/>
 			<disk-management disk-devices-selector="//disk"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>

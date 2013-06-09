@@ -1,8 +1,9 @@
 package com.wat.melody.cloud.firewall;
 
+import java.util.List;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexIcmpFireWallRule;
@@ -27,14 +28,18 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the icmp type of the
-	 * icmp Fw Rule.
+	 * The default value of the XML Nested element of an Instance Element, which
+	 * contains the definition of an ICMP FireWall Rule.
+	 */
+	public static final String DEFAULT_ICMP_FIREWALL_RULE_ELEMENT = "icmp";
+
+	/**
+	 * XML attribute of a FireWall Rule Element, which define its icmp types.
 	 */
 	public static final String TYPES_ATTR = "types";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the icmp code of the
-	 * icmp Fw Rule.
+	 * XML attribute of a FireWall Rule Element, which define its icmp codes.
 	 */
 	public static final String CODES_ATTR = "codes";
 
@@ -71,7 +76,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * </p>
 	 * 
 	 * <p>
-	 * An ICMP FireWall Rule {@link Element} must have the attributes :
+	 * An ICMP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
 	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
@@ -86,7 +91,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * </p>
 	 * 
 	 * @param instanceElmt
-	 *            is an Instance {@link Element}.
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
@@ -94,20 +99,18 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
-	 *             {@link Element}'s attribute is not valid, or the 'herit' XML
-	 *             attribute is not valid).
+	 *             {@link Element}'s attribute is not valid).
 	 */
 	public FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException {
-		NodeList nl = FireWallManagementHelper
+		List<Element> icmpFireRuleElmts = FireWallRulesHelper
 				.findIcmpFireWallRules(instanceElmt);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element e = (Element) nl.item(i);
-			Directions dirs = loadDirection(e);
-			IpRanges fromIps = loadFromIps(e);
-			IpRanges toIps = loadToIps(e);
+		for (Element icmpFireRuleElmt : icmpFireRuleElmts) {
+			Directions dirs = loadDirection(icmpFireRuleElmt);
+			IpRanges fromIps = loadFromIps(icmpFireRuleElmt);
+			IpRanges toIps = loadToIps(icmpFireRuleElmt);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
@@ -122,10 +125,10 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 					continue;
 				}
 			}
-			IcmpTypes types = loadIcmpTypes(e);
-			IcmpCodes codes = loadIcmpCodes(e);
-			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(e);
-			Access access = loadAccess(e);
+			IcmpTypes types = loadIcmpTypes(icmpFireRuleElmt);
+			IcmpCodes codes = loadIcmpCodes(icmpFireRuleElmt);
+			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(icmpFireRuleElmt);
+			Access access = loadAccess(icmpFireRuleElmt);
 			fwrs.merge(refs, new ComplexIcmpFireWallRule(fromIps, toIps, types,
 					codes, dirs, access));
 		}

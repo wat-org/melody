@@ -10,8 +10,8 @@
 	
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					item-name="srv" >
-			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
+			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
 			<property name="hwinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-hardware-infos') ]§" />
 			<property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
@@ -51,8 +51,8 @@
 	
 		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
 					item-name="srv" >
-			<property name="IP" value="§[ melody:getManagementNetworkHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'keypair-name') ]§" />
+			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 			
 			<ssh description="[rhn_unreg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
 				<exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />

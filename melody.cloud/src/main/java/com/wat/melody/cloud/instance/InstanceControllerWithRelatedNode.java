@@ -1,14 +1,13 @@
 package com.wat.melody.cloud.instance;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.NetworkDevicesHelper;
 import com.wat.melody.cloud.network.NetworkDevicesLoader;
-import com.wat.melody.cloud.network.NetworkManagementHelper;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -250,16 +249,13 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 
 	private Element getNetworkDeviceElement(NetworkDevice netdev)
 			throws OperationException {
-		NodeList netDevs = null;
 		try {
-			netDevs = NetworkManagementHelper.findNetworkDeviceNodeByName(
+			return NetworkDevicesHelper.findNetworkDeviceElementByName(
 					getRelatedElement(), netdev.getNetworkDeviceName()
 							.getValue());
 		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}
-		return (netDevs == null || netDevs.getLength() == 0) ? null
-				: (Element) netDevs.item(0);
 	}
 
 }

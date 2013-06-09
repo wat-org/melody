@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.network;
+package com.wat.melody.cloud.network.activation;
 
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 
@@ -7,7 +7,7 @@ import com.wat.melody.common.ssh.ISshSessionConfiguration;
  * @author Guillaume Cornet
  * 
  */
-public interface NetworkManagerFactoryConfigurationCallback {
+public interface NetworkActivatorConfigurationCallback {
 
 	public ISshSessionConfiguration getSshConfiguration();
 

@@ -15,14 +15,14 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.cloud.instance.InstanceController;
-import com.wat.melody.cloud.instance.InstanceControllerWithNetworkManagement;
+import com.wat.melody.cloud.instance.InstanceControllerWithNetworkActivation;
 import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatas;
 import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.InstanceDatasValidator;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
-import com.wat.melody.cloud.network.NetworkManagementHelper;
-import com.wat.melody.cloud.network.NetworkManagerFactoryConfigurationCallback;
+import com.wat.melody.cloud.network.activation.NetworkActivationHelper;
+import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.DocHelper;
@@ -36,7 +36,7 @@ import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
  * 
  */
 abstract public class AbstractOperation implements ITask,
-		InstanceDatasValidator, NetworkManagerFactoryConfigurationCallback {
+		InstanceDatasValidator, NetworkActivatorConfigurationCallback {
 
 	private static GenericTimeout createTimeout(int timeout) {
 		try {
@@ -85,9 +85,9 @@ abstract public class AbstractOperation implements ITask,
 		InstanceController instance = newAwsInstanceController();
 		instance = new InstanceControllerWithRelatedNode(instance,
 				getTargetElement());
-		if (NetworkManagementHelper
-				.isManagementNetworkEnable(getTargetElement())) {
-			instance = new InstanceControllerWithNetworkManagement(instance,
+		if (NetworkActivationHelper
+				.isNetworkActivationEnable(getTargetElement())) {
+			instance = new InstanceControllerWithNetworkActivation(instance,
 					this, getTargetElement());
 		}
 		return instance;

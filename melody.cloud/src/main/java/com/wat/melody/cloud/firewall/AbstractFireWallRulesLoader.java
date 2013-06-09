@@ -24,32 +24,29 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public abstract class AbstractFireWallRulesLoader {
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the name of the
-	 * device to attache the Fw Rule to.
+	 * XML attribute of a FireWall Rule Element, which define the device-names
+	 * the FireWall Rule apply to.
 	 */
 	public static final String DEVICES_NAME_ATTR = "devices-name";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the source ips of
-	 * the Fw Rule.
+	 * XML attribute of a FireWall Rule Element, which define its source ips.
 	 */
 	public static final String FROM_IPS_ATTR = "from-ips";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the destination ips
-	 * of the Fw Rule.
+	 * XML attribute of a FireWall Rule Element, which define its destination
+	 * ips.
 	 */
 	public static final String TO_IPS_ATTR = "to-ips";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the directions of
-	 * the flow.
+	 * XML attribute of a FireWall Rule Element, which define its directions.
 	 */
 	public static final String DIRECTIONS_ATTR = "directions";
 
 	/**
-	 * XML attribute of a FwRule Element Node, which define the action to
-	 * perform.
+	 * XML attribute of a FireWall Rule Element, which define its access.
 	 */
 	public static final String ACCESS_ATTR = "access";
 
@@ -97,7 +94,7 @@ public abstract class AbstractFireWallRulesLoader {
 	protected Directions loadDirection(Element e) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, DIRECTIONS_ATTR);
 		if (v == null || v.length() == 0) {
-			return null;
+			return Directions.ALL;
 		}
 		try {
 			return Directions.parseString(v);
@@ -121,7 +118,7 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	public abstract FireWallRulesPerDevice load(Element instanceElement)
+	public abstract FireWallRulesPerDevice load(Element instanceElmt)
 			throws NodeRelatedException;
 
 }
