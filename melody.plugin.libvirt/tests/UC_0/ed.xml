@@ -30,10 +30,10 @@
 	
 	<instances>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" instance-id="i-75351247" name="srv01">
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
 			<network-devices>
-				<interface device-name="eth0" fqdn="ip-192-168-122-8.cloud.local" ip="192.168.122.8"/>
-				<interface device-name="eth1" fqdn="ip-192-168-122-9.cloud.local" ip="192.168.122.9"/>
+				<interface device-name="eth0"/>
+				<interface device-name="eth1"/>
 			</network-devices>
 		</instance>
 		
