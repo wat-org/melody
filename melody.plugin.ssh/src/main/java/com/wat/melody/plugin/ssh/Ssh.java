@@ -15,7 +15,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
-import com.wat.melody.plugin.ssh.common.AbstractSshConnectionManagedOperation;
+import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.plugin.ssh.common.types.Exec;
@@ -25,7 +25,7 @@ import com.wat.melody.plugin.ssh.common.types.Exec;
  * @author Guillaume Cornet
  * 
  */
-public class Ssh extends AbstractSshConnectionManagedOperation {
+public class Ssh extends AbstractSshManagedOperation {
 
 	private static Log log = LogFactory.getLog(Ssh.class);
 

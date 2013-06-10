@@ -9,6 +9,7 @@ import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
@@ -90,6 +91,11 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	private ISshUserDatas setUserDatas(ISshUserDatas ud) {
+		if (ud == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshUserDatas.class.getCanonicalName() + ".");
+		}
 		ISshUserDatas previous = getUserDatas();
 		_userDatas = ud;
 		return previous;
@@ -100,6 +106,11 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	private ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd) {
+		if (cd == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshConnectionDatas.class.getCanonicalName() + ".");
+		}
 		ISshConnectionDatas previous = getConnectionDatas();
 		_cnxDatas = cd;
 		return previous;
@@ -124,6 +135,16 @@ public abstract class AbstractSshOperation implements ITask {
 		try {
 			kpr.createKeyPair(getKeyPairName(), getSshPlugInConf()
 					.getKeyPairSize(), getPassword());
+		} catch (IllegalPassphraseException Ex) {
+			if (getPassword() == null) {
+				throw new SshException(Messages.bind(
+						Messages.SshEx_MISSING_PASSPHRASE_ATTR,
+						getKeyPairName(), PASS_ATTR));
+			} else {
+				throw new SshException(Messages.bind(
+						Messages.SshEx_INVALID_PASSPHRASE_ATTR,
+						getKeyPairName(), PASS_ATTR));
+			}
 		} catch (IOException Ex) {
 			throw new SshException(Ex);
 		}
@@ -154,9 +175,8 @@ public abstract class AbstractSshOperation implements ITask {
 	 * Can be override by subclasses to enhance behavior of {@link ISshSession}.
 	 */
 	protected ISshSession createSession() throws SshException {
-		ISshSession session = new SshSession();
-		session.setUserDatas(getUserDatas());
-		session.setConnectionDatas(getConnectionDatas());
+		ISshSession session;
+		session = new SshSession(getUserDatas(), getConnectionDatas());
 		session.setSessionConfiguration(getSshPlugInConf());
 		return session;
 	}

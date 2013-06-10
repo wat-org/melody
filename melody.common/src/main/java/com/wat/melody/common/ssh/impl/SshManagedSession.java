@@ -12,6 +12,7 @@ import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
@@ -36,7 +37,7 @@ public class SshManagedSession implements ISshSession {
 	private ISshUserDatas _sshManagementUserDatas = null;
 	private ISshUserDatas _sshUserDatas = null;
 
-	public SshManagedSession(ISshSession session) {
+	public SshManagedSession(ISshSession session, ISshUserDatas md) {
 		if (session == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + ISshSession.class.getCanonicalName()
@@ -44,6 +45,7 @@ public class SshManagedSession implements ISshSession {
 		}
 		_session = session;
 		setUserDatas(session.getUserDatas());
+		setManagementUserDatas(md);
 	}
 
 	@Override
@@ -64,6 +66,33 @@ public class SshManagedSession implements ISshSession {
 
 	@Override
 	public ISshUserDatas setUserDatas(ISshUserDatas ud) {
+		// Ssh management feature requires the user's keypair exists.
+		// The public part of this key will be deployed on the remote system.
+		if (ud.getKeyPairName() == null) {
+			throw new IllegalArgumentException("No keypair-name defined ! "
+					+ "The caller should define a keypair-name.");
+		}
+		if (ud.getKeyPairRepositoryPath() == null) {
+			throw new IllegalArgumentException("No keypair-repo defined ! "
+					+ "The caller should define a keypair-repo.");
+		}
+		KeyPairRepositoryPath kprp = ud.getKeyPairRepositoryPath();
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
+		if (!kpr.containsKeyPair(ud.getKeyPairName())) {
+			throw new IllegalArgumentException("keypair not found ! "
+					+ "The caller should verify that the given keypair "
+					+ "exists in the given keypair-repo.");
+		}
+		try {
+			kpr.getKeyPair(ud.getKeyPairName(), ud.getPassword());
+		} catch (IllegalPassphraseException Ex) {
+			throw new IllegalArgumentException("Invalid passphrase ! "
+					+ "The caller should verify that the given keypair "
+					+ "can be decrypted with the given passphrase.", Ex);
+		} catch (IOException Ex) {
+			throw new IllegalArgumentException("Fail to retrieve keypair ! ",
+					Ex);
+		}
 		return _session.setUserDatas(_sshUserDatas = ud);
 	}
 
@@ -154,16 +183,6 @@ public class SshManagedSession implements ISshSession {
 
 	private void connectAsMasterUserAndDeployKey() throws SshSessionException,
 			InvalidCredentialException, InterruptedException {
-		if (getManagementUserDatas() == null) {
-			throw new IllegalStateException("BUG: No Management User Datas "
-					+ "defined! "
-					+ "Caller source code should set Management User Datas.");
-		}
-		if (getUserDatas().getKeyPairName() == null) {
-			throw new IllegalStateException("BUG: No User keypairname "
-					+ "defined! "
-					+ "Caller source code should set a User keyPairName.");
-		}
 		try {
 			openMasterSession();
 			deployKey();
@@ -208,7 +227,7 @@ public class SshManagedSession implements ISshSession {
 			throw new MelodyInterruptedException(
 					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED, Ex);
 		}
-		analyseDeployKeyCommandResult(res, k, errStream.toString());
+		analyzeDeployKeyCommandResult(res, k, errStream.toString());
 	}
 
 	private String getKey() throws SshSessionException {
@@ -243,7 +262,7 @@ public class SshManagedSession implements ISshSession {
 		return f;
 	}
 
-	private void analyseDeployKeyCommandResult(int res, String k, String errMsg)
+	private void analyzeDeployKeyCommandResult(int res, String k, String errMsg)
 			throws SshSessionException {
 		String login = getUserDatas().getLogin();
 		if (res == 0) {

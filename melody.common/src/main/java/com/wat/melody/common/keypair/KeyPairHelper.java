@@ -1,6 +1,7 @@
 package com.wat.melody.common.keypair;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,11 +25,13 @@ import java.security.spec.RSAPublicKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.PasswordFinder;
 
 import com.jcraft.jsch.Buffer;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 
 /**
  * 
@@ -42,7 +45,8 @@ public abstract class KeyPairHelper {
 	}
 
 	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey,
-			final String passphrase) throws IOException {
+			final String passphrase) throws IOException, FileNotFoundException,
+			IllegalPassphraseException {
 		File fin = privateKey.toFile();
 		FileReader fr = null;
 		PEMReader pemr = null;
@@ -60,6 +64,8 @@ public abstract class KeyPairHelper {
 				});
 			}
 			return (KeyPair) pemr.readObject();
+		} catch (EncryptionException Ex) {
+			throw new IllegalPassphraseException("Incorrect passphrase.", Ex);
 		} finally {
 			try {
 				if (pemr != null) {
@@ -177,8 +183,8 @@ public abstract class KeyPairHelper {
 	 *             if the content of the given file is not a valid RSA public
 	 *             key.
 	 */
-	public static PublicKey readOpenSshRSAPublicKey(Path filePath) throws IOException,
-			InvalidKeySpecException {
+	public static PublicKey readOpenSshRSAPublicKey(Path filePath)
+			throws IOException, InvalidKeySpecException {
 		String content = new String(Files.readAllBytes(filePath));
 		String opensshpubkey = content.split(" ")[1];
 		byte[] opensshpubblob = Base64.decodeBase64(opensshpubkey.getBytes());

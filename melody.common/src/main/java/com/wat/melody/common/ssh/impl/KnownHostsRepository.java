@@ -70,6 +70,11 @@ public class KnownHostsRepository implements IKnownHostsRepository {
 	}
 
 	@Override
+	public String toString() {
+		return _kh.getKnownHostsRepositoryID();
+	}
+
+	@Override
 	public synchronized List<IHostKey> getAll() {
 		HostKey[] hks = _kh.getHostKey();
 		List<IHostKey> res = new ArrayList<IHostKey>();

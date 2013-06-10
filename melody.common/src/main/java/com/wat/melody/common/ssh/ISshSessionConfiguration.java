@@ -39,9 +39,9 @@ public interface ISshSessionConfiguration {
 
 	public Timeout setReadTimeout(ReadTimeout ival);
 
-	public ServerAliveMaxCount getServerAliveCountMax();
+	public ServerAliveMaxCount getServerAliveMaxCount();
 
-	public ServerAliveMaxCount setServerAliveCountMax(ServerAliveMaxCount ival);
+	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount ival);
 
 	public Timeout getServerAliveInterval();
 

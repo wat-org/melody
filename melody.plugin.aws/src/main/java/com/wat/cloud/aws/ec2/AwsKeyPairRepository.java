@@ -11,6 +11,7 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 
 /**
  * <p>
@@ -94,7 +95,8 @@ public class AwsKeyPairRepository {
 
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
 			KeyPairSize size, String passphrase)
-			throws AwsKeyPairRepositoryException, IOException {
+			throws AwsKeyPairRepositoryException, IOException,
+			IllegalPassphraseException {
 		// Get/Create KeyPair in the underlying repository
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);

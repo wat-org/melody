@@ -22,6 +22,8 @@ public class Messages extends NLS {
 	public static String MachineEx_INVALID_IMAGEID_ATTR;
 	public static String MachineEx_MISSING_KEYPAIR_NAME_ATTR;
 
+	public static String CreateEx_MISSING_PASSPHRASE_ATTR;
+	public static String CreateEx_INVALID_PASSPHRASE_ATTR;
 	public static String CreateEx_GENERIC_FAIL;
 
 	public static String DestroyEx_GENERIC_FAIL;

@@ -610,19 +610,19 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public ServerAliveMaxCount getServerAliveCountMax() {
-		return getSshSessionConfiguration().getServerAliveCountMax();
+	public ServerAliveMaxCount getServerAliveMaxCount() {
+		return getSshSessionConfiguration().getServerAliveMaxCount();
 	}
 
 	@Override
-	public ServerAliveMaxCount setServerAliveCountMax(ServerAliveMaxCount ival) {
-		return getSshSessionConfiguration().setServerAliveCountMax(ival);
+	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount ival) {
+		return getSshSessionConfiguration().setServerAliveMaxCount(ival);
 	}
 
 	public ServerAliveMaxCount setServerAliveCountMax(String val)
 			throws SshPlugInConfigurationException {
 		try {
-			return setServerAliveCountMax(ServerAliveMaxCount.parseString(val));
+			return setServerAliveMaxCount(ServerAliveMaxCount.parseString(val));
 		} catch (IllegalServerAliveMaxCountException Ex) {
 			throw new SshPlugInConfigurationException(Ex);
 		}

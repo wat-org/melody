@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 
 /**
  * <p>
@@ -136,9 +137,13 @@ public class KeyPairRepository implements IFileBased {
 	 * @throws IOException
 	 *             if an IO error occurred while storing the {@link KeyPair} in
 	 *             this Repository.
+	 * @throws IllegalPassphraseException
+	 *             if the key already exists but the given passphrase is not
+	 *             correct (the key can't be decrypted).
 	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
-			KeyPairSize size, String passphrase) throws IOException {
+			KeyPairSize size, String passphrase) throws IOException,
+			IllegalPassphraseException {
 		if (containsKeyPair(keyPairName)) {
 			return getKeyPair(keyPairName, passphrase);
 		}
@@ -203,7 +208,8 @@ public class KeyPairRepository implements IFileBased {
 	 *             if the given KeyPair's doesn't exists in this
 	 *             KeyPairRepository.
 	 */
-	public String getPrivateKey(KeyPairName keyPairName) throws IOException {
+	public synchronized String getPrivateKey(KeyPairName keyPairName)
+			throws IOException {
 		try {
 			return new String(
 					Files.readAllBytes(getPrivateKeyPath(keyPairName)));
@@ -214,7 +220,7 @@ public class KeyPairRepository implements IFileBased {
 		}
 	}
 
-	public Path getPrivateKeyPath(KeyPairName keyPairName) {
+	public synchronized Path getPrivateKeyPath(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
@@ -223,7 +229,7 @@ public class KeyPairRepository implements IFileBased {
 		return Paths.get(_kprp.getPath(), keyPairName.getValue());
 	}
 
-	public File getPrivateKeyFile(KeyPairName keyPairName) {
+	public synchronized File getPrivateKeyFile(KeyPairName keyPairName) {
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
@@ -252,12 +258,15 @@ public class KeyPairRepository implements IFileBased {
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
+	 * @throws IllegalPassphraseException
+	 *             if the given passphrase is not correct (the key can't be
+	 *             decrypted).
 	 * @throws IllegalArgumentException
 	 *             if the given KeyPair's doesn't exists in this
 	 *             KeyPairRepository.
 	 */
-	public KeyPair getKeyPair(KeyPairName keyPairName, String passphrase)
-			throws IOException {
+	public synchronized KeyPair getKeyPair(KeyPairName keyPairName,
+			String passphrase) throws IOException, IllegalPassphraseException {
 		try {
 			return KeyPairHelper.readOpenSslPEMPrivateKey(
 					getPrivateKeyPath(keyPairName), passphrase);
@@ -285,12 +294,16 @@ public class KeyPairRepository implements IFileBased {
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
+	 * @throws IllegalPassphraseException
+	 *             if the given passphrase is not correct (the key can't be
+	 *             decrypted).
 	 * @throws IllegalArgumentException
 	 *             if the given KeyPair's doesn't exists in this
 	 *             KeyPairRepository.
 	 */
-	public String getPublicKeyInOpenSshFormat(KeyPairName keyPairName,
-			String passphrase, String sComment) throws IOException {
+	public synchronized String getPublicKeyInOpenSshFormat(
+			KeyPairName keyPairName, String passphrase, String sComment)
+			throws IOException, IllegalPassphraseException {
 		KeyPair kp = getKeyPair(keyPairName, passphrase);
 		return getPublicKeyInOpenSshFormat(kp, sComment);
 	}
@@ -317,12 +330,15 @@ public class KeyPairRepository implements IFileBased {
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
+	 * @throws IllegalPassphraseException
+	 *             if the given passphrase is not correct (the key can't be
+	 *             decrypted).
 	 * @throws IllegalArgumentException
 	 *             if the given KeyPair's doesn't exists in this
 	 *             KeyPairRepository.
 	 */
-	public String getFingerprint(KeyPairName keyPairName, String passphrase)
-			throws IOException {
+	public synchronized String getFingerprint(KeyPairName keyPairName,
+			String passphrase) throws IOException, IllegalPassphraseException {
 		KeyPair kp = getKeyPair(keyPairName, passphrase);
 		return getFingerprint(kp);
 	}

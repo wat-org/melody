@@ -23,7 +23,7 @@ import com.wat.melody.common.ssh.types.Resources;
 import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.ssh.types.exception.ResourceException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
-import com.wat.melody.plugin.ssh.common.AbstractSshConnectionManagedOperation;
+import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 
@@ -32,7 +32,7 @@ import com.wat.melody.plugin.ssh.common.exception.SshException;
  * @author Guillaume Cornet
  * 
  */
-public class Upload extends AbstractSshConnectionManagedOperation implements
+public class Upload extends AbstractSshManagedOperation implements
 		TemplatingHandler {
 
 	/**

@@ -110,9 +110,7 @@ public class SshNetworkActivator implements NetworkActivator {
 		cd.setHost(host);
 		cd.setPort(port);
 		cd.setTrust(true);
-		ISshSession session = new SshSession();
-		session.setUserDatas(ud);
-		session.setConnectionDatas(cd);
+		ISshSession session = new SshSession(ud, cd);
 		session.setSessionConfiguration(sc);
 
 		while (true) {

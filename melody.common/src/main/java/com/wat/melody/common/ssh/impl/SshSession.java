@@ -45,7 +45,9 @@ public class SshSession implements ISshSession {
 	private ISshUserDatas _sshUserDatas = null;
 	private ISshConnectionDatas _sshConnectionDatas = null;
 
-	public SshSession() {
+	public SshSession(ISshUserDatas ud, ISshConnectionDatas cd) {
+		setUserDatas(ud);
+		setConnectionDatas(cd);
 	}
 
 	@Override
@@ -125,8 +127,10 @@ public class SshSession implements ISshSession {
 
 	@Override
 	public synchronized void disconnect() {
-		if (_session != null && _session.isConnected()) {
-			_session.disconnect();
+		if (_session != null) {
+			if (_session.isConnected()) {
+				_session.disconnect();
+			}
 			_session = null;
 		}
 	}
@@ -189,12 +193,6 @@ public class SshSession implements ISshSession {
 	}
 
 	private void applyDatas() {
-		if (getUserDatas() == null) {
-			throw new IllegalStateException("No user datas defined.");
-		}
-		if (getConnectionDatas() == null) {
-			throw new IllegalStateException("No connection datas defined.");
-		}
 		try {
 			_session = JSCH.getSession(getLogin(), getHost(), getPort());
 		} catch (JSchException Ex) {
@@ -204,7 +202,7 @@ public class SshSession implements ISshSession {
 		_session.setUserInfo(new JSchUserInfoAdapter(getUserDatas(),
 				getConnectionDatas()));
 
-		if (getKeyPairName() == null || getKeyPairRepository() == null) {
+		if (getKeyPairPath() == null) {
 			return;
 		}
 		LocalIdentityRepository ir = new LocalIdentityRepository(JSCH);
@@ -218,12 +216,27 @@ public class SshSession implements ISshSession {
 	}
 
 	private void applySessionConfiguration() {
+		/*
+		 * We remove 'gssapi-with-mic' authentication method because, when the
+		 * target sshd is Kerberized, and when the client has no Kerberos ticket
+		 * yet, the auth method 'gssapi-with-mic' will wait for the user to
+		 * prompt a password.
+		 * 
+		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
+		 * as the bug is not solved, we must exclude kerberos/GSS auth method.
+		 */
+		/*
+		 * We remove 'keyboard-interactive' authentication method because, we
+		 * don't want the user to be prompt for anything.
+		 */
+		_session.setConfig("PreferredAuthentications", "publickey,password");
+
 		ISshSessionConfiguration conf = getSessionConfiguration();
 		if (getSessionConfiguration() == null) {
 			// no session configuration defined, will use defaults
 			return;
 		}
-		_session.setServerAliveCountMax(conf.getServerAliveCountMax()
+		_session.setServerAliveCountMax(conf.getServerAliveMaxCount()
 				.getValue());
 
 		try {
@@ -252,23 +265,11 @@ public class SshSession implements ISshSession {
 				.getValue());
 		_session.setConfig("compression_level", conf.getCompressionLevel()
 				.getValue());
-		/*
-		 * We remove 'gssapi-with-mic' authentication method because, when the
-		 * target sshd is Kerberized, and when the client has no Kerberos ticket
-		 * yet, the auth method 'gssapi-with-mic' will wait for the user to
-		 * prompt a password.
-		 * 
-		 * This is a bug in the JSch, class UserAuthGSSAPIWithMIC.java. As long
-		 * as the bug is not solved, we must exclude kerberos/GSS auth method.
-		 */
-		/*
-		 * We remove 'keyboard-interactive' authentication method because, we
-		 * don't want the user to be prompt for anything.
-		 */
-		_session.setConfig("PreferredAuthentications", "publickey,password");
 
-		_session.setHostKeyRepository(new KnownHostsAdapter(
-				getSessionConfiguration().getKnownHosts()));
+		if (conf.getKnownHosts() != null) {
+			_session.setHostKeyRepository(new KnownHostsAdapter(conf
+					.getKnownHosts()));
+		}
 
 		if (conf.getProxyType() != null) {
 			/*

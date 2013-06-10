@@ -6,6 +6,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.impl.SshManagedSession;
@@ -17,8 +18,7 @@ import com.wat.melody.plugin.ssh.common.exception.SshException;
  * @author Guillaume Cornet
  * 
  */
-public abstract class AbstractSshConnectionManagedOperation extends
-		AbstractSshOperation {
+public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 
 	/**
 	 * Defines the management master user to use to connect to remote system for
@@ -49,7 +49,7 @@ public abstract class AbstractSshConnectionManagedOperation extends
 
 	private ISshUserDatas _mgmtUserDatas;
 
-	public AbstractSshConnectionManagedOperation() {
+	public AbstractSshManagedOperation() {
 		super();
 		setMgmtUserDatas(new SshUserDatas());
 	}
@@ -59,6 +59,11 @@ public abstract class AbstractSshConnectionManagedOperation extends
 	}
 
 	private ISshUserDatas setMgmtUserDatas(ISshUserDatas ud) {
+		if (ud == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshUserDatas.class.getCanonicalName() + ".");
+		}
 		ISshUserDatas previous = getMgmtUserDatas();
 		_mgmtUserDatas = ud;
 		return previous;
@@ -76,10 +81,9 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		// Ensure a user keypairname is defined
 		if (getKeyPairName() == null) {
 			throw new SshException(Messages.bind(
-					Messages.SshEx_MISSING_USER_KEYPAIRNAME_ATTR, new Object[] {
-							KEYPAIR_NAME_ATTR,
-							SshPlugInConfiguration.MGMT_ENABLE,
-							getSshPlugInConf().getFilePath() }));
+					Messages.SshEx_MISSING_USER_KEYPAIRNAME_ATTR,
+					KEYPAIR_NAME_ATTR, SshPlugInConfiguration.MGMT_ENABLE,
+					getSshPlugInConf().getFilePath()));
 		}
 
 		// Verify that the Management User Login is defined
@@ -89,11 +93,10 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		}
 		if (getManagementLogin() == null) {
 			throw new SshException(Messages.bind(
-					Messages.SshEx_MISSING_MGMT_LOGIN_ATTR, new Object[] {
-							MGMT_MASTER_USER_ATTR,
-							SshPlugInConfiguration.MGMT_LOGIN,
-							SshPlugInConfiguration.MGMT_ENABLE,
-							getSshPlugInConf().getFilePath() }));
+					Messages.SshEx_MISSING_MGMT_LOGIN_ATTR,
+					MGMT_MASTER_USER_ATTR, SshPlugInConfiguration.MGMT_LOGIN,
+					SshPlugInConfiguration.MGMT_ENABLE, getSshPlugInConf()
+							.getFilePath()));
 		}
 
 		// Verify that the Management User Credentials are defined
@@ -112,11 +115,11 @@ public abstract class AbstractSshConnectionManagedOperation extends
 				&& getManagementPassword() == null) {
 			throw new SshException(Messages.bind(
 					Messages.SshEx_MISSING_MGMT_PASSWORD_OR_PK_ATTR,
-					new Object[] { MGMT_MASTER_PASS_ATTR, MGMT_MASTER_KEY_ATTR,
-							SshPlugInConfiguration.MGMT_PASSWORD,
-							SshPlugInConfiguration.MGMT_KEYPAIRNAME,
-							SshPlugInConfiguration.MGMT_ENABLE,
-							getSshPlugInConf().getFilePath() }));
+					MGMT_MASTER_PASS_ATTR, MGMT_MASTER_KEY_ATTR,
+					SshPlugInConfiguration.MGMT_PASSWORD,
+					SshPlugInConfiguration.MGMT_KEYPAIRNAME,
+					SshPlugInConfiguration.MGMT_ENABLE, getSshPlugInConf()
+							.getFilePath()));
 		}
 
 		// Create the Management User KeyPair if it doesn't exists
@@ -128,6 +131,20 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		try {
 			kpr.createKeyPair(getManagementKeyPairName(), getSshPlugInConf()
 					.getKeyPairSize(), getManagementPassword());
+		} catch (IllegalPassphraseException Ex) {
+			if (getPassword() == null) {
+				throw new SshException(Messages.bind(
+						Messages.SshEx_MISSING_MGMT_PASSPHRASE_ATTR,
+						getManagementKeyPairName(),
+						SshPlugInConfiguration.MGMT_PASSWORD,
+						getSshPlugInConf().getFilePath()));
+			} else {
+				throw new SshException(Messages.bind(
+						Messages.SshEx_INVALID_MGMT_PASSPHRASE,
+						getManagementKeyPairName(), getManagementKeyPairName(),
+						SshPlugInConfiguration.MGMT_PASSWORD,
+						getSshPlugInConf().getFilePath()));
+			}
 		} catch (IOException Ex) {
 			throw new SshException(Ex);
 		}
@@ -142,8 +159,8 @@ public abstract class AbstractSshConnectionManagedOperation extends
 		if (getSshPlugInConf().getMgmtEnable() == false) {
 			return super.createSession();
 		}
-		SshManagedSession session = new SshManagedSession(super.createSession());
-		session.setManagementUserDatas(getMgmtUserDatas());
+		SshManagedSession session = new SshManagedSession(
+				super.createSession(), getMgmtUserDatas());
 		return session;
 	}
 

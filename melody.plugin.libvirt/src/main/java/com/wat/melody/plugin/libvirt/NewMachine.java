@@ -8,9 +8,11 @@ import com.wat.cloud.libvirt.exception.LibVirtKeyPairRepositoryException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.InstanceController;
+import com.wat.melody.cloud.instance.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -73,6 +75,18 @@ public class NewMachine extends AbstractOperation {
 					kpr.createKeyPair(keyPairName, getInstanceDatas()
 							.getKeyPairSize(), getInstanceDatas()
 							.getPassphrase());
+				} catch (IllegalPassphraseException Ex) {
+					if (getInstanceDatas().getPassphrase() == null) {
+						throw new OperationException(Messages.bind(
+								Messages.CreateEx_MISSING_PASSPHRASE_ATTR,
+								InstanceDatasLoader.PASSPHRASE_ATTR,
+								keyPairName));
+					} else {
+						throw new OperationException(Messages.bind(
+								Messages.CreateEx_INVALID_PASSPHRASE_ATTR,
+								InstanceDatasLoader.PASSPHRASE_ATTR,
+								keyPairName));
+					}
 				} catch (IOException | LibVirtKeyPairRepositoryException Ex) {
 					throw new OperationException(Ex);
 				}
