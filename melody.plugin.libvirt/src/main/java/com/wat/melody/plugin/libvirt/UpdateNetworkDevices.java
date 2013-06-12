@@ -4,7 +4,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
-import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;

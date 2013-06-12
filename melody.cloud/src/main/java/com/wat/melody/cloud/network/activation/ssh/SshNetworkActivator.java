@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.cloud.network.Messages;
-import com.wat.melody.cloud.network.activation.NetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
+import com.wat.melody.cloud.network.activation.xml.NetworkActivationDatasLoader;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;

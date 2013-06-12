@@ -1,10 +1,13 @@
-package com.wat.melody.cloud.network;
+package com.wat.melody.cloud.network.xml;
 
 import java.util.List;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
+import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.cloud.network.NetworkDevice;
+import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;

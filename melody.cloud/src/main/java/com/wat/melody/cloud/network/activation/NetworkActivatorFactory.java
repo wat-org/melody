@@ -6,10 +6,11 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.cloud.network.Messages;
-import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivator;
-import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.ssh.xml.SshNetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivator;
+import com.wat.melody.cloud.network.activation.winrm.xml.WinRmNetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;

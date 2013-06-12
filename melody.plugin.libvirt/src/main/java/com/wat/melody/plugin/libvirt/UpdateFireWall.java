@@ -2,7 +2,7 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
-import com.wat.melody.cloud.firewall.FireWallRulesLoader;
+import com.wat.melody.cloud.firewall.xml.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.xml.exception.NodeRelatedException;

@@ -1,11 +1,12 @@
-package com.wat.melody.cloud.network.activation.ssh;
+package com.wat.melody.cloud.network.activation.ssh.xml;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.cloud.network.NetworkDevicesHelper;
-import com.wat.melody.cloud.network.activation.NetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
 import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
+import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
+import com.wat.melody.cloud.network.activation.xml.NetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;

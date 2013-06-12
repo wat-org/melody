@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.firewall;
+package com.wat.melody.cloud.firewall.xml;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.cloud.firewall.Messages;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;

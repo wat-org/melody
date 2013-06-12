@@ -1,8 +1,11 @@
-package com.wat.melody.cloud.instance;
+package com.wat.melody.cloud.instance.xml;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
+import com.wat.melody.cloud.instance.InstanceDatas;
+import com.wat.melody.cloud.instance.InstanceDatasValidator;
+import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;

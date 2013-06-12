@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.network;
+package com.wat.melody.cloud.network.xml;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.xml.FilteredDocHelper;

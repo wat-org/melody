@@ -1,10 +1,13 @@
-package com.wat.melody.cloud.network.activation;
+package com.wat.melody.cloud.network.activation.xml;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
+import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
+import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;

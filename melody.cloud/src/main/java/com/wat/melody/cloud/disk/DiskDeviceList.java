@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
+import com.wat.melody.cloud.disk.xml.DiskDevicesLoader;
 import com.wat.melody.common.systool.SysTool;
 
 /**

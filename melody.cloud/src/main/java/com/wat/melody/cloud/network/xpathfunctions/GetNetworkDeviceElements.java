@@ -7,7 +7,7 @@ import javax.xml.xpath.XPathFunctionException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.cloud.network.NetworkDevicesHelper;
+import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
 

@@ -1,10 +1,15 @@
-package com.wat.melody.cloud.disk;
+package com.wat.melody.cloud.disk.xml;
 
 import java.util.List;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
+import com.wat.melody.cloud.disk.DiskDevice;
+import com.wat.melody.cloud.disk.DiskDeviceList;
+import com.wat.melody.cloud.disk.DiskDeviceName;
+import com.wat.melody.cloud.disk.DiskDeviceSize;
+import com.wat.melody.cloud.disk.Messages;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;

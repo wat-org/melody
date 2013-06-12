@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.instance;
+package com.wat.melody.cloud.instance.xml;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
+import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;

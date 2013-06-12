@@ -4,10 +4,11 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
-import com.wat.melody.cloud.network.NetworkDevicesHelper;
-import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
+import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;

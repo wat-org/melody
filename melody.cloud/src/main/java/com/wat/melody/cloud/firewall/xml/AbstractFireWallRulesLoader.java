@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.firewall;
+package com.wat.melody.cloud.firewall.xml;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;

@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.network.activation;
+package com.wat.melody.cloud.network.activation.xml;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -8,11 +8,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.network.Messages;
-import com.wat.melody.cloud.network.NetworkDevicesHelper;
-import com.wat.melody.cloud.network.NetworkDevicesLoader;
+import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
+import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
+import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
 import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationProtocolException;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivationDatas;
+import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
+import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.firewall.NetworkDeviceName;

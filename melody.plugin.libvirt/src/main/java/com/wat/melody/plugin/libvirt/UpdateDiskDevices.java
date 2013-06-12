@@ -3,7 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.disk.DiskDeviceList;
-import com.wat.melody.cloud.disk.DiskDevicesLoader;
+import com.wat.melody.cloud.disk.xml.DiskDevicesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;

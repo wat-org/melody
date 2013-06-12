@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.firewall;
+package com.wat.melody.cloud.firewall.xml;
 
 import java.util.List;
 
