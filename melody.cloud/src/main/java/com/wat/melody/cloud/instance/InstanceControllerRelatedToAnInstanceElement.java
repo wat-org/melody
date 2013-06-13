@@ -17,175 +17,182 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * <p>
- * Decorate the given {@link InstanceController} Instance with the ability to
- * update the Resource Descriptor.
+ * Decorate the given {@link InstanceController}. Add the ability to update the
+ * related Instance {@link Element}'s datas when the related
+ * {@link InstanceController} changes.
+ * 
+ * On stop/start, Cloud Providers dynamically allocates ip address and fqdn.
+ * This class will update the related Instance {@link Element}'s datas
+ * accordingly.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class InstanceControllerWithRelatedNode extends BaseInstanceController
-		implements InstanceControllerListener {
+public class InstanceControllerRelatedToAnInstanceElement extends
+		BaseInstanceController implements InstanceControllerListener {
 
-	private InstanceController _instance;
-	private Element _relatedElement;
+	private InstanceController _instanceController;
+	private Element _instanceElement;
 
-	public InstanceControllerWithRelatedNode(InstanceController instance,
-			Element relatedElmt) {
-		setInstance(instance);
-		setRelatedElement(relatedElmt);
+	public InstanceControllerRelatedToAnInstanceElement(
+			InstanceController instance, Element relatedInstanceElmt) {
+		setInstanceController(instance);
+		setInstanceElement(relatedInstanceElmt);
 		instance.addListener(this);
 	}
 
-	private InstanceController getInstance() {
-		return _instance;
+	private InstanceController getInstanceController() {
+		return _instanceController;
 	}
 
-	private InstanceController setInstance(InstanceController instance) {
-		if (instance == null) {
+	private InstanceController setInstanceController(
+			InstanceController instanceController) {
+		if (instanceController == null) {
 			throw new IllegalArgumentException("null: Not accepted."
 					+ "Must be a valid "
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		InstanceController previous = getInstance();
-		_instance = instance;
+		InstanceController previous = getInstanceController();
+		_instanceController = instanceController;
 		return previous;
 	}
 
-	private Element getRelatedElement() {
-		return _relatedElement;
+	private Element getInstanceElement() {
+		return _instanceElement;
 	}
 
-	private Element setRelatedElement(Element relatedNode) {
+	private Element setInstanceElement(Element relatedNode) {
 		if (relatedNode == null) {
 			throw new IllegalArgumentException("null: Not accepted."
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		Element previous = getRelatedElement();
-		_relatedElement = relatedNode;
+		Element previous = getInstanceElement();
+		_instanceElement = relatedNode;
 		return previous;
 	}
 
 	@Override
 	public String getInstanceId() {
-		return getInstance().getInstanceId();
+		return getInstanceController().getInstanceId();
 	}
 
 	@Override
 	public boolean isInstanceDefined() {
-		return getInstance().isInstanceDefined();
+		return getInstanceController().isInstanceDefined();
 	}
 
 	@Override
 	public boolean instanceExists() {
-		return getInstance().instanceExists();
+		return getInstanceController().instanceExists();
 	}
 
 	@Override
 	public boolean instanceLives() {
-		return getInstance().instanceLives();
+		return getInstanceController().instanceLives();
 	}
 
 	@Override
 	public boolean instanceRuns() {
-		return getInstance().instanceRuns();
+		return getInstanceController().instanceRuns();
 	}
 
 	@Override
 	public InstanceState getInstanceState() {
-		return getInstance().getInstanceState();
+		return getInstanceController().getInstanceState();
 	}
 
 	@Override
 	public InstanceType getInstanceType() {
-		return getInstance().getInstanceType();
+		return getInstanceController().getInstanceType();
 	}
 
 	@Override
 	public void ensureInstanceIsCreated(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName, long createTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsCreated(type, site, imageId, keyPairName,
-				createTimeout);
+		getInstanceController().ensureInstanceIsCreated(type, site, imageId,
+				keyPairName, createTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsDestroyed(long timeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsDestroyed(timeout);
+		getInstanceController().ensureInstanceIsDestroyed(timeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStarted(long startTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsStarted(startTimeout);
+		getInstanceController().ensureInstanceIsStarted(startTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStoped(long stopTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsStoped(stopTimeout);
+		getInstanceController().ensureInstanceIsStoped(stopTimeout);
 	}
 
 	@Override
 	public void ensureInstanceSizing(InstanceType targetType)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceSizing(targetType);
+		getInstanceController().ensureInstanceSizing(targetType);
 	}
 
 	@Override
 	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceDiskDevicesAreUpToDate(list);
+		getInstanceController().ensureInstanceDiskDevicesAreUpToDate(list);
 	}
 
 	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
-		return getInstance().getInstanceDiskDevices();
+		return getInstanceController().getInstanceDiskDevices();
 	}
 
 	@Override
 	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceNetworkDevicesAreUpToDate(list);
+		getInstanceController().ensureInstanceNetworkDevicesAreUpToDate(list);
 	}
 
 	@Override
 	public NetworkDeviceList getInstanceNetworkDevices() {
-		return getInstance().getInstanceNetworkDevices();
+		return getInstanceController().getInstanceNetworkDevices();
 	}
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
 			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException {
-		getInstance().ensureInstanceFireWallRulesAreUpToDate(list);
+		getInstanceController().ensureInstanceFireWallRulesAreUpToDate(list);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toRevoke) throws OperationException,
 			InterruptedException {
-		getInstance().revokeInstanceFireWallRules(netDev, toRevoke);
+		getInstanceController().revokeInstanceFireWallRules(netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toAutorize) throws OperationException,
 			InterruptedException {
-		getInstance().authorizeInstanceFireWallRules(netDev, toAutorize);
+		getInstanceController().authorizeInstanceFireWallRules(netDev,
+				toAutorize);
 	}
 
 	@Override
 	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return getInstance().getInstanceFireWallRules(netDev);
+		return getInstanceController().getInstanceFireWallRules(netDev);
 	}
 
 	@Override
 	public void onInstanceCreated() throws OperationException,
 			InterruptedException {
-		setData(getRelatedElement(), InstanceDatasLoader.INSTANCE_ID_ATTR,
+		setData(getInstanceElement(), InstanceDatasLoader.INSTANCE_ID_ATTR,
 				getInstanceId());
 		fireInstanceCreated();
 	}
@@ -194,7 +201,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 	public void onInstanceDestroyed() throws OperationException,
 			InterruptedException {
 		fireInstanceDestroyed();
-		removeData(getRelatedElement(), InstanceDatasLoader.INSTANCE_ID_ATTR);
+		removeData(getInstanceElement(), InstanceDatasLoader.INSTANCE_ID_ATTR);
 	}
 
 	@Override
@@ -203,13 +210,13 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 		fireInstanceStopped();
 		NetworkDeviceList netDevices = null;
 		try {
-			netDevices = new NetworkDevicesLoader().load(getRelatedElement());
+			netDevices = new NetworkDevicesLoader().load(getInstanceElement());
 		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);
 		}
 		for (NetworkDevice nd : netDevices) {
 			Element d = getNetworkDeviceElement(nd);
-			synchronized (getRelatedElement().getOwnerDocument()) {
+			synchronized (getInstanceElement().getOwnerDocument()) {
 				removeData(d, NetworkDevicesLoader.IP_ATTR);
 				removeData(d, NetworkDevicesLoader.FQDN_ATTR);
 				removeData(d, NetworkDevicesLoader.NAT_IP_ATTR);
@@ -227,7 +234,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 				// The instance node could have no such network device node
 				continue;
 			}
-			synchronized (getRelatedElement().getOwnerDocument()) {
+			synchronized (getInstanceElement().getOwnerDocument()) {
 				setData(d, NetworkDevicesLoader.IP_ATTR, nd.getIP());
 				setData(d, NetworkDevicesLoader.FQDN_ATTR, nd.getFQDN());
 				setData(d, NetworkDevicesLoader.NAT_IP_ATTR, nd.getNatIP());
@@ -252,7 +259,7 @@ public class InstanceControllerWithRelatedNode extends BaseInstanceController
 			throws OperationException {
 		try {
 			return NetworkDevicesHelper.findNetworkDeviceElementByName(
-					getRelatedElement(), netdev.getNetworkDeviceName()
+					getInstanceElement(), netdev.getNetworkDeviceName()
 							.getValue());
 		} catch (NodeRelatedException Ex) {
 			throw new OperationException(Ex);

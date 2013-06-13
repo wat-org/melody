@@ -16,12 +16,12 @@ public class IpRange {
 
 	public static final IpRange ALL = createIpRange(_ALL);
 
-	private static IpRange createIpRange(String sIpRange) {
+	private static IpRange createIpRange(String ipRange) {
 		try {
-			return new IpRange(sIpRange);
+			return new IpRange(ipRange);
 		} catch (IllegalIpRangeException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
-					+ "an IpRange with value '" + sIpRange + "'. "
+					+ "an IpRange with value '" + ipRange + "'. "
 					+ "Because this default value initialization is "
 					+ "hardcoded, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -31,50 +31,53 @@ public class IpRange {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link IpRange} object.
+	 * Convert the given <tt>String</tt> to an {@link IpRange} object.
 	 * </p>
 	 * 
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>ipAddress(/CIDR)?</tt>
 	 * <ul>
-	 * <li>Input <code>String</code> must respect the following pattern :
-	 * <code>IpAddress('/'CIDR)?</code> ;</li>
-	 * <li>The IpAddress must be a valid {@link IpAddressV4}, as described in
-	 * {@link IpAddressV4#parseString(String)} ;</li>
-	 * <li>The CIDR Part must be a positive integer >0 and < 32 and is not
-	 * mandatory ;</li>
+	 * <li><tt>ipAddress</tt> must be a valid {@link IpAddressV4}, as described
+	 * in {@link IpAddressV4#parseString(String)} ;</li>
+	 * <li><tt>CIDR</tt> is optional and must be a positive integer >= 0 and <=
+	 * 32. When not provided, it is equals to 0 ;</li>
+	 * <li>Input <tt>String</tt> can also be equal to 'all', which is equal to
+	 * 0.0.0.0/0 ;</li>
 	 * </ul>
 	 * 
-	 * @param sIpRange
-	 *            is the given <code>String</code> to convert.
+	 * @param ipRange
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link IpRange} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link IpRange} object, which is equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalIpRangeException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link IpRange}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIpRangeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern ;</li>
+	 *             </ul>
 	 */
-	public static IpRange parseString(String sIpRange)
+	public static IpRange parseString(String ipRange)
 			throws IllegalIpRangeException {
-		return new IpRange(sIpRange);
+		return new IpRange(ipRange);
 	}
 
-	private String msValue;
+	private String _value;
 
-	public IpRange(String sIpRange) throws IllegalIpRangeException {
-		setValue(sIpRange);
+	public IpRange(String ipRange) throws IllegalIpRangeException {
+		setValue(ipRange);
 	}
 
 	@Override
 	public int hashCode() {
-		return getValue().hashCode();
+		return _value.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -90,38 +93,38 @@ public class IpRange {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String getIp() {
-		return msValue.split("/")[0];
+		return _value.split("/")[0];
 	}
 
 	public String getMask() {
-		return msValue.split("/")[1];
+		return _value.split("/")[1];
 	}
 
-	public String setValue(String sIpRange) throws IllegalIpRangeException {
+	private String setValue(String ipRange) throws IllegalIpRangeException {
 		String previous = getValue();
-		if (sIpRange == null) {
+		if (ipRange == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ IpRange.class.getCanonicalName() + ").");
 		}
-		if (sIpRange.trim().length() == 0) {
+		if (ipRange.trim().length() == 0) {
 			throw new IllegalIpRangeException(Messages.bind(
-					Messages.IpRangeEx_EMPTY, sIpRange));
-		} else if (sIpRange.equalsIgnoreCase("all")) {
-			msValue = _ALL;
+					Messages.IpRangeEx_EMPTY, ipRange));
+		} else if (ipRange.equalsIgnoreCase("all")) {
+			_value = _ALL;
 			return previous;
-		} else if (sIpRange.matches("^" + IpAddressV4.PATTERN + "$")) {
-			sIpRange += "/32";
+		} else if (ipRange.matches("^" + IpAddressV4.PATTERN + "$")) {
+			ipRange += "/32";
 		}
-		if (!sIpRange.matches("^" + PATTERN + "$")) {
+		if (!ipRange.matches("^" + PATTERN + "$")) {
 			throw new IllegalIpRangeException(Messages.bind(
-					Messages.IpRangeEx_INVALID, sIpRange, PATTERN));
+					Messages.IpRangeEx_INVALID, ipRange, PATTERN));
 		}
-		msValue = sIpRange;
+		_value = ipRange;
 		return previous;
 	}
 

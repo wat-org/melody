@@ -2,14 +2,12 @@ package com.wat.melody.cloud.instance;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
-import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
-import com.wat.melody.cloud.network.activation.NetworkActivatorFactory;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
@@ -22,13 +20,29 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.exception.IllegalPortRangeException;
 
 /**
  * <p>
- * Decorate the given {@link InstanceController} Instance with management
+ * Decorate the given {@link InstanceController} with Network Activation
  * features.
- * </p>
+ * 
+ * Will perform OS specific action to facilitate the establishment of network
+ * connection on the remote system.
+ * 
+ * On start :
+ * <ul>
+ * <li>for Linux : will wait until an SSH connection can be established and will
+ * register the remote system's host key in a KnowHosts file, for ip address and
+ * fqdn ;</li>
+ * <li>for Windows : ... ;</li>
+ * </ul>
+ * 
+ * On stop :
+ * <ul>
+ * <li>for Linux : will remove the previously registered remote system's host
+ * key ;</li>
+ * <li>for Windows : ... ;</li>
+ * </ul>
  * 
  * @author Guillaume Cornet
  * 
@@ -39,182 +53,162 @@ public class InstanceControllerWithNetworkActivation extends
 	private static Log log = LogFactory
 			.getLog(InstanceControllerWithNetworkActivation.class);
 
-	private InstanceController _instance;
-	private Element _relatedElement;
-	private NetworkActivatorConfigurationCallback _confCB;
+	private InstanceController _instanceController;
+	private NetworkActivator _networkActivator;
 
-	public InstanceControllerWithNetworkActivation(InstanceController instance,
-			NetworkActivatorConfigurationCallback confCB, Element relatedElement) {
-		setInstance(instance);
-		setNetworkManagerFactoryConfigurationCallback(confCB);
-		setRelatedElement(relatedElement);
-		instance.addListener(this);
+	public InstanceControllerWithNetworkActivation(
+			InstanceController instanceController,
+			NetworkActivator networkActivator) {
+		setInstanceController(instanceController);
+		setNetworkActivator(networkActivator);
+		instanceController.addListener(this);
 	}
 
-	private InstanceController getInstance() {
-		return _instance;
+	private InstanceController getInstanceController() {
+		return _instanceController;
 	}
 
-	private InstanceController setInstance(InstanceController instance) {
+	private InstanceController setInstanceController(InstanceController instance) {
 		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted."
 					+ "Must be a valid "
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		InstanceController previous = getInstance();
-		_instance = instance;
+		InstanceController previous = getInstanceController();
+		_instanceController = instance;
 		return previous;
 	}
 
-	private NetworkActivatorConfigurationCallback getNetworkManagerFactoryConfigurationCallback() {
-		return _confCB;
+	private NetworkActivator getNetworkActivator() {
+		return _networkActivator;
 	}
 
-	private NetworkActivatorConfigurationCallback setNetworkManagerFactoryConfigurationCallback(
-			NetworkActivatorConfigurationCallback confCB) {
-		if (confCB == null) {
-			throw new IllegalArgumentException(
-					"null: Not accepted. Must be a valid "
-							+ NetworkActivatorConfigurationCallback.class
-									.getCanonicalName() + ".");
+	private NetworkActivator setNetworkActivator(
+			NetworkActivator networkActivator) {
+		if (networkActivator == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkActivator.class.getCanonicalName() + ".");
 		}
-		NetworkActivatorConfigurationCallback previous = getNetworkManagerFactoryConfigurationCallback();
-		_confCB = confCB;
-		return previous;
-	}
-
-	private Element getRelatedElement() {
-		return _relatedElement;
-	}
-
-	private Element setRelatedElement(Element rd) {
-		/*
-		 * TODO : this class shouldn't be linked to the instance node. It should
-		 * be useable without RD (like [Default]InstanceController)
-		 */
-		if (rd == null) {
-			throw new IllegalArgumentException("null: Not accepted."
-					+ "Must be a valid " + Element.class.getCanonicalName()
-					+ ".");
-		}
-		Element previous = getRelatedElement();
-		_relatedElement = rd;
+		NetworkActivator previous = getNetworkActivator();
+		_networkActivator = networkActivator;
 		return previous;
 	}
 
 	@Override
 	public String getInstanceId() {
-		return getInstance().getInstanceId();
+		return getInstanceController().getInstanceId();
 	}
 
 	@Override
 	public boolean isInstanceDefined() {
-		return getInstance().isInstanceDefined();
+		return getInstanceController().isInstanceDefined();
 	}
 
 	@Override
 	public boolean instanceExists() {
-		return getInstance().instanceExists();
+		return getInstanceController().instanceExists();
 	}
 
 	@Override
 	public boolean instanceLives() {
-		return getInstance().instanceLives();
+		return getInstanceController().instanceLives();
 	}
 
 	@Override
 	public boolean instanceRuns() {
-		return getInstance().instanceRuns();
+		return getInstanceController().instanceRuns();
 	}
 
 	@Override
 	public InstanceState getInstanceState() {
-		return getInstance().getInstanceState();
+		return getInstanceController().getInstanceState();
 	}
 
 	@Override
 	public InstanceType getInstanceType() {
-		return getInstance().getInstanceType();
+		return getInstanceController().getInstanceType();
 	}
 
 	@Override
 	public void ensureInstanceIsCreated(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName, long createTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsCreated(type, site, imageId, keyPairName,
-				createTimeout);
+		getInstanceController().ensureInstanceIsCreated(type, site, imageId,
+				keyPairName, createTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsDestroyed(long timeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsDestroyed(timeout);
+		getInstanceController().ensureInstanceIsDestroyed(timeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStarted(long startTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsStarted(startTimeout);
+		getInstanceController().ensureInstanceIsStarted(startTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStoped(long stopTimeout)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceIsStoped(stopTimeout);
+		getInstanceController().ensureInstanceIsStoped(stopTimeout);
 	}
 
 	@Override
 	public void ensureInstanceSizing(InstanceType targetType)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceSizing(targetType);
+		getInstanceController().ensureInstanceSizing(targetType);
 	}
 
 	@Override
 	public void ensureInstanceDiskDevicesAreUpToDate(DiskDeviceList list)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceDiskDevicesAreUpToDate(list);
+		getInstanceController().ensureInstanceDiskDevicesAreUpToDate(list);
 	}
 
 	@Override
 	public DiskDeviceList getInstanceDiskDevices() {
-		return getInstance().getInstanceDiskDevices();
+		return getInstanceController().getInstanceDiskDevices();
 	}
 
 	@Override
 	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
 			throws OperationException, InterruptedException {
-		getInstance().ensureInstanceNetworkDevicesAreUpToDate(list);
+		getInstanceController().ensureInstanceNetworkDevicesAreUpToDate(list);
 	}
 
 	@Override
 	public NetworkDeviceList getInstanceNetworkDevices() {
-		return getInstance().getInstanceNetworkDevices();
+		return getInstanceController().getInstanceNetworkDevices();
 	}
 
 	@Override
 	public void ensureInstanceFireWallRulesAreUpToDate(
 			FireWallRulesPerDevice list) throws OperationException,
 			InterruptedException {
-		getInstance().ensureInstanceFireWallRulesAreUpToDate(list);
+		getInstanceController().ensureInstanceFireWallRulesAreUpToDate(list);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toRevoke) throws OperationException,
 			InterruptedException {
-		getInstance().revokeInstanceFireWallRules(netDev, toRevoke);
+		getInstanceController().revokeInstanceFireWallRules(netDev, toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
 			FireWallRules toAutorize) throws OperationException,
 			InterruptedException {
-		getInstance().authorizeInstanceFireWallRules(netDev, toAutorize);
+		getInstanceController().authorizeInstanceFireWallRules(netDev,
+				toAutorize);
 	}
 
 	@Override
 	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev) {
-		return getInstance().getInstanceFireWallRules(netDev);
+		return getInstanceController().getInstanceFireWallRules(netDev);
 	}
 
 	@Override
@@ -258,23 +252,20 @@ public class InstanceControllerWithNetworkActivation extends
 	 * @throws OperationException
 	 * @throws InterruptedException
 	 */
-	public void enableNetworkManagement() throws OperationException,
+	private void enableNetworkManagement() throws OperationException,
 			InterruptedException {
-		NetworkActivator nm = getNetworkManager();
-		if (nm == null) {
+		NetworkActivator na = getNetworkActivator();
+		NetworkActivationDatas nad = na.getNetworkActivationDatas();
+		if (nad == null) {
 			return;
 		}
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceId()));
 
-		NetworkDeviceName netdev = nm.getDatas().getNetworkDeviceName();
-		Port p = nm.getDatas().getPort();
-		PortRange toPorts = null;
-		try {
-			toPorts = new PortRange(p, p);
-		} catch (IllegalPortRangeException Ex) {
-			throw new RuntimeException("BUG ! Cannot happened !", Ex);
-		}
+		NetworkDeviceName netdev = na.getNetworkActivationDatas()
+				.getNetworkDeviceName();
+		Port p = na.getNetworkActivationDatas().getPort();
+		PortRange toPorts = new PortRange(p);
 		SimpleFireWallRule rule = new SimpleTcpFireWallRule(IpRange.ALL,
 				PortRange.ALL, IpRange.ALL, toPorts, Direction.IN, Access.ALLOW);
 		FireWallRules rules = new FireWallRules();
@@ -285,7 +276,7 @@ public class InstanceControllerWithNetworkActivation extends
 
 		authorizeInstanceFireWallRules(netdev, rules);
 		try {
-			nm.enableNetworkActivation();
+			na.enableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
@@ -312,16 +303,17 @@ public class InstanceControllerWithNetworkActivation extends
 	 * @throws OperationException
 	 * @throws InterruptedException
 	 */
-	public void disableNetworkManagement() throws OperationException,
+	private void disableNetworkManagement() throws OperationException,
 			InterruptedException {
-		NetworkActivator nm = getNetworkManager();
-		if (nm == null) {
+		NetworkActivator na = getNetworkActivator();
+		NetworkActivationDatas nad = na.getNetworkActivationDatas();
+		if (nad == null) {
 			return;
 		}
 		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceId()));
 		try {
-			nm.disableNetworkActivation();
+			na.disableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Messages.bind(
 					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
@@ -329,12 +321,6 @@ public class InstanceControllerWithNetworkActivation extends
 		}
 		log.info(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_SUCCESS,
 				getInstanceId()));
-	}
-
-	private NetworkActivator getNetworkManager() {
-		return NetworkActivatorFactory.createNetworkActivator(
-				getNetworkManagerFactoryConfigurationCallback(),
-				getRelatedElement());
 	}
 
 }

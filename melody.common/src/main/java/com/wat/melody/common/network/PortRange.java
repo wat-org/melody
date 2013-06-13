@@ -29,43 +29,53 @@ public class PortRange {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link PortRange} object.
+	 * Convert the given <tt>String</tt> to a {@link PortRange} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>start('-'end)?</code>. <BR/>
-	 * * 'start' and 'end' must be valid {@link Port} (see
-	 * {@link Port#parseString(String)}). <BR/>
-	 * * 'start' cannot be lower than 'end'. <BR/>
-	 * * Input <code>String</code> can also be equal to 'all', which is equal to
-	 * {@link Port#MIN}-{@link Port#MAX}. <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>start-end</tt>
+	 * <ul>
+	 * <li><tt>start</tt> and <tt>end</tt> must be valid {@link Port} (see
+	 * {@link Port#parseString(String)}) ;</li>
+	 * <li><tt>start</tt> cannot be lower than 'end' ;</li>
+	 * <li><tt>start</tt> is optional. When not provided, it is equal to
+	 * {@link Port#MIN} ;</li>
+	 * <li><tt>end</tt> is optional. When not provided, it is equal to
+	 * {@link Port#MAX} ;</li>
+	 * <li>Input <tt>String</tt> can also be equal to 'all', which is equal to
+	 * {@link Port#MIN}-{@link Port#MAX} ;</li>
+	 * </ul>
 	 * 
-	 * @param sPortRange
-	 *            is the given <code>String</code> to convert.
+	 * @param portRange
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link PortRange} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link PortRange} object, which is equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalPortRangeException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link PortRange}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPortRangeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if <tt>start</tt> is not a parse-able <tt>Integer</tt> ;</li>
+	 *             <li>if <tt>end</tt> is not a parse-able <tt>Integer</tt> ;</li>
+	 *             <li>if <tt>start</tt> is higher then <tt>end</tt> ;</li>
+	 *             </ul>
 	 */
-	public static PortRange parseString(String sPortRange)
+	public static PortRange parseString(String portRange)
 			throws IllegalPortRangeException {
-		return new PortRange(sPortRange);
+		return new PortRange(portRange);
 	}
 
-	private Port moStartPort;
-	private Port moEndPort;
+	private Port _startPort;
+	private Port _endPort;
 
-	public PortRange(String sPortRange) throws IllegalPortRangeException {
-		setPortRange(sPortRange);
+	public PortRange(String portRange) throws IllegalPortRangeException {
+		setPortRange(portRange);
+	}
+
+	public PortRange(Port port) {
+		setPortRange(port);
 	}
 
 	public PortRange(Port start, Port end) throws IllegalPortRangeException {
@@ -100,7 +110,7 @@ public class PortRange {
 	}
 
 	public Port getStartPort() {
-		return moStartPort;
+		return _startPort;
 	}
 
 	public Port setStartPort(Port port) {
@@ -109,88 +119,88 @@ public class PortRange {
 					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
 		}
 		Port previous = getStartPort();
-		moStartPort = port;
+		_startPort = port;
 		return previous;
 	}
 
-	public Port setStartPort(String sPort) throws IllegalPortException {
-		return setStartPort(new Port(sPort));
+	private Port setStartPort(String port) throws IllegalPortException {
+		return setStartPort(new Port(port));
 	}
 
 	public Port getEndPort() {
-		return moEndPort;
+		return _endPort;
 	}
 
-	public Port setEndPort(Port port) {
+	private Port setEndPort(Port port) {
 		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
 		}
 		Port previous = getEndPort();
-		moEndPort = port;
+		_endPort = port;
 		return previous;
 	}
 
-	public Port setEndPort(String sPort) throws IllegalPortException {
-		return setEndPort(new Port(sPort));
+	private Port setEndPort(String port) throws IllegalPortException {
+		return setEndPort(new Port(port));
 	}
 
-	public void setPortRange(String sPortRange)
+	private void setPortRange(String portRange)
 			throws IllegalPortRangeException {
-		if (sPortRange == null) {
+		if (portRange == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ PortRange.class.getCanonicalName() + ").");
 		}
-		if (sPortRange.trim().length() == 0) {
+		if (portRange.trim().length() == 0) {
 			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_EMPTY, sPortRange));
+					Messages.PortRangeEx_EMPTY, portRange));
 		}
 
 		String sStartPart = null;
 		String sEndPart = null;
-		int sep = sPortRange.indexOf(PORT_SEPARATOR);
-		if (sPortRange.equalsIgnoreCase("all")) {
+		int sep = portRange.indexOf(PORT_SEPARATOR);
+		if (portRange.equalsIgnoreCase("all")) {
 			sStartPart = String.valueOf(Port.MIN);
 			sEndPart = String.valueOf(Port.MAX);
 		} else if (sep == -1) {
-			sStartPart = sPortRange;
-			sEndPart = sPortRange;
-		} else if (sep == 0 && sPortRange.length() == 1) {
+			sStartPart = portRange;
+			sEndPart = portRange;
+		} else if (sep == 0 && portRange.length() == 1) {
 			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_MISSING_START_TO_PART, sPortRange));
+					Messages.PortRangeEx_MISSING_START_TO_PART, portRange));
 		} else if (sep == 0) {
 			sStartPart = String.valueOf(Port.MIN);
-			sEndPart = sPortRange.substring(1);
-		} else if (sep == sPortRange.length() - 1) {
-			sStartPart = sPortRange.substring(0, sPortRange.length() - 1);
+			sEndPart = portRange.substring(1);
+		} else if (sep == portRange.length() - 1) {
+			sStartPart = portRange.substring(0, portRange.length() - 1);
 			sEndPart = String.valueOf(Port.MAX);
 		} else {
-			sStartPart = sPortRange.substring(0, sep);
-			sEndPart = sPortRange.substring(sep + 1);
+			sStartPart = portRange.substring(0, sep);
+			sEndPart = portRange.substring(sep + 1);
 		}
 
 		try {
 			setStartPort(sStartPart);
 		} catch (IllegalPortException Ex) {
 			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_INVALID_START_PART, sPortRange), Ex);
+					Messages.PortRangeEx_INVALID_START_PART, portRange), Ex);
 		}
 		try {
 			setEndPort(sEndPart);
 		} catch (IllegalPortException Ex) {
 			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_INVALID_END_PART, sPortRange), Ex);
+					Messages.PortRangeEx_INVALID_END_PART, portRange), Ex);
 		}
 
 		if (getEndPort().getValue() < getStartPort().getValue()) {
 			throw new IllegalPortRangeException(Messages.bind(
 					Messages.PortRangeEx_ILLOGIC_RANGE, new Object[] {
-							sPortRange, getStartPort(), getEndPort() }));
+							portRange, getStartPort(), getEndPort() }));
 		}
 	}
 
-	public void setPortRange(Port start, Port end)
+	private void setPortRange(Port start, Port end)
 			throws IllegalPortRangeException {
 		if (start == null && end == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -213,4 +223,15 @@ public class PortRange {
 							start + PORT_SEPARATOR + end, start, end }));
 		}
 	}
+
+	private void setPortRange(Port port) {
+		if (port == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
+		}
+
+		setStartPort(port);
+		setEndPort(port);
+	}
+
 }

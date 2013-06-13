@@ -33,38 +33,38 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link IpRanges} object.
+	 * Convert the given <tt>String</tt> to an {@link IpRanges} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>IpRange(','IpRange)*</code>. <BR/>
-	 * * Each IpRange must be a valid {@link IpRange} (see
-	 * {@link IpRange#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>ipRange(,ipRange)*</tt>
+	 * <ul>
+	 * <li>Each <tt>ipRange</tt> must be a valid {@link IpRange} (see
+	 * {@link IpRange#parseString(String)}) ;</li>
+	 * </ul>
 	 * 
-	 * @param sIpRanges
-	 *            is the given <code>String</code> to convert.
+	 * @param ipRanges
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>IpRanges</code> object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link IpRanges} object, which is equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalIpRangesException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>IpRanges</code>.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIpRangesException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if an <tt>ipRange</tt> if not a valid {@link IpRange} ;</li>
+	 *             </ul>
 	 */
-	public static IpRanges parseString(String sIpRanges)
+	public static IpRanges parseString(String ipRanges)
 			throws IllegalIpRangesException {
-		return new IpRanges(sIpRanges);
+		return new IpRanges(ipRanges);
 	}
 
-	public IpRanges(String sIpRanges) throws IllegalIpRangesException {
+	public IpRanges(String ipRanges) throws IllegalIpRangesException {
 		super();
-		setIpRanges(sIpRanges);
+		setIpRanges(ipRanges);
 	}
 
 	public IpRanges(IpRange... ipRanges) throws IllegalIpRangesException {
@@ -72,39 +72,39 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 		setIpRanges(ipRanges);
 	}
 
-	public void setIpRanges(String sIpRanges) throws IllegalIpRangesException {
-		if (sIpRanges == null) {
+	private void setIpRanges(String ipRanges) throws IllegalIpRangesException {
+		if (ipRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ IpRanges.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String ipRange : sIpRanges.split(IP_RANGES_SEPARATOR)) {
+		for (String ipRange : ipRanges.split(IP_RANGES_SEPARATOR)) {
 			ipRange = ipRange.trim();
 			if (ipRange.length() == 0) {
 				throw new IllegalIpRangesException(Messages.bind(
-						Messages.IpRangesEx_EMPTY_IP_RANGE, sIpRanges));
+						Messages.IpRangesEx_EMPTY_IP_RANGE, ipRanges));
 			}
 			try {
 				add(IpRange.parseString(ipRange));
 			} catch (IllegalIpRangeException Ex) {
 				throw new IllegalIpRangesException(Messages.bind(
-						Messages.IpRangesEx_INVALID_IP_RANGE, sIpRanges), Ex);
+						Messages.IpRangesEx_INVALID_IP_RANGE, ipRanges), Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalIpRangesException(Messages.bind(
-					Messages.IpRangesEx_EMPTY, sIpRanges));
+					Messages.IpRangesEx_EMPTY, ipRanges));
 		}
 	}
 
-	public void setIpRanges(IpRange... portRanges)
+	private void setIpRanges(IpRange... ipRanges)
 			throws IllegalIpRangesException {
 		clear();
-		if (portRanges == null) {
+		if (ipRanges == null) {
 			return;
 		}
-		for (IpRange ipRange : portRanges) {
+		for (IpRange ipRange : ipRanges) {
 			if (ipRange == null) {
 				continue;
 			} else {
@@ -113,7 +113,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 		}
 		if (size() == 0) {
 			throw new IllegalIpRangesException(Messages.bind(
-					Messages.IpRangesEx_EMPTY, portRanges));
+					Messages.IpRangesEx_EMPTY, ipRanges));
 		}
 	}
 

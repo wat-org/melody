@@ -24,7 +24,7 @@ public class WinRmNetworkActivator implements NetworkActivator {
 		setDatas(datas);
 	}
 
-	public WinRmNetworkActivationDatas getDatas() {
+	public WinRmNetworkActivationDatas getNetworkActivationDatas() {
 		return _activationDatas;
 	}
 

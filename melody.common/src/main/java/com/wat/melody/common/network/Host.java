@@ -17,27 +17,30 @@ public class Host {
 	 * Convert the given <tt>String</tt> to an {@link Host} object.
 	 * </p>
 	 * 
-	 * @param sHost
+	 * @param host
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link Host} object, whose equal to the given input
+	 * @return an {@link Host} object, which is equal to the given input
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalHostException
-	 *             if the given <tt>String</tt> is not a valid {@link Host}
-	 *             (e.g. : is neither an ipv4, nor an ipv6, nor an hostname, nor
-	 *             a full qualified domain name).
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalHostException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is not a valid {@link Host}
+	 *             (e.g. : is neither an ipv4, nor an ipv6, nor an hostname, nor
+	 *             a full qualified domain name) ;</li>
+	 *             </ul>
 	 */
-	public static Host parseString(String sHost) throws IllegalHostException {
-		return new Host(sHost);
+	public static Host parseString(String host) throws IllegalHostException {
+		return new Host(host);
 	}
 
 	private InetAddress _inetAddress;
 
-	public Host(String sHost) throws IllegalHostException {
-		setValue(sHost);
+	public Host(String host) throws IllegalHostException {
+		setValue(host);
 	}
 
 	@Override
@@ -74,22 +77,22 @@ public class Host {
 		return _inetAddress;
 	}
 
-	private InetAddress setValue(String sHost) throws IllegalHostException {
-		if (sHost == null) {
+	private InetAddress setValue(String host) throws IllegalHostException {
+		if (host == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (which represents a "
 					+ "HostName, FQND, InetV4Address or InetV6Address)");
 		}
-		if (sHost.trim().length() == 0) {
+		if (host.trim().length() == 0) {
 			throw new IllegalHostException(Messages.bind(Messages.HostEx_EMPTY,
-					sHost));
+					host));
 		}
 		InetAddress previous = getValue();
 		try {
-			_inetAddress = InetAddress.getByName(sHost);
+			_inetAddress = InetAddress.getByName(host);
 		} catch (UnknownHostException Ex) {
 			throw new IllegalHostException(Messages.bind(
-					Messages.HostEx_INVALID, sHost), Ex);
+					Messages.HostEx_INVALID, host), Ex);
 		}
 		return previous;
 	}

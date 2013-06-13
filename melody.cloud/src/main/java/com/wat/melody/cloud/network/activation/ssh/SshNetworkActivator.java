@@ -46,7 +46,7 @@ public class SshNetworkActivator implements NetworkActivator {
 		setDatas(datas);
 	}
 
-	public SshNetworkActivationDatas getDatas() {
+	public SshNetworkActivationDatas getNetworkActivationDatas() {
 		return _activationDatas;
 	}
 
@@ -76,7 +76,7 @@ public class SshNetworkActivator implements NetworkActivator {
 	public void enableNetworkActivation() throws NetworkActivationException,
 			InterruptedException {
 		disableNetworkActivation();
-		SshNetworkActivationDatas datas = getDatas();
+		SshNetworkActivationDatas datas = getNetworkActivationDatas();
 		boolean result = false;
 		try {
 			result = addKnownHostsHost(getConfiguration(), datas.getHost(),
@@ -156,7 +156,7 @@ public class SshNetworkActivator implements NetworkActivator {
 
 	@Override
 	public void disableNetworkActivation() throws NetworkActivationException {
-		SshNetworkActivationDatas datas = getDatas();
+		SshNetworkActivationDatas datas = getNetworkActivationDatas();
 		getConfiguration().getKnownHosts().remove(datas.getHost());
 		log.debug(Messages.bind(
 				Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE, datas

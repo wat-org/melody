@@ -9,7 +9,12 @@ import com.wat.melody.cloud.network.activation.exception.NetworkActivationExcept
  */
 public interface NetworkActivator {
 
-	public NetworkActivationDatas getDatas();
+	/**
+	 * @return the {@link NetworkActivationDatas}, or <tt>null</tt>. If the
+	 *         <tt>null</tt>, calls to {@link #enableNetworkActivation()} and
+	 *         {@link #disableNetworkActivation()} will no do anything.
+	 */
+	public NetworkActivationDatas getNetworkActivationDatas();
 
 	/**
 	 * @throws NetworkActivationException

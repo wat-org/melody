@@ -33,38 +33,39 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link PortRanges} object.
+	 * Convert the given <tt>String</tt> to a {@link PortRanges} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>PortRange(','PortRange)*</code>. <BR/>
-	 * * Each PortRange must be a valid {@link PortRange} (see
-	 * {@link PortRange#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>portRange(,portRange)*</tt>
+	 * <ul>
+	 * <li>Each <tt>portRange</tt> must be a valid {@link PortRange} (see
+	 * {@link PortRange#parseString(String)}) ;</li>
+	 * </ul>
 	 * 
-	 * @param sPortRanges
-	 *            is the given <code>String</code> to convert.
+	 * @param portRanges
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link PortRanges} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link PortRanges} object, which is equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalPortRangesException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link PortRanges}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPortRangesException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if a <tt>portRange</tt> if not a valid {@link PortRange}
+	 *             ;</li>
+	 *             </ul>
 	 */
-	public static PortRanges parseString(String sPortRanges)
+	public static PortRanges parseString(String portRanges)
 			throws IllegalPortRangesException {
-		return new PortRanges(sPortRanges);
+		return new PortRanges(portRanges);
 	}
 
-	public PortRanges(String sPortRanges) throws IllegalPortRangesException {
+	public PortRanges(String portRanges) throws IllegalPortRangesException {
 		super();
-		setPortRanges(sPortRanges);
+		setPortRanges(portRanges);
 	}
 
 	public PortRanges(PortRange... portRanges)
@@ -73,35 +74,35 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 		setPortRanges(portRanges);
 	}
 
-	public void setPortRanges(String sPortRanges)
+	private void setPortRanges(String portRanges)
 			throws IllegalPortRangesException {
-		if (sPortRanges == null) {
+		if (portRanges == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ PortRanges.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String portRange : sPortRanges.split(PORT_RANGES_SEPARATOR)) {
+		for (String portRange : portRanges.split(PORT_RANGES_SEPARATOR)) {
 			portRange = portRange.trim();
 			if (portRange.length() == 0) {
 				throw new IllegalPortRangesException(Messages.bind(
-						Messages.PortRangesEx_EMPTY_PORT_RANGE, sPortRanges));
+						Messages.PortRangesEx_EMPTY_PORT_RANGE, portRanges));
 			}
 			try {
 				add(PortRange.parseString(portRange));
 			} catch (IllegalPortRangeException Ex) {
 				throw new IllegalPortRangesException(Messages.bind(
-						Messages.PortRangesEx_INVALID_PORT_RANGE, sPortRanges),
+						Messages.PortRangesEx_INVALID_PORT_RANGE, portRanges),
 						Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalPortRangesException(Messages.bind(
-					Messages.PortRangesEx_EMPTY, sPortRanges));
+					Messages.PortRangesEx_EMPTY, portRanges));
 		}
 	}
 
-	public void setPortRanges(PortRange... portRanges)
+	private void setPortRanges(PortRange... portRanges)
 			throws IllegalPortRangesException {
 		clear();
 		if (portRanges == null) {

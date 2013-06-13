@@ -16,42 +16,48 @@ public class IpAddressV4 {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link IpAddressV4} object.
+	 * Convert the given <tt>String</tt> to an {@link IpAddressV4} object.
 	 * </p>
 	 * 
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>A'.'B'.'C'.'D</tt>
 	 * <ul>
-	 * <li>Input <code>String</code> must respect the following pattern :
-	 * <code>A'.'B'.'C'.'D</code> ;</li>
-	 * <li>The A, B, C and D Part must be a positive integer < 256 ;</li>
+	 * <li>A, B, C and D must be a >=0 and <256 ;</li>
 	 * </ul>
 	 * 
-	 * @param sIpAddress
-	 *            is the given <code>String</code> to convert.
+	 * @param ipAddress
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link IpAddressV4} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link IpAddressV4} object, which is equal to the given input
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalIpAddressException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link IpAddressV4}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIpAddressException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern ;</li>
+	 *             </ul>
 	 */
-	public static IpAddressV4 parseString(String sIpAddress)
+	public static IpAddressV4 parseString(String ipAddress)
 			throws IllegalIpAddressException {
-		return new IpAddressV4(sIpAddress);
+		return new IpAddressV4(ipAddress);
 	}
 
-	private String msValue;
+	private String _value;
 
-	public IpAddressV4(String sIpAddress) throws IllegalIpAddressException {
-		setValue(sIpAddress);
+	public IpAddressV4(String ipAddress) throws IllegalIpAddressException {
+		setValue(ipAddress);
+	}
+
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -67,24 +73,24 @@ public class IpAddressV4 {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
-	public String setValue(String sIpAddress) throws IllegalIpAddressException {
-		if (sIpAddress == null) {
+	private String setValue(String ipAddress) throws IllegalIpAddressException {
+		if (ipAddress == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ IpAddressV4.class.getCanonicalName() + ").");
 		}
-		if (sIpAddress.trim().length() == 0) {
+		if (ipAddress.trim().length() == 0) {
 			throw new IllegalIpAddressException(Messages.bind(
-					Messages.IpAddrEx_EMPTY, sIpAddress));
-		} else if (!sIpAddress.matches("^" + PATTERN + "$")) {
+					Messages.IpAddrEx_EMPTY, ipAddress));
+		} else if (!ipAddress.matches("^" + PATTERN + "$")) {
 			throw new IllegalIpAddressException(Messages.bind(
-					Messages.IpAddrEx_INVALID, sIpAddress, PATTERN));
+					Messages.IpAddrEx_INVALID, ipAddress, PATTERN));
 		}
 		String previous = getValue();
-		msValue = sIpAddress;
+		_value = ipAddress;
 		return previous;
 	}
 

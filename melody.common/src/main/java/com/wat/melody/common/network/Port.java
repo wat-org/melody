@@ -41,15 +41,16 @@ public class Port {
 	 * @param sPort
 	 *            is the given <tt>int</tt> to convert.
 	 * 
-	 * @return a {@link Port} object, whose equal to the given <tt>int</tt>.
+	 * @return a {@link Port} object, which is equal to the given <tt>int</tt>.
 	 * 
 	 * @throws IllegalPortException
-	 *             if the given <tt>int</tt> is lower than {@link #MIN}.
-	 * @throws IllegalPortException
-	 *             if the given <tt>int</tt> is higher than {@link #MAX}.
+	 *             <ul>
+	 *             <li>if the given <tt>int</tt> is lower than {@link #MIN} ;</li>
+	 *             <li>if the given <tt>int</tt> is higher than {@link #MAX} ;</li>
+	 *             </ul>
 	 */
-	public static Port parseInt(int iPort) throws IllegalPortException {
-		return new Port(iPort);
+	public static Port parseInt(int port) throws IllegalPortException {
+		return new Port(port);
 	}
 
 	/**
@@ -57,24 +58,27 @@ public class Port {
 	 * Convert the given <tt>String</tt> to a {@link Port} object.
 	 * </p>
 	 * 
-	 * @param sPort
+	 * @param port
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link Port} object, whose equal to the given <tt>String</tt>.
+	 * @return a {@link Port} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalPortException
-	 *             if the given <tt>String</tt> is not an <tt>Integer</tt>.
-	 * @throws IllegalPortException
-	 *             if the given <tt>String</tt> is lower than {@link #MIN}.
-	 * @throws IllegalPortException
-	 *             if the given <tt>String</tt> is higher than {@link #MAX}.
-	 * @throws IllegalPortException
-	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPortException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Integer</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is lower than {@link #MIN} ;
+	 *             </li>
+	 *             <li>if the given <tt>String</tt> is higher than {@link #MAX}
+	 *             ;</li>
+	 *             </ul>
 	 */
-	public static Port parseString(String sPort) throws IllegalPortException {
-		return new Port(sPort);
+	public static Port parseString(String port) throws IllegalPortException {
+		return new Port(port);
 	}
 
 	private int _value;

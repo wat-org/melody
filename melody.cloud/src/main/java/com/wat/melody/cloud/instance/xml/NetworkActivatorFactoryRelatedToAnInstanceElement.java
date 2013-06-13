@@ -1,4 +1,4 @@
-package com.wat.melody.cloud.network.activation;
+package com.wat.melody.cloud.instance.xml;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,6 +6,9 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
+import com.wat.melody.cloud.network.activation.NetworkActivator;
+import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivator;
 import com.wat.melody.cloud.network.activation.ssh.xml.SshNetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivator;
@@ -20,9 +23,10 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  * @author Guillaume Cornet
  * 
  */
-public abstract class NetworkActivatorFactory {
+public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 
-	private static Log log = LogFactory.getLog(NetworkActivatorFactory.class);
+	private static Log log = LogFactory
+			.getLog(NetworkActivatorFactoryRelatedToAnInstanceElement.class);
 
 	/**
 	 * @param configurationCallBack
@@ -73,7 +77,7 @@ public abstract class NetworkActivatorFactory {
 						+ "bug have been introduced.");
 			}
 			log.debug(Messages.bind(Messages.NetworkActivatorMsg_RESUME,
-					activator.getDatas()));
+					activator.getNetworkActivationDatas()));
 			return activator;
 		} catch (NodeRelatedException Ex) {
 			log.debug(new MelodyException(Messages.bind(

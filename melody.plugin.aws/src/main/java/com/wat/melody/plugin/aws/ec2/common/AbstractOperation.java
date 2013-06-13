@@ -15,12 +15,13 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.cloud.instance.InstanceController;
+import com.wat.melody.cloud.instance.InstanceControllerRelatedToAnInstanceElement;
 import com.wat.melody.cloud.instance.InstanceControllerWithNetworkActivation;
-import com.wat.melody.cloud.instance.InstanceControllerWithRelatedNode;
 import com.wat.melody.cloud.instance.InstanceDatas;
 import com.wat.melody.cloud.instance.InstanceDatasValidator;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
+import com.wat.melody.cloud.instance.xml.NetworkActivatorRelatedToAnInstanceElement;
 import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
 import com.wat.melody.common.timeout.GenericTimeout;
@@ -82,15 +83,17 @@ abstract public class AbstractOperation implements ITask,
 	}
 
 	protected InstanceController createInstance() throws AwsException {
-		InstanceController instance = newAwsInstanceController();
-		instance = new InstanceControllerWithRelatedNode(instance,
-				getTargetElement());
+		InstanceController instanceCtrl = newAwsInstanceController();
+		instanceCtrl = new InstanceControllerRelatedToAnInstanceElement(
+				instanceCtrl, getTargetElement());
 		if (NetworkActivationHelper
 				.isNetworkActivationEnabled(getTargetElement())) {
-			instance = new InstanceControllerWithNetworkActivation(instance,
-					this, getTargetElement());
+			instanceCtrl = new InstanceControllerWithNetworkActivation(
+					instanceCtrl,
+					new NetworkActivatorRelatedToAnInstanceElement(this,
+							getTargetElement()));
 		}
-		return instance;
+		return instanceCtrl;
 	}
 
 	/**
