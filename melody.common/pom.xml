@@ -61,7 +61,25 @@
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
-			<version>9.4</version>
+			<version>9.4.0.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jdom</groupId>
+					<artifactId>jdom</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xom</groupId>
+					<artifactId>xom</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-resolver</groupId>
+					<artifactId>xml-resolver</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.tycho</groupId>
