@@ -510,33 +510,33 @@ public class FilteredDoc extends DUNIDDoc {
 					+ ".");
 		}
 
-		NodeList nl;
-		try {
-			nl = evaluateAsNodeList(filter.getValue());
-		} catch (XPathExpressionException Ex) {
-			throw new IllegalFilterException(Messages.bind(
-					Messages.FilteredDocEx_INCORRECT_XPATH, filter.getValue()),
-					Ex);
-		}
-		if (nl.getLength() == 0) {
-			throw new IllegalFilterException(Messages.bind(
-					Messages.FilteredDocEx_TOO_RSTRICTIVE, filter.getValue()));
-		}
-		for (int i = 0; i < nl.getLength(); i++) {
-			if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+		synchronized (getDocument()) {
+			NodeList nl;
+			try {
+				nl = evaluateAsNodeList(filter.getValue());
+			} catch (XPathExpressionException Ex) {
 				throw new IllegalFilterException(Messages.bind(
-						Messages.FilteredDocEx_MUST_TARGET_ELEMENT,
-						filter.getValue(), DocHelper.parseNodeType(nl.item(i))));
+						Messages.FilteredDocEx_INCORRECT_XPATH, filter), Ex);
 			}
-		}
+			if (nl.getLength() == 0) {
+				throw new IllegalFilterException(Messages.bind(
+						Messages.FilteredDocEx_TOO_RSTRICTIVE, filter));
+			}
+			for (int i = 0; i < nl.getLength(); i++) {
+				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+					throw new IllegalFilterException(Messages.bind(
+							Messages.FilteredDocEx_MUST_TARGET_ELEMENT, filter,
+							DocHelper.parseNodeType(nl.item(i))));
+				}
+			}
 
-		Document oFilteredDoc = DocHelper.newDocument();
-		for (int i = 0; i < nl.getLength(); i++) {
-			FilteredDocHelper.insertElement(oFilteredDoc, (Element) nl.item(i),
-					true);
+			Document oFilteredDoc = DocHelper.newDocument();
+			for (int i = 0; i < nl.getLength(); i++) {
+				FilteredDocHelper.insertElement(oFilteredDoc,
+						(Element) nl.item(i), true);
+			}
+			setDocument(oFilteredDoc);
 		}
-
-		setDocument(oFilteredDoc);
 	}
 
 	/**
