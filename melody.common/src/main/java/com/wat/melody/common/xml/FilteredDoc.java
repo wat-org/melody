@@ -72,11 +72,11 @@ public class FilteredDoc extends DUNIDDoc {
 	 * 
 	 * @return this object's {@link FilterSet}.
 	 */
-	private synchronized FilterSet getFilters() {
+	private FilterSet getFilters() {
 		return _filters;
 	}
 
-	private synchronized FilterSet setFilters(FilterSet filters) {
+	private FilterSet setFilters(FilterSet filters) {
 		if (filters == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + FilterSet.class.getCanonicalName()
@@ -87,7 +87,7 @@ public class FilteredDoc extends DUNIDDoc {
 		return previous;
 	}
 
-	public String fulldump() {
+	public synchronized String fulldump() {
 		StringBuilder str = new StringBuilder();
 		str.append("[");
 		str.append(getSmartMsg());
@@ -113,7 +113,11 @@ public class FilteredDoc extends DUNIDDoc {
 	 */
 	protected void restoreOriginalDocument() {
 		if (getOriginalDocument() != null) {
-			setDocument((Document) getOriginalDocument().cloneNode(true));
+			/*
+			 * original document and current document points to the same object,
+			 * until a filter is applied.
+			 */
+			setDocument(getOriginalDocument());
 		}
 	}
 
@@ -153,7 +157,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		setOriginalDocument((Document) getDocument().cloneNode(true));
+		setOriginalDocument(getDocument());
 		applyFilters();
 	}
 
@@ -175,7 +179,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 */
 	public synchronized void load(DUNIDDoc doc) throws IllegalFilterException {
 		super.load(doc);
-		setOriginalDocument((Document) getDocument().cloneNode(true));
+		setOriginalDocument(getDocument());
 		applyFilters();
 	}
 
@@ -209,7 +213,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		setOriginalDocument((Document) getDocument().cloneNode(true));
+		setOriginalDocument(getDocument());
 		applyFilters();
 	}
 
@@ -225,7 +229,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             {@inheritDoc}
 	 */
 	@Override
-	protected synchronized void validateContent() throws IllegalDocException {
+	protected void validateContent() throws IllegalDocException {
 		super.validateContent();
 		validateHeritAttrs();
 	}
@@ -394,9 +398,9 @@ public class FilteredDoc extends DUNIDDoc {
 					+ ".");
 		}
 		restoreOriginalDocument();
-		Filter sRemovedFilter = getFilters().set(i, filter);
+		Filter removedFilter = getFilters().set(i, filter);
 		applyFilters();
-		return sRemovedFilter;
+		return removedFilter;
 	}
 
 	/**
@@ -425,7 +429,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 */
 	public synchronized Filter removeFilter(int i) {
 		restoreOriginalDocument();
-		Filter sRemovedFilter = getFilters().remove(i);
+		Filter removedFilter = getFilters().remove(i);
 		try {
 			applyFilters();
 		} catch (IllegalFilterException Ex) {
@@ -436,7 +440,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		return sRemovedFilter;
+		return removedFilter;
 	}
 
 	/**
@@ -459,16 +463,23 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             if one {@link Filter} doesn't match any {@link Node}s.
 	 */
 	public synchronized void applyFilters() throws IllegalFilterException {
-		// Remove all Text node
-		// improve xpath query performance and reduce memory usage.
-		stopListening();
-		FilteredDocHelper.removeTextNode((Element) getDocument()
-				.getFirstChild());
-		startListening();
 		// apply filters
 		for (Filter filter : getFilters()) {
 			applyFilter(filter);
 		}
+
+		if (countFilters() != 0) {
+			return;
+		}
+		/*
+		 * Remove all Text Nodes in the current document, without impact on the
+		 * original document (improve xpath query performance and reduce memory
+		 * usage).
+		 */
+		stopListening();
+		FilteredDocHelper.removeTextNode((Element) getDocument()
+				.getFirstChild());
+		startListening();
 	}
 
 	/**
@@ -535,6 +546,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void elementInstered(MutationEvent evt) throws MelodyException {
 		super.elementInstered(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the inserted node
 		Element t = (Element) evt.getTarget();
 		// its next sibling
@@ -561,6 +584,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void elementRemoved(MutationEvent evt) throws MelodyException {
 		super.elementRemoved(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the removed node
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
@@ -580,6 +615,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafInserted(MutationEvent evt) throws MelodyException {
 		super.textLeafInserted(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the changed node
 		Text t = (Text) evt.getTarget();
 		// its parent node
@@ -598,6 +645,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafRemoved(MutationEvent evt) throws MelodyException {
 		super.textLeafRemoved(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the changed node
 		Text t = (Text) evt.getTarget();
 		// its parent node
@@ -616,6 +675,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafModified(MutationEvent evt) throws MelodyException {
 		super.textLeafModified(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the changed node
 		Text t = (Text) evt.getTarget();
 		// its parent node
@@ -634,6 +705,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		super.attributeInserted(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = DUNIDDocHelper.getDUNID(t);
@@ -649,6 +732,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
 		super.attributeRemoved(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = DUNIDDocHelper.getDUNID(t);
@@ -664,6 +759,18 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		super.attributeModified(evt);
+		/*
+		 * If there is no filter, the current document and the original document
+		 * point to the same object, so there's no need to modify the original
+		 * document.
+		 */
+		if (countFilters() == 0) {
+			return;
+		}
+
+		/*
+		 * Update the original document
+		 */
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID dunid = DUNIDDocHelper.getDUNID(t);

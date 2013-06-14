@@ -57,7 +57,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 				+ " }";
 	}
 
-	public String fulldump() {
+	public synchronized String fulldump() {
 		StringBuilder str = new StringBuilder();
 		str.append("[file:");
 		str.append(getSourceFile());
@@ -98,6 +98,8 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 	@Override
 	protected Document setDocument(Document d) {
+		// Release the listener
+		stopListening();
 		super.setDocument(d);
 		// Listen to all modifications performed on the underlying doc
 		startListening();
@@ -243,6 +245,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 	}
 
 	protected void startListening() {
+		if (getDocument() == null) {
+			return;
+		}
 		EventTarget target = (EventTarget) getDocument();
 		target.addEventListener("DOMAttrModified", this, true);
 		target.addEventListener("DOMCharacterDataModified", this, true);
@@ -251,6 +256,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 	}
 
 	protected void stopListening() {
+		if (getDocument() == null) {
+			return;
+		}
 		EventTarget target = (EventTarget) getDocument();
 		target.removeEventListener("DOMAttrModified", this, true);
 		target.removeEventListener("DOMCharacterDataModified", this, true);
@@ -421,7 +429,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 	 *             reserved attribute, necessary for internal usage.
 	 */
 	@Override
-	protected synchronized void validateContent() throws IllegalDocException {
+	protected void validateContent() throws IllegalDocException {
 		super.validateContent();
 
 		NodeList nl = DUNIDDocHelper.findDUNIDs(getDocument());
@@ -495,7 +503,7 @@ public class DUNIDDoc extends Doc implements EventListener {
 	 * @throws IllegalArgumentException
 	 *             if this object have not been loaded yet.
 	 */
-	public synchronized Element getElement(DUNID dunid) {
+	public Element getElement(DUNID dunid) {
 		return DUNIDDocHelper.getElement(getDocument(), dunid);
 	}
 

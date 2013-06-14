@@ -157,12 +157,12 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	}
 
 	@Override
-	public synchronized DUNID getMelodyID(Element n) {
+	public DUNID getMelodyID(Element n) {
 		return DUNIDDocHelper.getDUNID(n);
 	}
 
 	@Override
-	public synchronized List<Element> evaluateTargets(String xpath)
+	public List<Element> evaluateTargets(String xpath)
 			throws XPathExpressionException {
 		List<Element> targets = new ArrayList<Element>();
 		// Evaluate expression in the current document
@@ -276,7 +276,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			// Add the content
 			Node n = getOriginalDocument().importNode(
 					d.getDocument().getFirstChild(), true);
+			stopListening();
 			getOriginalDocument().getFirstChild().appendChild(n);
+			startListening();
 			// Rebuild
 			restoreOriginalDocument();
 			validateHeritAttrs();
@@ -326,7 +328,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		getDUNIDDocList().remove(i);
 		// Remove the content
 		Node base = getOriginalDocument().getFirstChild();
+		stopListening();
 		base.removeChild(base.getChildNodes().item(i));
+		startListening();
 		try {
 			// Rebuild
 			restoreOriginalDocument();
@@ -362,29 +366,27 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 * @throws RuntimeException
 	 *             every time.
 	 */
-	public synchronized void store(String path) {
+	public void store(String path) {
 		throw new RuntimeException("It is not possible to store a "
 				+ ResourcesDescriptor.class.getCanonicalName()
 				+ " at a custom location.");
 	}
 
 	@Override
-	public synchronized String evaluateAsString(String expr)
-			throws XPathExpressionException {
+	public String evaluateAsString(String expr) throws XPathExpressionException {
 		return XPathExpander.evaluateAsString(expr, getDocument()
 				.getFirstChild());
 	}
 
 	@Override
-	public synchronized NodeList evaluateAsNodeList(String expr)
+	public NodeList evaluateAsNodeList(String expr)
 			throws XPathExpressionException {
 		return XPathExpander.evaluateAsNodeList(expr, getDocument()
 				.getFirstChild());
 	}
 
 	@Override
-	public synchronized Node evaluateAsNode(String expr)
-			throws XPathExpressionException {
+	public Node evaluateAsNode(String expr) throws XPathExpressionException {
 		return XPathExpander
 				.evaluateAsNode(expr, getDocument().getFirstChild());
 	}

@@ -29,22 +29,20 @@ public class TargetsDescriptor extends FilteredDoc {
 	}
 
 	@Override
-	public synchronized String evaluateAsString(String expr)
-			throws XPathExpressionException {
+	public String evaluateAsString(String expr) throws XPathExpressionException {
 		return XPathExpander.evaluateAsString(expr, getDocument()
 				.getFirstChild());
 	}
 
 	@Override
-	public synchronized NodeList evaluateAsNodeList(String expr)
+	public NodeList evaluateAsNodeList(String expr)
 			throws XPathExpressionException {
 		return XPathExpander.evaluateAsNodeList(expr, getDocument()
 				.getFirstChild());
 	}
 
 	@Override
-	public synchronized Node evaluateAsNode(String expr)
-			throws XPathExpressionException {
+	public Node evaluateAsNode(String expr) throws XPathExpressionException {
 		return XPathExpander
 				.evaluateAsNode(expr, getDocument().getFirstChild());
 	}

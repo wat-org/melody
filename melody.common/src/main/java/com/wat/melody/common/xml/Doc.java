@@ -54,8 +54,8 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given path is <tt>null</tt>.
 	 */
-	public void load(String path) throws MelodyException, IllegalDocException,
-			IllegalFileException, IOException {
+	public synchronized void load(String path) throws MelodyException,
+			IllegalDocException, IllegalFileException, IOException {
 		File file = new File(path);
 		setSourceFile(file.toString());
 		try {
@@ -90,7 +90,7 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Doc} is <tt>null</tt>.
 	 */
-	public void load(Doc doc) {
+	public synchronized void load(Doc doc) {
 		if (doc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Doc.class.getCanonicalName() + ".");
@@ -127,7 +127,7 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             {@inheritDoc}
 	 */
-	public void loadFromXML(String xml) throws MelodyException,
+	public synchronized void loadFromXML(String xml) throws MelodyException,
 			IllegalDocException, IOException {
 		try {
 			setDocument(DocHelper.parse(xml));
@@ -176,7 +176,7 @@ public class Doc {
 	 * {@link #load(String)}).
 	 * </p>
 	 */
-	public void store() {
+	public synchronized void store() {
 		if (getSourceFile() == null) {
 			return;
 		}
@@ -214,7 +214,7 @@ public class Doc {
 	 * @throws IllegalArgumentException
 	 *             if the given path is <tt>null</tt>.
 	 */
-	public void store(String path) throws IllegalFileException,
+	public synchronized void store(String path) throws IllegalFileException,
 			IllegalDirectoryException {
 		if (getDocument() == null) {
 			return;
@@ -222,7 +222,7 @@ public class Doc {
 		DocHelper.store(getDocument(), path);
 	}
 
-	public String dump() {
+	public synchronized String dump() {
 		return DocHelper.dump(getDocument());
 	}
 
