@@ -67,37 +67,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.");
 		}
-		/*
-		 * TODO : in order to enhance performance and memory footprint, set the
-		 * target descriptor to null until a target filter is applied.
-		 */
-		// Build a new targets descriptor
-		setTargetsDescriptor(new TargetsDescriptor());
-		// Load it with this object
-		try {
-			getTargetsDescriptor().load(this);
-		} catch (IllegalTargetsFilterException Ex) {
-			throw new RuntimeException("Unexecpted error while initializing "
-					+ "the " + TargetsDescriptor.class.getSimpleName() + ". "
-					+ "Because no Filters have been defined yet, such error "
-					+ "cannot happened."
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.");
-		}
+		// set the targets descriptor to null
+		setTargetsDescriptor(null);
 		// Build the list of DUNIDoc
 		setDUNIDDocList(new ArrayList<DUNIDDoc>());
 	}
 
+	/**
+	 * @return the {@link TargetsDescriptor}, or <tt>null</tt> (if no Targets
+	 *         Filters are defined, targets descriptor is null. This improve
+	 *         performance and to reduce memory footprint).
+	 */
 	private TargetsDescriptor getTargetsDescriptor() {
 		return _targetsDescriptor;
 	}
 
 	private TargetsDescriptor setTargetsDescriptor(TargetsDescriptor td) {
-		if (td == null) {
-			throw new IllegalArgumentException("nul: Not accepted. "
-					+ "Must be a valid "
-					+ TargetsDescriptor.class.getCanonicalName() + ".");
-		}
+		// can be null, when there are no targets filters
 		TargetsDescriptor previous = getTargetsDescriptor();
 		_targetsDescriptor = td;
 		return previous;
@@ -125,8 +111,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		str.append(getDUNIDDocList());
 		str.append(", resources-filters:");
 		str.append(getFilterSet());
-		str.append(", target-filter:");
-		str.append(getTargetsDescriptor().getFilterSet());
+		str.append(", targets-filter:");
+		str.append(getTargetFilterSet());
 		str.append(" }");
 		return str.toString();
 	}
@@ -138,10 +124,12 @@ public class ResourcesDescriptor extends FilteredDoc implements
 				SysTool.NEW_LINE + "  "));
 		str.append(SysTool.NEW_LINE);
 		str.append(SysTool.NEW_LINE);
-		str.append(getTargetsDescriptor().fulldump().replaceAll(
-				SysTool.NEW_LINE, SysTool.NEW_LINE + "  "));
-		str.append(SysTool.NEW_LINE);
-		str.append(SysTool.NEW_LINE);
+		if (areTargetsFiltersDefined()) {
+			str.append(getTargetsDescriptor().fulldump().replaceAll(
+					SysTool.NEW_LINE, SysTool.NEW_LINE + "  "));
+			str.append(SysTool.NEW_LINE);
+			str.append(SysTool.NEW_LINE);
+		}
 		for (DUNIDDoc doc : getDUNIDDocList()) {
 			str.append(doc.fulldump().replaceAll(SysTool.NEW_LINE,
 					SysTool.NEW_LINE + "  "));
@@ -151,10 +139,40 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		return str.toString();
 	}
 
+	/**
+	 * @return <tt>true</tt> if target filters are defined. <tt>false</tt>
+	 *         otherwise.
+	 */
+	protected boolean areTargetsFiltersDefined() {
+		return getTargetsDescriptor() != null;
+	}
+
+	/**
+	 * <p>
+	 * Create a new {@link TargetsDescriptor} if it is undefined.
+	 * </p>
+	 */
+	protected void createTargetsDescriptor() {
+		if (!areTargetsFiltersDefined()) {
+			setTargetsDescriptor(new TargetsDescriptor());
+			try {
+				updateTargetsDescriptor();
+			} catch (IllegalTargetsFilterException ignore) {
+			}
+		}
+	}
+
+	protected void updateTargetsDescriptor()
+			throws IllegalTargetsFilterException {
+		if (areTargetsFiltersDefined()) {
+			getTargetsDescriptor().load(this);
+		}
+	}
+
 	@Override
 	public XPath setXPath(XPath xpath) {
 		XPath previous = super.setXPath(xpath);
-		if (getTargetsDescriptor() != null) {
+		if (areTargetsFiltersDefined()) {
 			getTargetsDescriptor().setXPath(xpath);
 		}
 		return previous;
@@ -169,8 +187,8 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	public List<Element> evaluateTargets(String xpath)
 			throws XPathExpressionException {
 		List<Element> targets = new ArrayList<Element>();
-		// Evaluate expression in the current document
 		synchronized (getDocument()) {
+			// Evaluate expression in the current document
 			NodeList nl = evaluateAsNodeList(xpath);
 			// Search for resulting nodes in the eligible targets
 			for (int i = 0; i < nl.getLength(); i++) {
@@ -180,8 +198,9 @@ public class ResourcesDescriptor extends FilteredDoc implements
 							DocHelper.parseNodeType(nl.item(i))));
 				}
 				Element n = (Element) nl.item(i);
-				if (getTargetsDescriptor().getElement(
-						DUNIDDocHelper.getDUNID(n)) != null) {
+				if (!areTargetsFiltersDefined()
+						|| getTargetsDescriptor().getElement(
+								DUNIDDocHelper.getDUNID(n)) != null) {
 					targets.add(n);
 				}
 			}
@@ -199,7 +218,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	 */
 	private DUNIDDoc findDUNIDDoc(String sPath) {
 		Integer i = findDUNIDDocIndex(sPath);
-		return i == null ? null : getDUNIDDocList().get(i);
+		return (i == null) ? null : getDUNIDDocList().get(i);
 	}
 
 	/**
@@ -299,8 +318,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
-		// Update targets descriptor
-		getTargetsDescriptor().load(this);
+		updateTargetsDescriptor();
 		return true;
 	}
 
@@ -345,8 +363,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		} catch (IllegalDocException Ex) {
 			throw Ex;
 		}
-		// Update targets descriptor
-		getTargetsDescriptor().load(this);
+		updateTargetsDescriptor();
 		return true;
 	}
 
@@ -417,18 +434,25 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// its parent node
 		Element p = (Element) t.getParentNode();
 		DUNID pdunid = DUNIDDocHelper.getDUNID(p);
-		// Modify the targets descriptor
-		Document d = getTargetsDescriptor().getDocument();
+		// Modify the DUNIDDoc
+		Document d = getOwnerDUNIDDoc(p).getDocument();
 		Element pori = DUNIDDocHelper.getElement(d, pdunid);
+		pori.insertBefore(d.importNode(t, true),
+				DUNIDDocHelper.getElement(d, sdunid));
+		// Modify the targets descriptor
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		d = getTargetsDescriptor().getDocument();
+		pori = DUNIDDocHelper.getElement(d, pdunid);
 		if (pori != null) { // inserted node parent is in the targets descriptor
 			pori.insertBefore(d.importNode(t, true),
 					DUNIDDocHelper.getElement(d, sdunid));
 		}
-		// Modify the DUNIDDoc
-		d = getOwnerDUNIDDoc(p).getDocument();
-		pori = DUNIDDocHelper.getElement(d, pdunid);
-		pori.insertBefore(d.importNode(t, true),
-				DUNIDDocHelper.getElement(d, sdunid));
 	}
 
 	/**
@@ -443,16 +467,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// its parent node
 		Element p = (Element) t.getParentNode();
 		DUNID pdunid = DUNIDDocHelper.getDUNID(p);
-		// Modify the targets descriptor
-		Document d = getTargetsDescriptor().getDocument();
+		// Modify the DUNIDDoc
+		Document d = getOwnerDUNIDDoc(p).getDocument();
 		Element tori = DUNIDDocHelper.getElement(d, tdunid);
+		DUNIDDocHelper.getElement(d, pdunid).removeChild(tori);
+		// Modify the targets descriptor
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		d = getTargetsDescriptor().getDocument();
+		tori = DUNIDDocHelper.getElement(d, tdunid);
 		if (tori != null) { // removed node is in the targets descriptor
 			DUNIDDocHelper.getElement(d, pdunid).removeChild(tori);
 		}
-		// Modify the DUNIDDoc
-		d = getOwnerDUNIDDoc(p).getDocument();
-		tori = DUNIDDocHelper.getElement(d, tdunid);
-		DUNIDDocHelper.getElement(d, pdunid).removeChild(tori);
 	}
 
 	/**
@@ -466,16 +497,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// its parent element
 		Element e = (Element) t.getParentNode();
 		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// Modify the DUNIDDoc
+		Element eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so setTextContent is OK
+		eori.setTextContent(t.getTextContent());
 		// Modify the targets descriptor
-		Element eori = getTargetsDescriptor().getElement(edunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		eori = getTargetsDescriptor().getElement(edunid);
 		if (eori != null) { // changed node is in the targets descriptor
 			// It is assume that the Element is a leaf, so setTextContent is OK
 			eori.setTextContent(t.getTextContent());
 		}
-		// Modify the DUNIDDoc
-		eori = getOwnerDUNIDDoc(e).getElement(edunid);
-		// It is assume that the Element is a leaf, so setTextContent is OK
-		eori.setTextContent(t.getTextContent());
 	}
 
 	/**
@@ -489,16 +527,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// its parent element
 		Element e = (Element) t.getParentNode();
 		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// Modify the DUNIDDoc
+		Element eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.removeChild(eori.getFirstChild());
 		// Modify the targets descriptor
-		Element eori = getTargetsDescriptor().getElement(edunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		eori = getTargetsDescriptor().getElement(edunid);
 		if (eori != null) { // changed node is in the targets descriptor
 			// It is assume that the Element is a leaf, so getFirstChild is OK
 			eori.removeChild(eori.getFirstChild());
 		}
-		// Modify the DUNIDDoc
-		eori = getOwnerDUNIDDoc(e).getElement(edunid);
-		// It is assume that the Element is a leaf, so getFirstChild is OK
-		eori.removeChild(eori.getFirstChild());
 	}
 
 	/**
@@ -512,16 +557,23 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// its parent element
 		Element e = (Element) t.getParentNode();
 		DUNID edunid = DUNIDDocHelper.getDUNID(e);
+		// Modify the DUNIDDoc
+		Element eori = getOwnerDUNIDDoc(e).getElement(edunid);
+		// It is assume that the Element is a leaf, so getFirstChild is OK
+		eori.getFirstChild().setNodeValue(t.getTextContent());
 		// Modify the targets descriptor
-		Element eori = getTargetsDescriptor().getElement(edunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		eori = getTargetsDescriptor().getElement(edunid);
 		if (eori != null) { // changed node is in the targets descriptor
 			// It is assume that the Element is a leaf, so getFirstChild is OK
 			eori.getFirstChild().setNodeValue(t.getTextContent());
 		}
-		// Modify the DUNIDDoc
-		eori = getOwnerDUNIDDoc(e).getElement(edunid);
-		// It is assume that the Element is a leaf, so getFirstChild is OK
-		eori.getFirstChild().setNodeValue(t.getTextContent());
 	}
 
 	/**
@@ -533,14 +585,21 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
+		// Modify the DUNIDDoc
+		Element tori = getOwnerDUNIDDoc(t).getElement(tdunid);
+		tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the targets descriptor
-		Element tori = getTargetsDescriptor().getElement(tdunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		tori = getTargetsDescriptor().getElement(tdunid);
 		if (tori != null) { // target node is in the targets descriptor
 			tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 		}
-		// Modify the DUNIDDoc
-		tori = getOwnerDUNIDDoc(t).getElement(tdunid);
-		tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 
 	/**
@@ -552,14 +611,21 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
+		// Modify the DUNIDDoc
+		Element tori = getOwnerDUNIDDoc(t).getElement(tdunid);
+		tori.removeAttribute(evt.getAttrName());
 		// Modify the targets descriptor
-		Element tori = getTargetsDescriptor().getElement(tdunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		tori = getTargetsDescriptor().getElement(tdunid);
 		if (tori != null) { // target node is in the targets descriptor
 			tori.removeAttribute(evt.getAttrName());
 		}
-		// Modify the DUNIDDoc
-		tori = getOwnerDUNIDDoc(t).getElement(tdunid);
-		tori.removeAttribute(evt.getAttrName());
 	}
 
 	/**
@@ -571,21 +637,28 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		// the target element
 		Element t = (Element) evt.getTarget();
 		DUNID tdunid = DUNIDDocHelper.getDUNID(t);
+		// Modify the DUNIDDoc
+		Element tori = getOwnerDUNIDDoc(t).getElement(tdunid);
+		tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 		// Modify the targets descriptor
-		Element tori = getTargetsDescriptor().getElement(tdunid);
+		if (!areTargetsFiltersDefined()) {
+			/*
+			 * If there is no targets filters defined, there's no need to modify
+			 * the targets descriptor.
+			 */
+			return;
+		}
+		tori = getTargetsDescriptor().getElement(tdunid);
 		if (tori != null) { // target node is in the targets descriptor
 			tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 		}
-		// Modify the DUNIDDoc
-		tori = getOwnerDUNIDDoc(t).getElement(tdunid);
-		tori.setAttribute(evt.getAttrName(), evt.getNewValue());
 	}
 
 	@Override
 	public synchronized Filter removeFilter(int i) {
 		Filter sRemovedFilter = super.removeFilter(i);
 		try {
-			getTargetsDescriptor().load(this);
+			updateTargetsDescriptor();
 		} catch (IllegalTargetsFilterException Ex) {
 			throw new RuntimeException("Unexecpted error in Target "
 					+ "Descriptor while removing a filter. "
@@ -601,7 +674,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	public synchronized void clearFilters() {
 		super.clearFilters();
 		try {
-			getTargetsDescriptor().load(this);
+			updateTargetsDescriptor();
 		} catch (IllegalTargetsFilterException Ex) {
 			throw new RuntimeException("Unexecpted error in Target "
 					+ "Descriptor while clearing all Resources Filters. "
@@ -622,7 +695,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
-		getTargetsDescriptor().load(this);
+		updateTargetsDescriptor();
 		return sRemovedFilter;
 	}
 
@@ -635,7 +708,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
-		getTargetsDescriptor().load(this);
+		updateTargetsDescriptor();
 	}
 
 	@Override
@@ -647,7 +720,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
-		getTargetsDescriptor().load(this);
+		updateTargetsDescriptor();
 	}
 
 	@Override
@@ -659,56 +732,82 @@ public class ResourcesDescriptor extends FilteredDoc implements
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);
 		}
-		getTargetsDescriptor().load(this);
-	}
-
-	@Override
-	public FilterSet getTargetFilterSet() {
-		return getTargetsDescriptor().getFilterSet();
-	}
-
-	@Override
-	public synchronized int countTargetFilters() {
-		return getTargetsDescriptor().countFilters();
+		updateTargetsDescriptor();
 	}
 
 	@Override
 	public synchronized Filter getTargetFilter(int i) {
+		if (!areTargetsFiltersDefined()) {
+			throw new IndexOutOfBoundsException("Index: " + i + ", Size: " + 0);
+		}
 		return getTargetsDescriptor().getFilter(i);
 	}
 
 	@Override
+	public FilterSet getTargetFilterSet() {
+		if (!areTargetsFiltersDefined()) {
+			return new FilterSet();
+		}
+		return getTargetsDescriptor().getFilterSet();
+	}
+
+	@Override
 	public synchronized Filter removeTargetFilter(int i) {
-		return getTargetsDescriptor().removeFilter(i);
+		if (!areTargetsFiltersDefined()) {
+			throw new IndexOutOfBoundsException("Index: " + i + ", Size: " + 0);
+		}
+		Filter removedFilter = getTargetsDescriptor().removeFilter(i);
+		if (getTargetsDescriptor().countFilters() == 0) {
+			setTargetsDescriptor(null);
+		}
+		return removedFilter;
 	}
 
 	@Override
 	public synchronized void clearTargetFilters() {
+		if (!areTargetsFiltersDefined()) {
+			return;
+		}
 		getTargetsDescriptor().clearFilters();
+		setTargetsDescriptor(null);
 	}
 
 	@Override
 	public synchronized Filter setTargetFilter(int i, Filter filter)
 			throws IllegalTargetsFilterException {
+		if (!areTargetsFiltersDefined()) {
+			throw new IndexOutOfBoundsException("Index: " + i + ", Size: " + 0);
+		}
 		return getTargetsDescriptor().setFilter(i, filter);
 	}
 
 	@Override
 	public synchronized void setTargetFilterSet(FilterSet filters)
 			throws IllegalTargetsFilterException {
+		createTargetsDescriptor();
 		getTargetsDescriptor().setFilterSet(filters);
 	}
 
 	@Override
 	public synchronized void addTargetFilter(Filter filter)
 			throws IllegalTargetsFilterException {
+		createTargetsDescriptor();
 		getTargetsDescriptor().addFilter(filter);
 	}
 
 	@Override
 	public synchronized void addTargetFilters(FilterSet filters)
 			throws IllegalTargetsFilterException {
+		createTargetsDescriptor();
 		getTargetsDescriptor().addFilters(filters);
+	}
+
+	@Override
+	public synchronized int countTargetFilters() {
+		if (!areTargetsFiltersDefined()) {
+			return 0;
+		}
+		return getTargetsDescriptor().countFilters();
 	}
 
 }
