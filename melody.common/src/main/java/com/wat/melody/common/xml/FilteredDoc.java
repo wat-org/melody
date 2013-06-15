@@ -93,7 +93,7 @@ public class FilteredDoc extends DUNIDDoc {
 		str.append(getSmartMsg());
 		str.append("]");
 		str.append(SysTool.NEW_LINE);
-		if (isFiltered()) {
+		if (areFiltersDefined()) {
 			str.append("|--- current document:");
 			str.append(SysTool.NEW_LINE + "| ");
 			str.append(dump().replaceAll(SysTool.NEW_LINE,
@@ -131,7 +131,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @return <tt>true</tt> if the current document and the original document
 	 *         doesn't point to the same object. <tt>false</tt> otherwise.
 	 */
-	protected boolean isFiltered() {
+	protected boolean areFiltersDefined() {
 		return getOriginalDocument() != getDocument();
 	}
 
@@ -510,23 +510,9 @@ public class FilteredDoc extends DUNIDDoc {
 	 *             </ul>
 	 */
 	public synchronized void applyFilters() throws IllegalFilterException {
-		// apply filters
 		for (Filter filter : getFilters()) {
 			applyFilter(filter);
 		}
-
-		if (!isFiltered()) {
-			return;
-		}
-		/*
-		 * Remove all Text Nodes in the current document, without impact on the
-		 * original document (improve xpath query performance and reduce memory
-		 * usage).
-		 */
-		stopListening();
-		FilteredDocHelper.removeTextNode((Element) getDocument()
-				.getFirstChild());
-		startListening();
 	}
 
 	/**
@@ -578,12 +564,23 @@ public class FilteredDoc extends DUNIDDoc {
 				}
 			}
 
-			Document oFilteredDoc = DocHelper.newDocument();
+			Document filtered = DocHelper.newDocument();
 			for (int i = 0; i < nl.getLength(); i++) {
-				FilteredDocHelper.insertElement(oFilteredDoc,
-						(Element) nl.item(i), true);
+				FilteredDocHelper.insertElement(filtered, (Element) nl.item(i),
+						true);
 			}
-			setDocument(oFilteredDoc);
+
+			// this return false as soon as the first filter is applied
+			if (!areFiltersDefined()) {
+				/*
+				 * Remove all Text Nodes in the current document, without impact
+				 * on the original document (improve xpath query performance and
+				 * reduce memory usage)
+				 */
+				FilteredDocHelper.removeTextNode((Element) filtered
+						.getFirstChild());
+			}
+			setDocument(filtered);
 		}
 	}
 
@@ -594,7 +591,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void elementInstered(MutationEvent evt) throws MelodyException {
 		super.elementInstered(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -628,7 +625,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void elementRemoved(MutationEvent evt) throws MelodyException {
 		super.elementRemoved(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -655,7 +652,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafInserted(MutationEvent evt) throws MelodyException {
 		super.textLeafInserted(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -681,7 +678,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafRemoved(MutationEvent evt) throws MelodyException {
 		super.textLeafRemoved(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -707,7 +704,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void textLeafModified(MutationEvent evt) throws MelodyException {
 		super.textLeafModified(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -733,7 +730,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeInserted(MutationEvent evt) throws MelodyException {
 		super.attributeInserted(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -756,7 +753,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeRemoved(MutationEvent evt) throws MelodyException {
 		super.attributeRemoved(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
@@ -779,7 +776,7 @@ public class FilteredDoc extends DUNIDDoc {
 	@Override
 	protected void attributeModified(MutationEvent evt) throws MelodyException {
 		super.attributeModified(evt);
-		if (!isFiltered()) {
+		if (!areFiltersDefined()) {
 			/*
 			 * If there is no filter, the current document and the original
 			 * document point to the same object, so there's no need to modify
