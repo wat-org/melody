@@ -5,12 +5,7 @@ import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 
 /**
  * <p>
- * A DUNID is a Document Unique Node IDentifier. Each DUNID is made of a
- * 'Document ID Part', the sign '|', and a 'Node Identifier part'.
- * </p>
- * 
- * <p>
- * The 'Document ID Part' can be used to find the 'Document ID'.
+ * A DUNID is a Document Unique Node IDentifier.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -20,20 +15,18 @@ public class DUNID {
 
 	/**
 	 * <p>
-	 * Convert the given {@link String} to a {@link DUNID} object.
+	 * Convert the given <tt>String</tt> to a {@link DUNID} object.
 	 * </p>
 	 * 
 	 * @param sDunid
-	 *            is the given {@link String} to convert.
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link DUNID}, whose equal to the given input {@link String}.
+	 * @return a {@link DUNID}, which is equal to the given <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalDUNIDException
-	 *             if the given input {@link String} is not a valid
-	 *             {@link DUNID} .
 	 * @throws IllegalArgumentException
-	 *             if the given input {@link String} is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDUNIDException
+	 *             if the given <tt>String</tt> is not a valid {@link DUNID}.
 	 */
 	public static DUNID parseString(String sDunid) throws IllegalDUNIDException {
 		return new DUNID(sDunid);
@@ -90,7 +83,7 @@ public class DUNID {
 		return _value;
 	}
 
-	public String setValue(String sDunid) throws IllegalDUNIDException {
+	private String setValue(String sDunid) throws IllegalDUNIDException {
 		if (sDunid == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a DUNID).");

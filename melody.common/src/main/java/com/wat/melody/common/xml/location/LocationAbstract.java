@@ -41,12 +41,16 @@ public abstract class LocationAbstract implements Location {
 	public String getSource() {
 		Element n = getRelatedElement();
 		String source = null;
-		do {
+		while (n != null) {
 			source = (String) n.getUserData(Parser.SOURCE);
 			if (source != null) {
 				return source;
 			}
-		} while ((n = (Element) n.getParentNode()) != null);
+			if (n.getParentNode().getNodeType() != Node.ELEMENT_NODE) {
+				return null;
+			}
+			n = (Element) n.getParentNode();
+		}
 		return null;
 	}
 
@@ -63,4 +67,5 @@ public abstract class LocationAbstract implements Location {
 	}
 
 	public abstract Element getRelatedElement();
+
 }

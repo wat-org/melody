@@ -25,8 +25,9 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 
 /**
  * <p>
- * A {@link DUNIDDoc} is a {@link Document}, where an ID is added to each
- * {@link Element}. It exposes method to query {@link Element} by this ID.
+ * A {@link DUNIDDoc} is a {@link Document}, where a {@link DUNID} is added to
+ * each {@link Element} as a reserved attribute. This class exposes methods to
+ * query {@link Element}s via this {@link DUNID}.
  * </p>
  * 
  * <p>
@@ -462,20 +463,12 @@ public class DUNIDDoc extends Doc implements EventListener {
 	 *            is a file path, which specifies where this object will be
 	 *            stored.
 	 * 
-	 * @throws IllegalFileException
-	 *             if the given path points to a directory.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non readable file.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non writable file.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a readable
-	 *             directory.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a writable
-	 *             directory.
 	 * @throws IllegalArgumentException
 	 *             if the given path is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             {@inheritDoc}
+	 * @throws IllegalDirectoryException
+	 *             {@inheritDoc}
 	 */
 	@Override
 	public synchronized void store(String sPath) throws IllegalFileException,
@@ -499,9 +492,6 @@ public class DUNIDDoc extends Doc implements EventListener {
 	 *         equal to the given input {@link DUNID}, or <tt>null</tt> if such
 	 *         {@link Element} cannot be found or if the given {@link DUNID} is
 	 *         <tt>null</tt>.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if this object have not been loaded yet.
 	 */
 	public Element getElement(DUNID dunid) {
 		return DUNIDDocHelper.getElement(getDocument(), dunid);

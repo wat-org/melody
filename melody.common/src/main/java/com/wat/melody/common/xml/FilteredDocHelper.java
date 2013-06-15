@@ -25,18 +25,13 @@ import com.wat.melody.common.xpath.XPathExpander;
 public abstract class FilteredDocHelper {
 
 	/**
-	 * <p>
-	 * Retrieve {@link Node}s which match the given relative XPath expression,
-	 * above the given {@link Element} and all its herited parents.
-	 * </p>
-	 * 
 	 * @param n
-	 *            is an {@link Element}.
+	 *            is the context, used for XPath Expression evaluation.
 	 * @param sAttrName
-	 *            is a relative XPath expression.
+	 *            is a relative XPath Expression.
 	 * 
-	 * @return {@link Node}s which match the given relative XPath expression,
-	 *         above the given {@link Element} and all its herited parents.
+	 * @return {@link Node}s which match the given relative XPath Expression,
+	 *         from the given context and all herited parents.
 	 */
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
@@ -66,19 +61,14 @@ public abstract class FilteredDocHelper {
 	}
 
 	/**
-	 * <p>
-	 * Search the given attribute value in the given {@link Element} and all its
-	 * herited parents.
-	 * </p>
-	 * 
 	 * @param n
 	 *            is an {@link Element}.
 	 * @param sAttrName
 	 *            is the attribute name to search.
 	 * 
-	 * @return the value of the given attribute if found, or <tt>null</tt> if
-	 *         the given attribute was not found in given {@link Element} and
-	 *         all its herited parents.
+	 * @return the value of the given attribute, or <tt>null</tt> if the given
+	 *         attribute was not found in given {@link Element} and all its
+	 *         herited parents.
 	 */
 	public static Attr getHeritedAttribute(Element n, String sAttrName) {
 		List<Element> circle = new ArrayList<Element>();
@@ -114,34 +104,36 @@ public abstract class FilteredDocHelper {
 	}
 
 	/**
-	 * <p>
-	 * Find the herited parent of the given {@link Element}.
-	 * </p>
-	 * 
 	 * @param n
-	 *            is an {@link Element}.
+	 *            is an {@link Element}. Can be <tt>null</tt>.
 	 * @param circle
 	 *            is the list of all already visited herited {@link Element}s.
 	 *            It is used to detect circular references. If <tt>null</tt>,
 	 *            circular references will not be detected.
 	 * 
+	 * @return the herited parent of the given {@link Element}., or
+	 *         <tt>null</tt> if the given {@link Element} was <tt>null</tt>.
+	 * 
 	 * @throws NodeRelatedException
-	 *             if the content of the {@link FilteredDoc#HERIT_ATTR} XML
+	 *             <ul>
+	 *             <li>if the content of the {@link FilteredDoc#HERIT_ATTR} XML
 	 *             Attribute of the given {@link Element} is not a valid XPath
-	 *             Expression.
-	 * @throws NodeRelatedException
-	 *             if, once resolved, the content of the
+	 *             Expression ;</li>
+	 *             <li>if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
-	 *             {@link Element} match no herited parent {@link Element}.
-	 * @throws NodeRelatedException
-	 *             if, once resolved, the content of the
+	 *             {@link Element} match no herited parent {@link Element} ;</li>
+	 *             <li>if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
 	 *             {@link Element} match multiple herited parent {@link Element}
-	 *             s.
-	 * @throws NodeRelatedException
-	 *             if, once resolved, the herited parent {@link Element} have
-	 *             already been visited (e.g. a circular reference hae been
-	 *             detected).
+	 *             s ;</li>
+	 *             <li>if, once resolved, the content of the
+	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
+	 *             {@link Element} match a {@link Node} which is not an
+	 *             {@link Element} ;</li>
+	 *             <li>if, once resolved, the herited parent {@link Element}
+	 *             have already been visited (e.g. a circular reference hae been
+	 *             detected) ;</li>
+	 *             </ul>
 	 */
 	protected static Element resolvHeritAttr(Element n, List<Element> circle)
 			throws NodeRelatedException {
@@ -224,11 +216,10 @@ public abstract class FilteredDocHelper {
 	 * @param doc
 	 *            is the {@link Document} to validate.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the given {@link Document} contains {@link Element}s which
-	 *             contains an invalid {@link #HERIT_ATTR} XML attribute
-	 *             (circular ref, invalid xpath expr, no target, multiple
-	 *             targets).
+	 *             {@inheritDoc}
 	 */
 	protected static void validateParentHeritedNodes(Document doc)
 			throws NodeRelatedException {
@@ -249,6 +240,9 @@ public abstract class FilteredDocHelper {
 	 * 
 	 * @return a {@link NodeList}, where each item is an {@link Element} which
 	 *         contains an {@link #HERIT_ATTR} XML attribute.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <tt>null</tt>.
 	 */
 	public static NodeList findNodeWithHeritAttr(Document doc) {
 		try {
@@ -271,13 +265,10 @@ public abstract class FilteredDocHelper {
 	 * </p>
 	 * 
 	 * @param n
-	 *            is the {@link Element} to validate.
+	 *            is the {@link Element} to validate. Can be <tt>null</tt>.
 	 * 
 	 * @throws NodeRelatedException
-	 *             if the given {@link Element} or one of its herited parents
-	 *             contains an invalid {@link #HERIT_ATTR} XML attribute
-	 *             (circular ref, invalid xpath expr, no target, multiple
-	 *             targets).
+	 *             {@inheritDoc}
 	 */
 	private static void validateHeritAttr(Element n)
 			throws NodeRelatedException {
@@ -286,6 +277,17 @@ public abstract class FilteredDocHelper {
 		validateHeritAttr(n, circle);
 	}
 
+	/**
+	 * @param n
+	 *            is the {@link Element} to validate. Can be <tt>null</tt>.
+	 * @param circle
+	 *            is the list of all already visited herited {@link Element}s.
+	 *            It is used to detect circular references. If <tt>null</tt>,
+	 *            circular references will not be detected.
+	 * 
+	 * @throws NodeRelatedException
+	 *             {@inheritDoc}
+	 */
 	private static void validateHeritAttr(Element n, List<Element> circle)
 			throws NodeRelatedException {
 		Element parent = resolvHeritAttr(n, circle);
@@ -316,6 +318,14 @@ public abstract class FilteredDocHelper {
 	 * @param importChilds
 	 * 
 	 * @return the inserted {@link Element}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given destination {@link Document} is
+	 *             <tt>null</tt> ;</li>
+	 *             <li>if the given {@link Element} to insert is <tt>null</tt> ;
+	 *             </li>
+	 *             </ul>
 	 */
 	protected static Element insertElement(Document dest, Element toImport,
 			boolean importChilds) {
@@ -366,6 +376,14 @@ public abstract class FilteredDocHelper {
 	 * @param importChilds
 	 * 
 	 * @return the imported {@link Node}.
+	 * 
+	 * @throws NullPointerException
+	 *             <ul>
+	 *             <li>if the given destination {@link Document} is
+	 *             <tt>null</tt> ;</li>
+	 *             <li>if the given {@link Element} to import is <tt>null</tt> ;
+	 *             </li>
+	 *             </ul>
 	 */
 	private static Node importNodeSubTree(Document dest, Node toImport,
 			boolean importChilds) {

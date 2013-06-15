@@ -86,11 +86,22 @@ public abstract class DocHelper {
 	 */
 	public static Document newDocument() {
 		DocumentBuilder builder = getDocumentBuilder();
+		// the factory is not synchronized and concurrent call will fail
 		synchronized (builder) {
 			return builder.newDocument();
 		}
 	}
 
+	/**
+	 * @param t
+	 *            is a {@link Node}.
+	 * 
+	 * @return the literal <tt>String</tt> value corresponding to the given
+	 *         {@link Node} type, as returned by {@link Node#getNodeType()}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Node} is <tt>null</tt>.
+	 */
 	public static String parseNodeType(Node n) {
 		if (n == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -99,6 +110,17 @@ public abstract class DocHelper {
 		return parseNodeType(n.getNodeType());
 	}
 
+	/**
+	 * @param t
+	 *            is a {@link Node} type, as returned by
+	 *            {@link Node#getNodeType()}.
+	 * 
+	 * @return the literal <tt>String</tt> value corresponding to the given
+	 *         value.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>int</tt> is not a node type.
+	 */
 	public static String parseNodeType(int t) {
 		switch (t) {
 		case Node.ATTRIBUTE_NODE:
@@ -127,7 +149,8 @@ public abstract class DocHelper {
 			return "TEXT";
 		default:
 			throw new IllegalArgumentException(": Not accepted. "
-					+ "Must a valid " + Node.class.getCanonicalName() + ".");
+					+ "Must a valid " + Node.class.getCanonicalName()
+					+ " type.");
 		}
 	}
 
@@ -142,23 +165,17 @@ public abstract class DocHelper {
 	 *            is a file path, which specifies where the given
 	 *            {@link Document} will be stored.
 	 * 
-	 * @throws IllegalFileException
-	 *             if the given path points to a directory.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non readable file.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non writable file.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a readable
-	 *             directory.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a writable
-	 *             directory.
 	 * @throws IllegalArgumentException
-	 *             if the given path is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given {@link Document} is <tt>null</tt>, or if the
-	 *             given path is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given path is <tt>null</tt> ;</li>
+	 *             <li>if the given {@link Document} is <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IllegalFileException
+	 *             if the given path doesn't point to a valid file (e.g. a
+	 *             directory, not readable, not writable).
+	 * @throws IllegalDirectoryException
+	 *             if the given path parent directory doesn't point to a valid
+	 *             directory (e.g. not readable, not writable)..
 	 */
 	public static void store(Document d, String path)
 			throws IllegalFileException, IllegalDirectoryException {
@@ -297,21 +314,13 @@ public abstract class DocHelper {
 	}
 
 	/**
-	 * <p>
-	 * Retrieve from the given {@link Document}'s user data a previously stored
-	 * {@link XPath} object.
-	 * </p>
-	 * 
-	 * <p>
-	 * An {@link XPath} object can be store using the method
-	 * {@link #storeXPath(Document, XPath)}.
-	 * </p>
-	 * 
 	 * @param d
 	 *            is the {@link Document} to retrieve the {@link XPath} object
 	 *            from.
 	 * 
-	 * @return the previously stored {@link XPath} object, or <tt>null</tt>.
+	 * @return the previously stored {@link XPath} object (see
+	 *         {@link #storeXPath(Document, XPath)}), or <tt>null</tt> if no
+	 *         {@link XPath} object have been previously stored.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <tt>null</tt>.
@@ -323,10 +332,6 @@ public abstract class DocHelper {
 					+ ".");
 		}
 		Object obj = d.getUserData(XPATH);
-		if (obj != null) {
-			return (XPath) obj;
-		}
-		return null;
+		return (obj == null) ? null : (XPath) obj;
 	}
-
 }

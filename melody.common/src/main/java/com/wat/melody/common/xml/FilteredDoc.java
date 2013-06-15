@@ -133,13 +133,15 @@ public class FilteredDoc extends DUNIDDoc {
 	 * 
 	 * @param sPath
 	 * 
-	 * @throws IllegalDocException
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
+	 * @throws IOException
 	 *             {@inheritDoc}
 	 * @throws IllegalFileException
 	 *             {@inheritDoc}
-	 * @throws IllegalFilterException
+	 * @throws IllegalDocException
 	 *             {@inheritDoc}
-	 * @throws IOException
+	 * @throws IllegalFilterException
 	 *             {@inheritDoc}
 	 */
 	@Override
@@ -174,6 +176,8 @@ public class FilteredDoc extends DUNIDDoc {
 	 * 
 	 * @param doc
 	 * 
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
 	 * @throws IllegalFilterException
 	 *             {@inheritDoc}
 	 */
@@ -194,11 +198,13 @@ public class FilteredDoc extends DUNIDDoc {
 	 * 
 	 * @param doc
 	 * 
-	 * @throws IllegalFilterException
+	 * @throws IllegalArgumentException
+	 *             {@inheritDoc}
+	 * @throws IOException
 	 *             {@inheritDoc}
 	 * @throws IllegalDocException
 	 *             {@inheritDoc}
-	 * @throws IOException
+	 * @throws IllegalFilterException
 	 *             {@inheritDoc}
 	 */
 	public synchronized void loadFromXML(String xml)
@@ -221,12 +227,10 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @throws IllegalDocException
 	 *             if one or more {@link Element}s have an invalid
 	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
-	 *             multiple node, doesn't contains a valid xpath expression,
+	 *             multiple node, doesn't contains a valid XPath Expression,
 	 *             circular ref). {@link #HERIT_ATTR} XML Attribute is a
 	 *             reserved attribute, which allow to define heritage between
-	 *             {@link Element}s.
-	 * @throws IllegalDocException
-	 *             {@inheritDoc}
+	 *             {@link Element}s. Or {@inheritDoc}
 	 */
 	@Override
 	protected void validateContent() throws IllegalDocException {
@@ -238,7 +242,7 @@ public class FilteredDoc extends DUNIDDoc {
 	 * @throws IllegalDocException
 	 *             if one or more {@link Element}s have an invalid
 	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
-	 *             multiple node, doesn't contains a valid xpath expression,
+	 *             multiple node, doesn't contains a valid XPath Expression,
 	 *             circular ref). {@link #HERIT_ATTR} XML Attribute is a
 	 *             reserved attribute, which allow to define heritage between
 	 *             {@link Element}s.
@@ -288,17 +292,21 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is a {@link FilterSet} to add to this object's
 	 *            {@link FilterSet}.
 	 * 
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} is already included in this object's
-	 *             {@link FilterSet}.
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} doesn't match any {@link Node}s.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link FilterSet} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if one {@link FilterSet} is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given {@link FilterSet} is <tt>null</tt> ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IllegalFilterException
+	 *             <ul>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             already included in this object's {@link FilterSet} ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             not a valid XPath Expression ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet}
+	 *             doesn't match any {@link Node}s ;</li>
+	 *             </ul>
 	 */
 	public synchronized void addFilters(FilterSet filters)
 			throws IllegalFilterException {
@@ -314,18 +322,21 @@ public class FilteredDoc extends DUNIDDoc {
 
 	/**
 	 * @param filter
-	 *            is an XPath Expression to add to this object's
-	 *            {@link FilterSet}.
+	 *            is a {@link Filter} to add to this object's {@link FilterSet}.
 	 * 
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} is already included in this
-	 *             object's {@link FilterSet}.
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} doesn't match any {@link Node}s.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Filter} is <tt>null</tt>.
+	 * @throws IllegalFilterException
+	 *             <ul>
+	 *             <li>if the given {@link Filter} is already included in this
+	 *             object's {@link FilterSet} ;</li>
+	 *             <li>if the given {@link Filter} is not a valid XPath
+	 *             Expression ;</li>
+	 *             <li>if the given {@link Filter} doesn't match any
+	 *             {@link Node}s ;</li>
+	 *             <li>if the given {@link Filter} match a {@link Node} which is
+	 *             not an {@link Element} ;</li>
+	 *             </ul>
 	 */
 	public synchronized void addFilter(Filter filter)
 			throws IllegalFilterException {
@@ -347,17 +358,23 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is a {@link FilterSet} to set in this object's
 	 *            {@link FilterSet}.
 	 * 
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} is already included in this object's
-	 *             {@link FilterSet}.
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} doesn't match any {@link Node}s.
 	 * @throws IllegalArgumentException
-	 *             if the given {@link FilterSet} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if one {@link FilterSet} is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given {@link FilterSet} is <tt>null</tt> ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IllegalFilterException
+	 *             <ul>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             already included in this object's {@link FilterSet} ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet} is
+	 *             not a valid XPath Expression ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet}
+	 *             doesn't match any {@link Node}s ;</li>
+	 *             <li>if one {@link Filter} of the given {@link FilterSet}
+	 *             match a {@link Node} which is not an {@link Element} ;</li>
+	 *             </ul>
 	 */
 	public synchronized void setFilterSet(FilterSet filters)
 			throws IllegalFilterException {
@@ -375,20 +392,27 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is the position in this object's {@link FilterSet} to place
 	 *            the given {@link Filter}.
 	 * @param filter
-	 *            is an XPath Expression to place in this object's
+	 *            is a {@link Filter} to place in this object's
 	 *            {@link FilterSet}.
 	 * 
 	 * @return the previous {@link Filter} located at the given position.
 	 * 
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} doesn't match any {@link Node}s.
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Filter} is <tt>null</tt>.
 	 * @throws IndexOutOfBoundsException
 	 *             if the given position is out of this object's
 	 *             {@link FilterSet}'s range.
+	 * @throws IllegalFilterException
+	 *             <ul>
+	 *             <li>if the given {@link Filter} is already included in this
+	 *             object's {@link FilterSet} ;</li>
+	 *             <li>if the given {@link Filter} is not a valid XPath
+	 *             Expression ;</li>
+	 *             <li>if the given {@link Filter} doesn't match any
+	 *             {@link Node}s ;</li>
+	 *             <li>if the give {@link Filter} match a {@link Node} which is
+	 *             not an {@link Element} ;</li>
+	 *             </ul>
 	 */
 	public synchronized Filter setFilter(int i, Filter filter)
 			throws IllegalFilterException {
@@ -396,6 +420,10 @@ public class FilteredDoc extends DUNIDDoc {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Filter.class.getCanonicalName()
 					+ ".");
+		}
+		if (getFilters().contains(filter)) {
+			throw new IllegalFilterException(Messages.bind(
+					Messages.FilteredDocEx_DUPLICATE, filter));
 		}
 		restoreOriginalDocument();
 		Filter removedFilter = getFilters().set(i, filter);
@@ -444,7 +472,7 @@ public class FilteredDoc extends DUNIDDoc {
 	}
 
 	/**
-	 * @return the number of{@link Filter} hold by this object's
+	 * @return the number of {@link Filter} hold by this object's
 	 *         {@link FilterSet}.
 	 */
 	public synchronized int countFilters() {
@@ -458,9 +486,14 @@ public class FilteredDoc extends DUNIDDoc {
 	 * </p>
 	 * 
 	 * @throws IllegalFilterException
-	 *             if one {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if one {@link Filter} doesn't match any {@link Node}s.
+	 *             <ul>
+	 *             <li>if one {@link Filter} of this object's {@link FilterSet}
+	 *             is not a valid XPath Expression ;</li>
+	 *             <li>if one {@link Filter} of this object's {@link FilterSet}
+	 *             doesn't match any {@link Node}s ;</li>
+	 *             <li>if one {@link Filter} of this object's {@link FilterSet}
+	 *             match a {@link Node} which is not an {@link Element} ;</li>
+	 *             </ul>
 	 */
 	public synchronized void applyFilters() throws IllegalFilterException {
 		// apply filters
@@ -492,12 +525,13 @@ public class FilteredDoc extends DUNIDDoc {
 	 *            is an XPath Expression, which match some {@link Element}s.
 	 * 
 	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} is not a valid XPath expression.
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} match no {@link Node}s.
-	 * @throws IllegalFilterException
-	 *             if the given {@link Filter} match a {@link Node} which is not
-	 *             an {@link Element}.
+	 *             <ul>
+	 *             <li>if the given {@link Filter} is not a valid XPath
+	 *             Expression ;</li>
+	 *             <li>if the given {@link Filter} match no {@link Node}s ;</li>
+	 *             <li>if the given {@link Filter} match a {@link Node} which is
+	 *             not an {@link Element} ;</li>
+	 *             </ul>
 	 */
 	private synchronized void applyFilter(Filter filter)
 			throws IllegalFilterException {

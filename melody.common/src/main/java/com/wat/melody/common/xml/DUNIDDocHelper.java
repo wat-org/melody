@@ -18,12 +18,16 @@ import com.wat.melody.common.xpath.XPathExpander;
  * 
  */
 public abstract class DUNIDDocHelper {
+
 	/**
 	 * @param d
 	 *            is the {@link Document} to search in.
 	 * 
 	 * @return a {@link NodeList}, where each item is an {@link Element} which
 	 *         contains a {@link #DUNID_ATTR} XML attribute.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link document} is <tt>null</tt>.
 	 */
 	public static NodeList findDUNIDs(Document d) {
 		try {
@@ -41,25 +45,17 @@ public abstract class DUNIDDocHelper {
 
 	/**
 	 * @param d
-	 *            is the {@link Document} to search in.
+	 *            is the {@link Document} to search in, or <tt>null</tt>.
 	 * @param dunid
 	 *            is the {@link DUNID} to search, or <tt>null</tt>.
 	 * 
 	 * @return the {@link Element} whose {@link #DUNID_ATTR} XML attribute is
 	 *         equal to the given input {@link DUNID}, or <tt>null</tt> if such
-	 *         {@link Element} cannot be found or if the given {@link DUNID} is
-	 *         <tt>null</tt>.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given given {@link Document} is <tt>null</tt>.
+	 *         {@link Element} cannot be found, or if the given {@link Document}
+	 *         is <tt>null</tt>, or if the given {@link DUNID} is <tt>null</tt>.
 	 */
 	public static Element getElement(Document d, DUNID dunid) {
-		if (d == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Document.class.getCanonicalName()
-					+ ".");
-		}
-		if (dunid == null) {
+		if (d == null || dunid == null) {
 			return null;
 		}
 		try {

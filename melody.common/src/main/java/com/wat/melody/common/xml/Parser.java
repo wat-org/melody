@@ -74,12 +74,12 @@ public abstract class Parser {
 	 * </ul>
 	 * </p>
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link File} is <tt>null</tt>.
 	 * @throws IOException
 	 *             {@inheritDoc}
 	 * @throws SAXException
 	 *             {@inheritDoc}
-	 * @throws IllegalArgumentException
-	 *             if the given File is <tt>null</tt>.
 	 */
 	public static Document parse(final File file) throws IOException,
 			SAXException {
@@ -116,12 +116,12 @@ public abstract class Parser {
 	 * </ul>
 	 * </p>
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IOException
 	 *             {@inheritDoc}
 	 * @throws SAXException
 	 *             {@inheritDoc}
-	 * @throws IllegalArgumentException
-	 *             if the given String is <tt>null</tt>.
 	 */
 	public static Document parse(final String xml) throws IOException,
 			SAXException {
@@ -148,6 +148,8 @@ public abstract class Parser {
 	 * 
 	 * @return
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link InputSource} is <tt>null</tt>.
 	 * @throws IOException
 	 *             {@inheritDoc}
 	 * @throws SAXException
@@ -182,11 +184,11 @@ class MySAXHandler extends DefaultHandler2 {
 
 	public final static String LEXICAL_HANDLER_PROPERTY = "http://xml.org/sax/properties/lexical-handler";
 
-	SAXParser parser;
-	Document doc;
-	Stack<Element> elementStack = new Stack<Element>();
-	StringBuilder textBuffer = new StringBuilder();
-	private Locator locator;
+	private SAXParser _parser;
+	private Document _doc;
+	private Stack<Element> _elementStack = new Stack<Element>();
+	private StringBuilder _textBuilder = new StringBuilder();
+	private Locator _locator;
 
 	public MySAXHandler() {
 		SAXParser parser;
@@ -213,7 +215,7 @@ class MySAXHandler extends DefaultHandler2 {
 	}
 
 	public SAXParser getParser() {
-		return parser;
+		return _parser;
 	}
 
 	public SAXParser setParser(SAXParser p) {
@@ -223,12 +225,12 @@ class MySAXHandler extends DefaultHandler2 {
 					+ ".");
 		}
 		SAXParser previous = getParser();
-		parser = p;
+		_parser = p;
 		return previous;
 	}
 
 	public Document getDocument() {
-		return doc;
+		return _doc;
 	}
 
 	public Document setDocument(Document d) {
@@ -238,38 +240,40 @@ class MySAXHandler extends DefaultHandler2 {
 					+ ".");
 		}
 		Document previous = getDocument();
-		doc = d;
+		_doc = d;
 		return previous;
 	}
 
 	@Override
 	public void setDocumentLocator(Locator locator) {
-		this.locator = locator; // Save the locator, so that it can be
-								// used later for line tracking when
-								// traversing nodes.
+		/*
+		 * Save the locator, so that it can be used later for line tracking when
+		 * traversing nodes.
+		 */
+		this._locator = locator;
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
 		addTextIfNeeded();
-		Element el = doc.createElement(qName);
+		Element el = _doc.createElement(qName);
 		for (int i = 0; i < attributes.getLength(); i++) {
 			el.setAttribute(attributes.getQName(i), attributes.getValue(i));
 		}
-		Parser.trackLineNumber(el, locator.getLineNumber());
-		Parser.trackColumnNumber(el, locator.getColumnNumber());
-		elementStack.push(el);
+		Parser.trackLineNumber(el, _locator.getLineNumber());
+		Parser.trackColumnNumber(el, _locator.getColumnNumber());
+		_elementStack.push(el);
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) {
 		addTextIfNeeded();
-		Element closedEl = elementStack.pop();
-		if (elementStack.isEmpty()) { // Is this the root element?
-			doc.appendChild(closedEl);
+		Element closedEl = _elementStack.pop();
+		if (_elementStack.isEmpty()) { // Is this the root element?
+			_doc.appendChild(closedEl);
 		} else {
-			Element parentEl = elementStack.peek();
+			Element parentEl = _elementStack.peek();
 			parentEl.appendChild(closedEl);
 		}
 	}
@@ -277,24 +281,25 @@ class MySAXHandler extends DefaultHandler2 {
 	@Override
 	public void characters(char ch[], int start, int length)
 			throws SAXException {
-		textBuffer.append(ch, start, length);
+		_textBuilder.append(ch, start, length);
 	}
 
 	// Outputs text accumulated under the current node
 	private void addTextIfNeeded() {
-		if (textBuffer.length() > 0) {
-			Element el = elementStack.peek();
-			Node textNode = doc.createTextNode(textBuffer.toString());
+		if (_textBuilder.length() > 0) {
+			Element el = _elementStack.peek();
+			Node textNode = _doc.createTextNode(_textBuilder.toString());
 			el.appendChild(textNode);
-			textBuffer.delete(0, textBuffer.length());
+			_textBuilder.delete(0, _textBuilder.length());
 		}
 	}
 
 	@Override
 	public void comment(char ch[], int start, int length) {
 		addTextIfNeeded();
-		Element el = elementStack.peek();
-		Node textNode = doc.createComment(new String(ch, start, length));
+		Element el = _elementStack.peek();
+		Node textNode = _doc.createComment(new String(ch, start, length));
 		el.appendChild(textNode);
 	}
+
 }

@@ -43,16 +43,16 @@ public class Doc {
 	 * @param path
 	 *            is the path of the file to load.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given path is <tt>null</tt>.
+	 * @throws IOException
+	 *             {@inheritDoc}
 	 * @throws IllegalFileException
 	 *             if the given path doesn't point to a valid file (e.g. the
 	 *             file doesn't exists, the path is a directory, ...).
 	 * @throws IllegalDocException
 	 *             if the content of the file pointed by the given path is not
 	 *             valid.
-	 * @throws IOException
-	 *             {@inheritDoc}
-	 * @throws IllegalArgumentException
-	 *             if the given path is <tt>null</tt>.
 	 */
 	public synchronized void load(String path) throws MelodyException,
 			IllegalDocException, IllegalFileException, IOException {
@@ -120,12 +120,12 @@ public class Doc {
 	 * @param xml
 	 *            is an XML String.
 	 * 
-	 * @throws IllegalDocException
-	 *             if the given XML content is not valid.
-	 * @throws IOException
-	 *             {@inheritDoc}
 	 * @throws IllegalArgumentException
 	 *             {@inheritDoc}
+	 * @throws IOException
+	 *             {@inheritDoc}
+	 * @throws IllegalDocException
+	 *             if the given XML content is not valid.
 	 */
 	public synchronized void loadFromXML(String xml) throws MelodyException,
 			IllegalDocException, IOException {
@@ -199,20 +199,12 @@ public class Doc {
 	 *            is a file path, which specifies where the given
 	 *            {@link Document} will be stored.
 	 * 
-	 * @throws IllegalFileException
-	 *             if the given path points to a directory.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non readable file.
-	 * @throws IllegalFileException
-	 *             if the given path points to a non writable file.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a readable
-	 *             directory.
-	 * @throws IllegalDirectoryException
-	 *             if the given file's parent directory is not a writable
-	 *             directory.
 	 * @throws IllegalArgumentException
 	 *             if the given path is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             {@inheritDoc}
+	 * @throws IllegalDirectoryException
+	 *             {@inheritDoc}
 	 */
 	public synchronized void store(String path) throws IllegalFileException,
 			IllegalDirectoryException {
