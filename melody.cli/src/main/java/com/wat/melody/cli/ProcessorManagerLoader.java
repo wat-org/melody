@@ -2,6 +2,7 @@ package com.wat.melody.cli;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +39,7 @@ import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetException;
+import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
@@ -53,6 +55,20 @@ import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadin
  * @see com.wat.melody.api.IProcessorManager
  */
 public class ProcessorManagerLoader {
+
+	/**
+	 * Name of the java option which specifies the Default Global Configuration
+	 * File.
+	 */
+	public static String DEFAULT_CONFIGURATION_FILE_PROPERTY = "melody.default.global.configuration.file";
+
+	/**
+	 * Hard-Coded Default Global Configuration File. Use if no User-Defined
+	 * Global Configuration File is defined (via option -C), and if no Default
+	 * Global Configuration File is defined (via java option).
+	 */
+	public static String DEFAULT_CONFIGURATION_FILE = SysTool.CWD
+			+ "/config/melody.properties";
 
 	// MANDATORY CONFIGURATION DIRECTIVE
 	// must be defined in the global configuration file
@@ -93,10 +109,6 @@ public class ProcessorManagerLoader {
 	}
 
 	/**
-	 * <p>
-	 * Get the inner {@link IProcessorManager} object.
-	 * </p>
-	 * 
 	 * @return the inner {@link IProcessorManager} object.
 	 */
 	public IProcessorManager getProcessorManager() {
@@ -112,7 +124,7 @@ public class ProcessorManagerLoader {
 	 * @return the previous inner {@link IProcessorManager} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link IProcessorManager} is <code>null</code>.
+	 *             if the given {@link IProcessorManager} is <tt>null</tt>.
 	 */
 	private IProcessorManager setProcessorManager(IProcessorManager pm) {
 		if (pm == null) {
@@ -136,121 +148,115 @@ public class ProcessorManagerLoader {
 	 * File, then load all Options found in the Command Line.
 	 * </p>
 	 * <p>
-	 * <i> The first argument of the Command Line must be the Default Global
-	 * Configuration File Path (the Default Global Configuration File Path is
-	 * automatically inserted by the Shell Wrapper at the first position). A
-	 * user-defined Global Configuration File can be provided in the Command
-	 * Line using the Option </i><code>-C</code><i>. If a user-defined Global
-	 * Configuration File is not explicitly provided in the Command Line, then
-	 * the Default Global Configuration File is used. </i>
+	 * <i> A User-Defined Global Configuration File can be provided in the
+	 * Command Line using the Option </i><tt>-C</tt><i>. If a User-Defined
+	 * Global Configuration File is not explicitly provided in the Command Line,
+	 * then the Default Global Configuration File is used. This Default Global
+	 * Configuration File is located in {@link #DEFAULT_CONFIGURATION_FILE},
+	 * relatively to the current working directory.</i>
 	 * </p>
 	 * <p>
 	 * Command Line's available Options are :
 	 * <ul>
-	 * <li><code>-C < Global Configuration File Path  ></code></li> Load the
-	 * specified Global Configuration File (see
-	 * {@link #loadGlobalConfigurationFile(String)} ;</BR>
+	 * <li><tt>-C &lt;Global Configuration File Path&gt;</tt><br/>
+	 * Load the specified Global Configuration File (see
+	 * {@link #loadGlobalConfigurationFile(String)} ;</li>
 	 * 
-	 * <li><code>-q</code></li> Decrease the log threshold (see
-	 * {@link IProcessorManager#decreaseLogThreshold()} ;</BR>
+	 * <li><tt>-q</tt><br/>
+	 * Decrease the log threshold (see
+	 * {@link IProcessorManager#decreaseLogThreshold()} ;</li>
 	 * 
-	 * <li><code>-v</code></li> Increase the log threshold (see
-	 * {@link IProcessorManager#increaseLogThreshold()} ;</BR>
+	 * <li><tt>-v</tt><br/>
+	 * Increase the log threshold (see
+	 * {@link IProcessorManager#increaseLogThreshold()} ;</li>
 	 * 
-	 * <li><code>-E < Resources Descriptor File Path ></code></li> Set the path
-	 * of the Resources Descriptor with the given value (see
+	 * <li><tt>-E &lt;Resources Descriptor File Path&gt;</tt><br/>
+	 * Add the given resource to the Resources Descriptor (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#add(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#add(String)}) ;</li>
 	 * 
-	 * <li><code>-f < Sequence Descriptor File Path ></code></li> Set the path
-	 * of the Sequence Descriptor with the given value (see
+	 * <li><tt>-f &lt;Sequence Descriptor File Path&gt;</tt><br/>
+	 * Set the path of the Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
+	 * {@link ISequenceDescriptor#load(String)}) ;</li>
 	 * 
-	 * <li><code>-F < Filter ></code></li> Add the given Filter to the Resources
-	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#addFilter(String)}) ;</BR>
+	 * <li><tt>-F &lt;Filter&gt;</tt><br/>
+	 * Add the given Filter to the Resources Descriptor (see
+	 * {@link IProcessorManager#getResourcesDescriptor()},
+	 * {@link IResourcesDescriptor#addFilter(String)}) ;</li>
 	 * 
-	 * <li><code>-T < Filter ></code></li> Add the given Filter to the Target
-	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#addTargetFilter(String)}) ;</BR>
+	 * <li><tt>-T &lt;Filter&gt;</tt><br/>
+	 * Add the given target Filter to the Resources Descriptor (see
+	 * {@link IProcessorManager#getResourcesDescriptor()},
+	 * {@link IResourcesDescriptor#addTargetFilter(String)}) ;</li>
 	 * 
-	 * <li><code>-o < Order ></code></li> Add the given Order to the Sequence
-	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#addOrder(String)}) ;</BR>
-	 * 
-	 * <li><code>-B</code></li> Enable 'Batch Mode' (see
-	 * {@link IProcessorManager#enableBatchMode()}) ;</BR>
-	 * 
-	 * <li><code>-b</code></li> Disable 'Batch Mode' (see
-	 * {@link IProcessorManager#disableBatchMode()}) ;</BR>
-	 * 
-	 * <li><code>-P</code></li> Enable 'Preserve Temporary Files Mode' (see
-	 * {@link IProcessorManager#enablePreserveTemporaryFilesMode()}) ;</BR>
-	 * 
-	 * <li><code>-p</code></li> Disable 'Preserve Temporary Files Mode' (see
-	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
-	 * 
-	 * <li><code>-D</code></li> Enable 'Run Dry Mode' (see
-	 * {@link IProcessorManager#enableRunDryMode()}) ;</BR>
-	 * 
-	 * <li><code>-d</code></li> Disable 'Run Dry Mode' (see
-	 * {@link IProcessorManager#disableRunDryMode()}) ;</BR>
-	 * 
-	 * <li><code>-V < Property ></code></li> Add the given Property to the
-	 * Sequence Descriptor (see
+	 * <li><tt>-o &lt;Order&gt;</tt><br/>
+	 * Add the given Order to the Sequence Descriptor (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</BR>
+	 * {@link ISequenceDescriptor#addOrder(String)}) ;</li>
+	 * 
+	 * <li><tt>-B</tt><br/>
+	 * Enable 'Batch Mode' (see {@link IProcessorManager#enableBatchMode()}) ;</li>
+	 * 
+	 * <li><tt>-b</tt><br/>
+	 * Disable 'Batch Mode' (see {@link IProcessorManager#disableBatchMode()}) ;
+	 * </li>
+	 * 
+	 * <li><tt>-P</tt><br/>
+	 * Enable 'Preserve Temporary Files Mode' (see
+	 * {@link IProcessorManager#enablePreserveTemporaryFilesMode()}) ;</li>
+	 * 
+	 * <li><tt>-p</tt><br/>
+	 * Disable 'Preserve Temporary Files Mode' (see
+	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</li>
+	 * 
+	 * <li><tt>-D</tt><br/>
+	 * Enable 'Run Dry Mode' (see {@link IProcessorManager#enableRunDryMode()})
+	 * ;</li>
+	 * 
+	 * <li><tt>-d</tt><br/>
+	 * Disable 'Run Dry Mode' (see {@link IProcessorManager#disableRunDryMode()}
+	 * ) ;</li>
+	 * 
+	 * <li><tt>-V &lt;Property&gt;</tt><br/>
+	 * Add the given Property to the Sequence Descriptor (see
+	 * {@link IProcessorManager#getSequenceDescriptor()},
+	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</li>
 	 * </ul>
 	 * </p>
 	 * 
 	 * @param cmdLine
-	 *            is the Command Line.
+	 *            is the Command Line to parse.
 	 * 
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a directory.
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a non
-	 *             readable file.
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a non
-	 *             writable file.
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a non
-	 *             existent file.
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a file which
-	 *             contains a malformed Unicode escape sequence.
-	 * @throws ConfigurationLoadingException
-	 *             if the Global Configuration File Path points to a file which
-	 *             is not a valid Global Configuration File (e.g. mandatory
-	 *             Configuration Directives are missing, or a Configuration
-	 *             Directives's value refers to a non-existent file, or a
-	 *             Configuration Directives's value is not valid, ...).
-	 * @throws ConfigurationLoadingException
-	 *             if a file mentioned in a Configuration Directive cannot be
-	 *             found.
-	 * @throws CommandLineParsingException
-	 *             if the Command Line is not properly formatted (e.g. a
-	 *             Option's value refers to a non-existent file, or a Option's
-	 *             value is missing, or a Option's value is not valid, ...).
-	 * @throws CommandLineParsingException
-	 *             if the given Command Line is an empty string array.
-	 * @throws CommandLineParsingException
-	 *             if a file mentioned in the Command Line cannot be found.
 	 * @throws IllegalArgumentException
-	 *             if the Global Configuration File Path is null.
-	 * @throws IllegalArgumentException
-	 *             if the given Command Line is null.
+	 *             if the given Command Line is <tt>null</tt>.
 	 * @throws IOException
-	 *             if an IO error occurred while reading the Global
-	 *             Configuration File.
-	 * @throws IOException
-	 *             if an IO error occurred while reading a file mentioned in a
-	 *             Configuration Directive.
-	 * @throws IOException
-	 *             if an IO error occurred while reading a Configuration File.
-	 * 
+	 *             if an IO error occurred.
+	 * @throws CommandLineParsingException
+	 *             <ul>
+	 *             <li>if the Command Line is not properly formatted (e.g. an
+	 *             Option's value is missing, an Option's specifier is missing)
+	 *             ;</li>
+	 *             <li>if Option </tt>-C</tt> appears multiple times in the
+	 *             Command Line ;</li>
+	 *             <li>if Option </tt>-C</tt>'s value is missing ;</li>
+	 *             <li>if an Option's specifier is not accepted ;</li>
+	 *             <li>if an Option's value is not accepted ;</li>
+	 *             </ul>
+	 * @throws ConfigurationLoadingException
+	 *             <ul>
+	 *             <li>if Global Configuration File path doesn't points to a
+	 *             valid file (e.g. a directory, a non readable file, a non
+	 *             writable file, a non existent file) ;</li>
+	 *             <li>if Global Configuration File is not a valid
+	 *             {@link PropertySet} (e.g. Configuration Directives
+	 *             duplicated, invalid Configuration Directive name, invalid
+	 *             escape character, circular reference during expansion
+	 *             process, ...) ;</li>
+	 *             <li>if Global Configuration File's content is not valid (e.g.
+	 *             mandatory Configuration Directives are missing, a
+	 *             Configuration Directives's value is not valid, ...) ;</li>
+	 *             </ul>
 	 */
 	public IProcessorManager parseCommandLine(String[] cmdLine)
 			throws ConfigurationLoadingException, CommandLineParsingException,
@@ -260,33 +266,17 @@ public class ProcessorManagerLoader {
 					+ "Must be a valid String[] (a Command Line).");
 		}
 		try {
-			/*
-			 * TODO : put the default configuration file into a system property,
-			 * instead of the first command line parameter.
-			 */
-			/*
-			 * The Melody Shell/Bat Wrapper must add the Default Global
-			 * Configuration File Path at the first position in the Command Line
-			 */
-			if (cmdLine.length == 0) {
-				throw new CommandLineParsingException(
-						Messages.CmdEx_MISSING_DEFAULT_GLOBAL_CONF_FILE);
-			}
-			try {
-				FS.validateFileExists(cmdLine[0]);
-			} catch (IllegalFileException Ex) {
-				throw new CommandLineParsingException(
-						Messages.CmdEx_INVALID_DEFAULT_GLOBAL_CONF_FILE, Ex);
-			}
-
-			/*
-			 * If the user don't explicitly specify a Global Configuration File
-			 * (using option -C ) => the default one (which is located at the
-			 * first position in the Command Line) is used
-			 */
 			String sGCFilePath = retrieveUserDefinedGlobalConfigurationFilePath(cmdLine);
 			if (sGCFilePath == null) {
-				sGCFilePath = cmdLine[0];
+				/*
+				 * If the user don't explicitly specify a Global Configuration
+				 * File (using option -C ) => the default one is used, defined
+				 * in a java option. If not provided as a java option => a hard
+				 * coded one is used.
+				 */
+				sGCFilePath = System.getProperty(
+						DEFAULT_CONFIGURATION_FILE_PROPERTY,
+						DEFAULT_CONFIGURATION_FILE);
 			}
 			loadGlobalConfigurationFile(sGCFilePath);
 
@@ -299,15 +289,15 @@ public class ProcessorManagerLoader {
 						cmdLine[firstArg]));
 			}
 
-			// ensure a sequence descriptor have beenF loaded
+			// ensure a sequence descriptor have been defined
 			if (getProcessorManager().getSequenceDescriptor().getSourceFile() == null) {
 				throw new CommandLineParsingException(Messages.CmdEx_MISSING_SD);
 			}
 
 			return getProcessorManager();
 		} catch (CommandLineParsingException Ex) {
-			throw new CommandLineParsingException(Messages.CmdEx_GENERIC_PARSE,
-					Ex);
+			throw new CommandLineParsingException(Messages.bind(
+					Messages.CmdEx_GENERIC_PARSE, Arrays.asList(cmdLine)), Ex);
 		}
 	}
 
@@ -315,30 +305,28 @@ public class ProcessorManagerLoader {
 
 	/**
 	 * <p>
-	 * Extract the user-defined Global Configuration File from the given Command
+	 * Extract the User-Defined Global Configuration File from the given Command
 	 * Line.
 	 * </p>
 	 * 
 	 * @param cmdLine
 	 *            is the Command Line.
 	 * 
-	 * @return a <code>String</code> which is the Global Configuration File Path
-	 *         (if provided through the Command Line using the option
-	 *         <code>-C</code>), or <code>null</code> (if option <code>-C</code>
-	 *         was not provided in the Command Line).
+	 * @return the Global Configuration File Path (if provided through the
+	 *         Command Line using the option <tt>-C</tt>), or <tt>null</tt> (if
+	 *         option <tt>-C</tt> was not provided in the Command Line).
 	 * 
 	 * @throws CommandLineParsingException
-	 *             if Option </code>-C</code> appears multiple times in the
-	 *             Command Line.
-	 * @throws CommandLineParsingException
-	 *             if Option </code>-C</code>'s value is missing.
+	 *             <ul>
+	 *             <li>if Option </tt>-C</tt> appears multiple times in the
+	 *             Command Line ;</li>
+	 *             <li>if Option </tt>-C</tt>'s value is missing ;</li>
+	 *             </ul>
 	 */
 	public String retrieveUserDefinedGlobalConfigurationFilePath(
 			String[] cmdLine) throws CommandLineParsingException {
 		String sUserDefinedGCFilePath = null;
-		// Begin at position 1 because the parameter at position 0 is the
-		// Default Global Configuration File Path
-		for (int i = 1; i < cmdLine.length; i++) {
+		for (int i = 0; i < cmdLine.length; i++) {
 			Matcher match = C_OPTION_FINDER.matcher(cmdLine[i]);
 			if (match.matches()) {
 				if (sUserDefinedGCFilePath != null) {
@@ -372,19 +360,26 @@ public class ProcessorManagerLoader {
 	 * 
 	 * @return the index of the first Argument of the Command Line.
 	 * 
-	 * @throws CommandLineParsingException
-	 *             if the Command Line is not properly formatted (e.g. a
-	 *             Option's value refers to a non-existent file, or a Option's
-	 *             value is missing, or a Option's value is not valid, ...).
+	 * @throws IllegalArgumentException
+	 *             if the given Command Line is <tt>null</tt>.
 	 * @throws IOException
-	 *             if an IO error occurred while reading a file mentioned in a
-	 *             Command Line Option.
+	 *             if an IO error occurred.
+	 * @throws CommandLineParsingException
+	 *             <ul>
+	 *             <li>if the Command Line is not properly formatted (e.g. an
+	 *             Option's value is missing, an Option's specifier is missing)
+	 *             ;</li>
+	 *             <li>if an Option's specifier is not accepted ;</li>
+	 *             <li>if an Option's value is not accepted ;</li>
+	 *             </ul>
 	 */
 	private int parseOptions(String[] cmdLine)
 			throws CommandLineParsingException, IOException {
-		// Begin at position 1 because the parameter at position 0 is the
-		// Default Global Configuration File Path
-		for (int i = 1; i < cmdLine.length; i++) {
+		if (cmdLine == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid String[].");
+		}
+		for (int i = 0; i < cmdLine.length; i++) {
 			// end of option list => exit option parsing loop
 			if (cmdLine[i].length() == 0 || cmdLine[i].charAt(0) != '-') {
 				return i;
@@ -616,99 +611,107 @@ public class ProcessorManagerLoader {
 	 * <p>
 	 * Global Configuration File's available Configuration Directives are :
 	 * <ul>
-	 * <li><code>processorManagerCanonicalClassName</code></li> Defines the
-	 * {@link IProcessorManager} implementation to use ;</BR>
+	 * <li><tt>processorManagerCanonicalClassName</tt><br/>
+	 * Defines the {@link IProcessorManager} implementation to use ;</li>
 	 * 
-	 * <li><code>tasks.directives</code></li> Defines the canonical class name
-	 * of all {@link ITask} implementation to use ;</BR>
+	 * <li><tt>tasks.directives</tt><br/>
+	 * Defines the canonical class name of all {@link ITask} implementation to
+	 * use ;</li>
 	 * 
-	 * <li><code>plugin.configuration.directives</code></li> Defines the path of
-	 * the Plug-In configuration file to load ;</BR>
+	 * <li><tt>plugin.configuration.directives</tt><br/>
+	 * Defines the path of the Plug-In configuration file to load ;</li>
 	 * 
-	 * <li><code>workingFolderPath</code></li> Set the Working Folder Path to
-	 * the given value (see
-	 * {@link IProcessorManager#setWorkingFolderPath(String)}) ;</BR>
+	 * <li><tt>xpath.namespace.directives</tt><br/>
+	 * Defines the namespaces of the custom XPath Functions ;</li>
 	 * 
-	 * <li><code>maxSimultaneousStep</code></li> Set the maximum number of
-	 * parallel worker (see
-	 * {@link IProcessorManager#setMaxSimultaneousStep(int)}) ;</BR>
+	 * <li><tt>xpath.function.directives</tt><br/>
+	 * Defines the custom XPath Functions ;</li>
 	 * 
-	 * <li><code>hardKillTimeout</code></li> Set the maximum amount of seconds a
-	 * worker will be waited before killed (see
-	 * {@link IProcessorManager#setHardKillTimeout(int)}) ;</BR>
+	 * <li><tt>workingFolderPath</tt><br/>
+	 * Set the Working Folder Path to the given value (see
+	 * {@link IProcessorManager#setWorkingFolderPath(String)}) ;</li>
 	 * 
-	 * <li><code>loggingConfigurationFile</code></li> Set the path of the log4j
-	 * configuration file ;</BR>
+	 * <li><tt>maxSimultaneousStep</tt><br/>
+	 * Set the maximum number of parallel worker (see
+	 * {@link IProcessorManager#setMaxSimultaneousStep(int)}) ;</li>
 	 * 
-	 * <li><code>loggingVariablesToSubstitute</code></li> Set the name of log4j
-	 * properties to add to system properties, so that they can be substitute in
-	 * the log4j configuration file ;</BR>
+	 * <li><tt>hardKillTimeout</tt><br/>
+	 * Set the maximum amount of seconds a worker will be waited before killed
+	 * (see {@link IProcessorManager#setHardKillTimeout(int)}) ;</li>
 	 * 
-	 * <li><code>resourcesDescriptors</code></li> add the given resource
-	 * descriptors to the Resource Descriptor (see
+	 * <li><tt>loggingConfigurationFile</tt><br/>
+	 * Set the path of the log4j configuration file ;</li>
+	 * 
+	 * <li><tt>loggingVariablesToSubstitute</tt><br/>
+	 * Set the name of log4j properties to add to system properties, so that
+	 * they can be substitute in the log4j configuration file ;</li>
+	 * 
+	 * <li><tt>resourcesDescriptors</tt><br/>
+	 * add the given resources to the Resources Descriptors (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#add(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#add(String)}) ;</li>
 	 * 
-	 * <li><code>batchMode</code></li> Enable/disable 'Batch Mode' (see
-	 * {@link IProcessorManager#disableBatchMode()} ;</BR>
+	 * <li><tt>batchMode</tt><br/>
+	 * Enable/disable 'Batch Mode' (see
+	 * {@link IProcessorManager#disableBatchMode()} ;</li>
 	 * 
-	 * <li><code>preserveTemporaryFilesMode</code></li> Enable/disable 'Preserve
-	 * Temporary Files Mode' (see
-	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</BR>
+	 * <li><tt>preserveTemporaryFilesMode</tt><br/>
+	 * Enable/disable 'Preserve Temporary Files Mode' (see
+	 * {@link IProcessorManager#disablePreserveTemporaryFilesMode()}) ;</li>
 	 * 
-	 * <li><code>runDryMode</code></li> Enable/disable 'Run Dry Mode' (see
-	 * {@link IProcessorManager#disableRunDryMode()} ;</BR>
+	 * <li><tt>runDryMode</tt><br/>
+	 * Enable/disable 'Run Dry Mode' (see
+	 * {@link IProcessorManager#disableRunDryMode()} ;</li>
 	 * 
-	 * <li><code>sequenceDescriptorFilePath</code></li> Set the path of the
-	 * Sequence Descriptor with the given value (see
+	 * <li><tt>sequenceDescriptorFilePath</tt><br/>
+	 * Set the path of the Sequence Descriptor with the given value (see
 	 * {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#load(String)}) ;</BR>
+	 * {@link ISequenceDescriptor#load(String)}) ;</li>
 	 * 
-	 * <li><code>orders</code></li> Add the given orders to the Sequence
-	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#addOrders(String)}) ;</BR>
+	 * <li><tt>orders</tt><br/>
+	 * Add the given orders to the Sequence Descriptor (see
+	 * {@link IProcessorManager#getSequenceDescriptor()},
+	 * {@link ISequenceDescriptor#addOrders(String)}) ;</li>
 	 * 
-	 * <li><code>properties</code></li> Add the given properties to the Sequence
-	 * Descriptor (see {@link IProcessorManager#getSequenceDescriptor()},
-	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</BR>
+	 * <li><tt>properties</tt><br/>
+	 * Add the given properties to the Sequence Descriptor (see
+	 * {@link IProcessorManager#getSequenceDescriptor()},
+	 * {@link ISequenceDescriptor#addProperty(Property)}) ;</li>
 	 * 
-	 * <li><code>resourcesFilters</code></li> Add the given filters to the
-	 * Resources Descriptor (see
+	 * <li><tt>resourcesFilters</tt><br/>
+	 * Add the given filters to the Resources Descriptor (see
 	 * {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#setFilter(String)}) ;</BR>
+	 * {@link IResourcesDescriptor#setFilter(String)}) ;</li>
 	 * 
-	 * <li><code>targetFilters</code></li> Add the given filters to the Target
-	 * Descriptor (see {@link IProcessorManager#getResourcesDescriptor()},
-	 * {@link IResourcesDescriptor#setTargetFilter(String)}) ;</BR>
+	 * <li><tt>targetFilters</tt><br>
+	 * Add the given target filters to the Resources Descriptor (see
+	 * {@link IProcessorManager#getResourcesDescriptor()},
+	 * {@link IResourcesDescriptor#setTargetFilter(String)}) ;<br/>
 	 * </ul>
 	 * </p>
 	 * 
 	 * @param gcfPath
 	 *            is the path of the Global Configuration File.
 	 * 
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a directory.
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a non readable file.
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a non writable file.
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a non existent file.
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a file which contains a malformed
-	 *             Unicode escape sequence.
-	 * @throws ConfigurationLoadingException
-	 *             if the given path points to a file which is not valid (e.g.
-	 *             mandatory Configuration Directives are missing, or a
-	 *             Configuration Directives's value refers to a non-existent
-	 *             file, or a Configuration Directives's value is not valid,
-	 *             ...).
 	 * @throws IllegalArgumentException
-	 *             if the given path is null.
+	 *             if the given path is <tt>null</tt>.
 	 * @throws IOException
-	 *             if an IO error occurred while reading the Global
-	 *             Configuration File.
-	 * 
+	 *             if an IO error occurred.
+	 * @throws ConfigurationLoadingException
+	 *             <ul>
+	 *             <li>if the given path doesn't points to a valid file (e.g. a
+	 *             directory, a non readable file, a non writable file, a non
+	 *             existent file) ;</li>
+	 *             <li>if the given path points to a file which is not a valid
+	 *             {@link PropertySet} (e.g. Configuration Directives
+	 *             duplicated, invalid Configuration Directive name, invalid
+	 *             escape character, circular reference during expansion
+	 *             process, ...) ;</li>
+	 *             <li>if the given path points to a file which is not a valid
+	 *             Global Configuration File (e.g. mandatory Configuration
+	 *             Directives are missing, a Configuration Directives's value is
+	 *             not valid, ...) ;</li>
+	 *             </ul>
 	 */
 	public void loadGlobalConfigurationFile(String gcfPath)
 			throws ConfigurationLoadingException, IOException {
@@ -1481,13 +1484,13 @@ public class ProcessorManagerLoader {
 	 * </p>
 	 * 
 	 * <p>
-	 * <b> Should be called when this object and its inner IProcessorManager are
-	 * no more necessary, in order to clean the hard disk. </b>
+	 * <b>Should be called when this object and its inner
+	 * {@link IProcessorManager} are no more necessary, in order to clean the
+	 * hard disk.</b>
 	 * </p>
 	 * 
 	 * @throws IOException
 	 *             if an IO error occurred while deleting files.
-	 * 
 	 */
 	public void deleteTemporaryResources() throws IOException {
 	}

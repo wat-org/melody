@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<project name="melody_test_native" basedir="../.." default="all">
+<project name="melody_test_native" basedir=".." default="all">
 
 	<path id="classpathElements">
-		<fileset dir="./melody.tests/common/lib/">
+		<fileset dir="./common/lib/">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -17,21 +17,22 @@
 
 	<target name="Cmd_UC01">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/not_exists.props" />
+			<arg value="-C" />
+			<arg value="./config/not_exists.props" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Cmd_UC02">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config" />
+			<arg value="-C" />
+			<arg value="./config" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Cmd_UC03">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-C" />
 			<classpath refid="classpathElements" />
 		</java>
@@ -39,9 +40,8 @@
 
 	<target name="Cmd_UC04">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-C" />
-			<arg value="./melody.tests/tests/order/mc.properties" />
+			<arg value="./config/melody.properties" />
 			<arg value="-C" />
 			<arg value="./tests/order/mc.properties" />
 			<classpath refid="classpathElements" />
@@ -50,9 +50,8 @@
 
 	<target name="Cmd_UC05">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-Co" />
-			<arg value="./melody.tests/tests/order/mc.properties" />
+			<arg value="./tests/order/mc.properties" />
 			<arg value="--" />
 			<classpath refid="classpathElements" />
 		</java>
@@ -60,17 +59,15 @@
 
 	<target name="Cmd_UC06">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-oC" />
 			<arg value="invalid_order" />
-			<arg value="./melody.tests/tests/order/UC_0/mc.properties" />
+			<arg value="./tests/order/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Cmd_UC07">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-T" />
 			<arg value="//*[what's up?" />
 			<classpath refid="classpathElements" />
@@ -79,7 +76,6 @@
 
 	<target name="Cmd_UC08">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-F" />
 			<arg value="//*[what's up?" />
 			<classpath refid="classpathElements" />
@@ -88,7 +84,6 @@
 
 	<target name="Cmd_UC09">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-E" />
 			<arg value="/file/deos/not/exists" />
 			<classpath refid="classpathElements" />
@@ -97,7 +92,6 @@
 
 	<target name="Cmd_UC10">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-vvvvv" />
 			<classpath refid="classpathElements" />
 		</java>
@@ -105,7 +99,6 @@
 
 	<target name="Cmd_UC11">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-v" />
 			<arg value="-v" />
 			<arg value="-v" />
@@ -117,7 +110,6 @@
 
 	<target name="Cmd_UC12">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-qqqq" />
 			<classpath refid="classpathElements" />
 		</java>
@@ -125,7 +117,6 @@
 
 	<target name="Cmd_UC13">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/config/melody.properties" />
 			<arg value="-q" />
 			<arg value="-q" />
 			<arg value="-q" />
@@ -136,77 +127,88 @@
 
 	<target name="Basedir_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/basedir/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/basedir/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Basedir_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/basedir/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/basedir/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Basedir_UC2">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/basedir/UC_2/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/basedir/UC_2/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Attributes_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/attributes/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/attributes/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Attributes_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/attributes/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/attributes/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Order_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/order/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/order/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Order_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/order/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/order/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Call_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/call/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/call/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Call_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/call/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/call/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Call_UC2">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/call/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/call/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Call_UC3">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/call/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/call/mc.properties" />
 			<arg value="-T" />
 			<arg value="//server[3]|//server[4]" />
 			<classpath refid="classpathElements" />
@@ -215,56 +217,64 @@
 
 	<target name="Filter_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/filter/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/filter/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Filter_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/filter/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/filter/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Filter_UC2">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/filter/UC_2/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/filter/UC_2/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Filter_UC3">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/filter/UC_3/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/filter/UC_3/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Foreach_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/foreach/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/foreach/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Dunid_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/dunid/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/dunid/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Dunid_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/dunid/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/dunid/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Param_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/param/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/param/UC_0/mc.properties" />
 			<arg value="-V" />
 			<arg value="undef=it works" />
 			<arg value="-V" />
@@ -275,49 +285,56 @@
 
 	<target name="Param_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/param/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/param/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Param_UC2">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/param/UC_2/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/param/UC_2/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Lock">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/lock/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/lock/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Herit_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/herit/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/herit/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Herit_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/herit/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/herit/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Herit_UC2">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/herit/UC_2/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/herit/UC_2/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Herit_UC3">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.tests/tests/herit/UC_3/mc.properties" />
+			<arg value="-C" />
+			<arg value="./tests/herit/UC_3/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

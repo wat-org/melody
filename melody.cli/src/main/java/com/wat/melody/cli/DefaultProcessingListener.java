@@ -38,7 +38,6 @@ public class DefaultProcessingListener implements IProcessorListener {
 	 * 
 	 * @param pm
 	 *            is the {@link IProcessorManager} which will generate events.
-	 * 
 	 */
 	public DefaultProcessingListener(IProcessorManager pm) {
 		pm.addListener(this);

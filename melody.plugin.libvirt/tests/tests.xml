@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<project name="melody_test_plugin_libvirt" basedir="../.." default="UC0_all">
+<project name="melody_test_plugin_libvirt" basedir="../../melody.tests" default="UC0_all">
 
 	<path id="classpathElements">
-		<fileset dir="./melody.tests/common/lib/">
+		<fileset dir="./common/lib/">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -13,7 +13,8 @@
 
 	<target name="UC0_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="create_all_vm" />
 			<classpath refid="classpathElements" />
@@ -22,7 +23,8 @@
 
 	<target name="UC0_02_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="stop_all_vm" />
 			<classpath refid="classpathElements" />
@@ -31,7 +33,8 @@
 
 	<target name="UC0_03_resize">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="resize_all_vm" />
 			<classpath refid="classpathElements" />
@@ -40,7 +43,8 @@
 
 	<target name="UC0_04_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="start_all_vm" />
 			<classpath refid="classpathElements" />
@@ -49,7 +53,8 @@
 
 	<target name="UC0_05_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_disk_devices" />
 			<classpath refid="classpathElements" />
@@ -58,7 +63,8 @@
 
 	<target name="UC0_06_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_network_devices" />
 			<classpath refid="classpathElements" />
@@ -67,7 +73,8 @@
 
 	<target name="UC0_07_update_firewall">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_firewall" />
 			<classpath refid="classpathElements" />
@@ -76,7 +83,8 @@
 
 	<target name="UC0_08_destroy_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="destroy_all_vm" />
 			<classpath refid="classpathElements" />
@@ -90,7 +98,8 @@
 
 	<target name="UC1_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="create_all_vm" />
 			<classpath refid="classpathElements" />
@@ -99,7 +108,8 @@
 
 	<target name="UC1_02_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="stop_all_vm" />
 			<classpath refid="classpathElements" />
@@ -108,7 +118,8 @@
 
 	<target name="UC1_03_resize">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="resize_all_vm" />
 			<classpath refid="classpathElements" />
@@ -117,7 +128,8 @@
 
 	<target name="UC1_04_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="start_all_vm" />
 			<classpath refid="classpathElements" />
@@ -126,7 +138,8 @@
 
 	<target name="UC1_05_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_disk_devices" />
 			<classpath refid="classpathElements" />
@@ -135,7 +148,8 @@
 
 	<target name="UC1_06_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_network_devices" />
 			<classpath refid="classpathElements" />
@@ -144,7 +158,8 @@
 
 	<target name="UC1_07_update_firewall">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="update_firewall" />
 			<classpath refid="classpathElements" />
@@ -153,7 +168,8 @@
 
 	<target name="UC1_08_destroy_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
 			<arg value="-o" />
 			<arg value="destroy_all_vm" />
 			<classpath refid="classpathElements" />

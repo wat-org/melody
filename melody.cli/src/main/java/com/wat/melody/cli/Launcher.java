@@ -48,12 +48,12 @@ public class Launcher {
 		// The logger can only be created after log4j's initialization
 		Log log = LogFactory.getLog(Launcher.class);
 		ShutdownHook sdh = null;
-		DefaultProcessingListener dpl = null;
+		// DefaultProcessingListener dpl = null;
 		ReturnCode iReturnCode = ReturnCode.ERRGEN;
 
 		try {
 			sdh = new ShutdownHook(pm, Thread.currentThread());
-			dpl = new DefaultProcessingListener(pm);
+			// dpl = new DefaultProcessingListener(pm);
 			pm.startProcessing();
 			pm.waitTillProcessingIsDone();
 			if (pm.getProcessingFinalError() != null) {
@@ -73,9 +73,9 @@ public class Launcher {
 			log.fatal(e.toString());
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
-			if (pm != null && dpl != null) {
-				pm.removeListener(dpl);
-			}
+			// if (pm != null && dpl != null) {
+			// pm.removeListener(dpl);
+			// }
 			try {
 				pml.deleteTemporaryResources();
 			} catch (IOException Ex) {

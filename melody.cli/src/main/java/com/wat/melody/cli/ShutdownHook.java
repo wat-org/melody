@@ -1,5 +1,8 @@
 package com.wat.melody.cli;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.wat.melody.api.IProcessorManager;
 
 /**
@@ -12,8 +15,10 @@ import com.wat.melody.api.IProcessorManager;
  */
 public class ShutdownHook extends Thread {
 
-	private IProcessorManager moProcessorManager;
-	private Thread moLauncherThread;
+	private static Log log = LogFactory.getLog(ShutdownHook.class);
+
+	private IProcessorManager _processorManager;
+	private Thread _launcherThread;
 
 	/**
 	 * <p>
@@ -38,16 +43,16 @@ public class ShutdownHook extends Thread {
 	 * Will be called on JVM termination (i.e. call to System.exit, CTRL-C
 	 * trapped, ...).
 	 * </p>
-	 * <p>
-	 * <i> * Will stop the associated {@link IProcessorManager} and wait for the
-	 * processing to be done. <BR/>
-	 * * Will stop the launcher thread to wait for its end. <BR/>
-	 * </i>
-	 * </p>
+	 * 
+	 * <ul>
+	 * <li>Will stop the associated {@link IProcessorManager} and wait for the
+	 * processing to be done ;</li>
+	 * <li>Will stop the launcher thread and wait for its end ;</li>
+	 * </ul>
 	 */
 	public void run() {
 		try {
-			System.out.println("Exit sequence engaged ...");
+			log.info("Exit sequence engaged ...");
 
 			// Request Engine to stop
 			getProcessorManager().stopProcessing();
@@ -65,27 +70,29 @@ public class ShutdownHook extends Thread {
 	}
 
 	private IProcessorManager getProcessorManager() {
-		return moProcessorManager;
+		return _processorManager;
 	}
 
 	private IProcessorManager setProcessorManager(IProcessorManager pm) {
 		if (pm == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid IProcessorManager.");
+					+ "Must be a valid "
+					+ IProcessorManager.class.getCanonicalName() + ".");
 		}
-		return moProcessorManager = pm;
+		return _processorManager = pm;
 	}
 
 	private Thread getLauncherThread() {
-		return moLauncherThread;
+		return _launcherThread;
 	}
 
 	private Thread setLauncherThread(Thread t) {
 		if (t == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Thread.");
+					+ "Must be a valid " + Thread.class.getCanonicalName()
+					+ ".");
 		}
-		return moLauncherThread = t;
+		return _launcherThread = t;
 	}
 
 }

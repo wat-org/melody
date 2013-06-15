@@ -10,6 +10,11 @@ import java.util.UUID;
 public abstract class SysTool {
 
 	/**
+	 * Is equal to System.getProperty("user.dir")
+	 */
+	public static final String CWD = System.getProperty("user.dir");
+
+	/**
 	 * Is equal to System.getProperty("line.separator")
 	 */
 	public static final String NEW_LINE = System.getProperty("line.separator");

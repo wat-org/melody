@@ -1,31 +1,34 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<project name="melody_test_plugin_ssh" basedir="../.." default="all">
+<project name="melody_test_plugin_ssh" basedir="../../melody.tests" default="all">
 
 	<path id="classpathElements">
-		<fileset dir="./melody.tests/common/lib/">
+		<fileset dir="./common/lib/">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
 
 	<target name="Upload_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.ssh/tests/UC_0/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.ssh/tests/UC_0/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Upload_UC1">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.ssh/tests/UC_1/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.ssh/tests/UC_1/mc.properties" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
 
 	<target name="Ssh_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.ssh/tests/UC_2/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.ssh/tests/UC_2/mc.properties" />
 			<arg value="-v" />
 			<classpath refid="classpathElements" />
 		</java>
@@ -33,7 +36,8 @@
 
 	<target name="SshManagement_UC0">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="./melody.plugin.ssh/tests/UC_3/mc.properties" />
+			<arg value="-C" />
+			<arg value="./../melody.plugin.ssh/tests/UC_3/mc.properties" />
 			<arg value="-v" />
 			<classpath refid="classpathElements" />
 		</java>

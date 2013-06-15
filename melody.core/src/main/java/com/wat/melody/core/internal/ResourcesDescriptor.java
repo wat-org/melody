@@ -67,6 +67,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.");
 		}
+		/*
+		 * TODO : in order to enhance performance and memory footprint, set the
+		 * target descriptor to null until a target filter is applied.
+		 */
 		// Build a new targets descriptor
 		setTargetsDescriptor(new TargetsDescriptor());
 		// Load it with this object

@@ -8,8 +8,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cli.messages";
 
-	public static String CmdEx_MISSING_DEFAULT_GLOBAL_CONF_FILE;
-	public static String CmdEx_INVALID_DEFAULT_GLOBAL_CONF_FILE;
 	public static String CmdEx_MULTIPLE_GLOBAL_CONF_FILE_ERROR;
 	public static String CmdEx_MISSING_OPTION_SPECIFIER;
 	public static String CmdEx_UNKNOWN_OPTION_SPECIFIER;
@@ -19,7 +17,6 @@ public class Messages extends NLS {
 	public static String CmdEx_UNKNOWN_ARGUMENT_ERROR;
 	public static String CmdEx_MISSING_SD;
 	public static String CmdEx_GENERIC_PARSE;
-	public static String CmdMsg_DISPLAY_CMDLINE;
 
 	public static String ConfEx_MISSING_DIRECTIVE;
 	public static String ConfEx_INVALID_DIRECTIVE;
