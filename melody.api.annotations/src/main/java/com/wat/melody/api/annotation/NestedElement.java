@@ -7,6 +7,44 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>
+ * A Melody Task can have Nested Elements.
+ * </p>
+ * 
+ * <p>
+ * In order to declare the setter method of a Nested Element, you must use the
+ * {@link NestedElement} annotation.
+ * </p>
+ * 
+ * <p>
+ * {@link #name()} allow to define the name of the Nested Element.
+ * {@link #mandatory()} allow to specify if the Attribute is mandatory or not.
+ * {@link #type()} allow to specify the type of the Nested Element.
+ * </p>
+ * 
+ * <p>
+ * Two type of Nested Elements exits :
+ * <ul>
+ * <li>Add Nested Element, which can be declared by setting the {@link #type()}
+ * to {@link Type#ADD} ;</li>
+ * <li>Create Nested Element, which can be declared by setting the
+ * {@link #type()} to {@link Type#CREATE} ;</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * A Add Nested Element must annotate a public 1-arg method. This method's 1-arg
+ * will be created (using it public 0-arg constructor), then it will be fulfill
+ * with the Nested Element's content (using its Attributes and Nested Element's
+ * setter method), and then it will be pass the the method.
+ * </p>
+ * 
+ * <p>
+ * A Create Nested Element must annotate a public 0-arg method which return an
+ * object. This method will be called, and the returned object will be fulfill
+ * with the Nested Element's content (using its Attributes and Nested Element's
+ * setter method).
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
@@ -25,8 +63,8 @@ public @interface NestedElement {
 
 	/**
 	 * <p>
-	 * If <code>true</code> and if the nested element is not declared, an error
-	 * will be generated.
+	 * If <tt>true</tt> and if the nested element is not declared, an error will
+	 * be generated.
 	 * </p>
 	 */
 	boolean mandatory() default false;

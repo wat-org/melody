@@ -7,6 +7,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>
+ * The Name of a Melody Task is deduced from the name of its implementation
+ * class.
+ * </p>
+ * 
+ * <p>
+ * In order to assign a Melody Task a more friendly Name, the {@link Task}
+ * annotation can be use. This annotation must annotate a Melody Task (e.g a
+ * class which implements {@link ITask}). It allows to declare an alternative
+ * Name (via {@link #name()}) for that Melody Task.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
