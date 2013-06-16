@@ -2,6 +2,7 @@ package com.wat.melody.common.ssh.types;
 
 import java.util.Arrays;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
 
 /**
@@ -41,7 +42,7 @@ public enum ProxyType {
 					+ Arrays.asList(ProxyType.values()) + " ).");
 		}
 		if (sProxyType.trim().length() == 0) {
-			throw new IllegalProxyTypeException(Messages.bind(
+			throw new IllegalProxyTypeException(Msg.bind(
 					Messages.ProxyTypeEx_EMPTY, sProxyType));
 		}
 		for (ProxyType c : ProxyType.class.getEnumConstants()) {
@@ -49,19 +50,19 @@ public enum ProxyType {
 				return c;
 			}
 		}
-		throw new IllegalProxyTypeException(Messages.bind(
+		throw new IllegalProxyTypeException(Msg.bind(
 				Messages.ProxyTypeEx_INVALID, sProxyType,
 				Arrays.asList(ProxyType.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private ProxyType(String sProxyType) {
-		this.msValue = sProxyType;
+		this._value = sProxyType;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

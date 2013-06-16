@@ -17,6 +17,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xpath.XPathExpander;
 
@@ -61,14 +62,14 @@ public class Doc {
 		try {
 			setDocument(DocHelper.parse(file));
 		} catch (SAXParseException Ex) {
-			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX_AT, new Object[] { path,
-							Ex.getLineNumber(), Ex.getColumnNumber() }), Ex);
+			throw new IllegalDocException(Msg.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX_AT, path,
+					Ex.getLineNumber(), Ex.getColumnNumber()), Ex);
 		} catch (SAXException Ex) {
-			throw new IllegalDocException(Messages.bind(
+			throw new IllegalDocException(Msg.bind(
 					Messages.DocEx_INVALID_XML_SYNTAX, path), Ex);
 		} catch (CharConversionException Ex) {
-			throw new IllegalDocException(Messages.bind(
+			throw new IllegalDocException(Msg.bind(
 					Messages.DocEx_INVALID_XML_DATA, path), Ex);
 		}
 		validateContent();
@@ -132,15 +133,14 @@ public class Doc {
 		try {
 			setDocument(DocHelper.parse(xml));
 		} catch (SAXParseException Ex) {
-			throw new IllegalDocException(Messages.bind(
-					Messages.DocEx_INVALID_XML_SYNTAX_AT,
-					new Object[] { "inline content", Ex.getLineNumber(),
-							Ex.getColumnNumber() }), Ex);
+			throw new IllegalDocException(Msg.bind(
+					Messages.DocEx_INVALID_XML_SYNTAX_AT, "inline content",
+					Ex.getLineNumber(), Ex.getColumnNumber()), Ex);
 		} catch (SAXException Ex) {
-			throw new IllegalDocException(Messages.bind(
+			throw new IllegalDocException(Msg.bind(
 					Messages.DocEx_INVALID_XML_SYNTAX, "inline content"), Ex);
 		} catch (CharConversionException Ex) {
-			throw new IllegalDocException(Messages.bind(
+			throw new IllegalDocException(Msg.bind(
 					Messages.DocEx_INVALID_XML_DATA, "inline content"), Ex);
 		}
 		validateContent();

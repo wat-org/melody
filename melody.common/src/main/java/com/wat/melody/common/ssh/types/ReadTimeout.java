@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -58,7 +59,7 @@ public class ReadTimeout implements Timeout {
 		try {
 			_timeout = new GenericTimeout(iTimeout);
 		} catch (IllegalTimeoutException Ex) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.ReadTimeoutEx_INVALID, iTimeout), Ex);
 		}
 	}
@@ -78,7 +79,7 @@ public class ReadTimeout implements Timeout {
 		try {
 			_timeout = new GenericTimeout(sTimeout);
 		} catch (IllegalTimeoutException Ex) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.ReadTimeoutEx_INVALID, sTimeout), Ex);
 		}
 	}

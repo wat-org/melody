@@ -1,6 +1,7 @@
 package com.wat.melody.cloud.disk;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -9,25 +10,27 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
  */
 public class DiskDeviceName {
 
-	public static final String DISK_DEVICE_NAME_PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
+	public static final String PATTERN = "/dev/[sv]d[a-z]+[1-9]*";
 
 	/**
 	 * <p>
-	 * Create a new {@link DiskDeviceName}, with the given name.
+	 * Convert the given name in a {@link DiskDeviceName}.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
 	 * @param name
-	 *            is the name to assign to this object.
+	 *            is the name to convert.
 	 * 
-	 * @throws IllegalDiskDeviceNameException
-	 *             if the given name is invalid.
+	 * @return a {@link DiskDeviceName}, which is equal to the given
+	 *         <tt>String</tt>.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDiskDeviceNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static DiskDeviceName parseString(String name)
 			throws IllegalDiskDeviceNameException {
@@ -41,18 +44,17 @@ public class DiskDeviceName {
 	 * Create a new {@link DiskDeviceName}, with the given name.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
 	 * @param name
 	 *            is the name to assign to this object.
 	 * 
-	 * @throws IllegalDiskDeviceNameException
-	 *             if the given name is invalid.
 	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDiskDeviceNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public DiskDeviceName(String name) throws IllegalDiskDeviceNameException {
 		setValue(name);
@@ -84,39 +86,18 @@ public class DiskDeviceName {
 		return _value;
 	}
 
-	/**
-	 * <p>
-	 * Set the name of this object.
-	 * </p>
-	 * 
-	 * <ul>
-	 * <li>The given name should match the pattern
-	 * {@link #DISK_DEVICE_NAME_PATTERN} ;</li>
-	 * </ul>
-	 * 
-	 * @param name
-	 *            is the name to assign to this object.
-	 * 
-	 * @return the name of this object before this call.
-	 * 
-	 * @throws IllegalDiskDeviceNameException
-	 *             if the given name is invalid.
-	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
-	 */
 	private String setValue(String name) throws IllegalDiskDeviceNameException {
 		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a String (a linux Disk Device name)");
 		}
 		if (name.trim().length() == 0) {
-			throw new IllegalDiskDeviceNameException(Messages.bind(
+			throw new IllegalDiskDeviceNameException(Msg.bind(
 					Messages.DiskDeviceNameEx_EMPTY, name));
 		}
-		if (!name.matches("^" + DISK_DEVICE_NAME_PATTERN + "$")) {
-			throw new IllegalDiskDeviceNameException(Messages.bind(
-					Messages.DiskDeviceNameEx_INVALID, name,
-					DISK_DEVICE_NAME_PATTERN));
+		if (!name.matches("^" + PATTERN + "$")) {
+			throw new IllegalDiskDeviceNameException(Msg.bind(
+					Messages.DiskDeviceNameEx_INVALID, name, PATTERN));
 		}
 		String previous = getValue();
 		_value = name;

@@ -13,6 +13,7 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
@@ -127,7 +128,7 @@ public class SshManagedSession implements ISshSession {
 		try {
 			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
-			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_CNX_USER_FAIL,
+			log.trace(Msg.bind(Messages.SshMgmtCnxMsg_CNX_USER_FAIL,
 					getUserDatas().getLogin()));
 			connectAsMasterUserAndDeployKey();
 			openUserSession();
@@ -200,7 +201,7 @@ public class SshManagedSession implements ISshSession {
 			openSession(getManagementUserDatas());
 			log.trace(Messages.SshMgmtCnxMsg_OPENED);
 		} catch (InvalidCredentialException Ex) {
-			throw new InvalidCredentialException(Messages.bind(
+			throw new InvalidCredentialException(Msg.bind(
 					Messages.SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS,
 					getManagementUserDatas()), Ex);
 		}
@@ -217,7 +218,7 @@ public class SshManagedSession implements ISshSession {
 	private void deployKey() throws SshSessionException, InterruptedException {
 		String k = getKey();
 		String dkc = createDeployKeyCommand(k);
-		log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYING, dkc,
+		log.trace(Msg.bind(Messages.SshMgmtCnxMsg_DEPLOYING, dkc,
 				getUserDatas().getLogin()));
 		OutputStream errStream = new ByteArrayOutputStream();
 		int res = -1;
@@ -266,16 +267,16 @@ public class SshManagedSession implements ISshSession {
 			throws SshSessionException {
 		String login = getUserDatas().getLogin();
 		if (res == 0) {
-			log.trace(Messages.bind(Messages.SshMgmtCnxMsg_DEPLOYED, login));
+			log.trace(Msg.bind(Messages.SshMgmtCnxMsg_DEPLOYED, login));
 			return;
 		}
 		String msg = null;
 		switch (res) {
 		case 96:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, login);
 			break;
 		case 97:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_NO_SUDO, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_SUDO, login);
 			break;
 		case 98:
 			throw new RuntimeException("BUG during the construction of CMD."
@@ -284,29 +285,29 @@ public class SshManagedSession implements ISshSession {
 			throw new RuntimeException("BUG during the construction of KEY."
 					+ "Please report this.");
 		case 100:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_USERADD_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_USERADD_FAIL, login);
 			break;
 		case 101:
 			msg = Messages.SshMgmtCnxEx_UMASK_FAIL;
 			break;
 		case 102:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_MKDIR_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_MKDIR_FAIL, login);
 		case 103:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, login);
 			break;
 		case 104:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, login);
 			break;
 		case 105:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, login);
 			break;
 		case 106:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_ADD_KEY_FAIL, login, k);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_ADD_KEY_FAIL, login, k);
 			break;
 		case 107:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_SELIUNX_FAIL, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_SELIUNX_FAIL, login);
 		default:
-			msg = Messages.bind(Messages.SshMgmtCnxEx_DEPLOY_FAIL, login, k);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_DEPLOY_FAIL, login, k);
 			break;
 		}
 		SshSessionException cause = null;

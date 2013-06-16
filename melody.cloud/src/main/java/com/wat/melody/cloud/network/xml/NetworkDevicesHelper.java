@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -190,7 +191,7 @@ public abstract class NetworkDevicesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 	}
@@ -252,7 +253,7 @@ public abstract class NetworkDevicesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
@@ -260,7 +261,7 @@ public abstract class NetworkDevicesHelper {
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.NetMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					Msg.bind(Messages.NetMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}

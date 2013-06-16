@@ -283,7 +283,6 @@ public class ForeachThread implements Runnable {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link PropertySet} is <tt>null</tt>.
-	 * 
 	 */
 	private void setPropertiesSet(PropertySet ps) {
 		if (ps == null) {
@@ -308,7 +307,6 @@ public class ForeachThread implements Runnable {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Foreach} is <tt>null</tt>.
-	 * 
 	 */
 	private Foreach setForeach(Foreach p) {
 		if (p == null) {

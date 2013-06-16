@@ -1,5 +1,6 @@
 package com.wat.melody.common.network;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalPortException;
 
 /**
@@ -83,12 +84,12 @@ public class Port {
 
 	private int _value;
 
-	public Port(String sPort) throws IllegalPortException {
-		setValue(sPort);
+	public Port(String port) throws IllegalPortException {
+		setValue(port);
 	}
 
-	public Port(int iPort) throws IllegalPortException {
-		setValue(iPort);
+	public Port(int port) throws IllegalPortException {
+		setValue(port);
 	}
 
 	@Override
@@ -117,35 +118,35 @@ public class Port {
 		return _value;
 	}
 
-	private int setValue(int iPort) throws IllegalPortException {
-		if (iPort < _MIN) {
-			throw new IllegalPortException(Messages.bind(Messages.PortEx_LOW,
-					new Object[] { iPort, _MIN, _MAX }));
-		} else if (iPort > _MAX) {
-			throw new IllegalPortException(Messages.bind(Messages.PortEx_HIGH,
-					new Object[] { iPort, _MIN, _MAX }));
+	private int setValue(int port) throws IllegalPortException {
+		if (port < _MIN) {
+			throw new IllegalPortException(Msg.bind(Messages.PortEx_LOW, port,
+					_MIN, _MAX));
+		} else if (port > _MAX) {
+			throw new IllegalPortException(Msg.bind(Messages.PortEx_HIGH, port,
+					_MIN, _MAX));
 		}
 		int previous = getValue();
-		_value = iPort;
+		_value = port;
 		return previous;
 	}
 
-	private int setValue(String sPort) throws IllegalPortException {
-		if (sPort == null) {
+	private int setValue(String port) throws IllegalPortException {
+		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Port.class.getCanonicalName() + ").");
 		}
-		if (sPort.trim().length() == 0) {
-			throw new IllegalPortException(Messages.bind(Messages.PortEx_EMPTY,
-					sPort));
+		if (port.trim().length() == 0) {
+			throw new IllegalPortException(
+					Msg.bind(Messages.PortEx_EMPTY, port));
 		}
 		int iPort = 0;
 		try {
-			iPort = Integer.parseInt(sPort);
+			iPort = Integer.parseInt(port);
 		} catch (NumberFormatException Ex) {
-			throw new IllegalPortException(Messages.bind(Messages.PortEx_NAN,
-					new Object[] { sPort, _MIN, _MAX }));
+			throw new IllegalPortException(Msg.bind(Messages.PortEx_NAN, port,
+					_MIN, _MAX));
 		}
 		return setValue(iPort);
 	}

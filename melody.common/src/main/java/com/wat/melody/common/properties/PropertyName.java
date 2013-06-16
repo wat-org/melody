@@ -1,5 +1,6 @@
 package com.wat.melody.common.properties;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.exception.IllegalPropertyNameException;
 
 /**
@@ -20,13 +21,14 @@ public class PropertyName {
 	 * @return a {@link PropertyName} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalPropertyNameException
-	 *             if the given <tt>String</tt> is empty.
-	 * @throws IllegalPropertyNameException
-	 *             if the given <tt>String</tt> doesn't match the pattern
-	 *             {@link #PATTERN}.
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPropertyNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static PropertyName parseString(String propertyName)
 			throws IllegalPropertyNameException {
@@ -79,14 +81,15 @@ public class PropertyName {
 					+ ".");
 		}
 		if (propertyName.trim().length() == 0) {
-			throw new IllegalPropertyNameException(Messages.bind(
+			throw new IllegalPropertyNameException(Msg.bind(
 					Messages.PropertyNameEx_EMPTY, propertyName));
 		} else if (!propertyName.matches("^" + PATTERN + "$")) {
-			throw new IllegalPropertyNameException(Messages.bind(
+			throw new IllegalPropertyNameException(Msg.bind(
 					Messages.PropertyNameEx_INVALID, propertyName, PATTERN));
 		}
 		String previous = getValue();
 		_value = propertyName;
 		return previous;
 	}
+
 }

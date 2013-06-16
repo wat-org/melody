@@ -10,6 +10,7 @@ import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KnownHosts;
 import com.jcraft.jsch.UserInfo;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.IKnownHostsRepository;
@@ -64,7 +65,7 @@ public class KnownHostsRepository implements IKnownHostsRepository {
 			kh.setKnownHosts(khrp.getPath());
 			_kh = kh;
 		} catch (JSchException Ex) {
-			throw new KnownHostsException(Messages.bind(
+			throw new KnownHostsException(Msg.bind(
 					Messages.KnownHostsEx_INVALID_CONTENT, khrp), Ex);
 		}
 	}

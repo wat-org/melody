@@ -15,6 +15,7 @@ import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivator;
 import com.wat.melody.cloud.network.activation.winrm.xml.WinRmNetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -52,8 +53,8 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 					+ ".");
 		}
 		try {
-			log.debug(Messages.bind(Messages.NetworkActivatorMsg_INTRO,
-					DocHelper.getNodeLocation(instanceElmt).toFullString()));
+			log.debug(Msg.bind(Messages.NetworkActivatorMsg_INTRO, DocHelper
+					.getNodeLocation(instanceElmt).toFullString()));
 
 			NetworkActivationProtocol ap = NetworkActivationHelper
 					.findNetworkActivationProtocol(instanceElmt);
@@ -76,11 +77,11 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 						+ "Source code has certainly been modified and a "
 						+ "bug have been introduced.");
 			}
-			log.debug(Messages.bind(Messages.NetworkActivatorMsg_RESUME,
+			log.debug(Msg.bind(Messages.NetworkActivatorMsg_RESUME,
 					activator.getNetworkActivationDatas()));
 			return activator;
 		} catch (NodeRelatedException Ex) {
-			log.debug(new MelodyException(Messages.bind(
+			log.debug(new MelodyException(Msg.bind(
 					Messages.NetworkActivatorMsg_CREATION_FAILED, DocHelper
 							.getNodeLocation(instanceElmt).toFullString()), Ex)
 					.toString());

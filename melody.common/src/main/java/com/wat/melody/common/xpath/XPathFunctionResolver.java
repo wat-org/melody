@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathFunction;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 
@@ -52,7 +53,8 @@ public class XPathFunctionResolver implements
 		}
 		if (properties == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid list of properties's name.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ "[] (some properties's name.");
 		}
 
 		for (String property : properties) {
@@ -76,7 +78,7 @@ public class XPathFunctionResolver implements
 			int funcArity = loadFunctionArity(ps, key);
 			addDefinition(funcName, funcNamespace, funcClass, funcArity);
 		} catch (XPathFunctionResolverLoadingException Ex) {
-			throw new XPathFunctionResolverLoadingException(Messages.bind(
+			throw new XPathFunctionResolverLoadingException(Msg.bind(
 					Messages.XPathResolver_INVALID_FUNCTION_DEFINITION, key),
 					Ex);
 		}
@@ -97,7 +99,7 @@ public class XPathFunctionResolver implements
 				validateFunctionName(functionName);
 			} catch (XPathFunctionResolverLoadingException Ex) {
 				throw new XPathFunctionResolverLoadingException(
-						Messages.bind(
+						Msg.bind(
 								Messages.XPathResolver_INVALID_FUNCTION_NAME_DEFINITION,
 								key + SUFFIX_NAME), Ex);
 			}
@@ -114,7 +116,7 @@ public class XPathFunctionResolver implements
 			throws XPathFunctionResolverLoadingException {
 		if (functionName.trim().length() == 0
 				|| !functionName.matches("^" + FUNCTION_NAME_PATTERN + "$")) {
-			throw new XPathFunctionResolverLoadingException(Messages.bind(
+			throw new XPathFunctionResolverLoadingException(Msg.bind(
 					Messages.XPathResolver_INVALID_FUNCTION_NAME, functionName,
 					FUNCTION_NAME_PATTERN));
 		}
@@ -124,20 +126,20 @@ public class XPathFunctionResolver implements
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_NAMESPACE_URI)) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_MISSING_FUNCTION_NAMESPACE_URI,
 						key + SUFFIX_NAMESPACE_URI));
 			}
 			String namespace = ps.get(key + SUFFIX_NAMESPACE_URI);
 			if (namespace.trim().length() == 0) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_NAMESPACE_URI,
 						namespace));
 			}
 			return namespace;
 		} catch (XPathFunctionResolverLoadingException Ex) {
 			throw new XPathFunctionResolverLoadingException(
-					Messages.bind(
+					Msg.bind(
 							Messages.XPathResolver_INVALID_FUNCTION_NAMESPACE_URI_DEFINITION,
 							key + SUFFIX_NAMESPACE_URI), Ex);
 		}
@@ -148,13 +150,13 @@ public class XPathFunctionResolver implements
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_CLASS)) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_MISSING_FUNCTION_CLASS, key
 								+ SUFFIX_CLASS));
 			}
 			String classname = ps.get(key + SUFFIX_CLASS);
 			if (classname.trim().length() == 0) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_CLASS_EMPTY,
 						classname));
 			}
@@ -162,11 +164,11 @@ public class XPathFunctionResolver implements
 			try {
 				c = (Class<? extends XPathFunction>) Class.forName(classname);
 			} catch (ClassNotFoundException Ex) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_CLASS_CNF,
 						classname));
 			} catch (NoClassDefFoundError Ex) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_CLASS_NCDF,
 						classname, Ex.getMessage().replaceAll("/", ".")));
 			}
@@ -174,17 +176,17 @@ public class XPathFunctionResolver implements
 			try {
 				function = c.newInstance();
 			} catch (InstantiationException | IllegalAccessException Ex) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_CLASS_IA,
 						classname));
 			} catch (ClassCastException Ex) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_CLASS_CC,
 						classname, XPathFunction.class.getCanonicalName()));
 			}
 			return function;
 		} catch (XPathFunctionResolverLoadingException Ex) {
-			throw new XPathFunctionResolverLoadingException(Messages.bind(
+			throw new XPathFunctionResolverLoadingException(Msg.bind(
 					Messages.XPathResolver_INVALID_FUNCTION_CLASS_DEFINITION,
 					key + SUFFIX_CLASS), Ex);
 		}
@@ -194,29 +196,29 @@ public class XPathFunctionResolver implements
 			throws XPathFunctionResolverLoadingException {
 		try {
 			if (!ps.containsKey(key + SUFFIX_ARITY)) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_MISSING_FUNCTION_ARITY, key
 								+ SUFFIX_ARITY));
 			}
 			String sArity = ps.get(key + SUFFIX_ARITY);
 			if (sArity.trim().length() == 0) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_ARITY, sArity));
 			}
 			int arity = 0;
 			try {
 				arity = Integer.parseInt(sArity);
 			} catch (NumberFormatException Ex) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_ARITY, sArity));
 			}
 			if (arity < 0) {
-				throw new XPathFunctionResolverLoadingException(Messages.bind(
+				throw new XPathFunctionResolverLoadingException(Msg.bind(
 						Messages.XPathResolver_INVALID_FUNCTION_ARITY, sArity));
 			}
 			return arity;
 		} catch (XPathFunctionResolverLoadingException Ex) {
-			throw new XPathFunctionResolverLoadingException(Messages.bind(
+			throw new XPathFunctionResolverLoadingException(Msg.bind(
 					Messages.XPathResolver_INVALID_FUNCTION_ARITY_DEFINITION,
 					key + SUFFIX_ARITY), Ex);
 		}
@@ -230,7 +232,8 @@ public class XPathFunctionResolver implements
 			List<XPathFunctionDefinition> funcsDef) {
 		if (funcsDef == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<XPathFunctionDefinition>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ XPathFunctionDefinition.class.getCanonicalName() + ">.");
 		}
 		List<XPathFunctionDefinition> previous = getXPathFunctionsDefinition();
 		_funcDefinition = funcsDef;

@@ -13,6 +13,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -153,23 +154,23 @@ public abstract class FilteredDocHelper {
 			nl = XPathExpander.evaluateAsNodeList(xpath, n.getOwnerDocument()
 					.getFirstChild());
 		} catch (XPathExpressionException Ex) {
-			throw new NodeRelatedException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Msg.bind(
 					Messages.HeritAttrEx_INVALID_XPATH, xpath), Ex);
 		}
 		if (nl.getLength() > 1) {
-			ConsolidatedException causes = new ConsolidatedException(
-					Messages.bind(Messages.HeritAttrEx_MATCH_RESUME, xpath));
+			ConsolidatedException causes = new ConsolidatedException(Msg.bind(
+					Messages.HeritAttrEx_MATCH_RESUME, xpath));
 			for (Node node : new NodeCollection(nl)) {
 				causes.addCause(new NodeRelatedException(node,
 						Messages.HeritAttrEx_MATCH));
 			}
 			throw new NodeRelatedException(herit, causes);
 		} else if (nl.getLength() == 0) {
-			throw new NodeRelatedException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Msg.bind(
 					Messages.HeritAttrEx_NO_MATCH, xpath));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(herit, Messages.bind(
+			throw new NodeRelatedException(herit, Msg.bind(
 					Messages.HeritAttrEx_DONT_MATCH_ELEMENT, xpath,
 					DocHelper.parseNodeType(nl.item(0))));
 		}
@@ -177,7 +178,7 @@ public abstract class FilteredDocHelper {
 
 		if (circle != null) {
 			if (circle.contains(parent)) {
-				throw new NodeRelatedException(herit, Messages.bind(
+				throw new NodeRelatedException(herit, Msg.bind(
 						Messages.HeritAttrEx_CIRCULAR_REF,
 						printCircularReferences(circle)));
 			}

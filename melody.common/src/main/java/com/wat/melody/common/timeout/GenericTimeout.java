@@ -1,5 +1,6 @@
 package com.wat.melody.common.timeout;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
@@ -111,7 +112,7 @@ public class GenericTimeout implements Timeout {
 
 	private long setTimeout(long timeout) throws IllegalTimeoutException {
 		if (timeout < 0) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.TimeoutEx_NEGATIVE, timeout));
 		}
 		long previous = getTimeout();
@@ -126,20 +127,20 @@ public class GenericTimeout implements Timeout {
 					+ Timeout.class.getCanonicalName() + ").");
 		}
 		if (timeout.trim().length() == 0) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.TimeoutEx_EMPTY, timeout));
 		}
 		try {
 			return setTimeout(Long.parseLong(timeout));
 		} catch (NumberFormatException Ex) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.TimeoutEx_NOT_A_NUMBER, timeout));
 		}
 	}
 
 	/**
 	 * @param ratio
-	 *            represents a ratiu.
+	 *            represents a ratio.
 	 * 
 	 * @return a {@link GenericTimeout} object, which is equal to this object's
 	 *         timeout value multiplied by the given ratio.

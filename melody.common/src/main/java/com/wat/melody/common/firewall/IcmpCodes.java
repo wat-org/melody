@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodeException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodesException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -87,8 +88,8 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIcmpCodesException(Messages.bind(
-					Messages.IcmpCodesEx_EMPTY, icmpCodes));
+			throw new IllegalIcmpCodesException(Msg.bind(
+					Messages.IcmpCodesEx_EMPTY, (Object[]) icmpCodes));
 		}
 	}
 
@@ -103,7 +104,7 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 		for (String icmpCode : sIcmpCodes.split(CODES_SEPARATOR)) {
 			icmpCode = icmpCode.trim();
 			if (icmpCode.length() == 0) {
-				throw new IllegalIcmpCodesException(Messages.bind(
+				throw new IllegalIcmpCodesException(Msg.bind(
 						Messages.IcmpCodesEx_EMPTY_CODE, sIcmpCodes));
 			}
 			if (icmpCode.equalsIgnoreCase(_ALL)) {
@@ -113,12 +114,12 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 			try {
 				add(IcmpCode.parseString(icmpCode));
 			} catch (IllegalIcmpCodeException Ex) {
-				throw new IllegalIcmpCodesException(Messages.bind(
+				throw new IllegalIcmpCodesException(Msg.bind(
 						Messages.IcmpCodesEx_INVALID_CODE, sIcmpCodes), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIcmpCodesException(Messages.bind(
+			throw new IllegalIcmpCodesException(Msg.bind(
 					Messages.IcmpCodesEx_EMPTY, sIcmpCodes));
 		}
 	}

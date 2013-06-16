@@ -14,6 +14,7 @@ import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -73,8 +74,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 		setInstanceId(instanceId);
 		if (!AwsEc2Cloud.waitUntilInstanceStatusBecomes(getConnection(),
 				instanceId, InstanceState.RUNNING, createTimeout, 10000)) {
-			throw new OperationException(Messages.bind(
-					Messages.CreateEx_TIMEOUT, instanceId, createTimeout));
+			throw new OperationException(Msg.bind(Messages.CreateEx_TIMEOUT,
+					instanceId, createTimeout));
 		}
 		return instanceId;
 	}
@@ -84,9 +85,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			InterruptedException {
 		if (!AwsEc2Cloud.deleteAwsInstance(getConnection(), getInstance(),
 				destroyTimeout)) {
-			throw new OperationException(
-					Messages.bind(Messages.DestroyEx_TIMEOUT, getInstanceId(),
-							destroyTimeout));
+			throw new OperationException(Msg.bind(Messages.DestroyEx_TIMEOUT,
+					getInstanceId(), destroyTimeout));
 		}
 	}
 
@@ -95,8 +95,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			InterruptedException {
 		if (!AwsEc2Cloud.startAwsInstance(getConnection(), getInstanceId(),
 				startTimeout)) {
-			throw new OperationException(Messages.bind(
-					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
+			throw new OperationException(Msg.bind(Messages.StartEx_TIMEOUT,
+					getInstanceId(), startTimeout));
 		}
 	}
 
@@ -105,7 +105,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			InterruptedException {
 		if (!AwsEc2Cloud.stopAwsInstance(getConnection(), getInstanceId(),
 				stopTimeout)) {
-			throw new OperationException(Messages.bind(Messages.StopEx_TIMEOUT,
+			throw new OperationException(Msg.bind(Messages.StopEx_TIMEOUT,
 					getInstanceId(), stopTimeout));
 		}
 	}
@@ -115,9 +115,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			throws OperationException, InterruptedException {
 		if (!AwsEc2Cloud.resizeAwsInstance(getConnection(), getInstanceId(),
 				targetType)) {
-			throw new OperationException(Messages.bind(
-					Messages.ResizeEx_FAILED, getInstanceId(),
-					getInstanceType(), targetType));
+			throw new OperationException(Msg.bind(Messages.ResizeEx_FAILED,
+					getInstanceId(), getInstanceType(), targetType));
 		}
 	}
 
@@ -133,7 +132,7 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			AwsEc2CloudDisk.detachAndDeleteDiskDevices(getConnection(),
 					getInstance(), toRemove);
 		} catch (WaitVolumeStatusException Ex) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateDiskDevEx_DETACH, Ex.getVolumeId(),
 					Ex.getDisk(), Ex.getTimeout()), Ex);
 		}
@@ -147,11 +146,11 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			AwsEc2CloudDisk.createAndAttachDiskDevices(getConnection(),
 					getInstanceId(), sAZ, toAdd);
 		} catch (WaitVolumeStatusException Ex) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateDiskDevEx_CREATE, Ex.getVolumeId(),
 					Ex.getDisk(), Ex.getTimeout()), Ex);
 		} catch (WaitVolumeAttachmentStatusException Ex) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateDiskDevEx_ATTACH, Ex.getVolumeId(),
 					Ex.getDisk(), Ex.getTimeout()), Ex);
 		}

@@ -9,6 +9,7 @@ import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
 import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
 import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
@@ -83,7 +84,7 @@ public abstract class NetworkActivationDatasLoader {
 					.getNetworkActivationDeviceElement(instanceElmt, mgmtElmt);
 			String attr = NetworkActivationHelper
 					.getNetworkActivationHostSelector(mgmtElmt);
-			throw new NodeRelatedException(netElmt, Messages.bind(
+			throw new NodeRelatedException(netElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr));
 		}
 		return host;

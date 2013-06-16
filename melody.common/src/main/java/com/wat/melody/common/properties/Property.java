@@ -1,6 +1,7 @@
 package com.wat.melody.common.properties;
 
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.properties.exception.IllegalPropertyNameException;
 
@@ -12,7 +13,7 @@ import com.wat.melody.common.properties.exception.IllegalPropertyNameException;
 public class Property {
 
 	/**
-	 * The 'Property' XML element used in the Sequence Descriptor
+	 * The element's name.
 	 */
 	public static final String PROPERTY = "property";
 
@@ -41,26 +42,25 @@ public class Property {
 	 * Convert the given <tt>String</tt> to a {@link Property} object.
 	 * </p>
 	 * 
-	 * @param v
+	 * @param property
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link Property} object, whose 'name' is equal to the Name part
 	 *         of the given <tt>String</tt> and whose 'value' is equal to the
 	 *         Value part of the given <tt>String</tt>.
 	 * 
-	 * @throws IllegalPropertyException
-	 *             if the given <tt>String</tt> doesn't respect the pattern
-	 *             {@link #PATTERN}.
-	 * @throws IllegalPropertyException
-	 *             if the Name part of the given <tt>String</tt> is empty.
-	 * @throws IllegalPropertyException
-	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPropertyException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't respect the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
-	public static Property parseProperty(String v)
+	public static Property parseProperty(String property)
 			throws IllegalPropertyException {
-		return new Property(v);
+		return new Property(property);
 	}
 
 	private PropertyName _name = null;
@@ -81,15 +81,17 @@ public class Property {
 	 * @param value
 	 *            is the value associated to the given name.
 	 * 
-	 * @throws IllegalPropertyException
-	 *             if the given name doesn't respect the pattern
-	 *             {@link #PATTERN}.
-	 * @throws IllegalPropertyException
-	 *             if the given name is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given value is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given name is <tt>null</tt> ;</li>
+	 *             <li>if the given value is <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IllegalPropertyException
+	 *             <ul>
+	 *             <li>if the given name is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't respect the pattern
+	 *             {@link PropertyName#PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public Property(String name, String value) throws IllegalPropertyException {
 		this();
@@ -105,15 +107,17 @@ public class Property {
 	 * @param comment
 	 *            is a comment associated to the given name.
 	 * 
-	 * @throws IllegalPropertyException
-	 *             if the given name doesn't respect the pattern
-	 *             {@link #PATTERN}.
-	 * @throws IllegalPropertyException
-	 *             if the given name is empty.
 	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given value is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given name is <tt>null</tt> ;</li>
+	 *             <li>if the given value is <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IllegalPropertyException
+	 *             <ul>
+	 *             <li>if the given name is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't respect the pattern
+	 *             {@link PropertyName#PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public Property(String name, String value, String comment)
 			throws IllegalPropertyException {
@@ -130,9 +134,10 @@ public class Property {
 	 *            is a comment associated to the given name.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if the given value is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given name is <tt>null</tt> ;</li>
+	 *             <li>if the given value is <tt>null</tt> ;</li>
+	 *             </ul>
 	 */
 	public Property(PropertyName name, String value, String comment) {
 		this();
@@ -159,39 +164,38 @@ public class Property {
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param v
+	 * @param property
 	 *            is the <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link Property} object, whose 'name' is equal to the Name part
 	 *         of the given <tt>String</tt> and whose 'value' is equal to the
 	 *         Value part of the given <tt>String</tt>.
 	 * 
-	 * @throws IllegalPropertyException
-	 *             if the given <tt>String</tt> doesn't respect the pattern
-	 *             {@link #PATTERN}.
-	 * @throws IllegalPropertyException
-	 *             if the Name part of the given <tt>String</tt> is empty.
-	 * @throws IllegalPropertyException
-	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalPropertyException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't respect the pattern
+	 *             {@link PropertyName#PATTERN} ;</li>
+	 *             </ul>
 	 */
-	public Property(String v) throws IllegalPropertyException {
+	public Property(String property) throws IllegalPropertyException {
 		this();
-		if (v == null) {
+		if (property == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String.");
 		}
-		if (v.trim().length() == 0) {
-			throw new IllegalPropertyException(Messages.bind(
-					Messages.PropertyEx_EMPTY, v));
-		} else if (!v.matches("^" + PATTERN + "$")) {
-			throw new IllegalPropertyException(Messages.bind(
-					Messages.PropertyEx_INVALID, v, PATTERN));
+		if (property.trim().length() == 0) {
+			throw new IllegalPropertyException(Msg.bind(
+					Messages.PropertyEx_EMPTY, property));
+		} else if (!property.matches("^" + PATTERN + "$")) {
+			throw new IllegalPropertyException(Msg.bind(
+					Messages.PropertyEx_INVALID, property, PATTERN));
 		}
-		int split = v.indexOf('=');
-		setName(v.substring(0, split));
-		setValue(v.substring(split + 1));
+		int split = property.indexOf('=');
+		setName(property.substring(0, split));
+		setValue(property.substring(split + 1));
 	}
 
 	@Override
@@ -222,24 +226,24 @@ public class Property {
 	}
 
 	@Attribute(name = NAME_ATTR, mandatory = true)
-	public PropertyName setName(PropertyName n) {
-		if (n == null) {
+	public PropertyName setName(PropertyName name) {
+		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ PropertyName.class.getCanonicalName() + ".");
 		}
 		PropertyName previous = getName();
-		_name = n;
+		_name = name;
 		return previous;
 	}
 
-	public PropertyName setName(String n) throws IllegalPropertyException {
-		if (n == null) {
+	public PropertyName setName(String name) throws IllegalPropertyException {
+		if (name == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a PropertyName).");
 		}
 		try {
-			return setName(PropertyName.parseString(n));
+			return setName(PropertyName.parseString(name));
 		} catch (IllegalPropertyNameException Ex) {
 			throw new IllegalPropertyException(Ex);
 		}
@@ -250,13 +254,13 @@ public class Property {
 	}
 
 	@Attribute(name = VALUE_ATTR, mandatory = true)
-	public String setValue(String v) {
-		if (v == null) {
+	public String setValue(String value) {
+		if (value == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a PropertyValue).");
 		}
 		String previous = getValue();
-		_value = v;
+		_value = value;
 		return previous;
 	}
 

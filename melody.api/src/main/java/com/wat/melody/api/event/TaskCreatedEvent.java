@@ -9,9 +9,9 @@ import com.wat.melody.api.ITask;
  */
 public class TaskCreatedEvent extends AbstractEvent {
 
-	private String msTaskName;
-	private State miState;
-	private Throwable moDetails;
+	private String _taskName;
+	private State _state;
+	private Throwable _details;
 
 	/**
 	 * We can't pass the {@link ITask} object, because when the creation failed,
@@ -32,7 +32,7 @@ public class TaskCreatedEvent extends AbstractEvent {
 	}
 
 	public String getTaskName() {
-		return msTaskName;
+		return _taskName;
 	}
 
 	private String setTaskName(String v) {
@@ -41,11 +41,11 @@ public class TaskCreatedEvent extends AbstractEvent {
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		return msTaskName = v;
+		return _taskName = v;
 	}
 
 	public State getState() {
-		return miState;
+		return _state;
 	}
 
 	private void setState(State s) {
@@ -53,20 +53,20 @@ public class TaskCreatedEvent extends AbstractEvent {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + State.class.getCanonicalName() + ".");
 		}
-		miState = s;
+		_state = s;
 	}
 
 	public Throwable getDetails() {
-		return moDetails;
+		return _details;
 	}
 
 	private void setDetails(Throwable s) {
-		if (s == null && miState != State.SUCCESS) {
+		if (s == null && _state != State.SUCCESS) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Throwable.class.getCanonicalName()
 					+ ".");
 		}
-		moDetails = s;
+		_details = s;
 	}
 
 }

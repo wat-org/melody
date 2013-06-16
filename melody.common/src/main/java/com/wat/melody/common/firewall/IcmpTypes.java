@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypesException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -87,8 +88,8 @@ public class IcmpTypes extends LinkedHashSet<IcmpType> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIcmpTypesException(Messages.bind(
-					Messages.IcmpTypesEx_EMPTY, icmpTypes));
+			throw new IllegalIcmpTypesException(Msg.bind(
+					Messages.IcmpTypesEx_EMPTY, (Object[]) icmpTypes));
 		}
 	}
 
@@ -103,7 +104,7 @@ public class IcmpTypes extends LinkedHashSet<IcmpType> {
 		for (String icmpType : sIcmpTypes.split(TYPES_SEPARATOR)) {
 			icmpType = icmpType.trim();
 			if (icmpType.length() == 0) {
-				throw new IllegalIcmpTypesException(Messages.bind(
+				throw new IllegalIcmpTypesException(Msg.bind(
 						Messages.IcmpTypesEx_EMPTY_TYPE, sIcmpTypes));
 			}
 			if (icmpType.equalsIgnoreCase(_ALL)) {
@@ -113,12 +114,12 @@ public class IcmpTypes extends LinkedHashSet<IcmpType> {
 			try {
 				add(IcmpType.parseString(icmpType));
 			} catch (IllegalIcmpTypeException Ex) {
-				throw new IllegalIcmpTypesException(Messages.bind(
+				throw new IllegalIcmpTypesException(Msg.bind(
 						Messages.IcmpTypesEx_INVALID_TYPE, sIcmpTypes), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIcmpTypesException(Messages.bind(
+			throw new IllegalIcmpTypesException(Msg.bind(
 					Messages.IcmpTypesEx_EMPTY, sIcmpTypes));
 		}
 	}

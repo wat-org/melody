@@ -19,17 +19,18 @@ public class Exec {
 	public static final String EXEC = "exec";
 
 	/**
-	 * The 'command' XML Attribute
+	 * Exec's attribute, which specifies the path of a script.
 	 */
 	public static final String FILE_ATTR = "file";
 
 	/**
-	 * The 'command' XML Attribute
+	 * Exec's attribute, which indicates if the script contains XPath Expression
+	 * to be resolved or not.
 	 */
 	public static final String TEMPLATE_ATTR = "template";
 
 	/**
-	 * The 'command' XML Attribute
+	 * Exec's attribute, which specifies the command.
 	 */
 	public static final String COMMAND_ATTR = "command";
 
@@ -73,7 +74,7 @@ public class Exec {
 	}
 
 	@Attribute(name = TEMPLATE_ATTR)
-	public boolean setTemplate(boolean c) throws IllegalFileException {
+	public boolean setTemplate(boolean c) {
 		boolean previous = getTemplate();
 		_template = c;
 		return previous;

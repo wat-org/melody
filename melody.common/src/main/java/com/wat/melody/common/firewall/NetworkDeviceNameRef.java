@@ -1,6 +1,7 @@
 package com.wat.melody.common.firewall;
 
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -108,13 +109,13 @@ public class NetworkDeviceNameRef {
 					+ NetworkDeviceNameRef.class.getCanonicalName() + ").");
 		}
 		if (netDevNameRef.trim().length() == 0) {
-			throw new IllegalNetworkDeviceNameRefException(Messages.bind(
+			throw new IllegalNetworkDeviceNameRefException(Msg.bind(
 					Messages.NetworkDeviceNameRefEx_EMPTY, netDevNameRef));
 		} else if (netDevNameRef.equalsIgnoreCase(_ALL)) {
 			_value = _ALL;
 			return previous;
 		} else if (!netDevNameRef.matches("^" + PATTERN + "$")) {
-			throw new IllegalNetworkDeviceNameRefException(Messages.bind(
+			throw new IllegalNetworkDeviceNameRefException(Msg.bind(
 					Messages.NetworkDeviceNameRefEx_INVALID, netDevNameRef,
 					PATTERN));
 		}

@@ -1,5 +1,6 @@
 package com.wat.melody.common.order;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.exception.IllegalOrderNameException;
 
 /**
@@ -17,14 +18,17 @@ public class OrderName {
 	 * @param sOrderName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link OrderName} object, whose equal to the given input
+	 * @return an {@link OrderName} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalOrderNameException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link OrderName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalOrderNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static OrderName parseString(String sOrderName)
 			throws IllegalOrderNameException {
@@ -75,10 +79,10 @@ public class OrderName {
 					+ OrderName.class.getCanonicalName() + ").");
 		}
 		if (sOrderName.trim().length() == 0) {
-			throw new IllegalOrderNameException(Messages.bind(
+			throw new IllegalOrderNameException(Msg.bind(
 					Messages.OrderNameEx_EMPTY, sOrderName));
 		} else if (!sOrderName.matches("^" + PATTERN + "$")) {
-			throw new IllegalOrderNameException(Messages.bind(
+			throw new IllegalOrderNameException(Msg.bind(
 					Messages.OrderNameEx_INVALID, sOrderName, PATTERN));
 		}
 		String previous = toString();

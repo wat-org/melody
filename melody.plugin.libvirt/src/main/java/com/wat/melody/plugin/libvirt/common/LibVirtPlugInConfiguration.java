@@ -14,6 +14,7 @@ import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.endpoint.ContextRoot;
 import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -140,7 +141,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		try {
 			setEndpointEnabled(ps.get(ENDPOINT_ENABLED));
 		} catch (LibVirtPlugInConfigurationException Ex) {
-			throw new LibVirtPlugInConfigurationException(Messages.bind(
+			throw new LibVirtPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_ENABLED), Ex);
 		}
 	}
@@ -153,7 +154,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		try {
 			setEndpointSecured(ps.get(ENDPOINT_SECURED));
 		} catch (LibVirtPlugInConfigurationException Ex) {
-			throw new LibVirtPlugInConfigurationException(Messages.bind(
+			throw new LibVirtPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_SECURED), Ex);
 		}
 	}
@@ -166,7 +167,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		try {
 			setEndpointListenIp(ps.get(ENDPOINT_LISTEN_IP));
 		} catch (LibVirtPlugInConfigurationException Ex) {
-			throw new LibVirtPlugInConfigurationException(Messages.bind(
+			throw new LibVirtPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_LISTEN_IP), Ex);
 		}
 	}
@@ -179,7 +180,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		try {
 			setEndpointListenPort(ps.get(ENDPOINT_LISTEN_PORT));
 		} catch (LibVirtPlugInConfigurationException Ex) {
-			throw new LibVirtPlugInConfigurationException(Messages.bind(
+			throw new LibVirtPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_LISTEN_PORT),
 					Ex);
 		}
@@ -193,7 +194,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		try {
 			setEndpointContextRoot(ps.get(ENDPOINT_CONTEXT_ROOT));
 		} catch (LibVirtPlugInConfigurationException Ex) {
-			throw new LibVirtPlugInConfigurationException(Messages.bind(
+			throw new LibVirtPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ENDPOINT_CONTEXT_ROOT),
 					Ex);
 		}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -29,7 +30,7 @@ public class NetworkDeviceList extends ArrayList<NetworkDevice> {
 		for (NetworkDevice netdev : this) {
 			if (devname.equals(netdev.getNetworkDeviceName())) {
 				// Detects duplicated NetworkDeviceName declaration
-				throw new IllegalNetworkDeviceListException(Messages.bind(
+				throw new IllegalNetworkDeviceListException(Msg.bind(
 						Messages.NetworkDeviceListEx_DEVICE_ALREADY_DEFINE,
 						devname));
 			}
@@ -49,6 +50,7 @@ public class NetworkDeviceList extends ArrayList<NetworkDevice> {
 
 	/**
 	 * @param target
+	 *            is a network device list.
 	 * 
 	 * @return a {@link NetworkDeviceList}, which contains all
 	 *         {@link NetworkDevice} which are in the given target

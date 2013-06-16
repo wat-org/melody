@@ -11,6 +11,7 @@ import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -204,9 +205,9 @@ public class NetworkDevicesLoader {
 		for (Element networkDeviceElmt : networkDeviceElmts) {
 			NetworkDeviceName netDevName = loadDeviceName(networkDeviceElmt);
 			if (netDevName == null) {
-				throw new NodeRelatedException(networkDeviceElmt,
-						Messages.bind(Messages.NetworkDevLoaderEx_MISSING_ATTR,
-								DEVICE_NAME_ATTR));
+				throw new NodeRelatedException(networkDeviceElmt, Msg.bind(
+						Messages.NetworkDevLoaderEx_MISSING_ATTR,
+						DEVICE_NAME_ATTR));
 			}
 			String mac = loadMac(networkDeviceElmt);
 			String ip = loadIp(networkDeviceElmt);

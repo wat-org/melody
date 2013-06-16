@@ -7,6 +7,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -18,13 +19,20 @@ public class KeyPairRepositoryPath implements IFileBased {
 	private String _path;
 
 	/**
-	 * 
 	 * @param path
+	 *            is a path.
 	 * 
-	 * @throws KeyPairRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws IllegalArgumentException
-	 *             if the given path is <code>null</code>.
+	 *             if the given path is <tt>null</tt>.
+	 * @throws KeyPairRepositoryPathException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             directory ;</li>
+	 *             <li>if the creation of given path failed ;</li>
+	 *             </ul>
 	 */
 	public KeyPairRepositoryPath(String sPath)
 			throws KeyPairRepositoryPathException {
@@ -32,25 +40,32 @@ public class KeyPairRepositoryPath implements IFileBased {
 		try {
 			FS.validateDirPath(_path);
 		} catch (IllegalDirectoryException Ex) {
-			throw new KeyPairRepositoryPathException(Messages.bind(
+			throw new KeyPairRepositoryPathException(Msg.bind(
 					Messages.KeyPairRepoPathEx_INVALID_REPO_PATH, _path), Ex);
 		}
 		// Create the directory if it doesn't exists
 		File f = new File(_path);
 		if (!f.exists() && !f.mkdirs()) {
-			throw new KeyPairRepositoryPathException(Messages.bind(
+			throw new KeyPairRepositoryPathException(Msg.bind(
 					Messages.KeyPairRepoPathEx_FAILED_TO_CREATE_REPO, _path));
 		}
 	}
 
 	/**
-	 * 
 	 * @param path
+	 *            is a path.
 	 * 
-	 * @throws KeyPairRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
+	 *             if the given path is <tt>null</tt>.
+	 * @throws KeyPairRepositoryPathException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             directory ;</li>
+	 *             <li>if the creation of given path failed ;</li>
+	 *             </ul>
 	 */
 	public KeyPairRepositoryPath(File path)
 			throws KeyPairRepositoryPathException {
@@ -58,13 +73,20 @@ public class KeyPairRepositoryPath implements IFileBased {
 	}
 
 	/**
-	 * 
 	 * @param path
+	 *            is a path.
 	 * 
-	 * @throws KeyPairRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws NullPointerException
-	 *             if the given path is <code>null</code>.
+	 *             if the given path is <tt>null</tt>.
+	 * @throws KeyPairRepositoryPathException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             directory ;</li>
+	 *             <li>if the creation of given path failed ;</li>
+	 *             </ul>
 	 */
 	public KeyPairRepositoryPath(Path path)
 			throws KeyPairRepositoryPathException {

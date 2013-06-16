@@ -29,6 +29,7 @@ import com.wat.melody.common.firewall.SimpleUdpFireWallRule;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodeException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.PortRange;
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
@@ -156,8 +157,8 @@ public abstract class AwsEc2CloudFireWall {
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
 		for (SimpleFireWallRule rule : toRevoke) {
-			log.info(Messages.bind(Messages.CommonMsg_REVOKE_FWRULE,
-					i.getImageId(), netdev, rule));
+			log.info(Msg.bind(Messages.CommonMsg_REVOKE_FWRULE, i.getImageId(),
+					netdev, rule));
 		}
 	}
 
@@ -173,7 +174,7 @@ public abstract class AwsEc2CloudFireWall {
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
 		for (SimpleFireWallRule rule : toAuthorize) {
-			log.info(Messages.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
+			log.info(Msg.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
 					i.getImageId(), netdev, rule));
 		}
 	}
@@ -204,13 +205,13 @@ public abstract class AwsEc2CloudFireWall {
 	private static IpPermission createTcpUdpPermission(
 			SimpleAbstractTcpUdpFireWallwRule rule) {
 		if (rule.getDirection().equals(Direction.OUT)) {
-			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+			log.info(Msg.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
 					Direction.OUT));
 			return null;
 		}
 		if (rule.getAccess().equals(Access.DENY)) {
-			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
-					Access.DENY));
+			log.info(Msg
+					.bind(Messages.CommonMsg_SKIP_FWRULE, rule, Access.DENY));
 			return null;
 		}
 		IpPermission perm = new IpPermission();
@@ -223,13 +224,13 @@ public abstract class AwsEc2CloudFireWall {
 
 	private static IpPermission createIcmpPermission(SimpleIcmpFireWallRule rule) {
 		if (rule.getDirection().equals(Direction.OUT)) {
-			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+			log.info(Msg.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
 					Direction.OUT));
 			return null;
 		}
 		if (rule.getAccess().equals(Access.DENY)) {
-			log.info(Messages.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
-					Access.DENY));
+			log.info(Msg
+					.bind(Messages.CommonMsg_SKIP_FWRULE, rule, Access.DENY));
 			return null;
 		}
 		IpPermission perm = new IpPermission();

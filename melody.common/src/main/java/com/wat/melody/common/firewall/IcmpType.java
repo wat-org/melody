@@ -1,6 +1,7 @@
 package com.wat.melody.common.firewall;
 
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -121,7 +122,7 @@ public class IcmpType {
 	 */
 	private int setIcmpType(int iIcmpType) throws IllegalIcmpTypeException {
 		if (iIcmpType < -1) {
-			throw new IllegalIcmpTypeException(Messages.bind(
+			throw new IllegalIcmpTypeException(Msg.bind(
 					Messages.IcmpTypeEx_NEGATIVE, iIcmpType));
 		}
 		int previous = getValue();
@@ -148,7 +149,7 @@ public class IcmpType {
 					+ IcmpType.class.getCanonicalName() + ").");
 		}
 		if (sIcmpType.trim().length() == 0) {
-			throw new IllegalIcmpTypeException(Messages.bind(
+			throw new IllegalIcmpTypeException(Msg.bind(
 					Messages.IcmpTypeEx_EMPTY, sIcmpType));
 		}
 		if (sIcmpType.equals(_ALL)) {
@@ -157,7 +158,7 @@ public class IcmpType {
 		try {
 			return setIcmpType(Integer.parseInt(sIcmpType));
 		} catch (NumberFormatException Ex) {
-			throw new IllegalIcmpTypeException(Messages.bind(
+			throw new IllegalIcmpTypeException(Msg.bind(
 					Messages.IcmpTypeEx_NOT_A_NUMBER, sIcmpType));
 		}
 	}

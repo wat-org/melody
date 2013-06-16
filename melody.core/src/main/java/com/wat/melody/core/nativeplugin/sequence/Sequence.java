@@ -17,6 +17,7 @@ import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
@@ -138,7 +139,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 						.getSequenceDescriptor().getOrder(i));
 			}
 		} catch (InterruptedException Ex) {
-			throw new InterruptedException(Messages.bind(
+			throw new InterruptedException(Msg.bind(
 					Messages.SequenceEx_INTERRUPTED, SEQUENCE));
 		} catch (TaskException Ex) {
 			throw new SequenceException(Ex);

@@ -3,6 +3,7 @@ package com.wat.melody.plugin.aws.ec2;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
@@ -34,8 +35,8 @@ public class ResizeMachine extends AbstractOperation {
 					getInstanceDatas().getInstanceType());
 		} catch (OperationException Ex) {
 			throw new AwsException(new NodeRelatedException(getTargetElement(),
-					Messages.bind(Messages.ResizeEx_GENERIC_FAIL,
-							getInstanceDatas().getInstanceType()), Ex));
+					Msg.bind(Messages.ResizeEx_GENERIC_FAIL, getInstanceDatas()
+							.getInstanceType()), Ex));
 		}
 	}
 

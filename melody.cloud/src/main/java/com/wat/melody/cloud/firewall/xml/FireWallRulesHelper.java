@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.firewall.Messages;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
@@ -164,7 +165,7 @@ public abstract class FireWallRulesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(TCP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.TcpMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.TcpMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
@@ -172,7 +173,7 @@ public abstract class FireWallRulesHelper {
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(TCP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.TcpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					Msg.bind(Messages.TcpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}
@@ -232,7 +233,7 @@ public abstract class FireWallRulesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(UDP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.UdpMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.UdpMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
@@ -240,7 +241,7 @@ public abstract class FireWallRulesHelper {
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(UDP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.UdpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					Msg.bind(Messages.UdpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}
@@ -300,7 +301,7 @@ public abstract class FireWallRulesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(ICMP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.IcmpMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.IcmpMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
@@ -308,7 +309,7 @@ public abstract class FireWallRulesHelper {
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(ICMP_RULE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.IcmpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					Msg.bind(Messages.IcmpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}

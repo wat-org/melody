@@ -14,6 +14,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
@@ -36,17 +37,18 @@ public class Upload extends AbstractSshManagedOperation implements
 		TemplatingHandler {
 
 	/**
-	 * The 'upload' XML element used in the Sequence Descriptor
+	 * Task's name
 	 */
 	public static final String UPLOAD = "upload";
 
 	/**
-	 * The 'max-par' XML Attribute
+	 * Task's attribute, which specifies the maximum number of concurrent
+	 * upload.
 	 */
 	public static final String MAXPAR_ATTR = "max-par";
 
 	/**
-	 * The 'resources' XML Nested Element
+	 * Task's nested element, which specifies the resources to upload.
 	 */
 	public static final String RESOURCES_NE = "resources";
 
@@ -90,8 +92,8 @@ public class Upload extends AbstractSshManagedOperation implements
 			} catch (IOException Ex) {
 				throw new RuntimeException("IO Error while finding files.", Ex);
 			} catch (SshException Ex) {
-				throw new SshException(Messages.bind(
-						Messages.UploadEx_INVALID_NE, RESOURCES_NE), Ex);
+				throw new SshException(Msg.bind(Messages.UploadEx_INVALID_NE,
+						RESOURCES_NE), Ex);
 			}
 		}
 	}
@@ -123,9 +125,8 @@ public class Upload extends AbstractSshManagedOperation implements
 			}
 		}
 		if (r.getMatch() == null) {
-			throw new SshException(
-					Messages.bind(Messages.UploadEx_MISSING_ATTR,
-							Resources.MATCH_ATTR, which));
+			throw new SshException(Msg.bind(Messages.UploadEx_MISSING_ATTR,
+					Resources.MATCH_ATTR, which));
 		}
 	}
 
@@ -155,7 +156,7 @@ public class Upload extends AbstractSshManagedOperation implements
 					+ "Source code has certainly been modified "
 					+ "and a bug have been introduced.", Ex);
 		} catch (IOException Ex) {
-			throw new TemplatingException(Messages.bind(
+			throw new TemplatingException(Msg.bind(
 					Messages.SshEx_READ_IO_ERROR, r), Ex);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new TemplatingException(Ex);
@@ -170,7 +171,7 @@ public class Upload extends AbstractSshManagedOperation implements
 					".txt");
 			Files.write(template, fileContent.getBytes());
 		} catch (IOException Ex) {
-			throw new TemplatingException(Messages.bind(
+			throw new TemplatingException(Msg.bind(
 					Messages.SshEx_WRITE_IO_ERROR, template), Ex);
 		}
 		return template;
@@ -202,7 +203,7 @@ public class Upload extends AbstractSshManagedOperation implements
 	@Attribute(name = MAXPAR_ATTR)
 	public int setMaxPar(int iMaxPar) throws SshException {
 		if (iMaxPar < 1 || iMaxPar > 10) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.UploadEx_INVALID_MAXPAR_ATTR, iMaxPar));
 		}
 		int previous = getMaxPar();

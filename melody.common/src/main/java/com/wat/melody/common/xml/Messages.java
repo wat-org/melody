@@ -2,8 +2,6 @@ package com.wat.melody.common.xml;
 
 import org.eclipse.osgi.util.NLS;
 
-import com.wat.melody.common.systool.SysTool;
-
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.xml.messages";
@@ -50,14 +48,6 @@ public class Messages extends NLS {
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-	}
-
-	public static String bind(String message, Object... bindings) {
-		for (int i = 0; i < bindings.length; i++) {
-			bindings[i] = bindings[i].toString().replaceAll(SysTool.NEW_LINE,
-					SysTool.NEW_LINE + "  ");
-		}
-		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {

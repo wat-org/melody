@@ -1,5 +1,6 @@
 package com.wat.melody.core.nativeplugin.attributes.common;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DUNIDDoc;
 import com.wat.melody.core.nativeplugin.attributes.common.exception.IllegalAttributeNameException;
 
@@ -18,14 +19,19 @@ public class AttributeName {
 	 * @param attributeName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link AttributeName} object, whose equal to the given input
+	 * @return an {@link AttributeName} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalAttributeNameException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link AttributeName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalAttributeNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             <li>if the given <tt>String</tt> is equal to the reserved
+	 *             name {@link DUNIDDoc#DUNID_ATTR};</li>
+	 *             </ul>
 	 */
 	public static AttributeName parseString(String attributeName)
 			throws IllegalAttributeNameException {
@@ -39,6 +45,25 @@ public class AttributeName {
 
 	private String _value;
 
+	/**
+	 * <p>
+	 * Create a new {@link AttributeName} with the given value.
+	 * </p>
+	 * 
+	 * @param attributeName
+	 *            is the given <tt>String</tt> to assign to this object.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalAttributeNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             <li>if the given <tt>String</tt> is equal to the reserved
+	 *             name {@link DUNIDDoc#DUNID_ATTR};</li>
+	 *             </ul>
+	 */
 	public AttributeName(String attributeName)
 			throws IllegalAttributeNameException {
 		setValue(attributeName);
@@ -65,7 +90,7 @@ public class AttributeName {
 		return _value;
 	}
 
-	public String setValue(String attributeName)
+	private String setValue(String attributeName)
 			throws IllegalAttributeNameException {
 		if (attributeName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -73,13 +98,13 @@ public class AttributeName {
 					+ AttributeName.class.getCanonicalName() + ").");
 		}
 		if (attributeName.trim().length() == 0) {
-			throw new IllegalAttributeNameException(Messages.bind(
+			throw new IllegalAttributeNameException(Msg.bind(
 					Messages.AttributeNameEx_EMPTY, attributeName));
 		} else if (!attributeName.matches("^" + PATTERN + "$")) {
-			throw new IllegalAttributeNameException(Messages.bind(
+			throw new IllegalAttributeNameException(Msg.bind(
 					Messages.AttributeNameEx_INVALID, attributeName, PATTERN));
 		} else if (attributeName.equals(DUNIDDoc.DUNID_ATTR)) {
-			throw new IllegalAttributeNameException(Messages.bind(
+			throw new IllegalAttributeNameException(Msg.bind(
 					Messages.AttributeNameEx_DUNID_FORBIDDEN, attributeName,
 					DUNIDDoc.DUNID_ATTR));
 		}

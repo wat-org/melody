@@ -56,10 +56,6 @@ public class Messages extends NLS {
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
 	}
 
-	public static String bind(String message, Object... bindings) {
-		return NLS.bind(message, bindings);
-	}
-
 	private Messages() {
 	}
 

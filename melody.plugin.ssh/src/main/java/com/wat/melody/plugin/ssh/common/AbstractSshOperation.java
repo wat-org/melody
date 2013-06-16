@@ -11,6 +11,7 @@ import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.log.LogThreshold;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
@@ -119,7 +120,7 @@ public abstract class AbstractSshOperation implements ITask {
 	@Override
 	public void validate() throws SshException {
 		if (getPassword() == null && getKeyPairName() == null) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
 					KEYPAIR_NAME_ATTR));
 		}
@@ -137,11 +138,11 @@ public abstract class AbstractSshOperation implements ITask {
 					.getKeyPairSize(), getPassword());
 		} catch (IllegalPassphraseException Ex) {
 			if (getPassword() == null) {
-				throw new SshException(Messages.bind(
+				throw new SshException(Msg.bind(
 						Messages.SshEx_MISSING_PASSPHRASE_ATTR,
 						getKeyPairName(), PASS_ATTR));
 			} else {
-				throw new SshException(Messages.bind(
+				throw new SshException(Msg.bind(
 						Messages.SshEx_INVALID_PASSPHRASE_ATTR,
 						getKeyPairName(), PASS_ATTR));
 			}
@@ -156,10 +157,9 @@ public abstract class AbstractSshOperation implements ITask {
 	 * </p>
 	 * 
 	 * @return the opened session.
-	 * @throws InterruptedException
-	 * @throws SshSessionException
 	 * 
 	 * @throws SshException
+	 * @throws InterruptedException
 	 */
 	public ISshSession openSession() throws SshException, InterruptedException {
 		ISshSession session = createSession();

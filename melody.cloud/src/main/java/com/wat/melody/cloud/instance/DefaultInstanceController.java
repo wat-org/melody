@@ -12,6 +12,7 @@ import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -28,22 +29,25 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		super();
 	}
 
+	/**
+	 * @return the instance id. Can be <tt>null</tt>, when the instance is not
+	 *         created.
+	 */
 	@Override
 	public String getInstanceId() {
 		return _instanceId;
 	}
 
 	/**
-	 * Can be <tt>null</tt>, when the instance is not created.
+	 * @param instanceId
+	 *            is the instance id to assign. Can be <tt>null</tt>, when the
+	 *            instance is not created.
 	 * 
-	 * @param instance
-	 * @return
-	 * @throws InterruptedException
-	 * @throws OperationException
+	 * @return the previous value.
 	 */
-	protected String setInstanceId(String instance) {
+	protected String setInstanceId(String instanceId) {
 		String previous = getInstanceId();
-		_instanceId = instance;
+		_instanceId = instanceId;
 		return previous;
 	}
 
@@ -57,8 +61,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			String imageId, KeyPairName keyPairName, long createTimeout)
 			throws OperationException, InterruptedException {
 		if (instanceLives()) {
-			log.warn(Messages.bind(Messages.CreateMsg_LIVES, getInstanceId(),
-					"LIVE"));
+			log.warn(Msg
+					.bind(Messages.CreateMsg_LIVES, getInstanceId(), "LIVE"));
 		} else {
 			String instanceId = createInstance(type, site, imageId,
 					keyPairName, createTimeout);
@@ -81,8 +85,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.DestroyMsg_NO_INSTANCE);
 		} else if (!instanceLives()) {
-			log.warn(Messages.bind(Messages.DestroyMsg_TERMINATED,
-					getInstanceId(), "DEAD"));
+			log.warn(Msg.bind(Messages.DestroyMsg_TERMINATED, getInstanceId(),
+					"DEAD"));
 		} else {
 			destroyInstance(destroyTimeout);
 			fireInstanceStopped();
@@ -101,25 +105,25 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StartEx_NO_INSTANCE);
 		} else if (is == InstanceState.PENDING) {
-			log.warn(Messages.bind(Messages.StartMsg_PENDING, getInstanceId(),
+			log.warn(Msg.bind(Messages.StartMsg_PENDING, getInstanceId(),
 					InstanceState.PENDING, InstanceState.RUNNING));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.RUNNING,
 					startTimeout)) {
-				throw new OperationException(Messages.bind(
+				throw new OperationException(Msg.bind(
 						Messages.StartEx_WAIT_TO_START_TIMEOUT,
 						getInstanceId(), startTimeout));
 			}
 			fireInstanceStarted();
 		} else if (is == InstanceState.RUNNING) {
 			fireInstanceStarted();
-			log.info(Messages.bind(Messages.StartMsg_RUNNING, getInstanceId(),
+			log.info(Msg.bind(Messages.StartMsg_RUNNING, getInstanceId(),
 					InstanceState.RUNNING));
 		} else if (is == InstanceState.STOPPING) {
-			log.warn(Messages.bind(Messages.StartMsg_STOPPING, getInstanceId(),
+			log.warn(Msg.bind(Messages.StartMsg_STOPPING, getInstanceId(),
 					InstanceState.STOPPING, InstanceState.STOPPED));
 			if (!waitUntilInstanceStatusBecomes(InstanceState.STOPPED,
 					startTimeout)) {
-				throw new OperationException(Messages.bind(
+				throw new OperationException(Msg.bind(
 						Messages.StartEx_WAIT_TO_RESTART_TIMEOUT,
 						getInstanceId(), startTimeout));
 			}
@@ -128,15 +132,14 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStarted();
 		} else if (is == InstanceState.SHUTTING_DOWN) {
 			fireInstanceStopped();
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.StartEx_SHUTTING_DOWN, getInstanceId(),
 					InstanceState.SHUTTING_DOWN));
 		} else if (is == InstanceState.TERMINATED) {
 			fireInstanceStopped();
 			fireInstanceDestroyed();
-			throw new OperationException(Messages.bind(
-					Messages.StartEx_TERMINATED, getInstanceId(),
-					InstanceState.TERMINATED));
+			throw new OperationException(Msg.bind(Messages.StartEx_TERMINATED,
+					getInstanceId(), InstanceState.TERMINATED));
 		} else {
 			startInstance(startTimeout);
 			fireInstanceStarted();
@@ -153,7 +156,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throw new OperationException(Messages.StopEx_NO_INSTANCE);
 		} else if (!instanceRuns()) {
 			fireInstanceStopped();
-			log.warn(Messages.bind(Messages.StopMsg_ALREADY_STOPPED,
+			log.warn(Msg.bind(Messages.StopMsg_ALREADY_STOPPED,
 					getInstanceId(), InstanceState.STOPPED));
 		} else {
 			fireInstanceStopped();
@@ -174,13 +177,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStopped();
 			fireInstanceDestroyed();
 			String sInstanceId = setInstanceId(null);
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.ResizeEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else if (getInstanceType() == targetType) {
-			log.info(Messages.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
+			log.info(Msg.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
 					targetType));
 		} else if (is != InstanceState.STOPPED) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.ResizeEx_NOT_STOPPED, getInstanceId(),
 					InstanceState.STOPPED, is));
 		} else {
@@ -208,7 +211,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStopped();
 			fireInstanceDestroyed();
 			String sInstanceId = setInstanceId(null);
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateDiskDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceDiskDevices(list);
@@ -229,7 +232,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		disksToAdd = current.delta(target);
 		disksToRemove = target.delta(current);
 
-		log.info(Messages.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
+		log.info(Msg.bind(Messages.UpdateDiskDevMsg_DISK_DEVICES_RESUME,
 				getInstanceId(), current, target, disksToAdd, disksToRemove));
 
 		detachAndDeleteInstanceDiskDevices(disksToRemove);
@@ -259,7 +262,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStopped();
 			fireInstanceDestroyed();
 			String sInstanceId = setInstanceId(null);
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateNetDevEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceNetworkDevices(list);
@@ -277,7 +280,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		toAdd = current.delta(target);
 		toRemove = target.delta(current);
 
-		log.info(Messages.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
+		log.info(Msg.bind(Messages.UpdateNetDevMsg_NETWORK_DEVICES_RESUME,
 				getInstanceId(), current, target, toAdd, toRemove));
 
 		detachInstanceNetworkDevices(toRemove);
@@ -302,7 +305,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStopped();
 			fireInstanceDestroyed();
 			String sInstanceId = setInstanceId(null);
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.UpdateFireWallEx_INVALID_INSTANCE_ID, sInstanceId));
 		} else {
 			updateInstanceFireWallRules(list);
@@ -319,7 +322,7 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			FireWallRules toAdd = current.delta(expected);
 			FireWallRules toRemove = expected.delta(current);
 
-			log.info(Messages.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
+			log.info(Msg.bind(Messages.UpdateFireWallMsg_FWRULES_RESUME,
 					getInstanceId(), devname, current, expected, toAdd,
 					toRemove));
 

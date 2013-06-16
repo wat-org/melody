@@ -14,6 +14,7 @@ import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.properties.PropertySet;
@@ -263,7 +264,7 @@ public class Foreach implements ITask, ITaskContainer {
 		} else if (isFailed()) {
 			throw new ForeachException(getExceptionsSet());
 		} else if (isInterrupted()) {
-			throw new InterruptedException(Messages.bind(
+			throw new InterruptedException(Msg.bind(
 					Messages.ForeachEx_INTERRUPTED, FOREACH));
 		}
 	}
@@ -286,16 +287,11 @@ public class Foreach implements ITask, ITaskContainer {
 	 *            is the name of the property which will contains the XPath
 	 *            position of the current Target.
 	 * 
-	 * @throws ForeachException
-	 *             if the given name is not a valid property name.
-	 * @throws ForeachException
-	 *             if a property with the same name was already defined.
 	 * @throws IllegalArgumentException
 	 *             if the given name is <tt>null</tt>.
 	 */
 	@Attribute(name = ITEMNAME_ATTR, mandatory = true)
-	public PropertyName setItemName(PropertyName propertyName)
-			throws ForeachException {
+	public PropertyName setItemName(PropertyName propertyName) {
 		if (propertyName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");
@@ -320,12 +316,10 @@ public class Foreach implements ITask, ITaskContainer {
 	 * @param itemsExpr
 	 *            the XPath expression which selects targets.
 	 * 
-	 * @throws ForeachException
-	 *             if the given <tt>String</tt> is an empty <tt>String</tt>.
-	 * @throws ForeachException
-	 *             if the given <tt>String</tt> is not a valid XPath Expression.
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws ForeachException
+	 *             if the given <tt>String</tt> is not a valid XPath Expression.
 	 */
 	@Attribute(name = ITEMS_ATTR, mandatory = true)
 	public String setItems(String itemsExpr) throws ForeachException {
@@ -334,14 +328,14 @@ public class Foreach implements ITask, ITaskContainer {
 					+ "Must be a valid String.");
 		}
 		if (itemsExpr.trim().length() == 0) {
-			throw new ForeachException(Messages.bind(
+			throw new ForeachException(Msg.bind(
 					Messages.ForeachEx_EMPTY_ITEMS_ATTR, itemsExpr));
 		}
 		try {
 			setTargets(Melody.getContext().getProcessorManager()
 					.getResourcesDescriptor().evaluateTargets(itemsExpr));
 		} catch (XPathExpressionException Ex) {
-			throw new ForeachException(Messages.bind(
+			throw new ForeachException(Msg.bind(
 					Messages.ForeachEx_INVALID_ITEMS_ATTR, itemsExpr), Ex);
 		}
 		String previous = getItems();
@@ -391,7 +385,7 @@ public class Foreach implements ITask, ITaskContainer {
 	@Attribute(name = MAXPAR_ATTR)
 	public int setMaxPar(int iMaxPar) throws ForeachException {
 		if (iMaxPar < 0) {
-			throw new ForeachException(Messages.bind(
+			throw new ForeachException(Msg.bind(
 					Messages.ForeachEx_INVALID_MAXPAR_ATTR, iMaxPar));
 		}
 		int previous = getMaxPar();

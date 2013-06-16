@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -17,12 +18,13 @@ public class Sleep implements ITask {
 	private static Log log = LogFactory.getLog(Sleep.class);
 
 	/**
-	 * The 'sleep' XML element used in the Sequence Descriptor
+	 * Task's name
 	 */
 	public static final String SLEEP = "sleep";
 
 	/**
-	 * The 'millis' XML attribute of the 'sleep' XML element
+	 * Task's attribute, which specifies the amount of time, in millis, to
+	 * sleep.
 	 */
 	public static final String MILLIS_ATTR = "millis";
 
@@ -46,7 +48,7 @@ public class Sleep implements ITask {
 	@Override
 	public void doProcessing() throws InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
-		log.debug(Messages.bind(Messages.SleepMsg_INFO, getTimeout()
+		log.debug(Msg.bind(Messages.SleepMsg_INFO, getTimeout()
 				.getTimeoutInMillis()));
 		Thread.sleep(getTimeout().getTimeoutInMillis());
 	}

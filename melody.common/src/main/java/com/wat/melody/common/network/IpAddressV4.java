@@ -1,5 +1,6 @@
 package com.wat.melody.common.network;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalIpAddressException;
 
 /**
@@ -36,7 +37,8 @@ public class IpAddressV4 {
 	 * @throws IllegalIpAddressException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if the given <tt>String</tt> doesn't match the pattern ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
 	public static IpAddressV4 parseString(String ipAddress)
@@ -83,10 +85,10 @@ public class IpAddressV4 {
 					+ IpAddressV4.class.getCanonicalName() + ").");
 		}
 		if (ipAddress.trim().length() == 0) {
-			throw new IllegalIpAddressException(Messages.bind(
+			throw new IllegalIpAddressException(Msg.bind(
 					Messages.IpAddrEx_EMPTY, ipAddress));
 		} else if (!ipAddress.matches("^" + PATTERN + "$")) {
-			throw new IllegalIpAddressException(Messages.bind(
+			throw new IllegalIpAddressException(Msg.bind(
 					Messages.IpAddrEx_INVALID, ipAddress, PATTERN));
 		}
 		String previous = getValue();

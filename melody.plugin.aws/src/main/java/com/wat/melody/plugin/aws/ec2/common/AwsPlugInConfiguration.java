@@ -17,6 +17,7 @@ import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationException;
 
@@ -109,13 +110,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	private void loadAccessKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_ACCESS_KEY)) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, EC2_ACCESS_KEY));
 		}
 		try {
 			setAccessKey(ps.get(EC2_ACCESS_KEY));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_ACCESS_KEY), Ex);
 		}
 	}
@@ -123,13 +124,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	private void loadSecretKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
 		if (!ps.containsKey(EC2_SECRET_KEY)) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, EC2_SECRET_KEY));
 		}
 		try {
 			setSecretKey(ps.get(EC2_SECRET_KEY));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_SECRET_KEY), Ex);
 		}
 	}
@@ -142,7 +143,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setConnectionTimeout(ps.get(EC2_CONNECTION_TIMEOUT));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_TIMEOUT),
 					Ex);
 		}
@@ -156,7 +157,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setSocketTimeout(ps.get(EC2_READ_TIMEOUT));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_READ_TIMEOUT), Ex);
 		}
 	}
@@ -169,7 +170,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setMaxErrorRetry(ps.get(EC2_CONNECTION_RETRY));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_RETRY),
 					Ex);
 		}
@@ -183,7 +184,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setMaxConnections(ps.get(EC2_MAX_CONNECTION));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_MAX_CONNECTION), Ex);
 		}
 	}
@@ -196,7 +197,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setSocketSendBufferSizeHints(ps.get(EC2_SEND_BUFFER_SIZE_HINT));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					EC2_SEND_BUFFER_SIZE_HINT), Ex);
 		}
@@ -211,7 +212,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			setSocketReceiveBufferSizeHints(ps
 					.get(EC2_RECEIVE_BUFFER_SIZE_HINTS));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					EC2_RECEIVE_BUFFER_SIZE_HINTS), Ex);
 		}
@@ -225,7 +226,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProtocol(ps.get(EC2_PROTOCOL));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROTOCOL), Ex);
 		}
 	}
@@ -238,7 +239,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setUserAgent(ps.get(EC2_USER_AGENT));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_USER_AGENT), Ex);
 		}
 	}
@@ -251,7 +252,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyHost(ps.get(EC2_PROXY_HOST));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_HOST), Ex);
 		}
 	}
@@ -264,7 +265,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyPort(ps.get(EC2_PROXY_PORT));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PORT), Ex);
 		}
 	}
@@ -277,7 +278,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyUsername(ps.get(EC2_PROXY_USERNAME));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_USERNAME), Ex);
 		}
 	}
@@ -290,7 +291,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyPassword(ps.get(EC2_PROXY_PASSWORD));
 		} catch (AwsPlugInConfigurationException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PASSWORD), Ex);
 		}
 	}
@@ -300,7 +301,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			AwsEc2Cloud.validate(new AmazonEC2Client(this, getCC()));
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
-				throw new AwsPlugInConfigurationException(Messages.bind(
+				throw new AwsPlugInConfigurationException(Msg.bind(
 						Messages.ConfEx_INVALID_AWS_CREDENTIALS,
 						getAWSAccessKeyId(), getAWSSecretKey(), EC2_ACCESS_KEY,
 						EC2_SECRET_KEY, getFilePath()));
@@ -407,7 +408,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setConnectionTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, val));
 		}
 	}
@@ -415,7 +416,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setConnectionTimeout(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, ival));
 		}
 		int previous = getCC().getConnectionTimeout();
@@ -441,7 +442,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setSocketTimeout(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, val));
 		}
 	}
@@ -449,7 +450,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setSocketTimeout(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, ival));
 		}
 		int previous = getCC().getSocketTimeout();
@@ -475,7 +476,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setMaxErrorRetry(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_RETRY, val));
 		}
 	}
@@ -483,7 +484,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setMaxErrorRetry(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_RETRY, ival));
 		}
 		int previous = getCC().getMaxErrorRetry();
@@ -510,7 +511,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setMaxConnections(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_MAX_CONN, val));
 		}
 	}
@@ -518,7 +519,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setMaxConnections(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_MAX_CONN, ival));
 		}
 		int previous = getCC().getMaxConnections();
@@ -544,7 +545,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setSocketSendBufferSizeHints(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_SEND_BUFFSIZE, val));
 		}
 	}
@@ -552,7 +553,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setSocketSendBufferSizeHints(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival <= 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_SEND_BUFFSIZE, ival));
 		}
 		int previous = getSocketSendBufferSizeHints();
@@ -579,7 +580,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setSocketReceiveBufferSizeHints(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_RECEIVE_BUFFSIZE, val));
 		}
 	}
@@ -587,7 +588,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public int setSocketReceiveBufferSizeHints(int ival)
 			throws AwsPlugInConfigurationException {
 		if (ival <= 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_RECEIVE_BUFFSIZE, ival));
 		}
 		int previous = getSocketReceiveBufferSizeHints();
@@ -617,7 +618,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		} else if (val.equalsIgnoreCase(Protocol.HTTPS.toString())) {
 			getCC().setProtocol(Protocol.HTTPS);
 		} else {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROTOCOL, val, Protocol.values()
 							.toString()));
 		}
@@ -663,7 +664,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			InetAddress.getByName(val);
 		} catch (UnknownHostException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROXY_HOST, val), Ex);
 		}
 		String previous = getCC().getProxyHost();
@@ -689,14 +690,14 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			return setProxyPort(Integer.parseInt(val));
 		} catch (NumberFormatException Ex) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROXY_PORT, val));
 		}
 	}
 
 	public int setProxyPort(int ival) throws AwsPlugInConfigurationException {
 		if (ival < 0) {
-			throw new AwsPlugInConfigurationException(Messages.bind(
+			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROXY_PORT, ival));
 		}
 		int previous = getCC().getProxyPort();

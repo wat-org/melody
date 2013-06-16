@@ -14,6 +14,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.log.LogThreshold;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.plugin.echo.exception.EchoException;
 
@@ -27,32 +28,34 @@ public class Echo implements ITask {
 	private static Log log = LogFactory.getLog(Echo.class);
 
 	/**
-	 * The 'echo' XML element used in the Sequence Descriptor
+	 * Task's name
 	 */
 	public static final String ECHO = "echo";
 
 	/**
-	 * The 'message' XML attribute of the 'echo' XML element
+	 * Task's attribute, which specifies the message to log.
 	 */
 	public static final String MESSAGE_ATTR = "message";
 
 	/**
-	 * The 'file' XML attribute of the 'echo' XML element
+	 * Task's attribute, which specifies the file where the message will be
+	 * logged.
 	 */
 	public static final String FILE_ATTR = "file";
 
 	/**
-	 * The 'append' XML attribute of the 'echo' XML element
+	 * Task's attribute, which specifies if the message will be appended or not.
 	 */
 	public static final String APPEND_ATTR = "append";
 
 	/**
-	 * The 'create-parent-directory' XML attribute of the 'echo' XML element
+	 * Task's attribute, which specifies if the file parent's directory should
+	 * be created or nor.
 	 */
 	public static final String CREATE_PARENT_DIR_ATTR = "create-parent-directory";
 
 	/**
-	 * The 'severity' XML attribute of the 'echo' XML element
+	 * Task's attribute, which specifies the severity of the message to log.
 	 */
 	public static final String SEVERITY_ATTR = "severity";
 
@@ -79,7 +82,7 @@ public class Echo implements ITask {
 		if (getFile() != null && getFile().getParentFile().exists() == false) {
 			if (getCreateParentDir() == true) {
 				if (!getFile().getParentFile().mkdirs()) {
-					throw new RuntimeException(Messages.bind(
+					throw new RuntimeException(Msg.bind(
 							Messages.EchoEx_FAILED_TO_CRAETE_PARENT_DIR,
 							getFile().getPath()));
 				}
@@ -87,10 +90,10 @@ public class Echo implements ITask {
 				try {
 					FS.validateDirExists(getFile().getParentFile().toString());
 				} catch (IllegalDirectoryException Ex) {
-					throw new EchoException(Messages.bind(
-							Messages.EchoEx_PARENT_DIR_NOT_EXISTS,
-							new Object[] { getFile().getPath(), ECHO,
-									CREATE_PARENT_DIR_ATTR }), Ex);
+					throw new EchoException(Msg.bind(
+							Messages.EchoEx_PARENT_DIR_NOT_EXISTS, getFile()
+									.getPath(), ECHO, CREATE_PARENT_DIR_ATTR),
+							Ex);
 				}
 			}
 		}
@@ -98,22 +101,19 @@ public class Echo implements ITask {
 
 	/**
 	 * <p>
-	 * Send an event which contains the specified message with the specified
-	 * severity. Or write the specified message into the specified file.
+	 * Log the specified message (attribute 'message') with the specified
+	 * severity (attribute 'severity').
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * If an event is sent, it will be treat by all Listeners. <BR/>
-	 * * The default Listeners will print the message to the standard output,
-	 * regarding its severity. <BR/>
-	 * * If a file is specified, the message will be write in it. <BR/>
-	 * * If the file doesn't exists, it will be created. <BR/>
-	 * * If append is set to true, the message will be appended to end of the
-	 * file. <BR/>
-	 * * If createParentDir is set to true, all necessary parent directories
-	 * will be created. <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>If a file is specified (using attribute 'file'), the message will be
+	 * write in it ;</li>
+	 * <li>If the file doesn't exists, it will be created ;</li>
+	 * <li>If the attribute 'append' is set to true, the message will be
+	 * appended to end of the file ;</li>
+	 * <li>If the attribute 'create-parent-directory' is set to true, all
+	 * necessary parent directories will be created ;</li>
+	 * </ul>
 	 * 
 	 * @throws InterruptedException
 	 *             if the processing of this task was interrupted.
@@ -136,8 +136,8 @@ public class Echo implements ITask {
 					}
 				}
 			} catch (IOException Ex) {
-				throw new RuntimeException(Messages.bind(
-						Messages.EchoEx_IO_ERROR, ECHO), Ex);
+				throw new RuntimeException(Msg.bind(Messages.EchoEx_IO_ERROR,
+						ECHO), Ex);
 			}
 		} else if (getSeverity() != null) {
 			log(getSeverity(), getMessage());

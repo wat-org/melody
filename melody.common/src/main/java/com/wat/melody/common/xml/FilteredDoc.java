@@ -17,6 +17,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
@@ -360,7 +361,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ ".");
 		}
 		if (getFilters().contains(filter)) {
-			throw new IllegalFilterException(Messages.bind(
+			throw new IllegalFilterException(Msg.bind(
 					Messages.FilteredDocEx_DUPLICATE, filter));
 		}
 		getFilters().add(filter);
@@ -436,7 +437,7 @@ public class FilteredDoc extends DUNIDDoc {
 					+ ".");
 		}
 		if (getFilters().contains(filter)) {
-			throw new IllegalFilterException(Messages.bind(
+			throw new IllegalFilterException(Msg.bind(
 					Messages.FilteredDocEx_DUPLICATE, filter));
 		}
 		restoreOriginalDocument();
@@ -549,16 +550,16 @@ public class FilteredDoc extends DUNIDDoc {
 			try {
 				nl = evaluateAsNodeList(filter.getValue());
 			} catch (XPathExpressionException Ex) {
-				throw new IllegalFilterException(Messages.bind(
+				throw new IllegalFilterException(Msg.bind(
 						Messages.FilteredDocEx_INCORRECT_XPATH, filter), Ex);
 			}
 			if (nl.getLength() == 0) {
-				throw new IllegalFilterException(Messages.bind(
+				throw new IllegalFilterException(Msg.bind(
 						Messages.FilteredDocEx_TOO_RSTRICTIVE, filter));
 			}
 			for (int i = 0; i < nl.getLength(); i++) {
 				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
-					throw new IllegalFilterException(Messages.bind(
+					throw new IllegalFilterException(Msg.bind(
 							Messages.FilteredDocEx_MUST_TARGET_ELEMENT, filter,
 							DocHelper.parseNodeType(nl.item(i))));
 				}

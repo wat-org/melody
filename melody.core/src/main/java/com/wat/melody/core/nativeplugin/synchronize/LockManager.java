@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.synchronize.exception.IllegalLockIdException;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockScope;
@@ -76,8 +77,8 @@ public abstract class LockManager {
 		Semaphore semaphore = getSemaphore(semaphoreId);
 		synchronized (semaphore) {
 			while (semaphore.getRunningJobsCount() >= maxPar.getValue()) {
-				log.trace(Messages.bind(Messages.LockMgmtMsg_BEGIN_WAIT,
-						semaphoreId));
+				log.trace(Msg
+						.bind(Messages.LockMgmtMsg_BEGIN_WAIT, semaphoreId));
 				semaphore.wait();
 				log.trace(Messages.LockMgmtMsg_END_WAIT);
 			}
@@ -88,7 +89,7 @@ public abstract class LockManager {
 			log.trace(Messages.LockMgmtMsg_BEGIN_JOB);
 			cb.doRun();
 		} finally {
-			log.trace(Messages.bind(Messages.LockMgmtMsg_END_JOB, semaphoreId));
+			log.trace(Msg.bind(Messages.LockMgmtMsg_END_JOB, semaphoreId));
 			synchronized (semaphore) {
 				semaphore.decreaseRunningJobsCount();
 				semaphore.notify();

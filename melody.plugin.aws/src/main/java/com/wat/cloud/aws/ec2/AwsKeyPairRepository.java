@@ -12,6 +12,7 @@ import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * <p>
@@ -118,7 +119,7 @@ public class AwsKeyPairRepository {
 			// when KeyPair is already in AWS, verify the fingerprint
 			String fprint = KeyPairRepository.getFingerprint(kp);
 			if (AwsEc2CloudKeyPair.compareKeyPair(getConnection(), kpn, fprint) == false) {
-				throw new AwsKeyPairRepositoryException(Messages.bind(
+				throw new AwsKeyPairRepositoryException(Msg.bind(
 						Messages.KeyPairEx_DIFFERENT, kpn,
 						getKeyPairRepository().getKeyPairRepositoryPath()));
 			}

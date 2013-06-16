@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationProtocolException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -31,7 +32,7 @@ public enum NetworkActivationProtocol {
 	 * @throws IllegalNetworkActivationProtocolException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if the given <tt>String</tt> is not a valid
+	 *             <li>if the given <tt>String</tt> is not one of the
 	 *             {@link NetworkActivationProtocol} Enumeration Constant ;</li>
 	 *             </ul>
 	 */
@@ -45,7 +46,7 @@ public enum NetworkActivationProtocol {
 					+ Arrays.asList(NetworkActivationProtocol.values()) + ").");
 		}
 		if (protocol.trim().length() == 0) {
-			throw new IllegalNetworkActivationProtocolException(Messages.bind(
+			throw new IllegalNetworkActivationProtocolException(Msg.bind(
 					Messages.NetworkActivationProtocolEx_EMPTY, protocol));
 		}
 		for (NetworkActivationProtocol c : NetworkActivationProtocol.class
@@ -54,7 +55,7 @@ public enum NetworkActivationProtocol {
 				return c;
 			}
 		}
-		throw new IllegalNetworkActivationProtocolException(Messages.bind(
+		throw new IllegalNetworkActivationProtocolException(Msg.bind(
 				Messages.NetworkActivationProtocolEx_INVALID, protocol,
 				Arrays.asList(NetworkActivationProtocol.values())));
 	}

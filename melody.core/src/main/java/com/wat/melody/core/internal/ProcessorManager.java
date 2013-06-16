@@ -38,6 +38,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -192,7 +193,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public int setMaxSimultaneousStep(int v)
 			throws ProcessorManagerConfigurationException {
 		if (v < 0) {
-			throw new ProcessorManagerConfigurationException(Messages.bind(
+			throw new ProcessorManagerConfigurationException(Msg.bind(
 					Messages.ProcMgrEx_HARD_KILL_TIMEOUT, v));
 		}
 		int previous = _maxSimultaneousStep;
@@ -209,7 +210,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	public int setHardKillTimeout(int v)
 			throws ProcessorManagerConfigurationException {
 		if (v < 0) {
-			throw new ProcessorManagerConfigurationException(Messages.bind(
+			throw new ProcessorManagerConfigurationException(Msg.bind(
 					Messages.ProcMgrEx_MAX_PAR, v));
 		}
 		int previous = _hardKillTimeout;
@@ -360,7 +361,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		IPlugInConfiguration pc = null;
 		pc = pcs.get(key);
 		if (pc == null) {
-			throw new PlugInConfigurationException(Messages.bind(
+			throw new PlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_CONF_NOT_REGISTERED, key));
 		}
 		return pc;
@@ -490,14 +491,14 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			throws ProcessorManagerConfigurationException {
 		// If the Working Folder Path is not provided => raise an error
 		if (getWorkingFolderPath() == null) {
-			throw new ProcessorManagerConfigurationException(Messages.bind(
+			throw new ProcessorManagerConfigurationException(Msg.bind(
 					Messages.ProcMgrEx_UNDEF_MANDOTORY_DIRECTIVE,
 					"Working Folder Path"));
 		}
 		// If the Sequence Descriptor File Path is not provided => raise an
 		// error
 		if (getSequenceDescriptor().getSourceFile() == null) {
-			throw new ProcessorManagerConfigurationException(Messages.bind(
+			throw new ProcessorManagerConfigurationException(Msg.bind(
 					Messages.ProcMgrEx_UNDEF_MANDOTORY_DIRECTIVE,
 					"Sequence Descriptor Path"));
 		}
@@ -775,14 +776,14 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		} catch (InterruptedException Ex) {
 			InterruptedException e = new MelodyInterruptedException(
 					new ProcessorException(getSequenceDescriptor()
-							.getSourceFile(), Messages.bind(
+							.getSourceFile(), Msg.bind(
 							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
 							State.INTERRUPTED)));
 			fireProcessorFinishedEvent(State.INTERRUPTED, e);
 			setFinalError(e);
 		} catch (TaskException Ex) {
 			ProcessorException e = new ProcessorException(
-					getSequenceDescriptor().getSourceFile(), Messages.bind(
+					getSequenceDescriptor().getSourceFile(), Msg.bind(
 							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
 							State.FAILED), Ex);
 			fireProcessorFinishedEvent(State.FAILED, e);
@@ -793,7 +794,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			}
 		} catch (Throwable Ex) {
 			ProcessorException e = new ProcessorException(
-					getSequenceDescriptor().getSourceFile(), Messages.bind(
+					getSequenceDescriptor().getSourceFile(), Msg.bind(
 							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
 							State.CRITICAL), Ex);
 			fireProcessorFinishedEvent(State.CRITICAL, e);
@@ -856,7 +857,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					null);
 			return t;
 		} catch (TaskFactoryException Ex) {
-			String msg = Messages.bind(Messages.TaskEx_INIT_FINAL_STATE, n
+			String msg = Msg.bind(Messages.TaskEx_INIT_FINAL_STATE, n
 					.getNodeName().toLowerCase(), State.FAILED);
 			TaskException e = new TaskException(new SimpleNodeRelatedException(
 					n, msg, Ex));
@@ -866,7 +867,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			}
 			throw e;
 		} catch (Throwable Ex) {
-			String msg = Messages.bind(Messages.TaskEx_INIT_FINAL_STATE, n
+			String msg = Msg.bind(Messages.TaskEx_INIT_FINAL_STATE, n
 					.getNodeName().toLowerCase(), State.CRITICAL);
 			TaskException e = new TaskException(new SimpleNodeRelatedException(
 					n, msg, Ex));
@@ -886,8 +887,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			task.doProcessing();
 			fireTaskFinishedEvent(task, State.SUCCESS, null);
 		} catch (InterruptedException Ex) {
-			String msg = Messages.bind(Messages.TaskEx_PROCESS_FINAL_STATE,
-					task.getClass().getSimpleName().toLowerCase(),
+			String msg = Msg.bind(Messages.TaskEx_PROCESS_FINAL_STATE, task
+					.getClass().getSimpleName().toLowerCase(),
 					State.INTERRUPTED);
 			InterruptedException e = new MelodyInterruptedException(
 					new SimpleNodeRelatedException(Melody.getContext()
@@ -907,9 +908,8 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				throw e;
 			}
 		} catch (Throwable Ex) {
-			String msg = Messages.bind(Messages.TaskEx_PROCESS_FINAL_STATE,
-					task.getClass().getSimpleName().toLowerCase(),
-					State.CRITICAL);
+			String msg = Msg.bind(Messages.TaskEx_PROCESS_FINAL_STATE, task
+					.getClass().getSimpleName().toLowerCase(), State.CRITICAL);
 			TaskException e = new TaskException(new SimpleNodeRelatedException(
 					Melody.getContext().getRelatedElement(), msg, Ex));
 			fireTaskFinishedEvent(task, State.CRITICAL, e);

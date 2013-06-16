@@ -3,6 +3,7 @@ package com.wat.cloud.aws.ec2;
 import java.util.Arrays;
 
 import com.wat.cloud.aws.ec2.exception.IllegalVolumeAttachmentStateException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * Note that the DELETED state cannot be used. That's the reason why it is not
@@ -25,13 +26,13 @@ public enum VolumeAttachmentState {
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return an {@link VolumeAttachmentState} object, whose equal to the given
-	 *         input <tt>String</tt>.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalVolumeAttachmentStateException
-	 *             if the given input <tt>String</tt> is not a valid
+	 *             if the given <tt>String</tt> is not a valid
 	 *             {@link VolumeAttachmentState} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static VolumeAttachmentState parseString(String sType)
 			throws IllegalVolumeAttachmentStateException {
@@ -43,7 +44,7 @@ public enum VolumeAttachmentState {
 					+ Arrays.asList(VolumeAttachmentState.values()) + ").");
 		}
 		if (sType.trim().length() == 0) {
-			throw new IllegalVolumeAttachmentStateException(Messages.bind(
+			throw new IllegalVolumeAttachmentStateException(Msg.bind(
 					Messages.VolumeAttachmentStateEx_EMPTY, sType));
 		}
 		for (VolumeAttachmentState c : VolumeAttachmentState.class
@@ -52,7 +53,7 @@ public enum VolumeAttachmentState {
 				return c;
 			}
 		}
-		throw new IllegalVolumeAttachmentStateException(Messages.bind(
+		throw new IllegalVolumeAttachmentStateException(Msg.bind(
 				Messages.VolumeAttachmentStateEx_INVALID, sType,
 				Arrays.asList(VolumeAttachmentState.values())));
 	}

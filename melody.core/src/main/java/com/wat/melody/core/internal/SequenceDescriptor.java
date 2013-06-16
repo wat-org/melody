@@ -12,6 +12,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.Property;
@@ -197,7 +198,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ ".");
 		}
 		if (getOrders().contains(order)) {
-			throw new IllegalOrderException(Messages.bind(
+			throw new IllegalOrderException(Msg.bind(
 					Messages.OrderEx_DUPLICATE, order));
 		}
 		validateOrder(order);
@@ -252,8 +253,8 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ ".");
 		}
 		if (getDocument() != null && Order.findOrder(order, this) == null) {
-			throw new IllegalOrderException(Messages.bind(
-					Messages.OrderEx_UNDEF, order));
+			throw new IllegalOrderException(Msg.bind(Messages.OrderEx_UNDEF,
+					order));
 		}
 	}
 

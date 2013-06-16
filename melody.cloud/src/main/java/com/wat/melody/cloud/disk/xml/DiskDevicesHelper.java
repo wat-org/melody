@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.Messages;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
@@ -135,7 +136,7 @@ public abstract class DiskDevicesHelper {
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.DiskMgmtEx_SELECTOR_INVALID_XPATH,
+					Msg.bind(Messages.DiskMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
@@ -143,7 +144,7 @@ public abstract class DiskDevicesHelper {
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
 					mgmtElmt.getAttributeNode(DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Messages.bind(Messages.DiskMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					Msg.bind(Messages.DiskMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}

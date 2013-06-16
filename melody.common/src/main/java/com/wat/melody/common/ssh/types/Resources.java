@@ -42,8 +42,8 @@ public class Resources extends ResourceMatcher {
 	 */
 	public static final String EXCLUDE_NE = "exclude";
 
-	private List<ResourceMatcher> maIncludes;
-	private List<ResourceMatcher> maExcludes;
+	private List<ResourceMatcher> _includes;
+	private List<ResourceMatcher> _excludes;
 
 	public Resources() {
 		super();
@@ -52,11 +52,11 @@ public class Resources extends ResourceMatcher {
 	}
 
 	private void initIncludes() {
-		maIncludes = new ArrayList<ResourceMatcher>();
+		_includes = new ArrayList<ResourceMatcher>();
 	}
 
 	private void initExcludes() {
-		maExcludes = new ArrayList<ResourceMatcher>();
+		_excludes = new ArrayList<ResourceMatcher>();
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class Resources extends ResourceMatcher {
 	}
 
 	public List<ResourceMatcher> getIncludes() {
-		return maIncludes;
+		return _includes;
 	}
 
 	public List<ResourceMatcher> setIncludes(List<ResourceMatcher> aIncludes) {
@@ -109,12 +109,12 @@ public class Resources extends ResourceMatcher {
 					+ "Inclusion List).");
 		}
 		List<ResourceMatcher> previous = getIncludes();
-		maIncludes = aIncludes;
+		_includes = aIncludes;
 		return previous;
 	}
 
 	public List<ResourceMatcher> getExcludes() {
-		return maExcludes;
+		return _excludes;
 	}
 
 	public List<ResourceMatcher> setExcludes(List<ResourceMatcher> aExcludes) {
@@ -124,7 +124,7 @@ public class Resources extends ResourceMatcher {
 					+ "Exclusion List).");
 		}
 		List<ResourceMatcher> previous = getExcludes();
-		maExcludes = aExcludes;
+		_excludes = aExcludes;
 		return previous;
 	}
 

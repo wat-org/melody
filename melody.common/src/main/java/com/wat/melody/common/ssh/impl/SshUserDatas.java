@@ -99,4 +99,5 @@ public class SshUserDatas implements ISshUserDatas {
 		_keyPairName = keyPairName;
 		return previous;
 	}
+
 }

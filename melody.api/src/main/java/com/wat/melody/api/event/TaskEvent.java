@@ -9,7 +9,7 @@ import com.wat.melody.api.ITask;
  */
 public class TaskEvent extends AbstractEvent {
 
-	private ITask msTask;
+	private ITask _task;
 
 	public TaskEvent(ITask task) {
 		super();
@@ -17,7 +17,7 @@ public class TaskEvent extends AbstractEvent {
 	}
 
 	public ITask getTask() {
-		return msTask;
+		return _task;
 	}
 
 	private ITask setTask(ITask t) {
@@ -25,7 +25,7 @@ public class TaskEvent extends AbstractEvent {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + ITask.class.getCanonicalName() + ".");
 		}
-		return msTask = t;
+		return _task = t;
 	}
 
 }

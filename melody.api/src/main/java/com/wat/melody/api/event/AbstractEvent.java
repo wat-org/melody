@@ -8,7 +8,8 @@ import java.util.Date;
  * 
  */
 public abstract class AbstractEvent {
-	private Date moDate;
+
+	private Date _date;
 
 	protected AbstractEvent() {
 		// Initialize members
@@ -16,11 +17,11 @@ public abstract class AbstractEvent {
 	}
 
 	private void initDate() {
-		moDate = new Date();
+		_date = new Date();
 	}
 
 	public Date getDate() {
-		return moDate;
+		return _date;
 	}
 
 }

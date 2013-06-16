@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefException;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefsException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -88,8 +89,9 @@ public class NetworkDeviceNameRefs extends LinkedHashSet<NetworkDeviceNameRef> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalNetworkDeviceNameRefsException(Messages.bind(
-					Messages.NetworkDeviceNameRefsEx_EMPTY, netDevNameRefs));
+			throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
+					Messages.NetworkDeviceNameRefsEx_EMPTY,
+					(Object[]) netDevNameRefs));
 		}
 	}
 
@@ -104,20 +106,20 @@ public class NetworkDeviceNameRefs extends LinkedHashSet<NetworkDeviceNameRef> {
 		for (String ref : netDevNameRefs.split(SEPARATOR)) {
 			ref = ref.trim();
 			if (ref.length() == 0) {
-				throw new IllegalNetworkDeviceNameRefsException(Messages.bind(
+				throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 						Messages.NetworkDeviceNameRefsEx_EMPTY_PART,
 						netDevNameRefs));
 			}
 			try {
 				add(NetworkDeviceNameRef.parseString(ref));
 			} catch (IllegalNetworkDeviceNameRefException Ex) {
-				throw new IllegalNetworkDeviceNameRefsException(Messages.bind(
+				throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 						Messages.NetworkDeviceNameRefsEx_INVALID_PART,
 						netDevNameRefs), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalNetworkDeviceNameRefsException(Messages.bind(
+			throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 					Messages.NetworkDeviceNameRefsEx_EMPTY, netDevNameRefs));
 		}
 	}

@@ -11,6 +11,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.core.nativeplugin.attributes.common.AttributeName;
 import com.wat.melody.core.nativeplugin.attributes.common.Messages;
@@ -36,7 +37,7 @@ public class RemoveAttribute implements ITask {
 
 	/**
 	 * Task's attribute, which specifies the targeted {@link Element}'s
-	 * {@link Attr}.
+	 * {@link Attr} to remove.
 	 */
 	public static final String TARGET_ATTRIBUTE_NAME_ATTR = "target-attribute";
 
@@ -107,20 +108,20 @@ public class RemoveAttribute implements ITask {
 			nl = Melody.getContext().getProcessorManager()
 					.getResourcesDescriptor().evaluateAsNodeList(target);
 		} catch (XPathExpressionException Ex) {
-			throw new RemoveAttributeException(Messages.bind(
+			throw new RemoveAttributeException(Msg.bind(
 					Messages.TargetAttrEx_NOT_XPATH, target));
 		}
 		if (nl.getLength() == 0) {
-			throw new RemoveAttributeException(Messages.bind(
+			throw new RemoveAttributeException(Msg.bind(
 					Messages.TargetAttrEx_MATCH_NO_NODE, target));
 		} else if (nl.getLength() > 1) {
-			throw new RemoveAttributeException(Messages.bind(
+			throw new RemoveAttributeException(Msg.bind(
 					Messages.TargetAttrEx_MATCH_MANY_NODES, target,
 					nl.getLength()));
 		}
 		Node n = nl.item(0);
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new RemoveAttributeException(Messages.bind(
+			throw new RemoveAttributeException(Msg.bind(
 					Messages.TargetAttrEx_NOT_MATCH_ELEMENT, target,
 					DocHelper.parseNodeType(n)));
 		}

@@ -13,6 +13,7 @@ import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -176,7 +177,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setKeyPairRepositoryPath(ps.get(KEYPAIR_REPO));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KEYPAIR_REPO), Ex);
 		}
 	}
@@ -189,7 +190,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setKeyPairSize(ps.get(KEYPAIR_SIZE));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KEYPAIR_SIZE), Ex);
 		}
 	}
@@ -202,7 +203,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setKnownHosts(ps.get(KNOWN_HOSTS));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, KNOWN_HOSTS), Ex);
 		}
 	}
@@ -215,7 +216,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setCompressionLevel(ps.get(COMPRESSION_LEVEL));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, COMPRESSION_LEVEL), Ex);
 		}
 	}
@@ -228,7 +229,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setCompressionType(ps.get(COMPRESSION_TYPE));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, COMPRESSION_TYPE), Ex);
 		}
 	}
@@ -241,7 +242,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setConnectionTimeout(ps.get(CONNECTION_TIMEOUT));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, CONNECTION_TIMEOUT), Ex);
 		}
 	}
@@ -254,7 +255,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setReadTimeout(ps.get(READ_TIMEOUT));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, READ_TIMEOUT), Ex);
 		}
 	}
@@ -267,7 +268,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setServerAliveCountMax(ps.get(SERVER_ALIVE_MAX_COUNT));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, SERVER_ALIVE_MAX_COUNT),
 					Ex);
 		}
@@ -281,7 +282,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setServerAliveInterval(ps.get(SERVER_ALIVE_INTERVAL));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, SERVER_ALIVE_INTERVAL),
 					Ex);
 		}
@@ -295,7 +296,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyType(ps.get(PROXY_TYPE));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_TYPE), Ex);
 		}
 	}
@@ -308,7 +309,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyHost(ps.get(PROXY_HOST));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_HOST), Ex);
 		}
 	}
@@ -321,7 +322,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setProxyPort(ps.get(PROXY_PORT));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROXY_PORT), Ex);
 		}
 	}
@@ -334,7 +335,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setMgmtEnable(ps.get(MGMT_ENABLE));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_ENABLE), Ex);
 		}
 	}
@@ -347,7 +348,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setManagementLogin(ps.get(MGMT_LOGIN));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_LOGIN), Ex);
 		}
 	}
@@ -360,7 +361,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setManagementKeyPairName(ps.get(MGMT_KEYPAIRNAME));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_KEYPAIRNAME), Ex);
 		}
 	}
@@ -373,7 +374,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		try {
 			setManagementPassword(ps.get(MGMT_PASSWORD));
 		} catch (SshPlugInConfigurationException Ex) {
-			throw new SshPlugInConfigurationException(Messages.bind(
+			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, MGMT_PASSWORD), Ex);
 		}
 	}
@@ -722,7 +723,6 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	/**
-	 * 
 	 * @return the ssh management master user. Cannot be null.
 	 */
 	public String getManagementLogin() {
@@ -746,7 +746,6 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	/**
-	 * 
 	 * @return the keypair name of the ssh management master user. Can be null,
 	 *         when the connection as ssh management master user should be done
 	 *         without keypair.
@@ -776,7 +775,6 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	/**
-	 * 
 	 * @return the password of the ssh management master user, or the password
 	 *         of the keypair of the ssh management master user. Can be null, if
 	 *         the keypair of the ssh management master user is defined and if

@@ -28,6 +28,7 @@ import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -512,7 +513,7 @@ public abstract class AwsEc2Cloud {
 		Thread.sleep(sleepfirst);
 		InstanceState is = null;
 		while ((is = getInstanceState(ec2, sAwsInstanceId)) != state) {
-			log.debug(Messages.bind(Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE,
+			log.debug(Msg.bind(Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE,
 					sAwsInstanceId, state, is));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
@@ -521,14 +522,13 @@ public abstract class AwsEc2Cloud {
 			left = timeout - (System.currentTimeMillis() - start);
 			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
 			if (left < 0) {
-				log.warn(Messages.bind(
+				log.warn(Msg.bind(
 						Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_FAILED,
 						sAwsInstanceId, state, timeout / 1000));
 				return false;
 			}
 		}
-		log.info(Messages.bind(
-				Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_SUCCEED,
+		log.info(Msg.bind(Messages.CommonMsg_WAIT_FOR_INSTANCE_STATE_SUCCEED,
 				sAwsInstanceId, state, System.currentTimeMillis() - start));
 		return true;
 	}

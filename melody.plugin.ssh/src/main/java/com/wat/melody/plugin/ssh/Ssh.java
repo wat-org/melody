@@ -12,6 +12,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
@@ -30,27 +31,30 @@ public class Ssh extends AbstractSshManagedOperation {
 	private static Log log = LogFactory.getLog(Ssh.class);
 
 	/**
-	 * The 'ssh' XML element used in the Sequence Descriptor
+	 * Task's name
 	 */
 	public static final String SSH = "ssh";
 
 	/**
-	 * The 'declare' XML Nested Element
+	 * Task's nested element, which specifies a variable declaration.
 	 */
 	public static final String DECLARE_NE = "declare";
 
 	/**
-	 * The 'export' XML Nested Element
+	 * Task's nested element, which specifies an export declaration.
 	 */
 	public static final String EXPORT_NE = "export";
 
 	/**
-	 * The 'description' XML attribute
+	 * Task's attribute, which defines a short description. This description
+	 * will be included in each message logged. It can help to grep the log
+	 * file.
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 
 	/**
-	 * The 'requiretty' XML attribute
+	 * Task's attribute, which specifies if the ssh command execution will set a
+	 * tty or not.
 	 */
 	public static final String REQUIRETTY_ATTR = "requiretty";
 
@@ -132,7 +136,7 @@ public class Ssh extends AbstractSshManagedOperation {
 					+ "Must be a valid IncludeScript.");
 		}
 		if (is.getCommand() != null && is.getFile() != null) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR,
 					Exec.COMMAND_ATTR, Exec.FILE_ATTR));
 		} else if (is.getCommand() != null) {
@@ -158,11 +162,11 @@ public class Ssh extends AbstractSshManagedOperation {
 				}
 				_commandToExecute += fileContent + "\n";
 			} catch (IOException Ex) {
-				throw new SshException(Messages.bind(
-						Messages.SshEx_READ_IO_ERROR, is.getFile()), Ex);
+				throw new SshException(Msg.bind(Messages.SshEx_READ_IO_ERROR,
+						is.getFile()), Ex);
 			}
 		} else {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR,
 					Exec.COMMAND_ATTR, Exec.FILE_ATTR));
 		}

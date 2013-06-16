@@ -16,6 +16,7 @@ import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -63,7 +64,7 @@ public class AwsEc2CloudNetwork {
 			return;
 		}
 		for (NetworkDevice netdev : toRemove) {
-			log.info(Messages.bind(
+			log.info(Msg.bind(
 					Messages.CommonMsg_DETACH_NOTWORK_DEVICE_NOT_SUPPORTED,
 					i.getImageId(), netdev));
 		}
@@ -75,7 +76,7 @@ public class AwsEc2CloudNetwork {
 			return;
 		}
 		for (NetworkDevice netdev : toAdd) {
-			log.info(Messages.bind(
+			log.info(Msg.bind(
 					Messages.CommonMsg_ATTACH_NOTWORK_DEVICE_NOT_SUPPORTED,
 					i.getImageId(), netdev));
 		}

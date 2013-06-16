@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolsException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -87,8 +88,8 @@ public class Protocols extends LinkedHashSet<Protocol> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalProtocolsException(Messages.bind(
-					Messages.ProtocolsEx_EMPTY, protocols));
+			throw new IllegalProtocolsException(Msg.bind(
+					Messages.ProtocolsEx_EMPTY, (Object[]) protocols));
 		}
 	}
 
@@ -103,7 +104,7 @@ public class Protocols extends LinkedHashSet<Protocol> {
 		for (String protocol : sProtocols.split(PROTOCOLS_SEPARATOR)) {
 			protocol = protocol.trim();
 			if (protocol.length() == 0) {
-				throw new IllegalProtocolsException(Messages.bind(
+				throw new IllegalProtocolsException(Msg.bind(
 						Messages.ProtocolsEx_EMPTY_PROTOCOL, sProtocols));
 			}
 			if (protocol.equalsIgnoreCase(_ALL)) {
@@ -114,12 +115,12 @@ public class Protocols extends LinkedHashSet<Protocol> {
 			try {
 				add(Protocol.parseString(protocol));
 			} catch (IllegalProtocolException Ex) {
-				throw new IllegalProtocolsException(Messages.bind(
+				throw new IllegalProtocolsException(Msg.bind(
 						Messages.ProtocolsEx_INVALID_PROTOCOL, sProtocols), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalProtocolsException(Messages.bind(
+			throw new IllegalProtocolsException(Msg.bind(
 					Messages.ProtocolsEx_EMPTY, sProtocols));
 		}
 	}

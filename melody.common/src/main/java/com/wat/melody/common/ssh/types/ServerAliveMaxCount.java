@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
 
 /**
@@ -107,7 +108,7 @@ public class ServerAliveMaxCount {
 	 */
 	private int setValue(int iValue) throws IllegalServerAliveMaxCountException {
 		if (iValue < 0) {
-			throw new IllegalServerAliveMaxCountException(Messages.bind(
+			throw new IllegalServerAliveMaxCountException(Msg.bind(
 					Messages.ServerAliveMaxCountEx_NEGATIVE, iValue));
 		}
 		int previous = getValue();
@@ -133,13 +134,13 @@ public class ServerAliveMaxCount {
 					+ ServerAliveMaxCount.class.getCanonicalName() + ").");
 		}
 		if (sValue.trim().length() == 0) {
-			throw new IllegalServerAliveMaxCountException(Messages.bind(
+			throw new IllegalServerAliveMaxCountException(Msg.bind(
 					Messages.ServerAliveMaxCountEx_EMPTY, sValue));
 		}
 		try {
 			return setValue(Integer.parseInt(sValue));
 		} catch (NumberFormatException Ex) {
-			throw new IllegalServerAliveMaxCountException(Messages.bind(
+			throw new IllegalServerAliveMaxCountException(Msg.bind(
 					Messages.ServerAliveMaxCountEx_NOT_A_NUMBER, sValue));
 		}
 	}

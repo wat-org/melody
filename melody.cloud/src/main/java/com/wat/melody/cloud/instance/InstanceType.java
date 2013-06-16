@@ -3,6 +3,7 @@ package com.wat.melody.cloud.instance;
 import java.util.Arrays;
 
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -21,38 +22,41 @@ public enum InstanceType {
 	 * Convert the given <tt>String</tt> to a {@link InstanceType} object.
 	 * </p>
 	 * 
-	 * @param sType
+	 * @param type
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an <code>InstanceType</code> object, whose equal to the given
-	 *         input <tt>String</tt>.
+	 * @return an {@link InstanceType} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalInstanceTypeException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link InstanceType} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalInstanceTypeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is not one of the
+	 *             {@link InstanceType} Enumeration Constant ;</li>
+	 *             </ul>
 	 */
-	public static InstanceType parseString(String sType)
+	public static InstanceType parseString(String type)
 			throws IllegalInstanceTypeException {
-		if (sType == null) {
+		if (type == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ InstanceType.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(InstanceType.values()) + ").");
 		}
-		if (sType.trim().length() == 0) {
-			throw new IllegalInstanceTypeException(Messages.bind(
-					Messages.InstanceTypeEx_EMPTY, sType));
+		if (type.trim().length() == 0) {
+			throw new IllegalInstanceTypeException(Msg.bind(
+					Messages.InstanceTypeEx_EMPTY, type));
 		}
 		for (InstanceType c : InstanceType.class.getEnumConstants()) {
-			if (sType.equalsIgnoreCase(c.getValue())) {
+			if (type.equalsIgnoreCase(c.getValue())) {
 				return c;
 			}
 		}
-		throw new IllegalInstanceTypeException(Messages.bind(
-				Messages.InstanceTypeEx_INVALID, sType,
+		throw new IllegalInstanceTypeException(Msg.bind(
+				Messages.InstanceTypeEx_INVALID, type,
 				Arrays.asList(InstanceType.values())));
 	}
 

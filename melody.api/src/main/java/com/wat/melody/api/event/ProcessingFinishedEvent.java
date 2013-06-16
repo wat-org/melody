@@ -9,8 +9,8 @@ import com.wat.melody.api.IProcessorManager;
  */
 public class ProcessingFinishedEvent extends ProcessorEvent {
 
-	private State miState;
-	private Throwable moDetails;
+	private State _state;
+	private Throwable _details;
 
 	public ProcessingFinishedEvent(IProcessorManager engine, State state) {
 		this(engine, state, null);
@@ -24,7 +24,7 @@ public class ProcessingFinishedEvent extends ProcessorEvent {
 	}
 
 	public State getState() {
-		return miState;
+		return _state;
 	}
 
 	private void setState(State s) {
@@ -32,20 +32,20 @@ public class ProcessingFinishedEvent extends ProcessorEvent {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + State.class.getCanonicalName() + ".");
 		}
-		miState = s;
+		_state = s;
 	}
 
 	public Throwable getDetails() {
-		return moDetails;
+		return _details;
 	}
 
 	private void setDetails(Throwable s) {
-		if (s == null && miState != State.SUCCESS) {
+		if (s == null && _state != State.SUCCESS) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Throwable.class.getCanonicalName()
 					+ ".");
 		}
-		moDetails = s;
+		_details = s;
 	}
 
 }

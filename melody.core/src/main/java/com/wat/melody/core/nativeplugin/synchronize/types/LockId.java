@@ -1,5 +1,6 @@
 package com.wat.melody.core.nativeplugin.synchronize.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.synchronize.Messages;
 import com.wat.melody.core.nativeplugin.synchronize.exception.IllegalLockIdException;
 
@@ -89,10 +90,10 @@ public class LockId {
 					+ LockId.class.getCanonicalName() + ").");
 		}
 		if (sLockId.trim().length() == 0) {
-			throw new IllegalLockIdException(Messages.bind(
-					Messages.LockIdEx_EMPTY, sLockId));
+			throw new IllegalLockIdException(Msg.bind(Messages.LockIdEx_EMPTY,
+					sLockId));
 		} else if (!sLockId.matches("^" + PATTERN + "$")) {
-			throw new IllegalLockIdException(Messages.bind(
+			throw new IllegalLockIdException(Msg.bind(
 					Messages.LockIdEx_INVALID, sLockId, PATTERN));
 		}
 		String previous = getValue();

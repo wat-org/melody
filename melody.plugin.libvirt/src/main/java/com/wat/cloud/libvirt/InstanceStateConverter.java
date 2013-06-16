@@ -7,6 +7,7 @@ import org.libvirt.DomainInfo;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.Messages;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -57,7 +58,7 @@ public abstract class InstanceStateConverter {
 		 * TODO : créer un state SHUTTING_DOWN, qui correspond au moment ou
 		 * libVitCloud dé-provisionne le Domain
 		 */
-		throw new IllegalInstanceStateException(Messages.bind(
+		throw new IllegalInstanceStateException(Msg.bind(
 				Messages.InstanceStateEx_INVALID, iState,
 				Arrays.asList(DomainInfo.DomainState.values())));
 	}

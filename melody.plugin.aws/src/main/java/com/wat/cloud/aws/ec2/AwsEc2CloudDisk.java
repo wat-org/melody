@@ -32,6 +32,7 @@ import com.wat.melody.cloud.disk.DiskDeviceSize;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -296,7 +297,7 @@ public class AwsEc2CloudDisk {
 		Thread.sleep(sleepfirst);
 		VolumeState vs = null;
 		while ((vs = getVolumeState(ec2, sAwsVolumeId)) != state) {
-			log.debug(Messages.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_STATE,
+			log.debug(Msg.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_STATE,
 					sAwsVolumeId, state, vs));
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
@@ -305,15 +306,14 @@ public class AwsEc2CloudDisk {
 			left = timeout - (System.currentTimeMillis() - start);
 			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
 			if (left < 0) {
-				log.warn(Messages.bind(
+				log.warn(Msg.bind(
 						Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_FAILED,
 						sAwsVolumeId, state, timeout));
 				return false;
 			}
 		}
-		log.info(Messages.bind(
-				Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_SUCCEED, sAwsVolumeId,
-				state, timeout));
+		log.info(Msg.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_STATE_SUCCEED,
+				sAwsVolumeId, state, timeout));
 		return true;
 	}
 
@@ -468,7 +468,7 @@ public class AwsEc2CloudDisk {
 		VolumeAttachmentState vas = null;
 		while ((vas = getVolumeAttachmentState(ec2, sAwsVolumeId,
 				iAttachmentIndex)) != state) {
-			log.debug(Messages.bind(
+			log.debug(Msg.bind(
 					Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE,
 					sAwsVolumeId, state, vas));
 			if (timeout == 0) {
@@ -478,13 +478,13 @@ public class AwsEc2CloudDisk {
 			left = timeout - (System.currentTimeMillis() - start);
 			Thread.sleep(Math.min(WAIT_STEP, Math.max(0, left)));
 			if (left < 0) {
-				log.warn(Messages
+				log.warn(Msg
 						.bind(Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_FAILED,
 								sAwsVolumeId, state, timeout));
 				return false;
 			}
 		}
-		log.info(Messages.bind(
+		log.info(Msg.bind(
 				Messages.CommonMsg_WAIT_FOR_VOLUME_ATTACHEMENT_STATE_SUCCEED,
 				sAwsVolumeId, state, timeout));
 		return true;

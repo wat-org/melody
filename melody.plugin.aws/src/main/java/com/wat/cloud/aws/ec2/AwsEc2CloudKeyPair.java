@@ -11,6 +11,7 @@ import com.amazonaws.services.ec2.model.DescribeKeyPairsRequest;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -152,7 +153,7 @@ public class AwsEc2CloudKeyPair {
 					+ "Must be a valid File (a Public Key File).");
 		}
 
-		log.trace(Messages.bind(Messages.CommonMsg_GENKEY_BEGIN, keyPairName));
+		log.trace(Msg.bind(Messages.CommonMsg_GENKEY_BEGIN, keyPairName));
 		ImportKeyPairRequest ikpreq = new ImportKeyPairRequest();
 		ikpreq.withKeyName(keyPairName.getValue());
 		ikpreq.withPublicKeyMaterial(sPublicKey);
@@ -162,14 +163,13 @@ public class AwsEc2CloudKeyPair {
 		} catch (AmazonServiceException Ex) {
 			// Means that the given Key Pair Name is not valid
 			if (Ex.getErrorCode().indexOf("InvalidKeyPair.Duplicate") != -1) {
-				log.debug(Messages.bind(Messages.CommonMsg_GENKEY_DUP,
-						keyPairName));
+				log.debug(Msg.bind(Messages.CommonMsg_GENKEY_DUP, keyPairName));
 				return;
 			} else {
 				throw Ex;
 			}
 		}
-		log.debug(Messages.bind(Messages.CommonMsg_GENKEY_END, keyPairName));
+		log.debug(Msg.bind(Messages.CommonMsg_GENKEY_END, keyPairName));
 	}
 
 	/**
@@ -199,13 +199,13 @@ public class AwsEc2CloudKeyPair {
 					+ "Must be a valid String (an Aws KeyPair Name).");
 		}
 
-		log.trace(Messages.bind(Messages.CommonMsg_DELKEY_BEGIN, keyPairName));
+		log.trace(Msg.bind(Messages.CommonMsg_DELKEY_BEGIN, keyPairName));
 		DeleteKeyPairRequest dkpreq = new DeleteKeyPairRequest();
 		dkpreq.withKeyName(keyPairName.getValue());
 
 		// will not fail if the given doesn't exists
 		ec2.deleteKeyPair(dkpreq);
-		log.debug(Messages.bind(Messages.CommonMsg_DELKEY_END, keyPairName));
+		log.debug(Msg.bind(Messages.CommonMsg_DELKEY_END, keyPairName));
 	}
 
 }

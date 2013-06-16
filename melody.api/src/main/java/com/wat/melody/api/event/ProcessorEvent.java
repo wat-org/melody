@@ -9,7 +9,7 @@ import com.wat.melody.api.IProcessorManager;
  */
 public abstract class ProcessorEvent extends AbstractEvent {
 
-	private IProcessorManager msProcessorManager;
+	private IProcessorManager _processorManager;
 
 	public ProcessorEvent(IProcessorManager engine) {
 		super();
@@ -17,7 +17,7 @@ public abstract class ProcessorEvent extends AbstractEvent {
 	}
 
 	public IProcessorManager getProcessorManager() {
-		return msProcessorManager;
+		return _processorManager;
 	}
 
 	private IProcessorManager setProcessorManager(IProcessorManager e) {
@@ -26,7 +26,7 @@ public abstract class ProcessorEvent extends AbstractEvent {
 					+ "Must be a valid "
 					+ IProcessorManager.class.getCanonicalName() + ".");
 		}
-		return msProcessorManager = e;
+		return _processorManager = e;
 	}
 
 }

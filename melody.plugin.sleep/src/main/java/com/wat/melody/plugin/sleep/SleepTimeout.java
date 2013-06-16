@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.sleep;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -22,72 +23,76 @@ public class SleepTimeout implements Timeout {
 	}
 
 	/**
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return a {@link SleepTimeout}, which is equal to the given <tt>long</tt>
+	 *         .
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is <= 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public static SleepTimeout parseLong(long iTimeout)
+	public static SleepTimeout parseLong(long timeout)
 			throws IllegalTimeoutException {
-		return new SleepTimeout(iTimeout);
+		return new SleepTimeout(timeout);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return a {@link SleepTimeout}, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is <= 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static SleepTimeout parseString(String sTimeout)
+	public static SleepTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
-		return new SleepTimeout(sTimeout);
+		return new SleepTimeout(timeout);
 	}
 
 	private GenericTimeout _timeout;
 
 	/**
-	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is <= 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public SleepTimeout(long iTimeout) throws IllegalTimeoutException {
-		_timeout = new GenericTimeout(iTimeout);
+	public SleepTimeout(long timeout) throws IllegalTimeoutException {
+		_timeout = new GenericTimeout(timeout);
 		if (_timeout.getTimeoutInMillis() <= 0) {
-			throw new IllegalTimeoutException(Messages.bind(
-					Messages.SleepTimeoutEx_INVALID, iTimeout));
+			throw new IllegalTimeoutException(Msg.bind(
+					Messages.SleepTimeoutEx_INVALID, timeout));
 		}
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is <= 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public SleepTimeout(String sTimeout) throws IllegalTimeoutException {
-		_timeout = new GenericTimeout(sTimeout);
+	public SleepTimeout(String timeout) throws IllegalTimeoutException {
+		_timeout = new GenericTimeout(timeout);
 		if (_timeout.getTimeoutInMillis() <= 0) {
-			throw new IllegalTimeoutException(Messages.bind(
-					Messages.SleepTimeoutEx_INVALID, sTimeout));
+			throw new IllegalTimeoutException(Msg.bind(
+					Messages.SleepTimeoutEx_INVALID, timeout));
 		}
 	}
 
@@ -102,7 +107,6 @@ public class SleepTimeout implements Timeout {
 	}
 
 	/**
-	 * 
 	 * @return the timeout in seconds.
 	 */
 	public long getTimeout() {
@@ -110,7 +114,6 @@ public class SleepTimeout implements Timeout {
 	}
 
 	/**
-	 * 
 	 * @return the timeout in milliseconds.
 	 */
 	public long getTimeoutInMillis() {

@@ -110,4 +110,5 @@ class UploaderThread implements Runnable {
 	private Throwable setFinalError(Throwable e) {
 		return _finalError = e;
 	}
+
 }

@@ -19,6 +19,7 @@ import java.util.Set;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 import com.wat.melody.common.ssh.types.exception.ResourceException;
 import com.wat.melody.common.systool.SysTool;
@@ -86,16 +87,16 @@ public class ResourceMatcher {
 	public static final String LINK_OPTION_ATTR = "linkOption";
 
 	// Mandatory with no default value
-	private File moLocalBaseDir;
-	private String msMatch;
+	private File _localBaseDir;
+	private String _match;
 	// Mandatory with a default value
-	private String msRemoteBaseDir;
-	private Modifiers moFileModifiers;
-	private Modifiers moDirModifiers;
-	private LinkOption moLinkOption;
-	private boolean mbTemplate;
+	private String _remoteBaseDir;
+	private Modifiers _fileModifiers;
+	private Modifiers _dirModifiers;
+	private LinkOption _linkOption;
+	private boolean _template;
 	// Optional
-	private GroupID msGroup;
+	private GroupID _group;
 
 	public ResourceMatcher() {
 		super();
@@ -156,15 +157,15 @@ public class ResourceMatcher {
 	}
 
 	private void initLocalBaseDir() {
-		moLocalBaseDir = null;
+		_localBaseDir = null;
 	}
 
 	private void initMatch() {
-		msMatch = null;
+		_match = null;
 	}
 
 	private void initGroup() {
-		msGroup = null;
+		_group = null;
 	}
 
 	public List<SimpleResource> findResources() throws IOException {
@@ -184,7 +185,7 @@ public class ResourceMatcher {
 	}
 
 	public File getLocalBaseDir() {
-		return moLocalBaseDir;
+		return _localBaseDir;
 	}
 
 	@Attribute(name = LOCAL_BASEDIR_ATTR)
@@ -199,12 +200,12 @@ public class ResourceMatcher {
 			throw new ResourceException(Ex);
 		}
 		File previous = getLocalBaseDir();
-		moLocalBaseDir = basedir;
+		_localBaseDir = basedir;
 		return previous;
 	}
 
 	public String getMatch() {
-		return msMatch;
+		return _match;
 	}
 
 	@Attribute(name = MATCH_ATTR)
@@ -215,16 +216,16 @@ public class ResourceMatcher {
 					+ "(a PathMatcher Glob Pattern).");
 		}
 		if (sMatch.indexOf('/') == 0) {
-			throw new ResourceException(Messages.bind(
+			throw new ResourceException(Msg.bind(
 					Messages.ResourceEx_INVALID_MATCH_ATTR, sMatch));
 		}
 		String previous = getMatch();
-		msMatch = sMatch;
+		_match = sMatch;
 		return previous;
 	}
 
 	public String getRemoteBaseDir() {
-		return msRemoteBaseDir;
+		return _remoteBaseDir;
 	}
 
 	@Attribute(name = REMOTE_BASEDIR_ATTR)
@@ -234,12 +235,12 @@ public class ResourceMatcher {
 					+ "Must be a valid String (a Directory Path).");
 		}
 		String previous = getRemoteBaseDir();
-		msRemoteBaseDir = sDestination;
+		_remoteBaseDir = sDestination;
 		return previous;
 	}
 
 	public Modifiers getFileModifiers() {
-		return moFileModifiers;
+		return _fileModifiers;
 	}
 
 	@Attribute(name = FILE_MODIFIERS_ATTR)
@@ -249,12 +250,12 @@ public class ResourceMatcher {
 					+ "Must be a valid Modifiers.");
 		}
 		Modifiers previous = getFileModifiers();
-		moFileModifiers = modifiers;
+		_fileModifiers = modifiers;
 		return previous;
 	}
 
 	public Modifiers getDirModifiers() {
-		return moDirModifiers;
+		return _dirModifiers;
 	}
 
 	@Attribute(name = DIR_MODIFIERS_ATTR)
@@ -264,12 +265,12 @@ public class ResourceMatcher {
 					+ "Must be a valid Modifiers.");
 		}
 		Modifiers previous = getDirModifiers();
-		moDirModifiers = modifiers;
+		_dirModifiers = modifiers;
 		return previous;
 	}
 
 	public LinkOption getLinkOption() {
-		return moLinkOption;
+		return _linkOption;
 	}
 
 	@Attribute(name = LINK_OPTION_ATTR)
@@ -279,12 +280,12 @@ public class ResourceMatcher {
 					+ "Must be a valid LinkOption.");
 		}
 		LinkOption previous = getLinkOption();
-		moLinkOption = linkOption;
+		_linkOption = linkOption;
 		return previous;
 	}
 
 	public GroupID getGroup() {
-		return msGroup;
+		return _group;
 	}
 
 	@Attribute(name = GROUP_ATTR)
@@ -294,18 +295,18 @@ public class ResourceMatcher {
 					+ "Must be a valid GroupID.");
 		}
 		GroupID previous = getGroup();
-		msGroup = sGroup;
+		_group = sGroup;
 		return previous;
 	}
 
 	public boolean getTemplate() {
-		return mbTemplate;
+		return _template;
 	}
 
 	@Attribute(name = TEMPLATE_ATTR)
 	public boolean setTemplate(boolean sGroup) {
 		boolean previous = getTemplate();
-		mbTemplate = sGroup;
+		_template = sGroup;
 		return previous;
 	}
 

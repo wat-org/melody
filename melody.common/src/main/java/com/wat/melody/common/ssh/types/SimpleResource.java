@@ -17,8 +17,8 @@ import java.nio.file.Paths;
  */
 public class SimpleResource {
 
-	private Path moPath;
-	private ResourceMatcher moMatcher;
+	private Path _path;
+	private ResourceMatcher _matcher;
 
 	/**
 	 * @param path
@@ -173,7 +173,7 @@ public class SimpleResource {
 	}
 
 	public Path getPath() {
-		return moPath;
+		return _path;
 	}
 
 	private Path setPath(Path path) {
@@ -183,12 +183,12 @@ public class SimpleResource {
 					+ "path).");
 		}
 		Path previous = getPath();
-		moPath = path;
+		_path = path;
 		return previous;
 	}
 
 	public ResourceMatcher getMatcher() {
-		return moMatcher;
+		return _matcher;
 	}
 
 	private ResourceMatcher setMatcher(ResourceMatcher rm) {
@@ -197,7 +197,7 @@ public class SimpleResource {
 					+ "Must be a valid ResourceMatcher.");
 		}
 		ResourceMatcher previous = getMatcher();
-		moMatcher = rm;
+		_matcher = rm;
 		return previous;
 	}
 

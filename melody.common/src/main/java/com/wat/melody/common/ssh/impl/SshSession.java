@@ -17,6 +17,7 @@ import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
@@ -115,7 +116,7 @@ public class SshSession implements ISshSession {
 		if (isConnected()) {
 			return;
 		}
-		log.trace(Messages.bind(Messages.SessionMsg_CNX, getConnectionDatas(),
+		log.trace(Msg.bind(Messages.SessionMsg_CNX, getConnectionDatas(),
 				getUserDatas()));
 		applyDatas();
 		applySessionConfiguration();
@@ -291,7 +292,7 @@ public class SshSession implements ISshSession {
 			throw new MelodyInterruptedException(Ex);
 		} catch (JSchException Ex) {
 			String msg;
-			msg = Messages.bind(Messages.SessionEx_FAILED_TO_CONNECT,
+			msg = Msg.bind(Messages.SessionEx_FAILED_TO_CONNECT,
 					getConnectionDatas(), getUserDatas());
 			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
 				// will match message 'Auth cancel' and 'Auth fail'

@@ -13,6 +13,7 @@ import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -79,8 +80,8 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	public void startInstance(long startTimeout) throws OperationException,
 			InterruptedException {
 		if (!LibVirtCloud.startInstance(getInstance(), startTimeout)) {
-			throw new OperationException(Messages.bind(
-					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
+			throw new OperationException(Msg.bind(Messages.StartEx_TIMEOUT,
+					getInstanceId(), startTimeout));
 		}
 	}
 
@@ -88,7 +89,7 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	public void stopInstance(long stopTimeout) throws OperationException,
 			InterruptedException {
 		if (!LibVirtCloud.stopInstance(getInstance(), stopTimeout)) {
-			throw new OperationException(Messages.bind(Messages.StopEx_TIMEOUT,
+			throw new OperationException(Msg.bind(Messages.StopEx_TIMEOUT,
 					getInstanceId(), stopTimeout));
 		}
 	}
@@ -97,9 +98,8 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 	public void resizeInstance(InstanceType targetType)
 			throws OperationException, InterruptedException {
 		if (!LibVirtCloud.resizeInstance(getInstance(), targetType)) {
-			throw new OperationException(Messages.bind(
-					Messages.ResizeEx_FAILED, getInstanceId(),
-					getInstanceType(), targetType));
+			throw new OperationException(Msg.bind(Messages.ResizeEx_FAILED,
+					getInstanceId(), getInstanceType(), targetType));
 		}
 	}
 

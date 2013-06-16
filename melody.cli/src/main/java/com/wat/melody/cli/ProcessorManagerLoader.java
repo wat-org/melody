@@ -34,6 +34,7 @@ import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.log.exception.IllegalLogThresholdException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.Property;
@@ -284,7 +285,7 @@ public class ProcessorManagerLoader {
 			// If the Command Line contains Arguments
 			// => raise an error
 			if (firstArg < cmdLine.length) {
-				throw new CommandLineParsingException(Messages.bind(
+				throw new CommandLineParsingException(Msg.bind(
 						Messages.CmdEx_UNKNOWN_ARGUMENT_ERROR,
 						cmdLine[firstArg]));
 			}
@@ -296,7 +297,7 @@ public class ProcessorManagerLoader {
 
 			return getProcessorManager();
 		} catch (CommandLineParsingException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_GENERIC_PARSE, Arrays.asList(cmdLine)), Ex);
 		}
 	}
@@ -316,6 +317,8 @@ public class ProcessorManagerLoader {
 	 *         Command Line using the option <tt>-C</tt>), or <tt>null</tt> (if
 	 *         option <tt>-C</tt> was not provided in the Command Line).
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Command Line is <tt>null</tt>.
 	 * @throws CommandLineParsingException
 	 *             <ul>
 	 *             <li>if Option </tt>-C</tt> appears multiple times in the
@@ -325,6 +328,10 @@ public class ProcessorManagerLoader {
 	 */
 	public String retrieveUserDefinedGlobalConfigurationFilePath(
 			String[] cmdLine) throws CommandLineParsingException {
+		if (cmdLine == null) {
+			throw new IllegalArgumentException("null: Not accepted."
+					+ "Must be a valid String[] (a Command Line).");
+		}
 		String sUserDefinedGCFilePath = null;
 		for (int i = 0; i < cmdLine.length; i++) {
 			Matcher match = C_OPTION_FINDER.matcher(cmdLine[i]);
@@ -336,12 +343,12 @@ public class ProcessorManagerLoader {
 				i += match.group(1).length() + 1;
 				try {
 					if (cmdLine[i].equals("--")) {
-						throw new CommandLineParsingException(Messages.bind(
+						throw new CommandLineParsingException(Msg.bind(
 								Messages.CmdEx_MISSING_OPTION_VALUE, 'C'));
 					}
 					sUserDefinedGCFilePath = cmdLine[i];
 				} catch (ArrayIndexOutOfBoundsException Ex) {
-					throw new CommandLineParsingException(Messages.bind(
+					throw new CommandLineParsingException(Msg.bind(
 							Messages.CmdEx_MISSING_OPTION_VALUE, 'C'));
 				}
 			}
@@ -360,7 +367,7 @@ public class ProcessorManagerLoader {
 	 * 
 	 * @return the index of the first Argument of the Command Line.
 	 * 
-	 * @throws IllegalArgumentException
+	 * @throws NullPointerException
 	 *             if the given Command Line is <tt>null</tt>.
 	 * @throws IOException
 	 *             if an IO error occurred.
@@ -375,10 +382,6 @@ public class ProcessorManagerLoader {
 	 */
 	private int parseOptions(String[] cmdLine)
 			throws CommandLineParsingException, IOException {
-		if (cmdLine == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String[].");
-		}
 		for (int i = 0; i < cmdLine.length; i++) {
 			// end of option list => exit option parsing loop
 			if (cmdLine[i].length() == 0 || cmdLine[i].charAt(0) != '-') {
@@ -402,7 +405,7 @@ public class ProcessorManagerLoader {
 					i = parseOption(cmdLine, i, sOpt.charAt(j));
 				} catch (ArrayIndexOutOfBoundsException Ex) {
 					throw new CommandLineParsingException(
-							Messages.bind(Messages.CmdEx_MISSING_OPTION_VALUE,
+							Msg.bind(Messages.CmdEx_MISSING_OPTION_VALUE,
 									sOpt.charAt(j)));
 				}
 		}
@@ -450,7 +453,7 @@ public class ProcessorManagerLoader {
 		case 'C': // Configuration File has already been loaded
 			return ++i;
 		default:
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_UNKNOWN_OPTION_SPECIFIER, cOpt));
 		}
 	}
@@ -465,7 +468,7 @@ public class ProcessorManagerLoader {
 			filter.setLevelMin(LogThreshold.increase(filter.getLevelMin()));
 			filter.activateOptions();
 		} catch (IllegalLogThresholdException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_TOOMUCH_LOG_THRESHOLD, 'q'), Ex);
 		}
 
@@ -481,7 +484,7 @@ public class ProcessorManagerLoader {
 			filter.setLevelMin(LogThreshold.decrease(filter.getLevelMin()));
 			filter.activateOptions();
 		} catch (IllegalLogThresholdException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_TOOMUCH_LOG_THRESHOLD, 'v'), Ex);
 		}
 		return i;
@@ -490,7 +493,7 @@ public class ProcessorManagerLoader {
 	private int parseResourcesFilter(String[] cmdLine, int i)
 			throws CommandLineParsingException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'F'));
 		}
 		try {
@@ -498,10 +501,10 @@ public class ProcessorManagerLoader {
 			pm.getResourcesDescriptor().addFilter(
 					Filter.parseFilter(cmdLine[i]));
 		} catch (IllegalTargetsFilterException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'T'), Ex);
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'F'), Ex);
 		}
 		return i;
@@ -510,7 +513,7 @@ public class ProcessorManagerLoader {
 	private int parseTargetFilter(String[] cmdLine, int i)
 			throws CommandLineParsingException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'T'));
 		}
 		try {
@@ -518,7 +521,7 @@ public class ProcessorManagerLoader {
 			pm.getResourcesDescriptor().addTargetFilter(
 					Filter.parseFilter(cmdLine[i]));
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'T'), Ex);
 		}
 		return i;
@@ -527,7 +530,7 @@ public class ProcessorManagerLoader {
 	private int parseOrder(String[] cmdLine, int i)
 			throws CommandLineParsingException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'o'));
 		}
 		try {
@@ -535,7 +538,7 @@ public class ProcessorManagerLoader {
 			pm.getSequenceDescriptor().addOrder(
 					OrderName.parseString(cmdLine[i]));
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'o'), Ex);
 		}
 		return i;
@@ -544,20 +547,20 @@ public class ProcessorManagerLoader {
 	private int parseResourcesDescriptor(String[] cmdLine, int i)
 			throws CommandLineParsingException, IOException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'E'));
 		}
 		try {
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().add(cmdLine[i]);
 		} catch (IllegalTargetsFilterException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'T'), Ex);
 		} catch (IllegalResourcesFilterException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'F'), Ex);
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'E'), Ex);
 		}
 		return i;
@@ -566,17 +569,17 @@ public class ProcessorManagerLoader {
 	private int parseSequenceDescriptor(String[] cmdLine, int i)
 			throws CommandLineParsingException, IOException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'f'));
 		}
 		try {
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().load(cmdLine[i]);
 		} catch (IllegalOrderException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'o'), Ex);
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'f'), Ex);
 		}
 		return i;
@@ -585,7 +588,7 @@ public class ProcessorManagerLoader {
 	private int parseProperties(String[] cmdLine, int i)
 			throws CommandLineParsingException {
 		if (cmdLine[++i].equals("--")) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'V'));
 		}
 		try {
@@ -593,7 +596,7 @@ public class ProcessorManagerLoader {
 			pm.getSequenceDescriptor().addProperty(
 					Property.parseProperty(cmdLine[i]));
 		} catch (MelodyException Ex) {
-			throw new CommandLineParsingException(Messages.bind(
+			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'V'), Ex);
 		}
 		return i;
@@ -744,7 +747,7 @@ public class ProcessorManagerLoader {
 			loadAllPlugInsConfiguration(oProps);
 		} catch (IllegalFileException | IllegalPropertiesSetException
 				| ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_GENERIC_GLOBAL_CONF_LOAD, gcfPath), Ex);
 		}
 	}
@@ -767,7 +770,7 @@ public class ProcessorManagerLoader {
 				loadLoggingVariableToSubstitute(oProps, vtsd);
 			}
 		} catch (ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					LOGGING_VARIABLES_TO_SUBSTITUTE), Ex);
 		}
@@ -776,7 +779,7 @@ public class ProcessorManagerLoader {
 	private void loadLoggingVariableToSubstitute(PropertySet oProps, String vtsd)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(vtsd)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, vtsd));
 		}
 		try {
@@ -787,7 +790,7 @@ public class ProcessorManagerLoader {
 			}
 			System.setProperty(vtsd, val);
 		} catch (ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, vtsd), Ex);
 		}
 	}
@@ -795,7 +798,7 @@ public class ProcessorManagerLoader {
 	private void loadLoggingConfigFile(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(LOGGING_CONFIG_FILE)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, LOGGING_CONFIG_FILE));
 		}
 		try {
@@ -807,7 +810,7 @@ public class ProcessorManagerLoader {
 			FS.validateFileExists(val);
 			org.apache.log4j.xml.DOMConfigurator.configure(val);
 		} catch (MelodyException | FactoryConfigurationError Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, LOGGING_CONFIG_FILE), Ex);
 		}
 	}
@@ -815,7 +818,7 @@ public class ProcessorManagerLoader {
 	private void loadProcessorManagerClass(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(PROCESSOR_MANAGER_CLASS)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, PROCESSOR_MANAGER_CLASS));
 		}
 		try {
@@ -832,7 +835,7 @@ public class ProcessorManagerLoader {
 		} catch (ProcessorManagerFactoryException
 				| ConfigurationLoadingException Ex) {
 			throw new ConfigurationLoadingException(
-					Messages.bind(Messages.ConfEx_INVALID_DIRECTIVE,
+					Msg.bind(Messages.ConfEx_INVALID_DIRECTIVE,
 							PROCESSOR_MANAGER_CLASS), Ex);
 		}
 
@@ -841,7 +844,7 @@ public class ProcessorManagerLoader {
 	private void loadWorkingFolderPath(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(WORKING_FOLDER_PATH)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, WORKING_FOLDER_PATH));
 		}
 		try {
@@ -853,7 +856,7 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.setWorkingFolderPath(val);
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, WORKING_FOLDER_PATH), Ex);
 		}
 
@@ -862,7 +865,7 @@ public class ProcessorManagerLoader {
 	private void loadMaxPar(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(MAX_SIMULTANEOUS_STEP)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, MAX_SIMULTANEOUS_STEP));
 		}
 		try {
@@ -875,11 +878,11 @@ public class ProcessorManagerLoader {
 				IProcessorManager pm = getProcessorManager();
 				pm.setMaxSimultaneousStep(Integer.parseInt(val));
 			} catch (NumberFormatException Ex) {
-				throw new ConfigurationLoadingException(Messages.bind(
+				throw new ConfigurationLoadingException(Msg.bind(
 						Messages.ConfEx_INVALID_INTEGER_FORMAT, val));
 			}
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, MAX_SIMULTANEOUS_STEP),
 					Ex);
 		}
@@ -888,7 +891,7 @@ public class ProcessorManagerLoader {
 	private void loadHardKillTimeout(PropertySet oProps)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(HARD_KILL_TIMEOUT)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, HARD_KILL_TIMEOUT));
 		}
 		try {
@@ -901,11 +904,11 @@ public class ProcessorManagerLoader {
 				IProcessorManager pm = getProcessorManager();
 				pm.setHardKillTimeout(Integer.parseInt(val));
 			} catch (NumberFormatException Ex) {
-				throw new ConfigurationLoadingException(Messages.bind(
+				throw new ConfigurationLoadingException(Msg.bind(
 						Messages.ConfEx_INVALID_INTEGER_FORMAT, val));
 			}
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, HARD_KILL_TIMEOUT), Ex);
 		}
 	}
@@ -928,7 +931,7 @@ public class ProcessorManagerLoader {
 				loadResourcesDescriptor(oProps, rdd);
 			}
 		} catch (ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, RESOURCES_DESCRIPTORS),
 					Ex);
 		}
@@ -937,7 +940,7 @@ public class ProcessorManagerLoader {
 	private void loadResourcesDescriptor(PropertySet oProps, String rdd)
 			throws ConfigurationLoadingException, IOException {
 		if (!oProps.containsKey(rdd)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, rdd));
 		}
 		try {
@@ -949,13 +952,13 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.getResourcesDescriptor().add(val);
 		} catch (IllegalTargetsFilterException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, TARGETS_FILTERS), Ex);
 		} catch (IllegalResourcesFilterException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, RESOURCES_FILTERS), Ex);
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, rdd), Ex);
 		}
 	}
@@ -970,7 +973,7 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.setBatchMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, BATCH_MODE), Ex);
 		}
 	}
@@ -985,7 +988,7 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.setPreserveTemporaryFilesMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					PRESERVE_TEMPORARY_FILES_MODE), Ex);
 		}
@@ -1001,7 +1004,7 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.setRunDryMode(Bool.parseString(val));
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, RUN_DRY_MODE), Ex);
 		}
 	}
@@ -1020,10 +1023,10 @@ public class ProcessorManagerLoader {
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().load(val);
 		} catch (IllegalOrderException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ORDERS), Ex);
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					SEQUENCE_DESCRIPTOR_FILE_PATH), Ex);
 		}
@@ -1044,7 +1047,7 @@ public class ProcessorManagerLoader {
 			pm.getSequenceDescriptor().addOrders(
 					OrderNameSet.parseOrderNameSet(val));
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ORDERS), Ex);
 		}
 	}
@@ -1068,7 +1071,7 @@ public class ProcessorManagerLoader {
 				loadProperty(oProps, p);
 			}
 		} catch (MelodyException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, PROPERTIES), Ex);
 		}
 	}
@@ -1076,7 +1079,7 @@ public class ProcessorManagerLoader {
 	private void loadProperty(PropertySet oProps, String p)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(p)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, p));
 		}
 		IProcessorManager pm = getProcessorManager();
@@ -1102,10 +1105,10 @@ public class ProcessorManagerLoader {
 				loadResourcesFilter(oProps, f);
 			}
 		} catch (IllegalTargetsFilterException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, TARGETS_FILTERS), Ex);
 		} catch (ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, RESOURCES_FILTERS), Ex);
 		}
 	}
@@ -1113,7 +1116,7 @@ public class ProcessorManagerLoader {
 	private void loadResourcesFilter(PropertySet oProps, String f)
 			throws ConfigurationLoadingException, IllegalTargetsFilterException {
 		if (!oProps.containsKey(f)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, f));
 		}
 		try {
@@ -1127,7 +1130,7 @@ public class ProcessorManagerLoader {
 		} catch (IllegalTargetsFilterException Ex) {
 			throw Ex;
 		} catch (ConfigurationLoadingException | IllegalFilterException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, f), Ex);
 		}
 	}
@@ -1151,7 +1154,7 @@ public class ProcessorManagerLoader {
 				loadTargetsFilter(oProps, f);
 			}
 		} catch (ConfigurationLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, TARGETS_FILTERS), Ex);
 		}
 	}
@@ -1159,7 +1162,7 @@ public class ProcessorManagerLoader {
 	private void loadTargetsFilter(PropertySet oProps, String f)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(f)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, f));
 		}
 		try {
@@ -1172,7 +1175,7 @@ public class ProcessorManagerLoader {
 			pm.getResourcesDescriptor()
 					.addTargetFilter(Filter.parseFilter(val));
 		} catch (ConfigurationLoadingException | IllegalFilterException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, f), Ex);
 		}
 	}
@@ -1198,13 +1201,13 @@ public class ProcessorManagerLoader {
 	private void registerAllPlugInClasses(PropertySet oProps, String pi)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pi)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, TASK_DIRECTIVES,
 					pi, oProps.getSourceFile()));
 		}
 		String pics = oProps.get(pi);
 		if (pics.trim().length() == 0) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_EMPTY_TASKS_DIRECTIVE, pi, TASK_DIRECTIVES));
 		}
 		for (String pic : pics.split(",")) {
@@ -1226,10 +1229,10 @@ public class ProcessorManagerLoader {
 		try {
 			c = (Class<ITask>) Class.forName(pic);
 		} catch (ClassNotFoundException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_CNF_TASKS_DIRECTIVE, pi, pic));
 		} catch (NoClassDefFoundError Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_NCDF_TASKS_DIRECTIVE, pi, pic, Ex
 							.getMessage().replaceAll("/", ".")));
 		}
@@ -1237,11 +1240,11 @@ public class ProcessorManagerLoader {
 			c.getConstructor().newInstance();
 		} catch (NoSuchMethodException | IllegalAccessException
 				| InstantiationException | ClassCastException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_IS_TASKS_DIRECTIVE, pi, pic,
 					ITask.class.getCanonicalName()));
 		} catch (InvocationTargetException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_IE_TASKS_DIRECTIVE, pi, pic), Ex.getCause());
 		}
 		/*
@@ -1286,13 +1289,13 @@ public class ProcessorManagerLoader {
 	private String loadPlugInConfigurationDirective(PropertySet oProps,
 			String pcd) throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pcd)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_PLUGINS_DIRECTIVE,
 					PLUGIN_CONF_DIRECTIVES, pcd, oProps.getSourceFile()));
 		}
 		String pcf = oProps.get(pcd);
 		if (pcf.trim().length() == 0) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_EMPTY_PLUGINS_DIRECTIVE, pcd,
 					PLUGIN_CONF_DIRECTIVES));
 		}
@@ -1306,10 +1309,10 @@ public class ProcessorManagerLoader {
 		try {
 			pcps = new PropertySet(pcf);
 		} catch (IllegalFileException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_NVF_PLUGINS_DIRECTIVE, pcd, pcf), Ex);
 		} catch (IllegalPropertiesSetException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_NVPS_PLUGINS_DIRECTIVE, pcd, pcf), Ex);
 		}
 		return pcps;
@@ -1318,14 +1321,14 @@ public class ProcessorManagerLoader {
 	private String findPlugInConfigurationClassName(PropertySet oProps,
 			String pcd, PropertySet pcps) throws ConfigurationLoadingException {
 		if (!pcps.containsKey(IPlugInConfiguration.PLUGIN_CONF_CLASS)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_PCC_DIRECTIVE, pcd,
 					pcps.getSourceFile(),
 					IPlugInConfiguration.PLUGIN_CONF_CLASS));
 		}
 		String pcc = pcps.get(IPlugInConfiguration.PLUGIN_CONF_CLASS);
 		if (pcc.trim().length() == 0) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_EMPTY_PCC_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile()));
@@ -1340,12 +1343,12 @@ public class ProcessorManagerLoader {
 		try {
 			c = (Class<? extends IPlugInConfiguration>) Class.forName(pcc);
 		} catch (ClassNotFoundException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_CNF_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile(), pcc));
 		} catch (NoClassDefFoundError Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_NCDF_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile(), pcc,
@@ -1353,7 +1356,7 @@ public class ProcessorManagerLoader {
 		}
 		IProcessorManager pm = getProcessorManager();
 		if (pm.getPluginConfigurations().contains(c)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_DUPLICATE_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile(), c));
@@ -1369,13 +1372,13 @@ public class ProcessorManagerLoader {
 			pc = c.getConstructor().newInstance();
 		} catch (NoSuchMethodException | InstantiationException
 				| IllegalAccessException | ClassCastException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_IS_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile(), c.getClass().getCanonicalName(),
 					IPlugInConfiguration.class.getCanonicalName()));
 		} catch (InvocationTargetException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_IE_CONF_DIRECTIVE,
 					IPlugInConfiguration.PLUGIN_CONF_CLASS,
 					pcps.getSourceFile(), c.getClass().getCanonicalName()),
@@ -1384,7 +1387,7 @@ public class ProcessorManagerLoader {
 		try {
 			pc.load(pcps);
 		} catch (PlugInConfigurationException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_GENERIC_PLUGIN_LOAD, pcps.getSourceFile()),
 					Ex);
 		}
@@ -1419,7 +1422,7 @@ public class ProcessorManagerLoader {
 	private void loadXPathNamespaceDefinitions(PropertySet oProps, String nscd)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(nscd)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, nscd));
 		}
 
@@ -1432,7 +1435,7 @@ public class ProcessorManagerLoader {
 			getProcessorManager().getXPathResolver().loadNamespaceDefinitions(
 					oProps, nss.split(","));
 		} catch (XPathNamespaceContextResolverLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, nscd), Ex);
 		}
 	}
@@ -1460,7 +1463,7 @@ public class ProcessorManagerLoader {
 	private void loadXPathFunctionDefinitions(PropertySet oProps, String fcd)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(fcd)) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_MISSING_DIRECTIVE, fcd));
 		}
 
@@ -1473,7 +1476,7 @@ public class ProcessorManagerLoader {
 			getProcessorManager().getXPathResolver().loadFunctionDefinitions(
 					oProps, nss.split(","));
 		} catch (XPathFunctionResolverLoadingException Ex) {
-			throw new ConfigurationLoadingException(Messages.bind(
+			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, fcd), Ex);
 		}
 	}

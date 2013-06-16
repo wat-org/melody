@@ -3,6 +3,7 @@ package com.wat.melody.api;
 import java.lang.reflect.InvocationTargetException;
 
 import com.wat.melody.api.exception.ProcessorManagerFactoryException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * <p>
@@ -81,7 +82,7 @@ public class ProcessorManagerFactory {
 	private ProcessorManagerFactory() throws ProcessorManagerFactoryException {
 		String pmClassName = System.getProperty(PROCESSOR_MANAGER_IMPL_KEY);
 		if (pmClassName == null) {
-			throw new ProcessorManagerFactoryException(Messages.bind(
+			throw new ProcessorManagerFactoryException(Msg.bind(
 					Messages.PMFactoryEx_UNDEF_ENV,
 					ProcessorManagerFactory.class.getSimpleName(),
 					IProcessorManager.class.getCanonicalName(),
@@ -90,11 +91,11 @@ public class ProcessorManagerFactory {
 		try {
 			moPMClass = (Class<IProcessorManager>) Class.forName(pmClassName);
 		} catch (ClassNotFoundException Ex) {
-			throw new ProcessorManagerFactoryException(Messages.bind(
+			throw new ProcessorManagerFactoryException(Msg.bind(
 					Messages.PMFactoryEx_CLASS_NOT_FOUND, Ex.getMessage(),
 					IProcessorManager.class.getCanonicalName()));
 		} catch (NoClassDefFoundError Ex) {
-			throw new ProcessorManagerFactoryException(Messages.bind(
+			throw new ProcessorManagerFactoryException(Msg.bind(
 					Messages.PMFactoryEx_NO_CLASS_DEF_FOUND, pmClassName, Ex
 							.getMessage().replaceAll("/", ".")));
 		}
@@ -102,12 +103,12 @@ public class ProcessorManagerFactory {
 			IProcessorManager pm = moPMClass.getConstructor().newInstance();
 		} catch (NoSuchMethodException | InstantiationException
 				| IllegalAccessException | ClassCastException Ex) {
-			throw new ProcessorManagerFactoryException(Messages.bind(
+			throw new ProcessorManagerFactoryException(Msg.bind(
 					Messages.PMFactoryEx_INVALID_SPEC,
 					moPMClass.getCanonicalName(),
 					IProcessorManager.class.getCanonicalName()));
 		} catch (InvocationTargetException Ex) {
-			throw new ProcessorManagerFactoryException(Messages.bind(
+			throw new ProcessorManagerFactoryException(Msg.bind(
 					Messages.PMFactoryEx_INTERNAL_ERROR,
 					moPMClass.getCanonicalName(),
 					IProcessorManager.class.getCanonicalName()), Ex.getCause());

@@ -3,6 +3,7 @@ package com.wat.melody.common.network;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalHostException;
 
 /**
@@ -84,15 +85,15 @@ public class Host {
 					+ "HostName, FQND, InetV4Address or InetV6Address)");
 		}
 		if (host.trim().length() == 0) {
-			throw new IllegalHostException(Messages.bind(Messages.HostEx_EMPTY,
-					host));
+			throw new IllegalHostException(
+					Msg.bind(Messages.HostEx_EMPTY, host));
 		}
 		InetAddress previous = getValue();
 		try {
 			_inetAddress = InetAddress.getByName(host);
 		} catch (UnknownHostException Ex) {
-			throw new IllegalHostException(Messages.bind(
-					Messages.HostEx_INVALID, host), Ex);
+			throw new IllegalHostException(Msg.bind(Messages.HostEx_INVALID,
+					host), Ex);
 		}
 		return previous;
 	}

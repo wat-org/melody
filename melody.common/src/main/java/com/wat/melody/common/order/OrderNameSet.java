@@ -2,6 +2,7 @@ package com.wat.melody.common.order;
 
 import java.util.ArrayList;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.exception.IllegalOrderNameException;
 import com.wat.melody.common.order.exception.IllegalOrderNameSetException;
 
@@ -32,12 +33,11 @@ public class OrderNameSet extends ArrayList<OrderName> {
 	 * @return an {@link OrderNameSet} object, whose equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IllegalOrderNameSetException
 	 *             if the given <tt>String</tt> is not a valid
 	 *             {@link OrderNameSet}.
-	 * @throws IllegalArgumentException
-	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
 	public static OrderNameSet parseOrderNameSet(String orders)
 			throws IllegalOrderNameSetException {
@@ -68,18 +68,18 @@ public class OrderNameSet extends ArrayList<OrderName> {
 		for (String order : orders.split(",")) {
 			order = order.trim();
 			if (order.length() == 0) {
-				throw new IllegalOrderNameSetException(Messages.bind(
+				throw new IllegalOrderNameSetException(Msg.bind(
 						Messages.OrderNameSetEx_EMPTY_ORDER_NAME, orders));
 			}
 			try {
 				add(OrderName.parseString(order));
 			} catch (IllegalOrderNameException Ex) {
-				throw new IllegalOrderNameSetException(Messages.bind(
+				throw new IllegalOrderNameSetException(Msg.bind(
 						Messages.OrderNameSetEx_INVALID_ORDER_NAME, orders), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalOrderNameSetException(Messages.bind(
+			throw new IllegalOrderNameSetException(Msg.bind(
 					Messages.OrderNameSetEx_EMPTY, orders));
 		}
 	}

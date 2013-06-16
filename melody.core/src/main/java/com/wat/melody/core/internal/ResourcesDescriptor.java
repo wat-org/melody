@@ -23,6 +23,7 @@ import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.DUNIDDoc;
@@ -193,7 +194,7 @@ public class ResourcesDescriptor extends FilteredDoc implements
 			// Search for resulting nodes in the eligible targets
 			for (int i = 0; i < nl.getLength(); i++) {
 				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
-					throw new XPathExpressionException(Messages.bind(
+					throw new XPathExpressionException(Msg.bind(
 							Messages.TargetEx_NOT_MATCH_ELEMENT, xpath,
 							DocHelper.parseNodeType(nl.item(i))));
 				}

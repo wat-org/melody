@@ -7,7 +7,8 @@ import com.wat.melody.api.IProcessorManager;
 
 /**
  * <p>
- * Stop the associated {@link IProcessorManager} on JVM termination.
+ * Stop the associated {@link IProcessorManager} on JVM termination and wait for
+ * its end.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -52,7 +53,7 @@ public class ShutdownHook extends Thread {
 	 */
 	public void run() {
 		try {
-			log.info("Exit sequence engaged ...");
+			log.info(Messages.ShutdownHookMsg_EXITING);
 
 			// Request Engine to stop
 			getProcessorManager().stopProcessing();

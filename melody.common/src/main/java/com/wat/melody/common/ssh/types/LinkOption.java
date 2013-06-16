@@ -2,6 +2,7 @@ package com.wat.melody.common.ssh.types;
 
 import java.util.Arrays;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalLinkOptionException;
 
 /**
@@ -48,7 +49,7 @@ public enum LinkOption {
 					+ Arrays.asList(LinkOption.values()) + " ).");
 		}
 		if (sLinkOptions.trim().length() == 0) {
-			throw new IllegalLinkOptionException(Messages.bind(
+			throw new IllegalLinkOptionException(Msg.bind(
 					Messages.LinkOptionEx_EMPTY, sLinkOptions));
 		}
 		for (LinkOption c : LinkOption.class.getEnumConstants()) {
@@ -56,19 +57,19 @@ public enum LinkOption {
 				return c;
 			}
 		}
-		throw new IllegalLinkOptionException(Messages.bind(
+		throw new IllegalLinkOptionException(Msg.bind(
 				Messages.LinkOptionEx_INVALID, sLinkOptions,
 				Arrays.asList(LinkOption.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private LinkOption(String sLinkOptions) {
-		this.msValue = sLinkOptions;
+		this._value = sLinkOptions;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

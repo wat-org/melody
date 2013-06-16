@@ -1,5 +1,6 @@
 package com.wat.melody.common.network;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
 
 /**
@@ -112,7 +113,7 @@ public class IpRange {
 					+ IpRange.class.getCanonicalName() + ").");
 		}
 		if (ipRange.trim().length() == 0) {
-			throw new IllegalIpRangeException(Messages.bind(
+			throw new IllegalIpRangeException(Msg.bind(
 					Messages.IpRangeEx_EMPTY, ipRange));
 		} else if (ipRange.equalsIgnoreCase("all")) {
 			_value = _ALL;
@@ -121,7 +122,7 @@ public class IpRange {
 			ipRange += "/32";
 		}
 		if (!ipRange.matches("^" + PATTERN + "$")) {
-			throw new IllegalIpRangeException(Messages.bind(
+			throw new IllegalIpRangeException(Msg.bind(
 					Messages.IpRangeEx_INVALID, ipRange, PATTERN));
 		}
 		_value = ipRange;

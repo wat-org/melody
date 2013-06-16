@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -44,7 +45,7 @@ public enum Protocol {
 					+ Arrays.asList(Protocol.values()) + ").");
 		}
 		if (protocol.trim().length() == 0) {
-			throw new IllegalProtocolException(Messages.bind(
+			throw new IllegalProtocolException(Msg.bind(
 					Messages.ProtocolEx_EMPTY, protocol));
 		}
 		for (Protocol c : Protocol.class.getEnumConstants()) {
@@ -52,7 +53,7 @@ public enum Protocol {
 				return c;
 			}
 		}
-		throw new IllegalProtocolException(Messages.bind(
+		throw new IllegalProtocolException(Msg.bind(
 				Messages.ProtocolEx_INVALID, protocol,
 				Arrays.asList(Protocol.values())));
 	}

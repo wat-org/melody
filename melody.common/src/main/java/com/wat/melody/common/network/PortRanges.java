@@ -2,6 +2,7 @@ package com.wat.melody.common.network;
 
 import java.util.LinkedHashSet;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 
@@ -85,19 +86,19 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 		for (String portRange : portRanges.split(PORT_RANGES_SEPARATOR)) {
 			portRange = portRange.trim();
 			if (portRange.length() == 0) {
-				throw new IllegalPortRangesException(Messages.bind(
+				throw new IllegalPortRangesException(Msg.bind(
 						Messages.PortRangesEx_EMPTY_PORT_RANGE, portRanges));
 			}
 			try {
 				add(PortRange.parseString(portRange));
 			} catch (IllegalPortRangeException Ex) {
-				throw new IllegalPortRangesException(Messages.bind(
+				throw new IllegalPortRangesException(Msg.bind(
 						Messages.PortRangesEx_INVALID_PORT_RANGE, portRanges),
 						Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalPortRangesException(Messages.bind(
+			throw new IllegalPortRangesException(Msg.bind(
 					Messages.PortRangesEx_EMPTY, portRanges));
 		}
 	}
@@ -116,8 +117,8 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalPortRangesException(Messages.bind(
-					Messages.PortRangesEx_EMPTY, portRanges));
+			throw new IllegalPortRangesException(Msg.bind(
+					Messages.PortRangesEx_EMPTY, (Object[]) portRanges));
 		}
 	}
 

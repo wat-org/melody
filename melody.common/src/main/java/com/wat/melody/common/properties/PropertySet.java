@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetException;
 import com.wat.melody.common.properties.exception.IllegalPropertyException;
 import com.wat.melody.common.systool.SysTool;
@@ -73,64 +74,60 @@ public class PropertySet {
 	 * the file pointed by the given path (see {@link #load(String)} ).
 	 * </p>
 	 * 
-	 * @param sFilePath
+	 * @param filePath
 	 *            is the path of the file to load.
 	 * 
-	 * @throws IllegalFileException
-	 *             if the given path doesn't points to a valid file (non
-	 *             existing, or non readable, or a directory, ...).
-	 * @throws IllegalPropertiesSetException
-	 *             if a line of the file points by the given path is neither an
-	 *             empty <tt>String</tt>, nor a comment, nor a Property String.
-	 * @throws IllegalPropertiesSetException
-	 *             if a Property's name is declared twice.
-	 * @throws IllegalPropertiesSetException
-	 *             if an unrecognized character is escaped.
-	 * @throws IllegalPropertiesSetException
-	 *             if a variable part is not properly formatted (no '{'
-	 *             Immediately after a '$', or no '}' after a '${', ...).
-	 * @throws IllegalPropertiesSetException
-	 *             if, during the expansion process, a variable part refers to
-	 *             an unknown Property's name.
-	 * @throws IllegalPropertiesSetException
-	 *             if, during the expansion process, a circular reference is
-	 *             detected.
 	 * @throws IllegalArgumentException
-	 *             if the given path is null.
+	 *             if the given path is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non existing
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             file ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the file points by the
 	 *             given path.
-	 * 
-	 * @see {@link #load(String)}
-	 * 
+	 * @throws IllegalPropertiesSetException
+	 *             <ul>
+	 *             <li>if a line of the file points by the given path is neither
+	 *             an empty <tt>String</tt>, nor a comment, nor a Property
+	 *             String ;</li>
+	 *             <li>if a Property's name is declared twice ;</li>
+	 *             <li>if an unrecognized character is escaped ;</li>
+	 *             <li>if a variable part is not properly formatted (no '{'
+	 *             Immediately after a '$', or no '}' after a '${', ...) ;</li>
+	 *             <li>if, during the expansion process, a variable part refers
+	 *             to an unknown Property's name ;</li>
+	 *             <li>if, during the expansion process, a circular reference is
+	 *             detected ;</li>
+	 *             </ul>
 	 */
-	public PropertySet(String sFilePath) throws IllegalFileException,
+	public PropertySet(String filePath) throws IllegalFileException,
 			IllegalPropertiesSetException, IOException {
 		this();
-		load(sFilePath);
+		load(filePath);
 	}
 
 	private Map<String, Property> getProperties() {
 		return _properties;
 	}
 
-	private String setFilePath(String sFilePath) {
-		if (sFilePath == null) {
+	private String setFilePath(String filePath) {
+		if (filePath == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a File Path).");
 		}
-		return _sourceFile = sFilePath;
+		return _sourceFile = filePath;
 	}
 
 	/**
-	 * <p>
-	 * Get the path of the file which was used to load (via {@link load(String)}
-	 * ) this object.
-	 * </p>
-	 * 
-	 * @return A <tt>String</tt> which represents the path of the file which was
-	 *         used to load (via {@link load(String)}) this object.
-	 * 
+	 * @return the path of the file which was used to load (via {@link
+	 *         load(String)}) this object.
 	 */
 	public String getSourceFile() {
 		return _sourceFile;
@@ -189,42 +186,46 @@ public class PropertySet {
 	 * 
 	 * </p>
 	 * 
-	 * @param sFilePath
+	 * @param filePath
 	 *            is the path of the file to load.
 	 * 
-	 * @throws IllegalFileException
-	 *             if the given path doesn't points to a valid file (non
-	 *             existing, or non readable, or a directory, ...).
-	 * @throws IllegalPropertiesSetException
-	 *             if a line of the file points by the given path is neither an
-	 *             empty <tt>String</tt>, nor a comment, nor a Property String.
-	 * @throws IllegalPropertiesSetException
-	 *             if a Property's name is declared twice.
-	 * @throws IllegalPropertiesSetException
-	 *             if an unrecognized character is escaped.
-	 * @throws IllegalPropertiesSetException
-	 *             if a variable part is not properly formatted (no '{'
-	 *             Immediately after a '$', or no '}' after a '${', ...).
-	 * @throws IllegalPropertiesSetException
-	 *             if, during the expansion process, a variable part refers to
-	 *             an unknown Property's name.
-	 * @throws IllegalPropertiesSetException
-	 *             if, during the expansion process, a circular reference is
-	 *             detected.
 	 * @throws IllegalArgumentException
-	 *             if the given path is null.
+	 *             if the given path is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non existing
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             file ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the file points by the
 	 *             given path.
-	 * 
+	 * @throws IllegalPropertiesSetException
+	 *             <ul>
+	 *             <li>if a line of the file points by the given path is neither
+	 *             an empty <tt>String</tt>, nor a comment, nor a Property
+	 *             String ;</li>
+	 *             <li>if a Property's name is declared twice ;</li>
+	 *             <li>if an unrecognized character is escaped ;</li>
+	 *             <li>if a variable part is not properly formatted (no '{'
+	 *             Immediately after a '$', or no '}' after a '${', ...) ;</li>
+	 *             <li>if, during the expansion process, a variable part refers
+	 *             to an unknown Property's name ;</li>
+	 *             <li>if, during the expansion process, a circular reference is
+	 *             detected ;</li>
+	 *             </ul>
 	 */
-	public synchronized String load(String sFilePath) throws IOException,
+	public synchronized String load(String filePath) throws IOException,
 			IllegalFileException, IllegalPropertiesSetException {
 		// remove all elements
 		getProperties().clear();
 
 		// Validate input parameters
-		FS.validateFileExists(sFilePath);
+		FS.validateFileExists(filePath);
 
 		// Add a property 'UUID', which have a unique value
 		final String UUID_COMMENT = "# 'UUID' is a special configuration "
@@ -246,26 +247,26 @@ public class PropertySet {
 
 		// Parse the file and load properties without treatment (no expansion,
 		// no escape)
-		parseFile(sFilePath);
+		parseFile(filePath);
 
 		// Escape chars and expand each properties
 		escapedAndExpandProperties();
 
 		// Set the file path
-		return setFilePath(sFilePath);
+		return setFilePath(filePath);
 	}
 
-	private void parseFile(String sFilePath)
+	private void parseFile(String filePath)
 			throws IllegalPropertiesSetException, IOException {
 		FileReader fr = null;
 		BufferedReader br = null;
 		try {
-			fr = new FileReader(new File(sFilePath));
+			fr = new FileReader(new File(filePath));
 			br = new BufferedReader(fr);
 			parseFile(br);
 		} catch (FileNotFoundException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
-					+ "creating an input stream for file '" + sFilePath + "'. "
+					+ "creating an input stream for file '" + filePath + "'. "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced. "
 					+ "Or an external event made the file no more accessible "
@@ -304,11 +305,11 @@ public class PropertySet {
 				try {
 					p = Property.parseProperty(line);
 				} catch (IllegalPropertyException Ex) {
-					throw new IllegalPropertiesSetException(Messages.bind(
+					throw new IllegalPropertiesSetException(Msg.bind(
 							Messages.PropertiesSetEx_MALFORMED_LINE, line), Ex);
 				}
 				if (containsKey(p.getName().getValue())) {
-					throw new IllegalPropertiesSetException(Messages.bind(
+					throw new IllegalPropertiesSetException(Msg.bind(
 							Messages.PropertiesSetEx_MULTIPLE_DIRECTIVE,
 							p.getName()));
 				}
@@ -332,7 +333,7 @@ public class PropertySet {
 			try {
 				n.setValue(escapeAndExpand(p.getValue(), circle));
 			} catch (IllegalPropertiesSetException Ex) {
-				throw new IllegalPropertiesSetException(Messages.bind(
+				throw new IllegalPropertiesSetException(Msg.bind(
 						Messages.PropertiesSetEx_INVALID_PROPERTY_VALUE,
 						p.getName(), p.getValue()), Ex);
 			}
@@ -352,7 +353,7 @@ public class PropertySet {
 		boolean escaped = false;
 		if (nBB != -1 && (nBegin == -1 || (nBegin != -1 && nBB < nBegin))) {
 			if (nBB + 1 >= v.length()) {
-				throw new IllegalPropertiesSetException(Messages.bind(
+				throw new IllegalPropertiesSetException(Msg.bind(
 						Messages.PropertiesSetEx_INVALID_ESCAPE_SEQUENCE, v,
 						nBB));
 			} else {
@@ -373,7 +374,7 @@ public class PropertySet {
 					escaped = true;
 					break;
 				default:
-					throw new IllegalPropertiesSetException(Messages.bind(
+					throw new IllegalPropertiesSetException(Msg.bind(
 							Messages.PropertiesSetEx_INVALID_ESCAPE_SEQUENCE,
 							v, nBB));
 				}
@@ -389,14 +390,14 @@ public class PropertySet {
 		}
 		// If the '$' is found at the last position => raise an error
 		if (nBegin + 1 >= v.length()) {
-			throw new IllegalPropertiesSetException(Messages.bind(
+			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_FOUND, v,
 					nBegin));
 		}
 		// If the $ is found but the next character is not a '{'
 		// => raise an error
 		if (v.charAt(nBegin + 1) != '{') {
-			throw new IllegalPropertiesSetException(Messages.bind(
+			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_OPENED, v,
 					nBegin + 1));
 		}
@@ -417,7 +418,7 @@ public class PropertySet {
 		}
 		// If the '}' can not be found => raise an error
 		if (nEnd == -1) {
-			throw new IllegalPropertiesSetException(Messages.bind(
+			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_CLOSED, v,
 					nBegin + 1));
 		}
@@ -437,10 +438,10 @@ public class PropertySet {
 			throws IllegalPropertiesSetException {
 		String escaped = escapeAndExpand(v, circle);
 		if (!containsKey(escaped)) {
-			throw new IllegalPropertiesSetException(Messages.bind(
+			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_UNDEFINED, v));
 		} else if (circle.contains(escaped)) {
-			throw new IllegalPropertiesSetException(Messages.bind(
+			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_CIRCULAR_REFERENCE,
 					printCircularReferences(circle)));
 		}
@@ -566,7 +567,7 @@ public class PropertySet {
 	 * </p>
 	 * 
 	 * @param ps
-	 *            is a {@link PropertySet} into this object.
+	 *            is a {@link PropertySet} to put into this object.
 	 */
 	public synchronized void putAll(PropertySet ps) {
 		if (ps == null) {

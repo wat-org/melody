@@ -13,6 +13,7 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -47,10 +48,10 @@ public class NewMachine extends AbstractOperation {
 					getInstanceDatas().getKeyPairName(),
 					getInstanceDatas().getCreateTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
-			throw new LibVirtException(new NodeRelatedException(
-					getTargetElement(),
-					Messages.bind(Messages.CreateEx_GENERIC_FAIL,
-							getInstanceDatas()), Ex));
+			throw new LibVirtException(
+					new NodeRelatedException(getTargetElement(),
+							Msg.bind(Messages.CreateEx_GENERIC_FAIL,
+									getInstanceDatas()), Ex));
 		}
 	}
 
@@ -77,12 +78,12 @@ public class NewMachine extends AbstractOperation {
 							.getPassphrase());
 				} catch (IllegalPassphraseException Ex) {
 					if (getInstanceDatas().getPassphrase() == null) {
-						throw new OperationException(Messages.bind(
+						throw new OperationException(Msg.bind(
 								Messages.CreateEx_MISSING_PASSPHRASE_ATTR,
 								InstanceDatasLoader.PASSPHRASE_ATTR,
 								keyPairName));
 					} else {
-						throw new OperationException(Messages.bind(
+						throw new OperationException(Msg.bind(
 								Messages.CreateEx_INVALID_PASSPHRASE_ATTR,
 								InstanceDatasLoader.PASSPHRASE_ATTR,
 								keyPairName));

@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -12,7 +13,7 @@ import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
  */
 public class DiskDeviceSize {
 
-	public static final String DISK_DEVICE_SIZE_PATTERN = "([0-9]+)[\\s]?([tTgG])?";
+	public static final String PATTERN = "([0-9]+)[\\s]?([tTgG])?";
 
 	public static final DiskDeviceSize SIZE_1G = createDiskDeviceSize(1);
 
@@ -31,16 +32,16 @@ public class DiskDeviceSize {
 
 	/**
 	 * <p>
-	 * Create a new {@link DiskDeviceSize}, which have the given size.
+	 * Convert the given size into a new {@link DiskDeviceSize}.
 	 * </p>
 	 * 
 	 * @param size
-	 *            is the size, in Go, to assign to this object.
+	 *            is the size, in Go, to convert.
 	 * 
-	 * @return the size, in Go, of this object before this call.
+	 * @return a {@link DiskDeviceSize}, which is equal to the given size.
 	 * 
 	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is negative or zero.
+	 *             if the given <tt>int</tt> is negative or zero.
 	 */
 	public static DiskDeviceSize parseInt(int iDiskDeviceSize)
 			throws IllegalDiskDeviceSizeException {
@@ -49,22 +50,23 @@ public class DiskDeviceSize {
 
 	/**
 	 * <p>
-	 * Create a new {@link DiskDeviceSize}, which have the given size.
+	 * Convert the given size into a new {@link DiskDeviceSize}.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given size should match the pattern
-	 * {@link #DISK_DEVICE_SIZE_PATTERN} ;</li>
-	 * <li>If no unit is provided, the unit is Go ;</li>
-	 * </ul>
-	 * 
 	 * @param size
-	 *            is the size to assign to this object.
+	 *            is the size, in Go, to convert.
 	 * 
-	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is invalid.
+	 * @return a {@link DiskDeviceSize}, which is equal to the given size.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDiskDeviceSizeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             <li>if the given <tt>String</tt> is negative or zero ;</li>
+	 *             </ul>
 	 */
 	public static DiskDeviceSize parseString(String sDiskDeviceSize)
 			throws IllegalDiskDeviceSizeException {
@@ -81,10 +83,8 @@ public class DiskDeviceSize {
 	 * @param size
 	 *            is the size, in Go, to assign to this object.
 	 * 
-	 * @return the size, in Go, of this object before this call.
-	 * 
 	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is negative or zero.
+	 *             if the given <tt>int</tt> is negative or zero.
 	 */
 	public DiskDeviceSize(int size) throws IllegalDiskDeviceSizeException {
 		setSize(size);
@@ -95,19 +95,18 @@ public class DiskDeviceSize {
 	 * Create a new {@link DiskDeviceSize}, which have the given size.
 	 * </p>
 	 * 
-	 * <ul>
-	 * <li>The given size should match the pattern
-	 * {@link #DISK_DEVICE_SIZE_PATTERN} ;</li>
-	 * <li>If no unit is provided, the unit is Go ;</li>
-	 * </ul>
-	 * 
 	 * @param size
-	 *            is the size to assign to this object.
+	 *            is the size, in Go, to assign to this object.
 	 * 
-	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is invalid.
 	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDiskDeviceSizeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             <li>if the given <tt>String</tt> is negative or zero ;</li>
+	 *             </ul>
 	 */
 	public DiskDeviceSize(String size) throws IllegalDiskDeviceSizeException {
 		setSize(size);
@@ -136,74 +135,37 @@ public class DiskDeviceSize {
 	}
 
 	/**
-	 * 
 	 * @return the size, in Go, of this object.
 	 */
 	public int getSize() {
 		return _size;
 	}
 
-	/**
-	 * <p>
-	 * Set the size of this object.
-	 * </p>
-	 * 
-	 * @param size
-	 *            is the size, in Go, to assign to this object.
-	 * 
-	 * @return the size, in Go, of this object before this call.
-	 * 
-	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is negative or zero.
-	 */
 	private int setSize(int size) throws IllegalDiskDeviceSizeException {
 		if (size <= 0) {
-			throw new IllegalDiskDeviceSizeException(Messages.bind(
-					Messages.DiskDeviceSizeEx_NEGATIVE_SIZE, size,
-					DISK_DEVICE_SIZE_PATTERN));
+			throw new IllegalDiskDeviceSizeException(Msg.bind(
+					Messages.DiskDeviceSizeEx_NEGATIVE_SIZE, size, PATTERN));
 		}
 		int previous = getSize();
 		_size = size;
 		return previous;
 	}
 
-	/**
-	 * <p>
-	 * Set the size of this object.
-	 * </p>
-	 * 
-	 * <ul>
-	 * <li>The given size should match the pattern
-	 * {@link #DISK_DEVICE_SIZE_PATTERN} ;</li>
-	 * <li>If no unit is provided, the unit is Go ;</li>
-	 * </ul>
-	 * 
-	 * @param size
-	 *            is the size to assign to this object.
-	 * 
-	 * @return the size, in Go, of this object before this call.
-	 * 
-	 * @throws IllegalDiskDeviceSizeException
-	 *             if the given size is invalid.
-	 * @throws IllegalArgumentException
-	 *             if the given size is <tt>null</tt>.
-	 */
 	private int setSize(String size) throws IllegalDiskDeviceSizeException {
 		if (size == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a String (a Disk Device Size)");
 		}
 		if (size.trim().length() == 0) {
-			throw new IllegalDiskDeviceSizeException(Messages.bind(
+			throw new IllegalDiskDeviceSizeException(Msg.bind(
 					Messages.DiskDeviceSizeEx_EMPTY_SIZE, size));
 		}
 
-		Pattern p = Pattern.compile("^" + DISK_DEVICE_SIZE_PATTERN + "$");
+		Pattern p = Pattern.compile("^" + PATTERN + "$");
 		Matcher matcher = p.matcher(size);
 		if (!matcher.matches()) {
-			throw new IllegalDiskDeviceSizeException(Messages.bind(
-					Messages.DiskDeviceSizeEx_INVALID_SIZE, size,
-					DISK_DEVICE_SIZE_PATTERN));
+			throw new IllegalDiskDeviceSizeException(Msg.bind(
+					Messages.DiskDeviceSizeEx_INVALID_SIZE, size, PATTERN));
 		}
 
 		int iSize = Integer.parseInt(matcher.group(1));

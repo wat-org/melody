@@ -1,5 +1,6 @@
 package com.wat.melody.common.network;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.network.exception.IllegalPortRangeException;
 
@@ -153,7 +154,7 @@ public class PortRange {
 					+ PortRange.class.getCanonicalName() + ").");
 		}
 		if (portRange.trim().length() == 0) {
-			throw new IllegalPortRangeException(Messages.bind(
+			throw new IllegalPortRangeException(Msg.bind(
 					Messages.PortRangeEx_EMPTY, portRange));
 		}
 
@@ -167,7 +168,7 @@ public class PortRange {
 			sStartPart = portRange;
 			sEndPart = portRange;
 		} else if (sep == 0 && portRange.length() == 1) {
-			throw new IllegalPortRangeException(Messages.bind(
+			throw new IllegalPortRangeException(Msg.bind(
 					Messages.PortRangeEx_MISSING_START_TO_PART, portRange));
 		} else if (sep == 0) {
 			sStartPart = String.valueOf(Port.MIN);
@@ -183,20 +184,20 @@ public class PortRange {
 		try {
 			setStartPort(sStartPart);
 		} catch (IllegalPortException Ex) {
-			throw new IllegalPortRangeException(Messages.bind(
+			throw new IllegalPortRangeException(Msg.bind(
 					Messages.PortRangeEx_INVALID_START_PART, portRange), Ex);
 		}
 		try {
 			setEndPort(sEndPart);
 		} catch (IllegalPortException Ex) {
-			throw new IllegalPortRangeException(Messages.bind(
+			throw new IllegalPortRangeException(Msg.bind(
 					Messages.PortRangeEx_INVALID_END_PART, portRange), Ex);
 		}
 
 		if (getEndPort().getValue() < getStartPort().getValue()) {
-			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_ILLOGIC_RANGE, new Object[] {
-							portRange, getStartPort(), getEndPort() }));
+			throw new IllegalPortRangeException(Msg.bind(
+					Messages.PortRangeEx_ILLOGIC_RANGE, portRange,
+					getStartPort(), getEndPort()));
 		}
 	}
 
@@ -218,9 +219,9 @@ public class PortRange {
 		setEndPort(end);
 
 		if (getEndPort().getValue() < getStartPort().getValue()) {
-			throw new IllegalPortRangeException(Messages.bind(
-					Messages.PortRangeEx_ILLOGIC_RANGE, new Object[] {
-							start + PORT_SEPARATOR + end, start, end }));
+			throw new IllegalPortRangeException(Msg.bind(
+					Messages.PortRangeEx_ILLOGIC_RANGE, start + PORT_SEPARATOR
+							+ end, start, end));
 		}
 	}
 

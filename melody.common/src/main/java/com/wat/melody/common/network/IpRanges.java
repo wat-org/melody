@@ -2,6 +2,7 @@ package com.wat.melody.common.network;
 
 import java.util.LinkedHashSet;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
 import com.wat.melody.common.network.exception.IllegalIpRangesException;
 
@@ -82,18 +83,18 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 		for (String ipRange : ipRanges.split(IP_RANGES_SEPARATOR)) {
 			ipRange = ipRange.trim();
 			if (ipRange.length() == 0) {
-				throw new IllegalIpRangesException(Messages.bind(
+				throw new IllegalIpRangesException(Msg.bind(
 						Messages.IpRangesEx_EMPTY_IP_RANGE, ipRanges));
 			}
 			try {
 				add(IpRange.parseString(ipRange));
 			} catch (IllegalIpRangeException Ex) {
-				throw new IllegalIpRangesException(Messages.bind(
+				throw new IllegalIpRangesException(Msg.bind(
 						Messages.IpRangesEx_INVALID_IP_RANGE, ipRanges), Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIpRangesException(Messages.bind(
+			throw new IllegalIpRangesException(Msg.bind(
 					Messages.IpRangesEx_EMPTY, ipRanges));
 		}
 	}
@@ -112,8 +113,8 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalIpRangesException(Messages.bind(
-					Messages.IpRangesEx_EMPTY, ipRanges));
+			throw new IllegalIpRangesException(Msg.bind(
+					Messages.IpRangesEx_EMPTY, (Object[]) ipRanges));
 		}
 	}
 

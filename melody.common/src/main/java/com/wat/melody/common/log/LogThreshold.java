@@ -3,6 +3,7 @@ package com.wat.melody.common.log;
 import java.util.Arrays;
 
 import com.wat.melody.common.log.exception.IllegalLogThresholdException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * <p>
@@ -19,38 +20,41 @@ public enum LogThreshold {
 
 	/**
 	 * <p>
-	 * Converts the given value to a <code>LogThreshold</code>.
+	 * Converts the given value to a {@link LogThreshold}.
 	 * </p>
 	 * 
 	 * @param v
 	 *            is the value to convert.
 	 * 
-	 * @return the corresponding <code>LogThreshold</code> Enumeration Constant. <BR/>
-	 *         More formally, this method will return : <BR/>
-	 *         {@link LogThreshold#ALL} if the input value is equal to "ALL"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#TRACE} if the input value is equal to "TRACE"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#DEBUG} if the input value is equal to "DEBUG"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#INFO} if the input value is equal to "INFO"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#WARNING} if the input value is equal to
-	 *         "WARNING" (case insensitive). <BR/>
-	 *         {@link LogThreshold#ERROR} if the input value is equal to "ERROR"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#FATAL} if the input value is equal to "FATAL"
-	 *         (case insensitive). <BR/>
-	 *         {@link LogThreshold#OFF} if the input value is equal to "OFF"
-	 *         (case insensitive). <BR/>
+	 * @return the corresponding {@link LogThreshold} Enumeration Constant. More
+	 *         formally, this method will return :
+	 *         <ul>
+	 *         <li>{@link LogThreshold#ALL} if the input value is equal to "ALL"
+	 *         (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#TRACE} if the input value is equal to
+	 *         "TRACE" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#DEBUG} if the input value is equal to
+	 *         "DEBUG" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#INFO} if the input value is equal to
+	 *         "INFO" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#WARNING} if the input value is equal to
+	 *         "WARNING" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#ERROR} if the input value is equal to
+	 *         "ERROR" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#FATAL} if the input value is equal to
+	 *         "FATAL" (case insensitive) ;</li>
+	 *         <li>{@link LogThreshold#OFF} if the input value is equal to "OFF"
+	 *         (case insensitive) ;</li>
+	 *         </ul>
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IllegalLogThresholdException
-	 *             if the given value is null.
-	 * 
-	 * @throws IllegalLogThresholdException
-	 *             if the given value doesn't match any of the
-	 *             <code>LogThreshold</code> Enumeration Constant.
-	 * 
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match any of the
+	 *             {@link LogThreshold} Enumeration Constant ;</li>
+	 *             </ul>
 	 */
 	public static LogThreshold parseString(String v)
 			throws IllegalLogThresholdException {
@@ -62,7 +66,7 @@ public enum LogThreshold {
 					+ Arrays.asList(LogThreshold.values()) + " ).");
 		}
 		if (v.trim().length() == 0) {
-			throw new IllegalLogThresholdException(Messages.bind(
+			throw new IllegalLogThresholdException(Msg.bind(
 					Messages.LogThresholdEx_EMPTY_STRSTR, v));
 		}
 		for (LogThreshold lt : LogThreshold.class.getEnumConstants()) {
@@ -70,7 +74,7 @@ public enum LogThreshold {
 				return lt;
 			}
 		}
-		throw new IllegalLogThresholdException(Messages.bind(
+		throw new IllegalLogThresholdException(Msg.bind(
 				Messages.LogThresholdEx_INVALID_STRSTR, v,
 				Arrays.asList(LogThreshold.values())));
 	}
@@ -119,34 +123,31 @@ public enum LogThreshold {
 	}
 
 	/**
-	 * <p>
-	 * Increase the given <code>LogThreshold</code>.
-	 * </p>
-	 * 
 	 * @param lt
 	 *            is the value to increase.
 	 * 
-	 * @return the increased <code>LogThreshold</code>. <BR/>
-	 *         More formally, this method will return : <BR/>
-	 *         {@link LogThreshold#TRACE} if the input value is equal to
-	 *         {@link LogThreshold#ALL}. <BR/>
-	 *         {@link LogThreshold#DEBUG} if the input value is equal to
-	 *         {@link LogThreshold#TRACE}. <BR/>
-	 *         {@link LogThreshold#INFO} if the input value is equal to
-	 *         {@link LogThreshold#DEBUG}. <BR/>
-	 *         {@link LogThreshold#WARNING} if the input value is equal to
-	 *         {@link LogThreshold#INFO}. <BR/>
-	 *         {@link LogThreshold#ERROR} if the input value is equal to
-	 *         {@link LogThreshold#WARNING}. <BR/>
-	 *         {@link LogThreshold#FATAL} if the input value is equal to
-	 *         {@link LogThreshold#ERROR}. <BR/>
-	 *         {@link LogThreshold#OFF} if the input value is equal to
-	 *         {@link LogThreshold#FATAL}. <BR/>
+	 * @return the increased {@link LogThreshold}. More formally, this method
+	 *         will return :
+	 *         <ul>
+	 *         <li>{@link LogThreshold#TRACE} if the input value is equal to
+	 *         {@link LogThreshold#ALL} ;</li>
+	 *         <li>{@link LogThreshold#DEBUG} if the input value is equal to
+	 *         {@link LogThreshold#TRACE} ;</li>
+	 *         <li>{@link LogThreshold#INFO} if the input value is equal to
+	 *         {@link LogThreshold#DEBUG} ;</li>
+	 *         <li>{@link LogThreshold#WARNING} if the input value is equal to
+	 *         {@link LogThreshold#INFO} ;</li>
+	 *         <li>{@link LogThreshold#ERROR} if the input value is equal to
+	 *         {@link LogThreshold#WARNING} ;</li>
+	 *         <li>{@link LogThreshold#FATAL} if the input value is equal to
+	 *         {@link LogThreshold#ERROR} ;</li>
+	 *         <li>{@link LogThreshold#OFF} if the input value is equal to
+	 *         {@link LogThreshold#FATAL} ;</li>
+	 *         </ul>
 	 * 
 	 * @throws IllegalLogThresholdException
 	 *             if the given value is already equals to the maximum (e.g.
 	 *             {@link LogThreshold#OFF}).
-	 * 
 	 */
 	public static LogThreshold increase(LogThreshold lt)
 			throws IllegalLogThresholdException {
@@ -166,40 +167,37 @@ public enum LogThreshold {
 		case FATAL:
 			return OFF;
 		default:
-			throw new IllegalLogThresholdException(Messages.bind(
+			throw new IllegalLogThresholdException(Msg.bind(
 					Messages.LogThresholdEx_MAX_REACHED, lt, OFF));
 		}
 	}
 
 	/**
-	 * <p>
-	 * Decrease the given <code>LogThreshold</code>.
-	 * </p>
-	 * 
 	 * @param lt
 	 *            is the value to decrease.
 	 * 
-	 * @return the decreased <code>LogThreshold</code>. <BR/>
-	 *         More formally, this method will return : <BR/>
-	 *         {@link LogThreshold#ALL} if the input value is equal to
-	 *         {@link LogThreshold#TRACE}. <BR/>
-	 *         {@link LogThreshold#TRACE} if the input value is equal to
-	 *         {@link LogThreshold#DEBUG}. <BR/>
-	 *         {@link LogThreshold#DEBUG} if the input value is equal to
-	 *         {@link LogThreshold#INFO}. <BR/>
-	 *         {@link LogThreshold#INFO} if the input value is equal to
-	 *         {@link LogThreshold#WARNING}. <BR/>
-	 *         {@link LogThreshold#WARNING} if the input value is equal to
-	 *         {@link LogThreshold#ERROR}. <BR/>
-	 *         {@link LogThreshold#ERROR} if the input value is equal to
-	 *         {@link LogThreshold#FATAL}. <BR/>
-	 *         {@link LogThreshold#FATAL} if the input value is equal to
-	 *         {@link LogThreshold#OFF}. <BR/>
+	 * @return the decreased {@link LogThreshold}. More formally, this method
+	 *         will return :
+	 *         <ul>
+	 *         <li>{@link LogThreshold#ALL} if the input value is equal to
+	 *         {@link LogThreshold#TRACE} ;</li>
+	 *         <li>{@link LogThreshold#TRACE} if the input value is equal to
+	 *         {@link LogThreshold#DEBUG} ;</li>
+	 *         <li>{@link LogThreshold#DEBUG} if the input value is equal to
+	 *         {@link LogThreshold#INFO} ;</li>
+	 *         <li>{@link LogThreshold#INFO} if the input value is equal to
+	 *         {@link LogThreshold#WARNING} ;</li>
+	 *         <li>{@link LogThreshold#WARNING} if the input value is equal to
+	 *         {@link LogThreshold#ERROR} ;</li>
+	 *         <li>{@link LogThreshold#ERROR} if the input value is equal to
+	 *         {@link LogThreshold#FATAL} ;</li>
+	 *         <li>{@link LogThreshold#FATAL} if the input value is equal to
+	 *         {@link LogThreshold#OFF} ;</li>
+	 *         </ul>
 	 * 
 	 * @throws IllegalLogThresholdException
 	 *             if the given value is already equals to the minimum (e.g.
 	 *             {@link LogThreshold#ALL}).
-	 * 
 	 */
 	public static LogThreshold decrease(LogThreshold lt)
 			throws IllegalLogThresholdException {
@@ -219,7 +217,7 @@ public enum LogThreshold {
 		case OFF:
 			return FATAL;
 		default:
-			throw new IllegalLogThresholdException(Messages.bind(
+			throw new IllegalLogThresholdException(Msg.bind(
 					Messages.LogThresholdEx_MIN_REACHED, lt, ALL));
 		}
 	}
@@ -290,14 +288,14 @@ public enum LogThreshold {
 				.convertToJavaLoggingLevel();
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private LogThreshold(String v) {
-		this.msValue = v;
+		this._value = v;
 	}
 
 	public String getValue() {
-		return this.msValue;
+		return this._value;
 	}
 
 	public LogThreshold increase() throws IllegalLogThresholdException {

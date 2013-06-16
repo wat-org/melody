@@ -2,6 +2,7 @@ package com.wat.melody.common.ssh.types;
 
 import java.util.Arrays;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionLevelException;
 
 /**
@@ -42,7 +43,7 @@ public enum CompressionLevel {
 					+ Arrays.asList(CompressionLevel.values()) + " ).");
 		}
 		if (sCompressionLevel.trim().length() == 0) {
-			throw new IllegalCompressionLevelException(Messages.bind(
+			throw new IllegalCompressionLevelException(Msg.bind(
 					Messages.CompressionLevelEx_EMPTY, sCompressionLevel));
 		}
 		for (CompressionLevel c : CompressionLevel.class.getEnumConstants()) {
@@ -50,19 +51,19 @@ public enum CompressionLevel {
 				return c;
 			}
 		}
-		throw new IllegalCompressionLevelException(Messages.bind(
+		throw new IllegalCompressionLevelException(Msg.bind(
 				Messages.CompressionLevelEx_INVALID, sCompressionLevel,
 				Arrays.asList(CompressionLevel.values())));
 	}
 
-	private final String msValue;
+	private final String _value;
 
 	private CompressionLevel(String sCompressionLevel) {
-		this.msValue = sCompressionLevel;
+		this._value = sCompressionLevel;
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 }

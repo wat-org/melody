@@ -1,5 +1,6 @@
 package com.wat.melody.common.xml;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDUNIDException;
 
@@ -26,7 +27,11 @@ public class DUNID {
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IllegalDUNIDException
-	 *             if the given <tt>String</tt> is not a valid {@link DUNID}.
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static DUNID parseString(String sDunid) throws IllegalDUNIDException {
 		return new DUNID(sDunid);
@@ -89,11 +94,11 @@ public class DUNID {
 					+ "Must be a valid String (a DUNID).");
 		}
 		if (sDunid.trim().length() == 0) {
-			throw new IllegalDUNIDException(Messages.bind(
-					Messages.DUNIDEx_EMPTY, sDunid));
+			throw new IllegalDUNIDException(Msg.bind(Messages.DUNIDEx_EMPTY,
+					sDunid));
 		} else if (!sDunid.matches("^" + PATTERN + "$")) {
-			throw new IllegalDUNIDException(Messages.bind(
-					Messages.DUNIDEx_INVALID, sDunid, PATTERN));
+			throw new IllegalDUNIDException(Msg.bind(Messages.DUNIDEx_INVALID,
+					sDunid, PATTERN));
 		}
 		String previous = getValue();
 		_value = sDunid;

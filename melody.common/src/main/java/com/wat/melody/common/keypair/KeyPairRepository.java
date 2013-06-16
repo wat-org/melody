@@ -20,6 +20,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * <p>
@@ -99,14 +100,14 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
-	 * <p>
-	 * Tests if the given KeyPair exists in the Repository.
-	 * </p>
-	 * 
 	 * @param keyPairName
+	 *            is the name of the KeyPair to test.
 	 * 
-	 * @return <code>true</code> if the given KeyPair exists in the Repository,
-	 *         <code>false</code> otherwise.
+	 * @return <tt>true</tt> if the given KeyPair exists in the Repository,
+	 *         <tt>false</tt> otherwise.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair name is <tt>null</tt>.
 	 */
 	public synchronized boolean containsKeyPair(KeyPairName keyPairName) {
 		try {
@@ -118,27 +119,28 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
-	 * <p>
-	 * Create a RSA {@link KeyPair}, and store it in this Repository, or
-	 * retrieve the {@link KeyPair} if it already exists in the repository.
-	 * </p>
-	 * 
 	 * @param keyPairName
 	 *            is the name of the key to create.
 	 * @param size
 	 *            is the size of the key to create.
 	 * @param passphrase
-	 *            is the passphrase of the key to create.
+	 *            is a password, which will be used to encrypt the key. Can be
+	 *            <tt>null</tt>, if the key shouldn't be crypted.
 	 * 
 	 * @return a new RSA {@link KeyPair}, created in this repository, or the
-	 *         existing {@link KeyPair} which match the given name if it already
-	 *         exists in the repository.
+	 *         {@link KeyPair} which match the given name if it already exists
+	 *         in the repository.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair size is <tt>null</tt> ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while storing the {@link KeyPair} in
 	 *             this Repository.
 	 * @throws IllegalPassphraseException
-	 *             if the key already exists but the given passphrase is not
+	 *             if the key already exists but the given pass-phrase is not
 	 *             correct (the key can't be decrypted).
 	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
@@ -146,6 +148,11 @@ public class KeyPairRepository implements IFileBased {
 			IllegalPassphraseException {
 		if (containsKeyPair(keyPairName)) {
 			return getKeyPair(keyPairName, passphrase);
+		}
+		if (size == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairSize.class.getCanonicalName()
+					+ ".");
 		}
 		KeyPairGenerator keyGen = null;
 		try {
@@ -155,58 +162,51 @@ public class KeyPairRepository implements IFileBased {
 					+ "Source code have been modified and a bug "
 					+ "introduced.", Ex);
 		}
-		log.trace(Messages.bind(Messages.KeyPairRepoMsg_GENKEY_BEGIN,
-				keyPairName, getKeyPairRepositoryPath()));
+		log.trace(Msg.bind(Messages.KeyPairRepoMsg_GENKEY_BEGIN, keyPairName,
+				getKeyPairRepositoryPath()));
 		keyGen.initialize(size.getValue(), new SecureRandom());
 		KeyPair kp = keyGen.generateKeyPair();
 		KeyPairHelper.writeOpenSslPEMPrivateKey(getPrivateKeyPath(keyPairName),
 				kp, passphrase);
-		log.debug(Messages.bind(Messages.KeyPairRepoMsg_GENKEY_END,
-				keyPairName, getKeyPairRepositoryPath()));
+		log.debug(Msg.bind(Messages.KeyPairRepoMsg_GENKEY_END, keyPairName,
+				getKeyPairRepositoryPath()));
 		return kp;
 	}
 
 	/**
-	 * <p>
-	 * Destroy a RSA KeyPair in this Repository.
-	 * </p>
-	 * 
 	 * @param keyPairName
-	 *            is the name of the key to create.
+	 *            is the name of the key to destroy.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given KeyPair name is <tt>null</tt>.
 	 */
 	public synchronized void destroyKeyPair(KeyPairName keyPairName) {
 		if (containsKeyPair(keyPairName)) {
-			log.trace(Messages.bind(Messages.KeyPairRepoMsg_DELKEY_BEGIN,
+			log.trace(Msg.bind(Messages.KeyPairRepoMsg_DELKEY_BEGIN,
 					keyPairName, getKeyPairRepositoryPath()));
 			getPrivateKeyFile(keyPairName).delete();
-			log.debug(Messages.bind(Messages.KeyPairRepoMsg_DELKEY_END,
-					keyPairName, getKeyPairRepositoryPath()));
+			log.debug(Msg.bind(Messages.KeyPairRepoMsg_DELKEY_END, keyPairName,
+					getKeyPairRepositoryPath()));
 		}
 	}
 
 	/**
-	 * <p>
-	 * Returns the private key of the {@link KeyPair} which match the given Name
-	 * in OpenSshFormat.
-	 * </p>
-	 * 
-	 * <p>
-	 * If the given key was stored with encryption, the returned data will not
-	 * be decrypted.
-	 * </p>
-	 * 
 	 * @param keyPairName
 	 *            is Name of the desired {@link KeyPair}.
 	 * 
 	 * @return the private key of the KeyPair which match the given Name in
-	 *         OpenSshFormat.
+	 *         OpenSshFormat. If the given key was stored with encryption, the
+	 *         returned data will not be decrypted.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair doesn't exists in this
+	 *             KeyPairRepository ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
-	 * @throws IllegalArgumentException
-	 *             if the given KeyPair's doesn't exists in this
-	 *             KeyPairRepository.
 	 */
 	public synchronized String getPrivateKey(KeyPairName keyPairName)
 			throws IOException {
@@ -239,31 +239,28 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
-	 * <p>
-	 * Returns the {@link KeyPair} which match the given Name.
-	 * </p>
-	 * 
-	 * <p>
-	 * If the given key was stored with encryption, the returned {@link KeyPair}
-	 * will be decrypted.
-	 * </p>
-	 * 
 	 * @param keyPairName
 	 *            is Name of the desired {@link KeyPair}.
 	 * @param passphrase
-	 *            is the password that was used to encrypt the key.
+	 *            is the password that was used to encrypt the key. Can be
+	 *            <tt>null</tt>, if the key is not crypted. If the given key was
+	 *            stored with encryption, the returned {@link KeyPair} will be
+	 *            decrypted.
 	 * 
 	 * @return the {@link KeyPair} which match the given Name.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair doesn't exists in this
+	 *             KeyPairRepository ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
 	 * @throws IllegalPassphraseException
-	 *             if the given passphrase is not correct (the key can't be
+	 *             if the given pass-phrase is not correct (the key can't be
 	 *             decrypted).
-	 * @throws IllegalArgumentException
-	 *             if the given KeyPair's doesn't exists in this
-	 *             KeyPairRepository.
 	 */
 	public synchronized KeyPair getKeyPair(KeyPairName keyPairName,
 			String passphrase) throws IOException, IllegalPassphraseException {
@@ -278,28 +275,27 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
-	 * <p>
-	 * Returns the public key of the {@link KeyPair} which match the given Name,
-	 * in OpenSshFormat.
-	 * </p>
-	 * 
 	 * @param keyPairName
 	 *            is Name of the desired {@link KeyPair}.
 	 * @param passphrase
-	 *            is the password that was used to encrypt the key.
+	 *            is the password that was used to encrypt the key. Can be
+	 *            <tt>null</tt>, if the key is not crypted.
 	 * 
 	 * @return the public key of the {@link KeyPair} which match the given Name,
 	 *         in OpenSshFormat.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair doesn't exists in this
+	 *             KeyPairRepository ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
 	 * @throws IllegalPassphraseException
-	 *             if the given passphrase is not correct (the key can't be
+	 *             if the given pass-phrase is not correct (the key can't be
 	 *             decrypted).
-	 * @throws IllegalArgumentException
-	 *             if the given KeyPair's doesn't exists in this
-	 *             KeyPairRepository.
 	 */
 	public synchronized String getPublicKeyInOpenSshFormat(
 			KeyPairName keyPairName, String passphrase, String sComment)
@@ -309,33 +305,29 @@ public class KeyPairRepository implements IFileBased {
 	}
 
 	/**
-	 * <p>
-	 * Returns the fingerprint of the {@link KeyPair} which match the given
-	 * Name.
-	 * </p>
-	 * 
-	 * <p>
-	 * The fingerprint is generated from raw keypair datas, which is not equal
-	 * to a fingerprint generated from OpenSshFormat datas.
-	 * </p>
-	 * 
 	 * @param keyPairName
 	 *            is Name of the desired {@link KeyPair}.
 	 * @param passphrase
-	 *            is the password that was used to encrypt the key.
+	 *            is the password that was used to encrypt the key. Can be
+	 *            <tt>null</tt>, if the key is not crypted.
 	 * 
-	 * @return the public key of the {@link KeyPair} which match the given Name,
-	 *         in OpenSshFormat.
+	 * @return the finger-print of the {@link KeyPair} which match the given
+	 *         Name. The finger-print is generated from raw keypair datas, which
+	 *         is not equal to a finger-print generated from OpenSshFormat
+	 *         datas.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair doesn't exists in this
+	 *             KeyPairRepository ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the given KeyPair's
 	 *             PrivateKey file.
 	 * @throws IllegalPassphraseException
-	 *             if the given passphrase is not correct (the key can't be
+	 *             if the given pass-phrase is not correct (the key can't be
 	 *             decrypted).
-	 * @throws IllegalArgumentException
-	 *             if the given KeyPair's doesn't exists in this
-	 *             KeyPairRepository.
 	 */
 	public synchronized String getFingerprint(KeyPairName keyPairName,
 			String passphrase) throws IOException, IllegalPassphraseException {

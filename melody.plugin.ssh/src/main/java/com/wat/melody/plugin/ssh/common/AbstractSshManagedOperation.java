@@ -7,6 +7,7 @@ import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.impl.SshManagedSession;
@@ -80,7 +81,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 
 		// Ensure a user keypairname is defined
 		if (getKeyPairName() == null) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_MISSING_USER_KEYPAIRNAME_ATTR,
 					KEYPAIR_NAME_ATTR, SshPlugInConfiguration.MGMT_ENABLE,
 					getSshPlugInConf().getFilePath()));
@@ -92,7 +93,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 			setManagementLogin(getSshPlugInConf().getManagementLogin());
 		}
 		if (getManagementLogin() == null) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_MISSING_MGMT_LOGIN_ATTR,
 					MGMT_MASTER_USER_ATTR, SshPlugInConfiguration.MGMT_LOGIN,
 					SshPlugInConfiguration.MGMT_ENABLE, getSshPlugInConf()
@@ -113,7 +114,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 		}
 		if (getManagementKeyPairName() == null
 				&& getManagementPassword() == null) {
-			throw new SshException(Messages.bind(
+			throw new SshException(Msg.bind(
 					Messages.SshEx_MISSING_MGMT_PASSWORD_OR_PK_ATTR,
 					MGMT_MASTER_PASS_ATTR, MGMT_MASTER_KEY_ATTR,
 					SshPlugInConfiguration.MGMT_PASSWORD,
@@ -133,13 +134,13 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 					.getKeyPairSize(), getManagementPassword());
 		} catch (IllegalPassphraseException Ex) {
 			if (getPassword() == null) {
-				throw new SshException(Messages.bind(
+				throw new SshException(Msg.bind(
 						Messages.SshEx_MISSING_MGMT_PASSPHRASE_ATTR,
 						getManagementKeyPairName(),
 						SshPlugInConfiguration.MGMT_PASSWORD,
 						getSshPlugInConf().getFilePath()));
 			} else {
-				throw new SshException(Messages.bind(
+				throw new SshException(Msg.bind(
 						Messages.SshEx_INVALID_MGMT_PASSPHRASE,
 						getManagementKeyPairName(), getManagementKeyPairName(),
 						SshPlugInConfiguration.MGMT_PASSWORD,

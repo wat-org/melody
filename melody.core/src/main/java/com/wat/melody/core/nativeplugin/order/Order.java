@@ -19,6 +19,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.xml.NodeCollection;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
@@ -220,7 +221,7 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 				Melody.getContext().processTask(n);
 			}
 		} catch (InterruptedException Ex) {
-			throw new InterruptedException(Messages.bind(
+			throw new InterruptedException(Msg.bind(
 					Messages.OrderEx_INTERRUPTED, ORDER, getName()));
 		} catch (TaskException Ex) {
 			throw new OrderException(Ex);
@@ -269,9 +270,9 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced. ");
 		} else if (count > 1) {
-			ConsolidatedException causes = new ConsolidatedException(
-					Messages.bind(Messages.OrderEx_DUPLICATE_NAME_RESUME,
-							new Object[] { name, ORDER, NAME_ATTR }));
+			ConsolidatedException causes = new ConsolidatedException(Msg.bind(
+					Messages.OrderEx_DUPLICATE_NAME_RESUME, name, ORDER,
+					NAME_ATTR));
 			for (Node node : new NodeCollection(nl)) {
 				causes.addCause(new SimpleNodeRelatedException(node, Messages
 						.bind(Messages.OrderEx_DUPLICATE_NAME, name)));

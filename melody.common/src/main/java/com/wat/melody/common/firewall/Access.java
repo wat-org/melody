@@ -3,6 +3,7 @@ package com.wat.melody.common.firewall;
 import java.util.Arrays;
 
 import com.wat.melody.common.firewall.exception.IllegalAccessException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -43,17 +44,16 @@ public enum Access {
 					+ Arrays.asList(Access.values()) + " ).");
 		}
 		if (access.trim().length() == 0) {
-			throw new IllegalAccessException(Messages.bind(
-					Messages.AccessEx_EMPTY, access));
+			throw new IllegalAccessException(Msg.bind(Messages.AccessEx_EMPTY,
+					access));
 		}
 		for (Access c : Access.class.getEnumConstants()) {
 			if (c.getValue().equalsIgnoreCase(access)) {
 				return c;
 			}
 		}
-		throw new IllegalAccessException(Messages.bind(
-				Messages.AccessEx_INVALID, access,
-				Arrays.asList(Access.values())));
+		throw new IllegalAccessException(Msg.bind(Messages.AccessEx_INVALID,
+				access, Arrays.asList(Access.values())));
 	}
 
 	private final String _value;

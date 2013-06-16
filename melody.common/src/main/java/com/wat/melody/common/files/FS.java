@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.files.exception.IllegalTarGzException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -33,17 +34,17 @@ public abstract class FS {
 	 * @param sPath
 	 *            is the path of the directory to validate.
 	 * 
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a file.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non readable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non writable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to non existing directory.
 	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
-	 * 
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non existing
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             directory ;</li>
+	 *             </ul>
 	 */
 	public static void validateDirExists(String sPath)
 			throws IllegalDirectoryException {
@@ -54,14 +55,14 @@ public abstract class FS {
 
 		File item = new File(sPath);
 		if (item.isFile()) {
-			throw new IllegalDirectoryException(Messages.bind(
+			throw new IllegalDirectoryException(Msg.bind(
 					Messages.DirEx_NOT_A_DIR, sPath));
 		} else if (item.isDirectory()) {
 			if (!item.canRead()) {
-				throw new IllegalDirectoryException(Messages.bind(
+				throw new IllegalDirectoryException(Msg.bind(
 						Messages.DirEx_CANT_READ, sPath));
 			} else if (!item.canWrite()) {
-				throw new IllegalDirectoryException(Messages.bind(
+				throw new IllegalDirectoryException(Msg.bind(
 						Messages.DirEx_CANT_WRITE, sPath));
 			}
 		} else if (!item.exists()) {
@@ -69,11 +70,11 @@ public abstract class FS {
 				try {
 					validateDirExists(item.getParent());
 				} catch (IllegalDirectoryException Ex) {
-					throw new IllegalDirectoryException(Messages.bind(
+					throw new IllegalDirectoryException(Msg.bind(
 							Messages.DirEx_NOT_FOUND, sPath), Ex);
 				}
 			}
-			throw new IllegalDirectoryException(Messages.bind(
+			throw new IllegalDirectoryException(Msg.bind(
 					Messages.DirEx_NOT_FOUND, sPath));
 		}
 	}
@@ -87,15 +88,16 @@ public abstract class FS {
 	 * @param sPath
 	 *            is the path of the directory to validate.
 	 * 
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a file.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non readable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non writable directory.
 	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
-	 * 
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDirectoryException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             directory ;</li>
+	 *             </ul>
 	 */
 	public static void validateDirPath(String sPath)
 			throws IllegalDirectoryException {
@@ -106,21 +108,21 @@ public abstract class FS {
 
 		File item = new File(sPath);
 		if (item.isFile()) {
-			throw new IllegalDirectoryException(Messages.bind(
+			throw new IllegalDirectoryException(Msg.bind(
 					Messages.DirEx_NOT_A_DIR, sPath));
 		} else if (item.isDirectory()) {
 			if (!item.canRead()) {
-				throw new IllegalDirectoryException(Messages.bind(
+				throw new IllegalDirectoryException(Msg.bind(
 						Messages.DirEx_CANT_READ, sPath));
 			} else if (!item.canWrite()) {
-				throw new IllegalDirectoryException(Messages.bind(
+				throw new IllegalDirectoryException(Msg.bind(
 						Messages.DirEx_CANT_WRITE, sPath));
 			}
 		} else if (item.getParent() != null) {
 			try {
 				validateDirPath(item.getParent());
 			} catch (IllegalDirectoryException Ex) {
-				throw new IllegalDirectoryException(Messages.bind(
+				throw new IllegalDirectoryException(Msg.bind(
 						Messages.DirEx_INVALID_PARENT, sPath), Ex);
 			}
 		}
@@ -132,50 +134,52 @@ public abstract class FS {
 	 * file.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the file to validate.
 	 * 
-	 * @throws IllegalFileException
-	 *             if sPath points to a directory.
-	 * @throws IllegalFileException
-	 *             if sPath points to a non readable file.
-	 * @throws IllegalFileException
-	 *             if sPath points to a non writable file.
-	 * @throws IllegalFileException
-	 *             if sPath points to non existing file.
 	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non existing
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             file ;</li>
+	 *             </ul>
 	 */
-	public static void validateFileExists(String sPath)
+	public static void validateFileExists(String path)
 			throws IllegalFileException {
-		if (sPath == null) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a File Path).");
 		}
 
-		File item = new File(sPath);
+		File item = new File(path);
 		if (item.isDirectory()) {
-			throw new IllegalFileException(Messages.bind(
-					Messages.FileEx_NOT_A_FILE, sPath));
+			throw new IllegalFileException(Msg.bind(Messages.FileEx_NOT_A_FILE,
+					path));
 		} else if (item.isFile()) {
 			if (!item.canRead()) {
-				throw new IllegalFileException(Messages.bind(
-						Messages.FileEx_CANT_READ, sPath));
+				throw new IllegalFileException(Msg.bind(
+						Messages.FileEx_CANT_READ, path));
 			} else if (!item.canWrite()) {
-				throw new IllegalFileException(Messages.bind(
-						Messages.FileEx_CANT_WRITE, sPath));
+				throw new IllegalFileException(Msg.bind(
+						Messages.FileEx_CANT_WRITE, path));
 			}
 		} else if (!item.exists()) {
 			if (item.getParent() != null) {
 				try {
 					validateDirExists(item.getParent());
 				} catch (IllegalDirectoryException Ex) {
-					throw new IllegalFileException(Messages.bind(
-							Messages.FileEx_NOT_FOUND, sPath), Ex);
+					throw new IllegalFileException(Msg.bind(
+							Messages.FileEx_NOT_FOUND, path), Ex);
 				}
 			}
-			throw new IllegalFileException(Messages.bind(
-					Messages.FileEx_NOT_FOUND, sPath));
+			throw new IllegalFileException(Msg.bind(Messages.FileEx_NOT_FOUND,
+					path));
 		}
 	}
 
@@ -185,41 +189,46 @@ public abstract class FS {
 	 * file.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the file to validate.
 	 * 
-	 * @throws IllegalFileException
-	 *             if sPath points to a directory.
-	 * @throws IllegalFileException
-	 *             if sPath points to a non readable file.
-	 * @throws IllegalFileException
-	 *             if sPath points to a non writable file.
-	 * @throws IllegalDirectoryException
-	 *             if sPath's parent points to non readable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sPath's parent points to non writable directory.
 	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             file ;</li>
+	 *             </ul>
+	 * @throws IllegalDirectoryException
+	 *             <ul>
+	 *             <li>if the given file's parent points to non readable
+	 *             directory ;</li>
+	 *             <li>if the given file's parent points to non writable
+	 *             directory ;</li>
+	 *             </ul>
 	 */
-	public static void validateFilePath(String sPath)
+	public static void validateFilePath(String path)
 			throws IllegalFileException, IllegalDirectoryException {
-		if (sPath == null) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a File Path).");
 		}
 
-		File item = new File(sPath);
+		File item = new File(path);
 		if (item.isDirectory()) {
-			throw new IllegalFileException(Messages.bind(
-					Messages.FileEx_NOT_A_FILE, item));
+			throw new IllegalFileException(Msg.bind(Messages.FileEx_NOT_A_FILE,
+					item));
 		}
 		if (item.exists() && !item.canRead()) {
-			throw new IllegalFileException(Messages.bind(
-					Messages.FileEx_CANT_READ, item));
+			throw new IllegalFileException(Msg.bind(Messages.FileEx_CANT_READ,
+					item));
 		}
 		if (item.exists() && !item.canWrite()) {
-			throw new IllegalFileException(Messages.bind(
-					Messages.FileEx_CANT_WRITE, item));
+			throw new IllegalFileException(Msg.bind(Messages.FileEx_CANT_WRITE,
+					item));
 		}
 		validateDirPath(item.getParent());
 	}
@@ -230,58 +239,54 @@ public abstract class FS {
 	 * TarGz archive.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the TarGz to validate.
 	 * 
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a directory.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a non readable file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a non writable file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to non existing file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to non valid TarGz archive.
 	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTarGzException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> points to a directory ;</li>
+	 *             <li>if the given <tt>String</tt> points to non existing file
+	 *             ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non readable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to a non writable
+	 *             file ;</li>
+	 *             <li>if the given <tt>String</tt> points to non valid TarGz
+	 *             archive ;</li>
+	 *             </ul>
 	 */
-	public static void validateTarGzExists(String sPath)
+	public static void validateTarGzExists(String path)
 			throws IllegalTarGzException {
 		try {
-			validateFileExists(sPath);
+			validateFileExists(path);
 		} catch (IllegalFileException Ex) {
-			throw new IllegalTarGzException(Messages.bind(
-					Messages.TarGzEx_NOT_A_TARGZ, sPath), Ex);
+			throw new IllegalTarGzException(Msg.bind(
+					Messages.TarGzEx_NOT_A_TARGZ, path), Ex);
 		}
-		if (!sPath.endsWith("tar.gz")) {
-			throw new IllegalTarGzException(Messages.bind(
-					Messages.TarGzEx_INVALID_EXTENSION, sPath));
+		if (!path.endsWith("tar.gz")) {
+			throw new IllegalTarGzException(Msg.bind(
+					Messages.TarGzEx_INVALID_EXTENSION, path));
 		}
 		// TODO : perform a real extraction test
 	}
 
 	/**
-	 * <p>
-	 * Return <code>true</code> if the given path points to a valid TarGz
-	 * archive.
-	 * </p>
-	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the TarGz archive to validate.
 	 * 
-	 * @return if sPath points to a directory, or if sPath points to a non
-	 *         readable file, or if sPath points to a non writable file, or if
-	 *         sPath points to a non existent file, or if sPath points to a file
-	 *         which is not a valid TarGz archive.
+	 * @return <tt>true</tt> if the given path points to a valid TarGz archive,
+	 *         or <tt>false</tt> otherwise (e.g. a directory, a non readable
+	 *         file, a non writable file, a non existent file, a file which is
+	 *         not a valid TarGz archive).
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given path is <code>null</code>.
-	 * 
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	public static boolean isTarGz(String sPath) {
+	public static boolean isTarGz(String path) {
 		try {
-			validateTarGzExists(sPath);
+			validateTarGzExists(path);
 		} catch (IllegalTarGzException Ex) {
 			return false;
 		}
@@ -290,66 +295,63 @@ public abstract class FS {
 
 	/**
 	 * <p>
-	 * Extract the given TarGz archive into the given directory.
+	 * Extract the given TarGz archive into the given destination directory.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * If the given directory doesn't exists, it will be created,
-	 * including any necessary but nonexistent parent directories. <BR/>
-	 * * Note that if this operation fails it may have succeeded in creating
-	 * some of the necessary parent directories. <BR/>
-	 * </i>
-	 * </p>
+	 * <ul>
+	 * <li>If the given destination directory doesn't exists, it will be
+	 * created, including any necessary but nonexistent parent directories ;</li>
+	 * <li>Note that if this operation fails it may have succeeded in creating
+	 * some of the necessary parent directories ;</li>
+	 * </ul>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the TarGz archive.
 	 * @param sOutPutDir
 	 *            is the path of the directory where the archive will be
 	 *            extracted.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given TarGz archive is <tt>null</tt> ;</li>
+	 *             <li>if the given destination directory is <tt>null</tt>< ;</li>
+	 *             </ul>
+	 * @throws IOException
+	 *             if an IO error occurred.
 	 * @throws IllegalTarGzException
 	 *             if sPath points to a directory.
 	 * @throws IllegalTarGzException
-	 *             if sPath points to a non readable file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a non writable file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a non existent file.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to an invalid TarGz archive.
+	 *             <ul>
+	 *             <li>if the given TarGz archive points to a directory ;</li>
+	 *             <li>if the given TarGz archive points to non existing file ;</li>
+	 *             <li>if the given TarGz archive points to a non readable file
+	 *             ;</li>
+	 *             <li>if the given TarGz archive points to a non writable file
+	 *             ;</li>
+	 *             <li>if the given TarGz archive points to non valid TarGz
+	 *             archive ;</li>
+	 *             </ul>
 	 * @throws IllegalDirectoryException
-	 *             if sOutPutDir points to a file.
-	 * @throws IllegalDirectoryException
-	 *             if sOutPutDir points to a non readable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sOutPutDir points to a non writable directory.
-	 * @throws IOException
-	 *             if an IO error occurred while reading the TarGz archive.
-	 * @throws IOException
-	 *             if an IO error occurred while reading an entry of the TarGz
-	 *             archive.
-	 * @throws IOException
-	 *             if an IO error occurred while creating a file entry.
-	 * @throws IOException
-	 *             if an IO error occurred while creating a directory entry.
-	 * @throws IllegalArgumentException
-	 *             if sPath is null.
-	 * @throws IllegalArgumentException
-	 *             if sOutPutDir is null.
-	 * 
+	 *             <ul>
+	 *             <li>if the given destination directory points to a file ;</li>
+	 *             <li>if the given destination directory points to a non
+	 *             readable directory ;</li>
+	 *             <li>if the given destination directory points to a non
+	 *             writable directory ;</li>
+	 *             </ul>
 	 */
-	public static void extractTarGz(String sPath, String sOutputDir)
+	public static void extractTarGz(String path, String outdir)
 			throws IOException, IllegalTarGzException,
 			IllegalDirectoryException {
 		// Validate input parameter
 		// If the given path is not a valid targz archive => raise an error
-		validateTarGzExists(sPath);
+		validateTarGzExists(path);
 		// If the given output directory is not a valid directory => raise an
 		// error
-		validateDirPath(sOutputDir);
+		validateDirPath(outdir);
 		// Create the directory (including any necessary but nonexistent parent
 		// directories) if it doesn't exists
-		new File(sOutputDir).mkdirs();
+		new File(outdir).mkdirs();
 
 		FileInputStream fis = null;
 		GZIPInputStream gzis = null;
@@ -357,7 +359,7 @@ public abstract class FS {
 		FileOutputStream fos = null;
 		try {
 			// Create the file input stream from the file
-			fis = new FileInputStream(new File(sPath));
+			fis = new FileInputStream(new File(path));
 			// Unzip it (no need to use a BufferedInputStream because
 			// GZIPInputStream has its own buffer)
 			gzis = new GZIPInputStream(fis);
@@ -367,7 +369,7 @@ public abstract class FS {
 			// For each entry in the tar archive
 			while ((entry = (TarArchiveEntry) tis.getNextEntry()) != null) {
 				// Create a new File instance in the given output directory
-				final File outputFile = new File(sOutputDir, entry.getName());
+				final File outputFile = new File(outdir, entry.getName());
 				if (entry.isFile()) {
 					// If the current entry is a file => extract it to the disk
 					// (using a file output stream)
@@ -409,25 +411,24 @@ public abstract class FS {
 	 * the parent directory if it is empty and so on.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the directory to delete.
 	 * 
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a file.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non readable directory.
-	 * @throws IllegalDirectoryException
-	 *             if sPath points to a non writable directory.
+	 * @throws IllegalArgumentException
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IOException
 	 *             if an IO error occurred while deleting a directory.
-	 * @throws IllegalArgumentException
-	 *             if sPath is <code>null</code>.
-	 * 
+	 * @throws IllegalDirectoryException
+	 *             <ul>
+	 *             <li>if sPath points to a file ;</li>
+	 *             <li>if sPath points to a non readable directory ;</li>
+	 *             <li>if sPath points to a non writable directory ;</li>
+	 *             </ul>
 	 */
-	public static void deleteDirectoryAndEmptyParentDirectory(String sPath)
+	public static void deleteDirectoryAndEmptyParentDirectory(String path)
 			throws IOException, IllegalDirectoryException {
-		validateDirPath(sPath);
-		File dir = new File(sPath);
+		validateDirPath(path);
+		File dir = new File(path);
 		FileUtils.deleteDirectory(dir);
 		File parentDir = dir;
 		while (true) {
@@ -442,26 +443,26 @@ public abstract class FS {
 		}
 	}
 
-	public static int validateBashSyntax(String sBashToValidate,
-			StringBuilder sOutRes) throws IOException, InterruptedException {
+	public static int validateBashSyntax(String bashToValidate,
+			StringBuilder outstr) throws IOException, InterruptedException {
 		// pour le debuggage sous windows
 		// if ( sBashToValidate.compareTo("toto") != 0 ) return 0;
 		InputStream is = null;
 		try {
-			String[] oCmdLine = { "/bin/sh", "-n", sBashToValidate };
+			String[] oCmdLine = { "/bin/sh", "-n", bashToValidate };
 			Process oP = Runtime.getRuntime().exec(oCmdLine);
-			sOutRes.append("\n\t");
+			outstr.append("\n\t");
 			is = oP.getErrorStream();
 			int c;
 			while ((c = is.read()) != -1)
 				if (c == 10)
-					sOutRes.append((char) c + "\t");
+					outstr.append((char) c + "\t");
 				else
-					sOutRes.append((char) c);
+					outstr.append((char) c);
 			is.close();
 			int nRes = oP.waitFor();
 			oP.destroy();
-			SysTool.replaceAll(sOutRes, sBashToValidate + ":", "");
+			SysTool.replaceAll(outstr, bashToValidate + ":", "");
 			return nRes;
 		} finally {
 			if (is != null)

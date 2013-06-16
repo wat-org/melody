@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.xml.DiskDevicesLoader;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -33,7 +34,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		for (DiskDevice d : this) {
 			if (d.getDiskDeviceName().equals(dd.getDiskDeviceName())) {
 				// Detects duplicated deviceName declaration
-				throw new IllegalDiskDeviceListException(Messages.bind(
+				throw new IllegalDiskDeviceListException(Msg.bind(
 						Messages.DiskListEx_DEVICE_ALREADY_DEFINE,
 						dd.getDiskDeviceName()));
 			}
@@ -41,7 +42,7 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 		if (dd.isRootDevice()) {
 			if (getRootDevice() != null) {
 				// Detects multiple RootDevice declaration
-				throw new IllegalDiskDeviceListException(Messages.bind(
+				throw new IllegalDiskDeviceListException(Msg.bind(
 						Messages.DiskListEx_MULTIPLE_ROOT_DEVICE_DEFINE,
 						dd.getDiskDeviceName()));
 			}
@@ -78,12 +79,11 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 	}
 
 	/**
-	 * 
 	 * @param target
+	 *            is a disk device list.
 	 * 
 	 * @return a {@link DiskDeviceList}, which contains all {@link DiskDevice}
-	 *         which are in the given target {@link DiskDeviceList} and not in
-	 *         this object.
+	 *         which are in the given target list and not in this object.
 	 */
 	public DiskDeviceList delta(DiskDeviceList target) {
 		DiskDeviceList delta = new DiskDeviceList(target);
@@ -92,18 +92,26 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 	}
 
 	/**
+	 * <p>
+	 * Will throw error if this object is not compatible with the given target
+	 * list.
+	 * </p>
 	 * 
-	 * @param cpm
+	 * @param target
+	 *            is a disk device list.
 	 * 
-	 * @return a {@link DiskDeviceList}, which contains all {@link DiskDevice}
-	 *         which are in the given {@link DiskDeviceList} and not in this
-	 *         object.
-	 * 
+	 * @throws RuntimeException
+	 *             <ul>
+	 *             <li>if this object is an empty list ;</li>
+	 *             <li>if this object has no root device ;</li>
+	 *             </ul>
 	 * @throws DiskDeviceException
-	 *             if this object is not a valid {@link DiskDeviceList}.
-	 * @throws DiskDeviceException
-	 *             if this object is not compatible with the given target
-	 *             {@link DiskDeviceList}.
+	 *             <ul>
+	 *             <li>if the given list is not a valid {@link DiskDeviceList}
+	 *             (empty list, no root device) ;</li>
+	 *             <li>if this object's root device is not the same than the
+	 *             given list's root device ;</li>
+	 *             </ul>
 	 */
 	public void isCompatible(DiskDeviceList target) throws DiskDeviceException {
 		if (target == null) {
@@ -120,23 +128,23 @@ public class DiskDeviceList extends ArrayList<DiskDevice> {
 					+ "root device.");
 		}
 		if (target.size() == 0) {
-			throw new DiskDeviceException(Messages.bind(
+			throw new DiskDeviceException(Msg.bind(
 					Messages.DiskDefEx_EMPTY_DEVICE_LIST,
 					DiskDevicesLoader.DEVICE_NAME_ATTR, getRootDevice()
 							.getDiskDeviceName()));
 		}
 		if (target.getRootDevice() == null) {
-			throw new DiskDeviceException(Messages.bind(
+			throw new DiskDeviceException(Msg.bind(
 					Messages.DiskDefEx_UNDEF_ROOT_DEVICE,
 					DiskDevicesLoader.ROOTDEVICE_ATTR, getRootDevice()
 							.getDiskDeviceName()));
 		}
 		if (!getRootDevice().equals(target.getRootDevice())) {
-			throw new DiskDeviceException(Messages.bind(
-					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE, new Object[] {
-							DiskDevicesLoader.ROOTDEVICE_ATTR,
-							target.getRootDevice().getDiskDeviceName(),
-							getRootDevice().getDiskDeviceName() }));
+			throw new DiskDeviceException(Msg.bind(
+					Messages.DiskDefEx_INCORRECT_ROOT_DEVICE,
+					DiskDevicesLoader.ROOTDEVICE_ATTR, target.getRootDevice()
+							.getDiskDeviceName(), getRootDevice()
+							.getDiskDeviceName()));
 		}
 	}
 

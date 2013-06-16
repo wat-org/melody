@@ -17,6 +17,7 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertyName;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.Doc;
@@ -103,12 +104,12 @@ public abstract class XPathExpander {
 	 * 
 	 * @return the evaluated expression, as a <tt>String</tt>.
 	 * 
-	 * @throws XPathExpressionException
-	 *             if the given expression is not a valid XPath 2.0 expression.
-	 * @throws NullPointerException
-	 *             if the given expression is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given context is <tt>null</tt>.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 * @throws XPathExpressionException
+	 *             if the given expression is not a valid XPath 2.0 expression.
 	 */
 	public static String evaluateAsString(String expr, Node ctx)
 			throws XPathExpressionException {
@@ -160,12 +161,12 @@ public abstract class XPathExpander {
 	 * 
 	 * @return the evaluated expression, as a {@link Node}.
 	 * 
-	 * @throws XPathExpressionException
-	 *             if the given expression is not a valid XPath 2.0 expression.
-	 * @throws NullPointerException
-	 *             if the given expression is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given context is <tt>null</tt>.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 * @throws XPathExpressionException
+	 *             if the given expression is not a valid XPath 2.0 expression.
 	 */
 	public static NodeList evaluateAsNodeList(String expr, Node ctx)
 			throws XPathExpressionException {
@@ -217,12 +218,12 @@ public abstract class XPathExpander {
 	 * 
 	 * @return the evaluated expression, as a {@link Node}.
 	 * 
-	 * @throws XPathExpressionException
-	 *             if the given expression is not a valid XPath 2.0 expression.
-	 * @throws NullPointerException
-	 *             if the given expression is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if the given context is <tt>null</tt>.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 * @throws XPathExpressionException
+	 *             if the given expression is not a valid XPath 2.0 expression.
 	 */
 	public static Node evaluateAsNode(String expr, Node ctx)
 			throws XPathExpressionException {
@@ -291,17 +292,20 @@ public abstract class XPathExpander {
 	 * @return the content of the file, as a <tt>String</tt>, where all Melody
 	 *         Expressions have been expanded.
 	 * 
-	 * @throws XPathExpressionSyntaxException
-	 *             if a Melody Expression cannot be expanded because it is not
-	 *             valid.
-	 * @throws IllegalFileException
-	 *             if the given {@link Path} doesn't point to a valid
-	 *             {@link File}.
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given file to expand is <tt>null</tt> ;</li>
+	 *             <li>if the given context is <tt>null</tt> ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred while reading the {@link File} which
 	 *             is pointed by the given {@link Path}.
-	 * @throws IllegalArgumentException
-	 *             if fileToExpand is <tt>null</tt>.
+	 * @throws IllegalFileException
+	 *             if the given {@link Path} doesn't point to a valid
+	 *             {@link File}.
+	 * @throws XPathExpressionSyntaxException
+	 *             if a Melody Expression cannot be expanded because it is not
+	 *             valid.
 	 */
 	public static String expand(Path fileToExpand, Node ctx,
 			PropertySet properties) throws XPathExpressionSyntaxException,
@@ -315,7 +319,7 @@ public abstract class XPathExpander {
 		try {
 			return expand(fileContent, ctx, properties);
 		} catch (XPathExpressionSyntaxException Ex) {
-			throw new XPathExpressionSyntaxException(Messages.bind(
+			throw new XPathExpressionSyntaxException(Msg.bind(
 					Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR_IN_TEMPLATE,
 					fileToExpand, fileContent.trim()), Ex);
 		}
@@ -358,14 +362,16 @@ public abstract class XPathExpander {
 	 * </p>
 	 * 
 	 * @param expr
-	 *            is the <code>String</code> to expand.
+	 *            is the <tt>String</tt> to expand.
 	 * @param ctx
 	 *            necessary to expand XPath 2.0 Expression.
 	 * @param vars
 	 *            necessary to expand Property's Name.
 	 * 
-	 * @return the corresponding expanded <code>String</code>.
+	 * @return the corresponding expanded <tt>String</tt>.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
 	 * @throws XPathExpressionSyntaxException
 	 *             if a Melody Expression cannot be expanded because it is not a
 	 *             valid X2Path Expression.
@@ -384,7 +390,7 @@ public abstract class XPathExpander {
 				return expr;
 			} else {
 				// Start Delimiter not found AND Stop Delimiter found
-				throw new XPathExpressionSyntaxException(Messages.bind(
+				throw new XPathExpressionSyntaxException(Msg.bind(
 						Messages.XPathExprSyntaxEx_START_DELIM_MISSING,
 						extractPart(expr, end)));
 			}
@@ -392,12 +398,12 @@ public abstract class XPathExpander {
 		// Start Delimiter found
 		if (end == -1) {
 			// Start Delimiter found AND Stop Delimiter not found
-			throw new XPathExpressionSyntaxException(Messages.bind(
+			throw new XPathExpressionSyntaxException(Msg.bind(
 					Messages.XPathExprSyntaxEx_STOP_DELIM_MISSING,
 					extractPart(expr, start)));
 		} else if (end < start) {
 			// Start Delimiter found AFTER Stop Delimiter
-			throw new XPathExpressionSyntaxException(Messages.bind(
+			throw new XPathExpressionSyntaxException(Msg.bind(
 					Messages.XPathExprSyntaxEx_START_DELIM_MISSING,
 					extractPart(expr, end)));
 		}
@@ -412,7 +418,7 @@ public abstract class XPathExpander {
 		}
 		if (end == -1) {
 			// Start Delimiter found AND Stop Delimiter not found
-			throw new XPathExpressionSyntaxException(Messages.bind(
+			throw new XPathExpressionSyntaxException(Msg.bind(
 					Messages.XPathExprSyntaxEx_STOP_DELIM_MISSING,
 					extractPart(expr, start)));
 		}
@@ -441,7 +447,7 @@ public abstract class XPathExpander {
 			if (vars.containsKey(expr)) {
 				return vars.get(expr);
 			} else {
-				throw new XPathExpressionSyntaxException(Messages.bind(
+				throw new XPathExpressionSyntaxException(Msg.bind(
 						Messages.XPathExprSyntaxEx_UNDEF_PROPERTY, expr));
 			}
 		} else {
@@ -452,7 +458,7 @@ public abstract class XPathExpander {
 			try {
 				return evaluateAsString(expr, ctx);
 			} catch (XPathExpressionException Ex) {
-				throw new XPathExpressionSyntaxException(Messages.bind(
+				throw new XPathExpressionSyntaxException(Msg.bind(
 						Messages.XPathExprSyntaxEx_INVALID_XPATH_EXPR,
 						extractPart(expr, 0)), Ex);
 			}

@@ -1,7 +1,7 @@
 package com.wat.melody.common.keypair;
 
-import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -11,60 +11,55 @@ import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
 public class KeyPairSize {
 
 	/**
-	 * @param iKeyPairSize
+	 * <p>
+	 * Convert the given size to a {@link KeyPairSize} object.
+	 * </p>
+	 * 
+	 * @param keyPairSize
+	 *            is the size to convert.
 	 * 
 	 * @return a {@link KeyPairSize}, which is equal to the given <tt>int</tt>.
 	 * 
-	 * @throws IllegalIcmpTypeException
+	 * @throws IllegalKeyPairSizeException
 	 *             if the given <tt>int</tt> is < 1024.
 	 */
-	public static KeyPairSize parseInt(int iKeyPairSize)
+	public static KeyPairSize parseInt(int keyPairSize)
 			throws IllegalKeyPairSizeException {
-		return new KeyPairSize(iKeyPairSize);
+		return new KeyPairSize(keyPairSize);
 	}
 
 	/**
-	 * @param sKeyPairSize
+	 * <p>
+	 * Convert the given size to a {@link KeyPairSize} object.
+	 * </p>
+	 * 
+	 * @param keyPairSize
+	 *            is the size to convert.
 	 * 
 	 * @return a {@link KeyPairSize}, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalKeyPairSizeException
-	 *             if the given <tt>String</tt> is < 1024.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
 	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is < 1024 ;</li>
+	 *             </ul>
 	 */
-	public static KeyPairSize parseString(String sKeyPairSize)
+	public static KeyPairSize parseString(String keyPairSize)
 			throws IllegalKeyPairSizeException {
-		return new KeyPairSize(sKeyPairSize);
+		return new KeyPairSize(keyPairSize);
 	}
 
 	private int _value;
 
-	/**
-	 * @param iKeyPairSize
-	 * 
-	 * @throws IllegalKeyPairSizeException
-	 *             if the given <tt>int</tt> is < 1024.
-	 */
-	public KeyPairSize(int iKeyPairSize) throws IllegalKeyPairSizeException {
-		setKeyPairSize(iKeyPairSize);
+	public KeyPairSize(int keyPairSize) throws IllegalKeyPairSizeException {
+		setKeyPairSize(keyPairSize);
 	}
 
-	/**
-	 * @param sKeyPairSize
-	 * 
-	 * @throws IllegalKeyPairSizeException
-	 *             if the given <tt>String</tt> is < 1024.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	public KeyPairSize(String sKeyPairSize) throws IllegalKeyPairSizeException {
-		setKeyPairSize(sKeyPairSize);
+	public KeyPairSize(String keyPairSize) throws IllegalKeyPairSizeException {
+		setKeyPairSize(keyPairSize);
 	}
 
 	@Override
@@ -96,53 +91,33 @@ public class KeyPairSize {
 		return _value;
 	}
 
-	/**
-	 * @param iKeyPairSize
-	 * 
-	 * @return the previous KeyPairSize's value.
-	 * 
-	 * @throws IllegalKeyPairSizeException
-	 *             if the given <tt>int</tt> is < 1024.
-	 */
-	private int setKeyPairSize(int iKeyPairSize)
+	private int setKeyPairSize(int keyPairSize)
 			throws IllegalKeyPairSizeException {
-		if (iKeyPairSize < 1024) {
-			throw new IllegalKeyPairSizeException(Messages.bind(
-					Messages.KeyPairSizeEx_TOO_SMALL, iKeyPairSize));
+		if (keyPairSize < 1024) {
+			throw new IllegalKeyPairSizeException(Msg.bind(
+					Messages.KeyPairSizeEx_TOO_SMALL, keyPairSize));
 		}
 		int previous = getValue();
-		_value = iKeyPairSize;
+		_value = keyPairSize;
 		return previous;
 	}
 
-	/**
-	 * @param sKeyPairSize
-	 * 
-	 * @return the previous KeyPairSize's value.
-	 * 
-	 * @throws IllegalKeyPairSizeException
-	 *             if the given <tt>String</tt> is < 1024.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	private int setKeyPairSize(String sKeyPairSize)
+	private int setKeyPairSize(String keyPairSize)
 			throws IllegalKeyPairSizeException {
-		if (sKeyPairSize == null) {
+		if (keyPairSize == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ KeyPairSize.class.getCanonicalName() + ").");
 		}
-		if (sKeyPairSize.trim().length() == 0) {
-			throw new IllegalKeyPairSizeException(Messages.bind(
-					Messages.KeyPairSizeEx_EMPTY, sKeyPairSize));
+		if (keyPairSize.trim().length() == 0) {
+			throw new IllegalKeyPairSizeException(Msg.bind(
+					Messages.KeyPairSizeEx_EMPTY, keyPairSize));
 		}
 		try {
-			return setKeyPairSize(Integer.parseInt(sKeyPairSize));
+			return setKeyPairSize(Integer.parseInt(keyPairSize));
 		} catch (NumberFormatException Ex) {
-			throw new IllegalKeyPairSizeException(Messages.bind(
-					Messages.KeyPairSizeEx_NOT_A_NUMBER, sKeyPairSize));
+			throw new IllegalKeyPairSizeException(Msg.bind(
+					Messages.KeyPairSizeEx_NOT_A_NUMBER, keyPairSize));
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -44,7 +45,7 @@ public enum Direction {
 					+ Arrays.asList(Direction.values()) + " ).");
 		}
 		if (direction.trim().length() == 0) {
-			throw new IllegalDirectionException(Messages.bind(
+			throw new IllegalDirectionException(Msg.bind(
 					Messages.DirectionEx_EMPTY, direction));
 		}
 		for (Direction c : Direction.class.getEnumConstants()) {
@@ -52,7 +53,7 @@ public enum Direction {
 				return c;
 			}
 		}
-		throw new IllegalDirectionException(Messages.bind(
+		throw new IllegalDirectionException(Msg.bind(
 				Messages.DirectionEx_INVALID, direction,
 				Arrays.asList(Direction.values())));
 	}

@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.TemplatingException;
@@ -38,19 +39,19 @@ class UploaderNoThread {
 	}
 
 	protected void upload() throws UploaderException {
-		log.debug(Messages.bind(Messages.UploadMsg_BEGIN, getResource()));
+		log.debug(Msg.bind(Messages.UploadMsg_BEGIN, getResource()));
 		if (getResource().isDirectory()) {
 			mkdirs(getResource());
 		} else if (getResource().isFile()) {
 			put(getResource());
 		} else {
-			log.warn(Messages.bind(Messages.UploadMsg_NOTFOUND, getResource()));
+			log.warn(Msg.bind(Messages.UploadMsg_NOTFOUND, getResource()));
 			return;
 		}
 		if (getResource().getGroup() != null && !getResource().isSymbolicLink()) {
 			chgrp(getResource().getDestination(), getResource().getGroup());
 		}
-		log.info(Messages.bind(Messages.UploadMsg_END, getResource()));
+		log.info(Msg.bind(Messages.UploadMsg_END, getResource()));
 	}
 
 	protected void mkdirs(SimpleResource r) throws UploaderException {
@@ -121,7 +122,7 @@ class UploaderNoThread {
 				return;
 			} catch (SftpException Ex) {
 				if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-					throw new UploaderException(Messages.bind(
+					throw new UploaderException(Msg.bind(
 							Messages.UploadEx_STAT, dir), Ex);
 				}
 			}
@@ -141,8 +142,8 @@ class UploaderNoThread {
 				parent = dir.resolve("..").normalize();
 				mkdirs(parent);
 			} catch (UploaderException Ex) {
-				throw new UploaderException(Messages.bind(
-						Messages.UploadEx_MKDIRS, parent), Ex);
+				throw new UploaderException(Msg.bind(Messages.UploadEx_MKDIRS,
+						parent), Ex);
 			}
 			mkdir(dir);
 		}
@@ -163,8 +164,8 @@ class UploaderNoThread {
 			return;
 		} catch (SftpException Ex) {
 			if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new UploaderException(Messages.bind(
-						Messages.UploadEx_STAT, r.getDestination()), Ex);
+				throw new UploaderException(Msg.bind(Messages.UploadEx_STAT,
+						r.getDestination()), Ex);
 			}
 		}
 		Path symbolinkLinkTarget = null;
@@ -177,7 +178,7 @@ class UploaderNoThread {
 			getChannel().symlink(symbolinkLinkTarget.toString(),
 					r.getDestination().toString());
 		} catch (SftpException Ex) {
-			throw new UploaderException(Messages.bind(Messages.UploadEx_LN,
+			throw new UploaderException(Msg.bind(Messages.UploadEx_LN,
 					symbolinkLinkTarget, r.getDestination()), Ex);
 		}
 	}
@@ -241,8 +242,8 @@ class UploaderNoThread {
 		try {
 			getChannel().put(source.toString(), dest.toString());
 		} catch (SftpException Ex) {
-			throw new UploaderException(Messages.bind(Messages.UploadEx_PUT,
-					source, dest), Ex);
+			throw new UploaderException(Msg.bind(Messages.UploadEx_PUT, source,
+					dest), Ex);
 		}
 	}
 
@@ -260,7 +261,7 @@ class UploaderNoThread {
 		try {
 			getChannel().chmod(modifiers.toInt(), file.toString());
 		} catch (SftpException Ex) {
-			throw new UploaderException(Messages.bind(Messages.UploadEx_CHMOD,
+			throw new UploaderException(Msg.bind(Messages.UploadEx_CHMOD,
 					modifiers, file), Ex);
 		}
 	}
@@ -278,7 +279,7 @@ class UploaderNoThread {
 		try {
 			getChannel().chgrp(group.toInt(), file.toString());
 		} catch (SftpException Ex) {
-			throw new UploaderException(Messages.bind(Messages.UploadEx_CHGRP,
+			throw new UploaderException(Msg.bind(Messages.UploadEx_CHGRP,
 					group, file), Ex);
 		}
 	}
@@ -292,8 +293,8 @@ class UploaderNoThread {
 		try {
 			getChannel().mkdir(dir.toString());
 		} catch (SftpException Ex) {
-			throw new UploaderException(Messages.bind(Messages.UploadEx_MKDIR,
-					dir), Ex);
+			throw new UploaderException(Msg.bind(Messages.UploadEx_MKDIR, dir),
+					Ex);
 		}
 	}
 

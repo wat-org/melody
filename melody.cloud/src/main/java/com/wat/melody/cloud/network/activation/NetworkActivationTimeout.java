@@ -1,6 +1,7 @@
 package com.wat.melody.cloud.network.activation;
 
 import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -41,6 +42,7 @@ public class NetworkActivationTimeout implements Timeout {
 	 *             <li>if the given <tt>String</tt> is not a parse-able
 	 *             <tt>Long</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
 	public static NetworkActivationTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
@@ -61,7 +63,7 @@ public class NetworkActivationTimeout implements Timeout {
 		try {
 			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.NetworkActivationTimeoutEx_INVALID, timeout), Ex);
 		}
 	}
@@ -77,13 +79,14 @@ public class NetworkActivationTimeout implements Timeout {
 	 *             <li>if the given <tt>String</tt> is not a parse-able
 	 *             <tt>Long</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
 	public NetworkActivationTimeout(String timeout)
 			throws IllegalTimeoutException {
 		try {
 			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
-			throw new IllegalTimeoutException(Messages.bind(
+			throw new IllegalTimeoutException(Msg.bind(
 					Messages.NetworkActivationTimeoutEx_INVALID, timeout), Ex);
 		}
 	}

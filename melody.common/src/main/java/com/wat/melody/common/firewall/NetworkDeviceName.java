@@ -1,6 +1,7 @@
 package com.wat.melody.common.firewall;
 
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -94,11 +95,11 @@ public class NetworkDeviceName {
 					+ " (a Network Device name)");
 		}
 		if (name.trim().length() == 0) {
-			throw new IllegalNetworkDeviceNameException(Messages.bind(
+			throw new IllegalNetworkDeviceNameException(Msg.bind(
 					Messages.NetworkDeviceNameEx_EMPTY, name));
 		}
 		if (!name.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
-			throw new IllegalNetworkDeviceNameException(Messages.bind(
+			throw new IllegalNetworkDeviceNameException(Msg.bind(
 					Messages.NetworkDeviceNameEx_INVALID, name,
 					NETWORK_DEVICE_NAME_PATTERN));
 		}

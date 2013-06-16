@@ -7,6 +7,7 @@ import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationDatasLoader;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
@@ -23,8 +24,8 @@ import com.wat.melody.common.ssh.impl.SshUserDatas;
  * <p>
  * This implementation of the {@link NetworkActivator} will :
  * <ul>
- * <li>On enablement : add the ip/fqdn of the target system in the known_host
- * file ;</li>
+ * <li>On enablement : wait for the ssh connection to be established and then
+ * add the ip/fqdn of the target system in the known_host file ;</li>
  * <li>On disablement : remove the ip/fqdn of the target system in the
  * known_host file ;</li>
  * </ul>
@@ -86,13 +87,12 @@ public class SshNetworkActivator implements NetworkActivator {
 			throw new NetworkActivationException(Ex);
 		}
 		if (result == false) {
-			throw new NetworkActivationException(Messages.bind(
+			throw new NetworkActivationException(Msg.bind(
 					Messages.SshNetworkActivatorEx_ENABLEMENT_TIMEOUT,
 					NetworkActivationDatasLoader.ACTIVATION_TIMEOUT_ATTR));
 		}
-		log.debug(Messages.bind(
-				Messages.SshNetworkActivatorMsg_ENABLEMENT_DONE, datas
-						.getHost().getAddress(), datas.getHost().getName()));
+		log.debug(Msg.bind(Messages.SshNetworkActivatorMsg_ENABLEMENT_DONE,
+				datas.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 	public static boolean addKnownHostsHost(ISshSessionConfiguration sc,
@@ -136,7 +136,7 @@ public class SshNetworkActivator implements NetworkActivator {
 					session.disconnect();
 				}
 			}
-			log.debug(Messages.bind(
+			log.debug(Msg.bind(
 					Messages.SshNetworkActivatorMsg_WAIT_FOR_ENABLEMENT,
 					host.getAddress(), port.getValue()));
 			if (timeout == 0) {
@@ -158,9 +158,8 @@ public class SshNetworkActivator implements NetworkActivator {
 	public void disableNetworkActivation() throws NetworkActivationException {
 		SshNetworkActivationDatas datas = getNetworkActivationDatas();
 		getConfiguration().getKnownHosts().remove(datas.getHost());
-		log.debug(Messages.bind(
-				Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE, datas
-						.getHost().getAddress(), datas.getHost().getName()));
+		log.debug(Msg.bind(Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE,
+				datas.getHost().getAddress(), datas.getHost().getName()));
 	}
 
 }

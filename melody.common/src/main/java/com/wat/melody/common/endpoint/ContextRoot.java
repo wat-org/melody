@@ -1,6 +1,7 @@
 package com.wat.melody.common.endpoint;
 
 import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -11,20 +12,23 @@ public class ContextRoot {
 
 	/**
 	 * <p>
-	 * Convert the given <tt>String</tt> to an {@link ContextRoot} object.
+	 * Convert the given <tt>String</tt> to a {@link ContextRoot} object.
 	 * </p>
 	 * 
 	 * @param contextRoot
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link ContextRoot} object, whose equal to the given input
+	 * @return a {@link ContextRoot} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalContextRootException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link ContextRoot}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalContextRootException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static ContextRoot parseString(String contextRoot)
 			throws IllegalContextRootException {
@@ -70,10 +74,10 @@ public class ContextRoot {
 					+ "Must be a valid String (a contextRoot).");
 		}
 		if (contextRoot.trim().length() == 0) {
-			throw new IllegalContextRootException(Messages.bind(
+			throw new IllegalContextRootException(Msg.bind(
 					Messages.ContextRootEx_EMPTY, contextRoot));
 		} else if (!contextRoot.matches("^" + PATTERN + "$")) {
-			throw new IllegalContextRootException(Messages.bind(
+			throw new IllegalContextRootException(Msg.bind(
 					Messages.ContextRootEx_INVALID, contextRoot, PATTERN));
 		}
 		String previous = getValue();

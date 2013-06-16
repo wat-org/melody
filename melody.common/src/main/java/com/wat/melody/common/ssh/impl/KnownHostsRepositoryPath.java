@@ -8,6 +8,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.KnownHostsRepositoryPathException;
 
@@ -35,14 +36,14 @@ public class KnownHostsRepositoryPath implements IFileBased {
 		try {
 			FS.validateFilePath(_path);
 		} catch (IllegalFileException | IllegalDirectoryException Ex) {
-			throw new KnownHostsRepositoryPathException(Messages.bind(
+			throw new KnownHostsRepositoryPathException(Msg.bind(
 					Messages.KnownHostsRepoPathEx_INVALID_REPO_PATH, _path), Ex);
 		}
 		// Create the file if it doesn't exists
 		try {
 			new File(_path).createNewFile();
 		} catch (IOException Ex) {
-			throw new KnownHostsRepositoryPathException(Messages.bind(
+			throw new KnownHostsRepositoryPathException(Msg.bind(
 					Messages.KnownHostsRepoPathEx_FAILED_TO_CREATE_REPO, _path));
 		}
 	}

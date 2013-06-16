@@ -24,6 +24,7 @@ import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.xml.NetworkActivatorRelatedToAnInstanceElement;
 import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.DocHelper;
@@ -166,14 +167,14 @@ public abstract class AbstractOperation implements ITask,
 	protected void validateRegion(InstanceDatas datas)
 			throws IllegalInstanceDatasException, LibVirtException {
 		if (datas.getRegion() == null) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_MISSING_REGION_ATTR,
 					InstanceDatasLoader.REGION_ATTR));
 		}
 		Connect connect = getLibVirtPlugInConfiguration().getCloudConnection(
 				datas.getRegion());
 		if (connect == null) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_INVALID_REGION_ATTR, datas.getRegion()));
 		}
 		// Initialize Cloud Connection
@@ -188,12 +189,12 @@ public abstract class AbstractOperation implements ITask,
 	protected void validateImageId(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
 		if (datas.getImageId() == null) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_MISSING_IMAGEID_ATTR,
 					InstanceDatasLoader.IMAGEID_ATTR));
 		}
 		if (!LibVirtCloud.imageIdExists(datas.getImageId())) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_INVALID_IMAGEID_ATTR,
 					datas.getImageId(), datas.getRegion()));
 		}
@@ -202,7 +203,7 @@ public abstract class AbstractOperation implements ITask,
 	protected void validateInstanceType(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
 		if (datas.getInstanceType() == null) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_MISSING_INSTANCETYPE_ATTR,
 					InstanceDatasLoader.INSTANCETYPE_ATTR));
 		}
@@ -219,7 +220,7 @@ public abstract class AbstractOperation implements ITask,
 	protected void validateKeyPairName(InstanceDatas datas)
 			throws IllegalInstanceDatasException {
 		if (datas.getKeyPairName() == null) {
-			throw new IllegalInstanceDatasException(Messages.bind(
+			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.MachineEx_MISSING_KEYPAIR_NAME_ATTR,
 					InstanceDatasLoader.KEYPAIR_NAME_ATTR));
 		}
@@ -373,21 +374,21 @@ public abstract class AbstractOperation implements ITask,
 		try {
 			nl = getRD().evaluateAsNodeList(target);
 		} catch (XPathExpressionException Ex) {
-			throw new LibVirtException(Messages.bind(
+			throw new LibVirtException(Msg.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_XPATH, target));
 		}
 		if (nl.getLength() == 0) {
-			throw new LibVirtException(Messages.bind(
+			throw new LibVirtException(Msg.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NO_NODE_MATCH,
 					target));
 		} else if (nl.getLength() > 1) {
-			throw new LibVirtException(Messages.bind(
+			throw new LibVirtException(Msg.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_MANY_NODES_MATCH,
 					target, nl.getLength()));
 		}
 		Node n = nl.item(0);
 		if (n.getNodeType() != Node.ELEMENT_NODE) {
-			throw new LibVirtException(Messages.bind(
+			throw new LibVirtException(Msg.bind(
 					Messages.MachineEx_INVALID_TARGET_ATTR_NOT_ELMT_MATCH,
 					target, DocHelper.parseNodeType(n)));
 		}

@@ -3,6 +3,7 @@ package com.wat.melody.plugin.libvirt;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.AbstractOperation;
 import com.wat.melody.plugin.libvirt.common.Messages;
@@ -34,7 +35,7 @@ public class ResizeMachine extends AbstractOperation {
 					getInstanceDatas().getInstanceType());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(new NodeRelatedException(
-					getTargetElement(), Messages.bind(
+					getTargetElement(), Msg.bind(
 							Messages.ResizeEx_GENERIC_FAIL, getInstanceDatas()
 									.getInstanceType()), Ex));
 		}

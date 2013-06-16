@@ -2,8 +2,6 @@ package com.wat.melody.cli;
 
 import org.eclipse.osgi.util.NLS;
 
-import com.wat.melody.common.systool.SysTool;
-
 public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.cli.messages";
@@ -45,17 +43,11 @@ public class Messages extends NLS {
 	public static String ConfEx_DUPLICATE_CONF_DIRECTIVE;
 	public static String ConfEx_GENERIC_PLUGIN_LOAD;
 
+	public static String ShutdownHookMsg_EXITING;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-	}
-
-	public static String bind(String message, Object... bindings) {
-		for (int i = 0; i < bindings.length; i++) {
-			bindings[i] = bindings[i].toString().replaceAll(SysTool.NEW_LINE,
-					SysTool.NEW_LINE + "  ");
-		}
-		return NLS.bind(message, bindings);
 	}
 
 	private Messages() {

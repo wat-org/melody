@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.xml.namespace.NamespaceContext;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
@@ -51,7 +52,8 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		}
 		if (properties == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid list of properties's name.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ "[] (some properties's name).");
 		}
 
 		for (String property : properties) {
@@ -73,10 +75,9 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 			String uri = loadNamespaceURI(ps, key);
 			addDefinition(namespace, uri);
 		} catch (XPathNamespaceContextResolverLoadingException Ex) {
-			throw new XPathNamespaceContextResolverLoadingException(
-					Messages.bind(
-							Messages.XPathResolver_INVALID_NAMESPACE_DEFINITION,
-							key), Ex);
+			throw new XPathNamespaceContextResolverLoadingException(Msg.bind(
+					Messages.XPathResolver_INVALID_NAMESPACE_DEFINITION, key),
+					Ex);
 		}
 	}
 
@@ -88,17 +89,15 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 			throws XPathNamespaceContextResolverLoadingException {
 		int lastIndexOfDot = key.lastIndexOf('.') + 1;
 		if (lastIndexOfDot >= key.length()) {
-			throw new XPathNamespaceContextResolverLoadingException(
-					Messages.bind(
-							Messages.XPathResolver_INVALID_NAMESPACE_NAME, "",
-							NAMESPACE_NAME_PATTERN));
+			throw new XPathNamespaceContextResolverLoadingException(Msg.bind(
+					Messages.XPathResolver_INVALID_NAMESPACE_NAME, "",
+					NAMESPACE_NAME_PATTERN));
 		}
 		String namespaceName = key.substring(lastIndexOfDot, key.length());
 		if (!namespaceName.matches("^" + NAMESPACE_NAME_PATTERN + "$")) {
-			throw new XPathNamespaceContextResolverLoadingException(
-					Messages.bind(
-							Messages.XPathResolver_INVALID_NAMESPACE_NAME,
-							namespaceName, NAMESPACE_NAME_PATTERN));
+			throw new XPathNamespaceContextResolverLoadingException(Msg.bind(
+					Messages.XPathResolver_INVALID_NAMESPACE_NAME,
+					namespaceName, NAMESPACE_NAME_PATTERN));
 		}
 		return namespaceName;
 	}
@@ -108,23 +107,20 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 		try {
 			if (!ps.containsKey(key + SUFFIX_NAMESPACE_URI)) {
 				throw new XPathNamespaceContextResolverLoadingException(
-						Messages.bind(
-								Messages.XPathResolver_MISSING_NAMESPACE_URI,
+						Msg.bind(Messages.XPathResolver_MISSING_NAMESPACE_URI,
 								key + SUFFIX_NAMESPACE_URI));
 			}
 			String namespace = ps.get(key + SUFFIX_NAMESPACE_URI);
 			if (namespace.trim().length() == 0) {
 				throw new XPathNamespaceContextResolverLoadingException(
-						Messages.bind(
-								Messages.XPathResolver_INVALID_NAMESPACE_URI,
+						Msg.bind(Messages.XPathResolver_INVALID_NAMESPACE_URI,
 								namespace));
 			}
 			return namespace;
 		} catch (XPathNamespaceContextResolverLoadingException Ex) {
-			throw new XPathNamespaceContextResolverLoadingException(
-					Messages.bind(
-							Messages.XPathResolver_INVALID_NAMESPACE_URI_DEFINITION,
-							key + SUFFIX_NAMESPACE_URI), Ex);
+			throw new XPathNamespaceContextResolverLoadingException(Msg.bind(
+					Messages.XPathResolver_INVALID_NAMESPACE_URI_DEFINITION,
+					key + SUFFIX_NAMESPACE_URI), Ex);
 		}
 	}
 
@@ -135,7 +131,9 @@ public class XPathNamespaceContextResolver implements NamespaceContext {
 	private Map<String, String> setNamespaceDefinition(Map<String, String> nsDef) {
 		if (nsDef == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Map<String, String>.");
+					+ "Must be a valid " + Map.class.getCanonicalName() + "<"
+					+ String.class.getCanonicalName() + ", "
+					+ String.class.getCanonicalName() + ">.");
 		}
 		Map<String, String> previous = getNamespaceDefinition();
 		_nsDefintion = nsDef;

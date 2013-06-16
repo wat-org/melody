@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.types.SimpleResource;
@@ -57,7 +58,7 @@ class UploaderMultiThread {
 			return;
 		}
 		try {
-			log.debug(Messages.bind(Messages.UploadMsg_START, getSession()
+			log.debug(Msg.bind(Messages.UploadMsg_START, getSession()
 					.getConnectionDatas()));
 			setThreadGroup(new ThreadGroup(Thread.currentThread().getName()
 					+ ">uploader"));
@@ -89,7 +90,7 @@ class UploaderMultiThread {
 		try {
 			new UploaderNoThread(channel, r, getTemplatingHandler()).upload();
 		} catch (UploaderException Ex) {
-			UploaderException e = new UploaderException(Messages.bind(
+			UploaderException e = new UploaderException(Msg.bind(
 					Messages.UploadEx_FAILED, r), Ex);
 			markState(UploaderMultiThread.FAILED);
 			getExceptionsSet().addCause(e);
@@ -155,13 +156,11 @@ class UploaderMultiThread {
 		}
 
 		if (isCritical()) {
-			throw new UploaderException(Messages.bind(
-					Messages.UploadEx_UNMANAGED, getSession()
-							.getConnectionDatas()), getExceptionsSet());
+			throw new UploaderException(Msg.bind(Messages.UploadEx_UNMANAGED,
+					getSession().getConnectionDatas()), getExceptionsSet());
 		} else if (isFailed()) {
-			throw new UploaderException(Messages.bind(
-					Messages.UploadEx_MANAGED, getSession()
-							.getConnectionDatas()), getExceptionsSet());
+			throw new UploaderException(Msg.bind(Messages.UploadEx_MANAGED,
+					getSession().getConnectionDatas()), getExceptionsSet());
 		} else if (isInterrupted()) {
 			throw new MelodyInterruptedException(Messages.UploadEx_INTERRUPTED,
 					getExceptionsSet());

@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalGroupIDException;
 
 /**
@@ -38,7 +39,7 @@ public class GroupID {
 		return new GroupID(sGroupID);
 	}
 
-	private String msValue;
+	private String _value;
 
 	public GroupID(String sGroupID) throws IllegalGroupIDException {
 		setValue(sGroupID);
@@ -50,7 +51,7 @@ public class GroupID {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class GroupID {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sGroupID) throws IllegalGroupIDException {
@@ -77,21 +78,21 @@ public class GroupID {
 					+ Modifiers.class.getCanonicalName() + ").");
 		}
 		if (sGroupID.trim().length() == 0) {
-			throw new IllegalGroupIDException(Messages.bind(
+			throw new IllegalGroupIDException(Msg.bind(
 					Messages.GroupIDEx_EMPTY, sGroupID));
 		}
 		int iGID = 0;
 		try {
 			iGID = Integer.parseInt(sGroupID);
 		} catch (NumberFormatException Ex) {
-			throw new IllegalGroupIDException(Messages.bind(
+			throw new IllegalGroupIDException(Msg.bind(
 					Messages.GroupIDEx_INVALID, sGroupID));
 		}
 		if (iGID < 0) {
-			throw new IllegalGroupIDException(Messages.bind(
+			throw new IllegalGroupIDException(Msg.bind(
 					Messages.GroupIDEx_INVALID, sGroupID));
 		}
-		msValue = sGroupID;
+		_value = sGroupID;
 		return previous;
 	}
 

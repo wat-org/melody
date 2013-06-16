@@ -1,6 +1,7 @@
 package com.wat.melody.common.filter;
 
 import com.wat.melody.common.filter.exception.IllegalFilterException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
 
 /**
@@ -21,12 +22,10 @@ public class Filter {
 	 * @return a {@link Filter} object, whose equal to the given input
 	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalFilterException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link Filter}.
 	 * @throws IllegalArgumentException
 	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalFilterException
+	 *             if the given input <tt>String</tt> is empty.
 	 */
 	public static Filter parseFilter(String filter)
 			throws IllegalFilterException {
@@ -71,8 +70,8 @@ public class Filter {
 					+ "Must be a valid String (a Filter).");
 		}
 		if (filter.trim().length() == 0) {
-			throw new IllegalFilterException(Messages.bind(
-					Messages.FilterEx_EMPTY, filter));
+			throw new IllegalFilterException(Msg.bind(Messages.FilterEx_EMPTY,
+					filter));
 		}
 		String previous = getValue();
 		_value = filter;

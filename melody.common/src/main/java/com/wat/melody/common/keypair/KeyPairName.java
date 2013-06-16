@@ -1,6 +1,7 @@
 package com.wat.melody.common.keypair;
 
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -11,20 +12,23 @@ public class KeyPairName {
 
 	/**
 	 * <p>
-	 * Convert the given <tt>String</tt> to an {@link KeyPairName} object.
+	 * Convert the given <tt>String</tt> to a {@link KeyPairName} object.
 	 * </p>
 	 * 
 	 * @param sKeyPairName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link KeyPairName} object, whose equal to the given input
+	 * @return a {@link KeyPairName} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalKeyPairNameException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             {@link KeyPairName}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalKeyPairNameException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't mathc the pattern
+	 *             {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
 	public static KeyPairName parseString(String sKeyPairName)
 			throws IllegalKeyPairNameException {
@@ -63,7 +67,7 @@ public class KeyPairName {
 		return _value;
 	}
 
-	public String setValue(String sKeyPairName)
+	private String setValue(String sKeyPairName)
 			throws IllegalKeyPairNameException {
 		if (sKeyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -71,10 +75,10 @@ public class KeyPairName {
 					+ KeyPairName.class.getCanonicalName() + ").");
 		}
 		if (sKeyPairName.trim().length() == 0) {
-			throw new IllegalKeyPairNameException(Messages.bind(
+			throw new IllegalKeyPairNameException(Msg.bind(
 					Messages.KeyPairNameEx_EMPTY, sKeyPairName));
 		} else if (!sKeyPairName.matches("^" + PATTERN + "$")) {
-			throw new IllegalKeyPairNameException(Messages.bind(
+			throw new IllegalKeyPairNameException(Msg.bind(
 					Messages.KeyPairNameEx_INVALID, sKeyPairName, PATTERN));
 		}
 		String previous = toString();

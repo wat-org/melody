@@ -5,6 +5,7 @@ import java.util.Arrays;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.Messages;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -21,11 +22,11 @@ public abstract class InstanceStateConverter {
 	 * @param type
 	 *            is the given <tt>int</tt> to convert.
 	 * 
-	 * @return an {@link InstanceState} object, whose equal to the given input
+	 * @return an {@link InstanceState} object, whose equal to the given
 	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalInstanceStateException
-	 *             if the given input <tt>int</tt> is not a valid
+	 *             if the given <tt>int</tt> is not a valid
 	 *             {@link InstanceState} Enumeration Constant.
 	 */
 	public static InstanceState parse(int iState)
@@ -44,7 +45,7 @@ public abstract class InstanceStateConverter {
 		case 80:
 			return InstanceState.STOPPED;
 		}
-		throw new IllegalInstanceStateException(Messages.bind(
+		throw new IllegalInstanceStateException(Msg.bind(
 				Messages.InstanceStateEx_INVALID, iState,
 				Arrays.asList(new int[] { 0, 16, 32, 48, 64, 80 })));
 	}

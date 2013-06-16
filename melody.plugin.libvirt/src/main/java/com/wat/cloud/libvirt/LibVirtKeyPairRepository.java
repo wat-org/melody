@@ -13,6 +13,7 @@ import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * <p>
@@ -120,7 +121,7 @@ public class LibVirtKeyPairRepository {
 			String fprint = KeyPairRepository.getFingerprint(kp);
 			if (LibVirtCloudKeyPair
 					.compareKeyPair(getConnection(), kpn, fprint) == false) {
-				throw new LibVirtKeyPairRepositoryException(Messages.bind(
+				throw new LibVirtKeyPairRepositoryException(Msg.bind(
 						Messages.KeyPairEx_DIFFERENT, kpn,
 						getKeyPairRepository().getKeyPairRepositoryPath()));
 			}

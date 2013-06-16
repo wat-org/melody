@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
 
 /**
@@ -40,7 +41,7 @@ public class Modifiers {
 		return new Modifiers(sModifiers);
 	}
 
-	private String msValue;
+	private String _value;
 
 	public Modifiers(String sModifiers) throws IllegalModifiersException {
 		setValue(sModifiers);
@@ -57,7 +58,7 @@ public class Modifiers {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -73,7 +74,7 @@ public class Modifiers {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	public String setValue(String sModifiers) throws IllegalModifiersException {
@@ -84,13 +85,13 @@ public class Modifiers {
 					+ Modifiers.class.getCanonicalName() + ").");
 		}
 		if (sModifiers.trim().length() == 0) {
-			throw new IllegalModifiersException(Messages.bind(
+			throw new IllegalModifiersException(Msg.bind(
 					Messages.ModifiersEx_EMPTY, sModifiers));
 		} else if (!sModifiers.matches("^" + PATTERN + "$")) {
-			throw new IllegalModifiersException(Messages.bind(
+			throw new IllegalModifiersException(Msg.bind(
 					Messages.ModifiersEx_INVALID, sModifiers, PATTERN));
 		}
-		msValue = sModifiers;
+		_value = sModifiers;
 		return previous;
 	}
 

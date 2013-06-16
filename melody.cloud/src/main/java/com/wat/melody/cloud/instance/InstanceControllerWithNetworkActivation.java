@@ -17,6 +17,7 @@ import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.SimpleFireWallRule;
 import com.wat.melody.common.firewall.SimpleTcpFireWallRule;
 import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.PortRange;
@@ -259,7 +260,7 @@ public class InstanceControllerWithNetworkActivation extends
 		if (nad == null) {
 			return;
 		}
-		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
+		log.debug(Msg.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
 				getInstanceId()));
 
 		NetworkDeviceName netdev = na.getNetworkActivationDatas()
@@ -278,13 +279,13 @@ public class InstanceControllerWithNetworkActivation extends
 		try {
 			na.enableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
 					getInstanceId()), Ex);
 		} finally {
 			revokeInstanceFireWallRules(netdev, rules);
 		}
-		log.info(Messages.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_SUCCESS,
+		log.info(Msg.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_SUCCESS,
 				getInstanceId()));
 	}
 
@@ -310,16 +311,16 @@ public class InstanceControllerWithNetworkActivation extends
 		if (nad == null) {
 			return;
 		}
-		log.debug(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
+		log.debug(Msg.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
 				getInstanceId()));
 		try {
 			na.disableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
-			throw new OperationException(Messages.bind(
+			throw new OperationException(Msg.bind(
 					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
 					getInstanceId()), Ex);
 		}
-		log.info(Messages.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_SUCCESS,
+		log.info(Msg.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_SUCCESS,
 				getInstanceId()));
 	}
 

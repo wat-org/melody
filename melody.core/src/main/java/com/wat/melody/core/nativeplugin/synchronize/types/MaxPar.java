@@ -1,5 +1,6 @@
 package com.wat.melody.core.nativeplugin.synchronize.types;
 
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.synchronize.Messages;
 import com.wat.melody.core.nativeplugin.synchronize.exception.IllegalMaxParException;
 
@@ -87,7 +88,7 @@ public class MaxPar {
 
 	private int setValue(int iMaxPar) throws IllegalMaxParException {
 		if (iMaxPar < 0) {
-			throw new IllegalMaxParException(Messages.bind(
+			throw new IllegalMaxParException(Msg.bind(
 					Messages.MaxParEx_NEGATIVE, iMaxPar));
 		}
 		int previous = getValue();
@@ -102,13 +103,13 @@ public class MaxPar {
 					+ MaxPar.class.getCanonicalName() + ").");
 		}
 		if (sMaxPar.trim().length() == 0) {
-			throw new IllegalMaxParException(Messages.bind(
-					Messages.MaxParEx_EMPTY, sMaxPar));
+			throw new IllegalMaxParException(Msg.bind(Messages.MaxParEx_EMPTY,
+					sMaxPar));
 		}
 		try {
 			return setValue(Integer.parseInt(sMaxPar));
 		} catch (NumberFormatException Ex) {
-			throw new IllegalMaxParException(Messages.bind(
+			throw new IllegalMaxParException(Msg.bind(
 					Messages.MaxParEx_NOT_A_NUMBER, sMaxPar));
 		}
 	}

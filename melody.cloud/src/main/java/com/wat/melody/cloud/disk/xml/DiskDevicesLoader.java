@@ -13,6 +13,7 @@ import com.wat.melody.cloud.disk.Messages;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -212,7 +213,7 @@ public class DiskDevicesLoader {
 			DiskDeviceName devname = loadDeviceName(diskDevElmt);
 			if (devname == null) {
 				throw new NodeRelatedException(diskDevElmt,
-						Messages.bind(Messages.DiskDevLoaderEx_MISSING_ATTR,
+						Msg.bind(Messages.DiskDevLoaderEx_MISSING_ATTR,
 								DEVICE_NAME_ATTR));
 			}
 			DiskDeviceSize devsize = loadDeviceSize(diskDevElmt);

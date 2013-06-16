@@ -3,6 +3,7 @@ package com.wat.cloud.aws.ec2;
 import java.util.Arrays;
 
 import com.wat.cloud.aws.ec2.exception.IllegalVolumeStateException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -19,38 +20,38 @@ public enum VolumeState {
 	 * Convert the given <tt>String</tt> to a {@link VolumeState} object.
 	 * </p>
 	 * 
-	 * @param sType
+	 * @param type
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link VolumeState} object, whose equal to the given input
+	 * @return a {@link VolumeState} object, whose equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalVolumeStateException
-	 *             if the given input <tt>String</tt> is not a valid
+	 *             if the given <tt>String</tt> is not a valid
 	 *             {@link VolumeState} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 */
-	public static VolumeState parseString(String sType)
+	public static VolumeState parseString(String type)
 			throws IllegalVolumeStateException {
-		if (sType == null) {
+		if (type == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ VolumeState.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(VolumeState.values()) + ").");
 		}
-		if (sType.trim().length() == 0) {
-			throw new IllegalVolumeStateException(Messages.bind(
-					Messages.VolumeStateEx_EMPTY, sType));
+		if (type.trim().length() == 0) {
+			throw new IllegalVolumeStateException(Msg.bind(
+					Messages.VolumeStateEx_EMPTY, type));
 		}
 		for (VolumeState c : VolumeState.class.getEnumConstants()) {
-			if (sType.equalsIgnoreCase(c.getValue())) {
+			if (type.equalsIgnoreCase(c.getValue())) {
 				return c;
 			}
 		}
-		throw new IllegalVolumeStateException(Messages.bind(
-				Messages.VolumeStateEx_INVALID, sType,
+		throw new IllegalVolumeStateException(Msg.bind(
+				Messages.VolumeStateEx_INVALID, type,
 				Arrays.asList(VolumeState.values())));
 	}
 

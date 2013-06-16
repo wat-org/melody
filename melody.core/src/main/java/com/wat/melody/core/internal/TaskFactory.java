@@ -33,6 +33,7 @@ import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
@@ -168,10 +169,9 @@ public class TaskFactory {
 			if (!Modifier.isPublic(m.getModifiers())
 					|| Modifier.isAbstract(m.getModifiers())
 					|| m.getParameterTypes().length != 1) {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT,
-						new Object[] { m.getName(), c.getCanonicalName(),
-								a.name() }));
+				throw new TaskFactoryException(Msg.bind(
+						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
+						c.getCanonicalName(), a.name()));
 			}
 
 			Class<?> param = m.getParameterTypes()[0];
@@ -179,10 +179,9 @@ public class TaskFactory {
 					|| (Modifier.isAbstract(param.getModifiers()) && !(param
 							.isEnum() || param.isPrimitive()))
 					|| param.isInterface() || param.isArray()) {
-				throw new TaskFactoryException(Messages.bind(
-						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT,
-						new Object[] { m.getName(), c.getCanonicalName(),
-								a.name() }));
+				throw new TaskFactoryException(Msg.bind(
+						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
+						c.getCanonicalName(), a.name()));
 			}
 			// setter's method found
 			return m;
@@ -244,10 +243,9 @@ public class TaskFactory {
 					|| Modifier.isAbstract(m.getModifiers())
 					|| m.getReturnType() != Void.TYPE
 					|| m.getParameterTypes().length != 1) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT,
-						new Object[] { m.getName(), c.getCanonicalName(),
-								a.name() }));
+						m.getName(), c.getCanonicalName(), a.name()));
 			}
 
 			Class<?> param = m.getParameterTypes()[0];
@@ -255,10 +253,9 @@ public class TaskFactory {
 					|| Modifier.isAbstract(param.getModifiers())
 					|| param.isInterface() || param.isEnum()
 					|| param.isPrimitive() || param.isArray()) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT,
-						new Object[] { m.getName(), c.getCanonicalName(),
-								a.name() }));
+						m.getName(), c.getCanonicalName(), a.name()));
 			}
 
 			for (Constructor<?> ct : param.getConstructors()) {
@@ -268,9 +265,9 @@ public class TaskFactory {
 					return m;
 				}
 			}
-			throw new TaskFactoryException(Messages.bind(
-					Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT, new Object[] {
-							m.getName(), c.getCanonicalName(), a.name() }));
+			throw new TaskFactoryException(Msg.bind(
+					Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT, m.getName(),
+					c.getCanonicalName(), a.name()));
 		}
 		return null;
 	}
@@ -321,10 +318,9 @@ public class TaskFactory {
 					|| Modifier.isAbstract(m.getModifiers())
 					|| m.getReturnType() == Void.TYPE
 					|| m.getParameterTypes().length != 0) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CREATE_NE_SPEC_CONFLICT,
-						new Object[] { m.getName(), c.getCanonicalName(),
-								a.name() }));
+						m.getName(), c.getCanonicalName(), a.name()));
 			}
 			// create's method found
 			return m;
@@ -412,7 +408,7 @@ public class TaskFactory {
 			throws TaskFactoryException {
 		String sSimpleName = n.getNodeName();
 		if (!getRegisteredTasks().contains(sSimpleName)) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
 		}
 		return getRegisteredTasks().get(sSimpleName);
@@ -436,19 +432,19 @@ public class TaskFactory {
 			}
 		}
 		if (implementsInterface(c, ITopLevelTask.class) && p != null) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_MUST_BE_TOPLEVEL, c.getName()));
 		} else if (!implementsInterface(c, ITopLevelTask.class) && p == null) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_CANNOT_BE_TOPLEVEL, c.getName()));
 		} else if (implementsInterface(c, IFirstLevelTask.class) && p != null
 				&& !implementsInterface(p, ITopLevelTask.class)) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_MUST_BE_FIRSTLEVEL, c.getName(),
 					p.getName()));
 		} else if (!implementsInterface(c, IFirstLevelTask.class) && p != null
 				&& implementsInterface(p, ITopLevelTask.class)) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_CANNOT_BE_FIRSTLEVEL, c.getName(),
 					p.getName()));
 		}
@@ -564,22 +560,20 @@ public class TaskFactory {
 					sAttrVal = Melody.getContext().expand(attr.getNodeValue());
 				} catch (ExpressionSyntaxException Ex) {
 					throw new TaskFactoryException(
-							new AttributeRelatedException(attr, m,
-									Messages.bind(
-											Messages.TaskFactoryEx_EXPAND_ATTR,
-											sAttrName, State.FAILED), Ex));
+							new AttributeRelatedException(attr, m, Msg.bind(
+									Messages.TaskFactoryEx_EXPAND_ATTR,
+									sAttrName, State.FAILED), Ex));
 				} catch (Throwable Ex) {
 					throw new TaskFactoryException(
-							new AttributeRelatedException(attr, m,
-									Messages.bind(
-											Messages.TaskFactoryEx_EXPAND_ATTR,
-											sAttrName, State.CRITICAL), Ex));
+							new AttributeRelatedException(attr, m, Msg.bind(
+									Messages.TaskFactoryEx_EXPAND_ATTR,
+									sAttrName, State.CRITICAL), Ex));
 				}
 				setMember(base, m, m.getParameterTypes()[0], attr, sAttrVal);
 			} else {
-				throw new TaskFactoryException(
-						new SimpleNodeRelatedException(attr, Messages.bind(
-								Messages.TaskFactoryEx_INVALID_ATTR, sAttrName)));
+				throw new TaskFactoryException(new SimpleNodeRelatedException(
+						attr, Msg.bind(Messages.TaskFactoryEx_INVALID_ATTR,
+								sAttrName)));
 			}
 		}
 		detectsUndefinedMandatoryAttributes(base.getClass(), attrs);
@@ -600,7 +594,7 @@ public class TaskFactory {
 					}
 				}
 				if (!found) {
-					throw new TaskFactoryException(Messages.bind(
+					throw new TaskFactoryException(Msg.bind(
 							Messages.TaskFactoryEx_MANDATORY_ATTR_NOT_FOUND,
 							a.name()));
 				}
@@ -622,9 +616,9 @@ public class TaskFactory {
 					|| registerInnerTask(base, n)) {
 				continue;
 			}
-			throw new TaskFactoryException(new SimpleNodeRelatedException(n,
-					Messages.bind(Messages.TaskFactoryEx_INVALID_NE,
-							n.getNodeName())));
+			throw new TaskFactoryException(
+					new SimpleNodeRelatedException(n, Msg.bind(
+							Messages.TaskFactoryEx_INVALID_NE, n.getNodeName())));
 		}
 		detectsUndefinedMandatoryNestedElements(base.getClass(), nestedNodes);
 	}
@@ -643,7 +637,7 @@ public class TaskFactory {
 					}
 				}
 				if (!found) {
-					throw new TaskFactoryException(Messages.bind(
+					throw new TaskFactoryException(Msg.bind(
 							Messages.TaskFactoryEx_MANDATORY_NE_NOT_FOUND,
 							a.name()));
 				}
@@ -686,12 +680,12 @@ public class TaskFactory {
 			}
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
-							.getNodeName().toLowerCase(), State.FAILED), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
-							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
@@ -720,12 +714,12 @@ public class TaskFactory {
 			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
-							.getNodeName().toLowerCase(), State.FAILED), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_NE, n
-							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
+							.toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
@@ -761,12 +755,12 @@ public class TaskFactory {
 			}
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
-							sAttrName, State.FAILED), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
+							State.FAILED), Ex));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Messages.bind(Messages.TaskFactoryEx_CREATE_ATTR,
-							sAttrName, State.CRITICAL), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
+							State.CRITICAL), Ex));
 		}
 
 		try {
@@ -778,12 +772,12 @@ public class TaskFactory {
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_ATTR,
-							sAttrName, State.FAILED), Ex.getCause()));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
+							State.FAILED), Ex.getCause()));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Messages.bind(Messages.TaskFactoryEx_SET_ATTR,
-							sAttrName, State.CRITICAL), Ex));
+					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
+							State.CRITICAL), Ex));
 		}
 	}
 
@@ -798,7 +792,7 @@ public class TaskFactory {
 			try {
 				o = Bool.parseString(sAttrVal);
 			} catch (IllegalBooleanException e) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Boolean.class.getSimpleName()));
 			}
@@ -806,7 +800,7 @@ public class TaskFactory {
 			if (sAttrVal != null && sAttrVal.length() == 1) {
 				o = sAttrVal.charAt(0);
 			} else {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Character.class.getSimpleName()));
 			}
@@ -814,7 +808,7 @@ public class TaskFactory {
 			try {
 				o = Byte.parseByte(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Byte.class.getSimpleName()));
 			}
@@ -822,7 +816,7 @@ public class TaskFactory {
 			try {
 				o = Short.parseShort(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Short.class.getSimpleName()));
 			}
@@ -830,7 +824,7 @@ public class TaskFactory {
 			try {
 				o = Integer.parseInt(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Integer.class.getSimpleName()));
 			}
@@ -838,7 +832,7 @@ public class TaskFactory {
 			try {
 				o = Long.parseLong(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Long.class.getSimpleName()));
 			}
@@ -846,7 +840,7 @@ public class TaskFactory {
 			try {
 				o = Float.parseFloat(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Float.class.getSimpleName()));
 			}
@@ -854,7 +848,7 @@ public class TaskFactory {
 			try {
 				o = Double.parseDouble(sAttrVal);
 			} catch (NumberFormatException Ex) {
-				throw new TaskFactoryException(Messages.bind(
+				throw new TaskFactoryException(Msg.bind(
 						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
 						Double.class.getSimpleName()));
 			}
@@ -873,7 +867,7 @@ public class TaskFactory {
 				return v;
 			}
 		}
-		throw new TaskFactoryException(Messages.bind(
+		throw new TaskFactoryException(Msg.bind(
 				Messages.TaskFactoryEx_CONVERT_ATTR_TO_ENUM, sAttrVal,
 				Arrays.asList(param.getEnumConstants())));
 	}
@@ -909,7 +903,7 @@ public class TaskFactory {
 			return param.getConstructor(String.class).newInstance(sAttrVal);
 		} catch (NoSuchMethodException | InstantiationException
 				| IllegalAccessException Ex) {
-			throw new TaskFactoryException(Messages.bind(
+			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_NO_CONSTRUCTOR_MATCH,
 					param.getCanonicalName()));
 		} catch (InvocationTargetException Ex) {

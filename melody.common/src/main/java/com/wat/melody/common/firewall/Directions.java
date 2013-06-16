@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 
 import com.wat.melody.common.firewall.exception.IllegalDirectionException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionsException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -89,8 +90,8 @@ public class Directions extends LinkedHashSet<Direction> {
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalDirectionsException(Messages.bind(
-					Messages.DirectionsEx_EMPTY, directions));
+			throw new IllegalDirectionsException(Msg.bind(
+					Messages.DirectionsEx_EMPTY, (Object[]) directions));
 		}
 	}
 
@@ -105,7 +106,7 @@ public class Directions extends LinkedHashSet<Direction> {
 		for (String direction : sDirections.split(DIRECTIONS_SEPARATOR)) {
 			direction = direction.trim();
 			if (direction.length() == 0) {
-				throw new IllegalDirectionsException(Messages.bind(
+				throw new IllegalDirectionsException(Msg.bind(
 						Messages.DirectionsEx_EMPTY_DIRECTION, sDirections));
 			}
 			if (direction.equalsIgnoreCase(_ALL)) {
@@ -116,13 +117,13 @@ public class Directions extends LinkedHashSet<Direction> {
 			try {
 				add(Direction.parseString(direction));
 			} catch (IllegalDirectionException Ex) {
-				throw new IllegalDirectionsException(Messages.bind(
+				throw new IllegalDirectionsException(Msg.bind(
 						Messages.DirectionsEx_INVALID_DIRECTION, sDirections),
 						Ex);
 			}
 		}
 		if (size() == 0) {
-			throw new IllegalDirectionsException(Messages.bind(
+			throw new IllegalDirectionsException(Msg.bind(
 					Messages.DirectionsEx_EMPTY, sDirections));
 		}
 	}

@@ -2,6 +2,7 @@ package com.wat.melody.common.bool;
 
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -18,17 +19,16 @@ public abstract class Bool {
 	 * Convert the given <tt>String</tt> to a <tt>boolean</tt>.
 	 * </p>
 	 * 
-	 * @param contextRoot
+	 * @param bool
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <tt>boolean</tt>, whose equal to the given input
-	 *         <tt>String</tt>.
+	 * @return a <tt>boolean</tt>, which is equal to the given <tt>String</tt>.
 	 * 
-	 * @throws IllegalContextRootException
-	 *             if the given input <tt>String</tt> is not a valid
-	 *             <tt>boolean</tt>.
 	 * @throws IllegalArgumentException
-	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalContextRootException
+	 *             if the given <tt>String</tt> neither matches the pattern
+	 *             {@link #TRUE_PATTERN} nor the pattern {@link #FALSE_PATTERN}.
 	 */
 	public static boolean parseString(String bool)
 			throws IllegalBooleanException {
@@ -42,9 +42,8 @@ public abstract class Bool {
 		} else if (bool.matches("^" + FALSE_PATTERN + "$")) {
 			return false;
 		}
-		throw new IllegalBooleanException(Messages.bind(
-				Messages.BooleanEx_INVALID, new Object[] { bool, TRUE_PATTERN,
-						FALSE_PATTERN }));
+		throw new IllegalBooleanException(Msg.bind(Messages.BooleanEx_INVALID,
+				bool, TRUE_PATTERN, FALSE_PATTERN));
 	}
 
 }

@@ -20,6 +20,7 @@ import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
@@ -178,20 +179,20 @@ public abstract class NetworkActivationHelper {
 		try {
 			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetworkActivationEx_INVALID_XPATH, selector), Ex);
 		}
 		if (nl != null && nl.getLength() > 1) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetworkActivationEx_TOO_MANY_MATCH, selector,
 					nl.getLength()));
 		}
 		if (nl == null || nl.getLength() == 0) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetworkActivationEx_NO_MATCH, selector));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetworkActivationEx_NOT_MATCH_ELMT, selector, nl
 							.item(0).getNodeType()));
 		}
@@ -276,10 +277,10 @@ public abstract class NetworkActivationHelper {
 			return NetworkDeviceName.parseString(netElmt.getAttributeNode(attr)
 					.getNodeValue());
 		} catch (NullPointerException Ex) {
-			throw new NodeRelatedException(netElmt, Messages.bind(
+			throw new NodeRelatedException(netElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr), Ex);
 		} catch (IllegalNetworkDeviceNameException Ex) {
-			throw new NodeRelatedException(netElmt, Messages.bind(
+			throw new NodeRelatedException(netElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
 	}
@@ -364,7 +365,7 @@ public abstract class NetworkActivationHelper {
 		} catch (NullPointerException Ex) {
 			return null;
 		} catch (IllegalHostException Ex) {
-			throw new NodeRelatedException(netElmt, Messages.bind(
+			throw new NodeRelatedException(netElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
 	}
@@ -399,7 +400,7 @@ public abstract class NetworkActivationHelper {
 		Element mgmtElmt = NetworkDevicesHelper
 				.findNetworkManagementElement(instanceElmt);
 		if (mgmtElmt == null) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(instanceElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING,
 					NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
@@ -441,7 +442,7 @@ public abstract class NetworkActivationHelper {
 		} catch (NullPointerException Ex) {
 			return getDefaultNetworkActivationPort(mgmtElmt);
 		} catch (IllegalPortException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
 	}
@@ -486,7 +487,7 @@ public abstract class NetworkActivationHelper {
 						+ "have been introduced.");
 			}
 		} catch (NodeRelatedException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING_ATTR,
 					NetworkActivationDatasLoader.ACTIVATION_PORT_ATTR), Ex);
 		}
@@ -517,7 +518,7 @@ public abstract class NetworkActivationHelper {
 		Element mgmtElmt = NetworkDevicesHelper
 				.findNetworkManagementElement(instanceElmt);
 		if (mgmtElmt == null) {
-			throw new NodeRelatedException(instanceElmt, Messages.bind(
+			throw new NodeRelatedException(instanceElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING,
 					NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
@@ -554,10 +555,10 @@ public abstract class NetworkActivationHelper {
 			return NetworkActivationProtocol.parseString(mgmtElmt
 					.getAttributeNode(attr).getNodeValue());
 		} catch (NullPointerException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_MISSING_ATTR, attr));
 		} catch (IllegalNetworkActivationProtocolException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
 	}
@@ -658,7 +659,7 @@ public abstract class NetworkActivationHelper {
 		} catch (NullPointerException Ex) {
 			return getDefaultNetworkActivationTimeout(mgmtElmt);
 		} catch (IllegalTimeoutException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Messages.bind(
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
 		}
 	}
