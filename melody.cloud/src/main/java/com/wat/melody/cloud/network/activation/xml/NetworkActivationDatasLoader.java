@@ -8,6 +8,8 @@ import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
 import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
+import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationDatasException;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUndefined;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
@@ -55,9 +57,14 @@ public abstract class NetworkActivationDatasLoader {
 	public NetworkActivationDatasLoader() {
 	}
 
-	protected NetworkActivationProtocol loadMgmtMethod(Element mgmtElmt)
-			throws NodeRelatedException {
-		return NetworkActivationHelper.getNetworkActivationProtocol(mgmtElmt);
+	protected NetworkActivationProtocol loadNetworkActivationProtocol(
+			Element mgmtElmt) throws IllegalNetworkActivationDatasException {
+		try {
+			return NetworkActivationHelper
+					.getNetworkActivationProtocol(mgmtElmt);
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalNetworkActivationDatasException(Ex);
+		}
 	}
 
 	protected boolean loadNetworkActivationEnabled(Element mgmtElmt) {
@@ -65,37 +72,58 @@ public abstract class NetworkActivationDatasLoader {
 	}
 
 	protected NetworkActivationTimeout loadNetworkActivationTimeout(
-			Element mgmtElmt) throws NodeRelatedException {
-		return NetworkActivationHelper.getNetworkActivationTimeout(mgmtElmt);
+			Element mgmtElmt) throws IllegalNetworkActivationDatasException {
+		try {
+			return NetworkActivationHelper
+					.getNetworkActivationTimeout(mgmtElmt);
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalNetworkActivationDatasException(Ex);
+		}
 	}
 
 	protected NetworkDeviceName loadNetworkActivationNetDevName(
-			Element instanceNode, Element mgmtElmt) throws NodeRelatedException {
-		return NetworkActivationHelper.getNetworkActivationDeviceName(
-				instanceNode, mgmtElmt);
+			Element instanceNode, Element mgmtElmt)
+			throws IllegalNetworkActivationDatasException {
+		try {
+			return NetworkActivationHelper.getNetworkActivationDeviceName(
+					instanceNode, mgmtElmt);
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalNetworkActivationDatasException(Ex);
+		}
 	}
 
 	protected Host loadNetworkActivationHost(Element instanceElmt,
-			Element mgmtElmt) throws NodeRelatedException {
-		Host host = NetworkActivationHelper.getNetworkActivationHost(
-				instanceElmt, mgmtElmt);
-		if (host == null) {
-			Element netElmt = NetworkActivationHelper
-					.getNetworkActivationDeviceElement(instanceElmt, mgmtElmt);
-			String attr = NetworkActivationHelper
-					.getNetworkActivationHostSelector(mgmtElmt);
-			throw new NodeRelatedException(netElmt, Msg.bind(
-					Messages.NetMgmtEx_MISSING_ATTR, attr));
+			Element mgmtElmt) throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException {
+		try {
+			Host host = NetworkActivationHelper.getNetworkActivationHost(
+					instanceElmt, mgmtElmt);
+			if (host == null) {
+				Element netElmt = NetworkActivationHelper
+						.getNetworkActivationDeviceElement(instanceElmt,
+								mgmtElmt);
+				String attr = NetworkActivationHelper
+						.getNetworkActivationHostSelector(mgmtElmt);
+				throw new NetworkActivationHostUndefined(
+						new NodeRelatedException(netElmt, Msg.bind(
+								Messages.NetMgmtEx_MISSING_ATTR, attr)));
+			}
+			return host;
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalNetworkActivationDatasException(Ex);
 		}
-		return host;
 	}
 
 	protected Port loadNetworkActivationPort(Element mgmtElmt)
-			throws NodeRelatedException {
-		return NetworkActivationHelper.getNetworkActivationPort(mgmtElmt);
+			throws IllegalNetworkActivationDatasException {
+		try {
+			return NetworkActivationHelper.getNetworkActivationPort(mgmtElmt);
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalNetworkActivationDatasException(Ex);
+		}
 	}
 
 	public abstract NetworkActivationDatas load(Element instanceElmt)
-			throws NodeRelatedException;
+			throws IllegalNetworkActivationDatasException;
 
 }

@@ -10,22 +10,28 @@ import com.wat.melody.cloud.network.activation.exception.NetworkActivationExcept
 public interface NetworkActivator {
 
 	/**
-	 * @return the {@link NetworkActivationDatas}, or <tt>null</tt>. If the
-	 *         <tt>null</tt>, calls to {@link #enableNetworkActivation()} and
-	 *         {@link #disableNetworkActivation()} will no do anything.
+	 * @return the {@link NetworkActivationDatas}.
+	 * 
+	 * @throws NetworkActivationException
+	 *             if it fails to retrieve the Network Activation Datas.
 	 */
-	public NetworkActivationDatas getNetworkActivationDatas();
+	public NetworkActivationDatas getNetworkActivationDatas()
+			throws NetworkActivationException;
 
 	/**
 	 * @throws NetworkActivationException
+	 *             if an error occurred during Network Activation enablement.
 	 * @throws InterruptedException
+	 *             if the operation have been interrupted.
 	 */
 	public void enableNetworkActivation() throws NetworkActivationException,
 			InterruptedException;
 
 	/**
 	 * @throws NetworkActivationException
+	 *             if an error occurred during Network Activation disablement.
 	 * @throws InterruptedException
+	 *             if the operation have been interrupted.
 	 */
 	public void disableNetworkActivation() throws NetworkActivationException,
 			InterruptedException;

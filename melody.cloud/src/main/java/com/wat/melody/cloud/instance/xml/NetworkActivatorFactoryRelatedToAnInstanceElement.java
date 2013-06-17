@@ -6,15 +6,21 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.cloud.network.Messages;
+import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
+import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationDatasException;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUndefined;
+import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivator;
 import com.wat.melody.cloud.network.activation.ssh.xml.SshNetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivator;
 import com.wat.melody.cloud.network.activation.winrm.xml.WinRmNetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.xml.NetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
-import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
@@ -36,12 +42,17 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return a {@link NetworkActivator}, which have the capacity to activate
-	 *         the network of the given Instance, or <tt>null</tt> if any
-	 *         problem occurred during the creation of this object.
+	 *         the network of the given Instance.
+	 * 
+	 * @throws NetworkActivationHostUndefined
+	 *             if the Network Activation Host is not defined.
+	 * @throws IllegalNetworkActivationDatasException
+	 *             if the connection datas are invalid.
 	 */
 	public static NetworkActivator createNetworkActivator(
 			NetworkActivatorConfigurationCallback configurationCallBack,
-			Element instanceElmt) {
+			Element instanceElmt) throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException {
 		if (configurationCallBack == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -56,20 +67,48 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 			log.debug(Msg.bind(Messages.NetworkActivatorMsg_INTRO, DocHelper
 					.getNodeLocation(instanceElmt).toFullString()));
 
-			NetworkActivationProtocol ap = NetworkActivationHelper
-					.findNetworkActivationProtocol(instanceElmt);
+			// Find the Activation Protocol
+			NetworkActivationProtocol ap;
+			try {
+				ap = NetworkActivationHelper
+						.findNetworkActivationProtocol(instanceElmt);
+			} catch (NodeRelatedException Ex) {
+				throw new IllegalNetworkActivationDatasException(Ex);
+			}
+			// no Activation Protocol found => raise an error
+			if (ap == null) {
+				// throw a precise error message
+				Element mgmtElmt = NetworkDevicesHelper
+						.findNetworkManagementElement(instanceElmt);
+				if (mgmtElmt == null) {
+					// if no Network Management Element is defined
+					String ne = NetworkDevicesHelper.NETWORK_MGMT_ELEMENT;
+					throw new IllegalNetworkActivationDatasException(
+							new NodeRelatedException(instanceElmt, Msg.bind(
+									Messages.NetMgmtEx_MISSING, ne)));
+				}
+				// if no Network Activation is defined
+				String attr = NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR;
+				throw new IllegalNetworkActivationDatasException(
+						new NodeRelatedException(mgmtElmt, Msg.bind(
+								Messages.NetMgmtEx_MISSING_ATTR, attr)));
+			}
+
 			NetworkActivator activator;
+			NetworkActivationDatas activationDatas;
 			switch (ap) {
 			case SSH:
-				activator = new SshNetworkActivator(
-						new SshNetworkActivationDatasLoader()
-								.load(instanceElmt),
+				SshNetworkActivationDatas sshDatas = new SshNetworkActivationDatasLoader()
+						.load(instanceElmt);
+				activator = new SshNetworkActivator(sshDatas,
 						configurationCallBack.getSshConfiguration());
+				activationDatas = sshDatas;
 				break;
 			case WINRM:
-				activator = new WinRmNetworkActivator(
-						new WinRmNetworkActivationDatasLoader()
-								.load(instanceElmt));
+				WinRmNetworkActivationDatas winrmDatas = new WinRmNetworkActivationDatasLoader()
+						.load(instanceElmt);
+				activator = new WinRmNetworkActivator(winrmDatas);
+				activationDatas = winrmDatas;
 				break;
 			default:
 				throw new RuntimeException("Unexpected error while branching "
@@ -77,15 +116,17 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 						+ "Source code has certainly been modified and a "
 						+ "bug have been introduced.");
 			}
+
 			log.debug(Msg.bind(Messages.NetworkActivatorMsg_RESUME,
-					activator.getNetworkActivationDatas()));
+					activationDatas));
+
 			return activator;
-		} catch (NodeRelatedException Ex) {
-			log.debug(new MelodyException(Msg.bind(
-					Messages.NetworkActivatorMsg_CREATION_FAILED, DocHelper
-							.getNodeLocation(instanceElmt).toFullString()), Ex)
-					.toString());
-			return null;
+		} catch (NetworkActivationHostUndefined Ex) {
+			throw Ex;
+		} catch (IllegalNetworkActivationDatasException Ex) {
+			throw new IllegalNetworkActivationDatasException(
+					new NodeRelatedException(instanceElmt,
+							Messages.NetworkActivatorEx_CREATION_FAILED, Ex));
 		}
 	}
 

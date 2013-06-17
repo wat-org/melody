@@ -475,6 +475,11 @@ public abstract class NetworkActivationHelper {
 		NetworkActivationProtocol ap = null;
 		try {
 			ap = getNetworkActivationProtocol(mgmtElmt);
+			if (ap == null) {
+				throw new NodeRelatedException(mgmtElmt, Msg.bind(
+						Messages.NetMgmtEx_MISSING_ATTR,
+						NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR));
+			}
 			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_PORT;
@@ -498,29 +503,22 @@ public abstract class NetworkActivationHelper {
 	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return the Activation Protocol defined in the given Instance's Network
-	 *         Management Element.
+	 *         Management Element, or <tt>null</tt> if no Activation Protocol is
+	 *         found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if the given Instance has no Network Management Element ;
-	 *             </li>
-	 *             <li>if no Activation Protocol is defined in the given
-	 *             Instance's Network Management Element ;</li>
-	 *             <li>if the Activation Protocol defined in the given
-	 *             Instance's Network Management Element cannot be converted to
-	 *             a {@link NetworkActivationProtocol} ;</li>
-	 *             </ul>
+	 *             if the Activation Protocol defined in the given Instance's
+	 *             Network Management Element cannot be converted to a
+	 *             {@link NetworkActivationProtocol}.
 	 */
 	public static NetworkActivationProtocol findNetworkActivationProtocol(
 			Element instanceElmt) throws NodeRelatedException {
 		Element mgmtElmt = NetworkDevicesHelper
 				.findNetworkManagementElement(instanceElmt);
 		if (mgmtElmt == null) {
-			throw new NodeRelatedException(instanceElmt, Msg.bind(
-					Messages.NetMgmtEx_MISSING,
-					NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
+			return null;
 		}
 		return getNetworkActivationProtocol(mgmtElmt);
 	}
@@ -531,18 +529,14 @@ public abstract class NetworkActivationHelper {
 	 *            Element related to an Instance.
 	 * 
 	 * @return the Activation Protocol defined in the given Network Management
-	 *         Element.
+	 *         Element, or <tt>null</tt> if no Activation Protocol is found.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Network Management Element is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if no Activation Protocol is defined in the given Network
-	 *             Management Element ;</li>
-	 *             <li>if the Activation Protocol defined in the given Network
+	 *             if the Activation Protocol defined in the given Network
 	 *             Management Element cannot be converted to a
-	 *             {@link NetworkActivationProtocol} ;</li>
-	 *             </ul>
+	 *             {@link NetworkActivationProtocol}.
 	 */
 	public static NetworkActivationProtocol getNetworkActivationProtocol(
 			Element mgmtElmt) throws NodeRelatedException {
@@ -555,8 +549,7 @@ public abstract class NetworkActivationHelper {
 			return NetworkActivationProtocol.parseString(mgmtElmt
 					.getAttributeNode(attr).getNodeValue());
 		} catch (NullPointerException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetMgmtEx_MISSING_ATTR, attr));
+			return null;
 		} catch (IllegalNetworkActivationProtocolException Ex) {
 			throw new NodeRelatedException(mgmtElmt, Msg.bind(
 					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
@@ -681,6 +674,9 @@ public abstract class NetworkActivationHelper {
 		NetworkActivationProtocol ap = null;
 		try {
 			ap = getNetworkActivationProtocol(mgmtElmt);
+			if (ap == null) {
+				return NetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+			}
 			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;

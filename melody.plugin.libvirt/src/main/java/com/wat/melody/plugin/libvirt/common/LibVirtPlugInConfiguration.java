@@ -346,6 +346,9 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	 *         valid.
 	 */
 	public Connect getCloudConnection(String region) {
+		/*
+		 * TODO :move the connection pool somewhere else
+		 */
 		if (region == null) {
 			return null;
 		}

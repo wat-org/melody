@@ -5,7 +5,9 @@ import org.w3c.dom.Element;
 import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
+import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationDatasException;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUndefined;
 
 /**
  * <p>
@@ -75,7 +77,9 @@ public class NetworkActivatorRelatedToAnInstanceElement implements
 		return previous;
 	}
 
-	private void createAndSetNetworkManager() {
+	private void createAndSetNetworkManager()
+			throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException {
 		setNetworkActivator(NetworkActivatorFactoryRelatedToAnInstanceElement
 				.createNetworkActivator(
 						getNetworkManagerFactoryConfigurationCallback(),
@@ -83,37 +87,35 @@ public class NetworkActivatorRelatedToAnInstanceElement implements
 	}
 
 	@Override
-	public NetworkActivationDatas getNetworkActivationDatas() {
+	public NetworkActivationDatas getNetworkActivationDatas()
+			throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException, NetworkActivationException {
 		if (getNetworkActivator() == null) {
 			createAndSetNetworkManager();
 		}
-		if (getNetworkActivator() != null) {
-			return getNetworkActivator().getNetworkActivationDatas();
-		} else {
-			return null;
-		}
+		return getNetworkActivator().getNetworkActivationDatas();
 	}
 
 	@Override
-	public void enableNetworkActivation() throws NetworkActivationException,
+	public void enableNetworkActivation()
+			throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException, NetworkActivationException,
 			InterruptedException {
 		if (getNetworkActivator() == null) {
 			createAndSetNetworkManager();
 		}
-		if (getNetworkActivator() != null) {
-			getNetworkActivator().enableNetworkActivation();
-		}
+		getNetworkActivator().enableNetworkActivation();
 	}
 
 	@Override
-	public void disableNetworkActivation() throws NetworkActivationException,
+	public void disableNetworkActivation()
+			throws NetworkActivationHostUndefined,
+			IllegalNetworkActivationDatasException, NetworkActivationException,
 			InterruptedException {
 		if (getNetworkActivator() == null) {
 			createAndSetNetworkManager();
 		}
-		if (getNetworkActivator() != null) {
-			getNetworkActivator().disableNetworkActivation();
-		}
+		getNetworkActivator().disableNetworkActivation();
 	}
 
 }

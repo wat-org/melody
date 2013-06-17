@@ -18,7 +18,7 @@ public class Messages extends NLS {
 
 	public static String NetworkActivatorMsg_INTRO;
 	public static String NetworkActivatorMsg_RESUME;
-	public static String NetworkActivatorMsg_CREATION_FAILED;
+	public static String NetworkActivatorEx_CREATION_FAILED;
 
 	public static String WinRmNetworkActivatorEx_NOT_SUPPORTED;
 

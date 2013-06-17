@@ -159,8 +159,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			log.warn(Msg.bind(Messages.StopMsg_ALREADY_STOPPED,
 					getInstanceId(), InstanceState.STOPPED));
 		} else {
-			fireInstanceStopped();
 			stopInstance(stopTimeout);
+			fireInstanceStopped();
 		}
 	}
 

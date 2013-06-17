@@ -759,6 +759,9 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 *             if the operation fails.
 	 */
 	public AmazonEC2 getCloudConnection(String region) {
+		/*
+		 * TODO :move the connection pool somewhere else
+		 */
 		if (region == null) {
 			return null;
 		}

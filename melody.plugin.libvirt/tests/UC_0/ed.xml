@@ -30,7 +30,7 @@
 	
 	<instances>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" instance-id="i-43d8bf24" name="srv01">
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
 			<network-devices>
 				<interface device-name="eth0"/>
 				<interface device-name="eth1"/>

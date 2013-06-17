@@ -9,6 +9,7 @@ import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
+import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUndefined;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -256,16 +257,19 @@ public class InstanceControllerWithNetworkActivation extends
 	private void enableNetworkManagement() throws OperationException,
 			InterruptedException {
 		NetworkActivator na = getNetworkActivator();
-		NetworkActivationDatas nad = na.getNetworkActivationDatas();
-		if (nad == null) {
-			return;
+
+		NetworkActivationDatas nad;
+		try {
+			nad = na.getNetworkActivationDatas();
+		} catch (NetworkActivationException Ex) {
+			throw new OperationException(Ex);
 		}
-		log.debug(Msg.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_BEGIN,
+
+		log.debug(Msg.bind(Messages.NewtworkActivationMsg_ENABLE_BEGIN,
 				getInstanceId()));
 
-		NetworkDeviceName netdev = na.getNetworkActivationDatas()
-				.getNetworkDeviceName();
-		Port p = na.getNetworkActivationDatas().getPort();
+		NetworkDeviceName netdev = nad.getNetworkDeviceName();
+		Port p = nad.getPort();
 		PortRange toPorts = new PortRange(p);
 		SimpleFireWallRule rule = new SimpleTcpFireWallRule(IpRange.ALL,
 				PortRange.ALL, IpRange.ALL, toPorts, Direction.IN, Access.ALLOW);
@@ -280,12 +284,12 @@ public class InstanceControllerWithNetworkActivation extends
 			na.enableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Msg.bind(
-					Messages.InstanceEx_MANAGEMENT_ENABLE_FAILED,
+					Messages.NewtworkActivationEx_ENABLE_FAILED,
 					getInstanceId()), Ex);
 		} finally {
 			revokeInstanceFireWallRules(netdev, rules);
 		}
-		log.info(Msg.bind(Messages.InstanceMsg_MANAGEMENT_ENABLE_SUCCESS,
+		log.info(Msg.bind(Messages.NewtworkActivationMsg_ENABLE_SUCCESS,
 				getInstanceId()));
 	}
 
@@ -307,20 +311,38 @@ public class InstanceControllerWithNetworkActivation extends
 	private void disableNetworkManagement() throws OperationException,
 			InterruptedException {
 		NetworkActivator na = getNetworkActivator();
-		NetworkActivationDatas nad = na.getNetworkActivationDatas();
-		if (nad == null) {
+
+		try {
+			na.getNetworkActivationDatas();
+		} catch (NetworkActivationHostUndefined Ex) {
+			/*
+			 * TODO : when the instance has just been stopped, Activation Host
+			 * must be defined. This is an error.
+			 * 
+			 * when the instance was already stopped, Activation Host is not
+			 * defined. This is an not error.
+			 * 
+			 * when the Network Activation Host points to a non existing
+			 * attribute, this is an error.
+			 */
+			log.debug(Msg.bind(
+					Messages.NewtworkActivationMsg_NO_NEED_TO_DISABLE,
+					getInstanceId()));
 			return;
+		} catch (NetworkActivationException Ex) {
+			throw new OperationException(Ex);
 		}
-		log.debug(Msg.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_BEGIN,
+
+		log.debug(Msg.bind(Messages.NewtworkActivationMsg_DISABLE_BEGIN,
 				getInstanceId()));
 		try {
 			na.disableNetworkActivation();
 		} catch (NetworkActivationException Ex) {
 			throw new OperationException(Msg.bind(
-					Messages.InstanceEx_MANAGEMENT_DISABLE_FAILED,
+					Messages.NewtworkActivationEx_DISABLE_FAILED,
 					getInstanceId()), Ex);
 		}
-		log.info(Msg.bind(Messages.InstanceMsg_MANAGEMENT_DISABLE_SUCCESS,
+		log.info(Msg.bind(Messages.NewtworkActivationMsg_DISABLE_SUCCESS,
 				getInstanceId()));
 	}
 

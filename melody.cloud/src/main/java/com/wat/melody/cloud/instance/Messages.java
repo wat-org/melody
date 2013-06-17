@@ -46,12 +46,14 @@ public class Messages extends NLS {
 	public static String UpdateFireWallEx_INVALID_INSTANCE_ID;
 	public static String UpdateFireWallMsg_FWRULES_RESUME;
 
-	public static String InstanceEx_MANAGEMENT_ENABLE_FAILED;
-	public static String InstanceEx_MANAGEMENT_DISABLE_FAILED;
-	public static String InstanceMsg_MANAGEMENT_ENABLE_BEGIN;
-	public static String InstanceMsg_MANAGEMENT_ENABLE_SUCCESS;
-	public static String InstanceMsg_MANAGEMENT_DISABLE_BEGIN;
-	public static String InstanceMsg_MANAGEMENT_DISABLE_SUCCESS;
+	public static String NewtworkActivationMsg_ENABLE_BEGIN;
+	public static String NewtworkActivationMsg_ENABLE_SUCCESS;
+	public static String NewtworkActivationEx_ENABLE_FAILED;
+
+	public static String NewtworkActivationMsg_NO_NEED_TO_DISABLE;
+	public static String NewtworkActivationMsg_DISABLE_BEGIN;
+	public static String NewtworkActivationMsg_DISABLE_SUCCESS;
+	public static String NewtworkActivationEx_DISABLE_FAILED;
 
 	static {
 		// initialize resource bundle
