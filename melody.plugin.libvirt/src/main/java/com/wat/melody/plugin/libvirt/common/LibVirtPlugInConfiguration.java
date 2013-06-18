@@ -1,6 +1,7 @@
 package com.wat.melody.plugin.libvirt.common;
 
 import org.libvirt.Connect;
+import org.libvirt.ConnectAuth;
 
 import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
 import com.wat.cloud.libvirt.LibVirtPooledConnection;
@@ -86,6 +87,7 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	public static final String ENDPOINT_CONTEXT_ROOT = "endpoint.contextroot";
 
 	private String _configurationFilePath;
+	private ConnectAuth _connectAuth;
 	private boolean _endpointEnabled = DEFAULT_ENDPOINT_ENABLED;
 	private boolean _endpointSecured = DEFAULT_ENDPOINT_SECURED;
 	private Host _endpointListenIp = DEFAULT_ENDPOINT_LISTEN_IP;
@@ -93,6 +95,15 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	private ContextRoot _endpointContextRoot = DEFAULT_ENDPOINT_CONTEXT_ROOT;
 
 	public LibVirtPlugInConfiguration() {
+		setConnectAuth(new ConnectAuth() {
+
+			@Override
+			public int callback(Credential[] cred) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+		});
 	}
 
 	@Override
@@ -107,6 +118,21 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 					+ " (a LibVirt Plug-In " + "Configuration file path).");
 		}
 		_configurationFilePath = fp;
+	}
+
+	public ConnectAuth getConnectAuth() {
+		return _connectAuth;
+	}
+
+	private ConnectAuth setConnectAuth(ConnectAuth connectAuth) {
+		if (connectAuth == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + ConnectAuth.class.getCanonicalName()
+					+ ".");
+		}
+		ConnectAuth previous = getConnectAuth();
+		_connectAuth = connectAuth;
+		return previous;
 	}
 
 	@Override
