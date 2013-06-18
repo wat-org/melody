@@ -1,12 +1,9 @@
 package com.wat.melody.plugin.libvirt.common;
 
-import java.util.Hashtable;
-import java.util.Map;
-
 import org.libvirt.Connect;
-import org.libvirt.LibvirtException;
 
 import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
+import com.wat.cloud.libvirt.LibVirtPooledConnection;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.exception.PlugInConfigurationException;
@@ -89,7 +86,6 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	public static final String ENDPOINT_CONTEXT_ROOT = "endpoint.contextroot";
 
 	private String _configurationFilePath;
-	private Map<String, Connect> _connectionPool;
 	private boolean _endpointEnabled = DEFAULT_ENDPOINT_ENABLED;
 	private boolean _endpointSecured = DEFAULT_ENDPOINT_SECURED;
 	private Host _endpointListenIp = DEFAULT_ENDPOINT_LISTEN_IP;
@@ -97,7 +93,6 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	private ContextRoot _endpointContextRoot = DEFAULT_ENDPOINT_CONTEXT_ROOT;
 
 	public LibVirtPlugInConfiguration() {
-		setConnectionPool(new Hashtable<String, Connect>());
 	}
 
 	@Override
@@ -212,23 +207,6 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 		}
 	}
 
-	public Map<String, Connect> getConnectionPool() {
-		return _connectionPool;
-	}
-
-	public Map<String, Connect> setConnectionPool(Map<String, Connect> ec2s) {
-		if (ec2s == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Map.class.getCanonicalName() + "<"
-					+ String.class.getCanonicalName() + ", "
-					+ Connect.class.getCanonicalName() + "> (a map which "
-					+ "contains pooled LibVirt Connection, by region).");
-		}
-		Map<String, Connect> previous = getConnectionPool();
-		_connectionPool = ec2s;
-		return previous;
-	}
-
 	public boolean getEndpointEnabled() {
 		return _endpointEnabled;
 	}
@@ -341,30 +319,17 @@ public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 	 * @param region
 	 *            is the requested region.
 	 * 
-	 * @return a {@link Connect} object which is already configured for the
-	 *         requested region, or <tt>null</tt> if the requested region is not
-	 *         valid.
+	 * @return a {@link Connect} object connected to the requested region, or
+	 *         <tt>null</tt> if the requested region is not valid.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given region is <tt>null</tt>.
 	 */
 	public Connect getCloudConnection(String region) {
 		/*
-		 * TODO :move the connection pool somewhere else
+		 * TODO :this should implements ConnectAuth, to specify credentials.
 		 */
-		if (region == null) {
-			return null;
-		}
-		Connect connect = null;
-		if (getConnectionPool().containsKey(region)) {
-			connect = getConnectionPool().get(region);
-		}
-		if (connect == null) {
-			try {
-				connect = new Connect(region);
-			} catch (LibvirtException Ex) {
-				return null;
-			}
-			getConnectionPool().put(region, connect);
-		}
-		return connect;
+		return LibVirtPooledConnection.getCloudConnection(region, null);
 	}
 
 }

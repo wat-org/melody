@@ -122,7 +122,9 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 
 			return activator;
 		} catch (NetworkActivationHostUndefined Ex) {
-			throw Ex;
+			throw new NetworkActivationHostUndefined(new NodeRelatedException(
+					instanceElmt, Messages.NetworkActivatorEx_CREATION_FAILED,
+					Ex));
 		} catch (IllegalNetworkActivationDatasException Ex) {
 			throw new IllegalNetworkActivationDatasException(
 					new NodeRelatedException(instanceElmt,
