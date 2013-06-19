@@ -46,45 +46,62 @@ import com.wat.melody.common.systool.SysTool;
  */
 public class ResourceMatcher {
 
-	/**
-	 * The 'basedir' XML Attribute
-	 */
-	public static final String LOCAL_BASEDIR_ATTR = "localBaseDir";
+	private static Modifiers createModifiers(String modifiers) {
+		try {
+			return Modifiers.parseString(modifiers);
+		} catch (IllegalModifiersException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a FileModifiers with its default value. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
+	private static Modifiers DEFAULT_FILE_MODIFIERS = createModifiers("660");
+	private static Modifiers DEFAULT_DIR_MODIFIERS = createModifiers("774");
 
 	/**
-	 * The 'match' XML Attribute
+	 * Attribute, which specifies the local directory.
+	 */
+	public static final String LOCAL_BASEDIR_ATTR = "local-basedir";
+
+	/**
+	 * Attribute, which specifies what to search.
 	 */
 	public static final String MATCH_ATTR = "match";
 
 	/**
-	 * The 'remoteBaseDir' XML Attribute
+	 * Attribute, which specifies the remote directory.
 	 */
-	public static final String REMOTE_BASEDIR_ATTR = "remoteBaseDir";
+	public static final String REMOTE_BASEDIR_ATTR = "remote-basedir";
 
 	/**
-	 * The 'fileModifiers' XML Attribute
+	 * Attribute, which specifies the file's modifier.
 	 */
-	public static final String FILE_MODIFIERS_ATTR = "fileModifiers";
+	public static final String FILE_MODIFIERS_ATTR = "file-modifiers";
 
 	/**
-	 * The 'dirModifiers' XML Attribute
+	 * Attribute, which specifies the directory's modifier.
 	 */
-	public static final String DIR_MODIFIERS_ATTR = "dirModifiers";
+	public static final String DIR_MODIFIERS_ATTR = "dir-modifiers";
 
 	/**
-	 * The 'template' XML Attribute
+	 * Attribute, which indicates if the matching resource should be templated
+	 * or not.
 	 */
 	public static final String TEMPLATE_ATTR = "template";
 
 	/**
-	 * The 'group' XML Attribute
+	 * Attribute, which specifies the group to apply.
 	 */
 	public static final String GROUP_ATTR = "group";
 
 	/**
-	 * The 'linkOption' XML Attribute
+	 * Attribute, which specifies the behavior when a link found.
 	 */
-	public static final String LINK_OPTION_ATTR = "linkOption";
+	public static final String LINK_OPTION_ATTR = "link-option";
 
 	// Mandatory with no default value
 	private File _localBaseDir;
@@ -103,26 +120,8 @@ public class ResourceMatcher {
 		initLocalBaseDir();
 		initMatch();
 		setRemoteBaseDir(".");
-		try {
-			setFileModifiers(Modifiers.parseString("660"));
-		} catch (IllegalModifiersException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the FileModifiers with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		try {
-			setDirModifiers(Modifiers.parseString("774"));
-		} catch (IllegalModifiersException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "the DirModifiers with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
+		setFileModifiers(DEFAULT_FILE_MODIFIERS);
+		setDirModifiers(DEFAULT_DIR_MODIFIERS);
 		setLinkOption(LinkOption.KEEP_LINKS);
 		setTemplate(false);
 		initGroup();
@@ -177,11 +176,21 @@ public class ResourceMatcher {
 
 	@Override
 	public String toString() {
-		return "{ " + "localBaseDir:" + getLocalBaseDir() + ", match:"
-				+ getMatch() + ", remoteBaseDir:" + getRemoteBaseDir()
-				+ ", fileModifiers:" + getFileModifiers() + ", dirModifiers:"
-				+ getDirModifiers() + ", linkOption:" + getLinkOption()
-				+ ", group:" + getGroup() + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("local-basedir:");
+		str.append(getLocalBaseDir());
+		str.append(", match:");
+		str.append(getMatch());
+		str.append(", remote-basedir:");
+		str.append(getRemoteBaseDir());
+		str.append(", file-modifiers:");
+		str.append(getFileModifiers());
+		str.append(", dir-modifiers:");
+		str.append(getDirModifiers());
+		str.append(", group:");
+		str.append(getGroup());
+		str.append(" }");
+		return str.toString();
 	}
 
 	public File getLocalBaseDir() {
@@ -192,7 +201,8 @@ public class ResourceMatcher {
 	public File setLocalBaseDir(File basedir) throws ResourceException {
 		if (basedir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Mus be a valid String (a Directory Path).");
+					+ "Mus be a valid " + File.class.getCanonicalName()
+					+ " (a Directory Path).");
 		}
 		try {
 			FS.validateDirExists(basedir.getAbsolutePath());
@@ -212,8 +222,8 @@ public class ResourceMatcher {
 	public String setMatch(String sMatch) throws ResourceException {
 		if (sMatch == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String "
-					+ "(a PathMatcher Glob Pattern).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " " + "(a PathMatcher Glob Pattern).");
 		}
 		if (sMatch.indexOf('/') == 0) {
 			throw new ResourceException(Msg.bind(
@@ -232,7 +242,8 @@ public class ResourceMatcher {
 	public String setRemoteBaseDir(String sDestination) {
 		if (sDestination == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a Directory Path).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (a Directory Path).");
 		}
 		String previous = getRemoteBaseDir();
 		_remoteBaseDir = sDestination;
@@ -247,7 +258,8 @@ public class ResourceMatcher {
 	public Modifiers setFileModifiers(Modifiers modifiers) {
 		if (modifiers == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Modifiers.");
+					+ "Must be a valid " + Modifiers.class.getCanonicalName()
+					+ ".");
 		}
 		Modifiers previous = getFileModifiers();
 		_fileModifiers = modifiers;
@@ -262,7 +274,8 @@ public class ResourceMatcher {
 	public Modifiers setDirModifiers(Modifiers modifiers) {
 		if (modifiers == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Modifiers.");
+					+ "Must be a valid " + Modifiers.class.getCanonicalName()
+					+ ".");
 		}
 		Modifiers previous = getDirModifiers();
 		_dirModifiers = modifiers;
@@ -277,7 +290,8 @@ public class ResourceMatcher {
 	public LinkOption setLinkOption(LinkOption linkOption) {
 		if (linkOption == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid LinkOption.");
+					+ "Must be a valid " + LinkOption.class.getCanonicalName()
+					+ ".");
 		}
 		LinkOption previous = getLinkOption();
 		_linkOption = linkOption;
@@ -292,7 +306,8 @@ public class ResourceMatcher {
 	public GroupID setGroup(GroupID sGroup) {
 		if (sGroup == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid GroupID.");
+					+ "Must be a valid " + GroupID.class.getCanonicalName()
+					+ ".");
 		}
 		GroupID previous = getGroup();
 		_group = sGroup;
@@ -314,44 +329,50 @@ public class ResourceMatcher {
 
 class Finder extends SimpleFileVisitor<Path> {
 
-	private ResourceMatcher moBaseResource;
-	private final PathMatcher matcher;
-	private final List<SimpleResource> maResources;
+	private ResourceMatcher _resourceMatcher;
+	private final PathMatcher _matcher;
+	private final List<SimpleResource> _resources;
 
-	public Finder(ResourceMatcher baseResource) {
+	public Finder(ResourceMatcher resourceMatcher) {
 		super();
-		if (baseResource == null) {
+		if (resourceMatcher == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid ResourceElement.");
+					+ "Must be a valid "
+					+ ResourceMatcher.class.getCanonicalName() + ".");
 		}
-		if (baseResource.getLocalBaseDir() == null) {
-			throw new IllegalArgumentException("invalid ResourceElement : "
+		if (resourceMatcher.getLocalBaseDir() == null) {
+			throw new IllegalArgumentException("invalid ResourceMatcher : "
 					+ "localBaseDir is null.");
 		}
-		if (baseResource.getMatch() == null) {
-			throw new IllegalArgumentException("invalid ResourceElement : "
+		if (resourceMatcher.getMatch() == null) {
+			throw new IllegalArgumentException("invalid ResourceMatcher : "
 					+ "match is null.");
 		}
-		String path = baseResource.getLocalBaseDir().getAbsolutePath()
-				+ SysTool.FILE_SEPARATOR + baseResource.getMatch();
-		String sPattern = "glob:" + Paths.get(path).normalize().toString();
-		moBaseResource = baseResource;
-		matcher = FileSystems.getDefault().getPathMatcher(sPattern);
-		maResources = new ArrayList<SimpleResource>();
+		String path = resourceMatcher.getLocalBaseDir().getAbsolutePath()
+				+ SysTool.FILE_SEPARATOR + resourceMatcher.getMatch();
+		String pattern = "glob:" + Paths.get(path).normalize().toString();
+		/*
+		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
+		 * the backslash is escaped; string literal example : "C:\\\\*"
+		 */
+		pattern = pattern.replaceAll("\\\\", "\\\\\\\\");
+		_resourceMatcher = resourceMatcher;
+		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
+		_resources = new ArrayList<SimpleResource>();
 	}
 
 	public List<SimpleResource> findFiles() throws IOException {
 		Set<FileVisitOption> set = new HashSet<FileVisitOption>();
 		set.add(FileVisitOption.FOLLOW_LINKS);
 		Files.walkFileTree(
-				Paths.get(moBaseResource.getLocalBaseDir().getAbsolutePath()),
+				Paths.get(_resourceMatcher.getLocalBaseDir().getAbsolutePath()),
 				set, Integer.MAX_VALUE, this);
-		return maResources;
+		return _resources;
 	}
 
 	private void matches(Path path, BasicFileAttributes attrs) {
-		if (path != null && matcher.matches(path)) {
-			maResources.add(new SimpleResource(path, moBaseResource));
+		if (path != null && _matcher.matches(path)) {
+			_resources.add(new SimpleResource(path, _resourceMatcher));
 		}
 	}
 
@@ -365,8 +386,7 @@ class Finder extends SimpleFileVisitor<Path> {
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 			throws IOException {
-		matches(dir, attrs);
-		SimpleResource sr = new SimpleResource(dir, moBaseResource);
+		SimpleResource sr = new SimpleResource(dir, _resourceMatcher);
 		if (sr.isSymbolicLink()) {
 			switch (sr.getLinkOption()) {
 			case COPY_LINKS:

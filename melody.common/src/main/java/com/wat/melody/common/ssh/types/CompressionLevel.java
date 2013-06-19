@@ -17,49 +17,51 @@ public enum CompressionLevel {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link CompressionLevel}
-	 * object.
+	 * Convert the given <tt>String</tt> to a {@link CompressionLevel} object.
 	 * </p>
 	 * 
-	 * @param sCompressionLevel
-	 *            is the given <code>String</code> to convert.
+	 * @param compressionLevel
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <code>CompressionLevel</code> object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @return a {@link CompressionLevel} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalCompressionLevelException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>CompressionLevel</code> Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given input <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalCompressionLevelException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty :</li>
+	 *             <li>if the given <tt>String</tt> is not not the
+	 *             {@link CompressionLevel} Enumeration Constant ;</li>
+	 *             </ul>
 	 */
-	public static CompressionLevel parseString(String sCompressionLevel)
+	public static CompressionLevel parseString(String compressionLevel)
 			throws IllegalCompressionLevelException {
-		if (sCompressionLevel == null) {
+		if (compressionLevel == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an "
+					+ "Must be a valid String (a "
 					+ CompressionLevel.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(CompressionLevel.values()) + " ).");
 		}
-		if (sCompressionLevel.trim().length() == 0) {
+		if (compressionLevel.trim().length() == 0) {
 			throw new IllegalCompressionLevelException(Msg.bind(
-					Messages.CompressionLevelEx_EMPTY, sCompressionLevel));
+					Messages.CompressionLevelEx_EMPTY, compressionLevel));
 		}
 		for (CompressionLevel c : CompressionLevel.class.getEnumConstants()) {
-			if (c.getValue().equalsIgnoreCase(sCompressionLevel)) {
+			if (c.getValue().equalsIgnoreCase(compressionLevel)) {
 				return c;
 			}
 		}
 		throw new IllegalCompressionLevelException(Msg.bind(
-				Messages.CompressionLevelEx_INVALID, sCompressionLevel,
+				Messages.CompressionLevelEx_INVALID, compressionLevel,
 				Arrays.asList(CompressionLevel.values())));
 	}
 
 	private final String _value;
 
-	private CompressionLevel(String sCompressionLevel) {
-		this._value = sCompressionLevel;
+	private CompressionLevel(String compressionLevel) {
+		this._value = compressionLevel;
 	}
 
 	public String getValue() {

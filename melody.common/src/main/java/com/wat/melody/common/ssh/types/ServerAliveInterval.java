@@ -13,75 +13,86 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 public class ServerAliveInterval implements Timeout {
 
 	/**
+	 * @param aliveInterval
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return a {@link ServerAliveInterval}, which is equal to the given
+	 *         <tt>long</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public static ServerAliveInterval parseLong(long iTimeout)
+	public static ServerAliveInterval parseLong(long aliveInterval)
 			throws IllegalTimeoutException {
-		return new ServerAliveInterval(iTimeout);
+		return new ServerAliveInterval(aliveInterval);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param aliveInterval
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return a {@link ServerAliveInterval}, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static ServerAliveInterval parseString(String sTimeout)
+	public static ServerAliveInterval parseString(String aliveInterval)
 			throws IllegalTimeoutException {
-		return new ServerAliveInterval(sTimeout);
+		return new ServerAliveInterval(aliveInterval);
 	}
 
 	private GenericTimeout _timeout;
 
 	/**
-	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param aliveInterval
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public ServerAliveInterval(long iTimeout) throws IllegalTimeoutException {
+	public ServerAliveInterval(long aliveInterval)
+			throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(iTimeout);
+			_timeout = new GenericTimeout(aliveInterval);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.ServerAliveIntervalEx_INVALID, iTimeout), Ex);
+					Messages.ServerAliveIntervalEx_INVALID, aliveInterval), Ex);
 		}
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param aliveInterval
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public ServerAliveInterval(String sTimeout) throws IllegalTimeoutException {
+	public ServerAliveInterval(String aliveInterval)
+			throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(sTimeout);
+			_timeout = new GenericTimeout(aliveInterval);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.ServerAliveIntervalEx_INVALID, sTimeout), Ex);
+					Messages.ServerAliveIntervalEx_INVALID, aliveInterval), Ex);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return _timeout.hashCode();
 	}
 
 	@Override
@@ -95,16 +106,14 @@ public class ServerAliveInterval implements Timeout {
 	}
 
 	/**
-	 * 
-	 * @return the timeout in seconds.
+	 * @return the timeout, in seconds.
 	 */
 	public long getTimeout() {
 		return _timeout.getTimeout();
 	}
 
 	/**
-	 * 
-	 * @return the timeout in milliseconds.
+	 * @return the timeout, in milliseconds.
 	 */
 	public long getTimeoutInMillis() {
 		return _timeout.getTimeoutInMillis();

@@ -22,13 +22,12 @@ public class KnownHostsRepositoryPath implements IFileBased {
 	private String _path;
 
 	/**
-	 * 
 	 * @param path
 	 * 
-	 * @throws KnownHostsRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws IllegalArgumentException
 	 *             if the given path is <code>null</code>.
+	 * @throws KnownHostsRepositoryPathException
+	 *             if the given path is not a valid KeyPairRepository path.
 	 */
 	public KnownHostsRepositoryPath(String sPath)
 			throws KnownHostsRepositoryPathException {
@@ -49,13 +48,12 @@ public class KnownHostsRepositoryPath implements IFileBased {
 	}
 
 	/**
-	 * 
 	 * @param path
 	 * 
-	 * @throws KnownHostsRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws NullPointerException
 	 *             if the given path is <code>null</code>.
+	 * @throws KnownHostsRepositoryPathException
+	 *             if the given path is not a valid KeyPairRepository path.
 	 */
 	public KnownHostsRepositoryPath(File path)
 			throws KnownHostsRepositoryPathException {
@@ -63,13 +61,12 @@ public class KnownHostsRepositoryPath implements IFileBased {
 	}
 
 	/**
-	 * 
 	 * @param path
 	 * 
-	 * @throws KnownHostsRepositoryPathException
-	 *             if the given path is not a valid KeyPairRepository path.
 	 * @throws NullPointerException
 	 *             if the given path is <code>null</code>.
+	 * @throws KnownHostsRepositoryPathException
+	 *             if the given path is not a valid KeyPairRepository path.
 	 */
 	public KnownHostsRepositoryPath(Path path)
 			throws KnownHostsRepositoryPathException {

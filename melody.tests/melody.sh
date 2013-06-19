@@ -9,14 +9,14 @@
 #
 declare homedir="$(dirname $0)"
 
-# Folder where are stored JARs. All JAR will be included recursively
-declare jarsLibraryPath="${homedir}/common"
+# Folder where are stored JARs. All JAR will be included
+export CLASSPATH="${homedir}/common/lib/*"
 
 # Melody's Main class
 declare melodyMainClass="com.wat.melody.cli.Launcher"
 
 # Default Global Configuration file path
-defaultGlobalConfigurationFilePath="${homedir}/config/melody.properties"
+declare defaultGlobalConfigurationFilePath="${homedir}/config/melody.properties"
 
 # Melody's Java Options
 declare JAVA_OPTS="-Dmelody.default.global.configuration.file=${defaultGlobalConfigurationFilePath}"
@@ -52,16 +52,9 @@ main() {
     myecho -e "'java' not found in path (code '$res'). Exiting" "${ERROR}"
     return $res
   }
-
-  # Dynamically built the Java ClassPath
-  local classpath="$(find "${jarsLibraryPath}" -type f -name *.jar -printf %p:)" || {
-    local res=$?
-    myecho -e "Fail to dynamically build Java ClassPath (code '$res'). Exiting" "${ERROR}"
-    return $res
-  }
   
   # Execute Melody
-  java -cp "${classpath}" ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
+  java ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
     local res=$?
     [ $res = 130 ] && myecho -e "Melody was interrupted (code '$res'). Exiting" "${WARNING}" || myecho -e "Melody return an error (code '$res'). Exiting" "${ERROR}"
     return $res

@@ -49,9 +49,6 @@ log4j.logFilePath=${rootFolderPath}/logs/melody.log
 ### Accepted values : ALL; TRACE; DEBUG; INFO; WARN; ERROR; FATAL; OFF
 log4j.defaultLoggingLevel=WARN
 
-### Folder where archived logs are stored
-archivedLogsFolderPath=${rootFolderPath}/logs_archived/
-
 
 ####################################################
 ### PLUGIN CONFIGURATION DIRECTIVES
@@ -78,14 +75,6 @@ ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugi
 ### needed for custom xpath functions resolution
 
 ### List Configuration Directives which will contains Custom XPath NameSpace
-xpath.namespace.directives=xpath.namespace.standard
-
-### Standard XPath NameSpaces
-xpath.namespace.standard=xpath.namespace.melody
-
-xpath.namespace.melody.uri=http://localhost/melody
-
-### List Configuration Directives which will contains Custom XPath Function
 xpath.namespace.directives=xpath.namespace.standard
 
 ### Standard XPath NameSpaces

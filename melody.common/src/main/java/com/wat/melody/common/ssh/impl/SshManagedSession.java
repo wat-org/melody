@@ -208,7 +208,6 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	/**
-	 * 
 	 * @throws SshException
 	 * @throws InterruptedException
 	 *             if the key deployment was interrupted. Note that when this

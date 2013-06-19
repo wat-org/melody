@@ -2,7 +2,6 @@ package com.wat.melody.common.ssh.impl;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,7 +66,8 @@ class UploaderNoThread {
 	protected void put(SimpleResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid SimpleResource.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
 		if (r.getDestination().getNameCount() > 1) {
 			mkdirs(r.getDestination().resolve("..").normalize());
@@ -83,7 +83,8 @@ class UploaderNoThread {
 	protected void ln(SimpleResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid SimpleResource.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
 		switch (r.getLinkOption()) {
 		case KEEP_LINKS:
@@ -98,45 +99,39 @@ class UploaderNoThread {
 		}
 	}
 
-	/**
-	 * 
-	 * @param channel
-	 * @param dir
-	 *            can be an absolute or relative directory path.
-	 * @throws UploaderException
-	 */
 	protected void mkdirs(Path dir) throws UploaderException {
 		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a Path (a Directory Path, relative or "
-					+ "absolute).");
+					+ "Must be a " + Path.class.getCanonicalName()
+					+ " (a Directory Path, relative or absolute).");
 		}
 		if (dir.toString().length() == 0 || dir.getNameCount() < 1) {
 			return;
 		}
 		// stat + mkdir must be atomic at the session level
 		synchronized (getLock()) {
-			// if the dirPath exists => nothing to do
+			// if dir exists => nothing to do
+			String unixDir = convertToUnixPath(dir);
 			try {
-				getChannel().stat(dir.toString());
+				getChannel().stat(unixDir);
 				return;
 			} catch (SftpException Ex) {
 				if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 					throw new UploaderException(Msg.bind(
-							Messages.UploadEx_STAT, dir), Ex);
+							Messages.UploadEx_STAT, unixDir), Ex);
 				}
 			}
-			// if the dirPath doesn't exists => create it
+			// if dir doesn't exists => create it
 			try {
 				mkdir(dir);
 				return;
 			} catch (UploaderException Ex) {
-				// if the top first dirPath cannot be created => raise an error
+				// if the top first dir cannot be created => raise an error
 				if (dir.getNameCount() <= 1) {
 					throw Ex;
 				}
 			}
-			// if the dirPath cannot be created => create its parent
+			// if dir cannot be created => create its parent
 			Path parent = null;
 			try {
 				parent = dir.resolve("..").normalize();
@@ -152,20 +147,22 @@ class UploaderNoThread {
 	protected void ln_keep(SimpleResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid SimpleResource.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
+		String unixItem = convertToUnixPath(r.getDestination());
 		try {
 			// if the link exists => nothing to do
 			/*
 			 * Note that the link's target may be invalid. in this situation,
 			 * because lstat will not follow link, lstat will not failed
 			 */
-			getChannel().lstat(r.getDestination().toString());
+			getChannel().lstat(unixItem);
 			return;
 		} catch (SftpException Ex) {
 			if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new UploaderException(Msg.bind(Messages.UploadEx_STAT,
-						r.getDestination()), Ex);
+						unixItem), Ex);
 			}
 		}
 		Path symbolinkLinkTarget = null;
@@ -174,19 +171,20 @@ class UploaderNoThread {
 		} catch (IOException Ex) {
 			throw new UploaderException(Ex);
 		}
+		String unixTarget = convertToUnixPath(symbolinkLinkTarget);
 		try {
-			getChannel().symlink(symbolinkLinkTarget.toString(),
-					r.getDestination().toString());
+			getChannel().symlink(unixTarget, unixItem);
 		} catch (SftpException Ex) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_LN,
-					symbolinkLinkTarget, r.getDestination()), Ex);
+					unixTarget, unixItem), Ex);
 		}
 	}
 
 	protected void ln_copy(SimpleResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid SimpleResource.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
 		if (!r.exists()) {
 			log.warn(Messages
@@ -203,7 +201,8 @@ class UploaderNoThread {
 	protected void ln_copy_unsafe(SimpleResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid SimpleResource.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
 		try {
 			if (r.isSafeLink()) {
@@ -233,69 +232,79 @@ class UploaderNoThread {
 	protected void put(Path source, Path dest) throws UploaderException {
 		if (source == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid String (a File Path).");
+					+ "Must be a valid " + Path.class.getCanonicalName()
+					+ " (the source file Path).");
 		}
 		if (dest == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid String (a File Path).");
+					+ "Must be a valid " + Path.class.getCanonicalName()
+					+ " (the destination file Path).");
 		}
+		String unixFile = convertToUnixPath(dest);
 		try {
-			getChannel().put(source.toString(), dest.toString());
+			getChannel().put(source.toString(), unixFile);
 		} catch (SftpException Ex) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_PUT, source,
-					dest), Ex);
+					unixFile), Ex);
 		}
 	}
 
-	protected void chmod(Path file, Modifiers modifiers)
+	protected void chmod(Path item, Modifiers modifiers)
 			throws UploaderException {
-		if (file == null) {
+		if (item == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a Path (a File or Directory Path, relative or "
-					+ "absolute).");
+					+ "Must be a " + Path.class.getCanonicalName()
+					+ " (a directory or file Path, relative or absolute).");
 		}
 		if (modifiers == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a Modifiers.");
+					+ "Must be a " + Modifiers.class.getCanonicalName() + ".");
 		}
+		String unixFile = convertToUnixPath(item);
 		try {
-			getChannel().chmod(modifiers.toInt(), file.toString());
+			getChannel().chmod(modifiers.toInt(), unixFile);
 		} catch (SftpException Ex) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_CHMOD,
-					modifiers, file), Ex);
+					modifiers, unixFile), Ex);
 		}
 	}
 
-	protected void chgrp(Path file, GroupID group) throws UploaderException {
-		if (file == null) {
+	protected void chgrp(Path item, GroupID group) throws UploaderException {
+		if (item == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a Path (a File or Directory Path, relative or "
-					+ "absolute).");
+					+ "Must be a " + Path.class.getCanonicalName()
+					+ " (a directory or file Path, relative or absolute).");
 		}
 		if (group == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a Group.");
+					+ "Must be a " + GroupID.class.getCanonicalName() + ".");
 		}
+		String unixFile = convertToUnixPath(item);
 		try {
-			getChannel().chgrp(group.toInt(), file.toString());
+			getChannel().chgrp(group.toInt(), unixFile);
 		} catch (SftpException Ex) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_CHGRP,
-					group, file), Ex);
+					group, unixFile), Ex);
 		}
 	}
 
 	protected void mkdir(Path dir) throws UploaderException {
 		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a String (a Directory Path, relative or "
-					+ "absolute).");
+					+ "Must be a " + Path.class.getCanonicalName()
+					+ " (a directory Path, relative or absolute).");
 		}
+		String unixDir = convertToUnixPath(dir);
 		try {
-			getChannel().mkdir(dir.toString());
+			getChannel().mkdir(unixDir);
 		} catch (SftpException Ex) {
-			throw new UploaderException(Msg.bind(Messages.UploadEx_MKDIR, dir),
-					Ex);
+			throw new UploaderException(Msg.bind(Messages.UploadEx_MKDIR,
+					unixDir), Ex);
 		}
+	}
+
+	private static String convertToUnixPath(Path path) {
+		return path.toString().replaceAll("\\\\", "/");
 	}
 
 	private static Object BASIC_LOCK = new Integer(0);
@@ -333,8 +342,8 @@ class UploaderNoThread {
 	private SimpleResource setResource(SimpleResource aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ SimpleResource.class.getCanonicalName() + ">.");
+					+ "Must be a valid "
+					+ SimpleResource.class.getCanonicalName() + ".");
 		}
 		SimpleResource previous = getResource();
 		_simpleResource = aft;

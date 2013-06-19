@@ -42,8 +42,9 @@
 		<artifact:dependencies filesetId="mydeps" pomRefId="mypom" sourcesFilesetId="mydeps.sources" javadocFilesetId="mydeps.javadoc" />
 		-->
 		<mkdir dir="./common/lib/" />
-		<delete dir="./common/lib/" includes="**" />
-		<copy todir="./common/lib/">
+		<delete dir="./common/lib/" includes="*.jar"/>
+		<copy todir="./common/lib/" flatten="true">
+			<!-- do not copy directory structure, so we can later define a classpath with wildcard ./common/lib/* -->
 			<fileset refid="mydeps" />
 		</copy>
 

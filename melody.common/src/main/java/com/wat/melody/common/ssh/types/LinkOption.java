@@ -24,48 +24,51 @@ public enum LinkOption {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link LinkOption} object.
+	 * Convert the given <tt>String</tt> to a {@link LinkOption} object.
 	 * </p>
 	 * 
-	 * @param sLinkOptions
-	 *            is the given <code>String</code> to convert.
+	 * @param linkOptions
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link LinkOption} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link LinkOption} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalLinkOptionException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link LinkOption} Enumeration Constant.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalLinkOptionException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty :</li>
+	 *             <li>if the given <tt>String</tt> is not not the
+	 *             {@link LinkOption} Enumeration Constant ;</li>
+	 *             </ul>
 	 */
-	public static LinkOption parseString(String sLinkOptions)
+	public static LinkOption parseString(String linkOptions)
 			throws IllegalLinkOptionException {
-		if (sLinkOptions == null) {
+		if (linkOptions == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an "
+					+ "Must be a valid String (a "
 					+ LinkOption.class.getCanonicalName()
 					+ " Enumeration Constant. Accepted values are "
 					+ Arrays.asList(LinkOption.values()) + " ).");
 		}
-		if (sLinkOptions.trim().length() == 0) {
+		if (linkOptions.trim().length() == 0) {
 			throw new IllegalLinkOptionException(Msg.bind(
-					Messages.LinkOptionEx_EMPTY, sLinkOptions));
+					Messages.LinkOptionEx_EMPTY, linkOptions));
 		}
 		for (LinkOption c : LinkOption.class.getEnumConstants()) {
-			if (c.getValue().equalsIgnoreCase(sLinkOptions)) {
+			if (c.getValue().equalsIgnoreCase(linkOptions)) {
 				return c;
 			}
 		}
 		throw new IllegalLinkOptionException(Msg.bind(
-				Messages.LinkOptionEx_INVALID, sLinkOptions,
+				Messages.LinkOptionEx_INVALID, linkOptions,
 				Arrays.asList(LinkOption.values())));
 	}
 
 	private final String _value;
 
-	private LinkOption(String sLinkOptions) {
-		this._value = sLinkOptions;
+	private LinkOption(String linkOptions) {
+		this._value = linkOptions;
 	}
 
 	public String getValue() {

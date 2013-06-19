@@ -124,7 +124,6 @@ public class SimpleResource {
 	}
 
 	/**
-	 * 
 	 * @return {@code true} if this link's target doesn't points outside of the
 	 *         localBaseDir and is not an absolute path.
 	 * 
@@ -150,12 +149,26 @@ public class SimpleResource {
 
 	@Override
 	public String toString() {
-		return "{ " + "localBaseDir:" + getLocalBaseDir() + ", "
-				+ (isFile() ? "file" : "directory") + ":" + getRelativePath()
-				+ ", remoteBaseDir:" + getRemoteBaseDir() + ", fileModifiers:"
-				+ getFileModifiers() + ", dirModifiers:" + getDirModifiers()
-				+ ", linkOption:" + getLinkOption() + ", group:" + getGroup()
-				+ " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("local-basedir:");
+		str.append(getLocalBaseDir());
+		if (isFile()) {
+			str.append(", file:");
+			str.append(getRelativePath());
+		} else {
+			str.append(", directory:");
+			str.append(getRelativePath());
+		}
+		str.append(", remote-basedir:");
+		str.append(getRemoteBaseDir());
+		str.append(", file-modifiers:");
+		str.append(getFileModifiers());
+		str.append(", dir-modifiers:");
+		str.append(getDirModifiers());
+		str.append(", group:");
+		str.append(getGroup());
+		str.append(" }");
+		return str.toString();
 	}
 
 	@Override
@@ -179,8 +192,8 @@ public class SimpleResource {
 	private Path setPath(Path path) {
 		if (path == null || !path.isAbsolute()) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Path (an absolute file or directory "
-					+ "path).");
+					+ "Must be a valid " + Path.class.getCanonicalName()
+					+ " (a file or directory path, relative or absolute).");
 		}
 		Path previous = getPath();
 		_path = path;
@@ -194,7 +207,8 @@ public class SimpleResource {
 	private ResourceMatcher setMatcher(ResourceMatcher rm) {
 		if (rm == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid ResourceMatcher.");
+					+ "Must be a valid "
+					+ ResourceMatcher.class.getCanonicalName() + ".");
 		}
 		ResourceMatcher previous = getMatcher();
 		_matcher = rm;

@@ -11,65 +11,94 @@ import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountExcep
 public class ServerAliveMaxCount {
 
 	/**
+	 * <p>
+	 * Convert the given <tt>String</tt> into a {@link ServerAliveMaxCount}
+	 * object.
+	 * </p>
 	 * 
-	 * @param sTimeout
+	 * @param maxCount
+	 *            is the value to convert.
 	 * 
-	 * @return
+	 * @return a {@link ConnectionTimeout}, which is equal to the given
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalServerAliveMaxCountException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public static ServerAliveMaxCount parseInt(int iValue)
+	public static ServerAliveMaxCount parseInt(int maxCount)
 			throws IllegalServerAliveMaxCountException {
-		return new ServerAliveMaxCount(iValue);
+		return new ServerAliveMaxCount(maxCount);
 	}
 
 	/**
-	 * @param sValue
+	 * <p>
+	 * Convert the given <tt>String</tt> into a {@link ServerAliveMaxCount}
+	 * object.
+	 * </p>
 	 * 
-	 * @return
+	 * @param maxCount
+	 *            is the value to convert.
 	 * 
-	 * @throws IllegalServerAliveMaxCountException
-	 *             if input string is < 0.
+	 * @return a {@link ServerAliveMaxCount}, which is equal to the given
+	 *         <tt>String</tt>.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalServerAliveMaxCountException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>int</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static ServerAliveMaxCount parseString(String sValue)
+	public static ServerAliveMaxCount parseString(String maxCount)
 			throws IllegalServerAliveMaxCountException {
-		return new ServerAliveMaxCount(sValue);
+		return new ServerAliveMaxCount(maxCount);
 	}
 
 	private int _value;
 
 	/**
+	 * <p>
+	 * Create a {@link ServerAliveMaxCount} object, which is equal to the given
+	 * <tt>String</tt>.
+	 * </p>
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param maxCount
+	 *            is the value to convert.
 	 * 
 	 * @throws IllegalServerAliveMaxCountException
-	 *             if input int is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public ServerAliveMaxCount(int iValue)
+	public ServerAliveMaxCount(int maxCount)
 			throws IllegalServerAliveMaxCountException {
-		setValue(iValue);
+		setValue(maxCount);
 	}
 
 	/**
-	 * @param sValue
-	 *            in millis
+	 * <p>
+	 * Create a {@link ServerAliveMaxCount} object, which is equal to the given
+	 * <tt>String</tt>.
+	 * </p>
 	 * 
-	 * @return
+	 * @param maxCount
+	 *            is the value to convert.
 	 * 
-	 * @throws IllegalServerAliveMaxCountException
-	 *             if input string is < 0.
+	 * @return a {@link ServerAliveMaxCount}, which is equal to the given
+	 *         <tt>String</tt>.
+	 * 
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalServerAliveMaxCountException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>int</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public ServerAliveMaxCount(String sValue)
+	public ServerAliveMaxCount(String maxCount)
 			throws IllegalServerAliveMaxCountException {
-		setTimeout(sValue);
+		setValue(maxCount);
 	}
 
 	@Override
@@ -89,59 +118,37 @@ public class ServerAliveMaxCount {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @return the value.
-	 */
 	public int getValue() {
 		return _value;
 	}
 
-	/**
-	 * 
-	 * @param sTimeout
-	 * 
-	 * @return
-	 * 
-	 * @throws IllegalServerAliveMaxCountException
-	 *             if input int is < 0.
-	 */
-	private int setValue(int iValue) throws IllegalServerAliveMaxCountException {
-		if (iValue < 0) {
+	private int setValue(int maxCount)
+			throws IllegalServerAliveMaxCountException {
+		if (maxCount < 0) {
 			throw new IllegalServerAliveMaxCountException(Msg.bind(
-					Messages.ServerAliveMaxCountEx_NEGATIVE, iValue));
+					Messages.ServerAliveMaxCountEx_NEGATIVE, maxCount));
 		}
 		int previous = getValue();
-		_value = iValue;
+		_value = maxCount;
 		return previous;
 	}
 
-	/**
-	 * @param sValue
-	 * 
-	 * @return
-	 * 
-	 * @throws IllegalServerAliveMaxCountException
-	 *             if input string is < 0.
-	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
-	 */
-	private int setTimeout(String sValue)
+	private int setValue(String maxCount)
 			throws IllegalServerAliveMaxCountException {
-		if (sValue == null) {
+		if (maxCount == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ ServerAliveMaxCount.class.getCanonicalName() + ").");
 		}
-		if (sValue.trim().length() == 0) {
+		if (maxCount.trim().length() == 0) {
 			throw new IllegalServerAliveMaxCountException(Msg.bind(
-					Messages.ServerAliveMaxCountEx_EMPTY, sValue));
+					Messages.ServerAliveMaxCountEx_EMPTY, maxCount));
 		}
 		try {
-			return setValue(Integer.parseInt(sValue));
+			return setValue(Integer.parseInt(maxCount));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalServerAliveMaxCountException(Msg.bind(
-					Messages.ServerAliveMaxCountEx_NOT_A_NUMBER, sValue));
+					Messages.ServerAliveMaxCountEx_NOT_A_NUMBER, maxCount));
 		}
 	}
 

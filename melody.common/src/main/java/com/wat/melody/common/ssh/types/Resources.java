@@ -15,16 +15,15 @@ import com.wat.melody.common.ssh.types.exception.ResourceException;
  * </p>
  * 
  * <p>
- * <i> The content of each inner include/exclude {@link ResourceMatcher} must be
- * validated before calling {@link #findResources()}. </i>
+ * A {@link Resources} is an {@link ITask} nested element, which can contains
+ * include/exclude {@link ResourceMatcher}. It is itself a
+ * {@link ResourceMatcher}. All attributes defined in it are passed as default
+ * values for the inner include and exclude {@link ResourceMatcher}.
  * </p>
  * 
  * <p>
- * <i> A {@link Resources} is an {@link ITask}, which can contains
- * include/exclude {@link ResourceMatcher}. It is itself a
- * {@link ResourceMatcher}. All attributes defined in it directly are passed as
- * default values for the inner include and exclude {@link ResourceMatcher}. <BR/>
- * </i>
+ * <i> The content of each inner include/exclude {@link ResourceMatcher} must be
+ * validated before calling {@link #findResources()}. </i>
  * </p>
  * 
  * @author Guillaume Cornet
@@ -47,25 +46,31 @@ public class Resources extends ResourceMatcher {
 
 	public Resources() {
 		super();
-		initIncludes();
-		initExcludes();
-	}
-
-	private void initIncludes() {
-		_includes = new ArrayList<ResourceMatcher>();
-	}
-
-	private void initExcludes() {
-		_excludes = new ArrayList<ResourceMatcher>();
+		setIncludes(new ArrayList<ResourceMatcher>());
+		setExcludes(new ArrayList<ResourceMatcher>());
 	}
 
 	@Override
 	public String toString() {
-		return "{ " + "basedir:" + getLocalBaseDir() + ", match:" + getMatch()
-				+ ", destination:" + getRemoteBaseDir() + ", fileModifiers:"
-				+ getFileModifiers() + ", dirModifiers:" + getDirModifiers()
-				+ ", group:" + getGroup() + ", includes:" + getIncludes()
-				+ ", excludes:" + getExcludes() + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("local-basedir:");
+		str.append(getLocalBaseDir());
+		str.append(", match:");
+		str.append(getMatch());
+		str.append(", remote-basedir:");
+		str.append(getRemoteBaseDir());
+		str.append(", file-modifiers:");
+		str.append(getFileModifiers());
+		str.append(", dir-modifiers:");
+		str.append(getDirModifiers());
+		str.append(", group:");
+		str.append(getGroup());
+		str.append(", includes:");
+		str.append(getIncludes());
+		str.append(", excludes:");
+		str.append(getExcludes());
+		str.append(" }");
+		return str.toString();
 	}
 
 	@Override
@@ -105,8 +110,9 @@ public class Resources extends ResourceMatcher {
 	public List<ResourceMatcher> setIncludes(List<ResourceMatcher> aIncludes) {
 		if (aIncludes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<ResourcesBase> (a Resource "
-					+ "Inclusion List).");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ ResourceMatcher.class.getCanonicalName()
+					+ "> (an Inclusion List).");
 		}
 		List<ResourceMatcher> previous = getIncludes();
 		_includes = aIncludes;
@@ -120,8 +126,9 @@ public class Resources extends ResourceMatcher {
 	public List<ResourceMatcher> setExcludes(List<ResourceMatcher> aExcludes) {
 		if (aExcludes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<ResourcesBase> (a Resource "
-					+ "Exclusion List).");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ ResourceMatcher.class.getCanonicalName()
+					+ "> (an Exclusion List).");
 		}
 		List<ResourceMatcher> previous = getExcludes();
 		_excludes = aExcludes;

@@ -45,7 +45,8 @@ public class LoggerOutputStream extends OutputStream {
 	protected StringBuffer setBuffer(StringBuffer b) {
 		if (b == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid StringBuffer.");
+					+ "Must be a valid "
+					+ StringBuffer.class.getCanonicalName() + ".");
 		}
 		StringBuffer previous = getBuffer();
 		_buffer = b;
@@ -59,7 +60,8 @@ public class LoggerOutputStream extends OutputStream {
 	protected String setPrefix(String sPrefix) {
 		if (sPrefix == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String.");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		String previous = getPrefix();
 		_prefix = sPrefix;
@@ -73,7 +75,8 @@ public class LoggerOutputStream extends OutputStream {
 	protected LogThreshold setLevel(LogThreshold level) {
 		if (level == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid LogThreshold.");
+					+ "Must be a valid "
+					+ LogThreshold.class.getCanonicalName() + ".");
 		}
 		LogThreshold previous = getLevel();
 		_level = level;

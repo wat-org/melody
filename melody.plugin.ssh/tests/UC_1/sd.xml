@@ -13,14 +13,14 @@
 		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
 			<resources
 				match="**"
-				dirModifiers="770"
-				remoteBaseDir="/tmp/melody/scp/UC_0"
-				linkOption="COPY_UNSAFE_LINKS" />
+				dir-modifiers="770"
+				remote-basedir="/tmp/melody/scp/UC_0"
+				link-option="COPY_UNSAFE_LINKS" />
 			<resources
 				match="./templates/content2.tmpl"
-				dirModifiers="770"
-				remoteBaseDir="/tmp/melody/scp/UC_0"
-				linkOption="COPY_UNSAFE_LINKS"
+				dir-modifiers="770"
+				remote-basedir="/tmp/melody/scp/UC_0"
+				link-option="COPY_UNSAFE_LINKS"
 				template="y" />
 		</upload>
 

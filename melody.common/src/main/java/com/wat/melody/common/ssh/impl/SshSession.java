@@ -99,7 +99,6 @@ public class SshSession implements ISshSession {
 	}
 
 	/**
-	 * 
 	 * @throws InvalidCredentialException
 	 *             on credentials error.
 	 * @throws SshSessionException

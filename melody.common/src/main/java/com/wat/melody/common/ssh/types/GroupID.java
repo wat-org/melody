@@ -12,31 +12,26 @@ public class GroupID {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link GroupID} object.
+	 * Convert the given <tt>String</tt> to a {@link GroupID} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern : a
-	 * String which represents a positive Integer or Zero.<BR/>
-	 * </i>
-	 * </p>
+	 * @param groupID
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @param sGroupID
-	 *            is the given <code>String</code> to convert.
+	 * @return a {@link GroupID} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @return a <code>GroupID</code> object, whose equal to the given input
-	 *         <code>String</code>.
-	 * 
-	 * 
-	 * @throws IllegalGroupIDException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>GroupID</code>.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalGroupIDException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static GroupID parseString(String sGroupID)
+	public static GroupID parseString(String groupID)
 			throws IllegalGroupIDException {
-		return new GroupID(sGroupID);
+		return new GroupID(groupID);
 	}
 
 	private String _value;
@@ -45,8 +40,9 @@ public class GroupID {
 		setValue(sGroupID);
 	}
 
-	public int toInt() {
-		return Integer.parseInt(getValue());
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
@@ -66,33 +62,37 @@ public class GroupID {
 		return false;
 	}
 
+	public int toInt() {
+		return Integer.parseInt(getValue());
+	}
+
 	public String getValue() {
 		return _value;
 	}
 
-	public String setValue(String sGroupID) throws IllegalGroupIDException {
+	private String setValue(String groupID) throws IllegalGroupIDException {
 		String previous = toString();
-		if (sGroupID == null) {
+		if (groupID == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an "
-					+ Modifiers.class.getCanonicalName() + ").");
+					+ "Must be a valid String (a "
+					+ GroupID.class.getCanonicalName() + ").");
 		}
-		if (sGroupID.trim().length() == 0) {
+		if (groupID.trim().length() == 0) {
 			throw new IllegalGroupIDException(Msg.bind(
-					Messages.GroupIDEx_EMPTY, sGroupID));
+					Messages.GroupIDEx_EMPTY, groupID));
 		}
 		int iGID = 0;
 		try {
-			iGID = Integer.parseInt(sGroupID);
+			iGID = Integer.parseInt(groupID);
 		} catch (NumberFormatException Ex) {
 			throw new IllegalGroupIDException(Msg.bind(
-					Messages.GroupIDEx_INVALID, sGroupID));
+					Messages.GroupIDEx_INVALID, groupID));
 		}
 		if (iGID < 0) {
 			throw new IllegalGroupIDException(Msg.bind(
-					Messages.GroupIDEx_INVALID, sGroupID));
+					Messages.GroupIDEx_INVALID, groupID));
 		}
-		_value = sGroupID;
+		_value = groupID;
 		return previous;
 	}
 

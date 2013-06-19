@@ -13,75 +13,83 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 public class ReadTimeout implements Timeout {
 
 	/**
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return a {@link ReadTimeout}, which is equal to the given <tt>long</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public static ReadTimeout parseLong(long iTimeout)
+	public static ReadTimeout parseLong(long timeout)
 			throws IllegalTimeoutException {
-		return new ReadTimeout(iTimeout);
+		return new ReadTimeout(timeout);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return a {@link ReadTimeout}, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static ReadTimeout parseString(String sTimeout)
+	public static ReadTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
-		return new ReadTimeout(sTimeout);
+		return new ReadTimeout(timeout);
 	}
 
 	private GenericTimeout _timeout;
 
 	/**
-	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public ReadTimeout(long iTimeout) throws IllegalTimeoutException {
+	public ReadTimeout(long timeout) throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(iTimeout);
+			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.ReadTimeoutEx_INVALID, iTimeout), Ex);
+					Messages.ReadTimeoutEx_INVALID, timeout), Ex);
 		}
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public ReadTimeout(String sTimeout) throws IllegalTimeoutException {
+	public ReadTimeout(String timeout) throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(sTimeout);
+			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.ReadTimeoutEx_INVALID, sTimeout), Ex);
+					Messages.ReadTimeoutEx_INVALID, timeout), Ex);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return _timeout.hashCode();
 	}
 
 	@Override
@@ -95,16 +103,14 @@ public class ReadTimeout implements Timeout {
 	}
 
 	/**
-	 * 
-	 * @return the timeout in seconds.
+	 * @return the timeout, in seconds.
 	 */
 	public long getTimeout() {
 		return _timeout.getTimeout();
 	}
 
 	/**
-	 * 
-	 * @return the timeout in milliseconds.
+	 * @return the timeout, in milliseconds.
 	 */
 	public long getTimeoutInMillis() {
 		return _timeout.getTimeoutInMillis();

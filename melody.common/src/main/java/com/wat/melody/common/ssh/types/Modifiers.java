@@ -14,46 +14,43 @@ public class Modifiers {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link Modifiers} object.
+	 * Convert the given <tt>String</tt> to a {@link Modifiers} object.
 	 * </p>
 	 * 
 	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * "[0-7]{3}" <BR/>
-	 * </i>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>[0-7]{3}</tt>
 	 * </p>
 	 * 
-	 * @param sModifiers
-	 *            is the given <code>String</code> to convert.
+	 * @param modifiers
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <code>Modifiers</code> object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link Modifiers} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * 
-	 * @throws IllegalModifiersException
-	 *             if the given input <code>String</code> is not a valid
-	 *             <code>Modifiers</code>.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalModifiersException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is doesn't respect the
+	 *             pattern {@link #PATTERN} ;</li>
+	 *             </ul>
 	 */
-	public static Modifiers parseString(String sModifiers)
+	public static Modifiers parseString(String modifiers)
 			throws IllegalModifiersException {
-		return new Modifiers(sModifiers);
+		return new Modifiers(modifiers);
 	}
 
 	private String _value;
 
-	public Modifiers(String sModifiers) throws IllegalModifiersException {
-		setValue(sModifiers);
+	public Modifiers(String modifiers) throws IllegalModifiersException {
+		setValue(modifiers);
 	}
 
-	public int toInt() {
-		int foo = 0;
-		for (byte k : getValue().getBytes()) {
-			foo <<= 3;
-			foo |= (k - '0');
-		}
-		return foo;
+	@Override
+	public int hashCode() {
+		return _value.hashCode();
 	}
 
 	@Override
@@ -73,25 +70,34 @@ public class Modifiers {
 		return false;
 	}
 
+	public int toInt() {
+		int foo = 0;
+		for (byte k : getValue().getBytes()) {
+			foo <<= 3;
+			foo |= (k - '0');
+		}
+		return foo;
+	}
+
 	public String getValue() {
 		return _value;
 	}
 
-	public String setValue(String sModifiers) throws IllegalModifiersException {
+	private String setValue(String modifiers) throws IllegalModifiersException {
 		String previous = toString();
-		if (sModifiers == null) {
+		if (modifiers == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an "
+					+ "Must be a valid String (a "
 					+ Modifiers.class.getCanonicalName() + ").");
 		}
-		if (sModifiers.trim().length() == 0) {
+		if (modifiers.trim().length() == 0) {
 			throw new IllegalModifiersException(Msg.bind(
-					Messages.ModifiersEx_EMPTY, sModifiers));
-		} else if (!sModifiers.matches("^" + PATTERN + "$")) {
+					Messages.ModifiersEx_EMPTY, modifiers));
+		} else if (!modifiers.matches("^" + PATTERN + "$")) {
 			throw new IllegalModifiersException(Msg.bind(
-					Messages.ModifiersEx_INVALID, sModifiers, PATTERN));
+					Messages.ModifiersEx_INVALID, modifiers, PATTERN));
 		}
-		_value = sModifiers;
+		_value = modifiers;
 		return previous;
 	}
 

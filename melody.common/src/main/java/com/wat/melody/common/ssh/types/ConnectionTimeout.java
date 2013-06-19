@@ -13,75 +13,84 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 public class ConnectionTimeout implements Timeout {
 
 	/**
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @return a {@link ConnectionTimeout}, which is equal to the given
+	 *         <tt>long</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public static ConnectionTimeout parseLong(long iTimeout)
+	public static ConnectionTimeout parseLong(long timeout)
 			throws IllegalTimeoutException {
-		return new ConnectionTimeout(iTimeout);
+		return new ConnectionTimeout(timeout);
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
+	 * @return a {@link ConnectionTimeout}, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public static ConnectionTimeout parseString(String sTimeout)
+	public static ConnectionTimeout parseString(String timeout)
 			throws IllegalTimeoutException {
-		return new ConnectionTimeout(sTimeout);
+		return new ConnectionTimeout(timeout);
 	}
 
 	private GenericTimeout _timeout;
 
 	/**
-	 * 
-	 * @param sTimeout
-	 *            in millis
-	 * 
-	 * @return
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if input int is < 0.
+	 *             if the given <tt>long</tt> is < 0.
 	 */
-	public ConnectionTimeout(long iTimeout) throws IllegalTimeoutException {
+	public ConnectionTimeout(long timeout) throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(iTimeout);
+			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.CnxTimeoutEx_INVALID, iTimeout), Ex);
+					Messages.CnxTimeoutEx_INVALID, timeout), Ex);
 		}
 	}
 
 	/**
-	 * @param sTimeout
-	 *            in millis
+	 * @param timeout
+	 *            represents a timeout value in millis.
 	 * 
-	 * @return
-	 * 
-	 * @throws IllegalTimeoutException
-	 *             if input string is < 0.
 	 * @throws IllegalArgumentException
-	 *             is input string is <tt>null</tt>.
+	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalTimeoutException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is not a parse-able
+	 *             <tt>Long</tt> ;</li>
+	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
+	 *             </ul>
 	 */
-	public ConnectionTimeout(String sTimeout) throws IllegalTimeoutException {
+	public ConnectionTimeout(String timeout) throws IllegalTimeoutException {
 		try {
-			_timeout = new GenericTimeout(sTimeout);
+			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new IllegalTimeoutException(Msg.bind(
-					Messages.CnxTimeoutEx_INVALID, sTimeout), Ex);
+					Messages.CnxTimeoutEx_INVALID, timeout), Ex);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return _timeout.hashCode();
 	}
 
 	@Override
@@ -95,16 +104,14 @@ public class ConnectionTimeout implements Timeout {
 	}
 
 	/**
-	 * 
-	 * @return the timeout in seconds.
+	 * @return the timeout, in seconds.
 	 */
 	public long getTimeout() {
 		return _timeout.getTimeout();
 	}
 
 	/**
-	 * 
-	 * @return the timeout in milliseconds.
+	 * @return the timeout, in milliseconds.
 	 */
 	public long getTimeoutInMillis() {
 		return _timeout.getTimeoutInMillis();
