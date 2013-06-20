@@ -15,7 +15,7 @@ public class KeyPairName {
 	 * Convert the given <tt>String</tt> to a {@link KeyPairName} object.
 	 * </p>
 	 * 
-	 * @param sKeyPairName
+	 * @param keyPairName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link KeyPairName} object, which is equal to the given
@@ -26,13 +26,13 @@ public class KeyPairName {
 	 * @throws IllegalKeyPairNameException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if the given <tt>String</tt> doesn't mathc the pattern
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
 	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static KeyPairName parseString(String sKeyPairName)
+	public static KeyPairName parseString(String keyPairName)
 			throws IllegalKeyPairNameException {
-		return new KeyPairName(sKeyPairName);
+		return new KeyPairName(keyPairName);
 	}
 
 	/**
@@ -42,8 +42,8 @@ public class KeyPairName {
 
 	private String _value;
 
-	public KeyPairName(String sKeyPairName) throws IllegalKeyPairNameException {
-		setValue(sKeyPairName);
+	public KeyPairName(String keyPairName) throws IllegalKeyPairNameException {
+		setValue(keyPairName);
 	}
 
 	@Override
@@ -67,22 +67,22 @@ public class KeyPairName {
 		return _value;
 	}
 
-	private String setValue(String sKeyPairName)
+	private String setValue(String keyPairName)
 			throws IllegalKeyPairNameException {
-		if (sKeyPairName == null) {
+		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ KeyPairName.class.getCanonicalName() + ").");
 		}
-		if (sKeyPairName.trim().length() == 0) {
+		if (keyPairName.trim().length() == 0) {
 			throw new IllegalKeyPairNameException(Msg.bind(
-					Messages.KeyPairNameEx_EMPTY, sKeyPairName));
-		} else if (!sKeyPairName.matches("^" + PATTERN + "$")) {
+					Messages.KeyPairNameEx_EMPTY, keyPairName));
+		} else if (!keyPairName.matches("^" + PATTERN + "$")) {
 			throw new IllegalKeyPairNameException(Msg.bind(
-					Messages.KeyPairNameEx_INVALID, sKeyPairName, PATTERN));
+					Messages.KeyPairNameEx_INVALID, keyPairName, PATTERN));
 		}
 		String previous = toString();
-		_value = sKeyPairName;
+		_value = keyPairName;
 		return previous;
 	}
 

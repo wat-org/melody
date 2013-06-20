@@ -47,7 +47,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 	 * @param ipRanges
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link IpRanges} object, which is equal to the given input
+	 * @return an {@link IpRanges} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
@@ -55,7 +55,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 	 * @throws IllegalIpRangesException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if an <tt>ipRange</tt> if not a valid {@link IpRange} ;</li>
+	 *             <li>if an <tt>ipRange</tt> is not a valid {@link IpRange} ;</li>
 	 *             </ul>
 	 */
 	public static IpRanges parseString(String ipRanges)

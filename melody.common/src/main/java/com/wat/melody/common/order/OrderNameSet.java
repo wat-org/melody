@@ -20,24 +20,26 @@ public class OrderNameSet extends ArrayList<OrderName> {
 	 * Convert the given <tt>String</tt> to an {@link OrderNameSet} object.
 	 * </p>
 	 * 
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>ordername(','ordername)*</tt>
 	 * <ul>
-	 * <li>Input <tt>String</tt> must respect the following pattern :
-	 * <code>/ordername}(,ordername)* /</code> ;</li>
-	 * <li>Each ordername must be a valid {@link OrderName} (see
+	 * <li>Each <tt>ordername</tt> must be a valid {@link OrderName} (see
 	 * {@link OrderName#parseString(String)}) ;</li>
 	 * </ul>
 	 * 
 	 * @param orders
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link OrderNameSet} object, whose equal to the given
+	 * @return an {@link OrderNameSet} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
 	 * @throws IllegalOrderNameSetException
-	 *             if the given <tt>String</tt> is not a valid
-	 *             {@link OrderNameSet}.
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if an <tt>ordername</tt> is not a valid {@link Order} ;</li>
+	 *             </ul>
 	 */
 	public static OrderNameSet parseOrderNameSet(String orders)
 			throws IllegalOrderNameSetException {
@@ -58,7 +60,8 @@ public class OrderNameSet extends ArrayList<OrderName> {
 		setOrdersSet(orders);
 	}
 
-	public void setOrdersSet(String orders) throws IllegalOrderNameSetException {
+	private void setOrdersSet(String orders)
+			throws IllegalOrderNameSetException {
 		if (orders == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -83,4 +86,5 @@ public class OrderNameSet extends ArrayList<OrderName> {
 					Messages.OrderNameSetEx_EMPTY, orders));
 		}
 	}
+
 }

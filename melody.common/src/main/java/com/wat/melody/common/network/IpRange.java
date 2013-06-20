@@ -42,14 +42,14 @@ public class IpRange {
 	 * in {@link IpAddressV4#parseString(String)} ;</li>
 	 * <li><tt>CIDR</tt> is optional and must be a positive integer >= 0 and <=
 	 * 32. When not provided, it is equals to 0 ;</li>
-	 * <li>Input <tt>String</tt> can also be equal to 'all', which is equal to
-	 * 0.0.0.0/0 ;</li>
+	 * <li>The given <tt>String</tt> can also be equal to 'all', which is equal
+	 * to 0.0.0.0/0 ;</li>
 	 * </ul>
 	 * 
 	 * @param ipRange
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link IpRange} object, which is equal to the given input
+	 * @return an {@link IpRange} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException

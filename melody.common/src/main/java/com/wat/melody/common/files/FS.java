@@ -31,7 +31,7 @@ public abstract class FS {
 	 * directory.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the directory to validate.
 	 * 
 	 * @throws IllegalArgumentException
@@ -46,24 +46,24 @@ public abstract class FS {
 	 *             directory ;</li>
 	 *             </ul>
 	 */
-	public static void validateDirExists(String sPath)
+	public static void validateDirExists(String path)
 			throws IllegalDirectoryException {
-		if (sPath == null) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Directory Path).");
 		}
 
-		File item = new File(sPath);
+		File item = new File(path);
 		if (item.isFile()) {
 			throw new IllegalDirectoryException(Msg.bind(
-					Messages.DirEx_NOT_A_DIR, sPath));
+					Messages.DirEx_NOT_A_DIR, path));
 		} else if (item.isDirectory()) {
 			if (!item.canRead()) {
 				throw new IllegalDirectoryException(Msg.bind(
-						Messages.DirEx_CANT_READ, sPath));
+						Messages.DirEx_CANT_READ, path));
 			} else if (!item.canWrite()) {
 				throw new IllegalDirectoryException(Msg.bind(
-						Messages.DirEx_CANT_WRITE, sPath));
+						Messages.DirEx_CANT_WRITE, path));
 			}
 		} else if (!item.exists()) {
 			if (item.getParent() != null) {
@@ -71,11 +71,11 @@ public abstract class FS {
 					validateDirExists(item.getParent());
 				} catch (IllegalDirectoryException Ex) {
 					throw new IllegalDirectoryException(Msg.bind(
-							Messages.DirEx_NOT_FOUND, sPath), Ex);
+							Messages.DirEx_NOT_FOUND, path), Ex);
 				}
 			}
 			throw new IllegalDirectoryException(Msg.bind(
-					Messages.DirEx_NOT_FOUND, sPath));
+					Messages.DirEx_NOT_FOUND, path));
 		}
 	}
 
@@ -85,7 +85,7 @@ public abstract class FS {
 	 * directory.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the directory to validate.
 	 * 
 	 * @throws IllegalArgumentException
@@ -99,31 +99,31 @@ public abstract class FS {
 	 *             directory ;</li>
 	 *             </ul>
 	 */
-	public static void validateDirPath(String sPath)
+	public static void validateDirPath(String path)
 			throws IllegalDirectoryException {
-		if (sPath == null) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a Directory Path).");
 		}
 
-		File item = new File(sPath);
+		File item = new File(path);
 		if (item.isFile()) {
 			throw new IllegalDirectoryException(Msg.bind(
-					Messages.DirEx_NOT_A_DIR, sPath));
+					Messages.DirEx_NOT_A_DIR, path));
 		} else if (item.isDirectory()) {
 			if (!item.canRead()) {
 				throw new IllegalDirectoryException(Msg.bind(
-						Messages.DirEx_CANT_READ, sPath));
+						Messages.DirEx_CANT_READ, path));
 			} else if (!item.canWrite()) {
 				throw new IllegalDirectoryException(Msg.bind(
-						Messages.DirEx_CANT_WRITE, sPath));
+						Messages.DirEx_CANT_WRITE, path));
 			}
 		} else if (item.getParent() != null) {
 			try {
 				validateDirPath(item.getParent());
 			} catch (IllegalDirectoryException Ex) {
 				throw new IllegalDirectoryException(Msg.bind(
-						Messages.DirEx_INVALID_PARENT, sPath), Ex);
+						Messages.DirEx_INVALID_PARENT, path), Ex);
 			}
 		}
 	}

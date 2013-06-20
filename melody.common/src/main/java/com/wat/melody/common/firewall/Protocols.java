@@ -36,37 +36,41 @@ public class Protocols extends LinkedHashSet<Protocol> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link Protocols} object.
+	 * Convert the given <tt>String</tt> to a {@link Protocols} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>Protocol(','Protocol)*</code>. <BR/>
-	 * * Protocol must be a valid {@link Protocol} (see
-	 * {@link Protocol#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>protocol(','protocol)*</tt>
+	 * <ul>
+	 * <li><Each <tt>protocol</tt> must be a valid {@link Protocol} (see
+	 * {@link Protocol#parseString(String)}) ;</li>
+	 * <li>The given <tt>String</tt> can be equals to 'all', which is equivalent
+	 * to {@link Protocol#TCP} and {@link Protocol#UDP} ;</li>
+	 * </ul>
 	 * 
-	 * @param sProtocols
-	 *            is the given <code>String</code> to convert.
+	 * @param protocols
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link Protocols} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link Protocols} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalProtocolsException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link Protocols}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalProtocolsException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if a <tt>protocol</tt> is neither a valid
+	 *             {@link Protocol} nor equals to 'all' ;</li>
+	 *             </ul>
 	 */
-	public static Protocols parseString(String sProtocols)
+	public static Protocols parseString(String protocols)
 			throws IllegalProtocolsException {
-		return new Protocols(sProtocols);
+		return new Protocols(protocols);
 	}
 
-	public Protocols(String sProtocols) throws IllegalProtocolsException {
+	public Protocols(String protocols) throws IllegalProtocolsException {
 		super();
-		setProtocols(sProtocols);
+		setProtocols(protocols);
 	}
 
 	public Protocols(Protocol... protocols) throws IllegalProtocolsException {
@@ -74,7 +78,7 @@ public class Protocols extends LinkedHashSet<Protocol> {
 		setProtocols(protocols);
 	}
 
-	public void setProtocols(Protocol... protocols)
+	private void setProtocols(Protocol... protocols)
 			throws IllegalProtocolsException {
 		clear();
 		if (protocols == null) {
@@ -93,19 +97,19 @@ public class Protocols extends LinkedHashSet<Protocol> {
 		}
 	}
 
-	public void setProtocols(String sProtocols)
+	private void setProtocols(String protocols)
 			throws IllegalProtocolsException {
-		if (sProtocols == null) {
+		if (protocols == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Protocols.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String protocol : sProtocols.split(PROTOCOLS_SEPARATOR)) {
+		for (String protocol : protocols.split(PROTOCOLS_SEPARATOR)) {
 			protocol = protocol.trim();
 			if (protocol.length() == 0) {
 				throw new IllegalProtocolsException(Msg.bind(
-						Messages.ProtocolsEx_EMPTY_PROTOCOL, sProtocols));
+						Messages.ProtocolsEx_EMPTY_PROTOCOL, protocols));
 			}
 			if (protocol.equalsIgnoreCase(_ALL)) {
 				add(Protocol.TCP);
@@ -116,12 +120,12 @@ public class Protocols extends LinkedHashSet<Protocol> {
 				add(Protocol.parseString(protocol));
 			} catch (IllegalProtocolException Ex) {
 				throw new IllegalProtocolsException(Msg.bind(
-						Messages.ProtocolsEx_INVALID_PROTOCOL, sProtocols), Ex);
+						Messages.ProtocolsEx_INVALID_PROTOCOL, protocols), Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalProtocolsException(Msg.bind(
-					Messages.ProtocolsEx_EMPTY, sProtocols));
+					Messages.ProtocolsEx_EMPTY, protocols));
 		}
 	}
 

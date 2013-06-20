@@ -513,6 +513,9 @@ public class PropertySet {
 	 * 
 	 * @return the previous value of the given {@link Property}, or
 	 *         <tt>null</tt> if it did not have one.
+	 * 
+	 * @throws NullPointerException
+	 *             if the given property is <tt>null</tt>.
 	 */
 	public synchronized Property put(Property p) {
 		return getProperties().put(p.getName().getValue(), p);
@@ -524,6 +527,9 @@ public class PropertySet {
 	 * 
 	 * @return the <tt>String</tt> value corresponding to the specified key, or
 	 *         <tt>null</tt> if it did not have one.
+	 * 
+	 * @throws NullPointerException
+	 *             if the requested key is <tt>null</tt>.
 	 */
 	public synchronized String get(String key) {
 		if (!containsKey(key)) {
@@ -538,6 +544,9 @@ public class PropertySet {
 	 * 
 	 * @return the {@link Property} corresponding to the specified key, or
 	 *         <tt>null</tt> if it did not have one.
+	 * 
+	 * @throws NullPointerException
+	 *             if the requested key is <tt>null</tt>.
 	 */
 	public synchronized Property getProperty(String key) {
 		if (!containsKey(key)) {
@@ -552,6 +561,9 @@ public class PropertySet {
 	 * 
 	 * @return the previous value of the specified key, or <tt>null</tt> if it
 	 *         did not have one.
+	 * 
+	 * @throws NullPointerException
+	 *             if the requested key is <tt>null</tt>.
 	 */
 	public synchronized String remove(String key) {
 		if (!containsKey(key)) {
@@ -567,7 +579,9 @@ public class PropertySet {
 	 * </p>
 	 * 
 	 * @param ps
-	 *            is a {@link PropertySet} to put into this object.
+	 *            is a {@link PropertySet} to put into this object. Can be
+	 *            <tt>null</tt>. When <tt>null</tt>, this method return
+	 *            Immediately.
 	 */
 	public synchronized void putAll(PropertySet ps) {
 		if (ps == null) {

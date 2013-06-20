@@ -47,7 +47,7 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 	 * @param portRanges
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link PortRanges} object, which is equal to the given input
+	 * @return a {@link PortRanges} object, which is equal to the
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
@@ -55,7 +55,7 @@ public class PortRanges extends LinkedHashSet<PortRange> {
 	 * @throws IllegalPortRangesException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if a <tt>portRange</tt> if not a valid {@link PortRange}
+	 *             <li>if a <tt>portRange</tt> is not a valid {@link PortRange}
 	 *             ;</li>
 	 *             </ul>
 	 */

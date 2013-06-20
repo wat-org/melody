@@ -28,7 +28,7 @@ public abstract class Msg {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given message's substitution locations does not map to
-	 *             '{an <tt>Integer</tt>'.
+	 *             '{an <tt>Integer</tt> '.
 	 */
 	public static String bind(String message, Object... bindings) {
 		for (int i = 0; i < bindings.length; i++) {

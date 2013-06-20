@@ -29,7 +29,7 @@ public class IpAddressV4 {
 	 * @param ipAddress
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link IpAddressV4} object, which is equal to the given input
+	 * @return an {@link IpAddressV4} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException

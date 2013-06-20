@@ -36,32 +36,36 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link IcmpCodes} object.
+	 * Convert the given <tt>String</tt> to an {@link IcmpCodes} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>IcmpCode(','IcmpCode)*</code>. <BR/>
-	 * * IcmpCode must be a valid {@link IcmpCode} (see
-	 * {@link IcmpCode#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>icmpCode(','icmpCode)*</tt>
+	 * <ul>
+	 * <li>Each <tt>icmpCode</tt> must be a valid {@link IcmpCode} (see
+	 * {@link IcmpCode#parseString(String)}) ;</li>
+	 * <li>The given <tt>String</tt> can also be equal to 'all', which is
+	 * equivalent to an {@link IcmpCode} equal to 0 ;</li>
+	 * </ul>
 	 * 
-	 * @param sIcmpCodes
-	 *            is the given <code>String</code> to convert.
+	 * @param icmpCodes
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link IcmpCodes} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return an {@link IcmpCodes} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalIcmpCodesException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link IcmpCodes}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIcmpCodesException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if an <tt>icmpCode</tt> is neither a valid
+	 *             {@link IcmpCode} nor equals to 'all' ;</li>
+	 *             </ul>
 	 */
-	public static IcmpCodes parseString(String sIcmpCodes)
+	public static IcmpCodes parseString(String icmpCodes)
 			throws IllegalIcmpCodesException {
-		return new IcmpCodes(sIcmpCodes);
+		return new IcmpCodes(icmpCodes);
 	}
 
 	public IcmpCodes(String icmpCodes) throws IllegalIcmpCodesException {
@@ -74,7 +78,7 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 		setIcmpCodes(icmpCodes);
 	}
 
-	public void setIcmpCodes(IcmpCode... icmpCodes)
+	private void setIcmpCodes(IcmpCode... icmpCodes)
 			throws IllegalIcmpCodesException {
 		clear();
 		if (icmpCodes == null) {
@@ -93,19 +97,19 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 		}
 	}
 
-	public void setIcmpCodes(String sIcmpCodes)
+	private void setIcmpCodes(String icmpCodes)
 			throws IllegalIcmpCodesException {
-		if (sIcmpCodes == null) {
+		if (icmpCodes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a "
+					+ "Must be a valid String (an "
 					+ IcmpCodes.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String icmpCode : sIcmpCodes.split(CODES_SEPARATOR)) {
+		for (String icmpCode : icmpCodes.split(CODES_SEPARATOR)) {
 			icmpCode = icmpCode.trim();
 			if (icmpCode.length() == 0) {
 				throw new IllegalIcmpCodesException(Msg.bind(
-						Messages.IcmpCodesEx_EMPTY_CODE, sIcmpCodes));
+						Messages.IcmpCodesEx_EMPTY_CODE, icmpCodes));
 			}
 			if (icmpCode.equalsIgnoreCase(_ALL)) {
 				add(IcmpCode.ALL);
@@ -115,12 +119,12 @@ public class IcmpCodes extends LinkedHashSet<IcmpCode> {
 				add(IcmpCode.parseString(icmpCode));
 			} catch (IllegalIcmpCodeException Ex) {
 				throw new IllegalIcmpCodesException(Msg.bind(
-						Messages.IcmpCodesEx_INVALID_CODE, sIcmpCodes), Ex);
+						Messages.IcmpCodesEx_INVALID_CODE, icmpCodes), Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalIcmpCodesException(Msg.bind(
-					Messages.IcmpCodesEx_EMPTY, sIcmpCodes));
+					Messages.IcmpCodesEx_EMPTY, icmpCodes));
 		}
 	}
 

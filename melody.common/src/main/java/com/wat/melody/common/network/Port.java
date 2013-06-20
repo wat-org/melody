@@ -39,7 +39,7 @@ public class Port {
 	 * Convert the given <tt>int</tt> to a {@link Port} object.
 	 * </p>
 	 * 
-	 * @param sPort
+	 * @param port
 	 *            is the given <tt>int</tt> to convert.
 	 * 
 	 * @return a {@link Port} object, which is equal to the given <tt>int</tt>.

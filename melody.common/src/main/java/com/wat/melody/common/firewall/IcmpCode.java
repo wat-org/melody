@@ -28,7 +28,13 @@ public class IcmpCode {
 	}
 
 	/**
-	 * @param iIcmpCode
+	 * <p>
+	 * Convert the given <tt>int</tt> to an {@link IcmpCode} object.
+	 * </p>
+	 * 
+	 * @param icmpCode
+	 *            is the given <tt>int</tt> to convert. 0 is a magic value,
+	 *            which means 'all codes'.
 	 * 
 	 * @return an {@link IcmpCode} object, which is equal to the given
 	 *         <tt>int</tt>.
@@ -36,53 +42,44 @@ public class IcmpCode {
 	 * @throws IllegalIcmpCodeException
 	 *             if the given <tt>int</tt> is < -1.
 	 */
-	public static IcmpCode parseInt(int iIcmpCode)
+	public static IcmpCode parseInt(int icmpCode)
 			throws IllegalIcmpCodeException {
-		return new IcmpCode(iIcmpCode);
+		return new IcmpCode(icmpCode);
 	}
 
 	/**
-	 * @param sIcmpCode
+	 * <p>
+	 * Convert the given <tt>String</tt> to an {@link IcmpCode} object.
+	 * </p>
+	 * 
+	 * @param icmpCode
+	 *            is the given <tt>String</tt> to convert. "0" is a magic value,
+	 *            which means 'all codes'.
 	 * 
 	 * @return an {@link IcmpCode} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is empty.
 	 * @throws IllegalArgumentException
 	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIcmpCodeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is < -1 ;</li>
+	 *             </ul>
 	 */
-	public static IcmpCode parseString(String sIcmpCode)
+	public static IcmpCode parseString(String icmpCode)
 			throws IllegalIcmpCodeException {
-		return new IcmpCode(sIcmpCode);
+		return new IcmpCode(icmpCode);
 	}
 
 	private int _value;
 
-	/**
-	 * @param iIcmpCode
-	 * 
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>int</tt> is < -1.
-	 */
-	public IcmpCode(int iIcmpCode) throws IllegalIcmpCodeException {
-		setIcmpCode(iIcmpCode);
+	public IcmpCode(int icmpCode) throws IllegalIcmpCodeException {
+		setIcmpCode(icmpCode);
 	}
 
-	/**
-	 * @param sIcmpCode
-	 * 
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	public IcmpCode(String sIcmpCode) throws IllegalIcmpCodeException {
-		setIcmpCode(sIcmpCode);
+	public IcmpCode(String icmpCode) throws IllegalIcmpCodeException {
+		setIcmpCode(icmpCode);
 	}
 
 	@Override
@@ -108,60 +105,40 @@ public class IcmpCode {
 	}
 
 	/**
-	 * @return the IcmpCode's value.
+	 * @return this object's value.
 	 */
 	public int getValue() {
 		return _value;
 	}
 
-	/**
-	 * @param iIcmpCode
-	 * 
-	 * @return the previous IcmpCode's value.
-	 * 
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>int</tt> is < -1.
-	 */
-	private int setIcmpCode(int iIcmpCode) throws IllegalIcmpCodeException {
-		if (iIcmpCode < -1) {
+	private int setIcmpCode(int icmpCode) throws IllegalIcmpCodeException {
+		if (icmpCode < -1) {
 			throw new IllegalIcmpCodeException(Msg.bind(
-					Messages.IcmpCodeEx_NEGATIVE, iIcmpCode));
+					Messages.IcmpCodeEx_NEGATIVE, icmpCode));
 		}
 		int previous = getValue();
-		_value = iIcmpCode;
+		_value = icmpCode;
 		return previous;
 	}
 
-	/**
-	 * @param sIcmpCode
-	 * 
-	 * @return the previous IcmpCode's value.
-	 * 
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalIcmpCodeException
-	 *             if the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	private int setIcmpCode(String sIcmpCode) throws IllegalIcmpCodeException {
-		if (sIcmpCode == null) {
+	private int setIcmpCode(String icmpCode) throws IllegalIcmpCodeException {
+		if (icmpCode == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a "
+					+ "Must be a valid String (an "
 					+ IcmpCode.class.getCanonicalName() + ").");
 		}
-		if (sIcmpCode.trim().length() == 0) {
+		if (icmpCode.trim().length() == 0) {
 			throw new IllegalIcmpCodeException(Msg.bind(
-					Messages.IcmpCodeEx_EMPTY, sIcmpCode));
+					Messages.IcmpCodeEx_EMPTY, icmpCode));
 		}
-		if (sIcmpCode.equals(_ALL)) {
+		if (icmpCode.equals(_ALL)) {
 			return setIcmpCode(-1);
 		}
 		try {
-			return setIcmpCode(Integer.parseInt(sIcmpCode));
+			return setIcmpCode(Integer.parseInt(icmpCode));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalIcmpCodeException(Msg.bind(
-					Messages.IcmpCodeEx_NOT_A_NUMBER, sIcmpCode));
+					Messages.IcmpCodeEx_NOT_A_NUMBER, icmpCode));
 		}
 	}
 

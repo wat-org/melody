@@ -21,7 +21,7 @@ public class Host {
 	 * @param host
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link Host} object, which is equal to the given input
+	 * @return an {@link Host} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException

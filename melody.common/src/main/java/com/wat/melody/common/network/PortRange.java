@@ -43,14 +43,14 @@ public class PortRange {
 	 * {@link Port#MIN} ;</li>
 	 * <li><tt>end</tt> is optional. When not provided, it is equal to
 	 * {@link Port#MAX} ;</li>
-	 * <li>Input <tt>String</tt> can also be equal to 'all', which is equal to
-	 * {@link Port#MIN}-{@link Port#MAX} ;</li>
+	 * <li>The given <tt>String</tt> can also be equal to 'all', which is equal
+	 * to {@link Port#MIN}-{@link Port#MAX} ;</li>
 	 * </ul>
 	 * 
 	 * @param portRange
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link PortRange} object, which is equal to the given input
+	 * @return a {@link PortRange} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
@@ -58,8 +58,8 @@ public class PortRange {
 	 * @throws IllegalPortRangeException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
-	 *             <li>if <tt>start</tt> is not a parse-able <tt>Integer</tt> ;</li>
-	 *             <li>if <tt>end</tt> is not a parse-able <tt>Integer</tt> ;</li>
+	 *             <li>if <tt>start</tt> is not a valid {@link Port} ;</li>
+	 *             <li>if <tt>end</tt> is not a valid {@link Port} ;</li>
 	 *             <li>if <tt>start</tt> is higher then <tt>end</tt> ;</li>
 	 *             </ul>
 	 */

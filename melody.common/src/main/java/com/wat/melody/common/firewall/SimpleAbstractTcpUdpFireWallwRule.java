@@ -33,11 +33,23 @@ public abstract class SimpleAbstractTcpUdpFireWallwRule extends
 
 	@Override
 	public String toString() {
-		return "{ " + "protocol: " + getProtocol() + ", from-ip: "
-				+ getFromIpRange() + ", from-port: " + getFromPortRange()
-				+ ", to-ip: " + getToIpRange() + ", to-port: "
-				+ getToPortRange() + ", direction: " + getDirection()
-				+ ", access: " + getAccess() + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("protocol: ");
+		str.append(getProtocol());
+		str.append("from-ips, : ");
+		str.append(getFromIpRange());
+		str.append("from-ports, : ");
+		str.append(getFromPortRange());
+		str.append("to-ips, : ");
+		str.append(getToIpRange());
+		str.append("to-ports, : ");
+		str.append(getToPortRange());
+		str.append("directions, : ");
+		str.append(getDirection());
+		str.append("access, : ");
+		str.append(getAccess());
+		str.append(" }");
+		return str.toString();
 	}
 
 	@Override

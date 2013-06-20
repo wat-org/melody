@@ -35,53 +35,56 @@ public class NetworkDeviceNameRefs extends LinkedHashSet<NetworkDeviceNameRef> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link NetworkDeviceNameRefs}
+	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceNameRefs}
 	 * object.
 	 * </p>
 	 * 
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>ref(','ref)*</tt>
 	 * <ul>
-	 * <li>Input <code>String</code> must respect the following pattern :
-	 * <code>Ref(','Ref)*</code> ;</li>
-	 * <li>Ref must be a valid {@link NetworkDeviceNameRef} (see
+	 * <li>Each <tt>ref</tt> must be a valid {@link NetworkDeviceNameRef} (see
 	 * {@link NetworkDeviceNameRef#parseString(String)}) ;</li>
 	 * </ul>
 	 * 
-	 * @param netDevNameRefs
-	 *            is the given <code>String</code> to convert.
+	 * @param devnameRefs
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return an {@link NetworkDeviceNameRefs} object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @return a {@link NetworkDeviceNameRefs} object, whose equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalNetworkDeviceNameRefsException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link NetworkDeviceNameRefs}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalNetworkDeviceNameRefsException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if a <tt>ref</tt> is not a valid
+	 *             {@link NetworkDeviceNameRef} ;</li>
+	 *             </ul>
 	 */
-	public static NetworkDeviceNameRefs parseString(String netDevNameRefs)
+	public static NetworkDeviceNameRefs parseString(String devnameRefs)
 			throws IllegalNetworkDeviceNameRefsException {
-		return new NetworkDeviceNameRefs(netDevNameRefs);
+		return new NetworkDeviceNameRefs(devnameRefs);
 	}
 
-	public NetworkDeviceNameRefs(String netDevNameRefs)
-			throws IllegalNetworkDeviceNameRefsException {
-		super();
-		setValue(netDevNameRefs);
-	}
-
-	public NetworkDeviceNameRefs(NetworkDeviceNameRef... netDevNameRefs)
+	public NetworkDeviceNameRefs(String devnameRefs)
 			throws IllegalNetworkDeviceNameRefsException {
 		super();
-		setValue(netDevNameRefs);
+		setValue(devnameRefs);
 	}
 
-	public void setValue(NetworkDeviceNameRef... netDevNameRefs)
+	public NetworkDeviceNameRefs(NetworkDeviceNameRef... devnameRefs)
+			throws IllegalNetworkDeviceNameRefsException {
+		super();
+		setValue(devnameRefs);
+	}
+
+	private void setValue(NetworkDeviceNameRef... devnameRefs)
 			throws IllegalNetworkDeviceNameRefsException {
 		clear();
-		if (netDevNameRefs == null) {
+		if (devnameRefs == null) {
 			return;
 		}
-		for (NetworkDeviceNameRef ref : netDevNameRefs) {
+		for (NetworkDeviceNameRef ref : devnameRefs) {
 			if (ref == null) {
 				continue;
 			} else {
@@ -91,36 +94,36 @@ public class NetworkDeviceNameRefs extends LinkedHashSet<NetworkDeviceNameRef> {
 		if (size() == 0) {
 			throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 					Messages.NetworkDeviceNameRefsEx_EMPTY,
-					(Object[]) netDevNameRefs));
+					(Object[]) devnameRefs));
 		}
 	}
 
-	public void setValue(String netDevNameRefs)
+	private void setValue(String devnameRefs)
 			throws IllegalNetworkDeviceNameRefsException {
-		if (netDevNameRefs == null) {
+		if (devnameRefs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ NetworkDeviceNameRefs.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String ref : netDevNameRefs.split(SEPARATOR)) {
+		for (String ref : devnameRefs.split(SEPARATOR)) {
 			ref = ref.trim();
 			if (ref.length() == 0) {
 				throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 						Messages.NetworkDeviceNameRefsEx_EMPTY_PART,
-						netDevNameRefs));
+						devnameRefs));
 			}
 			try {
 				add(NetworkDeviceNameRef.parseString(ref));
 			} catch (IllegalNetworkDeviceNameRefException Ex) {
 				throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
 						Messages.NetworkDeviceNameRefsEx_INVALID_PART,
-						netDevNameRefs), Ex);
+						devnameRefs), Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalNetworkDeviceNameRefsException(Msg.bind(
-					Messages.NetworkDeviceNameRefsEx_EMPTY, netDevNameRefs));
+					Messages.NetworkDeviceNameRefsEx_EMPTY, devnameRefs));
 		}
 	}
 

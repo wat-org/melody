@@ -28,59 +28,58 @@ public class IcmpType {
 	}
 
 	/**
-	 * @param iIcmpType
+	 * <p>
+	 * Convert the given <tt>int</tt> to an {@link IcmpType} object.
+	 * </p>
 	 * 
-	 * @return an {@link IcmpType}, which is equal to the given <tt>int</tt>.
+	 * @param icmpType
+	 *            is the given <tt>int</tt> to convert. 0 is a magic value,
+	 *            which means 'all codes'.
+	 * 
+	 * @return an {@link IcmpType} object, which is equal to the given
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalIcmpTypeException
 	 *             if the given <tt>int</tt> is < -1.
 	 */
-	public static IcmpType parseInt(int iIcmpType)
+	public static IcmpType parseInt(int icmpType)
 			throws IllegalIcmpTypeException {
-		return new IcmpType(iIcmpType);
+		return new IcmpType(icmpType);
 	}
 
 	/**
-	 * @param sIcmpType
+	 * <p>
+	 * Convert the given <tt>String</tt> to an {@link IcmpType} object.
+	 * </p>
 	 * 
-	 * @return an {@link IcmpType}, which is equal to the given <tt>String</tt>.
+	 * @param icmpType
+	 *            is the given <tt>String</tt> to convert. "0" is a magic value,
+	 *            which means 'all codes'.
 	 * 
-	 * @throws IllegalIcmpTypeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
+	 * @return an {@link IcmpType} object, which is equal to the given
+	 *         <tt>String</tt>.
+	 * 
 	 * @throws IllegalArgumentException
 	 *             is the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalIcmpTypeException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> is < -1 ;</li>
+	 *             </ul>
 	 */
-	public static IcmpType parseString(String sIcmpType)
+	public static IcmpType parseString(String icmpType)
 			throws IllegalIcmpTypeException {
-		return new IcmpType(sIcmpType);
+		return new IcmpType(icmpType);
 	}
 
 	private int _value;
 
-	/**
-	 * @param iIcmpType
-	 * 
-	 * @throws IllegalIcmpTypeException
-	 *             if the given <tt>int</tt> is < -1.
-	 */
-	public IcmpType(int iIcmpType) throws IllegalIcmpTypeException {
-		setIcmpType(iIcmpType);
+	public IcmpType(int icmpType) throws IllegalIcmpTypeException {
+		setIcmpType(icmpType);
 	}
 
-	/**
-	 * @param sIcmpType
-	 * 
-	 * @throws IllegalIcmpTypeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	public IcmpType(String sIcmpType) throws IllegalIcmpTypeException {
-		setIcmpType(sIcmpType);
+	public IcmpType(String icmpType) throws IllegalIcmpTypeException {
+		setIcmpType(icmpType);
 	}
 
 	@Override
@@ -106,60 +105,40 @@ public class IcmpType {
 	}
 
 	/**
-	 * @return the IcmpType's value.
+	 * @return this object's value.
 	 */
 	public int getValue() {
 		return _value;
 	}
 
-	/**
-	 * @param iIcmpType
-	 * 
-	 * @return the previous IcmpType's value.
-	 * 
-	 * @throws IllegalIcmpTypeException
-	 *             if the given <tt>int</tt> is < -1.
-	 */
-	private int setIcmpType(int iIcmpType) throws IllegalIcmpTypeException {
-		if (iIcmpType < -1) {
+	private int setIcmpType(int icmpType) throws IllegalIcmpTypeException {
+		if (icmpType < -1) {
 			throw new IllegalIcmpTypeException(Msg.bind(
-					Messages.IcmpTypeEx_NEGATIVE, iIcmpType));
+					Messages.IcmpTypeEx_NEGATIVE, icmpType));
 		}
 		int previous = getValue();
-		_value = iIcmpType;
+		_value = icmpType;
 		return previous;
 	}
 
-	/**
-	 * @param sIcmpType
-	 * 
-	 * @return the previous IcmpType's value.
-	 * 
-	 * @throws IllegalIcmpTypeException
-	 *             if the given <tt>String</tt> is < -1.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is empty.
-	 * @throws IllegalArgumentException
-	 *             is the given <tt>String</tt> is <tt>null</tt>.
-	 */
-	private int setIcmpType(String sIcmpType) throws IllegalIcmpTypeException {
-		if (sIcmpType == null) {
+	private int setIcmpType(String icmpType) throws IllegalIcmpTypeException {
+		if (icmpType == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (a "
+					+ "Must be a valid String (an "
 					+ IcmpType.class.getCanonicalName() + ").");
 		}
-		if (sIcmpType.trim().length() == 0) {
+		if (icmpType.trim().length() == 0) {
 			throw new IllegalIcmpTypeException(Msg.bind(
-					Messages.IcmpTypeEx_EMPTY, sIcmpType));
+					Messages.IcmpTypeEx_EMPTY, icmpType));
 		}
-		if (sIcmpType.equals(_ALL)) {
+		if (icmpType.equals(_ALL)) {
 			return setIcmpType(-1);
 		}
 		try {
-			return setIcmpType(Integer.parseInt(sIcmpType));
+			return setIcmpType(Integer.parseInt(icmpType));
 		} catch (NumberFormatException Ex) {
 			throw new IllegalIcmpTypeException(Msg.bind(
-					Messages.IcmpTypeEx_NOT_A_NUMBER, sIcmpType));
+					Messages.IcmpTypeEx_NOT_A_NUMBER, icmpType));
 		}
 	}
 

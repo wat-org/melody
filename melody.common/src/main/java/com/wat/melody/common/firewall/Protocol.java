@@ -23,7 +23,7 @@ public enum Protocol {
 	 * @param protocol
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <tt>Protocol</tt> object, whose equal to the given input
+	 * @return a <tt>Protocol</tt> object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException

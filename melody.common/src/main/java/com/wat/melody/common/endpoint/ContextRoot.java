@@ -40,7 +40,7 @@ public class ContextRoot {
 	 */
 	public static final String PATTERN = "[\\w-_]+";
 
-	private String msValue;
+	private String _value;
 
 	public ContextRoot(String contextRoot) throws IllegalContextRootException {
 		setValue(contextRoot);
@@ -48,7 +48,7 @@ public class ContextRoot {
 
 	@Override
 	public String toString() {
-		return msValue;
+		return _value;
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class ContextRoot {
 	}
 
 	public String getValue() {
-		return msValue;
+		return _value;
 	}
 
 	private String setValue(String contextRoot)
@@ -81,7 +81,8 @@ public class ContextRoot {
 					Messages.ContextRootEx_INVALID, contextRoot, PATTERN));
 		}
 		String previous = getValue();
-		msValue = contextRoot;
+		_value = contextRoot;
 		return previous;
 	}
+
 }

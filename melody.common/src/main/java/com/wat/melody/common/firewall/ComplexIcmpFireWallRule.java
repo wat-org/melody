@@ -2,8 +2,6 @@ package com.wat.melody.common.firewall;
 
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.IpRanges;
-import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.PortRanges;
 
 /**
  * 
@@ -33,11 +31,23 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 
 	@Override
 	public String toString() {
-		return "{ " + "protocol: " + getProtocol() + ",from-ips: "
-				+ getFromIpRanges() + ", to-ips: " + getToIpRanges()
-				+ ", types: " + getTypes() + ", codes: " + getCodes()
-				+ ", directions: " + getDirections() + ", access: "
-				+ getAccess() + " }";
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("protocol: ");
+		str.append(getProtocol());
+		str.append("from-ips, : ");
+		str.append(getFromIpRanges());
+		str.append("to-ips, : ");
+		str.append(getToIpRanges());
+		str.append("types, : ");
+		str.append(getTypes());
+		str.append("codes, : ");
+		str.append(getCodes());
+		str.append("directions, : ");
+		str.append(getDirections());
+		str.append("access, : ");
+		str.append(getAccess());
+		str.append(" }");
+		return str.toString();
 	}
 
 	@Override
@@ -52,12 +62,12 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 	 * </p>
 	 * 
 	 * <p>
-	 * More formally, this object's 'from' {@link IpRanges}, 'from'
-	 * {@link PortRanges}, 'to' {@link IpRanges}, 'to' {@link PortRanges} and
+	 * More formally, this object's 'from' {@link IpRanges}, 'to'
+	 * {@link IpRanges}, {@link IcmpTypes}, {@link IcmpCodes} and
 	 * {@link Directions} are decomposed into the corresponding
 	 * {@link SimpleFireWallRule} objects, which contains equivalent 'from'
-	 * {@link IpRange}, 'from' {@link PortRange}, 'to' {@link IpRange}, 'to'
-	 * {@link PortRange} and {@link Direction}.
+	 * {@link IpRange}, 'to' {@link IpRange}, {@link IcmpType}, {@link IcmpCode}
+	 * and {@link Direction}.
 	 * </p>
 	 * 
 	 * @return an equivalent collection of {@link SimpleFireWallRule} objects.

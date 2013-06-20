@@ -8,9 +8,9 @@ import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
- * This exception have the ability to store multiple causes. This object is
- * particularly useful in a multi-thread environment, when many threads raised
- * exception. All these exceptions can be grouped in a single
+ * This exception have the ability to store multiple causes. This is
+ * particularly useful in a multi-thread environment, when many threads can
+ * raise exception. All these exceptions can be grouped in a single
  * {@link ConsolidatedException}.
  * </p>
  * 

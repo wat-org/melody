@@ -35,7 +35,6 @@ public class FireWallRules extends LinkedHashSet<SimpleFireWallRule> {
 	}
 
 	/**
-	 * 
 	 * @param target
 	 * 
 	 * @return a {@link FireWallRules}, which contains all

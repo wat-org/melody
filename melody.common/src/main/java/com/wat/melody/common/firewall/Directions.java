@@ -37,37 +37,41 @@ public class Directions extends LinkedHashSet<Direction> {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to a {@link Directions} object.
+	 * Convert the given <tt>String</tt> to a {@link Directions} object.
 	 * </p>
 	 * 
-	 * <p>
-	 * <i> * Input <code>String</code> must respect the following pattern :
-	 * <code>Direction(','Direction)*</code>. <BR/>
-	 * * Direction must be a valid {@link Direction} (see
-	 * {@link Direction#parseString(String)}). <BR/>
-	 * </i>
-	 * </p>
+	 * Input <tt>String</tt> must respect the following pattern :
+	 * <tt>direction(','direction)*</tt>
+	 * <ul>
+	 * <li>Each <tt>direction</tt> must be a valid {@link Direction} (see
+	 * {@link Direction#parseString(String)}) ;</li>
+	 * <li>The given <tt>String</tt> can also be equal to 'all', which is equal
+	 * to {@link Direction#IN} and {@link Direction#OUT} ;</li>
+	 * </ul>
 	 * 
-	 * @param sDirections
-	 *            is the given <code>String</code> to convert.
+	 * @param directions
+	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link Directions} object, whose equal to the given input
-	 *         <code>String</code>.
+	 * @return a {@link Directions} object, which is equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalDirectionsException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link Directions}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalDirectionsException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if a <tt>direction</tt> is neither a valid
+	 *             {@link Direction} nor equals to 'all' ;</li>
+	 *             </ul>
 	 */
-	public static Directions parseString(String sDirections)
+	public static Directions parseString(String directions)
 			throws IllegalDirectionsException {
-		return new Directions(sDirections);
+		return new Directions(directions);
 	}
 
-	public Directions(String sDirections) throws IllegalDirectionsException {
+	public Directions(String directions) throws IllegalDirectionsException {
 		super();
-		setDirections(sDirections);
+		setDirections(directions);
 	}
 
 	public Directions(Direction... directions)
@@ -76,7 +80,7 @@ public class Directions extends LinkedHashSet<Direction> {
 		setDirections(directions);
 	}
 
-	public void setDirections(Direction... directions)
+	private void setDirections(Direction... directions)
 			throws IllegalDirectionsException {
 		clear();
 		if (directions == null) {
@@ -95,19 +99,19 @@ public class Directions extends LinkedHashSet<Direction> {
 		}
 	}
 
-	public void setDirections(String sDirections)
+	private void setDirections(String directions)
 			throws IllegalDirectionsException {
-		if (sDirections == null) {
+		if (directions == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
 					+ Directions.class.getCanonicalName() + ").");
 		}
 		clear();
-		for (String direction : sDirections.split(DIRECTIONS_SEPARATOR)) {
+		for (String direction : directions.split(DIRECTIONS_SEPARATOR)) {
 			direction = direction.trim();
 			if (direction.length() == 0) {
 				throw new IllegalDirectionsException(Msg.bind(
-						Messages.DirectionsEx_EMPTY_DIRECTION, sDirections));
+						Messages.DirectionsEx_EMPTY_DIRECTION, directions));
 			}
 			if (direction.equalsIgnoreCase(_ALL)) {
 				add(Direction.IN);
@@ -118,13 +122,13 @@ public class Directions extends LinkedHashSet<Direction> {
 				add(Direction.parseString(direction));
 			} catch (IllegalDirectionException Ex) {
 				throw new IllegalDirectionsException(Msg.bind(
-						Messages.DirectionsEx_INVALID_DIRECTION, sDirections),
+						Messages.DirectionsEx_INVALID_DIRECTION, directions),
 						Ex);
 			}
 		}
 		if (size() == 0) {
 			throw new IllegalDirectionsException(Msg.bind(
-					Messages.DirectionsEx_EMPTY, sDirections));
+					Messages.DirectionsEx_EMPTY, directions));
 		}
 	}
 

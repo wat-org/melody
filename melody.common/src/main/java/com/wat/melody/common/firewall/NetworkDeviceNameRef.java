@@ -32,36 +32,43 @@ public class NetworkDeviceNameRef {
 
 	/**
 	 * <p>
-	 * Convert the given <code>String</code> to an {@link NetworkDeviceNameRef}
+	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceNameRef}
 	 * object.
 	 * </p>
 	 * 
-	 * @param netDevNameRef
-	 *            is the given <code>String</code> to convert.
+	 * <p>
+	 * The given <tt>String</tt> can be equal to 'all', which means 'all
+	 * devices'.
+	 * </p>
 	 * 
-	 * @return an {@link NetworkDeviceNameRef} object, whose equal to the given
-	 *         input <code>String</code>.
+	 * @param devnameRef
+	 *            is the given <tt>String</tt> to convert.
 	 * 
+	 * @return a {@link NetworkDeviceNameRef} object, whose equal to the given
+	 *         <tt>String</tt>.
 	 * 
-	 * @throws IllegalNetworkDeviceNameRefException
-	 *             if the given input <code>String</code> is not a valid
-	 *             {@link NetworkDeviceNameRef}.
 	 * @throws IllegalArgumentException
-	 *             if the given input <code>String</code> is <code>null</code>.
+	 *             if the given <tt>String</tt> is <tt>null</tt>.
+	 * @throws IllegalNetworkDeviceNameRefException
+	 *             <ul>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> neither match the pattern
+	 *             {@link #PATTERN} nor equals to 'all' ;</li>
+	 *             </ul>
 	 */
-	public static NetworkDeviceNameRef parseString(String netDevNameRef)
+	public static NetworkDeviceNameRef parseString(String devnameRef)
 			throws IllegalNetworkDeviceNameRefException {
-		return new NetworkDeviceNameRef(netDevNameRef);
+		return new NetworkDeviceNameRef(devnameRef);
 	}
 
 	public static NetworkDeviceNameRef fromNetworkDeviceName(
-			NetworkDeviceName netDevName) {
+			NetworkDeviceName devnameRef) {
 		try {
-			return new NetworkDeviceNameRef(netDevName.getValue());
+			return new NetworkDeviceNameRef(devnameRef.getValue());
 		} catch (IllegalNetworkDeviceNameRefException e) {
 			throw new RuntimeException("Unexecpted error while creating a "
 					+ "NetworkDeviceNameRef from a NetworkDeviceName "
-					+ "equals to '" + netDevName + "'. "
+					+ "equals to '" + devnameRef + "'. "
 					+ "Source code has certainly been modified and a bug "
 					+ "have been introduced.");
 		}
@@ -69,9 +76,9 @@ public class NetworkDeviceNameRef {
 
 	private String _value;
 
-	public NetworkDeviceNameRef(String netDevNameRef)
+	public NetworkDeviceNameRef(String devnameRef)
 			throws IllegalNetworkDeviceNameRefException {
-		setValue(netDevNameRef);
+		setValue(devnameRef);
 	}
 
 	@Override
@@ -100,26 +107,26 @@ public class NetworkDeviceNameRef {
 		return _value;
 	}
 
-	public String setValue(String netDevNameRef)
+	private String setValue(String devnameRef)
 			throws IllegalNetworkDeviceNameRefException {
 		String previous = toString();
-		if (netDevNameRef == null) {
+		if (devnameRef == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ NetworkDeviceNameRef.class.getCanonicalName() + ").");
 		}
-		if (netDevNameRef.trim().length() == 0) {
+		if (devnameRef.trim().length() == 0) {
 			throw new IllegalNetworkDeviceNameRefException(Msg.bind(
-					Messages.NetworkDeviceNameRefEx_EMPTY, netDevNameRef));
-		} else if (netDevNameRef.equalsIgnoreCase(_ALL)) {
+					Messages.NetworkDeviceNameRefEx_EMPTY, devnameRef));
+		} else if (devnameRef.equalsIgnoreCase(_ALL)) {
 			_value = _ALL;
 			return previous;
-		} else if (!netDevNameRef.matches("^" + PATTERN + "$")) {
+		} else if (!devnameRef.matches("^" + PATTERN + "$")) {
 			throw new IllegalNetworkDeviceNameRefException(Msg.bind(
-					Messages.NetworkDeviceNameRefEx_INVALID, netDevNameRef,
+					Messages.NetworkDeviceNameRefEx_INVALID, devnameRef,
 					PATTERN));
 		}
-		_value = netDevNameRef;
+		_value = devnameRef;
 		return previous;
 	}
 

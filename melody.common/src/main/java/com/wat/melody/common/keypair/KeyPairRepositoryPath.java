@@ -34,9 +34,9 @@ public class KeyPairRepositoryPath implements IFileBased {
 	 *             <li>if the creation of given path failed ;</li>
 	 *             </ul>
 	 */
-	public KeyPairRepositoryPath(String sPath)
+	public KeyPairRepositoryPath(String path)
 			throws KeyPairRepositoryPathException {
-		_path = sPath;
+		_path = path;
 		try {
 			FS.validateDirPath(_path);
 		} catch (IllegalDirectoryException Ex) {

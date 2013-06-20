@@ -10,55 +10,38 @@ import com.wat.melody.common.messages.Msg;
  */
 public class NetworkDeviceName {
 
-	public static final String NETWORK_DEVICE_NAME_PATTERN = "eth[0-9]";
+	public static final String PATTERN = "eth[0-9]";
 
 	/**
 	 * <p>
 	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceName} object.
 	 * </p>
 	 * 
-	 * @param name
+	 * @param devname
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link NetworkDeviceName} object, which is equal to the given
-	 *         name.
+	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given name is <tt>null</tt>.
 	 * @throws IllegalNetworkDeviceNameException
 	 *             <ul>
-	 *             <li>if the given name is empty ;</li>
-	 *             <li>if the given name doesn't match the pattern
-	 *             {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
+	 *             <li>if the given <tt>String</tt> is empty ;</li>
+	 *             <li>if the given <tt>String</tt> doesn't match the pattern
+	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static NetworkDeviceName parseString(String name)
+	public static NetworkDeviceName parseString(String devname)
 			throws IllegalNetworkDeviceNameException {
-		return new NetworkDeviceName(name);
+		return new NetworkDeviceName(devname);
 	}
 
 	private String _value;
 
-	/**
-	 * <p>
-	 * Convert the given <tt>String</tt> to a {@link NetworkDeviceName} object.
-	 * </p>
-	 * 
-	 * @param name
-	 *            is the given <tt>String</tt> to convert.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given name is <tt>null</tt>.
-	 * @throws IllegalNetworkDeviceNameException
-	 *             <ul>
-	 *             <li>if the given name is empty ;</li>
-	 *             <li>if the given name doesn't match the pattern
-	 *             {@link #NETWORK_DEVICE_NAME_PATTERN} ;</li>
-	 *             </ul>
-	 */
-	public NetworkDeviceName(String name)
+	public NetworkDeviceName(String devname)
 			throws IllegalNetworkDeviceNameException {
-		setValue(name);
+		setValue(devname);
 	}
 
 	@Override
@@ -87,24 +70,23 @@ public class NetworkDeviceName {
 		return _value;
 	}
 
-	private String setValue(String name)
+	private String setValue(String devname)
 			throws IllegalNetworkDeviceNameException {
-		if (name == null) {
+		if (devname == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a " + String.class.getCanonicalName()
 					+ " (a Network Device name)");
 		}
-		if (name.trim().length() == 0) {
+		if (devname.trim().length() == 0) {
 			throw new IllegalNetworkDeviceNameException(Msg.bind(
-					Messages.NetworkDeviceNameEx_EMPTY, name));
+					Messages.NetworkDeviceNameEx_EMPTY, devname));
 		}
-		if (!name.matches("^" + NETWORK_DEVICE_NAME_PATTERN + "$")) {
+		if (!devname.matches("^" + PATTERN + "$")) {
 			throw new IllegalNetworkDeviceNameException(Msg.bind(
-					Messages.NetworkDeviceNameEx_INVALID, name,
-					NETWORK_DEVICE_NAME_PATTERN));
+					Messages.NetworkDeviceNameEx_INVALID, devname, PATTERN));
 		}
 		String previous = getValue();
-		_value = name;
+		_value = devname;
 		return previous;
 	}
 
