@@ -38,7 +38,7 @@ public class OrderName {
 	/**
 	 * The pattern an OrderName must satisfy.
 	 */
-	public static final String PATTERN = "\\w+([.]\\w+)*";
+	public static final String PATTERN = "\\w+([-._]\\w+)*";
 
 	private String _value;
 

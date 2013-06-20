@@ -18,7 +18,6 @@ import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -90,26 +89,24 @@ public class FilteredDoc extends DUNIDDoc {
 
 	public synchronized String fulldump() {
 		StringBuilder str = new StringBuilder();
-		str.append("[");
+		str.append('[');
 		str.append(getSmartMsg());
-		str.append("]");
-		str.append(SysTool.NEW_LINE);
+		str.append(']');
+		str.append('\n');
 		if (areFiltersDefined()) {
 			str.append("|--- current document:");
-			str.append(SysTool.NEW_LINE + "| ");
-			str.append(dump().replaceAll(SysTool.NEW_LINE,
-					SysTool.NEW_LINE + "| "));
-			str.append(SysTool.NEW_LINE);
+			str.append("\n| ");
+			str.append(dump().replaceAll("\\n", "\n| "));
+			str.append('\n');
 		} else {
 			str.append("|--- current document: equal to original document");
-			str.append(SysTool.NEW_LINE);
 		}
-		str.append("|");
-		str.append(SysTool.NEW_LINE);
+		str.append("\n|");
+		str.append('\n');
 		str.append("|--- original document:");
-		str.append(SysTool.NEW_LINE + "| ");
-		str.append(DocHelper.dump(getOriginalDocument()).replaceAll(
-				SysTool.NEW_LINE, SysTool.NEW_LINE + "| "));
+		str.append("\n| ");
+		str.append(DocHelper.dump(getOriginalDocument()).replaceAll("\\n",
+				"\n| "));
 		return str.toString();
 	}
 

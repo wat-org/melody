@@ -23,7 +23,6 @@ import org.xml.sax.SAXException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.location.Location;
 import com.wat.melody.common.xml.location.LocationFactory;
 
@@ -202,6 +201,8 @@ public abstract class DocHelper {
 	 *            is a {@link Document}.
 	 * 
 	 * @return the <tt>String</tt> representation of the given {@link Document}.
+	 *         Note that even on Windows OS, new line contained in this
+	 *         <tt>String</tt> is '\n'.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Document} is <tt>null</tt>.
@@ -223,8 +224,9 @@ public abstract class DocHelper {
 				t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 				t.transform(new DOMSource(d), new StreamResult(sw));
 				String s = sw.toString();
-				if (s.endsWith(SysTool.NEW_LINE)) {
-					s = s.substring(0, s.length() - SysTool.NEW_LINE.length());
+				// even on Windows OS, new line contained in this String is '\n'
+				if (s.endsWith("\n")) {
+					s = s.substring(0, s.length() - 1);
 				}
 				return s;
 			}

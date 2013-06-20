@@ -20,7 +20,6 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -64,8 +63,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 		str.append("[file:");
 		str.append(getSourceFile());
 		str.append(']');
-		str.append(SysTool.NEW_LINE + "| ");
-		str.append(dump().replaceAll(SysTool.NEW_LINE, SysTool.NEW_LINE + "| "));
+		str.append("\n| ");
+		// even on Windows OS, new line contained in this string is '\n' ...
+		str.append(dump().replaceAll("\\n", "\n| "));
 		return str.toString();
 	}
 

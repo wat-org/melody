@@ -9,6 +9,7 @@
 	<property name="project.name.display" value="Melody" />
 	<property name="project.version" value="0.0.1" />
 	<property name="project.archive.name" value="${project.name}_${project.version}.tar.gz" />
+	<property name="project.archive.src.name" value="${project.name}_src_${project.version}.tar.gz" />
 
 	<property name="deploy.user.login" value="pmanager" />
 
@@ -30,7 +31,7 @@
 		<echo>Building man page for project ${project.name}_${project.version}</echo>
 		<gzip src="./man/src/${project.name}.1" destfile="./man/${project.name}.1.gz" />
 
-		<echo>Keeping the previous version of project ${project.name}_${project.version}</echo>
+		<echo>Keeping the previous packages of project ${project.name}_${project.version}</echo>
 		<move todir="./archives">
 			<fileset dir="." includes="*.tar.gz" />
 		</move>
@@ -42,7 +43,7 @@
 		<artifact:dependencies filesetId="mydeps" pomRefId="mypom" sourcesFilesetId="mydeps.sources" javadocFilesetId="mydeps.javadoc" />
 		-->
 		<mkdir dir="./common/lib/" />
-		<delete dir="./common/lib/" includes="*.jar"/>
+		<delete dir="./common/lib/" includes="*.jar" />
 		<copy todir="./common/lib/" flatten="true">
 			<!-- do not copy directory structure, so we can later define a classpath with wildcard ./common/lib/* -->
 			<fileset refid="mydeps" />
@@ -73,6 +74,33 @@
 				<include name="config/plugin/ssh/.ssh/known_hosts" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}" mode="740">
+				<include name="**/*.sh" />
+			</tarfileset>
+		</tar>
+
+		<echo>Building source package for project ${project.name}_${project.version}</echo>
+		<tar destfile="${project.archive.src.name}" compression="gzip">
+			<tarfileset dir="./.." username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+				<exclude name="**/.*" />
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+				<exclude name="**/target/**" />
+				<exclude name="**/*.prefs" />
+				<exclude name="**/*.sh" />
+				<exclude name="**/*.tar.gz" />
+				<exclude name="melody.tests/archives/**" />
+				<exclude name="melody.tests/logs/**" />
+				<exclude name="melody.tests/tmp/**" />
+				<exclude name="melody.tests/config/**/*.properties" />
+				<exclude name="melody.tests/config/plugin/ssh/.ssh/**" />
+				<exclude name="melody.tests.*/**" />
+			</tarfileset>
+			<tarfileset dir="./.." username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="melody.tests/.version_info" />
+				<include name="melody.tests/config/plugin/ssh/.ssh/known_hosts" />
+			</tarfileset>
+			<tarfileset dir="./.." username="${deploy.user.login}" group="${deploy.user.login}" mode="740">
 				<include name="**/*.sh" />
 			</tarfileset>
 		</tar>

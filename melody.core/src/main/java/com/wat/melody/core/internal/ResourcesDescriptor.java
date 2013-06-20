@@ -24,7 +24,6 @@ import com.wat.melody.common.filter.Filter;
 import com.wat.melody.common.filter.FilterSet;
 import com.wat.melody.common.filter.exception.IllegalFilterException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.DUNID;
 import com.wat.melody.common.xml.DUNIDDoc;
 import com.wat.melody.common.xml.DUNIDDocHelper;
@@ -121,21 +120,19 @@ public class ResourcesDescriptor extends FilteredDoc implements
 	@Override
 	public String fulldump() {
 		StringBuilder str = new StringBuilder();
-		str.append(super.fulldump().replaceAll(SysTool.NEW_LINE,
-				SysTool.NEW_LINE + "  "));
-		str.append(SysTool.NEW_LINE);
-		str.append(SysTool.NEW_LINE);
+		str.append(super.fulldump().replaceAll("\\n", "\n  "));
+		str.append('\n');
+		str.append('\n');
 		if (areTargetsFiltersDefined()) {
-			str.append(getTargetsDescriptor().fulldump().replaceAll(
-					SysTool.NEW_LINE, SysTool.NEW_LINE + "  "));
-			str.append(SysTool.NEW_LINE);
-			str.append(SysTool.NEW_LINE);
+			str.append(getTargetsDescriptor().fulldump().replaceAll("\\n",
+					"\n  "));
+			str.append('\n');
+			str.append('\n');
 		}
 		for (DUNIDDoc doc : getDUNIDDocList()) {
-			str.append(doc.fulldump().replaceAll(SysTool.NEW_LINE,
-					SysTool.NEW_LINE + "  "));
-			str.append(SysTool.NEW_LINE);
-			str.append(SysTool.NEW_LINE);
+			str.append(doc.fulldump().replaceAll("\\n", "\n  "));
+			str.append('\n');
+			str.append('\n');
 		}
 		return str.toString();
 	}
