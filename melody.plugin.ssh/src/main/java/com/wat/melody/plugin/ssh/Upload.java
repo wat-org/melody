@@ -1,6 +1,5 @@
 package com.wat.melody.plugin.ssh;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +12,8 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
@@ -22,7 +23,6 @@ import com.wat.melody.common.ssh.exception.TemplatingException;
 import com.wat.melody.common.ssh.types.ResourceMatcher;
 import com.wat.melody.common.ssh.types.Resources;
 import com.wat.melody.common.ssh.types.SimpleResource;
-import com.wat.melody.common.ssh.types.exception.ResourceException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
@@ -109,24 +109,16 @@ public class Upload extends AbstractSshManagedOperation implements
 	private void validateResourceElement(ResourceMatcher r, String which)
 			throws SshException {
 		if (r.getLocalBaseDir() == null) {
-			File localBaseDir = getContext().getProcessorManager()
-					.getSequenceDescriptor().getBaseDir();
-			try {
-				r.setLocalBaseDir(localBaseDir);
-			} catch (ResourceException Ex) {
-				throw new RuntimeException("Unexpected error occurred while "
-						+ "setting the localBaseDir to '" + localBaseDir
-						+ "'. "
-						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced. "
-						+ "Or an external event made the file no more "
-						+ "accessible (deleted, moved, read permission "
-						+ "removed, ...).", Ex);
-			}
+			r.setLocalBaseDir(Melody.getContext().getProcessorManager()
+					.getSequenceDescriptor().getBaseDir());
 		}
-		if (r.getMatch() == null) {
-			throw new SshException(Msg.bind(Messages.UploadEx_MISSING_ATTR,
-					Resources.MATCH_ATTR, which));
+		try {
+			FS.validateDirExists(r.getLocalBaseDir().toString());
+		} catch (IllegalDirectoryException Ex) {
+			throw new SshException(Msg.bind(
+					Messages.UploadEx_INVALID_LOCALBASEDIR_ATTR,
+					r.getLocalBaseDir(), ResourceMatcher.LOCAL_BASEDIR_ATTR),
+					Ex);
 		}
 	}
 
@@ -184,7 +176,8 @@ public class Upload extends AbstractSshManagedOperation implements
 	public List<Resources> setResourcesList(List<Resources> resources) {
 		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Resources>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ Resources.class.getCanonicalName() + ">.");
 		}
 		List<Resources> previous = getResourcesList();
 		_resourcesList = resources;
@@ -218,7 +211,8 @@ public class Upload extends AbstractSshManagedOperation implements
 	private List<SimpleResource> setSimpleResourcesList(List<SimpleResource> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<SimpleResource>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ SimpleResource.class.getCanonicalName() + ">.");
 		}
 		List<SimpleResource> previous = getSimpleResourcesList();
 		_simpleResourcesList = aft;

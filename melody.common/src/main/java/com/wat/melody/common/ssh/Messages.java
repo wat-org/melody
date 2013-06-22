@@ -15,6 +15,20 @@ public class Messages extends NLS {
 	public static String SessionMsg_CNX;
 	public static String SessionMsg_CNX_OK;
 
+	public static String DownloadEx_FAILED;
+	public static String DownloadEx_UNMANAGED;
+	public static String DownloadEx_MANAGED;
+	public static String DownloadEx_INTERRUPTED;
+	public static String DownloadMsg_GRACEFUL_SHUTDOWN;
+	public static String DownloadMsg_START;
+	public static String DownloadMsg_BEGIN;
+	public static String DownloadMsg_END;
+	public static String DownloadMsg_FINISH;
+
+	public static String DownloadEx_MKDIRS;
+	public static String DownloadEx_LIST;
+
+	public static String UploadEx_NO_TEMPLATING_HANDLER;
 	public static String UploadEx_FAILED;
 	public static String UploadEx_UNMANAGED;
 	public static String UploadEx_MANAGED;
@@ -26,8 +40,9 @@ public class Messages extends NLS {
 	public static String UploadMsg_FINISH;
 	public static String UploadMsg_NOTFOUND;
 	public static String UploadMsg_COPY_UNSAFE_IMPOSSIBLE;
+	public static String UploadMsg_DONT_UPLOAD_CAUSE_LOCAL_OLDER;
 
-	public static String UploadEx_STAT;
+	public static String UploadEx_LSTAT;
 	public static String UploadEx_LN;
 	public static String UploadEx_MKDIR;
 	public static String UploadEx_MKDIRS;

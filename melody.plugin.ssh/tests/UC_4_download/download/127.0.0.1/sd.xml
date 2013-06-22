@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="main" basedir=".">
+
+	<order name="main">
+
+		<property name="IP" value="127.0.0.1"/>
+		<property name="property1" value="salut les filles"/>
+
+		<echo message="Transfering files to 'IP:§[IP]§' ..."/>
+
+		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
+			<resources
+				match="**"
+				dir-modifiers="770"
+				remote-basedir="/tmp/melody/scp/UC_0"
+				link-option="COPY_UNSAFE_LINKS" />
+			<resources
+				match="./templates/content2.tmpl"
+				dir-modifiers="770"
+				remote-basedir="/tmp/melody/scp/UC_0"
+				link-option="COPY_UNSAFE_LINKS"
+				template="y" />
+			<resources
+				match="./static*/content*"
+				dir-modifiers="770"
+				remote-basedir="/tmp/melody/scp/UC_0"
+				link-option="COPY_UNSAFE_LINKS" />
+		</upload>
+
+		<echo message="Files successfully transfered to 'IP:§[IP]§'."/>
+
+	</order>
+
+</sequence>

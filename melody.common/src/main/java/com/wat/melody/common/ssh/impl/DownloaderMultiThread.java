@@ -11,17 +11,16 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.types.SimpleResource;
+import com.wat.melody.common.ssh.types.ResourceMatcher;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-class UploaderMultiThread {
+class DownloaderMultiThread {
 
-	private static Log log = LogFactory.getLog(UploaderMultiThread.class);
+	private static Log log = LogFactory.getLog(DownloaderMultiThread.class);
 
 	protected static final short NEW = 16;
 	protected static final short RUNNING = 8;
@@ -31,41 +30,39 @@ class UploaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<SimpleResource> _simpleResourcesList;
+	private List<ResourceMatcher> _resourceMatcherList;
 	private int _maxPar;
-	private TemplatingHandler _templatingHandler;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
-	private List<UploaderThread> _threadsList;
+	private List<DownloaderThread> _threadsList;
 	private ConsolidatedException _exceptionsSet;
 
-	protected UploaderMultiThread(SshSession session, List<SimpleResource> r,
-			int maxPar, TemplatingHandler th) {
+	protected DownloaderMultiThread(SshSession session,
+			List<ResourceMatcher> r, int maxPar) {
 		setSession(session);
-		setSimpleResourcesList(r);
+		setResourceMatcherList(r);
 		setMaxPar(maxPar);
-		setTemplatingHandler(th);
 
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setThreadsList(new ArrayList<UploaderThread>());
+		setThreadsList(new ArrayList<DownloaderThread>());
 		setExceptionsSet(new ConsolidatedException());
 	}
 
-	protected void upload() throws UploaderException, InterruptedException {
-		if (getSimpleResourcesList().size() == 0) {
+	protected void download() throws DownloaderException, InterruptedException {
+		if (getResourceMatcherList().size() == 0) {
 			return;
 		}
 		try {
-			log.debug(Msg.bind(Messages.UploadMsg_START, getSession()
+			log.debug(Msg.bind(Messages.DownloadMsg_START, getSession()
 					.getConnectionDatas()));
 			setThreadGroup(new ThreadGroup(Thread.currentThread().getName()
-					+ ">uploader"));
+					+ ">downloader"));
 			getThreadGroup().setDaemon(true);
-			initializeUploadThreads();
+			initializeDownloadThreads();
 			try {
-				startUploadThreads();
+				startDownloadThreads();
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
@@ -75,9 +72,9 @@ class UploaderMultiThread {
 				// If an error occurred while starting thread, some thread may
 				// have been launched without any problem
 				// We must wait for these threads to die
-				waitForUploadThreadsToBeDone();
+				waitForDownloadThreadsToBeDone();
 				quit();
-				log.debug(Messages.UploadMsg_FINISH);
+				log.debug(Messages.DownloadMsg_FINISH);
 			}
 		} finally {
 			// This allow the doProcessing method to be called multiple time
@@ -86,35 +83,35 @@ class UploaderMultiThread {
 		}
 	}
 
-	protected void upload(ChannelSftp channel, SimpleResource r) {
+	protected void download(ChannelSftp channel, ResourceMatcher r) {
 		try {
-			new UploaderNoThread(channel, r, getTemplatingHandler()).upload();
-		} catch (UploaderException Ex) {
-			UploaderException e = new UploaderException(Msg.bind(
-					Messages.UploadEx_FAILED, r), Ex);
-			markState(UploaderMultiThread.FAILED);
+			new DownloaderNoThread(channel, r).download();
+		} catch (DownloaderException Ex) {
+			DownloaderException e = new DownloaderException(Msg.bind(
+					Messages.DownloadEx_FAILED, r), Ex);
+			markState(DownloaderMultiThread.FAILED);
 			getExceptionsSet().addCause(e);
 		}
 	}
 
-	private void initializeUploadThreads() {
+	private void initializeDownloadThreads() {
 		int max = getMaxPar();
-		if (getSimpleResourcesList().size() < max) {
-			max = getSimpleResourcesList().size();
+		if (getResourceMatcherList().size() < max) {
+			max = getResourceMatcherList().size();
 		}
 		for (int i = 0; i < max; i++) {
-			getThreadsList().add(new UploaderThread(this, i + 1));
+			getThreadsList().add(new DownloaderThread(this, i + 1));
 		}
 	}
 
-	private void startUploadThreads() throws InterruptedException {
+	private void startDownloadThreads() throws InterruptedException {
 		int threadToLaunchID = getThreadsList().size();
-		List<UploaderThread> runningThreads = new ArrayList<UploaderThread>();
+		List<DownloaderThread> runningThreads = new ArrayList<DownloaderThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
-				UploaderThread ft = getThreadsList().get(--threadToLaunchID);
+				DownloaderThread ft = getThreadsList().get(--threadToLaunchID);
 				runningThreads.add(ft);
 				ft.startProcessing();
 			}
@@ -123,36 +120,36 @@ class UploaderMultiThread {
 				runningThreads.get(0).waitTillProcessingIsDone(50);
 			// Remove ended threads
 			for (int i = runningThreads.size() - 1; i >= 0; i--) {
-				UploaderThread ft = runningThreads.get(i);
+				DownloaderThread ft = runningThreads.get(i);
 				if (ft.getFinalState() != NEW && ft.getFinalState() != RUNNING)
 					runningThreads.remove(ft);
 			}
 		}
 	}
 
-	private void waitForUploadThreadsToBeDone() {
+	private void waitForDownloadThreadsToBeDone() {
 		int nbTry = 2;
 		while (nbTry-- > 0) {
 			try {
-				for (UploaderThread ft : getThreadsList())
+				for (DownloaderThread ft : getThreadsList())
 					ft.waitTillProcessingIsDone();
 				return;
 			} catch (InterruptedException Ex) {
 				// If the processing was stopped wait for each thread to end
 				if (!isInterrupted()) {
-					log.info(Messages.UploadMsg_GRACEFUL_SHUTDOWN);
+					log.info(Messages.DownloadMsg_GRACEFUL_SHUTDOWN);
 				}
 				markState(INTERRUPTED);
 				getExceptionsSet().addCause(Ex);
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
-				+ "for " + UploaderMultiThread.class.getCanonicalName()
+				+ "for " + DownloaderMultiThread.class.getCanonicalName()
 				+ " to finish.", getExceptionsSet());
 	}
 
-	private void quit() throws UploaderException, InterruptedException {
-		for (UploaderThread ft : getThreadsList()) {
+	private void quit() throws DownloaderException, InterruptedException {
+		for (DownloaderThread ft : getThreadsList()) {
 			markState(ft.getFinalState());
 			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
 				getExceptionsSet().addCause(ft.getFinalError());
@@ -160,14 +157,15 @@ class UploaderMultiThread {
 		}
 
 		if (isCritical()) {
-			throw new UploaderException(Msg.bind(Messages.UploadEx_UNMANAGED,
-					getSession().getConnectionDatas()), getExceptionsSet());
+			throw new DownloaderException(Msg.bind(
+					Messages.DownloadEx_UNMANAGED, getSession()
+							.getConnectionDatas()), getExceptionsSet());
 		} else if (isFailed()) {
-			throw new UploaderException(Msg.bind(Messages.UploadEx_MANAGED,
+			throw new DownloaderException(Msg.bind(Messages.DownloadEx_MANAGED,
 					getSession().getConnectionDatas()), getExceptionsSet());
 		} else if (isInterrupted()) {
-			throw new MelodyInterruptedException(Messages.UploadEx_INTERRUPTED,
-					getExceptionsSet());
+			throw new MelodyInterruptedException(
+					Messages.DownloadEx_INTERRUPTED, getExceptionsSet());
 		}
 	}
 
@@ -202,18 +200,19 @@ class UploaderMultiThread {
 		return previous;
 	}
 
-	protected List<SimpleResource> getSimpleResourcesList() {
-		return _simpleResourcesList;
+	protected List<ResourceMatcher> getResourceMatcherList() {
+		return _resourceMatcherList;
 	}
 
-	private List<SimpleResource> setSimpleResourcesList(List<SimpleResource> aft) {
+	private List<ResourceMatcher> setResourceMatcherList(
+			List<ResourceMatcher> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ SimpleResource.class.getCanonicalName() + ">.");
+					+ ResourceMatcher.class.getCanonicalName() + ">.");
 		}
-		List<SimpleResource> previous = getSimpleResourcesList();
-		_simpleResourcesList = aft;
+		List<ResourceMatcher> previous = getResourceMatcherList();
+		_resourceMatcherList = aft;
 		return previous;
 	}
 
@@ -223,7 +222,7 @@ class UploaderMultiThread {
 
 	/**
 	 * @param iMaxPar
-	 *            is the maximum number of {@link UploaderThread} this object
+	 *            is the maximum number of {@link DownloaderThread} this object
 	 *            can run simultaneously.
 	 * 
 	 * @throws ForeachException
@@ -237,16 +236,6 @@ class UploaderMultiThread {
 		}
 		int previous = getMaxPar();
 		_maxPar = iMaxPar;
-		return previous;
-	}
-
-	private TemplatingHandler getTemplatingHandler() {
-		return _templatingHandler;
-	}
-
-	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
-		TemplatingHandler previous = getTemplatingHandler();
-		_templatingHandler = th;
 		return previous;
 	}
 
@@ -266,25 +255,25 @@ class UploaderMultiThread {
 	}
 
 	/**
-	 * @return all the {@link UploaderThread} managed by this object.
+	 * @return all the {@link DownloaderThread} managed by this object.
 	 */
-	private List<UploaderThread> getThreadsList() {
+	private List<DownloaderThread> getThreadsList() {
 		return _threadsList;
 	}
 
-	private List<UploaderThread> setThreadsList(List<UploaderThread> aft) {
+	private List<DownloaderThread> setThreadsList(List<DownloaderThread> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ UploaderThread.class.getCanonicalName() + ">.");
+					+ DownloaderThread.class.getCanonicalName() + ">.");
 		}
-		List<UploaderThread> previous = getThreadsList();
+		List<DownloaderThread> previous = getThreadsList();
 		_threadsList = aft;
 		return previous;
 	}
 
 	/**
-	 * @return the exceptions that append during the upload.
+	 * @return the exceptions that append during the download.
 	 */
 	private ConsolidatedException getExceptionsSet() {
 		return _exceptionsSet;

@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
-import com.wat.melody.common.ssh.types.exception.ResourceException;
 
 /**
  * <p>
@@ -32,12 +31,12 @@ import com.wat.melody.common.ssh.types.exception.ResourceException;
 public class Resources extends ResourceMatcher {
 
 	/**
-	 * The 'include' XML Nested Element
+	 * Nested Element, which specifies the resources to include.
 	 */
 	public static final String INCLUDE_NE = "include";
 
 	/**
-	 * The 'exclude' XML Nested Element
+	 * Nested Element, which specifies the resources to exclude.
 	 */
 	public static final String EXCLUDE_NE = "exclude";
 
@@ -65,6 +64,12 @@ public class Resources extends ResourceMatcher {
 		str.append(getDirModifiers());
 		str.append(", group:");
 		str.append(getGroup());
+		str.append(", link-option:");
+		str.append(getLinkOption());
+		str.append(", transfer-behavior:");
+		str.append(getTransferBehavior());
+		str.append(", is-template:");
+		str.append(getTemplate());
 		str.append(", includes:");
 		str.append(getIncludes());
 		str.append(", excludes:");
@@ -90,14 +95,14 @@ public class Resources extends ResourceMatcher {
 	}
 
 	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
-	public ResourceMatcher addInclude() throws ResourceException {
+	public ResourceMatcher addInclude() {
 		ResourceMatcher include = new ResourceMatcher(this);
 		getIncludes().add(include);
 		return include;
 	}
 
 	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
-	public ResourceMatcher createExclude() throws ResourceException {
+	public ResourceMatcher createExclude() {
 		ResourceMatcher exclude = new ResourceMatcher(this);
 		getExcludes().add(exclude);
 		return exclude;

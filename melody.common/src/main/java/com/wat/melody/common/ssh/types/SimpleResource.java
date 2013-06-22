@@ -53,6 +53,10 @@ public class SimpleResource {
 		return getMatcher().getLinkOption();
 	}
 
+	public TransferBehavior getTransferBehavior() {
+		return getMatcher().getTransferBehavior();
+	}
+
 	public boolean getTemplate() {
 		return getMatcher().getTemplate();
 	}
@@ -154,11 +158,10 @@ public class SimpleResource {
 		str.append(getLocalBaseDir());
 		if (isFile()) {
 			str.append(", file:");
-			str.append(getRelativePath());
 		} else {
 			str.append(", directory:");
-			str.append(getRelativePath());
 		}
+		str.append(getRelativePath());
 		str.append(", remote-basedir:");
 		str.append(getRemoteBaseDir());
 		str.append(", file-modifiers:");
@@ -167,6 +170,12 @@ public class SimpleResource {
 		str.append(getDirModifiers());
 		str.append(", group:");
 		str.append(getGroup());
+		str.append(", link-option:");
+		str.append(getLinkOption());
+		str.append(", transfer-behavior:");
+		str.append(getTransferBehavior());
+		str.append(", is-template:");
+		str.append(getTemplate());
 		str.append(" }");
 		return str.toString();
 	}

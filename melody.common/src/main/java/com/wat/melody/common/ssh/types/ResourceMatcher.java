@@ -17,11 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.files.FS;
-import com.wat.melody.common.files.exception.IllegalDirectoryException;
-import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
-import com.wat.melody.common.ssh.types.exception.ResourceException;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -103,68 +99,47 @@ public class ResourceMatcher {
 	 */
 	public static final String LINK_OPTION_ATTR = "link-option";
 
+	/**
+	 * Attribute, which specifies the behavior when the to file transfer already
+	 * exists.
+	 */
+	public static final String TRANSFER_BEHAVIOR_ATTR = "transfer-behavior";
+
 	// Mandatory with no default value
-	private File _localBaseDir;
-	private String _match;
+	private File _localBaseDir = null;
+	// Mandatory (verified by Task Factory)
+	private String _match = null;
 	// Mandatory with a default value
-	private String _remoteBaseDir;
-	private Modifiers _fileModifiers;
-	private Modifiers _dirModifiers;
-	private LinkOption _linkOption;
-	private boolean _template;
+	private String _remoteBaseDir = ".";
+	private Modifiers _fileModifiers = DEFAULT_FILE_MODIFIERS;
+	private Modifiers _dirModifiers = DEFAULT_DIR_MODIFIERS;
+	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
+	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_LOCAL_NEWER;
+	private boolean _template = false;
 	// Optional
-	private GroupID _group;
+	private GroupID _group = null;
 
 	public ResourceMatcher() {
-		super();
-		initLocalBaseDir();
-		initMatch();
-		setRemoteBaseDir(".");
-		setFileModifiers(DEFAULT_FILE_MODIFIERS);
-		setDirModifiers(DEFAULT_DIR_MODIFIERS);
-		setLinkOption(LinkOption.KEEP_LINKS);
-		setTemplate(false);
-		initGroup();
+		// This 0-arg constructor is used by the Task Factory
 	}
 
-	public ResourceMatcher(ResourceMatcher r) throws ResourceException {
-		this();
+	public ResourceMatcher(ResourceMatcher r) {
+		if (r.getMatch() == null) {
+			throw new IllegalArgumentException("invalid arg : the given "
+					+ ResourceMatcher.MATCH_ATTR + " is null.");
+		}
 		if (r.getLocalBaseDir() != null) {
 			setLocalBaseDir(r.getLocalBaseDir());
-		}
-		if (r.getMatch() != null) {
-			try {
-				setMatch(r.getMatch());
-			} catch (ResourceException Ex) {
-				throw new RuntimeException("Unexpected error occurred while "
-						+ "calling setMatch(\"" + r.getMatch() + "\"). "
-						+ "Since this string have already been validated by "
-						+ "the owner ResourceElement, such error cannot "
-						+ "happened. "
-						+ "Source code have certainly been modified and a bug "
-						+ "have been introduced.", Ex);
-			}
 		}
 		setRemoteBaseDir(r.getRemoteBaseDir());
 		setFileModifiers(r.getFileModifiers());
 		setDirModifiers(r.getDirModifiers());
 		setLinkOption(r.getLinkOption());
+		setTransferBehavior(r.getTransferBehavior());
 		setTemplate(r.getTemplate());
 		if (r.getGroup() != null) {
 			setGroup(r.getGroup());
 		}
-	}
-
-	private void initLocalBaseDir() {
-		_localBaseDir = null;
-	}
-
-	private void initMatch() {
-		_match = null;
-	}
-
-	private void initGroup() {
-		_group = null;
 	}
 
 	public List<SimpleResource> findResources() throws IOException {
@@ -189,6 +164,12 @@ public class ResourceMatcher {
 		str.append(getDirModifiers());
 		str.append(", group:");
 		str.append(getGroup());
+		str.append(", link-option:");
+		str.append(getLinkOption());
+		str.append(", transfer-behavior:");
+		str.append(getTransferBehavior());
+		str.append(", is-template:");
+		str.append(getTemplate());
 		str.append(" }");
 		return str.toString();
 	}
@@ -198,16 +179,11 @@ public class ResourceMatcher {
 	}
 
 	@Attribute(name = LOCAL_BASEDIR_ATTR)
-	public File setLocalBaseDir(File basedir) throws ResourceException {
+	public File setLocalBaseDir(File basedir) {
 		if (basedir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Mus be a valid " + File.class.getCanonicalName()
 					+ " (a Directory Path).");
-		}
-		try {
-			FS.validateDirExists(basedir.getAbsolutePath());
-		} catch (IllegalDirectoryException Ex) {
-			throw new ResourceException(Ex);
 		}
 		File previous = getLocalBaseDir();
 		_localBaseDir = basedir;
@@ -218,19 +194,15 @@ public class ResourceMatcher {
 		return _match;
 	}
 
-	@Attribute(name = MATCH_ATTR)
-	public String setMatch(String sMatch) throws ResourceException {
-		if (sMatch == null) {
+	@Attribute(name = MATCH_ATTR, mandatory = true)
+	public String setMatch(String match) {
+		if (match == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " " + "(a PathMatcher Glob Pattern).");
-		}
-		if (sMatch.indexOf('/') == 0) {
-			throw new ResourceException(Msg.bind(
-					Messages.ResourceEx_INVALID_MATCH_ATTR, sMatch));
+					+ " " + "(a Path Matcher Glob Pattern).");
 		}
 		String previous = getMatch();
-		_match = sMatch;
+		_match = match;
 		return previous;
 	}
 
@@ -239,14 +211,14 @@ public class ResourceMatcher {
 	}
 
 	@Attribute(name = REMOTE_BASEDIR_ATTR)
-	public String setRemoteBaseDir(String sDestination) {
-		if (sDestination == null) {
+	public String setRemoteBaseDir(String destination) {
+		if (destination == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ " (a Directory Path).");
 		}
 		String previous = getRemoteBaseDir();
-		_remoteBaseDir = sDestination;
+		_remoteBaseDir = destination;
 		return previous;
 	}
 
@@ -298,19 +270,20 @@ public class ResourceMatcher {
 		return previous;
 	}
 
-	public GroupID getGroup() {
-		return _group;
+	public TransferBehavior getTransferBehavior() {
+		return _transferBehavior;
 	}
 
-	@Attribute(name = GROUP_ATTR)
-	public GroupID setGroup(GroupID sGroup) {
-		if (sGroup == null) {
+	@Attribute(name = TRANSFER_BEHAVIOR_ATTR)
+	public TransferBehavior setTransferBehavior(
+			TransferBehavior transferBehavior) {
+		if (transferBehavior == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + GroupID.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ TransferBehavior.class.getCanonicalName() + ".");
 		}
-		GroupID previous = getGroup();
-		_group = sGroup;
+		TransferBehavior previous = getTransferBehavior();
+		_transferBehavior = transferBehavior;
 		return previous;
 	}
 
@@ -319,9 +292,25 @@ public class ResourceMatcher {
 	}
 
 	@Attribute(name = TEMPLATE_ATTR)
-	public boolean setTemplate(boolean sGroup) {
+	public boolean setTemplate(boolean yesno) {
 		boolean previous = getTemplate();
-		_template = sGroup;
+		_template = yesno;
+		return previous;
+	}
+
+	public GroupID getGroup() {
+		return _group;
+	}
+
+	@Attribute(name = GROUP_ATTR)
+	public GroupID setGroup(GroupID group) {
+		if (group == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + GroupID.class.getCanonicalName()
+					+ ".");
+		}
+		GroupID previous = getGroup();
+		_group = group;
 		return previous;
 	}
 
@@ -341,21 +330,22 @@ class Finder extends SimpleFileVisitor<Path> {
 					+ ResourceMatcher.class.getCanonicalName() + ".");
 		}
 		if (resourceMatcher.getLocalBaseDir() == null) {
-			throw new IllegalArgumentException("invalid ResourceMatcher : "
-					+ "localBaseDir is null.");
+			throw new IllegalArgumentException("invalid arg : the given "
+					+ ResourceMatcher.LOCAL_BASEDIR_ATTR + " is null.");
 		}
 		if (resourceMatcher.getMatch() == null) {
-			throw new IllegalArgumentException("invalid ResourceMatcher : "
-					+ "match is null.");
+			throw new IllegalArgumentException("invalid arg : the given "
+					+ ResourceMatcher.MATCH_ATTR + " is null.");
 		}
-		String path = resourceMatcher.getLocalBaseDir().getAbsolutePath()
+		String path = Paths.get(
+				resourceMatcher.getLocalBaseDir().getAbsolutePath())
+				.normalize()
 				+ SysTool.FILE_SEPARATOR + resourceMatcher.getMatch();
-		String pattern = "glob:" + Paths.get(path).normalize().toString();
 		/*
 		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
 		 * the backslash is escaped; string literal example : "C:\\\\*"
 		 */
-		pattern = pattern.replaceAll("\\\\", "\\\\\\\\");
+		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
 		_resourceMatcher = resourceMatcher;
 		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
 		_resources = new ArrayList<SimpleResource>();

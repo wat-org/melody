@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
@@ -16,6 +17,7 @@ import com.wat.melody.common.ssh.exception.TemplatingException;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.SimpleResource;
+import com.wat.melody.common.ssh.types.TransferBehavior;
 
 /**
  * 
@@ -118,7 +120,7 @@ class UploaderNoThread {
 			} catch (SftpException Ex) {
 				if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 					throw new UploaderException(Msg.bind(
-							Messages.UploadEx_STAT, unixDir), Ex);
+							Messages.UploadEx_LSTAT, unixDir), Ex);
 				}
 			}
 			// if dir doesn't exists => create it
@@ -161,7 +163,7 @@ class UploaderNoThread {
 			return;
 		} catch (SftpException Ex) {
 			if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new UploaderException(Msg.bind(Messages.UploadEx_STAT,
+				throw new UploaderException(Msg.bind(Messages.UploadEx_LSTAT,
 						unixItem), Ex);
 			}
 		}
@@ -217,19 +219,24 @@ class UploaderNoThread {
 
 	protected void template(SimpleResource r) throws UploaderException {
 		if (r.getTemplate() == true) {
+			if (getTemplatingHandler() == null) {
+				throw new UploaderException(
+						Messages.UploadEx_NO_TEMPLATING_HANDLER);
+			}
 			Path template;
 			try {
 				template = getTemplatingHandler().doTemplate(r.getPath());
 			} catch (TemplatingException Ex) {
 				throw new UploaderException(Ex);
 			}
-			put(template, r.getDestination());
+			put(template, r.getDestination(), r.getTransferBehavior());
 		} else {
-			put(r.getPath(), r.getDestination());
+			put(r.getPath(), r.getDestination(), r.getTransferBehavior());
 		}
 	}
 
-	protected void put(Path source, Path dest) throws UploaderException {
+	protected void put(Path source, Path dest, TransferBehavior tb)
+			throws UploaderException {
 		if (source == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid " + Path.class.getCanonicalName()
@@ -241,6 +248,9 @@ class UploaderNoThread {
 					+ " (the destination file Path).");
 		}
 		String unixFile = convertToUnixPath(dest);
+		if (!shouldTranferFile(source, unixFile, tb)) {
+			return;
+		}
 		try {
 			getChannel().put(source.toString(), unixFile);
 		} catch (SftpException Ex) {
@@ -305,6 +315,62 @@ class UploaderNoThread {
 
 	private static String convertToUnixPath(Path path) {
 		return path.toString().replaceAll("\\\\", "/");
+	}
+
+	/**
+	 * @param file
+	 *            is the local file to test.
+	 * @param unixDest
+	 *            is the remote path of the given local file.
+	 * @param tb
+	 *            is the desired transfer behavior.
+	 * 
+	 * @return <tt>true</tt> if the given local file should be transfered, or
+	 *         <tt>false</tt> otherwise. More formally :
+	 *         <ul>
+	 *         <li>return <tt>true</tt> if the desired transfer behavior is
+	 *         equal to {@link TransferBehavior#FORCE_OVERWRITE} ;</li>
+	 *         <li>return <tt>true</tt> if the desired transfer behavior is
+	 *         equal to {@link TransferBehavior#OVERWRITE_IF_LOCAL_NEWER} and
+	 *         the local file size is not equal to the remote file size ;</li>
+	 *         <li>return <tt>true</tt> if the desired transfer behavior is
+	 *         equal to {@link TransferBehavior#OVERWRITE_IF_LOCAL_NEWER} and
+	 *         the local file size is equal to the remote file size and the
+	 *         local file last modification time is newer than the remote file
+	 *         last modification time ;</li>
+	 *         <li>return <tt>false</tt> otherwise ;</li>
+	 *         </ul>
+	 * 
+	 * @throws UploaderException
+	 *             if it fails to retrieve the stats of the remote file.
+	 */
+	private boolean shouldTranferFile(Path file, String unixDest,
+			TransferBehavior tb) throws UploaderException {
+		if (tb == TransferBehavior.FORCE_OVERWRITE) {
+			// => transfer
+			return true;
+		}
+		// Get remote file attributes
+		SftpATTRS remoteFileAttrs = null;
+		try {
+			remoteFileAttrs = getChannel().lstat(unixDest);
+		} catch (SftpException Ex) {
+			if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				// The remote file doesn't exists => should be transfered
+				return true;
+			} else {
+				throw new UploaderException(Msg.bind(Messages.UploadEx_LSTAT,
+						unixDest), Ex);
+			}
+		}
+		if (remoteFileAttrs.getMTime() > file.toFile().lastModified() / 1000
+				&& remoteFileAttrs.getSize() == file.toFile().length()) {
+			log.info(Messages.UploadMsg_DONT_UPLOAD_CAUSE_LOCAL_OLDER);
+			// => do not transfer
+			return false;
+		}
+		// => transfer
+		return true;
 	}
 
 	private static Object BASIC_LOCK = new Integer(0);
