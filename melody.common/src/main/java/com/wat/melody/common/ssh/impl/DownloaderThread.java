@@ -4,7 +4,7 @@ import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ssh.types.ResourceMatcher;
+import com.wat.melody.common.ssh.types.RemoteResource;
 
 /**
  * 
@@ -64,12 +64,12 @@ class DownloaderThread implements Runnable {
 		try {
 			channel = getDownloader().getSession().openSftpChannel();
 			while (true) {
-				ResourceMatcher r = null;
-				synchronized (getDownloader().getResourceMatcherList()) {
-					if (getDownloader().getResourceMatcherList().size() == 0) {
+				RemoteResource r = null;
+				synchronized (getDownloader().getRemoteResourcesList()) {
+					if (getDownloader().getRemoteResourcesList().size() == 0) {
 						return;
 					}
-					r = getDownloader().getResourceMatcherList().remove(0);
+					r = getDownloader().getRemoteResourcesList().remove(0);
 				}
 				getDownloader().download(channel, r);
 			}

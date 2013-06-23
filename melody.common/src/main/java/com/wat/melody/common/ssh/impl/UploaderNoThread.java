@@ -15,8 +15,8 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.TemplatingException;
 import com.wat.melody.common.ssh.types.GroupID;
+import com.wat.melody.common.ssh.types.LocalResource;
 import com.wat.melody.common.ssh.types.Modifiers;
-import com.wat.melody.common.ssh.types.SimpleResource;
 import com.wat.melody.common.ssh.types.TransferBehavior;
 
 /**
@@ -29,10 +29,10 @@ class UploaderNoThread {
 	private static Log log = LogFactory.getLog(UploaderNoThread.class);
 
 	private ChannelSftp _channel;
-	private SimpleResource _simpleResource;
+	private LocalResource _simpleResource;
 	private TemplatingHandler _templatingHandler;
 
-	protected UploaderNoThread(ChannelSftp channel, SimpleResource r,
+	protected UploaderNoThread(ChannelSftp channel, LocalResource r,
 			TemplatingHandler th) {
 		setChannel(channel);
 		setResource(r);
@@ -55,7 +55,7 @@ class UploaderNoThread {
 		log.info(Msg.bind(Messages.UploadMsg_END, getResource()));
 	}
 
-	protected void mkdirs(SimpleResource r) throws UploaderException {
+	protected void mkdirs(LocalResource r) throws UploaderException {
 		if (r.isSymbolicLink()) {
 			mkdirs(r.getDestination().getParent().normalize());
 			ln(r);
@@ -65,11 +65,11 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void put(SimpleResource r) throws UploaderException {
+	protected void put(LocalResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		if (r.getDestination().getNameCount() > 1) {
 			mkdirs(r.getDestination().resolve("..").normalize());
@@ -82,11 +82,11 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln(SimpleResource r) throws UploaderException {
+	protected void ln(LocalResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		switch (r.getLinkOption()) {
 		case KEEP_LINKS:
@@ -116,6 +116,10 @@ class UploaderNoThread {
 			String unixDir = convertToUnixPath(dir);
 			try {
 				getChannel().stat(unixDir);
+				/*
+				 * TODO : should verify that it is a dir, and should remove it
+				 * if it is not.
+				 */
 				return;
 			} catch (SftpException Ex) {
 				if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
@@ -146,11 +150,11 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln_keep(SimpleResource r) throws UploaderException {
+	protected void ln_keep(LocalResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		String unixItem = convertToUnixPath(r.getDestination());
 		try {
@@ -173,6 +177,9 @@ class UploaderNoThread {
 		} catch (IOException Ex) {
 			throw new UploaderException(Ex);
 		}
+		/*
+		 * TODO : should remove the remote dir/file before symlink creation.
+		 */
 		String unixTarget = convertToUnixPath(symbolinkLinkTarget);
 		try {
 			getChannel().symlink(unixTarget, unixItem);
@@ -182,11 +189,11 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln_copy(SimpleResource r) throws UploaderException {
+	protected void ln_copy(LocalResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		if (!r.exists()) {
 			log.warn(Messages
@@ -200,11 +207,11 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln_copy_unsafe(SimpleResource r) throws UploaderException {
+	protected void ln_copy_unsafe(LocalResource r) throws UploaderException {
 		if (r == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		try {
 			if (r.isSafeLink()) {
@@ -217,7 +224,7 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void template(SimpleResource r) throws UploaderException {
+	protected void template(LocalResource r) throws UploaderException {
 		if (r.getTemplate() == true) {
 			if (getTemplatingHandler() == null) {
 				throw new UploaderException(
@@ -251,6 +258,9 @@ class UploaderNoThread {
 		if (!shouldTranferFile(source, unixFile, tb)) {
 			return;
 		}
+		/*
+		 * TODO : should remove the remote dir/link before transfer.
+		 */
 		try {
 			getChannel().put(source.toString(), unixFile);
 		} catch (SftpException Ex) {
@@ -355,7 +365,7 @@ class UploaderNoThread {
 		try {
 			remoteFileAttrs = getChannel().lstat(unixDest);
 		} catch (SftpException Ex) {
-			if (Ex.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+			if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				// The remote file doesn't exists => should be transfered
 				return true;
 			} else {
@@ -401,17 +411,17 @@ class UploaderNoThread {
 		return previous;
 	}
 
-	protected SimpleResource getResource() {
+	protected LocalResource getResource() {
 		return _simpleResource;
 	}
 
-	private SimpleResource setResource(SimpleResource aft) {
+	private LocalResource setResource(LocalResource aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ SimpleResource.class.getCanonicalName() + ".");
+					+ LocalResource.class.getCanonicalName() + ".");
 		}
-		SimpleResource previous = getResource();
+		LocalResource previous = getResource();
 		_simpleResource = aft;
 		return previous;
 	}

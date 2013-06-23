@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,8 @@ import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.types.SimpleResource;
+import com.wat.melody.common.ssh.types.LocalResource;
+import com.wat.melody.common.ssh.types.Resources;
 
 /**
  * 
@@ -31,21 +33,23 @@ class UploaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<SimpleResource> _simpleResourcesList;
+	private List<Resources> _resourcesList;
 	private int _maxPar;
 	private TemplatingHandler _templatingHandler;
+	private List<LocalResource> _localResourcesList;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
 	private List<UploaderThread> _threadsList;
 	private ConsolidatedException _exceptionsSet;
 
-	protected UploaderMultiThread(SshSession session, List<SimpleResource> r,
+	protected UploaderMultiThread(SshSession session, List<Resources> r,
 			int maxPar, TemplatingHandler th) {
 		setSession(session);
-		setSimpleResourcesList(r);
+		setResourcesList(r);
 		setMaxPar(maxPar);
 		setTemplatingHandler(th);
+		setLocalResourcesList(new ArrayList<LocalResource>());
 
 		markState(SUCCEED);
 		setThreadGroup(null);
@@ -54,9 +58,15 @@ class UploaderMultiThread {
 	}
 
 	protected void upload() throws UploaderException, InterruptedException {
-		if (getSimpleResourcesList().size() == 0) {
+		// compute resources to upload
+		if (getResourcesList().size() == 0) {
 			return;
 		}
+		computeLocalResources();
+		if (getLocalResourcesList().size() == 0) {
+			return;
+		}
+		// do upload
 		try {
 			log.debug(Msg.bind(Messages.UploadMsg_START, getSession()
 					.getConnectionDatas()));
@@ -86,7 +96,23 @@ class UploaderMultiThread {
 		}
 	}
 
-	protected void upload(ChannelSftp channel, SimpleResource r) {
+	private void computeLocalResources() throws UploaderException {
+		for (Resources resources : getResourcesList()) {
+			try { // Add all found LocalResource to the global list
+				List<LocalResource> ar = resources.findResources();
+				getLocalResourcesList().removeAll(ar); // remove duplicated
+				getLocalResourcesList().addAll(ar);
+			} catch (IOException Ex) {
+				throw new UploaderException(
+						Messages.UploadEx_IO_ERROR_WHILE_FINDING, Ex);
+			}
+		}
+		for (LocalResource r : getLocalResourcesList()) {
+			System.out.println(r);
+		}
+	}
+
+	protected void upload(ChannelSftp channel, LocalResource r) {
 		try {
 			new UploaderNoThread(channel, r, getTemplatingHandler()).upload();
 		} catch (UploaderException Ex) {
@@ -99,8 +125,8 @@ class UploaderMultiThread {
 
 	private void initializeUploadThreads() {
 		int max = getMaxPar();
-		if (getSimpleResourcesList().size() < max) {
-			max = getSimpleResourcesList().size();
+		if (getLocalResourcesList().size() < max) {
+			max = getLocalResourcesList().size();
 		}
 		for (int i = 0; i < max; i++) {
 			getThreadsList().add(new UploaderThread(this, i + 1));
@@ -202,18 +228,18 @@ class UploaderMultiThread {
 		return previous;
 	}
 
-	protected List<SimpleResource> getSimpleResourcesList() {
-		return _simpleResourcesList;
+	protected List<Resources> getResourcesList() {
+		return _resourcesList;
 	}
 
-	private List<SimpleResource> setSimpleResourcesList(List<SimpleResource> aft) {
-		if (aft == null) {
+	private List<Resources> setResourcesList(List<Resources> resources) {
+		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ SimpleResource.class.getCanonicalName() + ">.");
+					+ Resources.class.getCanonicalName() + ">.");
 		}
-		List<SimpleResource> previous = getSimpleResourcesList();
-		_simpleResourcesList = aft;
+		List<Resources> previous = getResourcesList();
+		_resourcesList = resources;
 		return previous;
 	}
 
@@ -222,21 +248,21 @@ class UploaderMultiThread {
 	}
 
 	/**
-	 * @param iMaxPar
+	 * @param maxPar
 	 *            is the maximum number of {@link UploaderThread} this object
 	 *            can run simultaneously.
 	 * 
 	 * @throws ForeachException
 	 *             if the given value is not >= 1 and < 10.
 	 */
-	private int setMaxPar(int iMaxPar) {
-		if (iMaxPar < 1) {
-			iMaxPar = 1; // security
-		} else if (iMaxPar > 10) {
-			iMaxPar = 10; // maximum number of opened JSch channel
+	private int setMaxPar(int maxPar) {
+		if (maxPar < 1) {
+			maxPar = 1; // security
+		} else if (maxPar > 10) {
+			maxPar = 10; // maximum number of opened JSch channel
 		}
 		int previous = getMaxPar();
-		_maxPar = iMaxPar;
+		_maxPar = maxPar;
 		return previous;
 	}
 
@@ -247,6 +273,25 @@ class UploaderMultiThread {
 	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
 		TemplatingHandler previous = getTemplatingHandler();
 		_templatingHandler = th;
+		return previous;
+	}
+
+	/**
+	 * @return the list of {@link LocalResource}, computed from this object's
+	 *         {@link Resources}.
+	 */
+	protected List<LocalResource> getLocalResourcesList() {
+		return _localResourcesList;
+	}
+
+	private List<LocalResource> setLocalResourcesList(List<LocalResource> aft) {
+		if (aft == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ LocalResource.class.getCanonicalName() + ">.");
+		}
+		List<LocalResource> previous = getLocalResourcesList();
+		_localResourcesList = aft;
 		return previous;
 	}
 

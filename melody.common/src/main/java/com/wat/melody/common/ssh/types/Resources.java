@@ -1,11 +1,15 @@
 package com.wat.melody.common.ssh.types;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
+import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
@@ -79,19 +83,56 @@ public class Resources extends ResourceMatcher {
 	}
 
 	@Override
-	public List<SimpleResource> findResources() throws IOException {
-		List<SimpleResource> res = super.findResources();
-		List<SimpleResource> tmp;
+	public List<LocalResource> findResources() throws IOException {
+		List<LocalResource> res = super.findResources();
 		for (ResourceMatcher r : getIncludes()) {
-			tmp = r.findResources();
-			res.removeAll(tmp); // remove duplicated element
-			res.addAll(tmp);
+			updateMatchingLocalResources(res, r);
 		}
 		for (ResourceMatcher r : getExcludes()) {
-			tmp = r.findResources();
-			res.removeAll(tmp);
+			excludeMatchingLocalResources(res, r);
 		}
 		return res;
+	}
+
+	private static void updateMatchingLocalResources(
+			List<LocalResource> localResources, ResourceMatcher resourceMatcher) {
+		String path = Paths.get(
+				resourceMatcher.getLocalBaseDir().getAbsolutePath())
+				.normalize()
+				+ SysTool.FILE_SEPARATOR + resourceMatcher.getMatch();
+		/*
+		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
+		 * the backslash is escaped; string literal example : "C:\\\\*"
+		 */
+		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
+		PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
+		for (LocalResource r : localResources) {
+			if (matcher.matches(r.getPath())) {
+				r.setResourceMatcher(resourceMatcher);
+			}
+		}
+	}
+
+	private static List<LocalResource> excludeMatchingLocalResources(
+			List<LocalResource> localResources, ResourceMatcher resourceMatcher) {
+		List<LocalResource> matching = new ArrayList<LocalResource>();
+		String path = Paths.get(
+				resourceMatcher.getLocalBaseDir().getAbsolutePath())
+				.normalize()
+				+ SysTool.FILE_SEPARATOR + resourceMatcher.getMatch();
+		/*
+		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
+		 * the backslash is escaped; string literal example : "C:\\\\*"
+		 */
+		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
+		PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
+		for (LocalResource r : localResources) {
+			if (matcher.matches(r.getPath())) {
+				matching.add(r);
+			}
+		}
+		localResources.removeAll(matching);
+		return localResources;
 	}
 
 	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)

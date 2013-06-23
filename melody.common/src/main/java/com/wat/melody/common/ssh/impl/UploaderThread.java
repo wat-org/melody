@@ -4,7 +4,7 @@ import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ssh.types.SimpleResource;
+import com.wat.melody.common.ssh.types.LocalResource;
 
 /**
  * 
@@ -64,12 +64,12 @@ class UploaderThread implements Runnable {
 		try {
 			channel = getUploader().getSession().openSftpChannel();
 			while (true) {
-				SimpleResource r = null;
-				synchronized (getUploader().getSimpleResourcesList()) {
-					if (getUploader().getSimpleResourcesList().size() == 0) {
+				LocalResource r = null;
+				synchronized (getUploader().getLocalResourcesList()) {
+					if (getUploader().getLocalResourcesList().size() == 0) {
 						return;
 					}
-					r = getUploader().getSimpleResourcesList().remove(0);
+					r = getUploader().getLocalResourcesList().remove(0);
 				}
 				getUploader().upload(channel, r);
 			}

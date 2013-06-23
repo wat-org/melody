@@ -142,9 +142,9 @@ public class ResourceMatcher {
 		}
 	}
 
-	public List<SimpleResource> findResources() throws IOException {
+	public List<LocalResource> findResources() throws IOException {
 		if (getLocalBaseDir() == null || getMatch() == null) {
-			return new ArrayList<SimpleResource>();
+			return new ArrayList<LocalResource>();
 		}
 		return new Finder(this).findFiles();
 	}
@@ -320,7 +320,7 @@ class Finder extends SimpleFileVisitor<Path> {
 
 	private ResourceMatcher _resourceMatcher;
 	private final PathMatcher _matcher;
-	private final List<SimpleResource> _resources;
+	private final List<LocalResource> _resources;
 
 	public Finder(ResourceMatcher resourceMatcher) {
 		super();
@@ -348,10 +348,10 @@ class Finder extends SimpleFileVisitor<Path> {
 		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
 		_resourceMatcher = resourceMatcher;
 		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
-		_resources = new ArrayList<SimpleResource>();
+		_resources = new ArrayList<LocalResource>();
 	}
 
-	public List<SimpleResource> findFiles() throws IOException {
+	public List<LocalResource> findFiles() throws IOException {
 		Set<FileVisitOption> set = new HashSet<FileVisitOption>();
 		set.add(FileVisitOption.FOLLOW_LINKS);
 		Files.walkFileTree(
@@ -362,7 +362,7 @@ class Finder extends SimpleFileVisitor<Path> {
 
 	private void matches(Path path, BasicFileAttributes attrs) {
 		if (path != null && _matcher.matches(path)) {
-			_resources.add(new SimpleResource(path, _resourceMatcher));
+			_resources.add(new LocalResource(path, _resourceMatcher));
 		}
 	}
 
@@ -376,7 +376,8 @@ class Finder extends SimpleFileVisitor<Path> {
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 			throws IOException {
-		SimpleResource sr = new SimpleResource(dir, _resourceMatcher);
+		LocalResource sr = new LocalResource(dir, _resourceMatcher);
+		matches(dir, attrs);
 		if (sr.isSymbolicLink()) {
 			switch (sr.getLinkOption()) {
 			case COPY_LINKS:
@@ -391,7 +392,6 @@ class Finder extends SimpleFileVisitor<Path> {
 				}
 			}
 		}
-		matches(dir, attrs);
 		return FileVisitResult.CONTINUE;
 	}
 

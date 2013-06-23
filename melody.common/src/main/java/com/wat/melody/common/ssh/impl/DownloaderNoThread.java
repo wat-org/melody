@@ -7,10 +7,9 @@ import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.types.ResourceMatcher;
+import com.wat.melody.common.ssh.types.RemoteResource;
 
 /**
  * 
@@ -22,17 +21,24 @@ class DownloaderNoThread {
 	private static Log log = LogFactory.getLog(DownloaderNoThread.class);
 
 	private ChannelSftp _channel;
-	private ResourceMatcher _resourceMatcher;
+	private RemoteResource _remoteResource;
 
-	protected DownloaderNoThread(ChannelSftp channel, ResourceMatcher r) {
+	protected DownloaderNoThread(ChannelSftp channel, RemoteResource r) {
 		setChannel(channel);
-		setResourceMatcher(r);
+		setRemoteResource(r);
 	}
 
 	protected void download() throws DownloaderException {
-		log.debug(Msg.bind(Messages.DownloadMsg_BEGIN, getResource()));
+		log.debug(Msg.bind(Messages.DownloadMsg_BEGIN, getRemoteResource()));
+
+		/*
+		 * TODO : implement download logic
+		 * 
+		 * parents dir creation should be done in the get method, before getting
+		 * the file
+		 */
 		// create the local-basedir if it doesn't exists
-		File dest = getResource().getLocalBaseDir();
+		File dest = getRemoteResource().getLocalBaseDir();
 		synchronized (getLock()) {
 			if (!dest.exists() && !dest.mkdirs()) {
 				throw new DownloaderException(Msg.bind(
@@ -40,20 +46,7 @@ class DownloaderNoThread {
 			}
 		}
 
-		/*
-		 * TODO : Recurs lists remote files from glob
-		 */
-		String glob = getResource().getRemoteBaseDir() + "/"
-				+ getResource().getMatch();
-		try {
-			getChannel().ls(glob);
-		} catch (SftpException Ex) {
-			throw new DownloaderException(Msg.bind(Messages.DownloadEx_LIST,
-					glob), Ex);
-		}
-
-		// TODO : implement download logic
-		log.info(Msg.bind(Messages.DownloadMsg_END, getResource()));
+		log.info(Msg.bind(Messages.DownloadMsg_END, getRemoteResource()));
 	}
 
 	private static Object BASIC_LOCK = new Integer(0);
@@ -84,18 +77,18 @@ class DownloaderNoThread {
 		return previous;
 	}
 
-	protected ResourceMatcher getResource() {
-		return _resourceMatcher;
+	protected RemoteResource getRemoteResource() {
+		return _remoteResource;
 	}
 
-	private ResourceMatcher setResourceMatcher(ResourceMatcher aft) {
+	private RemoteResource setRemoteResource(RemoteResource aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ ResourceMatcher.class.getCanonicalName() + ".");
+					+ RemoteResource.class.getCanonicalName() + ".");
 		}
-		ResourceMatcher previous = getResource();
-		_resourceMatcher = aft;
+		RemoteResource previous = getRemoteResource();
+		_remoteResource = aft;
 		return previous;
 	}
 

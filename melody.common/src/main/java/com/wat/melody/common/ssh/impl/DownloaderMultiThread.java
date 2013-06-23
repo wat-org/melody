@@ -11,7 +11,8 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.types.ResourceMatcher;
+import com.wat.melody.common.ssh.types.RemoteResource;
+import com.wat.melody.common.ssh.types.Resources;
 
 /**
  * 
@@ -30,19 +31,21 @@ class DownloaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<ResourceMatcher> _resourceMatcherList;
+	private List<Resources> _resourcesList;
 	private int _maxPar;
+	private List<RemoteResource> _resourceMatcherList;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
 	private List<DownloaderThread> _threadsList;
 	private ConsolidatedException _exceptionsSet;
 
-	protected DownloaderMultiThread(SshSession session,
-			List<ResourceMatcher> r, int maxPar) {
+	protected DownloaderMultiThread(SshSession session, List<Resources> r,
+			int maxPar) {
 		setSession(session);
-		setResourceMatcherList(r);
+		setResourcesList(r);
 		setMaxPar(maxPar);
+		setRemoteResourcesList(new ArrayList<RemoteResource>());
 
 		markState(SUCCEED);
 		setThreadGroup(null);
@@ -51,7 +54,11 @@ class DownloaderMultiThread {
 	}
 
 	protected void download() throws DownloaderException, InterruptedException {
-		if (getResourceMatcherList().size() == 0) {
+		if (getResourcesList().size() == 0) {
+			return;
+		}
+		computeRemoteResources();
+		if (getRemoteResourcesList().size() == 0) {
 			return;
 		}
 		try {
@@ -83,7 +90,24 @@ class DownloaderMultiThread {
 		}
 	}
 
-	protected void download(ChannelSftp channel, ResourceMatcher r) {
+	private void computeRemoteResources() throws DownloaderException {
+		ChannelSftp chan = null;
+		try {
+			chan = getSession().openSftpChannel();
+			for (Resources resources : getResourcesList()) {
+				List<RemoteResource> ar;
+				ar = DownloaderHelper.findResources(chan, resources);
+				getRemoteResourcesList().removeAll(ar); // remove duplicated
+				getRemoteResourcesList().addAll(ar);
+			}
+		} finally {
+			if (chan != null) {
+				chan.disconnect();
+			}
+		}
+	}
+
+	protected void download(ChannelSftp channel, RemoteResource r) {
 		try {
 			new DownloaderNoThread(channel, r).download();
 		} catch (DownloaderException Ex) {
@@ -96,8 +120,8 @@ class DownloaderMultiThread {
 
 	private void initializeDownloadThreads() {
 		int max = getMaxPar();
-		if (getResourceMatcherList().size() < max) {
-			max = getResourceMatcherList().size();
+		if (getRemoteResourcesList().size() < max) {
+			max = getRemoteResourcesList().size();
 		}
 		for (int i = 0; i < max; i++) {
 			getThreadsList().add(new DownloaderThread(this, i + 1));
@@ -200,19 +224,18 @@ class DownloaderMultiThread {
 		return previous;
 	}
 
-	protected List<ResourceMatcher> getResourceMatcherList() {
-		return _resourceMatcherList;
+	protected List<Resources> getResourcesList() {
+		return _resourcesList;
 	}
 
-	private List<ResourceMatcher> setResourceMatcherList(
-			List<ResourceMatcher> aft) {
-		if (aft == null) {
+	private List<Resources> setResourcesList(List<Resources> resources) {
+		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourceMatcher.class.getCanonicalName() + ">.");
+					+ Resources.class.getCanonicalName() + ">.");
 		}
-		List<ResourceMatcher> previous = getResourceMatcherList();
-		_resourceMatcherList = aft;
+		List<Resources> previous = getResourcesList();
+		_resourcesList = resources;
 		return previous;
 	}
 
@@ -236,6 +259,25 @@ class DownloaderMultiThread {
 		}
 		int previous = getMaxPar();
 		_maxPar = iMaxPar;
+		return previous;
+	}
+
+	/**
+	 * @return the list of {@link RemoteResource}, computed from this object's
+	 *         {@link Resources}.
+	 */
+	protected List<RemoteResource> getRemoteResourcesList() {
+		return _resourceMatcherList;
+	}
+
+	private List<RemoteResource> setRemoteResourcesList(List<RemoteResource> aft) {
+		if (aft == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ RemoteResource.class.getCanonicalName() + ">.");
+		}
+		List<RemoteResource> previous = getRemoteResourcesList();
+		_resourceMatcherList = aft;
 		return previous;
 	}
 

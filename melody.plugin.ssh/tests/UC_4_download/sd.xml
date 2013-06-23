@@ -16,7 +16,10 @@
 				remote-basedir="/tmp/melody/scp/UC_0"
 				local-basedir="./download/§[IP]§"
 				dir-modifiers="770"
-				link-option="COPY_UNSAFE_LINKS" />
+				link-option="COPY_UNSAFE_LINKS" >
+				<exclude match="**/content3.*"/>
+				<include match="**/content2.*" template="1"/>
+			</resources>
 		</download>
 
 		<echo message="Files successfully recevied from 'IP:§[IP]§'."/>

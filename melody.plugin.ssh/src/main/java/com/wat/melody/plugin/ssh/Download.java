@@ -11,6 +11,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.types.ResourceMatcher;
+import com.wat.melody.common.ssh.types.Resources;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -38,12 +39,12 @@ public class Download extends AbstractSshManagedOperation {
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<ResourceMatcher> _resourceMatcherList;
+	private List<Resources> _resourcesList;
 	private int _maxPar;
 
 	public Download() {
 		super();
-		setResourceMatcherList(new ArrayList<ResourceMatcher>());
+		setResourcesList(new ArrayList<Resources>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -55,8 +56,21 @@ public class Download extends AbstractSshManagedOperation {
 	public void validate() throws SshException {
 		super.validate();
 
-		for (ResourceMatcher rm : getResourceMatcherList()) {
-			validateResourceElement(rm, RESOURCES_NE);
+		for (Resources resources : getResourcesList()) {
+			// validate each inner include/exclude
+			validateResourceElementLsit(resources.getIncludes(),
+					Resources.INCLUDE_NE);
+			validateResourceElementLsit(resources.getExcludes(),
+					Resources.EXCLUDE_NE);
+			// validate itself
+			validateResourceElement(resources, RESOURCES_NE);
+		}
+	}
+
+	private void validateResourceElementLsit(
+			List<ResourceMatcher> aResourceMatcher, String which) {
+		for (ResourceMatcher r : aResourceMatcher) {
+			validateResourceElement(r, which);
 		}
 	}
 
@@ -72,7 +86,7 @@ public class Download extends AbstractSshManagedOperation {
 		ISshSession session = null;
 		try {
 			session = openSession();
-			session.download(getResourceMatcherList(), getMaxPar());
+			session.download(getResourcesList(), getMaxPar());
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {
@@ -82,25 +96,24 @@ public class Download extends AbstractSshManagedOperation {
 		}
 	}
 
-	public List<ResourceMatcher> getResourceMatcherList() {
-		return _resourceMatcherList;
+	public List<Resources> getResourcesList() {
+		return _resourcesList;
 	}
 
-	public List<ResourceMatcher> setResourceMatcherList(
-			List<ResourceMatcher> resources) {
+	public List<Resources> setResourcesList(List<Resources> resources) {
 		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourceMatcher.class.getCanonicalName() + ">.");
+					+ Resources.class.getCanonicalName() + ">.");
 		}
-		List<ResourceMatcher> previous = getResourceMatcherList();
-		_resourceMatcherList = resources;
+		List<Resources> previous = getResourcesList();
+		_resourcesList = resources;
 		return previous;
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResources(ResourceMatcher resourceMatcher) {
-		getResourceMatcherList().add(resourceMatcher);
+	public void addResources(Resources resources) {
+		getResourcesList().add(resources);
 	}
 
 	public int getMaxPar() {

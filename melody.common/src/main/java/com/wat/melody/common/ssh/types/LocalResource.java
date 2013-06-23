@@ -8,61 +8,61 @@ import java.nio.file.Paths;
 
 /**
  * <p>
- * A {@link SimpleResource} describe a single file or directory which was found
+ * A {@link LocalResource} describe a single file or directory which was found
  * with {@link ResourceMatcher#findResources()}.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class SimpleResource {
+public class LocalResource {
 
 	private Path _path;
-	private ResourceMatcher _matcher;
+	private ResourceMatcher _resourceMatcher;
 
 	/**
 	 * @param path
-	 *            is the absolute path of a file or directory.
+	 *            is the path of a file or directory.
 	 * @param matcher
 	 *            is the {@link ResourceMatcher} which was used to find this
 	 *            file or directory.
 	 */
-	public SimpleResource(Path path, ResourceMatcher matcher) {
+	public LocalResource(Path path, ResourceMatcher matcher) {
 		super();
 		setPath(path);
-		setMatcher(matcher);
+		setResourceMatcher(matcher);
 	}
 
 	public File getLocalBaseDir() {
-		return getMatcher().getLocalBaseDir();
+		return getResourceMatcher().getLocalBaseDir();
 	}
 
 	public String getRemoteBaseDir() {
-		return getMatcher().getRemoteBaseDir();
+		return getResourceMatcher().getRemoteBaseDir();
 	}
 
 	public Modifiers getFileModifiers() {
-		return getMatcher().getFileModifiers();
+		return getResourceMatcher().getFileModifiers();
 	}
 
 	public Modifiers getDirModifiers() {
-		return getMatcher().getDirModifiers();
+		return getResourceMatcher().getDirModifiers();
 	}
 
 	public LinkOption getLinkOption() {
-		return getMatcher().getLinkOption();
+		return getResourceMatcher().getLinkOption();
 	}
 
 	public TransferBehavior getTransferBehavior() {
-		return getMatcher().getTransferBehavior();
+		return getResourceMatcher().getTransferBehavior();
 	}
 
 	public boolean getTemplate() {
-		return getMatcher().getTemplate();
+		return getResourceMatcher().getTemplate();
 	}
 
 	public GroupID getGroup() {
-		return getMatcher().getGroup();
+		return getResourceMatcher().getGroup();
 	}
 
 	public boolean exists() {
@@ -91,14 +91,14 @@ public class SimpleResource {
 	 * <pre>
 	 * Sample
 	 * 
-	 * localBaseDir = /home/user/dir1/dir2
-	 * path         = /home/user/dir1/dir2/dir3/dir4/file.txt
+	 * local-basedir = /home/user/dir1/dir2
+	 * path          = /home/user/dir1/dir2/dir3/dir4/file.txt
 	 * 
-	 * will return                         dir3/dir4/file.txt
+	 * will return     dir3/dir4/file.txt
 	 * </pre>
 	 * 
-	 * @return a {@link Path} which, when resolved from the localBaseDir, is
-	 *         equal to the absolute path of this object.
+	 * @return a {@link Path} which, when resolved from the local-basedir, is
+	 *         equal to the path of this object.
 	 */
 	protected Path getRelativePath() {
 		return Paths.get(getLocalBaseDir().getPath()).relativize(getPath());
@@ -108,16 +108,16 @@ public class SimpleResource {
 	 * <pre>
 	 * Sample
 	 * 
-	 * localBaseDir  = /home/user/dir1/dir2
-	 * path          = /home/user/dir1/dir2/dir3/dir4/file.txt
-	 * remoteBaseDir = /tmp
+	 * local-basedir  = /home/user/dir1/dir2
+	 * path           = /home/user/dir1/dir2/dir3/dir4/file.txt
+	 * remote-basedir = /tmp
 	 * 
-	 * will return     /tmp/                dir3/dir4/file.txt
+	 * will return      /tmp/dir3/dir4/file.txt
 	 * </pre>
 	 * 
 	 * <p>
 	 * <i> * The resulting path can be a relative or absolute path, depending
-	 * the if the remoteBaseDir is relative or absolute ; <BR/>
+	 * the if the remote-basedir is relative or absolute ; <BR/>
 	 * </i>
 	 * </p>
 	 * 
@@ -129,7 +129,7 @@ public class SimpleResource {
 
 	/**
 	 * @return {@code true} if this link's target doesn't points outside of the
-	 *         localBaseDir and is not an absolute path.
+	 *         local-basedir and is not an absolute path.
 	 * 
 	 * @throws IOException
 	 *             if an error occurred while retrieving the link's target.
@@ -154,14 +154,16 @@ public class SimpleResource {
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder("{ ");
-		str.append("local-basedir:");
-		str.append(getLocalBaseDir());
-		if (isFile()) {
-			str.append(", file:");
+		if (isSymbolicLink()) {
+			str.append("link:");
+		} else if (isDirectory()) {
+			str.append("directory:");
 		} else {
-			str.append(", directory:");
+			str.append("file:");
 		}
 		str.append(getRelativePath());
+		str.append(", local-basedir:");
+		str.append(getLocalBaseDir());
 		str.append(", remote-basedir:");
 		str.append(getRemoteBaseDir());
 		str.append(", file-modifiers:");
@@ -185,11 +187,10 @@ public class SimpleResource {
 		if (this == anObject) {
 			return true;
 		}
-		if (anObject instanceof SimpleResource) {
-			SimpleResource sr = (SimpleResource) anObject;
+		if (anObject instanceof LocalResource) {
+			LocalResource sr = (LocalResource) anObject;
 			return getPath().equals(sr.getPath())
-					&& getMatcher().getRemoteBaseDir().equals(
-							sr.getMatcher().getRemoteBaseDir());
+					&& getRemoteBaseDir().equals(sr.getRemoteBaseDir());
 		}
 		return false;
 	}
@@ -199,7 +200,7 @@ public class SimpleResource {
 	}
 
 	private Path setPath(Path path) {
-		if (path == null || !path.isAbsolute()) {
+		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName()
 					+ " (a file or directory path, relative or absolute).");
@@ -209,18 +210,18 @@ public class SimpleResource {
 		return previous;
 	}
 
-	public ResourceMatcher getMatcher() {
-		return _matcher;
+	public ResourceMatcher getResourceMatcher() {
+		return _resourceMatcher;
 	}
 
-	private ResourceMatcher setMatcher(ResourceMatcher rm) {
-		if (rm == null) {
+	public ResourceMatcher setResourceMatcher(ResourceMatcher resourceMatcher) {
+		if (resourceMatcher == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ResourceMatcher.class.getCanonicalName() + ".");
 		}
-		ResourceMatcher previous = getMatcher();
-		_matcher = rm;
+		ResourceMatcher previous = getResourceMatcher();
+		_resourceMatcher = resourceMatcher;
 		return previous;
 	}
 

@@ -26,8 +26,10 @@ public class Messages extends NLS {
 	public static String DownloadMsg_FINISH;
 
 	public static String DownloadEx_MKDIRS;
+	public static String DownloadEx_READLINK;
 	public static String DownloadEx_LIST;
 
+	public static String UploadEx_IO_ERROR_WHILE_FINDING;
 	public static String UploadEx_NO_TEMPLATING_HANDLER;
 	public static String UploadEx_FAILED;
 	public static String UploadEx_UNMANAGED;
