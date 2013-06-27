@@ -20,6 +20,7 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
+import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesSelector;
 import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
@@ -150,7 +151,7 @@ public class Upload extends AbstractSshManagedOperation implements
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResourcesSelector(ResourcesSelector rs) {
+	public void addResourcesSelector(LocalResourcesSelector rs) {
 		getResourcesSelectors().add(rs);
 	}
 

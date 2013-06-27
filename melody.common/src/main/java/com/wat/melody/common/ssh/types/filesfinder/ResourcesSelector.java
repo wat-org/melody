@@ -7,8 +7,6 @@ import java.util.List;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesUpdaterExcludes;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesUpdaterIncludes;
 
 /**
  * <p>
@@ -25,7 +23,7 @@ import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesUpdaterIncludes;
  * @author Guillaume Cornet
  * 
  */
-public class ResourcesSelector extends ResourceSpecification {
+public abstract class ResourcesSelector extends ResourceSpecification {
 
 	/**
 	 * Attribute, which specifies the local directory.
@@ -84,18 +82,22 @@ public class ResourcesSelector extends ResourceSpecification {
 		return str.toString();
 	}
 
+	public abstract ResourcesUpdater newResourcesUpdaterIncludes(
+			ResourcesSelector rs);
+
+	public abstract ResourcesUpdater newResourcesUpdaterExcludes(
+			ResourcesSelector rs);
+
 	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
-	public ResourceSpecification addInclude() {
-		LocalResourcesUpdaterIncludes include = new LocalResourcesUpdaterIncludes(
-				this);
+	public ResourcesUpdater createInclude() {
+		ResourcesUpdater include = newResourcesUpdaterIncludes(this);
 		getResourcesUpdaters().add(include);
 		return include;
 	}
 
 	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
-	public ResourceSpecification createExclude() {
-		LocalResourcesUpdaterExcludes exclude = new LocalResourcesUpdaterExcludes(
-				this);
+	public ResourcesUpdater createExclude() {
+		ResourcesUpdater exclude = newResourcesUpdaterExcludes(this);
 		getResourcesUpdaters().add(exclude);
 		return exclude;
 	}

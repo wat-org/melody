@@ -10,6 +10,7 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.impl.filefinder.RemoteResourcesSelector;
 import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
@@ -95,7 +96,7 @@ public class Download extends AbstractSshManagedOperation {
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResourcesSelector(ResourcesSelector rs) {
+	public void addResourcesSelector(RemoteResourcesSelector rs) {
 		getResourcesSelectors().add(rs);
 	}
 
