@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.downloader;
 
 import java.io.File;
 
@@ -9,7 +9,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.types.RemoteResource;
+import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
 
 /**
  * 

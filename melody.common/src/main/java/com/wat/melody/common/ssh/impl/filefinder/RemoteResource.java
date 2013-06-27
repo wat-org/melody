@@ -1,56 +1,82 @@
-package com.wat.melody.common.ssh.types;
+package com.wat.melody.common.ssh.impl.filefinder;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.jcraft.jsch.SftpATTRS;
+import com.wat.melody.common.ssh.types.GroupID;
+import com.wat.melody.common.ssh.types.LinkOption;
+import com.wat.melody.common.ssh.types.Modifiers;
+import com.wat.melody.common.ssh.types.TransferBehavior;
+import com.wat.melody.common.ssh.types.filesfinder.Resource;
+import com.wat.melody.common.ssh.types.filesfinder.ResourceSpecification;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
-public class RemoteResource {
+/**
+ * <p>
+ * A {@link RemoteResource} describe a single file or directory which was found
+ * with {@link RemoteResourcesFinder#findResources(ResourcesSelector)}.
+ * </p>
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
+public class RemoteResource implements Resource {
 
-	private LocalResource _simpleResource;
+	private LocalResource _localResource;
 	private SftpATTRS _remoteAttrs;
 
-	public RemoteResource(Path path, SftpATTRS remoteAttrs,
-			ResourceMatcher matcher) {
-		setSimpleResource(new LocalResource(path, matcher));
+	public RemoteResource(Path path, SftpATTRS remoteAttrs, ResourcesSelector rs) {
+		setLocalResource(new LocalResource(path, rs));
 		setRemoteAttrs(remoteAttrs);
 	}
 
+	@Override
 	public Path getPath() {
-		return getSimpleResource().getPath();
+		return getLocalResource().getPath();
+	}
+
+	@Override
+	public ResourceSpecification setResourceSpecification(
+			ResourceSpecification spec) {
+		return getLocalResource().setResourceSpecification(spec);
 	}
 
 	public File getLocalBaseDir() {
-		return getSimpleResource().getLocalBaseDir();
+		return getLocalResource().getLocalBaseDir();
 	}
 
 	public String getRemoteBaseDir() {
-		return getSimpleResource().getRemoteBaseDir();
+		return getLocalResource().getRemoteBaseDir();
+	}
+
+	public String getMatch() {
+		return getLocalResource().getMatch();
 	}
 
 	public Modifiers getFileModifiers() {
-		return getSimpleResource().getFileModifiers();
+		return getLocalResource().getFileModifiers();
 	}
 
 	public Modifiers getDirModifiers() {
-		return getSimpleResource().getDirModifiers();
+		return getLocalResource().getDirModifiers();
 	}
 
 	public LinkOption getLinkOption() {
-		return getSimpleResource().getLinkOption();
+		return getLocalResource().getLinkOption();
 	}
 
 	public TransferBehavior getTransferBehavior() {
-		return getSimpleResource().getTransferBehavior();
+		return getLocalResource().getTransferBehavior();
 	}
 
 	public boolean getTemplate() {
-		return getSimpleResource().getTemplate();
+		return getLocalResource().getTemplate();
 	}
 
 	public GroupID getGroup() {
-		return getSimpleResource().getGroup();
+		return getLocalResource().getGroup();
 	}
 
 	public boolean isDir() {
@@ -145,22 +171,18 @@ public class RemoteResource {
 		return false;
 	}
 
-	public ResourceMatcher setResourceMatcher(ResourceMatcher resourceMatcher) {
-		return getSimpleResource().setResourceMatcher(resourceMatcher);
+	private LocalResource getLocalResource() {
+		return _localResource;
 	}
 
-	private LocalResource getSimpleResource() {
-		return _simpleResource;
-	}
-
-	private LocalResource setSimpleResource(LocalResource path) {
-		if (path == null) {
+	private LocalResource setLocalResource(LocalResource localResource) {
+		if (localResource == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ LocalResource.class.getCanonicalName() + ".");
 		}
-		LocalResource previous = getSimpleResource();
-		_simpleResource = path;
+		LocalResource previous = getLocalResource();
+		_localResource = localResource;
 		return previous;
 	}
 
@@ -168,14 +190,14 @@ public class RemoteResource {
 		return _remoteAttrs;
 	}
 
-	private SftpATTRS setRemoteAttrs(SftpATTRS rm) {
-		if (rm == null) {
+	private SftpATTRS setRemoteAttrs(SftpATTRS attrs) {
+		if (attrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + SftpATTRS.class.getCanonicalName()
 					+ ".");
 		}
 		SftpATTRS previous = getRemoteAttrs();
-		_remoteAttrs = rm;
+		_remoteAttrs = attrs;
 		return previous;
 	}
 

@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.downloader;
 
 import com.wat.melody.common.ssh.exception.SshSessionException;
 

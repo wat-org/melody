@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -34,14 +34,15 @@ public interface ISshSession {
 
 	public boolean isConnected();
 
-	public int execRemoteCommand(String sCommand, boolean requiretty,
+	public int execRemoteCommand(String command, boolean requiretty,
 			OutputStream out, OutputStream err) throws SshSessionException,
 			InterruptedException;
 
-	public void upload(List<Resources> r, int maxPar, TemplatingHandler th)
-			throws SshSessionException, InterruptedException;
+	public void upload(List<ResourcesSelector> rslist, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException;
 
-	public void download(List<Resources> r, int maxPar)
+	public void download(List<ResourcesSelector> rslist, int maxPar)
 			throws SshSessionException, InterruptedException;
 
 	public IHostKey getHostKey();

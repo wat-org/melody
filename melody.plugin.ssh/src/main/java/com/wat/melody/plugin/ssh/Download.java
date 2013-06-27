@@ -10,8 +10,7 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.types.ResourceMatcher;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -39,12 +38,12 @@ public class Download extends AbstractSshManagedOperation {
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<Resources> _resourcesList;
+	private List<ResourcesSelector> _resourcesSelectors;
 	private int _maxPar;
 
 	public Download() {
 		super();
-		setResourcesList(new ArrayList<Resources>());
+		setResourcesSelectors(new ArrayList<ResourcesSelector>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -56,28 +55,11 @@ public class Download extends AbstractSshManagedOperation {
 	public void validate() throws SshException {
 		super.validate();
 
-		for (Resources resources : getResourcesList()) {
-			// validate each inner include/exclude
-			validateResourceElementLsit(resources.getIncludes(),
-					Resources.INCLUDE_NE);
-			validateResourceElementLsit(resources.getExcludes(),
-					Resources.EXCLUDE_NE);
-			// validate itself
-			validateResourceElement(resources, RESOURCES_NE);
-		}
-	}
-
-	private void validateResourceElementLsit(
-			List<ResourceMatcher> aResourceMatcher, String which) {
-		for (ResourceMatcher r : aResourceMatcher) {
-			validateResourceElement(r, which);
-		}
-	}
-
-	private void validateResourceElement(ResourceMatcher r, String which) {
-		if (r.getLocalBaseDir() == null) {
-			r.setLocalBaseDir(Melody.getContext().getProcessorManager()
-					.getSequenceDescriptor().getBaseDir());
+		for (ResourcesSelector r : getResourcesSelectors()) {
+			if (r.getLocalBaseDir() == null) {
+				r.setLocalBaseDir(Melody.getContext().getProcessorManager()
+						.getSequenceDescriptor().getBaseDir());
+			}
 		}
 	}
 
@@ -86,7 +68,7 @@ public class Download extends AbstractSshManagedOperation {
 		ISshSession session = null;
 		try {
 			session = openSession();
-			session.download(getResourcesList(), getMaxPar());
+			session.download(getResourcesSelectors(), getMaxPar());
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {
@@ -96,24 +78,25 @@ public class Download extends AbstractSshManagedOperation {
 		}
 	}
 
-	public List<Resources> getResourcesList() {
-		return _resourcesList;
+	public List<ResourcesSelector> getResourcesSelectors() {
+		return _resourcesSelectors;
 	}
 
-	public List<Resources> setResourcesList(List<Resources> resources) {
-		if (resources == null) {
+	public List<ResourcesSelector> setResourcesSelectors(
+			List<ResourcesSelector> rslist) {
+		if (rslist == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ Resources.class.getCanonicalName() + ">.");
+					+ ResourcesSelector.class.getCanonicalName() + ">.");
 		}
-		List<Resources> previous = getResourcesList();
-		_resourcesList = resources;
+		List<ResourcesSelector> previous = getResourcesSelectors();
+		_resourcesSelectors = rslist;
 		return previous;
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResources(Resources resources) {
-		getResourcesList().add(resources);
+	public void addResourcesSelector(ResourcesSelector rs) {
+		getResourcesSelectors().add(rs);
 	}
 
 	public int getMaxPar() {
@@ -121,13 +104,13 @@ public class Download extends AbstractSshManagedOperation {
 	}
 
 	@Attribute(name = MAXPAR_ATTR)
-	public int setMaxPar(int iMaxPar) throws SshException {
-		if (iMaxPar < 1 || iMaxPar > 10) {
+	public int setMaxPar(int maxPar) throws SshException {
+		if (maxPar < 1 || maxPar > 10) {
 			throw new SshException(Msg.bind(
-					Messages.DownloadEx_INVALID_MAXPAR_ATTR, iMaxPar));
+					Messages.DownloadEx_INVALID_MAXPAR_ATTR, maxPar));
 		}
 		int previous = getMaxPar();
-		_maxPar = iMaxPar;
+		_maxPar = maxPar;
 		return previous;
 	}
 

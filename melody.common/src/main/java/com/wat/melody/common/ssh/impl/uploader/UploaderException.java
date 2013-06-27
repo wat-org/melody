@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.uploader;
 
 import com.wat.melody.common.ssh.exception.SshSessionException;
 

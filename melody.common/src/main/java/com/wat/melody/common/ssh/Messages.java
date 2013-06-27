@@ -35,6 +35,9 @@ public class Messages extends NLS {
 	public static String UploadEx_UNMANAGED;
 	public static String UploadEx_MANAGED;
 	public static String UploadEx_INTERRUPTED;
+	public static String UploadEx_ENSURE_LINK_FAILED;
+	public static String UploadEx_ENSURE_FILE_FAILED;
+	public static String UploadEx_ENSURE_DIR_FAILED;
 	public static String UploadMsg_GRACEFUL_SHUTDOWN;
 	public static String UploadMsg_START;
 	public static String UploadMsg_BEGIN;
@@ -42,15 +45,21 @@ public class Messages extends NLS {
 	public static String UploadMsg_FINISH;
 	public static String UploadMsg_NOTFOUND;
 	public static String UploadMsg_COPY_UNSAFE_IMPOSSIBLE;
-	public static String UploadMsg_DONT_UPLOAD_CAUSE_LOCAL_OLDER;
+	public static String UploadMsg_DONT_UPLOAD_CAUSE_DIR_ALREADY_EXISTS;
+	public static String UploadMsg_DONT_UPLOAD_CAUSE_LINK_ALREADY_EXISTS;
+	public static String UploadMsg_DONT_UPLOAD_CAUSE_FILE_ALREADY_EXISTS;
 
-	public static String UploadEx_LSTAT;
-	public static String UploadEx_LN;
-	public static String UploadEx_MKDIR;
-	public static String UploadEx_MKDIRS;
-	public static String UploadEx_CHMOD;
-	public static String UploadEx_CHGRP;
-	public static String UploadEx_PUT;
+	public static String SftpEx_LSTAT;
+	public static String SftpEx_STAT;
+	public static String SftpEx_LN;
+	public static String SftpEx_MKDIR;
+	public static String SftpEx_CHMOD;
+	public static String SftpEx_CHGRP;
+	public static String SfptEx_PUT;
+	public static String SftpEx_RMDIR;
+	public static String SftpEx_RM;
+	public static String SftpEx_READLINK;
+	public static String SftpEx_LS;
 
 	public static String ExecEx_INTERRUPTED;
 	public static String ExecMsg_GRACEFULL_SHUTDOWN;

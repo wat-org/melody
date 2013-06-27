@@ -1,7 +1,6 @@
 package com.wat.melody.common.bool;
 
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
-import com.wat.melody.common.endpoint.exception.IllegalContextRootException;
 import com.wat.melody.common.messages.Msg;
 
 /**
@@ -26,7 +25,7 @@ public abstract class Bool {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
-	 * @throws IllegalContextRootException
+	 * @throws IllegalBooleanException
 	 *             if the given <tt>String</tt> neither matches the pattern
 	 *             {@link #TRUE_PATTERN} nor the pattern {@link #FALSE_PATTERN}.
 	 */

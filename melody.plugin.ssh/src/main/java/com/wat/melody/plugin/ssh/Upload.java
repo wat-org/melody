@@ -20,8 +20,7 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
-import com.wat.melody.common.ssh.types.ResourceMatcher;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
@@ -51,14 +50,14 @@ public class Upload extends AbstractSshManagedOperation implements
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<Resources> _resourcesList;
+	private List<ResourcesSelector> _resourcesSelectors;
 	private int _maxPar;
 
 	private ITaskContext _taskContext;
 
 	public Upload() {
 		super();
-		setResourcesList(new ArrayList<Resources>());
+		setResourcesSelectors(new ArrayList<ResourcesSelector>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -71,43 +70,19 @@ public class Upload extends AbstractSshManagedOperation implements
 	public void validate() throws SshException {
 		super.validate();
 
-		for (Resources resources : getResourcesList()) {
-			try {
-				// validate each inner include/exclude
-				validateResourceElementLsit(resources.getIncludes(),
-						Resources.INCLUDE_NE);
-				validateResourceElementLsit(resources.getExcludes(),
-						Resources.EXCLUDE_NE);
-				// validate itself
-				validateResourceElement(resources, RESOURCES_NE);
-			} catch (SshException Ex) {
-				throw new SshException(Msg.bind(Messages.UploadEx_INVALID_NE,
-						RESOURCES_NE), Ex);
+		for (ResourcesSelector r : getResourcesSelectors()) {
+			if (r.getLocalBaseDir() == null) {
+				r.setLocalBaseDir(Melody.getContext().getProcessorManager()
+						.getSequenceDescriptor().getBaseDir());
 			}
-		}
-	}
-
-	private void validateResourceElementLsit(
-			List<ResourceMatcher> aResourceMatcher, String which)
-			throws SshException {
-		for (ResourceMatcher r : aResourceMatcher) {
-			validateResourceElement(r, which);
-		}
-	}
-
-	private void validateResourceElement(ResourceMatcher r, String which)
-			throws SshException {
-		if (r.getLocalBaseDir() == null) {
-			r.setLocalBaseDir(Melody.getContext().getProcessorManager()
-					.getSequenceDescriptor().getBaseDir());
-		}
-		try {
-			FS.validateDirExists(r.getLocalBaseDir().toString());
-		} catch (IllegalDirectoryException Ex) {
-			throw new SshException(Msg.bind(
-					Messages.UploadEx_INVALID_LOCALBASEDIR_ATTR,
-					r.getLocalBaseDir(), ResourceMatcher.LOCAL_BASEDIR_ATTR),
-					Ex);
+			try {
+				FS.validateDirExists(r.getLocalBaseDir().toString());
+			} catch (IllegalDirectoryException Ex) {
+				throw new SshException(Msg.bind(
+						Messages.UploadEx_INVALID_LOCALBASEDIR_ATTR,
+						r.getLocalBaseDir(),
+						ResourcesSelector.LOCAL_BASEDIR_ATTR), Ex);
+			}
 		}
 	}
 
@@ -116,7 +91,7 @@ public class Upload extends AbstractSshManagedOperation implements
 		ISshSession session = null;
 		try {
 			session = openSession();
-			session.upload(getResourcesList(), getMaxPar(), this);
+			session.upload(getResourcesSelectors(), getMaxPar(), this);
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {
@@ -158,24 +133,25 @@ public class Upload extends AbstractSshManagedOperation implements
 		return template;
 	}
 
-	public List<Resources> getResourcesList() {
-		return _resourcesList;
+	public List<ResourcesSelector> getResourcesSelectors() {
+		return _resourcesSelectors;
 	}
 
-	public List<Resources> setResourcesList(List<Resources> resources) {
-		if (resources == null) {
+	public List<ResourcesSelector> setResourcesSelectors(
+			List<ResourcesSelector> rslist) {
+		if (rslist == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ Resources.class.getCanonicalName() + ">.");
+					+ ResourcesSelector.class.getCanonicalName() + ">.");
 		}
-		List<Resources> previous = getResourcesList();
-		_resourcesList = resources;
+		List<ResourcesSelector> previous = getResourcesSelectors();
+		_resourcesSelectors = rslist;
 		return previous;
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResources(Resources resources) {
-		getResourcesList().add(resources);
+	public void addResourcesSelector(ResourcesSelector rs) {
+		getResourcesSelectors().add(rs);
 	}
 
 	public int getMaxPar() {
@@ -183,13 +159,13 @@ public class Upload extends AbstractSshManagedOperation implements
 	}
 
 	@Attribute(name = MAXPAR_ATTR)
-	public int setMaxPar(int iMaxPar) throws SshException {
-		if (iMaxPar < 1 || iMaxPar > 10) {
+	public int setMaxPar(int maxPar) throws SshException {
+		if (maxPar < 1 || maxPar > 10) {
 			throw new SshException(Msg.bind(
-					Messages.UploadEx_INVALID_MAXPAR_ATTR, iMaxPar));
+					Messages.UploadEx_INVALID_MAXPAR_ATTR, maxPar));
 		}
 		int previous = getMaxPar();
-		_maxPar = iMaxPar;
+		_maxPar = maxPar;
 		return previous;
 	}
 

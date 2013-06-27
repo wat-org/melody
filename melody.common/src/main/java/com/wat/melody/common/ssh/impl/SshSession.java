@@ -27,7 +27,9 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.impl.downloader.DownloaderMultiThread;
+import com.wat.melody.common.ssh.impl.uploader.UploaderMultiThread;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -141,23 +143,24 @@ public class SshSession implements ISshSession {
 	}
 
 	@Override
-	public int execRemoteCommand(String sCommand, boolean requiretty,
+	public int execRemoteCommand(String command, boolean requiretty,
 			OutputStream outStream, OutputStream errStream)
 			throws SshSessionException, InterruptedException {
-		return new RemoteExec(this, sCommand, requiretty, outStream, errStream)
+		return new RemoteExec(this, command, requiretty, outStream, errStream)
 				.exec();
 	}
 
 	@Override
-	public void upload(List<Resources> r, int maxPar, TemplatingHandler th)
-			throws SshSessionException, InterruptedException {
-		new UploaderMultiThread(this, r, maxPar, th).upload();
+	public void upload(List<ResourcesSelector> rslist, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException {
+		new UploaderMultiThread(this, rslist, maxPar, th).upload();
 	}
 
 	@Override
-	public void download(List<Resources> r, int maxPar)
+	public void download(List<ResourcesSelector> rslist, int maxPar)
 			throws SshSessionException, InterruptedException {
-		new DownloaderMultiThread(this, r, maxPar).download();
+		new DownloaderMultiThread(this, rslist, maxPar).download();
 	}
 
 	@Override
@@ -323,7 +326,7 @@ public class SshSession implements ISshSession {
 		return channel;
 	}
 
-	protected ChannelSftp openSftpChannel() {
+	public ChannelSftp openSftpChannel() {
 		if (!isConnected()) {
 			throw new IllegalStateException("session: Not accepted. "
 					+ "Session must be connected.");

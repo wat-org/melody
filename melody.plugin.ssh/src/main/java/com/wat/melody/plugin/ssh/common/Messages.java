@@ -27,7 +27,6 @@ public class Messages extends NLS {
 
 	public static String UploadEx_INVALID_MAXPAR_ATTR;
 	public static String UploadEx_INVALID_LOCALBASEDIR_ATTR;
-	public static String UploadEx_INVALID_NE;
 
 	public static String DownloadEx_INVALID_MAXPAR_ATTR;
 

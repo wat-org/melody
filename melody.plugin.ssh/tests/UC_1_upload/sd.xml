@@ -14,12 +14,12 @@
 			<resources
 				match="**"
 				dir-modifiers="770"
-				remote-basedir="/tmp/melody/scp/UC_0"
+				remote-basedir="/tmp/melody/scp/UC_1_upload"
 				link-option="COPY_UNSAFE_LINKS" />
 			<resources
-				match="./templates/content2.tmpl"
+				match="templates/content2.tmpl"
 				dir-modifiers="770"
-				remote-basedir="/tmp/melody/scp/UC_0"
+				remote-basedir="/tmp/melody/scp/UC_1_upload"
 				link-option="COPY_UNSAFE_LINKS"
 				template="y" />
 		</upload>

@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.downloader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +11,17 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.types.RemoteResource;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
+import com.wat.melody.common.ssh.impl.filefinder.RemoteResourcesFinder;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-class DownloaderMultiThread {
+public class DownloaderMultiThread {
 
 	private static Log log = LogFactory.getLog(DownloaderMultiThread.class);
 
@@ -31,34 +33,34 @@ class DownloaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<Resources> _resourcesList;
+	private List<ResourcesSelector> _resourcesSelectors;
 	private int _maxPar;
-	private List<RemoteResource> _resourceMatcherList;
+	private List<RemoteResource> _remoteResources;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
-	private List<DownloaderThread> _threadsList;
-	private ConsolidatedException _exceptionsSet;
+	private List<DownloaderThread> _threads;
+	private ConsolidatedException _exceptions;
 
-	protected DownloaderMultiThread(SshSession session, List<Resources> r,
+	public DownloaderMultiThread(SshSession session, List<ResourcesSelector> r,
 			int maxPar) {
 		setSession(session);
-		setResourcesList(r);
+		setResourcesSelectors(r);
 		setMaxPar(maxPar);
-		setRemoteResourcesList(new ArrayList<RemoteResource>());
+		setRemoteResources(new ArrayList<RemoteResource>());
 
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setThreadsList(new ArrayList<DownloaderThread>());
-		setExceptionsSet(new ConsolidatedException());
+		setThreads(new ArrayList<DownloaderThread>());
+		setExceptions(new ConsolidatedException());
 	}
 
-	protected void download() throws DownloaderException, InterruptedException {
-		if (getResourcesList().size() == 0) {
+	public void download() throws DownloaderException, InterruptedException {
+		if (getResourcesSelectors().size() == 0) {
 			return;
 		}
 		computeRemoteResources();
-		if (getRemoteResourcesList().size() == 0) {
+		if (getRemoteResources().size() == 0) {
 			return;
 		}
 		try {
@@ -73,7 +75,7 @@ class DownloaderMultiThread {
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 				markState(CRITICAL);
 			} finally {
 				// If an error occurred while starting thread, some thread may
@@ -94,16 +96,19 @@ class DownloaderMultiThread {
 		ChannelSftp chan = null;
 		try {
 			chan = getSession().openSftpChannel();
-			for (Resources resources : getResourcesList()) {
-				List<RemoteResource> ar;
-				ar = DownloaderHelper.findResources(chan, resources);
-				getRemoteResourcesList().removeAll(ar); // remove duplicated
-				getRemoteResourcesList().addAll(ar);
+			for (ResourcesSelector resources : getResourcesSelectors()) {
+				List<RemoteResource> list;
+				list = RemoteResourcesFinder.findResources(chan, resources);
+				getRemoteResources().removeAll(list); // remove duplicated
+				getRemoteResources().addAll(list);
 			}
 		} finally {
 			if (chan != null) {
 				chan.disconnect();
 			}
+		}
+		for (RemoteResource r : getRemoteResources()) {
+			System.out.println(r);
 		}
 	}
 
@@ -114,28 +119,28 @@ class DownloaderMultiThread {
 			DownloaderException e = new DownloaderException(Msg.bind(
 					Messages.DownloadEx_FAILED, r), Ex);
 			markState(DownloaderMultiThread.FAILED);
-			getExceptionsSet().addCause(e);
+			getExceptions().addCause(e);
 		}
 	}
 
 	private void initializeDownloadThreads() {
 		int max = getMaxPar();
-		if (getRemoteResourcesList().size() < max) {
-			max = getRemoteResourcesList().size();
+		if (getRemoteResources().size() < max) {
+			max = getRemoteResources().size();
 		}
 		for (int i = 0; i < max; i++) {
-			getThreadsList().add(new DownloaderThread(this, i + 1));
+			getThreads().add(new DownloaderThread(this, i + 1));
 		}
 	}
 
 	private void startDownloadThreads() throws InterruptedException {
-		int threadToLaunchID = getThreadsList().size();
+		int threadToLaunchID = getThreads().size();
 		List<DownloaderThread> runningThreads = new ArrayList<DownloaderThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
-				DownloaderThread ft = getThreadsList().get(--threadToLaunchID);
+				DownloaderThread ft = getThreads().get(--threadToLaunchID);
 				runningThreads.add(ft);
 				ft.startProcessing();
 			}
@@ -155,7 +160,7 @@ class DownloaderMultiThread {
 		int nbTry = 2;
 		while (nbTry-- > 0) {
 			try {
-				for (DownloaderThread ft : getThreadsList())
+				for (DownloaderThread ft : getThreads())
 					ft.waitTillProcessingIsDone();
 				return;
 			} catch (InterruptedException Ex) {
@@ -164,32 +169,32 @@ class DownloaderMultiThread {
 					log.info(Messages.DownloadMsg_GRACEFUL_SHUTDOWN);
 				}
 				markState(INTERRUPTED);
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
 				+ "for " + DownloaderMultiThread.class.getCanonicalName()
-				+ " to finish.", getExceptionsSet());
+				+ " to finish.", getExceptions());
 	}
 
 	private void quit() throws DownloaderException, InterruptedException {
-		for (DownloaderThread ft : getThreadsList()) {
+		for (DownloaderThread ft : getThreads()) {
 			markState(ft.getFinalState());
 			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
-				getExceptionsSet().addCause(ft.getFinalError());
+				getExceptions().addCause(ft.getFinalError());
 			}
 		}
 
 		if (isCritical()) {
 			throw new DownloaderException(Msg.bind(
 					Messages.DownloadEx_UNMANAGED, getSession()
-							.getConnectionDatas()), getExceptionsSet());
+							.getConnectionDatas()), getExceptions());
 		} else if (isFailed()) {
 			throw new DownloaderException(Msg.bind(Messages.DownloadEx_MANAGED,
-					getSession().getConnectionDatas()), getExceptionsSet());
+					getSession().getConnectionDatas()), getExceptions());
 		} else if (isInterrupted()) {
 			throw new MelodyInterruptedException(
-					Messages.DownloadEx_INTERRUPTED, getExceptionsSet());
+					Messages.DownloadEx_INTERRUPTED, getExceptions());
 		}
 	}
 
@@ -224,18 +229,19 @@ class DownloaderMultiThread {
 		return previous;
 	}
 
-	protected List<Resources> getResourcesList() {
-		return _resourcesList;
+	protected List<ResourcesSelector> getResourcesSelectors() {
+		return _resourcesSelectors;
 	}
 
-	private List<Resources> setResourcesList(List<Resources> resources) {
+	private List<ResourcesSelector> setResourcesSelectors(
+			List<ResourcesSelector> resources) {
 		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ Resources.class.getCanonicalName() + ">.");
+					+ ResourcesSelector.class.getCanonicalName() + ">.");
 		}
-		List<Resources> previous = getResourcesList();
-		_resourcesList = resources;
+		List<ResourcesSelector> previous = getResourcesSelectors();
+		_resourcesSelectors = resources;
 		return previous;
 	}
 
@@ -244,40 +250,40 @@ class DownloaderMultiThread {
 	}
 
 	/**
-	 * @param iMaxPar
+	 * @param maxPar
 	 *            is the maximum number of {@link DownloaderThread} this object
 	 *            can run simultaneously.
 	 * 
 	 * @throws ForeachException
 	 *             if the given value is not >= 1 and < 10.
 	 */
-	private int setMaxPar(int iMaxPar) {
-		if (iMaxPar < 1) {
-			iMaxPar = 1; // security
-		} else if (iMaxPar > 10) {
-			iMaxPar = 10; // maximum number of opened JSch channel
+	private int setMaxPar(int maxPar) {
+		if (maxPar < 1) {
+			maxPar = 1; // security
+		} else if (maxPar > 10) {
+			maxPar = 10; // maximum number of opened JSch channel
 		}
 		int previous = getMaxPar();
-		_maxPar = iMaxPar;
+		_maxPar = maxPar;
 		return previous;
 	}
 
 	/**
 	 * @return the list of {@link RemoteResource}, computed from this object's
-	 *         {@link Resources}.
+	 *         {@link ResourcesSelector}.
 	 */
-	protected List<RemoteResource> getRemoteResourcesList() {
-		return _resourceMatcherList;
+	protected List<RemoteResource> getRemoteResources() {
+		return _remoteResources;
 	}
 
-	private List<RemoteResource> setRemoteResourcesList(List<RemoteResource> aft) {
+	private List<RemoteResource> setRemoteResources(List<RemoteResource> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ RemoteResource.class.getCanonicalName() + ">.");
 		}
-		List<RemoteResource> previous = getRemoteResourcesList();
-		_resourceMatcherList = aft;
+		List<RemoteResource> previous = getRemoteResources();
+		_remoteResources = aft;
 		return previous;
 	}
 
@@ -299,36 +305,36 @@ class DownloaderMultiThread {
 	/**
 	 * @return all the {@link DownloaderThread} managed by this object.
 	 */
-	private List<DownloaderThread> getThreadsList() {
-		return _threadsList;
+	private List<DownloaderThread> getThreads() {
+		return _threads;
 	}
 
-	private List<DownloaderThread> setThreadsList(List<DownloaderThread> aft) {
+	private List<DownloaderThread> setThreads(List<DownloaderThread> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ DownloaderThread.class.getCanonicalName() + ">.");
 		}
-		List<DownloaderThread> previous = getThreadsList();
-		_threadsList = aft;
+		List<DownloaderThread> previous = getThreads();
+		_threads = aft;
 		return previous;
 	}
 
 	/**
 	 * @return the exceptions that append during the download.
 	 */
-	private ConsolidatedException getExceptionsSet() {
-		return _exceptionsSet;
+	private ConsolidatedException getExceptions() {
+		return _exceptions;
 	}
 
-	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
+	private ConsolidatedException setExceptions(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		ConsolidatedException previous = getExceptionsSet();
-		_exceptionsSet = cex;
+		ConsolidatedException previous = getExceptions();
+		_exceptions = cex;
 		return previous;
 	}
 

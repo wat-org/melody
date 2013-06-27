@@ -859,7 +859,6 @@ public class ProcessorManagerLoader {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, WORKING_FOLDER_PATH), Ex);
 		}
-
 	}
 
 	private void loadMaxPar(PropertySet oProps)

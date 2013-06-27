@@ -1,24 +1,24 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.uploader;
 
 import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ssh.types.RemoteResource;
+import com.wat.melody.common.ssh.impl.filefinder.LocalResource;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-class DownloaderThread implements Runnable {
+class UploaderThread implements Runnable {
 
-	private DownloaderMultiThread _download;
+	private UploaderMultiThread _upload;
 	private Thread _thread;
 	private Throwable _finalError;
 
-	protected DownloaderThread(DownloaderMultiThread p, int index) {
-		setDownloader(p);
+	protected UploaderThread(UploaderMultiThread p, int index) {
+		setUploader(p);
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
 		setFinalError(null);
@@ -26,17 +26,17 @@ class DownloaderThread implements Runnable {
 
 	protected short getFinalState() {
 		if (getThread().getState() == State.NEW) {
-			return DownloaderMultiThread.NEW;
+			return UploaderMultiThread.NEW;
 		} else if (getThread().getState() != State.TERMINATED) {
-			return DownloaderMultiThread.RUNNING;
+			return UploaderMultiThread.RUNNING;
 		} else if (getFinalError() == null) {
-			return DownloaderMultiThread.SUCCEED;
+			return UploaderMultiThread.SUCCEED;
 		} else if (getFinalError() instanceof MelodyException) {
-			return DownloaderMultiThread.FAILED;
+			return UploaderMultiThread.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
-			return DownloaderMultiThread.INTERRUPTED;
+			return UploaderMultiThread.INTERRUPTED;
 		} else {
-			return DownloaderMultiThread.CRITICAL;
+			return UploaderMultiThread.CRITICAL;
 		}
 	}
 
@@ -62,16 +62,16 @@ class DownloaderThread implements Runnable {
 	public void run() {
 		ChannelSftp channel = null;
 		try {
-			channel = getDownloader().getSession().openSftpChannel();
+			channel = getUploader().getSession().openSftpChannel();
 			while (true) {
-				RemoteResource r = null;
-				synchronized (getDownloader().getRemoteResourcesList()) {
-					if (getDownloader().getRemoteResourcesList().size() == 0) {
+				LocalResource r = null;
+				synchronized (getUploader().getLocalResources()) {
+					if (getUploader().getLocalResources().size() == 0) {
 						return;
 					}
-					r = getDownloader().getRemoteResourcesList().remove(0);
+					r = getUploader().getLocalResources().remove(0);
 				}
-				getDownloader().download(channel, r);
+				getUploader().upload(channel, r);
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);
@@ -82,17 +82,17 @@ class DownloaderThread implements Runnable {
 		}
 	}
 
-	private DownloaderMultiThread getDownloader() {
-		return _download;
+	private UploaderMultiThread getUploader() {
+		return _upload;
 	}
 
-	private void setDownloader(DownloaderMultiThread p) {
+	private void setUploader(UploaderMultiThread p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ DownloaderMultiThread.class.getCanonicalName() + ".");
+					+ UploaderMultiThread.class.getCanonicalName() + ".");
 		}
-		_download = p;
+		_upload = p;
 	}
 
 	private Thread getThread() {

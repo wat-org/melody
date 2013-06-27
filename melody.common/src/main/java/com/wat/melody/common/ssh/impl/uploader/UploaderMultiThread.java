@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl;
+package com.wat.melody.common.ssh.impl.uploader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,15 +13,17 @@ import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.types.LocalResource;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.ssh.impl.filefinder.LocalResource;
+import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesFinder;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-class UploaderMultiThread {
+public class UploaderMultiThread {
 
 	private static Log log = LogFactory.getLog(UploaderMultiThread.class);
 
@@ -33,37 +35,37 @@ class UploaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<Resources> _resourcesList;
+	private List<ResourcesSelector> _resourcesList;
 	private int _maxPar;
 	private TemplatingHandler _templatingHandler;
-	private List<LocalResource> _localResourcesList;
+	private List<LocalResource> _localResources;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
-	private List<UploaderThread> _threadsList;
-	private ConsolidatedException _exceptionsSet;
+	private List<UploaderThread> _threads;
+	private ConsolidatedException _exceptions;
 
-	protected UploaderMultiThread(SshSession session, List<Resources> r,
+	public UploaderMultiThread(SshSession session, List<ResourcesSelector> r,
 			int maxPar, TemplatingHandler th) {
 		setSession(session);
 		setResourcesList(r);
 		setMaxPar(maxPar);
 		setTemplatingHandler(th);
-		setLocalResourcesList(new ArrayList<LocalResource>());
+		setLocalResources(new ArrayList<LocalResource>());
 
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setThreadsList(new ArrayList<UploaderThread>());
-		setExceptionsSet(new ConsolidatedException());
+		setThreads(new ArrayList<UploaderThread>());
+		setExceptions(new ConsolidatedException());
 	}
 
-	protected void upload() throws UploaderException, InterruptedException {
+	public void upload() throws UploaderException, InterruptedException {
 		// compute resources to upload
 		if (getResourcesList().size() == 0) {
 			return;
 		}
 		computeLocalResources();
-		if (getLocalResourcesList().size() == 0) {
+		if (getLocalResources().size() == 0) {
 			return;
 		}
 		// do upload
@@ -79,7 +81,7 @@ class UploaderMultiThread {
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 				markState(CRITICAL);
 			} finally {
 				// If an error occurred while starting thread, some thread may
@@ -97,17 +99,18 @@ class UploaderMultiThread {
 	}
 
 	private void computeLocalResources() throws UploaderException {
-		for (Resources resources : getResourcesList()) {
+		for (ResourcesSelector resources : getResourcesList()) {
 			try { // Add all found LocalResource to the global list
-				List<LocalResource> ar = resources.findResources();
-				getLocalResourcesList().removeAll(ar); // remove duplicated
-				getLocalResourcesList().addAll(ar);
+				List<LocalResource> list;
+				list = LocalResourcesFinder.findResources(resources);
+				getLocalResources().removeAll(list); // remove duplicated
+				getLocalResources().addAll(list);
 			} catch (IOException Ex) {
 				throw new UploaderException(
 						Messages.UploadEx_IO_ERROR_WHILE_FINDING, Ex);
 			}
 		}
-		for (LocalResource r : getLocalResourcesList()) {
+		for (LocalResource r : getLocalResources()) {
 			System.out.println(r);
 		}
 	}
@@ -119,28 +122,28 @@ class UploaderMultiThread {
 			UploaderException e = new UploaderException(Msg.bind(
 					Messages.UploadEx_FAILED, r), Ex);
 			markState(UploaderMultiThread.FAILED);
-			getExceptionsSet().addCause(e);
+			getExceptions().addCause(e);
 		}
 	}
 
 	private void initializeUploadThreads() {
 		int max = getMaxPar();
-		if (getLocalResourcesList().size() < max) {
-			max = getLocalResourcesList().size();
+		if (getLocalResources().size() < max) {
+			max = getLocalResources().size();
 		}
 		for (int i = 0; i < max; i++) {
-			getThreadsList().add(new UploaderThread(this, i + 1));
+			getThreads().add(new UploaderThread(this, i + 1));
 		}
 	}
 
 	private void startUploadThreads() throws InterruptedException {
-		int threadToLaunchID = getThreadsList().size();
+		int threadToLaunchID = getThreads().size();
 		List<UploaderThread> runningThreads = new ArrayList<UploaderThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
-				UploaderThread ft = getThreadsList().get(--threadToLaunchID);
+				UploaderThread ft = getThreads().get(--threadToLaunchID);
 				runningThreads.add(ft);
 				ft.startProcessing();
 			}
@@ -160,7 +163,7 @@ class UploaderMultiThread {
 		int nbTry = 2;
 		while (nbTry-- > 0) {
 			try {
-				for (UploaderThread ft : getThreadsList())
+				for (UploaderThread ft : getThreads())
 					ft.waitTillProcessingIsDone();
 				return;
 			} catch (InterruptedException Ex) {
@@ -169,31 +172,31 @@ class UploaderMultiThread {
 					log.info(Messages.UploadMsg_GRACEFUL_SHUTDOWN);
 				}
 				markState(INTERRUPTED);
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
 				+ "for " + UploaderMultiThread.class.getCanonicalName()
-				+ " to finish.", getExceptionsSet());
+				+ " to finish.", getExceptions());
 	}
 
 	private void quit() throws UploaderException, InterruptedException {
-		for (UploaderThread ft : getThreadsList()) {
+		for (UploaderThread ft : getThreads()) {
 			markState(ft.getFinalState());
 			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
-				getExceptionsSet().addCause(ft.getFinalError());
+				getExceptions().addCause(ft.getFinalError());
 			}
 		}
 
 		if (isCritical()) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_UNMANAGED,
-					getSession().getConnectionDatas()), getExceptionsSet());
+					getSession().getConnectionDatas()), getExceptions());
 		} else if (isFailed()) {
 			throw new UploaderException(Msg.bind(Messages.UploadEx_MANAGED,
-					getSession().getConnectionDatas()), getExceptionsSet());
+					getSession().getConnectionDatas()), getExceptions());
 		} else if (isInterrupted()) {
 			throw new MelodyInterruptedException(Messages.UploadEx_INTERRUPTED,
-					getExceptionsSet());
+					getExceptions());
 		}
 	}
 
@@ -228,17 +231,18 @@ class UploaderMultiThread {
 		return previous;
 	}
 
-	protected List<Resources> getResourcesList() {
+	protected List<ResourcesSelector> getResourcesList() {
 		return _resourcesList;
 	}
 
-	private List<Resources> setResourcesList(List<Resources> resources) {
+	private List<ResourcesSelector> setResourcesList(
+			List<ResourcesSelector> resources) {
 		if (resources == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ Resources.class.getCanonicalName() + ">.");
+					+ ResourcesSelector.class.getCanonicalName() + ">.");
 		}
-		List<Resources> previous = getResourcesList();
+		List<ResourcesSelector> previous = getResourcesList();
 		_resourcesList = resources;
 		return previous;
 	}
@@ -278,20 +282,20 @@ class UploaderMultiThread {
 
 	/**
 	 * @return the list of {@link LocalResource}, computed from this object's
-	 *         {@link Resources}.
+	 *         {@link ResourcesSelector}.
 	 */
-	protected List<LocalResource> getLocalResourcesList() {
-		return _localResourcesList;
+	protected List<LocalResource> getLocalResources() {
+		return _localResources;
 	}
 
-	private List<LocalResource> setLocalResourcesList(List<LocalResource> aft) {
+	private List<LocalResource> setLocalResources(List<LocalResource> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ LocalResource.class.getCanonicalName() + ">.");
 		}
-		List<LocalResource> previous = getLocalResourcesList();
-		_localResourcesList = aft;
+		List<LocalResource> previous = getLocalResources();
+		_localResources = aft;
 		return previous;
 	}
 
@@ -313,36 +317,36 @@ class UploaderMultiThread {
 	/**
 	 * @return all the {@link UploaderThread} managed by this object.
 	 */
-	private List<UploaderThread> getThreadsList() {
-		return _threadsList;
+	private List<UploaderThread> getThreads() {
+		return _threads;
 	}
 
-	private List<UploaderThread> setThreadsList(List<UploaderThread> aft) {
+	private List<UploaderThread> setThreads(List<UploaderThread> aft) {
 		if (aft == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ UploaderThread.class.getCanonicalName() + ">.");
 		}
-		List<UploaderThread> previous = getThreadsList();
-		_threadsList = aft;
+		List<UploaderThread> previous = getThreads();
+		_threads = aft;
 		return previous;
 	}
 
 	/**
 	 * @return the exceptions that append during the upload.
 	 */
-	private ConsolidatedException getExceptionsSet() {
-		return _exceptionsSet;
+	private ConsolidatedException getExceptions() {
+		return _exceptions;
 	}
 
-	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
+	private ConsolidatedException setExceptions(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		ConsolidatedException previous = getExceptionsSet();
-		_exceptionsSet = cex;
+		ConsolidatedException previous = getExceptions();
+		_exceptions = cex;
 		return previous;
 	}
 

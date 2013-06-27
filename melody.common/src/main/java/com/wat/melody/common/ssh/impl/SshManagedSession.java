@@ -23,7 +23,7 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.types.Resources;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -147,22 +147,23 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	@Override
-	public int execRemoteCommand(String sCommand, boolean requiretty,
+	public int execRemoteCommand(String command, boolean requiretty,
 			OutputStream out, OutputStream err) throws SshSessionException,
 			InterruptedException {
-		return _session.execRemoteCommand(sCommand, requiretty, out, err);
+		return _session.execRemoteCommand(command, requiretty, out, err);
 	}
 
 	@Override
-	public void upload(List<Resources> r, int maxPar, TemplatingHandler th)
-			throws SshSessionException, InterruptedException {
-		_session.upload(r, maxPar, th);
+	public void upload(List<ResourcesSelector> rslist, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException {
+		_session.upload(rslist, maxPar, th);
 	}
 
 	@Override
-	public void download(List<Resources> r, int maxPar)
+	public void download(List<ResourcesSelector> rslist, int maxPar)
 			throws SshSessionException, InterruptedException {
-		_session.download(r, maxPar);
+		_session.download(rslist, maxPar);
 	}
 
 	@Override
@@ -268,7 +269,7 @@ public class SshManagedSession implements ISshSession {
 		return f;
 	}
 
-	private void analyzeDeployKeyCommandResult(int res, String k, String errMsg)
+	private void analyzeDeployKeyCommandResult(int res, String k, String errmsg)
 			throws SshSessionException {
 		String login = getUserDatas().getLogin();
 		if (res == 0) {
@@ -316,8 +317,8 @@ public class SshManagedSession implements ISshSession {
 			break;
 		}
 		SshSessionException cause = null;
-		if (errMsg != null && errMsg.length() != 0) {
-			cause = new SshSessionException(errMsg);
+		if (errmsg != null && errmsg.length() != 0) {
+			cause = new SshSessionException(errmsg);
 		}
 		throw new SshSessionException(msg, cause);
 	}

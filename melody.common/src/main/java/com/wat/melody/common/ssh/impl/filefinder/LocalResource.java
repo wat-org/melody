@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.types;
+package com.wat.melody.common.ssh.impl.filefinder;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,79 +6,122 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.wat.melody.common.ssh.types.GroupID;
+import com.wat.melody.common.ssh.types.LinkOption;
+import com.wat.melody.common.ssh.types.Modifiers;
+import com.wat.melody.common.ssh.types.TransferBehavior;
+import com.wat.melody.common.ssh.types.filesfinder.Resource;
+import com.wat.melody.common.ssh.types.filesfinder.ResourceSpecification;
+import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
+
 /**
  * <p>
  * A {@link LocalResource} describe a single file or directory which was found
- * with {@link ResourceMatcher#findResources()}.
+ * with {@link LocalResourcesFinder#findResources(ResourcesSelector)}.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class LocalResource {
+public class LocalResource implements Resource {
 
 	private Path _path;
-	private ResourceMatcher _resourceMatcher;
+	private ResourcesSelector _resourcesSelector;
+	private ResourceSpecification _resourceSpecification;
 
 	/**
 	 * @param path
 	 *            is the path of a file or directory.
-	 * @param matcher
-	 *            is the {@link ResourceMatcher} which was used to find this
+	 * @param rs
+	 *            is the {@link ResourcesSelector} which was used to find this
 	 *            file or directory.
 	 */
-	public LocalResource(Path path, ResourceMatcher matcher) {
+	public LocalResource(Path path, ResourcesSelector rs) {
 		super();
 		setPath(path);
-		setResourceMatcher(matcher);
+		setResourcesSelector(rs);
+		setResourceSpecification(rs);
 	}
 
 	public File getLocalBaseDir() {
-		return getResourceMatcher().getLocalBaseDir();
+		return getResourcesSelector().getLocalBaseDir();
 	}
 
 	public String getRemoteBaseDir() {
-		return getResourceMatcher().getRemoteBaseDir();
+		return getResourcesSelector().getRemoteBaseDir();
+	}
+
+	public String getMatch() {
+		return getResourceSpecification().getMatch();
 	}
 
 	public Modifiers getFileModifiers() {
-		return getResourceMatcher().getFileModifiers();
+		return getResourceSpecification().getFileModifiers();
 	}
 
 	public Modifiers getDirModifiers() {
-		return getResourceMatcher().getDirModifiers();
+		return getResourceSpecification().getDirModifiers();
 	}
 
 	public LinkOption getLinkOption() {
-		return getResourceMatcher().getLinkOption();
+		return getResourceSpecification().getLinkOption();
 	}
 
 	public TransferBehavior getTransferBehavior() {
-		return getResourceMatcher().getTransferBehavior();
+		return getResourceSpecification().getTransferBehavior();
 	}
 
 	public boolean getTemplate() {
-		return getResourceMatcher().getTemplate();
+		return getResourceSpecification().getTemplate();
 	}
 
 	public GroupID getGroup() {
-		return getResourceMatcher().getGroup();
+		return getResourceSpecification().getGroup();
 	}
 
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular file,
+	 *         directory, or link (follow link). Note that if this object's path
+	 *         is a symbolic link which points to nothing, this will return
+	 *         <tt>false</tt>.
+	 */
 	public boolean exists() {
 		return Files.exists(getPath());
 	}
 
-	public boolean isFile() {
-		return Files.isRegularFile(getPath(),
-				java.nio.file.LinkOption.NOFOLLOW_LINKS)
-				|| (isSymbolicLink() && !isDirectory());
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular file,
+	 *         directory, or link (no follow link). Note that if this object's
+	 *         path is a symbolic link which points to nothing, this will return
+	 *         <tt>true</tt>.
+	 */
+	public boolean lexists() {
+		return Files.exists(getPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS);
 	}
 
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular file
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
+	 *         <tt>true</tt> too.
+	 */
+	public boolean isFile() {
+		return Files.isRegularFile(getPath());
+	}
+
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular directory
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
+	 *         <tt>true</tt> too.
+	 */
 	public boolean isDirectory() {
 		return Files.isDirectory(getPath());
 	}
 
+	/**
+	 * @return <tt>true</tt> if this object's path directly points to a link.
+	 *         Note that {@link #isFile()} or {@link #isDirectory()} can return
+	 *         <tt>true</tt> too.
+	 */
 	public boolean isSymbolicLink() {
 		return Files.isSymbolicLink(getPath());
 	}
@@ -195,6 +238,7 @@ public class LocalResource {
 		return false;
 	}
 
+	@Override
 	public Path getPath() {
 		return _path;
 	}
@@ -210,18 +254,36 @@ public class LocalResource {
 		return previous;
 	}
 
-	public ResourceMatcher getResourceMatcher() {
-		return _resourceMatcher;
+	public ResourcesSelector getResourcesSelector() {
+		return _resourcesSelector;
 	}
 
-	public ResourceMatcher setResourceMatcher(ResourceMatcher resourceMatcher) {
+	private ResourcesSelector setResourcesSelector(
+			ResourcesSelector resourceMatcher) {
 		if (resourceMatcher == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ ResourceMatcher.class.getCanonicalName() + ".");
+					+ ResourcesSelector.class.getCanonicalName() + ".");
 		}
-		ResourceMatcher previous = getResourceMatcher();
-		_resourceMatcher = resourceMatcher;
+		ResourcesSelector previous = getResourcesSelector();
+		_resourcesSelector = resourceMatcher;
+		return previous;
+	}
+
+	public ResourceSpecification getResourceSpecification() {
+		return _resourceSpecification;
+	}
+
+	@Override
+	public ResourceSpecification setResourceSpecification(
+			ResourceSpecification resourceSpecification) {
+		if (resourceSpecification == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ResourceSpecification.class.getCanonicalName() + ".");
+		}
+		ResourceSpecification previous = getResourceSpecification();
+		_resourceSpecification = resourceSpecification;
 		return previous;
 	}
 
