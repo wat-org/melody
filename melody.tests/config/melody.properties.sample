@@ -11,9 +11,6 @@ rootFolderPath=<REPLACE ME WITH THE ABSOLUTE HOME DIR OF MELODY.SH>
 ####################################################
 ### MANDATORY CONFIGURATION DIRECTIVES
 
-####################################################
-### MANDATORY CONFIGURATION DIRECTIVES
-
 ### The canonical class name of the Processor Manager 
 processorManagerCanonicalClassName=com.wat.melody.core.internal.ProcessorManager
 
