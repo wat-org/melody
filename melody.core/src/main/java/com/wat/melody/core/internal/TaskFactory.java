@@ -2,10 +2,8 @@ package com.wat.melody.core.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -47,219 +45,8 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
  */
 public class TaskFactory {
 
-	/**
-	 * <p>
-	 * Find the setter's method in the given class which matches the given
-	 * attribute name.
-	 * </p>
-	 * 
-	 * <p>
-	 * The setter's method should respect the following rules :
-	 * <ul>
-	 * <li>must be <code>public</code> ;</li>
-	 * <li>must not be <code>abstract</code> ;</li>
-	 * <li>must have an {@link Attribute} annotation whose name is equal to the
-	 * given attribute name (no case match) ;</li>
-	 * <li>must have 1 argument ;</li>
-	 * <li>the argument type must be public ;</li>
-	 * <li>the argument type must not be an abstract ;</li>
-	 * <li>the argument type must not be an array ;</li>
-	 * <li>the argument type must not be an interface ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the class where the search is done.
-	 * @param sAttrName
-	 *            is the name of searched attribute.
-	 * 
-	 * @return the setter's method which matches the given attribute name, or
-	 *         <tt>null</tt> if no setter's method which matches the given
-	 *         attribute name can be found in the given class.
-	 * 
-	 * @throws TaskFactoryException
-	 *             if the method decorated by the annotation {@link Attribute}
-	 *             doesn't respect specifications.
-	 */
-	private static Method findSetMethod(Class<?> c, String sAttrName)
-			throws TaskFactoryException {
-		// For all method of the task
-		for (Method m : c.getMethods()) {
-			// Look for the annotation TaskAttrbiute
-			/*
-			 * TODO : consume resource. Should resolve all herited parent first,
-			 * then search for the method
-			 */
-			Attribute a = ReflectionHelper.getAnnotation(m, Attribute.class);
-			if (a == null || !a.name().equalsIgnoreCase(sAttrName)) {
-				continue;
-			}
-			// Validate that the method respect TaskAttribute specifications
-			if (!Modifier.isPublic(m.getModifiers())
-					|| Modifier.isAbstract(m.getModifiers())
-					|| m.getParameterTypes().length != 1) {
-				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
-						c.getCanonicalName(), a.name()));
-			}
-
-			Class<?> param = m.getParameterTypes()[0];
-			if (!Modifier.isPublic(param.getModifiers())
-					|| (Modifier.isAbstract(param.getModifiers()) && !(param
-							.isEnum() || param.isPrimitive()))
-					|| param.isInterface() || param.isArray()) {
-				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
-						c.getCanonicalName(), a.name()));
-			}
-			// setter's method found
-			return m;
-		}
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Find the add's method in the given class which matches the given
-	 * attribute name.
-	 * </p>
-	 * 
-	 * <p>
-	 * The add's method should respect the following rules :
-	 * <ul>
-	 * <li>must be <code>public</code> ;</li>
-	 * <li>must not be <code>abstract</code> ;</li>
-	 * <li>must have an {@link NestedElement} annotation whose name is equal to
-	 * the given attribute name (no case match) and whose type is equal to
-	 * {@link NestedElement.Type#ADD} ;</li>
-	 * <li>must not return <code>void</code> ;</li>
-	 * <li>must have 1 argument ;</li>
-	 * <li>the argument type must be public ;</li>
-	 * <li>the argument type must not be an abstract ;</li>
-	 * <li>the argument type must not be an interface ;</li>
-	 * <li>the argument type must not be an enumeration ;</li>
-	 * <li>the argument type must not be an primitive ;</li>
-	 * <li>the argument type must not be an array ;</li>
-	 * <li>the argument type must have a public no-arg constructor ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the class where the search is done.
-	 * @param sAttrName
-	 *            is the name of searched attribute.
-	 * 
-	 * @return the add's method which matches the given attribute name, or
-	 *         <tt>null</tt> if no add method which matches the given attribute
-	 *         name can be found in the given class.
-	 * 
-	 * @throws TaskFactoryException
-	 *             if the method decorated by the annotation
-	 *             {@link NestedElement} doesn't respect specifications.
-	 */
-	private static Method findAddMethod(Class<?> c, String sNodeName)
-			throws TaskFactoryException {
-		// For all method of the task
-		for (Method m : c.getMethods()) {
-			// Look for the annotation TaskNestedElement
-			NestedElement a = ReflectionHelper.getAnnotation(m,
-					NestedElement.class);
-			if (a == null || !a.name().equalsIgnoreCase(sNodeName)
-					|| a.type() != NestedElement.Type.ADD) {
-				continue;
-			}
-			// Validate that the method respect TaskNestedElement specifications
-			if (!Modifier.isPublic(m.getModifiers())
-					|| Modifier.isAbstract(m.getModifiers())
-					|| m.getReturnType() != Void.TYPE
-					|| m.getParameterTypes().length != 1) {
-				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT,
-						m.getName(), c.getCanonicalName(), a.name()));
-			}
-
-			Class<?> param = m.getParameterTypes()[0];
-			if (!Modifier.isPublic(param.getModifiers())
-					|| Modifier.isAbstract(param.getModifiers())
-					|| param.isInterface() || param.isEnum()
-					|| param.isPrimitive() || param.isArray()) {
-				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT,
-						m.getName(), c.getCanonicalName(), a.name()));
-			}
-
-			for (Constructor<?> ct : param.getConstructors()) {
-				if (ct.getParameterTypes().length == 0
-						&& Modifier.isPublic(ct.getModifiers())) {
-					// add's method found
-					return m;
-				}
-			}
-			throw new TaskFactoryException(Msg.bind(
-					Messages.TaskFactoryEx_ADD_NE_SPEC_CONFLICT, m.getName(),
-					c.getCanonicalName(), a.name()));
-		}
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Find the create's method in the given class which matches the given
-	 * attribute name.
-	 * </p>
-	 * 
-	 * <p>
-	 * The create's method should respect the following rules :
-	 * <ul>
-	 * <li>must be <code>public</code> ;</li>
-	 * <li>must not be an <code>abstract</code> ;</li>
-	 * <li>must have an {@link NestedElement} annotation whose name is equal to
-	 * the given attribute name (no case match) and whose type is equal to
-	 * {@link NestedElement.Type#CREATE} ;</li>
-	 * <li>must not return <code>void</code> ;</li>
-	 * <li>must have 0 argument ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the class where the search is done.
-	 * @param sAttrName
-	 *            is the name of searched attribute.
-	 * 
-	 * @return the create's method which matches the given attribute name, or
-	 *         <tt>null</tt> if no add method which matches the given attribute
-	 *         name can be found in the given class.
-	 * 
-	 * @throws TaskFactoryException
-	 *             if the method decorated by the annotation
-	 *             {@link NestedElement} doesn't respect specifications.
-	 */
-	private static Method findCreateMethod(Class<?> c, String sNodeName)
-			throws TaskFactoryException {
-		// For all method of the task
-		for (Method m : c.getMethods()) {
-			// Look for the annotation TaskNestedElement
-			NestedElement a = ReflectionHelper.getAnnotation(m,
-					NestedElement.class);
-			if (a == null || !a.name().equalsIgnoreCase(sNodeName)
-					|| a.type() != NestedElement.Type.CREATE) {
-				continue;
-			}
-			if (!Modifier.isPublic(m.getModifiers())
-					|| Modifier.isAbstract(m.getModifiers())
-					|| m.getReturnType() == Void.TYPE
-					|| m.getParameterTypes().length != 0) {
-				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CREATE_NE_SPEC_CONFLICT,
-						m.getName(), c.getCanonicalName(), a.name()));
-			}
-			// create's method found
-			return m;
-		}
-		return null;
-	}
-
 	private IRegisteredTasks _registeredTasks;
+	private TaskFactoryCache _cache;
 
 	/**
 	 * <p>
@@ -270,21 +57,52 @@ public class TaskFactory {
 	 */
 	public TaskFactory() {
 		setRegisteredTasks(new RegisteredTasks());
+		setCache(new TaskFactoryCache());
 	}
 
 	public IRegisteredTasks getRegisteredTasks() {
 		return _registeredTasks;
 	}
 
-	public IRegisteredTasks setRegisteredTasks(IRegisteredTasks rg) {
-		if (rg == null) {
+	public IRegisteredTasks setRegisteredTasks(IRegisteredTasks rts) {
+		if (rts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ IRegisteredTasks.class.getCanonicalName() + ".");
 		}
 		IRegisteredTasks previous = getRegisteredTasks();
-		_registeredTasks = rg;
+		_registeredTasks = rts;
 		return previous;
+	}
+
+	public TaskFactoryCache getCache() {
+		return _cache;
+	}
+
+	public TaskFactoryCache setCache(TaskFactoryCache rts) {
+		if (rts == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TaskFactoryCache.class.getCanonicalName() + ".");
+		}
+		TaskFactoryCache previous = getCache();
+		_cache = rts;
+		return previous;
+	}
+
+	private Method findSetMethod(Class<?> c, String attrName)
+			throws TaskFactoryException {
+		return getCache().getSetMethod(c, attrName);
+	}
+
+	private Method findAddMethod(Class<?> c, String elmtName)
+			throws TaskFactoryException {
+		return getCache().getAddMethod(c, elmtName);
+	}
+
+	private Method findCreateMethod(Class<?> c, String elmtName)
+			throws TaskFactoryException {
+		return getCache().getCreateMethod(c, elmtName);
 	}
 
 	/**
@@ -293,7 +111,7 @@ public class TaskFactory {
 	 * {@link Element} format).
 	 * </p>
 	 * 
-	 * @param n
+	 * @param elmt
 	 *            is a task (in its native {@link Element} format).
 	 * 
 	 * @return the Class which correspond to the given task.
@@ -306,16 +124,16 @@ public class TaskFactory {
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Element} is <tt>null</tt>.
 	 */
-	public Class<? extends ITask> identifyTask(Element n)
+	public Class<? extends ITask> identifyTask(Element elmt)
 			throws TaskFactoryException {
-		if (n == null) {
+		if (elmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ ").");
 		}
 
-		Class<? extends ITask> c = findTaskClass(n);
-		validateTaskHierarchy(c, n.getParentNode());
+		Class<? extends ITask> c = findTaskClass(elmt);
+		validateTaskHierarchy(c, elmt.getParentNode());
 		return c;
 	}
 
@@ -325,7 +143,7 @@ public class TaskFactory {
 	 * {@link Element} format).
 	 * </p>
 	 * 
-	 * @param n
+	 * @param elmt
 	 *            is a task (in its native {@link Element} format).
 	 * 
 	 * @return a {@link Class} object, which can be use to instantiate an
@@ -335,9 +153,9 @@ public class TaskFactory {
 	 *             if the given {@link element} is doesn't represent an
 	 *             {@link ITask}.
 	 */
-	private Class<? extends ITask> findTaskClass(Element n)
+	private Class<? extends ITask> findTaskClass(Element elmt)
 			throws TaskFactoryException {
-		String sSimpleName = n.getNodeName();
+		String sSimpleName = elmt.getNodeName();
 		if (!getRegisteredTasks().contains(sSimpleName)) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
@@ -400,7 +218,7 @@ public class TaskFactory {
 	 * 
 	 * @param c
 	 *            is the class of the {@link ITask} to create.
-	 * @param n
+	 * @param elmt
 	 *            is the task to create (in its native {@link Element} format).
 	 * @param ps
 	 *            is a {@link PropertySet}, which will be used during
@@ -433,13 +251,13 @@ public class TaskFactory {
 	 *             if a the {@link PropertySet} is <tt>null</tt>.
 	 * 
 	 */
-	public ITask newTask(Class<? extends ITask> c, Element n, PropertySet ps)
+	public ITask newTask(Class<? extends ITask> c, Element elmt, PropertySet ps)
 			throws TaskFactoryException {
 		if (c == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
 		}
-		if (n == null) {
+		if (elmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ ".");
@@ -467,9 +285,9 @@ public class TaskFactory {
 					Ex.getCause());
 		}
 
-		synchronized (n.getOwnerDocument()) {
-			setAllMembers(t, n.getAttributes(), n.getNodeName());
-			setAllNestedElements(t, n.getChildNodes(), n.getNodeName());
+		synchronized (elmt.getOwnerDocument()) {
+			setAllMembers(t, elmt.getAttributes(), elmt.getNodeName());
+			setAllNestedElements(t, elmt.getChildNodes(), elmt.getNodeName());
 		}
 		try {
 			t.validate();
@@ -579,9 +397,9 @@ public class TaskFactory {
 		}
 	}
 
-	private boolean addNestedElement(Object base, Element n)
+	private boolean addNestedElement(Object base, Element elmt)
 			throws TaskFactoryException {
-		Method m = findAddMethod(base.getClass(), n.getNodeName());
+		Method m = findAddMethod(base.getClass(), elmt.getNodeName());
 		if (m == null) {
 			return false;
 		}
@@ -599,8 +417,8 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 
-			setAllMembers(o, n.getAttributes(), n.getNodeName());
-			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
+			setAllMembers(o, elmt.getAttributes(), elmt.getNodeName());
+			setAllNestedElements(o, elmt.getChildNodes(), elmt.getNodeName());
 
 			try {
 				m.invoke(base, o);
@@ -613,21 +431,21 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.FAILED), Ex));
+			throw new TaskFactoryException(new NestedElementRelatedException(
+					elmt, m, Msg.bind(Messages.TaskFactoryEx_SET_NE, elmt
+							.getNodeName().toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.CRITICAL), Ex));
+			throw new TaskFactoryException(new NestedElementRelatedException(
+					elmt, m, Msg.bind(Messages.TaskFactoryEx_SET_NE, elmt
+							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
 	}
 
-	private boolean createNestedElement(Object base, Element n)
+	private boolean createNestedElement(Object base, Element elmt)
 			throws TaskFactoryException {
-		Method m = findCreateMethod(base.getClass(), n.getNodeName());
+		Method m = findCreateMethod(base.getClass(), elmt.getNodeName());
 		if (m == null) {
 			return false;
 		}
@@ -644,28 +462,28 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 
-			setAllMembers(o, n.getAttributes(), n.getNodeName());
-			setAllNestedElements(o, n.getChildNodes(), n.getNodeName());
+			setAllMembers(o, elmt.getAttributes(), elmt.getNodeName());
+			setAllNestedElements(o, elmt.getChildNodes(), elmt.getNodeName());
 		} catch (TaskFactoryException Ex) {
-			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.FAILED), Ex));
+			throw new TaskFactoryException(new NestedElementRelatedException(
+					elmt, m, Msg.bind(Messages.TaskFactoryEx_SET_NE, elmt
+							.getNodeName().toLowerCase(), State.FAILED), Ex));
 		} catch (Throwable Ex) {
-			throw new TaskFactoryException(new NestedElementRelatedException(n,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_NE, n.getNodeName()
-							.toLowerCase(), State.CRITICAL), Ex));
+			throw new TaskFactoryException(new NestedElementRelatedException(
+					elmt, m, Msg.bind(Messages.TaskFactoryEx_SET_NE, elmt
+							.getNodeName().toLowerCase(), State.CRITICAL), Ex));
 		}
 
 		return true;
 	}
 
-	private boolean registerInnerTask(Object base, Element n)
+	private boolean registerInnerTask(Object base, Element elmt)
 			throws TaskFactoryException {
 		if (!ReflectionHelper.implement(base.getClass(), ITaskContainer.class)) {
 			return false;
 		}
 		try {
-			((ITaskContainer) base).registerInnerTask(n);
+			((ITaskContainer) base).registerInnerTask(elmt);
 		} catch (TaskException Ex) {
 			throw new TaskFactoryException(Ex);
 		}
@@ -673,19 +491,19 @@ public class TaskFactory {
 	}
 
 	private void setMember(Object base, Method m, Class<?> param, Attr attr,
-			String sAttrVal) throws TaskFactoryException {
+			String attrVal) throws TaskFactoryException {
 		String sAttrName = attr.getNodeName();
 		Object o = null;
 		try {
-			o = createNewPrimitiveType(param, sAttrVal, base, sAttrName);
+			o = createNewPrimitiveType(param, attrVal, base, sAttrName);
 			if (o == null) {
-				o = createNewEnumConstant(param, sAttrVal, base, sAttrName);
+				o = createNewEnumConstant(param, attrVal, base, sAttrName);
 			}
 			if (o == null) {
-				o = createNewFile(param, sAttrVal);
+				o = createNewFile(param, attrVal);
 			}
 			if (o == null) {
-				o = createNewObject(param, sAttrVal);
+				o = createNewObject(param, attrVal);
 			}
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
@@ -715,8 +533,8 @@ public class TaskFactory {
 		}
 	}
 
-	private Object createNewPrimitiveType(Class<?> param, String sAttrVal,
-			Object base, String sAttrName) throws TaskFactoryException {
+	private Object createNewPrimitiveType(Class<?> param, String attrVal,
+			Object base, String attrName) throws TaskFactoryException {
 		if (!param.isPrimitive()) {
 			return null;
 		}
@@ -724,89 +542,89 @@ public class TaskFactory {
 		Object o = null;
 		if (param == Boolean.TYPE) {
 			try {
-				o = Bool.parseString(sAttrVal);
+				o = Bool.parseString(attrVal);
 			} catch (IllegalBooleanException e) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Boolean.class.getSimpleName()));
 			}
 		} else if (param == Character.TYPE) {
-			if (sAttrVal != null && sAttrVal.length() == 1) {
-				o = sAttrVal.charAt(0);
+			if (attrVal != null && attrVal.length() == 1) {
+				o = attrVal.charAt(0);
 			} else {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Character.class.getSimpleName()));
 			}
 		} else if (param == Byte.TYPE) {
 			try {
-				o = Byte.parseByte(sAttrVal);
+				o = Byte.parseByte(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Byte.class.getSimpleName()));
 			}
 		} else if (param == Short.TYPE) {
 			try {
-				o = Short.parseShort(sAttrVal);
+				o = Short.parseShort(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Short.class.getSimpleName()));
 			}
 		} else if (param == Integer.TYPE) {
 			try {
-				o = Integer.parseInt(sAttrVal);
+				o = Integer.parseInt(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Integer.class.getSimpleName()));
 			}
 		} else if (param == Long.TYPE) {
 			try {
-				o = Long.parseLong(sAttrVal);
+				o = Long.parseLong(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Long.class.getSimpleName()));
 			}
 		} else if (param == Float.TYPE) {
 			try {
-				o = Float.parseFloat(sAttrVal);
+				o = Float.parseFloat(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Float.class.getSimpleName()));
 			}
 		} else if (param == Double.TYPE) {
 			try {
-				o = Double.parseDouble(sAttrVal);
+				o = Double.parseDouble(attrVal);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, sAttrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
 						Double.class.getSimpleName()));
 			}
 		}
 		return o;
 	}
 
-	private Object createNewEnumConstant(Class<?> param, String sAttrVal,
-			Object base, String sAttrName) throws TaskFactoryException {
+	private Object createNewEnumConstant(Class<?> param, String attrVal,
+			Object base, String attrName) throws TaskFactoryException {
 		if (!param.isEnum()) {
 			return null;
 		}
 
 		for (Object v : param.getEnumConstants()) {
-			if (v.toString().equalsIgnoreCase(sAttrVal)) {
+			if (v.toString().equalsIgnoreCase(attrVal)) {
 				return v;
 			}
 		}
 		throw new TaskFactoryException(Msg.bind(
-				Messages.TaskFactoryEx_CONVERT_ATTR_TO_ENUM, sAttrVal,
+				Messages.TaskFactoryEx_CONVERT_ATTR_TO_ENUM, attrVal,
 				Arrays.asList(param.getEnumConstants())));
 	}
 
-	private Object createNewFile(Class<?> param, String sAttrVal)
+	private Object createNewFile(Class<?> param, String attrVal)
 			throws TaskFactoryException {
 		if (!ReflectionHelper.implement(param, Path.class)
 				&& !ReflectionHelper.herit(param, File.class)
@@ -814,27 +632,27 @@ public class TaskFactory {
 			return null;
 		}
 		// make an absolute path, relative to the sequence descriptor basedir
-		if (!new File(sAttrVal).isAbsolute()) {
+		if (!new File(attrVal).isAbsolute()) {
 			File sBaseDir = Melody.getContext().getProcessorManager()
 					.getSequenceDescriptor().getBaseDir();
 			try {
-				sAttrVal = new File(sBaseDir, sAttrVal).getCanonicalPath();
+				attrVal = new File(sBaseDir, attrVal).getCanonicalPath();
 			} catch (IOException Ex) {
 				throw new RuntimeException("IO error while get the Canonical "
-						+ "Path of '" + sAttrVal + "'.", Ex);
+						+ "Path of '" + attrVal + "'.", Ex);
 			}
 		}
 		if (param == Path.class) {
-			return Paths.get(sAttrVal);
+			return Paths.get(attrVal);
 		} else {
-			return createNewObject(param, sAttrVal);
+			return createNewObject(param, attrVal);
 		}
 	}
 
-	private Object createNewObject(Class<?> param, String sAttrVal)
+	private Object createNewObject(Class<?> param, String attrVal)
 			throws TaskFactoryException {
 		try {
-			return param.getConstructor(String.class).newInstance(sAttrVal);
+			return param.getConstructor(String.class).newInstance(attrVal);
 		} catch (NoSuchMethodException | InstantiationException
 				| IllegalAccessException Ex) {
 			throw new TaskFactoryException(Msg.bind(
