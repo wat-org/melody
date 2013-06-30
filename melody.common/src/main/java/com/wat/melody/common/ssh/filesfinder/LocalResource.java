@@ -154,8 +154,20 @@ public class LocalResource implements Resource {
 	 * src-basedir  = /src/basedir
 	 * path         = /src/basedir/dir3/dir4/file.txt
 	 * dest-basedir = /dest/basedir
+	 * dest-path    = null
 	 * 
 	 * will return    /dest/basedir/dir3/dir4/file.txt
+	 * </pre>
+	 * 
+	 * <pre>
+	 * Sample
+	 * 
+	 * src-basedir  = /src/basedir
+	 * path         = /src/basedir/dir3/dir4/file.txt
+	 * dest-basedir = /dest/basedir
+	 * dest-path    = /super/directory/renamed.txt
+	 * 
+	 * will return    /dest/basedir/super/directory/renamed.txt
 	 * </pre>
 	 * 
 	 * @return the destination {@link Path} of this object (a relative or
@@ -163,10 +175,9 @@ public class LocalResource implements Resource {
 	 *         absolute).
 	 */
 	public Path getDestination() {
-		/*
-		 * TODO : handle getDestPath() if defined. Override this computed
-		 * destination
-		 */
+		if (getDestPath() != null) {
+			return Paths.get(getDestBaseDir()).resolve(getDestPath());
+		}
 		return Paths.get(getDestBaseDir()).resolve(getRelativePath());
 	}
 
@@ -203,11 +214,9 @@ public class LocalResource implements Resource {
 		} else {
 			str.append("file:");
 		}
-		str.append(getRelativePath());
-		str.append(", src-basedir:");
-		str.append(getSrcBaseDir());
-		str.append(", dest-basedir:");
-		str.append(getDestBaseDir());
+		str.append(getPath());
+		str.append(", destination:");
+		str.append(getDestination());
 		str.append(", file-modifiers:");
 		str.append(getFileModifiers());
 		str.append(", dir-modifiers:");

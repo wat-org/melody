@@ -110,7 +110,7 @@ public class RemoteResource implements Resource {
 	 * @return a {@link Path} which, when resolved from the src-basedir, is
 	 *         equal to this object's path.
 	 */
-	public Path getRelativePath() {
+	protected Path getRelativePath() {
 		return getLocalResource().getRelativePath();
 	}
 
@@ -142,11 +142,9 @@ public class RemoteResource implements Resource {
 		} else {
 			str.append("file:");
 		}
-		str.append(getRelativePath());
-		str.append(", src-basedir:");
-		str.append(getSrcBaseDir());
-		str.append(", dest-basedir:");
-		str.append(getDestBaseDir());
+		str.append(getPath());
+		str.append(", destination:");
+		str.append(getDestination());
 		str.append(", file-modifiers:");
 		str.append(getFileModifiers());
 		str.append(", dir-modifiers:");

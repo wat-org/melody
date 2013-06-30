@@ -17,8 +17,10 @@
 				dest-basedir="./download/§[IP]§"
 				dir-modifiers="770"
 				link-option="COPY_UNSAFE_LINKS" >
-				<exclude match="**/content3.*"/>
-				<include match="**/content2.*" template="1"/>
+				<exclude match="**/file1.*"/>
+				<include	match="**/file2.tmpl"
+							dest-path="templates/§[IP]§/file2.§[IP]§"
+							template="y" />
 			</resources>
 		</download>
 
