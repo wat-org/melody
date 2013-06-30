@@ -35,6 +35,7 @@ import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
+import com.wat.melody.common.reflection.ReflectionHelper;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
@@ -45,82 +46,6 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
  * 
  */
 public class TaskFactory {
-
-	/**
-	 * <p>
-	 * Tests if the given subject class implements the given interface, at any
-	 * parent degrees.
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the subject class.
-	 * @param base
-	 *            is the required interface.
-	 * 
-	 * @return <code>true</code> if the given subject class implements the given
-	 *         interface, or <code>false</code> if not.
-	 * 
-	 * @throw IllegalArgumentException if the given subject class or the given
-	 *        interface is <tt>null</tt>.
-	 */
-	public static boolean implementsInterface(Class<?> c, Class<?> base) {
-		if (c == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
-		}
-		if (base == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
-		}
-		for (Class<?> i : c.getInterfaces()) {
-			if (i == base) {
-				return true;
-			}
-		}
-		// recursive search in the parent class
-		if (c.getSuperclass() != null) {
-			return implementsInterface(c.getSuperclass(), base);
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * <p>
-	 * Tests if the given subject class extends the given parent class, at any
-	 * parent degrees.
-	 * </p>
-	 * 
-	 * @param c
-	 *            is the subject class.
-	 * @param base
-	 *            is the parent class.
-	 * 
-	 * @return <code>true</code> if the given subject class extends the required
-	 *         class, or <code>false</code> if not.
-	 * 
-	 * @throw IllegalArgumentException if the given subject class or the given
-	 *        parent class is <tt>null</tt>.
-	 */
-	public static boolean heritsClass(Class<?> c, Class<?> base) {
-		if (c == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
-		}
-		if (base == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
-		}
-		if (c == base) {
-			return true;
-		}
-		// recursive search in the parent class
-		if (c.getSuperclass() != null) {
-			return heritsClass(c.getSuperclass(), base);
-		} else {
-			return false;
-		}
-	}
 
 	/**
 	 * <p>
@@ -161,7 +86,11 @@ public class TaskFactory {
 		// For all method of the task
 		for (Method m : c.getMethods()) {
 			// Look for the annotation TaskAttrbiute
-			Attribute a = m.getAnnotation(Attribute.class);
+			/*
+			 * TODO : consume resource. Should resolve all herited parent first,
+			 * then search for the method
+			 */
+			Attribute a = ReflectionHelper.getAnnotation(m, Attribute.class);
 			if (a == null || !a.name().equalsIgnoreCase(sAttrName)) {
 				continue;
 			}
@@ -233,7 +162,8 @@ public class TaskFactory {
 		// For all method of the task
 		for (Method m : c.getMethods()) {
 			// Look for the annotation TaskNestedElement
-			NestedElement a = m.getAnnotation(NestedElement.class);
+			NestedElement a = ReflectionHelper.getAnnotation(m,
+					NestedElement.class);
 			if (a == null || !a.name().equalsIgnoreCase(sNodeName)
 					|| a.type() != NestedElement.Type.ADD) {
 				continue;
@@ -309,7 +239,8 @@ public class TaskFactory {
 		// For all method of the task
 		for (Method m : c.getMethods()) {
 			// Look for the annotation TaskNestedElement
-			NestedElement a = m.getAnnotation(NestedElement.class);
+			NestedElement a = ReflectionHelper.getAnnotation(m,
+					NestedElement.class);
 			if (a == null || !a.name().equalsIgnoreCase(sNodeName)
 					|| a.type() != NestedElement.Type.CREATE) {
 				continue;
@@ -431,19 +362,22 @@ public class TaskFactory {
 						+ "have been introduced.", Ex);
 			}
 		}
-		if (implementsInterface(c, ITopLevelTask.class) && p != null) {
+		if (ReflectionHelper.implement(c, ITopLevelTask.class) && p != null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_MUST_BE_TOPLEVEL, c.getName()));
-		} else if (!implementsInterface(c, ITopLevelTask.class) && p == null) {
+		} else if (!ReflectionHelper.implement(c, ITopLevelTask.class)
+				&& p == null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_CANNOT_BE_TOPLEVEL, c.getName()));
-		} else if (implementsInterface(c, IFirstLevelTask.class) && p != null
-				&& !implementsInterface(p, ITopLevelTask.class)) {
+		} else if (ReflectionHelper.implement(c, IFirstLevelTask.class)
+				&& p != null
+				&& !ReflectionHelper.implement(p, ITopLevelTask.class)) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_MUST_BE_FIRSTLEVEL, c.getName(),
 					p.getName()));
-		} else if (!implementsInterface(c, IFirstLevelTask.class) && p != null
-				&& implementsInterface(p, ITopLevelTask.class)) {
+		} else if (!ReflectionHelper.implement(c, IFirstLevelTask.class)
+				&& p != null
+				&& ReflectionHelper.implement(p, ITopLevelTask.class)) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_CANNOT_BE_FIRSTLEVEL, c.getName(),
 					p.getName()));
@@ -727,7 +661,7 @@ public class TaskFactory {
 
 	private boolean registerInnerTask(Object base, Element n)
 			throws TaskFactoryException {
-		if (!implementsInterface(base.getClass(), ITaskContainer.class)) {
+		if (!ReflectionHelper.implement(base.getClass(), ITaskContainer.class)) {
 			return false;
 		}
 		try {
@@ -874,9 +808,9 @@ public class TaskFactory {
 
 	private Object createNewFile(Class<?> param, String sAttrVal)
 			throws TaskFactoryException {
-		if (!implementsInterface(param, Path.class)
-				&& !heritsClass(param, File.class)
-				&& !implementsInterface(param, IFileBased.class)) {
+		if (!ReflectionHelper.implement(param, Path.class)
+				&& !ReflectionHelper.herit(param, File.class)
+				&& !ReflectionHelper.implement(param, IFileBased.class)) {
 			return null;
 		}
 		// make an absolute path, relative to the sequence descriptor basedir

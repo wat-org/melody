@@ -1,6 +1,5 @@
-package com.wat.melody.common.ssh.types.filesfinder;
+package com.wat.melody.common.ssh.filesfinder;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,12 +9,12 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 
 /**
  * <p>
- * A {@link ResourcesSelector} describes which and how files and directories
- * should be transfered.
+ * A {@link ResourcesSpecification} describes which and how files and
+ * directories should be transfered.
  * </p>
  * 
  * <p>
- * A {@link ResourcesSelector} is an {@link ITask} nested element. It can
+ * A {@link ResourcesSpecification} is an {@link ITask} nested element. It can
  * contains nested include/exclude elements, which can override how files and
  * directories should be transfered.
  * </p>
@@ -23,17 +22,17 @@ import com.wat.melody.api.annotation.NestedElement.Type;
  * @author Guillaume Cornet
  * 
  */
-public abstract class ResourcesSelector extends ResourceSpecification {
+public abstract class ResourcesSpecification extends ResourceSpecification {
 
 	/**
-	 * Attribute, which specifies the local directory.
+	 * Attribute, which specifies the source directory.
 	 */
-	public static final String LOCAL_BASEDIR_ATTR = "local-basedir";
+	public static final String SRC_BASEDIR_ATTR = "src-basedir";
 
 	/**
-	 * Attribute, which specifies the remote directory.
+	 * Attribute, which specifies the destination directory.
 	 */
-	public static final String REMOTE_BASEDIR_ATTR = "remote-basedir";
+	public static final String DEST_BASEDIR_ATTR = "dest-basedir";
 
 	/**
 	 * Nested Element, which specifies the resources to include.
@@ -45,14 +44,14 @@ public abstract class ResourcesSelector extends ResourceSpecification {
 	 */
 	public static final String EXCLUDE_NE = "exclude";
 
-	// Mandatory with no default value
-	private File _localBaseDir = null;
-	// Mandatory with a default value
-	private String _remoteBaseDir = ".";
+	private String _srcBaseDir;
+	private String _destBaseDir;
 	private List<ResourcesUpdater> _resourcesUpdaters = new ArrayList<ResourcesUpdater>();
 
-	public ResourcesSelector() {
+	public ResourcesSpecification(String srcBaseDir, String destBaseDir) {
 		super();
+		setSrcBaseDir(srcBaseDir);
+		setDestBaseDir(destBaseDir);
 	}
 
 	@Override
@@ -60,10 +59,10 @@ public abstract class ResourcesSelector extends ResourceSpecification {
 		StringBuilder str = new StringBuilder("{ ");
 		str.append("match:");
 		str.append(getMatch());
-		str.append(", local-basedir:");
-		str.append(getLocalBaseDir());
-		str.append(", remote-basedir:");
-		str.append(getRemoteBaseDir());
+		str.append(", src-basedir:");
+		str.append(getSrcBaseDir());
+		str.append(", dest-basedir:");
+		str.append(getDestBaseDir());
 		str.append(", file-modifiers:");
 		str.append(getFileModifiers());
 		str.append(", dir-modifiers:");
@@ -82,55 +81,57 @@ public abstract class ResourcesSelector extends ResourceSpecification {
 		return str.toString();
 	}
 
-	public abstract ResourcesUpdater newResourcesUpdaterIncludes(
-			ResourcesSelector rs);
+	public ResourcesUpdater newResourcesUpdaterInclude(ResourcesSpecification rs) {
+		return new ResourcesUpdaterIncludes(rs);
+	}
 
-	public abstract ResourcesUpdater newResourcesUpdaterExcludes(
-			ResourcesSelector rs);
+	public ResourcesUpdater newResourcesUpdaterExclude(ResourcesSpecification rs) {
+		return new ResourcesUpdaterExcludes(rs);
+	}
 
 	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
 	public ResourcesUpdater createInclude() {
-		ResourcesUpdater include = newResourcesUpdaterIncludes(this);
+		ResourcesUpdater include = newResourcesUpdaterInclude(this);
 		getResourcesUpdaters().add(include);
 		return include;
 	}
 
 	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
 	public ResourcesUpdater createExclude() {
-		ResourcesUpdater exclude = newResourcesUpdaterExcludes(this);
+		ResourcesUpdater exclude = newResourcesUpdaterExclude(this);
 		getResourcesUpdaters().add(exclude);
 		return exclude;
 	}
 
-	public File getLocalBaseDir() {
-		return _localBaseDir;
+	public String getSrcBaseDir() {
+		return _srcBaseDir;
 	}
 
-	@Attribute(name = LOCAL_BASEDIR_ATTR)
-	public File setLocalBaseDir(File basedir) {
-		if (basedir == null) {
+	@Attribute(name = SRC_BASEDIR_ATTR, mandatory = true)
+	public String setSrcBaseDir(String dir) {
+		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Mus be a valid " + File.class.getCanonicalName()
+					+ "Mus be a valid " + String.class.getCanonicalName()
 					+ " (a Directory Path).");
 		}
-		File previous = getLocalBaseDir();
-		_localBaseDir = basedir;
+		String previous = getSrcBaseDir();
+		_srcBaseDir = dir;
 		return previous;
 	}
 
-	public String getRemoteBaseDir() {
-		return _remoteBaseDir;
+	public String getDestBaseDir() {
+		return _destBaseDir;
 	}
 
-	@Attribute(name = REMOTE_BASEDIR_ATTR)
-	public String setRemoteBaseDir(String destination) {
-		if (destination == null) {
+	@Attribute(name = DEST_BASEDIR_ATTR)
+	public String setDestBaseDir(String dir) {
+		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ " (a Directory Path).");
 		}
-		String previous = getRemoteBaseDir();
-		_remoteBaseDir = destination;
+		String previous = getDestBaseDir();
+		_destBaseDir = dir;
 		return previous;
 	}
 

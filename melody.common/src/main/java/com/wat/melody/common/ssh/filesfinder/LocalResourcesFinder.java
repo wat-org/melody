@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl.filefinder;
+package com.wat.melody.common.ssh.filesfinder;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -15,9 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.wat.melody.common.ssh.types.filesfinder.ResourceSpecification;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesUpdater;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -27,11 +24,8 @@ import com.wat.melody.common.systool.SysTool;
  */
 public abstract class LocalResourcesFinder {
 
-	public static List<LocalResource> findResources(ResourcesSelector rs)
+	public static List<LocalResource> findResources(ResourcesSpecification rs)
 			throws IOException {
-		if (rs.getLocalBaseDir() == null) {
-			return new ArrayList<LocalResource>();
-		}
 		List<LocalResource> rrs = new Finder(rs).findFiles();
 		for (ResourcesUpdater ru : rs.getResourcesUpdaters()) {
 			ru.update(rrs);
@@ -43,29 +37,21 @@ public abstract class LocalResourcesFinder {
 
 class Finder extends SimpleFileVisitor<Path> {
 
-	private ResourcesSelector _rs;
+	private ResourcesSpecification _rs;
 	private Path _topdir;
 	private final PathMatcher _matcher;
 	private final List<LocalResource> _localResources;
 
-	public Finder(ResourcesSelector rs) {
+	public Finder(ResourcesSpecification rs) {
 		super();
 		if (rs == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid "
-					+ ResourcesSelector.class.getCanonicalName() + ".");
-		}
-		if (rs.getLocalBaseDir() == null) {
-			throw new IllegalArgumentException("invalid arg : the given "
-					+ ResourcesSelector.LOCAL_BASEDIR_ATTR + " is null.");
-		}
-		if (rs.getMatch() == null) {
-			throw new IllegalArgumentException("invalid arg : the given "
-					+ ResourceSpecification.MATCH_ATTR + " is null.");
+					+ ResourcesSpecification.class.getCanonicalName() + ".");
 		}
 		_localResources = new ArrayList<LocalResource>();
 		_rs = rs;
-		_topdir = Paths.get(rs.getLocalBaseDir().getAbsolutePath()).normalize();
+		_topdir = Paths.get(rs.getSrcBaseDir()).normalize();
 		String match = _topdir + SysTool.FILE_SEPARATOR + rs.getMatch();
 		/*
 		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
@@ -78,8 +64,9 @@ class Finder extends SimpleFileVisitor<Path> {
 	public List<LocalResource> findFiles() throws IOException {
 		Set<FileVisitOption> set = new HashSet<FileVisitOption>();
 		set.add(FileVisitOption.FOLLOW_LINKS);
-		Files.walkFileTree(Paths.get(_rs.getLocalBaseDir().getAbsolutePath())
-				.normalize(), set, Integer.MAX_VALUE, this);
+		// will go into visitFileFailed if the path doesn't exists
+		Files.walkFileTree(Paths.get(_rs.getSrcBaseDir()).normalize(), set,
+				Integer.MAX_VALUE, this);
 		return _localResources;
 	}
 

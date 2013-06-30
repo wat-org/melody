@@ -15,12 +15,12 @@ import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResource;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.LocalResource;
+import com.wat.melody.common.ssh.filesfinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.TransferBehavior;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -119,6 +119,9 @@ public abstract class SftpHelper {
 		try {
 			return chan.ls(path);
 		} catch (SftpException Ex) {
+			if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				return new Vector<LsEntry>();
+			}
 			throw new SshSessionException(Msg.bind(Messages.SftpEx_LS, path),
 					Ex);
 		}
@@ -209,36 +212,36 @@ public abstract class SftpHelper {
 	}
 
 	private static List<RemoteResource> list(ChannelSftp chan, String dir,
-			ResourcesSelector resourceMatcher) throws SshSessionException {
-		List<RemoteResource> res = new ArrayList<RemoteResource>();
+			ResourcesSpecification rs) throws SshSessionException {
+		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
 		for (LsEntry entry : scp_ls(chan, dir)) {
 			if (entry.getAttrs().isDir()
 					&& (entry.getFilename().equals(".") || entry.getFilename()
 							.equals(".."))) {
 				continue;
 			}
-			res.add(new RemoteResource(Paths.get(dir + "/"
-					+ entry.getFilename()), entry.getAttrs(), resourceMatcher));
+			rrs.add(new RemoteResource(Paths.get(dir + "/"
+					+ entry.getFilename()), entry.getAttrs(), rs));
 		}
-		return res;
+		return rrs;
 	}
 
 	public static List<RemoteResource> listrecurs(ChannelSftp chan, String dir,
-			ResourcesSelector resourceMatcher) throws SshSessionException {
-		List<RemoteResource> res = new ArrayList<RemoteResource>();
-		for (RemoteResource rm : list(chan, dir, resourceMatcher)) {
-			res.add(rm);
+			ResourcesSpecification rs) throws SshSessionException {
+		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
+		for (RemoteResource rm : list(chan, dir, rs)) {
+			rrs.add(rm);
 			if (rm.isDir()) {
 				String unixDir = convertToUnixPath(rm.getPath());
 				try {
-					res.addAll(listrecurs(chan, unixDir, resourceMatcher));
+					rrs.addAll(listrecurs(chan, unixDir, rs));
 				} catch (SshSessionException Ex) {
 					throw new SshSessionException(Msg.bind(
 							Messages.DownloadEx_LIST, dir), Ex);
 				}
 			}
 		}
-		return res;
+		return rrs;
 	}
 
 	/**

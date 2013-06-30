@@ -4,7 +4,7 @@ import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.RemoteResource;
 
 /**
  * 

@@ -1,15 +1,12 @@
 package com.wat.melody.common.ssh.impl.downloader;
 
-import java.io.File;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.RemoteResource;
 
 /**
  * 
@@ -23,9 +20,9 @@ class DownloaderNoThread {
 	private ChannelSftp _channel;
 	private RemoteResource _remoteResource;
 
-	protected DownloaderNoThread(ChannelSftp channel, RemoteResource r) {
+	protected DownloaderNoThread(ChannelSftp channel, RemoteResource rr) {
 		setChannel(channel);
-		setRemoteResource(r);
+		setRemoteResource(rr);
 	}
 
 	protected void download() throws DownloaderException {
@@ -33,33 +30,9 @@ class DownloaderNoThread {
 
 		/*
 		 * TODO : implement download logic
-		 * 
-		 * parents dir creation should be done in the get method, before getting
-		 * the file
 		 */
-		// create the local-basedir if it doesn't exists
-		File dest = getRemoteResource().getLocalBaseDir();
-		synchronized (getLock()) {
-			if (!dest.exists() && !dest.mkdirs()) {
-				throw new DownloaderException(Msg.bind(
-						Messages.DownloadEx_MKDIRS, dest));
-			}
-		}
 
 		log.info(Msg.bind(Messages.DownloadMsg_END, getRemoteResource()));
-	}
-
-	private static Object BASIC_LOCK = new Integer(0);
-
-	/**
-	 * @return a session scope lock.
-	 */
-	private Object getLock() {
-		try {
-			return getChannel().getSession();
-		} catch (JSchException Ex) {
-			return BASIC_LOCK;
-		}
 	}
 
 	protected ChannelSftp getChannel() {
@@ -81,14 +54,14 @@ class DownloaderNoThread {
 		return _remoteResource;
 	}
 
-	private RemoteResource setRemoteResource(RemoteResource aft) {
-		if (aft == null) {
+	private RemoteResource setRemoteResource(RemoteResource rr) {
+		if (rr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ RemoteResource.class.getCanonicalName() + ".");
 		}
 		RemoteResource previous = getRemoteResource();
-		_remoteResource = aft;
+		_remoteResource = rr;
 		return previous;
 	}
 

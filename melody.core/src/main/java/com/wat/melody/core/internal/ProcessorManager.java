@@ -40,6 +40,7 @@ import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
+import com.wat.melody.common.reflection.ReflectionHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionResolver;
@@ -848,7 +849,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			// Duplicate the PropertiesSet, so the Task can work with its own
 			// PropertiesSet
 			// Doesn't apply to ITask which implements IShareProperties
-			PropertySet ownPs = TaskFactory.implementsInterface(c,
+			PropertySet ownPs = ReflectionHelper.implement(c,
 					IShareProperties.class) ? ps : ps.clone();
 			Melody.pushContext(new TaskContext(n, ownPs, this));
 			pushed = true;

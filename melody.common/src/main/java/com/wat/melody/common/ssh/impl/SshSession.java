@@ -27,9 +27,10 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
 import com.wat.melody.common.ssh.impl.downloader.DownloaderMultiThread;
 import com.wat.melody.common.ssh.impl.uploader.UploaderMultiThread;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -151,16 +152,16 @@ public class SshSession implements ISshSession {
 	}
 
 	@Override
-	public void upload(List<ResourcesSelector> rslist, int maxPar,
+	public void upload(List<LocalResourcesSpecification> lrss, int maxPar,
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
-		new UploaderMultiThread(this, rslist, maxPar, th).upload();
+		new UploaderMultiThread(this, lrss, maxPar, th).upload();
 	}
 
 	@Override
-	public void download(List<ResourcesSelector> rslist, int maxPar)
+	public void download(List<RemoteResourcesSpecification> rrss, int maxPar)
 			throws SshSessionException, InterruptedException {
-		new DownloaderMultiThread(this, rslist, maxPar).download();
+		new DownloaderMultiThread(this, rrss, maxPar).download();
 	}
 
 	@Override

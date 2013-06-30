@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.ssh;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,16 +13,13 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
-import com.wat.melody.common.files.FS;
-import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesSelector;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
+import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
@@ -51,14 +49,14 @@ public class Upload extends AbstractSshManagedOperation implements
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<ResourcesSelector> _resourcesSelectors;
+	private List<LocalResourcesSpecification> _localResourcesSpecifications;
 	private int _maxPar;
 
 	private ITaskContext _taskContext;
 
 	public Upload() {
 		super();
-		setResourcesSelectors(new ArrayList<ResourcesSelector>());
+		setResourcesSpecifications(new ArrayList<LocalResourcesSpecification>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -68,31 +66,11 @@ public class Upload extends AbstractSshManagedOperation implements
 	}
 
 	@Override
-	public void validate() throws SshException {
-		super.validate();
-
-		for (ResourcesSelector r : getResourcesSelectors()) {
-			if (r.getLocalBaseDir() == null) {
-				r.setLocalBaseDir(Melody.getContext().getProcessorManager()
-						.getSequenceDescriptor().getBaseDir());
-			}
-			try {
-				FS.validateDirExists(r.getLocalBaseDir().toString());
-			} catch (IllegalDirectoryException Ex) {
-				throw new SshException(Msg.bind(
-						Messages.UploadEx_INVALID_LOCALBASEDIR_ATTR,
-						r.getLocalBaseDir(),
-						ResourcesSelector.LOCAL_BASEDIR_ATTR), Ex);
-			}
-		}
-	}
-
-	@Override
 	public void doProcessing() throws SshException, InterruptedException {
 		ISshSession session = null;
 		try {
 			session = openSession();
-			session.upload(getResourcesSelectors(), getMaxPar(), this);
+			session.upload(getResourcesSpecifications(), getMaxPar(), this);
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {
@@ -134,25 +112,31 @@ public class Upload extends AbstractSshManagedOperation implements
 		return template;
 	}
 
-	public List<ResourcesSelector> getResourcesSelectors() {
-		return _resourcesSelectors;
+	public List<LocalResourcesSpecification> getResourcesSpecifications() {
+		return _localResourcesSpecifications;
 	}
 
-	public List<ResourcesSelector> setResourcesSelectors(
-			List<ResourcesSelector> rslist) {
-		if (rslist == null) {
+	public List<LocalResourcesSpecification> setResourcesSpecifications(
+			List<LocalResourcesSpecification> lrss) {
+		if (lrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourcesSelector.class.getCanonicalName() + ">.");
+					+ LocalResourcesSpecification.class.getCanonicalName()
+					+ ">.");
 		}
-		List<ResourcesSelector> previous = getResourcesSelectors();
-		_resourcesSelectors = rslist;
+		List<LocalResourcesSpecification> previous = getResourcesSpecifications();
+		_localResourcesSpecifications = lrss;
 		return previous;
 	}
 
-	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResourcesSelector(LocalResourcesSelector rs) {
-		getResourcesSelectors().add(rs);
+	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.CREATE)
+	public LocalResourcesSpecification createResourcesSpecification() {
+		File basedir = Melody.getContext().getProcessorManager()
+				.getSequenceDescriptor().getBaseDir();
+		LocalResourcesSpecification lrs = new LocalResourcesSpecification(
+				basedir);
+		getResourcesSpecifications().add(lrs);
+		return lrs;
 	}
 
 	public int getMaxPar() {

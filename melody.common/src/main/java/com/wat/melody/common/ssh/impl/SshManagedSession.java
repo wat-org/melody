@@ -23,7 +23,8 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
+import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
 
 /**
  * 
@@ -154,16 +155,16 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	@Override
-	public void upload(List<ResourcesSelector> rslist, int maxPar,
+	public void upload(List<LocalResourcesSpecification> lrss, int maxPar,
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
-		_session.upload(rslist, maxPar, th);
+		_session.upload(lrss, maxPar, th);
 	}
 
 	@Override
-	public void download(List<ResourcesSelector> rslist, int maxPar)
+	public void download(List<RemoteResourcesSpecification> rrss, int maxPar)
 			throws SshSessionException, InterruptedException {
-		_session.download(rslist, maxPar);
+		_session.download(rrss, maxPar);
 	}
 
 	@Override

@@ -13,8 +13,8 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
+import com.wat.melody.common.ssh.filesfinder.LocalResource;
 import com.wat.melody.common.ssh.impl.SftpHelper;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResource;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.TransferBehavior;
@@ -32,10 +32,10 @@ class UploaderNoThread {
 	private LocalResource _localResource;
 	private TemplatingHandler _templatingHandler;
 
-	protected UploaderNoThread(ChannelSftp channel, LocalResource r,
+	protected UploaderNoThread(ChannelSftp channel, LocalResource lr,
 			TemplatingHandler th) {
 		setChannel(channel);
-		setLocalResource(r);
+		setLocalResource(lr);
 		setTemplatingHandler(th);
 	}
 
@@ -166,21 +166,21 @@ class UploaderNoThread {
 		SftpHelper.scp_mkdir(getChannel(), unixDir);
 	}
 
-	protected void template(LocalResource r) throws SshSessionException {
-		if (r.getTemplate() == true) {
+	protected void template(LocalResource lr) throws SshSessionException {
+		if (lr.getTemplate() == true) {
 			if (getTemplatingHandler() == null) {
 				throw new SshSessionException(
 						Messages.UploadEx_NO_TEMPLATING_HANDLER);
 			}
 			Path template;
 			try {
-				template = getTemplatingHandler().doTemplate(r.getPath());
+				template = getTemplatingHandler().doTemplate(lr.getPath());
 			} catch (TemplatingException Ex) {
 				throw new SshSessionException(Ex);
 			}
-			put(template, r.getDestination(), r.getTransferBehavior());
+			put(template, lr.getDestination(), lr.getTransferBehavior());
 		} else {
-			put(r.getPath(), r.getDestination(), r.getTransferBehavior());
+			put(lr.getPath(), lr.getDestination(), lr.getTransferBehavior());
 		}
 	}
 
@@ -250,14 +250,14 @@ class UploaderNoThread {
 		return _localResource;
 	}
 
-	private LocalResource setLocalResource(LocalResource aft) {
-		if (aft == null) {
+	private LocalResource setLocalResource(LocalResource lr) {
+		if (lr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		LocalResource previous = getLocalResource();
-		_localResource = aft;
+		_localResource = lr;
 		return previous;
 	}
 

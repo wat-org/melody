@@ -11,10 +11,11 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.filesfinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.RemoteResourcesFinder;
+import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.ssh.impl.SshSession;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResource;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResourcesFinder;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -33,7 +34,7 @@ public class DownloaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<ResourcesSelector> _resourcesSelectors;
+	private List<RemoteResourcesSpecification> _remoteResourcesSpecifications;
 	private int _maxPar;
 	private List<RemoteResource> _remoteResources;
 
@@ -42,10 +43,10 @@ public class DownloaderMultiThread {
 	private List<DownloaderThread> _threads;
 	private ConsolidatedException _exceptions;
 
-	public DownloaderMultiThread(SshSession session, List<ResourcesSelector> r,
-			int maxPar) {
+	public DownloaderMultiThread(SshSession session,
+			List<RemoteResourcesSpecification> r, int maxPar) {
 		setSession(session);
-		setResourcesSelectors(r);
+		setResourcesSpecifications(r);
 		setMaxPar(maxPar);
 		setRemoteResources(new ArrayList<RemoteResource>());
 
@@ -56,7 +57,7 @@ public class DownloaderMultiThread {
 	}
 
 	public void download() throws DownloaderException, InterruptedException {
-		if (getResourcesSelectors().size() == 0) {
+		if (getResourcesSpecifications().size() == 0) {
 			return;
 		}
 		computeRemoteResources();
@@ -96,11 +97,11 @@ public class DownloaderMultiThread {
 		ChannelSftp chan = null;
 		try {
 			chan = getSession().openSftpChannel();
-			for (ResourcesSelector resources : getResourcesSelectors()) {
-				List<RemoteResource> list;
-				list = RemoteResourcesFinder.findResources(chan, resources);
-				getRemoteResources().removeAll(list); // remove duplicated
-				getRemoteResources().addAll(list);
+			for (ResourcesSpecification rs : getResourcesSpecifications()) {
+				List<RemoteResource> rrs;
+				rrs = RemoteResourcesFinder.findResources(chan, rs);
+				getRemoteResources().removeAll(rrs); // remove duplicated
+				getRemoteResources().addAll(rrs);
 			}
 		} finally {
 			if (chan != null) {
@@ -112,12 +113,12 @@ public class DownloaderMultiThread {
 		}
 	}
 
-	protected void download(ChannelSftp channel, RemoteResource r) {
+	protected void download(ChannelSftp channel, RemoteResource rr) {
 		try {
-			new DownloaderNoThread(channel, r).download();
+			new DownloaderNoThread(channel, rr).download();
 		} catch (DownloaderException Ex) {
 			DownloaderException e = new DownloaderException(Msg.bind(
-					Messages.DownloadEx_FAILED, r), Ex);
+					Messages.DownloadEx_FAILED, rr), Ex);
 			markState(DownloaderMultiThread.FAILED);
 			getExceptions().addCause(e);
 		}
@@ -229,19 +230,20 @@ public class DownloaderMultiThread {
 		return previous;
 	}
 
-	protected List<ResourcesSelector> getResourcesSelectors() {
-		return _resourcesSelectors;
+	protected List<RemoteResourcesSpecification> getResourcesSpecifications() {
+		return _remoteResourcesSpecifications;
 	}
 
-	private List<ResourcesSelector> setResourcesSelectors(
-			List<ResourcesSelector> resources) {
-		if (resources == null) {
+	private List<RemoteResourcesSpecification> setResourcesSpecifications(
+			List<RemoteResourcesSpecification> rrss) {
+		if (rrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourcesSelector.class.getCanonicalName() + ">.");
+					+ RemoteResourcesSpecification.class.getCanonicalName()
+					+ ">.");
 		}
-		List<ResourcesSelector> previous = getResourcesSelectors();
-		_resourcesSelectors = resources;
+		List<RemoteResourcesSpecification> previous = getResourcesSpecifications();
+		_remoteResourcesSpecifications = rrss;
 		return previous;
 	}
 
@@ -270,7 +272,7 @@ public class DownloaderMultiThread {
 
 	/**
 	 * @return the list of {@link RemoteResource}, computed from this object's
-	 *         {@link ResourcesSelector}.
+	 *         {@link ResourcesSpecification}.
 	 */
 	protected List<RemoteResource> getRemoteResources() {
 		return _remoteResources;

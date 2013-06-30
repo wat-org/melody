@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.types.filesfinder;
+package com.wat.melody.common.ssh.filesfinder;
 
 import java.nio.file.Path;
 

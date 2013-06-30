@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.impl.filefinder;
+package com.wat.melody.common.ssh.filesfinder;
 
 import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
@@ -10,8 +10,6 @@ import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 import com.wat.melody.common.ssh.impl.downloader.DownloaderException;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesUpdater;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -22,7 +20,7 @@ import com.wat.melody.common.systool.SysTool;
 public abstract class RemoteResourcesFinder {
 
 	public static List<RemoteResource> findResources(ChannelSftp chan,
-			ResourcesSelector rs) throws DownloaderException {
+			ResourcesSpecification rs) throws DownloaderException {
 		if (rs == null) {
 			return new ArrayList<RemoteResource>();
 		}
@@ -43,12 +41,12 @@ public abstract class RemoteResourcesFinder {
 	}
 
 	private static List<RemoteResource> findMatchingResources(ChannelSftp chan,
-			ResourcesSelector rs) throws DownloaderException {
+			ResourcesSpecification rs) throws DownloaderException {
 		if (rs == null) {
 			return new ArrayList<RemoteResource>();
 		}
-		// Recurs lists remote files from the remote basedir
-		String dir = SftpHelper.convertToUnixPath(rs.getRemoteBaseDir());
+		// Recurs lists remote files from the source basedir
+		String dir = SftpHelper.convertToUnixPath(rs.getSrcBaseDir());
 		List<RemoteResource> rrs;
 		try {
 			rrs = SftpHelper.listrecurs(chan, dir, rs);
@@ -59,9 +57,9 @@ public abstract class RemoteResourcesFinder {
 	}
 
 	private static List<RemoteResource> findMatchingRemoteResources(
-			List<RemoteResource> rr, ResourcesSelector rs) {
-		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
-		String path = Paths.get(rs.getRemoteBaseDir()).normalize()
+			List<RemoteResource> rrs, ResourcesSpecification rs) {
+		List<RemoteResource> matching = new ArrayList<RemoteResource>();
+		String path = Paths.get(rs.getSrcBaseDir()).normalize()
 				+ SysTool.FILE_SEPARATOR + rs.getMatch();
 		/*
 		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
@@ -69,14 +67,14 @@ public abstract class RemoteResourcesFinder {
 		 */
 		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
-		for (RemoteResource r : rr) {
+		for (RemoteResource r : rrs) {
 			if (matcher.matches(r.getPath())) {
 				// include path parent til topdir is reacher
 				// TODO : include path parent til topdir is reacher
-				rrs.add(r);
+				matching.add(r);
 			}
 		}
-		return rrs;
+		return matching;
 	}
 
 }

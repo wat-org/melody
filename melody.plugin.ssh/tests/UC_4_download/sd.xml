@@ -12,9 +12,9 @@
 
 		<download host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
 			<resources
+				src-basedir="/tmp/melody/scp/UC_1_upload"
 				match="**"
-				remote-basedir="/tmp/melody/scp/UC_1_upload"
-				local-basedir="./download/§[IP]§"
+				dest-basedir="./download/§[IP]§"
 				dir-modifiers="770"
 				link-option="COPY_UNSAFE_LINKS" >
 				<exclude match="**/content3.*"/>

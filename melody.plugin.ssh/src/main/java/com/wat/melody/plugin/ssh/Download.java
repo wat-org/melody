@@ -1,5 +1,6 @@
 package com.wat.melody.plugin.ssh;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +11,7 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.impl.filefinder.RemoteResourcesSelector;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
+import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -39,12 +39,12 @@ public class Download extends AbstractSshManagedOperation {
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<ResourcesSelector> _resourcesSelectors;
+	private List<RemoteResourcesSpecification> _remoteResourcesSpecifications;
 	private int _maxPar;
 
 	public Download() {
 		super();
-		setResourcesSelectors(new ArrayList<ResourcesSelector>());
+		setResourcesSelectors(new ArrayList<RemoteResourcesSpecification>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -53,23 +53,11 @@ public class Download extends AbstractSshManagedOperation {
 	}
 
 	@Override
-	public void validate() throws SshException {
-		super.validate();
-
-		for (ResourcesSelector r : getResourcesSelectors()) {
-			if (r.getLocalBaseDir() == null) {
-				r.setLocalBaseDir(Melody.getContext().getProcessorManager()
-						.getSequenceDescriptor().getBaseDir());
-			}
-		}
-	}
-
-	@Override
 	public void doProcessing() throws SshException, InterruptedException {
 		ISshSession session = null;
 		try {
 			session = openSession();
-			session.download(getResourcesSelectors(), getMaxPar());
+			session.download(getResourcesSpecifications(), getMaxPar());
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {
@@ -79,25 +67,31 @@ public class Download extends AbstractSshManagedOperation {
 		}
 	}
 
-	public List<ResourcesSelector> getResourcesSelectors() {
-		return _resourcesSelectors;
+	public List<RemoteResourcesSpecification> getResourcesSpecifications() {
+		return _remoteResourcesSpecifications;
 	}
 
-	public List<ResourcesSelector> setResourcesSelectors(
-			List<ResourcesSelector> rslist) {
-		if (rslist == null) {
+	public List<RemoteResourcesSpecification> setResourcesSelectors(
+			List<RemoteResourcesSpecification> rrss) {
+		if (rrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourcesSelector.class.getCanonicalName() + ">.");
+					+ RemoteResourcesSpecification.class.getCanonicalName()
+					+ ">.");
 		}
-		List<ResourcesSelector> previous = getResourcesSelectors();
-		_resourcesSelectors = rslist;
+		List<RemoteResourcesSpecification> previous = getResourcesSpecifications();
+		_remoteResourcesSpecifications = rrss;
 		return previous;
 	}
 
-	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.ADD)
-	public void addResourcesSelector(RemoteResourcesSelector rs) {
-		getResourcesSelectors().add(rs);
+	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.CREATE)
+	public RemoteResourcesSpecification createResourcesSpecification() {
+		File basedir = Melody.getContext().getProcessorManager()
+				.getSequenceDescriptor().getBaseDir();
+		RemoteResourcesSpecification rrs = new RemoteResourcesSpecification(
+				basedir);
+		getResourcesSpecifications().add(rrs);
+		return rrs;
 	}
 
 	public int getMaxPar() {

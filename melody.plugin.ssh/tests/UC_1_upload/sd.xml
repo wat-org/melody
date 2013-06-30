@@ -11,17 +11,18 @@
 		<echo message="Transfering files to 'IP:§[IP]§' ..."/>
 
 		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
-			<resources
-				match="**"
-				dir-modifiers="770"
-				remote-basedir="/tmp/melody/scp/UC_1_upload"
-				link-option="COPY_UNSAFE_LINKS" />
-			<resources
-				match="templates/content2.tmpl"
-				dir-modifiers="770"
-				remote-basedir="/tmp/melody/scp/UC_1_upload"
-				link-option="COPY_UNSAFE_LINKS"
-				template="y" />
+			<resources	src-basedir=""
+						match="**"
+						dest-basedir="/tmp/melody/scp/UC_1_upload"
+						dir-modifiers="770"
+						link-option="KEEP_LINKS" >
+				<include	match="templates/file1.tmpl"
+							template="y" />
+				<include	match="templates/file2.tmpl"
+							dest-path="templates/§[IP]§/file2.§[IP]§"
+							template="y" />
+				<exclude	match="static_myApp_myMod/content2.*" />
+			</resources>
 		</upload>
 
 		<echo message="Files successfully transfered to 'IP:§[IP]§'."/>

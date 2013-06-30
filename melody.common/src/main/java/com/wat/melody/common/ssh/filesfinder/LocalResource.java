@@ -1,6 +1,5 @@
-package com.wat.melody.common.ssh.impl.filefinder;
+package com.wat.melody.common.ssh.filesfinder;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,14 +9,11 @@ import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.LinkOption;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.TransferBehavior;
-import com.wat.melody.common.ssh.types.filesfinder.Resource;
-import com.wat.melody.common.ssh.types.filesfinder.ResourceSpecification;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * <p>
  * A {@link LocalResource} describe a single file or directory which was found
- * with {@link LocalResourcesFinder#findResources(ResourcesSelector)}.
+ * with {@link LocalResourcesFinder#findResources(ResourcesSpecification)}.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -26,29 +22,29 @@ import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 public class LocalResource implements Resource {
 
 	private Path _path;
-	private ResourcesSelector _resourcesSelector;
+	private ResourcesSpecification _resourcesSpecification;
 	private ResourceSpecification _resourceSpecification;
 
 	/**
 	 * @param path
 	 *            is the path of a file or directory.
 	 * @param rs
-	 *            is the {@link ResourcesSelector} which was used to find this
-	 *            file or directory.
+	 *            is the {@link ResourcesSpecification} which was used to find
+	 *            this file or directory.
 	 */
-	public LocalResource(Path path, ResourcesSelector rs) {
+	public LocalResource(Path path, ResourcesSpecification rs) {
 		super();
 		setPath(path);
-		setResourcesSelector(rs);
+		setResourcesSpecification(rs);
 		setResourceSpecification(rs);
 	}
 
-	public File getLocalBaseDir() {
-		return getResourcesSelector().getLocalBaseDir();
+	public String getSrcBaseDir() {
+		return getResourcesSpecification().getSrcBaseDir();
 	}
 
-	public String getRemoteBaseDir() {
-		return getResourcesSelector().getRemoteBaseDir();
+	public String getDestBaseDir() {
+		return getResourcesSpecification().getDestBaseDir();
 	}
 
 	public String getMatch() {
@@ -77,6 +73,10 @@ public class LocalResource implements Resource {
 
 	public GroupID getGroup() {
 		return getResourceSpecification().getGroup();
+	}
+
+	public String getDestPath() {
+		return getResourceSpecification().getDestPath();
 	}
 
 	/**
@@ -134,40 +134,40 @@ public class LocalResource implements Resource {
 	 * <pre>
 	 * Sample
 	 * 
-	 * local-basedir = /home/user/dir1/dir2
-	 * path          = /home/user/dir1/dir2/dir3/dir4/file.txt
+	 * src-basedir = /src/basedir
+	 * path        = /src/basedir/dir3/dir4/file.txt
 	 * 
-	 * will return     dir3/dir4/file.txt
+	 * will return   dir3/dir4/file.txt
 	 * </pre>
 	 * 
-	 * @return a {@link Path} which, when resolved from the local-basedir, is
+	 * @return a {@link Path} which, when resolved from the src-basedir, is
 	 *         equal to the path of this object.
 	 */
 	protected Path getRelativePath() {
-		return Paths.get(getLocalBaseDir().getPath()).relativize(getPath());
+		return Paths.get(getSrcBaseDir()).relativize(getPath());
 	}
 
 	/**
 	 * <pre>
 	 * Sample
 	 * 
-	 * local-basedir  = /home/user/dir1/dir2
-	 * path           = /home/user/dir1/dir2/dir3/dir4/file.txt
-	 * remote-basedir = /tmp
+	 * src-basedir  = /src/basedir
+	 * path         = /src/basedir/dir3/dir4/file.txt
+	 * dest-basedir = /dest/basedir
 	 * 
-	 * will return      /tmp/dir3/dir4/file.txt
+	 * will return    /dest/basedir/dir3/dir4/file.txt
 	 * </pre>
 	 * 
-	 * <p>
-	 * <i> * The resulting path can be a relative or absolute path, depending
-	 * the if the remote-basedir is relative or absolute ; <BR/>
-	 * </i>
-	 * </p>
-	 * 
-	 * @return the destination {@link Path} of this object.
+	 * @return the destination {@link Path} of this object (a relative or
+	 *         absolute path, depending the if the dest-basedir is relative or
+	 *         absolute).
 	 */
 	public Path getDestination() {
-		return Paths.get(getRemoteBaseDir()).resolve(getRelativePath());
+		/*
+		 * TODO : handle getDestPath() if defined. Override this computed
+		 * destination
+		 */
+		return Paths.get(getDestBaseDir()).resolve(getRelativePath());
 	}
 
 	/**
@@ -182,8 +182,7 @@ public class LocalResource implements Resource {
 		if (symTarget.isAbsolute()) {
 			return false;
 		}
-		int refLength = Paths.get(getLocalBaseDir().getPath()).normalize()
-				.getNameCount();
+		int refLength = Paths.get(getSrcBaseDir()).normalize().getNameCount();
 		Path computed = getPath().getParent();
 		for (Path p : symTarget) {
 			computed = computed.resolve(p).normalize();
@@ -205,10 +204,10 @@ public class LocalResource implements Resource {
 			str.append("file:");
 		}
 		str.append(getRelativePath());
-		str.append(", local-basedir:");
-		str.append(getLocalBaseDir());
-		str.append(", remote-basedir:");
-		str.append(getRemoteBaseDir());
+		str.append(", src-basedir:");
+		str.append(getSrcBaseDir());
+		str.append(", dest-basedir:");
+		str.append(getDestBaseDir());
 		str.append(", file-modifiers:");
 		str.append(getFileModifiers());
 		str.append(", dir-modifiers:");
@@ -233,7 +232,7 @@ public class LocalResource implements Resource {
 		if (anObject instanceof LocalResource) {
 			LocalResource sr = (LocalResource) anObject;
 			return getPath().equals(sr.getPath())
-					&& getRemoteBaseDir().equals(sr.getRemoteBaseDir());
+					&& getDestBaseDir().equals(sr.getDestBaseDir());
 		}
 		return false;
 	}
@@ -254,19 +253,19 @@ public class LocalResource implements Resource {
 		return previous;
 	}
 
-	public ResourcesSelector getResourcesSelector() {
-		return _resourcesSelector;
+	public ResourcesSpecification getResourcesSpecification() {
+		return _resourcesSpecification;
 	}
 
-	private ResourcesSelector setResourcesSelector(
-			ResourcesSelector resourceMatcher) {
+	private ResourcesSpecification setResourcesSpecification(
+			ResourcesSpecification resourceMatcher) {
 		if (resourceMatcher == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ ResourcesSelector.class.getCanonicalName() + ".");
+					+ ResourcesSpecification.class.getCanonicalName() + ".");
 		}
-		ResourcesSelector previous = getResourcesSelector();
-		_resourcesSelector = resourceMatcher;
+		ResourcesSpecification previous = getResourcesSpecification();
+		_resourcesSpecification = resourceMatcher;
 		return previous;
 	}
 

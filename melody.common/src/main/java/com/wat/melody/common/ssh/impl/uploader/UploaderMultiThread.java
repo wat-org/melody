@@ -13,10 +13,11 @@ import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
+import com.wat.melody.common.ssh.filesfinder.LocalResource;
+import com.wat.melody.common.ssh.filesfinder.LocalResourcesFinder;
+import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.ssh.impl.SshSession;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResource;
-import com.wat.melody.common.ssh.impl.filefinder.LocalResourcesFinder;
-import com.wat.melody.common.ssh.types.filesfinder.ResourcesSelector;
 
 /**
  * 
@@ -35,7 +36,7 @@ public class UploaderMultiThread {
 	protected static final short CRITICAL = 4;
 
 	private SshSession _session;
-	private List<ResourcesSelector> _resourcesList;
+	private List<LocalResourcesSpecification> _localResourcesSpecifications;
 	private int _maxPar;
 	private TemplatingHandler _templatingHandler;
 	private List<LocalResource> _localResources;
@@ -45,10 +46,11 @@ public class UploaderMultiThread {
 	private List<UploaderThread> _threads;
 	private ConsolidatedException _exceptions;
 
-	public UploaderMultiThread(SshSession session, List<ResourcesSelector> r,
-			int maxPar, TemplatingHandler th) {
+	public UploaderMultiThread(SshSession session,
+			List<LocalResourcesSpecification> r, int maxPar,
+			TemplatingHandler th) {
 		setSession(session);
-		setResourcesList(r);
+		setResourcesSpecifications(r);
 		setMaxPar(maxPar);
 		setTemplatingHandler(th);
 		setLocalResources(new ArrayList<LocalResource>());
@@ -61,7 +63,7 @@ public class UploaderMultiThread {
 
 	public void upload() throws UploaderException, InterruptedException {
 		// compute resources to upload
-		if (getResourcesList().size() == 0) {
+		if (getResourcesSpecifications().size() == 0) {
 			return;
 		}
 		computeLocalResources();
@@ -99,12 +101,12 @@ public class UploaderMultiThread {
 	}
 
 	private void computeLocalResources() throws UploaderException {
-		for (ResourcesSelector resources : getResourcesList()) {
+		for (ResourcesSpecification rs : getResourcesSpecifications()) {
 			try { // Add all found LocalResource to the global list
-				List<LocalResource> list;
-				list = LocalResourcesFinder.findResources(resources);
-				getLocalResources().removeAll(list); // remove duplicated
-				getLocalResources().addAll(list);
+				List<LocalResource> lrs;
+				lrs = LocalResourcesFinder.findResources(rs);
+				getLocalResources().removeAll(lrs); // remove duplicated
+				getLocalResources().addAll(lrs);
 			} catch (IOException Ex) {
 				throw new UploaderException(
 						Messages.UploadEx_IO_ERROR_WHILE_FINDING, Ex);
@@ -115,12 +117,12 @@ public class UploaderMultiThread {
 		}
 	}
 
-	protected void upload(ChannelSftp channel, LocalResource r) {
+	protected void upload(ChannelSftp channel, LocalResource lr) {
 		try {
-			new UploaderNoThread(channel, r, getTemplatingHandler()).upload();
+			new UploaderNoThread(channel, lr, getTemplatingHandler()).upload();
 		} catch (UploaderException Ex) {
 			UploaderException e = new UploaderException(Msg.bind(
-					Messages.UploadEx_FAILED, r), Ex);
+					Messages.UploadEx_FAILED, lr), Ex);
 			markState(UploaderMultiThread.FAILED);
 			getExceptions().addCause(e);
 		}
@@ -231,19 +233,20 @@ public class UploaderMultiThread {
 		return previous;
 	}
 
-	protected List<ResourcesSelector> getResourcesList() {
-		return _resourcesList;
+	protected List<LocalResourcesSpecification> getResourcesSpecifications() {
+		return _localResourcesSpecifications;
 	}
 
-	private List<ResourcesSelector> setResourcesList(
-			List<ResourcesSelector> resources) {
-		if (resources == null) {
+	private List<LocalResourcesSpecification> setResourcesSpecifications(
+			List<LocalResourcesSpecification> lrss) {
+		if (lrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourcesSelector.class.getCanonicalName() + ">.");
+					+ LocalResourcesSpecification.class.getCanonicalName()
+					+ ">.");
 		}
-		List<ResourcesSelector> previous = getResourcesList();
-		_resourcesList = resources;
+		List<LocalResourcesSpecification> previous = getResourcesSpecifications();
+		_localResourcesSpecifications = lrss;
 		return previous;
 	}
 
@@ -282,7 +285,7 @@ public class UploaderMultiThread {
 
 	/**
 	 * @return the list of {@link LocalResource}, computed from this object's
-	 *         {@link ResourcesSelector}.
+	 *         {@link ResourcesSpecification}.
 	 */
 	protected List<LocalResource> getLocalResources() {
 		return _localResources;

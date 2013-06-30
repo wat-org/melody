@@ -19,66 +19,61 @@
 
 			<upload host="§[IP]§" login="couille" keypair-name="§[melody:getInstanceKeyPairName(§[svr]§)]§" max-par="10" >
 			<!--
-			'resources' XML Nested Element allow to select files.
+			'resources' XML Nested Element allow to select files and directories.
 			Select files will be transfered on the remote computer.
+
+			Each element 'resources' and its nested element 'include' must have a 'match' XML attributes and may have a 'file-modifiers', 'dir-modifiers', 'group', 'link-option', 'transfer-behavior', 'template' and 'dest-path' XML Attributes :
+			* match : selects files whose name match the given pattern ;
+			* file-modifiers : the modifiers to apply to the selected file(s), once they have been transfered on the remote computer ;
+			* dir-modifiers :  the modifiers to apply to the selected directorie(s), once they have been transfered on the remote computer
+			* group : the group to apply to the selected file(s) and directorie(s), once they have been transfered on the remote computer
+			* link-option : specifies how to handle link, if the selected file(s) and directorie(s) is a (are) link(s) ;
+			* transfer-behavior : specifies what to do if the selected file(s) and directorie(s) already exists on the remote computer ;
+			* template : specifies if the selected file-s) should be templated before transfer ;
+			* dest-path : specifies the remote path of the selected file(s) and directorie(s) on the remote system. Override the computed destinaiton path, which is computed from dest-basedir + match ;
 			-->
+				<resources dir-modifiers="770"/>
 				<resources
+					src-basedir="."
 					match="**"
+					dest-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
 					dir-modifiers="770"/>
 				<resources
+					src-basedir="."
 					match="**"
-					remote-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
-					dir-modifiers="770"/>
-				<resources
-					match="**"
-					remote-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dest-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
 					dir-modifiers="774"/>
 				<resources
+					src-basedir="."
 					match="**"
-					remote-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dest-basedir="appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
 					dir-modifiers="774"/>
 				<resources
-					local-basedir="."
+					src-basedir="."
 					match="nothing"
-					remote-basedir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					dest-basedir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
 					file-modifiers="640"/>
 				<resources
-					remote-basedir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
+					src-basedir="."
+					dest-basedir="/tmp/test/appli/apache/web-§[/environment/@shortname]§-§[application]§-§[instance]§/www/html/"
 					file-modifiers="644">
-				<!--
-				Each 'include' must have a 'local-basedir', 'modifiers', 'group', 'remote-basedir' and 'match' XML Attributes.
-				* match : search files whose name match the given pattern
-				* local-basedir : the base directory for the search. (Relative to the 'sequence's basedir')
-				* remote-basedir : the remote-basedir of each files on the remote computer
-				* fileAtt : the modifiers to set to the file(s), once they have been transfered on the remote computer
-				* dirAtt :  the modifiers to set to the directories(s), once they have been transfered on the remote computer
-				* group : the group to set to the file(s) and directories, once they have been transfered on the remote computer
 
-				Note  :
-				Each 'local-basedir', 'modifiers', 'group' and 'remote-basedir' XML Attributes can be defined in the parent 'resources' XML Element.
-				-->
-					<include match="./static_§[application]§_§[module]§/**" file-modifiers="754" />
-					<include local-basedir="." match="./resources/marker/**" file-modifiers="754" />
-					<include local-basedir="." match="./resources/file with space.txt" file-modifiers="754" />
-					<include match="./resources/file with space.txt" file-modifiers="777" />
-					<include match="./resources/emptyfolder" file-modifiers="754" />
+					<include match="static_§[application]§_§[module]§/**" file-modifiers="754" />
+					<include match="resources/marker/**" file-modifiers="754" />
+					<include match="resources/file with space.txt" file-modifiers="754" />
+					<include match="resources/file with space.txt" file-modifiers="777" />
+					<include match="resources/emptyfolder" file-modifiers="754" />
 					<include match="nothing" file-modifiers="754" />
 
 				<!-- TEMPLATING SAMPLE
-				If the 'template' XML Attribute is set to 'true', then each matching file(s) will be specially instanciated for each remote computer.
-					<include match="templates/httpd_app/wls_plugin_for_apache.conf" remote-basedir="/appli/apache/https-§[§[svr]§/@IP_priv]§/wls_§[application]§-§[module]§.conf" template="true"/>
-					<include match="templates/httpd_app/jk_plugin_for_apache.conf" remote-basedir="/appli/apache/https-§[§[svr]§/@IP_priv]§/jk_§[application]§-§[module]§.conf" template="true" />
+				If the 'template' XML Attribute is set to 'true', then each matching file(s) will be specifically templated for each remote computer.
+					<include match="templates/httpd_app/wls_plugin_for_apache.conf" dest-path="/appli/apache/https-§[§[svr]§/@IP_priv]§/wls_§[application]§-§[module]§.conf" template="true"/>
+					<include match="templates/httpd_app/jk_plugin_for_apache.conf" dest-path="/appli/apache/https-§[§[svr]§/@IP_priv]§/jk_§[application]§-§[module]§.conf" template="true" />
 				-->
 
-					<exclude local-basedir="./resources/marker/" match="exclude.me" />
-					<exclude match="./static_§[application]§_§[module]§/content3.txt" />
+					<exclude match="resources/marker/exclude.me" />
+					<exclude match="static_§[application]§_§[module]§/content3.txt" />
 				</resources>
-				<!--
-				<resources
-					local-basedir="../.."
-					match="/echo/**"
-					dir-modifiers="440"/>
-				-->
 			</upload>
 
 			<echo message="+ Files successfully transfered to 'IP:§[IP]§'." />

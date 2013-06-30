@@ -1,4 +1,4 @@
-package com.wat.melody.common.ssh.types.filesfinder;
+package com.wat.melody.common.ssh.filesfinder;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ssh.types.GroupID;
@@ -71,9 +71,13 @@ public abstract class ResourceSpecification {
 	 */
 	public static final String TRANSFER_BEHAVIOR_ATTR = "transfer-behavior";
 
-	// Mandatory (verified by Task Factory)
-	private String _match = null;
-	// Mandatory with a default value
+	/**
+	 * Attribute, which specifies the path of the destination.
+	 */
+	public static final String DEST_PATH_ATTR = "dest-path";
+
+	// Mandatory (with a default value)
+	private String _match = "**";
 	private Modifiers _fileModifiers = DEFAULT_FILE_MODIFIERS;
 	private Modifiers _dirModifiers = DEFAULT_DIR_MODIFIERS;
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
@@ -81,16 +85,12 @@ public abstract class ResourceSpecification {
 	private boolean _template = false;
 	// Optional
 	private GroupID _group = null;
+	private String _destPath = null;
 
 	public ResourceSpecification() {
-		// This 0-arg constructor is used by the Task Factory
 	}
 
 	public ResourceSpecification(ResourceSpecification r) {
-		if (r.getMatch() == null) {
-			throw new IllegalArgumentException("invalid arg : the given "
-					+ ResourceSpecification.MATCH_ATTR + " is null.");
-		}
 		setFileModifiers(r.getFileModifiers());
 		setDirModifiers(r.getDirModifiers());
 		setLinkOption(r.getLinkOption());
@@ -98,6 +98,9 @@ public abstract class ResourceSpecification {
 		setTemplate(r.getTemplate());
 		if (r.getGroup() != null) {
 			setGroup(r.getGroup());
+		}
+		if (r.getDestPath() != null) {
+			setDestPath(r.getDestPath());
 		}
 	}
 
@@ -206,6 +209,22 @@ public abstract class ResourceSpecification {
 		}
 		GroupID previous = getGroup();
 		_group = group;
+		return previous;
+	}
+
+	public String getDestPath() {
+		return _destPath;
+	}
+
+	@Attribute(name = DEST_PATH_ATTR)
+	public String setDestPath(String DestPath) {
+		if (DestPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " " + "(the destination path).");
+		}
+		String previous = getDestPath();
+		_destPath = DestPath;
 		return previous;
 	}
 
