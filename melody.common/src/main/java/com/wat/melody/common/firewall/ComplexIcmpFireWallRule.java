@@ -32,19 +32,19 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder("{ ");
-		str.append("protocol: ");
+		str.append("protocol : ");
 		str.append(getProtocol());
-		str.append("from-ips, : ");
+		str.append(", from-ips : ");
 		str.append(getFromIpRanges());
-		str.append("to-ips, : ");
+		str.append(", to-ips : ");
 		str.append(getToIpRanges());
-		str.append("types, : ");
+		str.append(", types : ");
 		str.append(getTypes());
-		str.append("codes, : ");
+		str.append(", codes : ");
 		str.append(getCodes());
-		str.append("directions, : ");
+		str.append(", directions : ");
 		str.append(getDirections());
-		str.append("access, : ");
+		str.append(", access : ");
 		str.append(getAccess());
 		str.append(" }");
 		return str.toString();

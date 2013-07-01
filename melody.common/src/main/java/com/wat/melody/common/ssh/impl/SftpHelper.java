@@ -228,6 +228,9 @@ public abstract class SftpHelper {
 
 	public static List<RemoteResource> listrecurs(ChannelSftp chan, String dir,
 			ResourcesSpecification rs) throws SshSessionException {
+		/*
+		 * TODO : handle links on directory
+		 */
 		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
 		for (RemoteResource rm : list(chan, dir, rs)) {
 			rrs.add(rm);

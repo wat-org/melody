@@ -466,37 +466,32 @@ public abstract class XPathExpander {
 	}
 
 	private static String extractPart(String sMsg, int near) {
-		int relLeft = 100;
-		int relRight = 100;
 		if (sMsg == null) {
-			throw new IllegalArgumentException(relLeft + ": Not accepted. "
-					+ "Must be a valid String.");
+			return "";
 		}
 		if (near < 0) {
-			throw new IllegalArgumentException(relLeft + ": Not accepted. "
-					+ "Must be a positive integer.");
+			near = 0;
 		}
-		String left = "..... truncated datas .....\n";
-		String right = "\n...........................";
+		if (near > sMsg.length()) {
+			near = sMsg.length();
+		}
+		int relLeft = 100;
+		int relRight = 100;
+		String left = "-------- full datas -------\n";
+		String right = "\n---------------------------";
+		if (sMsg.length() > relLeft + relRight) {
+			left = "..... truncated datas .....\n";
+			right = "\n...........................";
+		}
+
 		int absLeft = near - relLeft;
 		int absRight = near + relRight;
-		if (absLeft > sMsg.length()) {
-			absLeft = sMsg.length() - (relLeft + relRight);
-			absRight = sMsg.length();
-		}
 		if (absLeft <= 0) {
 			absLeft = 0;
-			left = "----- full datas ----\n";
 			absRight = relLeft + relRight;
 		}
 		if (absRight >= sMsg.length()) {
 			absRight = sMsg.length();
-			right = "\n---------------------";
-			absLeft = sMsg.length() - (relLeft + relRight);
-		}
-		if (absLeft <= 0) {
-			absLeft = 0;
-			left = "----- full datas ----\n";
 		}
 
 		return left + sMsg.substring(absLeft, absRight).trim() + right;
