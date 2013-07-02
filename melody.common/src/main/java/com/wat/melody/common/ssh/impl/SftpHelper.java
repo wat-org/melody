@@ -32,6 +32,16 @@ public abstract class SftpHelper {
 		}
 	}
 
+	public static void scp_get(ChannelSftp chan, String source, String dest)
+			throws SshSessionException {
+		try {
+			chan.get(source, dest);
+		} catch (SftpException Ex) {
+			throw new SshSessionException(Msg.bind(Messages.SfptEx_GET, source,
+					dest), Ex);
+		}
+	}
+
 	public static void scp_mkdir(ChannelSftp chan, String dir)
 			throws SshSessionException {
 		try {

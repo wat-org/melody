@@ -40,85 +40,69 @@ class UploaderNoThread {
 	}
 
 	protected void upload() throws UploaderException {
-		LocalResource r = getLocalResource();
-		log.debug(Msg.bind(Messages.UploadMsg_BEGIN, r));
+		LocalResource lr = getLocalResource();
+		log.debug(Msg.bind(Messages.UploadMsg_BEGIN, lr));
 		try {
 			// ensure parent directory exists
-			Path dest = r.getDestination().normalize();
+			Path dest = lr.getDestination().normalize();
 			if (dest.getNameCount() > 1) {
 				SftpHelper.scp_mkdirs(getChannel(), dest.getParent());
 				// neither chmod nor chgrp.
 			}
 
 			// deal with resource, regarding its type
-			if (r.isSymbolicLink()) {
-				ln(r);
-			} else if (r.isDirectory()) {
-				mkdir(r.getDestination());
-				chmod(r.getDestination(), r.getDirModifiers());
-				chgrp(r.getDestination(), r.getGroup());
-			} else if (r.isFile()) {
-				template(r);
-				chmod(r.getDestination(), r.getFileModifiers());
-				chgrp(r.getDestination(), r.getGroup());
+			if (lr.isSymbolicLink()) {
+				ln(lr);
+			} else if (lr.isDirectory()) {
+				mkdir(lr.getDestination());
+				chmod(lr.getDestination(), lr.getDirModifiers());
+				chgrp(lr.getDestination(), lr.getGroup());
+			} else if (lr.isFile()) {
+				template(lr);
+				chmod(lr.getDestination(), lr.getFileModifiers());
+				chgrp(lr.getDestination(), lr.getGroup());
 			} else {
-				log.warn(Msg.bind(Messages.UploadMsg_NOTFOUND,
-						getLocalResource()));
+				log.warn(Msg.bind(Messages.UploadMsg_NOTFOUND, lr));
 				return;
 			}
 		} catch (SshSessionException Ex) {
 			throw new UploaderException(Ex);
 		}
-		log.info(Msg.bind(Messages.UploadMsg_END, r));
+		log.info(Msg.bind(Messages.UploadMsg_END, lr));
 	}
 
-	protected void ln(LocalResource r) throws SshSessionException {
-		if (r == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid "
-					+ LocalResource.class.getCanonicalName() + ".");
-		}
-		switch (r.getLinkOption()) {
+	protected void ln(LocalResource lr) throws SshSessionException {
+		switch (lr.getLinkOption()) {
 		case KEEP_LINKS:
-			ln_keep(r);
+			ln_keep(lr);
 			break;
 		case COPY_LINKS:
-			ln_copy(r);
+			ln_copy(lr);
 			break;
 		case COPY_UNSAFE_LINKS:
-			ln_copy_unsafe(r);
+			ln_copy_unsafe(lr);
 			break;
 		}
 	}
 
-	protected void ln_copy_unsafe(LocalResource r) throws SshSessionException {
-		if (r == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid "
-					+ LocalResource.class.getCanonicalName() + ".");
-		}
+	protected void ln_copy_unsafe(LocalResource lr) throws SshSessionException {
 		try {
-			if (r.isSafeLink()) {
-				ln_keep(r);
+			if (lr.isSafeLink()) {
+				ln_keep(lr);
 			} else {
-				ln_copy(r);
+				ln_copy(lr);
 			}
 		} catch (IOException Ex) {
 			throw new SshSessionException(Ex);
 		}
 	}
 
-	protected void ln_keep(LocalResource r) throws SshSessionException {
-		if (r == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid "
-					+ LocalResource.class.getCanonicalName() + ".");
-		}
-		String unixLink = SftpHelper.convertToUnixPath(r.getDestination());
+	protected void ln_keep(LocalResource lr) throws SshSessionException {
+		String unixLink = SftpHelper.convertToUnixPath(lr.getDestination());
 		String unixTarget;
 		try {
-			unixTarget = SftpHelper
-					.convertToUnixPath(r.getSymbolicLinkTarget());
+			unixTarget = SftpHelper.convertToUnixPath(lr
+					.getSymbolicLinkTarget());
 		} catch (IOException Ex) {
 			throw new SshSessionException(Ex);
 		}
@@ -129,14 +113,9 @@ class UploaderNoThread {
 		SftpHelper.scp_symlink(getChannel(), unixTarget, unixLink);
 	}
 
-	protected void ln_copy(LocalResource r) throws SshSessionException {
-		if (r == null) {
-			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid "
-					+ LocalResource.class.getCanonicalName() + ".");
-		}
-		if (!r.exists()) {
-			String unixPath = SftpHelper.convertToUnixPath(r.getDestination());
+	protected void ln_copy(LocalResource lr) throws SshSessionException {
+		if (!lr.exists()) {
+			String unixPath = SftpHelper.convertToUnixPath(lr.getDestination());
 			SftpATTRS attrs = SftpHelper.scp_lstat(getChannel(), unixPath);
 			if (attrs != null) {
 				if (attrs.isDir()) {
@@ -145,16 +124,16 @@ class UploaderNoThread {
 					SftpHelper.scp_rm(getChannel(), unixPath);
 				}
 			}
-			log.warn(Messages
-					.bind(Messages.UploadMsg_COPY_UNSAFE_IMPOSSIBLE, r));
-		} else if (r.isFile()) {
-			template(r);
-			chmod(r.getDestination(), r.getFileModifiers());
-			chgrp(r.getDestination(), r.getGroup());
+			log.warn(Messages.bind(Messages.UploadMsg_COPY_UNSAFE_IMPOSSIBLE,
+					lr));
+		} else if (lr.isFile()) {
+			template(lr);
+			chmod(lr.getDestination(), lr.getFileModifiers());
+			chgrp(lr.getDestination(), lr.getGroup());
 		} else {
-			mkdir(r.getDestination());
-			chmod(r.getDestination(), r.getDirModifiers());
-			chgrp(r.getDestination(), r.getGroup());
+			mkdir(lr.getDestination());
+			chmod(lr.getDestination(), lr.getDirModifiers());
+			chgrp(lr.getDestination(), lr.getGroup());
 		}
 	}
 

@@ -25,10 +25,11 @@ public class Messages extends NLS {
 	public static String DownloadMsg_BEGIN;
 	public static String DownloadMsg_END;
 	public static String DownloadMsg_FINISH;
+	public static String DownloadMsg_NOTFOUND;
+	public static String DownloadMsg_COPY_UNSAFE_IMPOSSIBLE;
 
-	public static String DownloadEx_MKDIRS;
-	public static String DownloadEx_READLINK;
-	public static String DownloadEx_LIST;
+	public static String FSEx_LN;
+	public static String FSEx_MKDIR;
 
 	public static String UploadEx_IO_ERROR_WHILE_FINDING;
 	public static String UploadEx_NO_TEMPLATING_HANDLER;
@@ -57,6 +58,7 @@ public class Messages extends NLS {
 	public static String SftpEx_CHMOD;
 	public static String SftpEx_CHGRP;
 	public static String SfptEx_PUT;
+	public static String SfptEx_GET;
 	public static String SftpEx_RMDIR;
 	public static String SftpEx_RM;
 	public static String SftpEx_READLINK;

@@ -84,6 +84,26 @@ public class RemoteResource implements Resource {
 	}
 
 	/**
+	 * @return <tt>true</tt> if this object's path points to a regular file,
+	 *         directory, or link (follow link). Note that if this object's path
+	 *         is a symbolic link which points to nothing, this will return
+	 *         <tt>false</tt>.
+	 */
+	public boolean exists() {
+		return isFile() || isDirectory();
+	}
+
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular file,
+	 *         directory, or link (no follow link). Note that if this object's
+	 *         path is a symbolic link which points to nothing, this will return
+	 *         <tt>true</tt>.
+	 */
+	public boolean lexists() {
+		return true;
+	}
+
+	/**
 	 * @return <tt>true</tt> if this object's path points to a regular file
 	 *         (follow link). Note that {@link #isSymbolicLink()} can return
 	 *         <tt>true</tt> too.
