@@ -30,19 +30,19 @@ public class SimpleIcmpFireWallRule extends SimpleAbstractFireWallRule {
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder("{ ");
-		str.append("protocol : ");
+		str.append("protocol: ");
 		str.append(getProtocol());
-		str.append(", from-ips : ");
+		str.append(", from-ips: ");
 		str.append(getFromIpRange());
-		str.append(", to-ips : ");
+		str.append(", to-ips: ");
 		str.append(getToIpRange());
-		str.append(", types : ");
+		str.append(", types: ");
 		str.append(getType());
-		str.append(", codes : ");
+		str.append(", codes: ");
 		str.append(getCode());
-		str.append(", directions : ");
+		str.append(", directions: ");
 		str.append(getDirection());
-		str.append(", access : ");
+		str.append(", access: ");
 		str.append(getAccess());
 		str.append(" }");
 		return str.toString();

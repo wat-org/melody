@@ -1,8 +1,10 @@
 package com.wat.melody.common.ssh.filesfinder;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.ChannelSftp;
+import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileAttributes;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.LinkOption;
 import com.wat.melody.common.ssh.types.Modifiers;
@@ -11,7 +13,9 @@ import com.wat.melody.common.ssh.types.TransferBehavior;
 /**
  * <p>
  * A {@link RemoteResource} describe a single file or directory which was found
- * with {@link RemoteResourcesFinder#findResources(ResourcesSpecification)}.
+ * with
+ * {@link RemoteResourcesFinder#findResources(ChannelSftp, ResourcesSpecification)}
+ * .
  * </p>
  * 
  * @author Guillaume Cornet
@@ -20,9 +24,9 @@ import com.wat.melody.common.ssh.types.TransferBehavior;
 public class RemoteResource implements Resource {
 
 	private LocalResource _localResource;
-	private SftpATTRS _remoteAttrs;
+	private RemoteFileAttributes _remoteAttrs;
 
-	public RemoteResource(Path path, SftpATTRS remoteAttrs,
+	public RemoteResource(Path path, RemoteFileAttributes remoteAttrs,
 			ResourcesSpecification rs) {
 		setLocalResource(new LocalResource(path, rs));
 		setRemoteAttrs(remoteAttrs);
@@ -80,21 +84,38 @@ public class RemoteResource implements Resource {
 	}
 
 	/**
-	 * @return <tt>true</tt> if this object's path is a directory. Note that if
-	 *         neither {@link #isLink()} nor {@link #isDir()} returns
-	 *         <tt>true</tt>, then it means that this object's path is a file.
+	 * @return <tt>true</tt> if this object's path points to a regular file
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
+	 *         <tt>true</tt> too.
 	 */
-	public boolean isDir() {
+	public boolean isFile() {
+		return getRemoteAttrs().isFile();
+	}
+
+	/**
+	 * @return <tt>true</tt> if this object's path points to a regular directory
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
+	 *         <tt>true</tt> too.
+	 */
+	public boolean isDirectory() {
 		return getRemoteAttrs().isDir();
 	}
 
 	/**
-	 * @return <tt>true</tt> if this object's path is a link. Note that if
-	 *         neither {@link #isLink()} nor {@link #isDir()} returns
-	 *         <tt>true</tt>, then it means that this object's path is a file.
+	 * @return <tt>true</tt> if this object's path points to a link (no follow
+	 *         link). Note that {@link #isFile()} or {@link #isDirectory()} can
+	 *         return <tt>true</tt> too. Also note that if this returns
+	 *         <tt>true</tt>, and if {@link #isFile()} and
+	 *         {@link #isDirectory()} both return <tt>false</tt>, then it means
+	 *         that this object's path points to a link, and this link's target
+	 *         is a non existent file or directory.
 	 */
-	public boolean isLink() {
+	public boolean isSymbolicLink() {
 		return getRemoteAttrs().isLink();
+	}
+
+	public Path getSymbolicLinkTarget() {
+		return getRemoteAttrs().getLinkTarget();
 	}
 
 	/**
@@ -133,11 +154,32 @@ public class RemoteResource implements Resource {
 		return getLocalResource().getDestination();
 	}
 
+	/**
+	 * @return {@code true} if this link's target doesn't points outside of the
+	 *         src-basedir and is not an absolute path.
+	 */
+	public boolean isSafeLink() {
+		Path symTarget = getSymbolicLinkTarget();
+		if (symTarget.isAbsolute()) {
+			return false;
+		}
+		int refLength = Paths.get(getSrcBaseDir()).normalize().getNameCount();
+		Path computed = getPath().getParent();
+		for (Path p : symTarget) {
+			computed = computed.resolve(p).normalize();
+			if (computed.getNameCount() < refLength) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder("{ ");
-		if (isLink()) {
+		if (isSymbolicLink()) {
 			str.append("link:");
-		} else if (isDir()) {
+		} else if (isDirectory()) {
 			str.append("directory:");
 		} else {
 			str.append("file:");
@@ -169,7 +211,7 @@ public class RemoteResource implements Resource {
 		if (anObject instanceof RemoteResource) {
 			RemoteResource sr = (RemoteResource) anObject;
 			return getPath().equals(sr.getPath())
-					&& getSrcBaseDir().equals(sr.getSrcBaseDir());
+					&& getDestBaseDir().equals(sr.getDestBaseDir());
 		}
 		return false;
 	}
@@ -189,17 +231,17 @@ public class RemoteResource implements Resource {
 		return previous;
 	}
 
-	private SftpATTRS getRemoteAttrs() {
+	private RemoteFileAttributes getRemoteAttrs() {
 		return _remoteAttrs;
 	}
 
-	private SftpATTRS setRemoteAttrs(SftpATTRS attrs) {
+	private RemoteFileAttributes setRemoteAttrs(RemoteFileAttributes attrs) {
 		if (attrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + SftpATTRS.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ RemoteFileAttributes.class.getCanonicalName() + ".");
 		}
-		SftpATTRS previous = getRemoteAttrs();
+		RemoteFileAttributes previous = getRemoteAttrs();
 		_remoteAttrs = attrs;
 		return previous;
 	}

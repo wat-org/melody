@@ -118,9 +118,13 @@ public class LocalResource implements Resource {
 	}
 
 	/**
-	 * @return <tt>true</tt> if this object's path directly points to a link.
-	 *         Note that {@link #isFile()} or {@link #isDirectory()} can return
-	 *         <tt>true</tt> too.
+	 * @return <tt>true</tt> if this object's path points to a link (no follow
+	 *         link). Note that {@link #isFile()} or {@link #isDirectory()} can
+	 *         return <tt>true</tt> too. Also note that if this returns
+	 *         <tt>true</tt>, and if {@link #isFile()} and
+	 *         {@link #isDirectory()} both return <tt>false</tt>, then it means
+	 *         that this object's path points to a link, and this link's target
+	 *         is a non existent file or directory.
 	 */
 	public boolean isSymbolicLink() {
 		return Files.isSymbolicLink(getPath());
@@ -183,7 +187,7 @@ public class LocalResource implements Resource {
 
 	/**
 	 * @return {@code true} if this link's target doesn't points outside of the
-	 *         local-basedir and is not an absolute path.
+	 *         src-basedir and is not an absolute path.
 	 * 
 	 * @throws IOException
 	 *             if an error occurred while retrieving the link's target.

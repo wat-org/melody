@@ -1,11 +1,7 @@
 package com.wat.melody.common.ssh.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -15,9 +11,6 @@ import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.LocalResource;
-import com.wat.melody.common.ssh.filesfinder.RemoteResource;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.TransferBehavior;
@@ -78,7 +71,23 @@ public abstract class SftpHelper {
 		try {
 			return chan.readlink(link);
 		} catch (SftpException Ex) {
+			if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				return null;
+			}
 			throw new SshSessionException(Msg.bind(Messages.SftpEx_READLINK,
+					link), Ex);
+		}
+	}
+
+	public static String scp_realpath(ChannelSftp chan, String link)
+			throws SshSessionException {
+		try {
+			return chan.realpath(link);
+		} catch (SftpException Ex) {
+			if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				return null;
+			}
+			throw new SshSessionException(Msg.bind(Messages.SftpEx_REALPATH,
 					link), Ex);
 		}
 	}
@@ -209,42 +218,6 @@ public abstract class SftpHelper {
 					unixDir), Ex);
 		}
 		scp_mkdir(chan, unixDir);
-	}
-
-	private static List<RemoteResource> list(ChannelSftp chan, String dir,
-			ResourcesSpecification rs) throws SshSessionException {
-		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
-		for (LsEntry entry : scp_ls(chan, dir)) {
-			if (entry.getAttrs().isDir()
-					&& (entry.getFilename().equals(".") || entry.getFilename()
-							.equals(".."))) {
-				continue;
-			}
-			rrs.add(new RemoteResource(Paths.get(dir + "/"
-					+ entry.getFilename()), entry.getAttrs(), rs));
-		}
-		return rrs;
-	}
-
-	public static List<RemoteResource> listrecurs(ChannelSftp chan, String dir,
-			ResourcesSpecification rs) throws SshSessionException {
-		/*
-		 * TODO : handle links on directory
-		 */
-		List<RemoteResource> rrs = new ArrayList<RemoteResource>();
-		for (RemoteResource rm : list(chan, dir, rs)) {
-			rrs.add(rm);
-			if (rm.isDir()) {
-				String unixDir = convertToUnixPath(rm.getPath());
-				try {
-					rrs.addAll(listrecurs(chan, unixDir, rs));
-				} catch (SshSessionException Ex) {
-					throw new SshSessionException(Msg.bind(
-							Messages.DownloadEx_LIST, dir), Ex);
-				}
-			}
-		}
-		return rrs;
 	}
 
 	/**
@@ -416,15 +389,6 @@ public abstract class SftpHelper {
 
 	public static String convertToUnixPath(Path path) {
 		return convertToUnixPath(path.toString());
-	}
-
-	public static String readLocalLink(LocalResource r)
-			throws SshSessionException {
-		try {
-			return convertToUnixPath(r.getSymbolicLinkTarget());
-		} catch (IOException Ex) {
-			throw new SshSessionException(Ex);
-		}
 	}
 
 }

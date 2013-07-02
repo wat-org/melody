@@ -11,6 +11,7 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.RemoteResource;
 import com.wat.melody.common.ssh.filesfinder.RemoteResourcesFinder;
 import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
@@ -98,10 +99,15 @@ public class DownloaderMultiThread {
 		try {
 			chan = getSession().openSftpChannel();
 			for (ResourcesSpecification rs : getResourcesSpecifications()) {
-				List<RemoteResource> rrs;
-				rrs = RemoteResourcesFinder.findResources(chan, rs);
-				getRemoteResources().removeAll(rrs); // remove duplicated
-				getRemoteResources().addAll(rrs);
+				try {
+					List<RemoteResource> rrs;
+					rrs = RemoteResourcesFinder.findResources(chan, rs);
+					getRemoteResources().removeAll(rrs); // remove duplicated
+					getRemoteResources().addAll(rrs);
+				} catch (SshSessionException Ex) {
+					throw new DownloaderException(
+							Messages.DownloadEx_IO_ERROR_WHILE_FINDING, Ex);
+				}
 			}
 		} finally {
 			if (chan != null) {

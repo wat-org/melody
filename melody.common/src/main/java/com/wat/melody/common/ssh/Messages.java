@@ -15,6 +15,7 @@ public class Messages extends NLS {
 	public static String SessionMsg_CNX;
 	public static String SessionMsg_CNX_OK;
 
+	public static String DownloadEx_IO_ERROR_WHILE_FINDING;
 	public static String DownloadEx_FAILED;
 	public static String DownloadEx_UNMANAGED;
 	public static String DownloadEx_MANAGED;
@@ -59,6 +60,7 @@ public class Messages extends NLS {
 	public static String SftpEx_RMDIR;
 	public static String SftpEx_RM;
 	public static String SftpEx_READLINK;
+	public static String SftpEx_REALPATH;
 	public static String SftpEx_LS;
 
 	public static String ExecEx_INTERRUPTED;

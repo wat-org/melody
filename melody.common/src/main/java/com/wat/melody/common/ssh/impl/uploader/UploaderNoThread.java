@@ -115,7 +115,13 @@ class UploaderNoThread {
 					+ LocalResource.class.getCanonicalName() + ".");
 		}
 		String unixLink = SftpHelper.convertToUnixPath(r.getDestination());
-		String unixTarget = SftpHelper.readLocalLink(r);
+		String unixTarget;
+		try {
+			unixTarget = SftpHelper
+					.convertToUnixPath(r.getSymbolicLinkTarget());
+		} catch (IOException Ex) {
+			throw new SshSessionException(Ex);
+		}
 		if (SftpHelper.scp_ensureLink(getChannel(), unixTarget, unixLink)) {
 			log.info(Messages.UploadMsg_DONT_UPLOAD_CAUSE_LINK_ALREADY_EXISTS);
 			return;
