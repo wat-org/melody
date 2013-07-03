@@ -81,7 +81,7 @@ public abstract class ResourceSpecification {
 	private Modifiers _fileModifiers = DEFAULT_FILE_MODIFIERS;
 	private Modifiers _dirModifiers = DEFAULT_DIR_MODIFIERS;
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
-	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_LOCAL_NEWER;
+	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_SRC_NEWER;
 	private boolean _template = false;
 	// Optional
 	private GroupID _group = null;

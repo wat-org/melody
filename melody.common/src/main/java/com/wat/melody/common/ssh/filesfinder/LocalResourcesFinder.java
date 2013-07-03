@@ -72,8 +72,9 @@ class Finder extends SimpleFileVisitor<Path> {
 
 	private void matches(Path path, BasicFileAttributes attrs) {
 		if (path != null && _matcher.matches(path)) {
-			// include path parent til topdir is reacher
-			// TODO : include path parent til topdir is reacher
+			/*
+			 * TODO : include path parent til topdir is reached.
+			 */
 			// include path
 			_localResources.add(new LocalResource(path, _rs));
 		}

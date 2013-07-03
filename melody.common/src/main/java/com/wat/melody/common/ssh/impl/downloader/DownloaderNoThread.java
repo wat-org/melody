@@ -13,6 +13,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileAttributes;
 import com.wat.melody.common.ssh.impl.FSHelper;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 import com.wat.melody.common.ssh.types.GroupID;
@@ -55,7 +56,8 @@ class DownloaderNoThread {
 				chmod(rr.getDestination(), rr.getDirModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else if (rr.isFile()) {
-				get(rr.getPath(), rr.getDestination(), rr.getTransferBehavior());
+				get(rr.getPath(), rr.getRemoteAttrs(), rr.getDestination(),
+						rr.getTransferBehavior());
 				chmod(rr.getDestination(), rr.getFileModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else {
@@ -69,7 +71,8 @@ class DownloaderNoThread {
 		log.info(Msg.bind(Messages.DownloadMsg_END, rr));
 	}
 
-	protected void ln(RemoteResource rr) throws SshSessionException {
+	protected void ln(RemoteResource rr) throws IOException,
+			SshSessionException {
 		switch (rr.getLinkOption()) {
 		case KEEP_LINKS:
 			ln_keep(rr);
@@ -83,7 +86,8 @@ class DownloaderNoThread {
 		}
 	}
 
-	protected void ln_copy_unsafe(RemoteResource rr) throws SshSessionException {
+	protected void ln_copy_unsafe(RemoteResource rr) throws IOException,
+			SshSessionException {
 		if (rr.isSafeLink()) {
 			ln_keep(rr);
 		} else {
@@ -91,15 +95,19 @@ class DownloaderNoThread {
 		}
 	}
 
-	protected void ln_keep(RemoteResource rr) throws SshSessionException {
+	protected void ln_keep(RemoteResource rr) throws IOException,
+			SshSessionException {
 		Path link = rr.getDestination();
 		Path target = rr.getSymbolicLinkTarget();
-		// TODO : ensure link
+		if (FSHelper.ensureLink(target, link)) {
+			log.info(Messages.DownloadMsg_DONT_DOWNLOAD_CAUSE_LINK_ALREADY_EXISTS);
+			return;
+		}
 		FSHelper.ln(link, target);
-
 	}
 
-	protected void ln_copy(RemoteResource rr) throws SshSessionException {
+	protected void ln_copy(RemoteResource rr) throws IOException,
+			SshSessionException {
 		if (!rr.exists()) {
 			String unixPath = SftpHelper.convertToUnixPath(rr.getDestination());
 			SftpATTRS attrs = SftpHelper.scp_lstat(getChannel(), unixPath);
@@ -113,7 +121,8 @@ class DownloaderNoThread {
 			log.warn(Messages.bind(Messages.DownloadMsg_COPY_UNSAFE_IMPOSSIBLE,
 					rr));
 		} else if (rr.isFile()) {
-			get(rr.getPath(), rr.getDestination(), rr.getTransferBehavior());
+			get(rr.getPath(), rr.getRemoteAttrs(), rr.getDestination(),
+					rr.getTransferBehavior());
 			chmod(rr.getDestination(), rr.getFileModifiers());
 			chgrp(rr.getDestination(), rr.getGroup());
 		} else {
@@ -123,18 +132,22 @@ class DownloaderNoThread {
 		}
 	}
 
-	protected void mkdir(Path dir) throws SshSessionException {
+	protected void mkdir(Path dir) throws IOException, SshSessionException {
 		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a " + Path.class.getCanonicalName()
 					+ " (a Directory Path, relative or absolute).");
 		}
-		// TODO : ensure Dir
+		if (FSHelper.ensureDir(dir)) {
+			log.info(Messages.DownloadMsg_DONT_DOWNLOAD_CAUSE_DIR_ALREADY_EXISTS);
+			return;
+		}
 		FSHelper.mkdir(dir);
 	}
 
-	protected void get(Path source, Path dest, TransferBehavior tb)
-			throws SshSessionException {
+	protected void get(Path source, RemoteFileAttributes remoteFileAttrs,
+			Path dest, TransferBehavior tb) throws IOException,
+			SshSessionException {
 		if (source == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid " + Path.class.getCanonicalName()
@@ -145,9 +158,12 @@ class DownloaderNoThread {
 					+ "Must be a valid " + Path.class.getCanonicalName()
 					+ " (the destination file Path).");
 		}
-		String unixFile = SftpHelper.convertToUnixPath(dest);
-		// TODO : ensure File
-		SftpHelper.scp_get(getChannel(), source.toString(), unixFile);
+		String unixFile = SftpHelper.convertToUnixPath(source);
+		if (FSHelper.ensureFile(remoteFileAttrs, dest, tb)) {
+			log.info(Messages.DownloadMsg_DONT_DOWNLOAD_CAUSE_FILE_ALREADY_EXISTS);
+			return;
+		}
+		SftpHelper.scp_get(getChannel(), unixFile, dest.toString());
 	}
 
 	protected void chmod(Path path, Modifiers modifiers)

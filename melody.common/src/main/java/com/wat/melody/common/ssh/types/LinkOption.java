@@ -13,11 +13,16 @@ import com.wat.melody.common.ssh.types.exception.IllegalLinkOptionException;
 public enum LinkOption {
 
 	/*
-	 * keep-links keep symlinks as symlinks
+	 * keep-links : will keep the symlink as a symlink ;
 	 * 
-	 * copy-links copy symlinks into referent file/dir
+	 * copy-links : will copy the symlink target into a file or a directory. If
+	 * the symlink target is invalid, it will be skipped ;
 	 * 
-	 * copy-unsafe-links only "unsafe" symlinks are transformed
+	 * copy-unsafe-links : will copy symlink target into a file or a directory
+	 * if the symlink is "unsafe". If the symlink target is invalid, it will be
+	 * skipped ;
+	 * 
+	 * TODO : skip-links : will skip symlink ;
 	 */
 	KEEP_LINKS("keep_links"), COPY_LINKS("copy_links"), COPY_UNSAFE_LINKS(
 			"copy_unsafe_links");

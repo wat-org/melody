@@ -12,8 +12,8 @@ import com.wat.melody.common.ssh.types.exception.IllegalTransferBehaviorExceptio
  */
 public enum TransferBehavior {
 
-	FORCE_OVERWRITE("force-overwrite"), OVERWRITE_IF_LOCAL_NEWER(
-			"overwrite-if-local-is-newer");
+	FORCE_OVERWRITE("force-overwrite"), OVERWRITE_IF_SRC_NEWER(
+			"overwrite-if-source-is-newer");
 
 	/**
 	 * <p>

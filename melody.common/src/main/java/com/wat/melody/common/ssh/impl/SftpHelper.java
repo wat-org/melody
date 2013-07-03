@@ -243,7 +243,7 @@ public abstract class SftpHelper {
 	 * @param target
 	 *            is the expected target.
 	 * @param path
-	 *            is the path of the link to validate.
+	 *            is the path of the remote link to validate.
 	 * 
 	 * @return <tt>true</tt> if the remote path exists, is a link (no follow
 	 *         link) and point to the correct target, meaning it is not
@@ -284,7 +284,8 @@ public abstract class SftpHelper {
 	 * <li>if the deletion failed : throws an exception ;</li>
 	 * </ul>
 	 * 
-	 * @param r
+	 * @param path
+	 *            is the path of the remote directory to validate.
 	 * 
 	 * @return <tt>true</tt> if the remote path exists and is a directory (no
 	 *         follow link), meaning it is not necessary to create such
@@ -304,11 +305,12 @@ public abstract class SftpHelper {
 		}
 		scp_rm(chan, path);
 		// delete operation works ? or not (permission issue) ?
-		/*
-		 * TODO : not a good way. Should remove everything first, then create
-		 * directory tree, then create link, then upload
-		 */
 		// but another thread may have create this directory between ...
+		/*
+		 * BTW : it is not a good way to do this. The upload process should
+		 * remove everything first, then create directory tree, then create
+		 * link, then upload files.
+		 */
 		attrs = scp_lstat(chan, path);
 		if (attrs == null) {
 			return false;
@@ -330,14 +332,19 @@ public abstract class SftpHelper {
 	 * <li>if the deletion failed : throws an exception ;</li>
 	 * </ul>
 	 * 
-	 * @param r
+	 * @param localfile
+	 *            is the path of the local file to transfer.
+	 * @param path
+	 *            is the path of the remote file to validate.
 	 * 
-	 * @return <tt>true</tt>, if the remote path if a file (no follow link)
-	 *         'equals' to the local file, or <tt>false</tt> otherwise.
+	 * @return <tt>true</tt>, if the remote path is a file (no follow link)
+	 *         'equals' to the local file, meaning it is not necessary to upload
+	 *         such file, or <tt>false</tt> otherwise, meaning it is now safe to
+	 *         upload such file.
 	 * 
 	 * @throws SshSessionException
 	 */
-	public static boolean scp_ensureFile(ChannelSftp chan, Path source,
+	public static boolean scp_ensureFile(ChannelSftp chan, Path localfile,
 			String path, TransferBehavior tb) throws SshSessionException {
 		SftpATTRS attrs = scp_lstat(chan, path);
 		if (attrs == null) {
@@ -346,7 +353,7 @@ public abstract class SftpHelper {
 		if (attrs.isDir()) {
 			scp_rmdirs(chan, path);
 		} else {
-			if (!attrs.isLink() && !shouldTranferFile(source, attrs, tb)) {
+			if (!attrs.isLink() && !shouldTranferFile(localfile, attrs, tb)) {
 				return true;
 			}
 			scp_rm(chan, path);
@@ -360,9 +367,9 @@ public abstract class SftpHelper {
 	}
 
 	/**
-	 * @param source
+	 * @param localfile
 	 *            is the local file to compare.
-	 * @param remoteFileAttrs
+	 * @param remotefileAttrs
 	 *            is the remote file attribute to compare.
 	 * @param tb
 	 *            is the desired transfer behavior.
@@ -373,24 +380,24 @@ public abstract class SftpHelper {
 	 *         <li>return <tt>true</tt> if the desired transfer behavior is
 	 *         equal to {@link TransferBehavior#FORCE_OVERWRITE} ;</li>
 	 *         <li>return <tt>true</tt> if the desired transfer behavior is
-	 *         equal to {@link TransferBehavior#OVERWRITE_IF_LOCAL_NEWER} and
-	 *         the local file size is not equal to the remote file size ;</li>
+	 *         equal to {@link TransferBehavior#OVERWRITE_IF_SRC_NEWER} and the
+	 *         local file size is not equal to the remote file size ;</li>
 	 *         <li>return <tt>true</tt> if the desired transfer behavior is
-	 *         equal to {@link TransferBehavior#OVERWRITE_IF_LOCAL_NEWER} and
-	 *         the local file size is equal to the remote file size and the
-	 *         local file last modification time is newer than the remote file
-	 *         last modification time ;</li>
+	 *         equal to {@link TransferBehavior#OVERWRITE_IF_SRC_NEWER} and the
+	 *         local file size is equal to the remote file size and the local
+	 *         file last modification time is newer than the remote file last
+	 *         modification time ;</li>
 	 *         <li>return <tt>false</tt> otherwise ;</li>
 	 *         </ul>
 	 */
-	private static boolean shouldTranferFile(Path source,
-			SftpATTRS remoteFileAttrs, TransferBehavior tb) {
+	private static boolean shouldTranferFile(Path localfile,
+			SftpATTRS remotefileAttrs, TransferBehavior tb) {
 		if (tb == TransferBehavior.FORCE_OVERWRITE) {
 			return true;
 		}
-		File f = source.toFile();
-		return !(remoteFileAttrs.getSize() == f.length() && remoteFileAttrs
-				.getMTime() > f.lastModified() / 1000);
+		File f = localfile.toFile();
+		return remotefileAttrs.getSize() != f.length()
+				|| remotefileAttrs.getMTime() < f.lastModified() / 1000;
 	}
 
 	public static String convertToUnixPath(String path) {

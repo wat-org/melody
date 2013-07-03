@@ -15,7 +15,7 @@
 						match="**"
 						dest-basedir="/tmp/melody/scp/UC_1_upload"
 						dir-modifiers="770"
-						link-option="KEEP_LINKS" >
+						link-option="COPY_UNSAFE_LINKS" >
 				<include	match="templates/file1.tmpl"
 							template="y" />
 				<include	match="templates/file2.tmpl"

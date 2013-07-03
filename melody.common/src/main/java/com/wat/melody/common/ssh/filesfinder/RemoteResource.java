@@ -251,7 +251,7 @@ public class RemoteResource implements Resource {
 		return previous;
 	}
 
-	private RemoteFileAttributes getRemoteAttrs() {
+	public RemoteFileAttributes getRemoteAttrs() {
 		return _remoteAttrs;
 	}
 

@@ -95,8 +95,9 @@ class RemoteFinder extends RemoteSimpleFileVisitor<Path> {
 
 	private void matches(Path path, RemoteFileAttributes attrs) {
 		if (path != null && _matcher.matches(path)) {
-			// include path parent til topdir is reacher
-			// TODO : include path parent til topdir is reacher
+			/*
+			 * TODO : include path parent til topdir is reached.
+			 */
 			// include path
 			_remoteResources.add(new RemoteResource(path, attrs, _rs));
 		}
