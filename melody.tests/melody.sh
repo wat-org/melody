@@ -26,8 +26,8 @@ declare JAVA_OPTS="-Dmelody.default.global.configuration.file=${defaultGlobalCon
 #
 declare FATAL="FATAL"
 declare ERROR="ERROR"
-declare WARN="WARN"
-declare INFO="INFO"
+declare WARN="WARN "
+declare INFO="INFO "
 declare DEBUG="DEBUG"
 declare TRACE="TRACE"
 
@@ -38,7 +38,7 @@ myecho() {
   # $1 : same as echo ; is either "-n" or "-e" or "ne" or ""
   # $2 : message
   # $3 : severity (DEBUG, INFO, WARN, ERROR, FATAL) 
-  echo $1 $(date "+%F %T.%N" | cut -b1-23) "$3" "$2"
+  echo $1 $(date "+[%F] [%T,%3N]") "[$3]" "$2"
   return 0
 }
 
