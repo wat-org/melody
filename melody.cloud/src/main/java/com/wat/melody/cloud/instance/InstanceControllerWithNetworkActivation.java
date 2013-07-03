@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.instance;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -52,8 +52,8 @@ import com.wat.melody.common.network.PortRange;
 public class InstanceControllerWithNetworkActivation extends
 		BaseInstanceController implements InstanceControllerListener {
 
-	private static Log log = LogFactory
-			.getLog(InstanceControllerWithNetworkActivation.class);
+	private static Logger log = LoggerFactory
+			.getLogger(InstanceControllerWithNetworkActivation.class);
 
 	private InstanceController _instanceController;
 	private NetworkActivator _networkActivator;

@@ -2,13 +2,13 @@ package com.wat.cloud.libvirt;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.DiskDevice;
@@ -36,7 +36,7 @@ import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
  */
 public abstract class LibVirtCloudDisk {
 
-	private static Log log = LogFactory.getLog(LibVirtCloudDisk.class);
+	private static Logger log = LoggerFactory.getLogger(LibVirtCloudDisk.class);
 
 	public static DiskDeviceList getDiskDevices(Domain d) {
 		if (d == null) {

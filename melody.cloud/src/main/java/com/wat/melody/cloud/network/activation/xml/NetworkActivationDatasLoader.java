@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.network.activation.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.network.Messages;
@@ -23,8 +23,8 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public abstract class NetworkActivationDatasLoader {
 
-	protected static Log log = LogFactory
-			.getLog(NetworkActivationDatasLoader.class);
+	protected static Logger log = LoggerFactory
+			.getLogger(NetworkActivationDatasLoader.class);
 
 	/**
 	 * XML attribute of the Network Management Element, which indicate if the

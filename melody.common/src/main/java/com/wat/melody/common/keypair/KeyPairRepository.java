@@ -13,8 +13,8 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.IFileBased;
@@ -50,7 +50,8 @@ import com.wat.melody.common.messages.Msg;
  */
 public class KeyPairRepository implements IFileBased {
 
-	private static Log log = LogFactory.getLog(KeyPairRepository.class);
+	private static Logger log = LoggerFactory
+			.getLogger(KeyPairRepository.class);
 
 	private static Map<KeyPairRepositoryPath, KeyPairRepository> REGISTERED_REPOS = new HashMap<KeyPairRepositoryPath, KeyPairRepository>();
 

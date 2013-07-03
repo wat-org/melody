@@ -1,8 +1,8 @@
 package com.wat.cloud.libvirt;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.endpoint.ContextRoot;
 import com.wat.melody.common.network.Host;
@@ -18,8 +18,8 @@ import com.wat.melody.common.network.Port;
  */
 public class LibVirtCloudServicesEndpoint {
 
-	private static Log log = LogFactory
-			.getLog(LibVirtCloudServicesEndpoint.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LibVirtCloudServicesEndpoint.class);
 
 	private static LibVirtCloudServicesEndpoint _singleton = null;
 

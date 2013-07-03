@@ -7,8 +7,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -21,8 +21,8 @@ import org.apache.commons.logging.LogFactory;
 @Path("/Rest")
 public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 
-	private static Log log = LogFactory
-			.getLog(LibVirtCloudRestServicesImpl.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LibVirtCloudRestServicesImpl.class);
 
 	@Context
 	HttpServletRequest request;

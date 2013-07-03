@@ -3,14 +3,21 @@ package com.wat.melody.cli;
 import java.io.IOException;
 import java.lang.Thread.State;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.utils.ReturnCode;
 
 public class Launcher {
+
+	static {
+		// will redirect (e.g. bridge) JUL (java.util.logging) to SLF4J
+		SLF4JBridgeHandler.removeHandlersForRootLogger();
+		SLF4JBridgeHandler.install();
+	}
 
 	/**
 	 * Launch the processing sequence. First, parse the command line, then fill
@@ -46,7 +53,7 @@ public class Launcher {
 		}
 
 		// The logger can only be created after log4j's initialization
-		Log log = LogFactory.getLog(Launcher.class);
+		Logger log = LoggerFactory.getLogger(Launcher.class);
 		ShutdownHook sdh = null;
 		// DefaultProcessingListener dpl = null;
 		ReturnCode iReturnCode = ReturnCode.ERRGEN;
@@ -70,7 +77,7 @@ public class Launcher {
 		} catch (Throwable Ex) {
 			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			log.fatal(e.toString());
+			log.error(e.toString());
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
 			// if (pm != null && dpl != null) {

@@ -2,8 +2,8 @@ package com.wat.melody.common.ssh.impl;
 
 import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -18,7 +18,7 @@ import com.wat.melody.common.ssh.Messages;
  */
 class RemoteExec {
 
-	private static Log log = LogFactory.getLog(RemoteExec.class);
+	private static Logger log = LoggerFactory.getLogger(RemoteExec.class);
 
 	private SshSession _session;
 	private String _cmd;

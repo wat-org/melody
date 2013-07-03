@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -45,7 +45,8 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public abstract class LibVirtCloudFireWall {
 
-	private static Log log = LogFactory.getLog(LibVirtCloudFireWall.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LibVirtCloudFireWall.class);
 
 	public static FireWallRules getFireWallRules(Domain d,
 			NetworkDeviceName netdev) {

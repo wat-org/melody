@@ -3,8 +3,8 @@ package com.wat.melody.core.nativeplugin.synchronize;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.messages.Msg;
@@ -21,7 +21,7 @@ import com.wat.melody.core.nativeplugin.synchronize.types.Semaphore;
  */
 public abstract class LockManager {
 
-	private static Log log = LogFactory.getLog(LockManager.class);
+	private static Logger log = LoggerFactory.getLogger(LockManager.class);
 
 	private static Map<LockId, Semaphore> lockTableStates = new HashMap<LockId, Semaphore>();
 

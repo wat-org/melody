@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -33,7 +33,8 @@ import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
  */
 public class SshManagedSession implements ISshSession {
 
-	private static Log log = LogFactory.getLog(SshManagedSession.class);
+	private static Logger log = LoggerFactory
+			.getLogger(SshManagedSession.class);
 
 	private ISshSession _session = null;
 	private ISshUserDatas _sshManagementUserDatas = null;

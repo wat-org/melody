@@ -2,8 +2,8 @@ package com.wat.melody.common.ssh.impl;
 
 import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.log.LogThreshold;
 
@@ -14,7 +14,8 @@ import com.wat.melody.common.log.LogThreshold;
  */
 public class LoggerOutputStream extends OutputStream {
 
-	private static Log log = LogFactory.getLog(LoggerOutputStream.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LoggerOutputStream.class);
 
 	protected StringBuffer _buffer;
 	private String _prefix;
@@ -170,7 +171,7 @@ public class LoggerOutputStream extends OutputStream {
 			log.error(msg);
 			break;
 		case FATAL:
-			log.fatal(msg);
+			log.error(msg);
 			break;
 		case OFF:
 			break;

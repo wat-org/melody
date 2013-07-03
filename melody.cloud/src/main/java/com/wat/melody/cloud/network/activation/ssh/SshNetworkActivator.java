@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.network.activation.ssh;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
@@ -36,7 +36,8 @@ import com.wat.melody.common.ssh.impl.SshUserDatas;
  */
 public class SshNetworkActivator implements NetworkActivator {
 
-	private static Log log = LogFactory.getLog(SshNetworkActivator.class);
+	private static Logger log = LoggerFactory
+			.getLogger(SshNetworkActivator.class);
 
 	private SshNetworkActivationDatas _activationDatas;
 	private ISshSessionConfiguration _configuration;

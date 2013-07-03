@@ -2,8 +2,8 @@ package com.wat.cloud.aws.ec2;
 
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -25,7 +25,8 @@ import com.wat.melody.common.messages.Msg;
  */
 public class AwsEc2CloudNetwork {
 
-	private static Log log = LogFactory.getLog(AwsEc2CloudNetwork.class);
+	private static Logger log = LoggerFactory
+			.getLogger(AwsEc2CloudNetwork.class);
 
 	/**
 	 * @param i

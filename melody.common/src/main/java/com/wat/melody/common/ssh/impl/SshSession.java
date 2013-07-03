@@ -3,8 +3,8 @@ package com.wat.melody.common.ssh.impl;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -39,7 +39,7 @@ import com.wat.melody.common.ssh.impl.uploader.UploaderMultiThread;
  */
 public class SshSession implements ISshSession {
 
-	private static Log log = LogFactory.getLog(SshSession.class);
+	private static Logger log = LoggerFactory.getLogger(SshSession.class);
 
 	private static JSch JSCH = new JSch();
 

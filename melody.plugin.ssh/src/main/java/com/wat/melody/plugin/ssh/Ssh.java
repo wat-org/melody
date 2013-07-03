@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
@@ -28,7 +28,7 @@ import com.wat.melody.plugin.ssh.common.types.Exec;
  */
 public class Ssh extends AbstractSshManagedOperation {
 
-	private static Log log = LogFactory.getLog(Ssh.class);
+	private static Logger log = LoggerFactory.getLogger(Ssh.class);
 
 	/**
 	 * Task's name

@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
@@ -25,7 +25,7 @@ import com.wat.melody.plugin.echo.exception.EchoException;
  */
 public class Echo implements ITask {
 
-	private static Log log = LogFactory.getLog(Echo.class);
+	private static Logger log = LoggerFactory.getLogger(Echo.class);
 
 	/**
 	 * Task's name
@@ -169,7 +169,7 @@ public class Echo implements ITask {
 				log.error(msg);
 				break;
 			case FATAL:
-				log.fatal(msg);
+				log.error(msg);
 			case OFF:
 				break;
 			}

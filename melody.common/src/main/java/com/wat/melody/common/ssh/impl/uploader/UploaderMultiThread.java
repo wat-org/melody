@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.ConsolidatedException;
@@ -26,7 +26,8 @@ import com.wat.melody.common.ssh.impl.SshSession;
  */
 public class UploaderMultiThread {
 
-	private static Log log = LogFactory.getLog(UploaderMultiThread.class);
+	private static Logger log = LoggerFactory
+			.getLogger(UploaderMultiThread.class);
 
 	protected static final short NEW = 16;
 	protected static final short RUNNING = 8;

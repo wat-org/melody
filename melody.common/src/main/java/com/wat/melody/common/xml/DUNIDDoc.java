@@ -3,8 +3,8 @@ package com.wat.melody.common.xml;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,7 +39,7 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public class DUNIDDoc extends Doc implements EventListener {
 
-	private static Log log = LogFactory.getLog(DUNIDDoc.class);
+	private static Logger log = LoggerFactory.getLogger(DUNIDDoc.class);
 
 	public static final String DUNID_ATTR = "__DUNID__";
 
@@ -316,10 +316,10 @@ public class DUNIDDoc extends Doc implements EventListener {
 				fireElementRemovedEvent(e);
 			}
 		} catch (MelodyException Ex) {
-			log.fatal(new NodeRelatedException((Node) e.getTarget(),
+			log.error(new NodeRelatedException((Node) e.getTarget(),
 					Messages.DUNIDDocEx_FORBIDDEN_OP, Ex).toString());
 		} catch (Throwable Ex) {
-			log.fatal(new NodeRelatedException((Node) e.getTarget(),
+			log.error(new NodeRelatedException((Node) e.getTarget(),
 					Messages.DUNIDDocEx_UNEXPECTED_ERR, Ex).toString());
 		}
 	}

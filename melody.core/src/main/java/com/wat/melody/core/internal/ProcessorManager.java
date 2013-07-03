@@ -5,8 +5,8 @@ import java.util.List;
 
 import javax.xml.xpath.XPath;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.api.IPlugInConfiguration;
@@ -74,7 +74,7 @@ import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
  */
 public final class ProcessorManager implements IProcessorManager, Runnable {
 
-	private static Log log = LogFactory.getLog(ProcessorManager.class);
+	private static Logger log = LoggerFactory.getLogger(ProcessorManager.class);
 
 	private TaskFactory _taskFactory;
 	private String _workingFolderPath;
@@ -919,4 +919,5 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			Melody.popContext();
 		}
 	}
+
 }

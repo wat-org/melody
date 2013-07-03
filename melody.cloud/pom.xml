@@ -34,9 +34,9 @@
 			<version>3.8.0.v20120529-1548</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
 		</dependency>
 	</dependencies>
 

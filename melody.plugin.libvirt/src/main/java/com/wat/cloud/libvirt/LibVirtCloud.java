@@ -8,8 +8,6 @@ import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
@@ -17,6 +15,8 @@ import org.libvirt.Error.ErrorNumber;
 import org.libvirt.LibvirtException;
 import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -49,7 +49,7 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public abstract class LibVirtCloud {
 
-	private static Log log = LogFactory.getLog(LibVirtCloud.class);
+	private static Logger log = LoggerFactory.getLogger(LibVirtCloud.class);
 
 	public static final String LIBVIRT_CLOUD_IMG_CONF = "/Cloud/libvirt/conf.xml";
 	protected static Doc conf = loadLibVirtCloudConfiguration();

@@ -9,11 +9,11 @@ import java.security.spec.InvalidKeySpecException;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.common.keypair.KeyPairHelper;
@@ -29,7 +29,8 @@ import com.wat.melody.common.keypair.KeyPairName;
  */
 public abstract class LibVirtCloudKeyPair {
 
-	private static Log log = LogFactory.getLog(LibVirtCloudKeyPair.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LibVirtCloudKeyPair.class);
 
 	/**
 	 * <p>

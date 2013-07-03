@@ -1,7 +1,7 @@
 package com.wat.melody.plugin.sleep;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
@@ -15,7 +15,7 @@ import com.wat.melody.common.messages.Msg;
  */
 public class Sleep implements ITask {
 
-	private static Log log = LogFactory.getLog(Sleep.class);
+	private static Logger log = LoggerFactory.getLogger(Sleep.class);
 
 	/**
 	 * Task's name

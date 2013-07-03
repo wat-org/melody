@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.instance.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.api.ITaskContext;
@@ -32,8 +32,8 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
  */
 public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 
-	private static Log log = LogFactory
-			.getLog(NetworkActivatorFactoryRelatedToAnInstanceElement.class);
+	private static Logger log = LoggerFactory
+			.getLogger(NetworkActivatorFactoryRelatedToAnInstanceElement.class);
 
 	/**
 	 * @param configurationCallBack

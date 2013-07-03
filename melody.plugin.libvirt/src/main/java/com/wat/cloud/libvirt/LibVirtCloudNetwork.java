@@ -6,12 +6,12 @@ import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -39,7 +39,8 @@ import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
  */
 public abstract class LibVirtCloudNetwork {
 
-	private static Log log = LogFactory.getLog(LibVirtCloudNetwork.class);
+	private static Logger log = LoggerFactory
+			.getLogger(LibVirtCloudNetwork.class);
 
 	public static final String LIBVIRT_CLOUD_NET_CONF = "/Cloud/libvirt/conf-net.xml";
 	protected static Doc netconf = loadLibVirtCloudNetworkConfiguration();

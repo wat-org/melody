@@ -1,7 +1,7 @@
 package com.wat.cloud.aws.ec2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -20,7 +20,8 @@ import com.wat.melody.common.messages.Msg;
  */
 public class AwsEc2CloudKeyPair {
 
-	private static Log log = LogFactory.getLog(AwsEc2CloudKeyPair.class);
+	private static Logger log = LoggerFactory
+			.getLogger(AwsEc2CloudKeyPair.class);
 
 	/**
 	 * <p>

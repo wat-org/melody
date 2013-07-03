@@ -1,7 +1,7 @@
 package com.wat.melody.cloud.instance;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
@@ -21,7 +21,8 @@ import com.wat.melody.common.messages.Msg;
  */
 public abstract class DefaultInstanceController extends BaseInstanceController {
 
-	private static Log log = LogFactory.getLog(DefaultInstanceController.class);
+	private static Logger log = LoggerFactory
+			.getLogger(DefaultInstanceController.class);
 
 	private String _instanceId;
 

@@ -3,8 +3,8 @@ package com.wat.cloud.aws.ec2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -42,7 +42,8 @@ import com.wat.melody.common.network.exception.IllegalPortRangeException;
  */
 public abstract class AwsEc2CloudFireWall {
 
-	private static Log log = LogFactory.getLog(AwsEc2CloudFireWall.class);
+	private static Logger log = LoggerFactory
+			.getLogger(AwsEc2CloudFireWall.class);
 
 	public static FireWallRules getFireWallRules(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
