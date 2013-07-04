@@ -12,6 +12,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.RemoteResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
@@ -39,12 +40,12 @@ public class Download extends AbstractSshManagedOperation {
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<RemoteResourcesSpecification> _remoteResourcesSpecifications;
+	private List<ResourcesSpecification> _resourcesSpecifications;
 	private int _maxPar;
 
 	public Download() {
 		super();
-		setResourcesSelectors(new ArrayList<RemoteResourcesSpecification>());
+		setResourcesSpecifications(new ArrayList<ResourcesSpecification>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -67,29 +68,27 @@ public class Download extends AbstractSshManagedOperation {
 		}
 	}
 
-	public List<RemoteResourcesSpecification> getResourcesSpecifications() {
-		return _remoteResourcesSpecifications;
+	public List<ResourcesSpecification> getResourcesSpecifications() {
+		return _resourcesSpecifications;
 	}
 
-	public List<RemoteResourcesSpecification> setResourcesSelectors(
-			List<RemoteResourcesSpecification> rrss) {
+	public List<ResourcesSpecification> setResourcesSpecifications(
+			List<ResourcesSpecification> rrss) {
 		if (rrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ RemoteResourcesSpecification.class.getCanonicalName()
-					+ ">.");
+					+ ResourcesSpecification.class.getCanonicalName() + ">.");
 		}
-		List<RemoteResourcesSpecification> previous = getResourcesSpecifications();
-		_remoteResourcesSpecifications = rrss;
+		List<ResourcesSpecification> previous = getResourcesSpecifications();
+		_resourcesSpecifications = rrss;
 		return previous;
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.CREATE)
-	public RemoteResourcesSpecification createResourcesSpecification() {
+	public ResourcesSpecification createResourcesSpecification() {
 		File basedir = Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor().getBaseDir();
-		RemoteResourcesSpecification rrs = new RemoteResourcesSpecification(
-				basedir);
+		ResourcesSpecification rrs = new RemoteResourcesSpecification(basedir);
 		getResourcesSpecifications().add(rrs);
 		return rrs;
 	}

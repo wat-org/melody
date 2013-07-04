@@ -1,24 +1,24 @@
-package com.wat.melody.common.ssh.impl.uploader;
+package com.wat.melody.common.ssh.impl.transfer;
 
 import java.lang.Thread.State;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ssh.filesfinder.LocalResource;
+import com.wat.melody.common.ssh.filesfinder.Resource;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-class UploaderThread implements Runnable {
+public class TransferThread implements Runnable {
 
-	private UploaderMultiThread _upload;
+	private TransferMultiThread _transferMultiThread;
 	private Thread _thread;
 	private Throwable _finalError;
 
-	protected UploaderThread(UploaderMultiThread p, int index) {
-		setUploader(p);
+	protected TransferThread(TransferMultiThread p, int index) {
+		setTransferMultiThread(p);
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
 		setFinalError(null);
@@ -26,17 +26,17 @@ class UploaderThread implements Runnable {
 
 	protected short getFinalState() {
 		if (getThread().getState() == State.NEW) {
-			return UploaderMultiThread.NEW;
+			return TransferMultiThread.NEW;
 		} else if (getThread().getState() != State.TERMINATED) {
-			return UploaderMultiThread.RUNNING;
+			return TransferMultiThread.RUNNING;
 		} else if (getFinalError() == null) {
-			return UploaderMultiThread.SUCCEED;
+			return TransferMultiThread.SUCCEED;
 		} else if (getFinalError() instanceof MelodyException) {
-			return UploaderMultiThread.FAILED;
+			return TransferMultiThread.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
-			return UploaderMultiThread.INTERRUPTED;
+			return TransferMultiThread.INTERRUPTED;
 		} else {
-			return UploaderMultiThread.CRITICAL;
+			return TransferMultiThread.CRITICAL;
 		}
 	}
 
@@ -60,18 +60,17 @@ class UploaderThread implements Runnable {
 
 	@Override
 	public void run() {
+		// TODO : channel should be passed in constructor and stored in a member
 		ChannelSftp channel = null;
 		try {
-			channel = getUploader().getSession().openSftpChannel();
+			channel = getTransferMultiThread().getSession().openSftpChannel();
 			while (true) {
-				LocalResource r = null;
-				synchronized (getUploader().getLocalResources()) {
-					if (getUploader().getLocalResources().size() == 0) {
-						return;
-					}
-					r = getUploader().getLocalResources().remove(0);
+				Resource r = getTransferMultiThread()
+						.getNextResourceToTransfer();
+				if (r == null) {
+					return;
 				}
-				getUploader().upload(channel, r);
+				getTransferMultiThread()._transfer(channel, r);
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);
@@ -82,17 +81,17 @@ class UploaderThread implements Runnable {
 		}
 	}
 
-	private UploaderMultiThread getUploader() {
-		return _upload;
+	private TransferMultiThread getTransferMultiThread() {
+		return _transferMultiThread;
 	}
 
-	private void setUploader(UploaderMultiThread p) {
+	private void setTransferMultiThread(TransferMultiThread p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ UploaderMultiThread.class.getCanonicalName() + ".");
+					+ TransferMultiThread.class.getCanonicalName() + ".");
 		}
-		_upload = p;
+		_transferMultiThread = p;
 	}
 
 	private Thread getThread() {

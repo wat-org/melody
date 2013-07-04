@@ -8,7 +8,7 @@
 		<property name="IP" value="127.0.0.1"/>
 		<property name="property1" value="salut les filles"/>
 
-		<echo message="Receiving files from 'IP:§[IP]§' ..."/>
+		<echo message="Transferring files from 'IP:§[IP]§' ..."/>
 
 		<download host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
 			<resources
@@ -24,7 +24,7 @@
 			</resources>
 		</download>
 
-		<echo message="Files successfully recevied from 'IP:§[IP]§'."/>
+		<echo message="Files successfully transferred from 'IP:§[IP]§'."/>
 
 	</order>
 

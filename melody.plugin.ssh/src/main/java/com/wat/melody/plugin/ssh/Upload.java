@@ -20,6 +20,7 @@ import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
 import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
+import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
 import com.wat.melody.plugin.ssh.common.Messages;
@@ -49,14 +50,14 @@ public class Upload extends AbstractSshManagedOperation implements
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<LocalResourcesSpecification> _localResourcesSpecifications;
+	private List<ResourcesSpecification> _resourcesSpecifications;
 	private int _maxPar;
 
 	private ITaskContext _taskContext;
 
 	public Upload() {
 		super();
-		setResourcesSpecifications(new ArrayList<LocalResourcesSpecification>());
+		setResourcesSpecifications(new ArrayList<ResourcesSpecification>());
 		try {
 			setMaxPar(10);
 		} catch (SshException Ex) {
@@ -112,29 +113,27 @@ public class Upload extends AbstractSshManagedOperation implements
 		return template;
 	}
 
-	public List<LocalResourcesSpecification> getResourcesSpecifications() {
-		return _localResourcesSpecifications;
+	public List<ResourcesSpecification> getResourcesSpecifications() {
+		return _resourcesSpecifications;
 	}
 
-	public List<LocalResourcesSpecification> setResourcesSpecifications(
-			List<LocalResourcesSpecification> lrss) {
+	public List<ResourcesSpecification> setResourcesSpecifications(
+			List<ResourcesSpecification> lrss) {
 		if (lrss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ LocalResourcesSpecification.class.getCanonicalName()
-					+ ">.");
+					+ ResourcesSpecification.class.getCanonicalName() + ">.");
 		}
-		List<LocalResourcesSpecification> previous = getResourcesSpecifications();
-		_localResourcesSpecifications = lrss;
+		List<ResourcesSpecification> previous = getResourcesSpecifications();
+		_resourcesSpecifications = lrss;
 		return previous;
 	}
 
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.CREATE)
-	public LocalResourcesSpecification createResourcesSpecification() {
+	public ResourcesSpecification createResourcesSpecification() {
 		File basedir = Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor().getBaseDir();
-		LocalResourcesSpecification lrs = new LocalResourcesSpecification(
-				basedir);
+		ResourcesSpecification lrs = new LocalResourcesSpecification(basedir);
 		getResourcesSpecifications().add(lrs);
 		return lrs;
 	}

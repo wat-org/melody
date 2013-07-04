@@ -13,6 +13,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileAttributes;
 import com.wat.melody.common.ssh.impl.FSHelper;
 import com.wat.melody.common.ssh.impl.SftpHelper;
@@ -31,15 +32,15 @@ class DownloaderNoThread {
 			.getLogger(DownloaderNoThread.class);
 
 	private ChannelSftp _channel;
-	private RemoteResource _remoteResource;
+	private Resource _resource;
 
-	protected DownloaderNoThread(ChannelSftp channel, RemoteResource rr) {
+	protected DownloaderNoThread(ChannelSftp channel, Resource rr) {
 		setChannel(channel);
-		setRemoteResource(rr);
+		setResource(rr);
 	}
 
 	protected void download() throws DownloaderException {
-		RemoteResource rr = getRemoteResource();
+		Resource rr = getResource();
 		log.debug(Msg.bind(Messages.DownloadMsg_BEGIN, rr));
 		try {// ensure parent directory exists
 			Path dest = rr.getDestination().normalize();
@@ -56,8 +57,9 @@ class DownloaderNoThread {
 				chmod(rr.getDestination(), rr.getDirModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else if (rr.isFile()) {
-				get(rr.getPath(), rr.getRemoteAttrs(), rr.getDestination(),
-						rr.getTransferBehavior());
+				// TODO : bad bad bad. What's this cast doing here ?
+				get(rr.getPath(), ((RemoteResource) rr).getRemoteAttrs(),
+						rr.getDestination(), rr.getTransferBehavior());
 				chmod(rr.getDestination(), rr.getFileModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else {
@@ -71,8 +73,7 @@ class DownloaderNoThread {
 		log.info(Msg.bind(Messages.DownloadMsg_END, rr));
 	}
 
-	protected void ln(RemoteResource rr) throws IOException,
-			SshSessionException {
+	protected void ln(Resource rr) throws IOException, SshSessionException {
 		switch (rr.getLinkOption()) {
 		case KEEP_LINKS:
 			ln_keep(rr);
@@ -86,7 +87,7 @@ class DownloaderNoThread {
 		}
 	}
 
-	protected void ln_copy_unsafe(RemoteResource rr) throws IOException,
+	protected void ln_copy_unsafe(Resource rr) throws IOException,
 			SshSessionException {
 		if (rr.isSafeLink()) {
 			ln_keep(rr);
@@ -95,8 +96,7 @@ class DownloaderNoThread {
 		}
 	}
 
-	protected void ln_keep(RemoteResource rr) throws IOException,
-			SshSessionException {
+	protected void ln_keep(Resource rr) throws IOException, SshSessionException {
 		Path link = rr.getDestination();
 		Path target = rr.getSymbolicLinkTarget();
 		if (FSHelper.ensureLink(target, link)) {
@@ -106,8 +106,7 @@ class DownloaderNoThread {
 		FSHelper.ln(link, target);
 	}
 
-	protected void ln_copy(RemoteResource rr) throws IOException,
-			SshSessionException {
+	protected void ln_copy(Resource rr) throws IOException, SshSessionException {
 		if (!rr.exists()) {
 			String unixPath = SftpHelper.convertToUnixPath(rr.getDestination());
 			SftpATTRS attrs = SftpHelper.scp_lstat(getChannel(), unixPath);
@@ -121,8 +120,9 @@ class DownloaderNoThread {
 			log.warn(Messages.bind(Messages.DownloadMsg_COPY_UNSAFE_IMPOSSIBLE,
 					rr));
 		} else if (rr.isFile()) {
-			get(rr.getPath(), rr.getRemoteAttrs(), rr.getDestination(),
-					rr.getTransferBehavior());
+			// TODO : bad bad bad. What's this cast doing here ?
+			get(rr.getPath(), ((RemoteResource) rr).getRemoteAttrs(),
+					rr.getDestination(), rr.getTransferBehavior());
 			chmod(rr.getDestination(), rr.getFileModifiers());
 			chgrp(rr.getDestination(), rr.getGroup());
 		} else {
@@ -206,18 +206,18 @@ class DownloaderNoThread {
 		return previous;
 	}
 
-	protected RemoteResource getRemoteResource() {
-		return _remoteResource;
+	protected Resource getResource() {
+		return _resource;
 	}
 
-	private RemoteResource setRemoteResource(RemoteResource rr) {
+	private Resource setResource(Resource rr) {
 		if (rr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ RemoteResource.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Resource.class.getCanonicalName()
+					+ ".");
 		}
-		RemoteResource previous = getRemoteResource();
-		_remoteResource = rr;
+		Resource previous = getResource();
+		_resource = rr;
 		return previous;
 	}
 

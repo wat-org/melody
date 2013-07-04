@@ -13,7 +13,7 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
-import com.wat.melody.common.ssh.filesfinder.LocalResource;
+import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
@@ -29,18 +29,18 @@ class UploaderNoThread {
 	private static Logger log = LoggerFactory.getLogger(UploaderNoThread.class);
 
 	private ChannelSftp _channel;
-	private LocalResource _localResource;
+	private Resource _resource;
 	private TemplatingHandler _templatingHandler;
 
-	protected UploaderNoThread(ChannelSftp channel, LocalResource lr,
+	protected UploaderNoThread(ChannelSftp channel, Resource lr,
 			TemplatingHandler th) {
 		setChannel(channel);
-		setLocalResource(lr);
+		setResource(lr);
 		setTemplatingHandler(th);
 	}
 
 	protected void upload() throws UploaderException {
-		LocalResource lr = getLocalResource();
+		Resource lr = getResource();
 		log.debug(Msg.bind(Messages.UploadMsg_BEGIN, lr));
 		try {
 			// ensure parent directory exists
@@ -71,7 +71,7 @@ class UploaderNoThread {
 		log.info(Msg.bind(Messages.UploadMsg_END, lr));
 	}
 
-	protected void ln(LocalResource lr) throws SshSessionException {
+	protected void ln(Resource lr) throws SshSessionException {
 		switch (lr.getLinkOption()) {
 		case KEEP_LINKS:
 			ln_keep(lr);
@@ -85,7 +85,7 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln_copy_unsafe(LocalResource lr) throws SshSessionException {
+	protected void ln_copy_unsafe(Resource lr) throws SshSessionException {
 		try {
 			if (lr.isSafeLink()) {
 				ln_keep(lr);
@@ -97,7 +97,7 @@ class UploaderNoThread {
 		}
 	}
 
-	protected void ln_keep(LocalResource lr) throws SshSessionException {
+	protected void ln_keep(Resource lr) throws SshSessionException {
 		String unixLink = SftpHelper.convertToUnixPath(lr.getDestination());
 		String unixTarget;
 		try {
@@ -113,7 +113,7 @@ class UploaderNoThread {
 		SftpHelper.scp_symlink(getChannel(), unixTarget, unixLink);
 	}
 
-	protected void ln_copy(LocalResource lr) throws SshSessionException {
+	protected void ln_copy(Resource lr) throws SshSessionException {
 		if (!lr.exists()) {
 			String unixPath = SftpHelper.convertToUnixPath(lr.getDestination());
 			SftpATTRS attrs = SftpHelper.scp_lstat(getChannel(), unixPath);
@@ -151,7 +151,7 @@ class UploaderNoThread {
 		SftpHelper.scp_mkdir(getChannel(), unixDir);
 	}
 
-	protected void template(LocalResource lr) throws SshSessionException {
+	protected void template(Resource lr) throws SshSessionException {
 		if (lr.getTemplate() == true) {
 			if (getTemplatingHandler() == null) {
 				throw new SshSessionException(
@@ -231,18 +231,18 @@ class UploaderNoThread {
 		return previous;
 	}
 
-	protected LocalResource getLocalResource() {
-		return _localResource;
+	protected Resource getResource() {
+		return _resource;
 	}
 
-	private LocalResource setLocalResource(LocalResource lr) {
+	private Resource setResource(Resource lr) {
 		if (lr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ LocalResource.class.getCanonicalName() + ".");
+					+ "Must be a valid " + Resource.class.getCanonicalName()
+					+ ".");
 		}
-		LocalResource previous = getLocalResource();
-		_localResource = lr;
+		Resource previous = getResource();
+		_resource = lr;
 		return previous;
 	}
 
