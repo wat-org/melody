@@ -82,7 +82,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 		// Ensure a user keypairname is defined
 		if (getKeyPairName() == null) {
 			throw new SshException(Msg.bind(
-					Messages.SshEx_MISSING_USER_KEYPAIRNAME_ATTR,
+					Messages.BaseEx_MISSING_USER_KEYPAIRNAME_ATTR,
 					KEYPAIR_NAME_ATTR, SshPlugInConfiguration.MGMT_ENABLE,
 					getSshPlugInConf().getFilePath()));
 		}
@@ -94,7 +94,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 		}
 		if (getManagementLogin() == null) {
 			throw new SshException(Msg.bind(
-					Messages.SshEx_MISSING_MGMT_LOGIN_ATTR,
+					Messages.BaseEx_MISSING_MGMT_LOGIN_ATTR,
 					MGMT_MASTER_USER_ATTR, SshPlugInConfiguration.MGMT_LOGIN,
 					SshPlugInConfiguration.MGMT_ENABLE, getSshPlugInConf()
 							.getFilePath()));
@@ -115,7 +115,7 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 		if (getManagementKeyPairName() == null
 				&& getManagementPassword() == null) {
 			throw new SshException(Msg.bind(
-					Messages.SshEx_MISSING_MGMT_PASSWORD_OR_PK_ATTR,
+					Messages.BaseEx_MISSING_MGMT_PASSWORD_OR_PK_ATTR,
 					MGMT_MASTER_PASS_ATTR, MGMT_MASTER_KEY_ATTR,
 					SshPlugInConfiguration.MGMT_PASSWORD,
 					SshPlugInConfiguration.MGMT_KEYPAIRNAME,
@@ -135,13 +135,13 @@ public abstract class AbstractSshManagedOperation extends AbstractSshOperation {
 		} catch (IllegalPassphraseException Ex) {
 			if (getPassword() == null) {
 				throw new SshException(Msg.bind(
-						Messages.SshEx_MISSING_MGMT_PASSPHRASE_ATTR,
+						Messages.BaseEx_MISSING_MGMT_PASSPHRASE_ATTR,
 						getManagementKeyPairName(),
 						SshPlugInConfiguration.MGMT_PASSWORD,
 						getSshPlugInConf().getFilePath()));
 			} else {
 				throw new SshException(Msg.bind(
-						Messages.SshEx_INVALID_MGMT_PASSPHRASE,
+						Messages.BaseEx_INVALID_MGMT_PASSPHRASE,
 						getManagementKeyPairName(), getManagementKeyPairName(),
 						SshPlugInConfiguration.MGMT_PASSWORD,
 						getSshPlugInConf().getFilePath()));

@@ -20,12 +20,9 @@ import com.wat.melody.common.ssh.impl.transfer.TransferMultiThread;
  */
 public class UploaderMultiThread extends TransferMultiThread {
 
-	private TemplatingHandler _templatingHandler;
-
 	public UploaderMultiThread(SshSession session,
 			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th) {
-		super(session, rss, maxPar);
-		setTemplatingHandler(th);
+		super(session, rss, maxPar, th);
 	}
 
 	@Override
@@ -74,16 +71,6 @@ public class UploaderMultiThread extends TransferMultiThread {
 		} catch (UploaderException Ex) {
 			throw new TransferException(Ex);
 		}
-	}
-
-	private TemplatingHandler getTemplatingHandler() {
-		return _templatingHandler;
-	}
-
-	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
-		TemplatingHandler previous = getTemplatingHandler();
-		_templatingHandler = th;
-		return previous;
 	}
 
 }

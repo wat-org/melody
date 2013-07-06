@@ -24,6 +24,7 @@ public class Messages extends NLS {
 	public static String TransferMsg_FINISH;
 
 	public static String DownloadEx_IO_ERROR_WHILE_FINDING;
+	public static String DownloadEx_NO_TEMPLATING_HANDLER;
 	public static String DownloadEx_ENSURE_DIR_FAILED;
 	public static String DownloadEx_ENSURE_LINK_FAILED;
 	public static String DownloadEx_ENSURE_FILE_FAILED;

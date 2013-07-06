@@ -163,10 +163,11 @@ public class SshSession implements ISshSession {
 	}
 
 	@Override
-	public void download(List<ResourcesSpecification> rrss, int maxPar)
-			throws SshSessionException, InterruptedException {
+	public void download(List<ResourcesSpecification> rrss, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException {
 		try {
-			new DownloaderMultiThread(this, rrss, maxPar).transfer();
+			new DownloaderMultiThread(this, rrss, maxPar, th).transfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}

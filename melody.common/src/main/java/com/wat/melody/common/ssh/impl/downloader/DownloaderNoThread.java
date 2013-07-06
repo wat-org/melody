@@ -11,7 +11,9 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.exception.TemplatingException;
 import com.wat.melody.common.ssh.filesfinder.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.impl.FSHelper;
@@ -32,10 +34,13 @@ class DownloaderNoThread {
 
 	private ChannelSftp _channel;
 	private Resource _resource;
+	private TemplatingHandler _templatingHandler;
 
-	protected DownloaderNoThread(ChannelSftp channel, Resource rr) {
+	protected DownloaderNoThread(ChannelSftp channel, Resource rr,
+			TemplatingHandler th) {
 		setChannel(channel);
 		setResource(rr);
+		setTemplatingHandler(th);
 	}
 
 	protected void download() throws DownloaderException {
@@ -56,8 +61,7 @@ class DownloaderNoThread {
 				chmod(rr.getDestination(), rr.getDirModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else if (rr.isRegularFile()) {
-				get(rr.getPath(), rr.getAttributes(), rr.getDestination(),
-						rr.getTransferBehavior());
+				template(rr);
 				chmod(rr.getDestination(), rr.getFileModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else {
@@ -71,33 +75,33 @@ class DownloaderNoThread {
 		log.info(Msg.bind(Messages.DownloadMsg_END, rr));
 	}
 
-	protected void ln(Resource rr) throws IOException, SshSessionException {
+	protected void ln(Resource r) throws IOException, SshSessionException {
 		// TODO : use getResource instead
-		switch (rr.getLinkOption()) {
+		switch (r.getLinkOption()) {
 		case KEEP_LINKS:
-			ln_keep(rr);
+			ln_keep(r);
 			break;
 		case COPY_LINKS:
-			ln_copy(rr);
+			ln_copy(r);
 			break;
 		case COPY_UNSAFE_LINKS:
-			ln_copy_unsafe(rr);
+			ln_copy_unsafe(r);
 			break;
 		}
 	}
 
-	protected void ln_copy_unsafe(Resource rr) throws IOException,
+	protected void ln_copy_unsafe(Resource r) throws IOException,
 			SshSessionException {
-		if (rr.isSafeLink()) {
-			ln_keep(rr);
+		if (r.isSafeLink()) {
+			ln_keep(r);
 		} else {
-			ln_copy(rr);
+			ln_copy(r);
 		}
 	}
 
-	protected void ln_keep(Resource rr) throws IOException, SshSessionException {
-		Path link = rr.getDestination();
-		Path target = rr.getSymbolicLinkTarget();
+	protected void ln_keep(Resource r) throws IOException, SshSessionException {
+		Path link = r.getDestination();
+		Path target = r.getSymbolicLinkTarget();
 		if (FSHelper.ensureLink(target, link)) {
 			log.info(Messages.DownloadMsg_DONT_DOWNLOAD_CAUSE_LINK_ALREADY_EXISTS);
 			return;
@@ -105,9 +109,9 @@ class DownloaderNoThread {
 		FSHelper.ln(link, target);
 	}
 
-	protected void ln_copy(Resource rr) throws IOException, SshSessionException {
-		if (!rr.exists()) {
-			String unixPath = SftpHelper.convertToUnixPath(rr.getDestination());
+	protected void ln_copy(Resource r) throws IOException, SshSessionException {
+		if (!r.exists()) {
+			String unixPath = SftpHelper.convertToUnixPath(r.getDestination());
 			SftpATTRS attrs = SftpHelper.scp_lstat(getChannel(), unixPath);
 			if (attrs != null) {
 				if (attrs.isDir()) {
@@ -117,16 +121,35 @@ class DownloaderNoThread {
 				}
 			}
 			log.warn(Messages.bind(Messages.DownloadMsg_COPY_UNSAFE_IMPOSSIBLE,
-					rr));
-		} else if (rr.isRegularFile()) {
-			get(rr.getPath(), rr.getAttributes(), rr.getDestination(),
-					rr.getTransferBehavior());
-			chmod(rr.getDestination(), rr.getFileModifiers());
-			chgrp(rr.getDestination(), rr.getGroup());
+					r));
+		} else if (r.isRegularFile()) {
+			template(r);
+			chmod(r.getDestination(), r.getFileModifiers());
+			chgrp(r.getDestination(), r.getGroup());
 		} else {
-			mkdir(rr.getDestination());
-			chmod(rr.getDestination(), rr.getDirModifiers());
-			chgrp(rr.getDestination(), rr.getGroup());
+			mkdir(r.getDestination());
+			chmod(r.getDestination(), r.getDirModifiers());
+			chgrp(r.getDestination(), r.getGroup());
+		}
+	}
+
+	protected void template(Resource r) throws IOException, SshSessionException {
+		if (r.getTemplate() == true) {
+			if (getTemplatingHandler() == null) {
+				throw new SshSessionException(
+						Messages.DownloadEx_NO_TEMPLATING_HANDLER);
+			}
+			Path template;
+			try {
+				template = getTemplatingHandler().doTemplate(r.getPath());
+			} catch (TemplatingException Ex) {
+				throw new SshSessionException(Ex);
+			}
+			get(template, r.getAttributes(), r.getDestination(),
+					r.getTransferBehavior());
+		} else {
+			get(r.getPath(), r.getAttributes(), r.getDestination(),
+					r.getTransferBehavior());
 		}
 	}
 
@@ -208,14 +231,24 @@ class DownloaderNoThread {
 		return _resource;
 	}
 
-	private Resource setResource(Resource rr) {
-		if (rr == null) {
+	private Resource setResource(Resource r) {
+		if (r == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Resource.class.getCanonicalName()
 					+ ".");
 		}
 		Resource previous = getResource();
-		_resource = rr;
+		_resource = r;
+		return previous;
+	}
+
+	private TemplatingHandler getTemplatingHandler() {
+		return _templatingHandler;
+	}
+
+	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		TemplatingHandler previous = getTemplatingHandler();
+		_templatingHandler = th;
 		return previous;
 	}
 

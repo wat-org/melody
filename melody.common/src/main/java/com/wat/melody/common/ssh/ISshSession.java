@@ -42,8 +42,9 @@ public interface ISshSession {
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException;
 
-	public void download(List<ResourcesSpecification> rrss, int maxPar)
-			throws SshSessionException, InterruptedException;
+	public void download(List<ResourcesSpecification> rrss, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException;
 
 	public IHostKey getHostKey();
 

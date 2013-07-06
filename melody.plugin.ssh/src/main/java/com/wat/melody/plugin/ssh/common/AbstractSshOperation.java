@@ -121,7 +121,7 @@ public abstract class AbstractSshOperation implements ITask {
 	public void validate() throws SshException {
 		if (getPassword() == null && getKeyPairName() == null) {
 			throw new SshException(Msg.bind(
-					Messages.SshEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
+					Messages.BaseEx_MISSING_PASSWORD_OR_PK_ATTR, PASS_ATTR,
 					KEYPAIR_NAME_ATTR));
 		}
 		if (getKeyPairName() == null) {
@@ -139,11 +139,11 @@ public abstract class AbstractSshOperation implements ITask {
 		} catch (IllegalPassphraseException Ex) {
 			if (getPassword() == null) {
 				throw new SshException(Msg.bind(
-						Messages.SshEx_MISSING_PASSPHRASE_ATTR,
+						Messages.BaseEx_MISSING_PASSPHRASE_ATTR,
 						getKeyPairName(), PASS_ATTR));
 			} else {
 				throw new SshException(Msg.bind(
-						Messages.SshEx_INVALID_PASSPHRASE_ATTR,
+						Messages.BaseEx_INVALID_PASSPHRASE_ATTR,
 						getKeyPairName(), PASS_ATTR));
 			}
 		} catch (IOException Ex) {

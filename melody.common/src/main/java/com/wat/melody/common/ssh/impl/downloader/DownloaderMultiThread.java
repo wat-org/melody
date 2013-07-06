@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.RemoteResourcesFinder;
 import com.wat.melody.common.ssh.filesfinder.Resource;
@@ -19,11 +20,9 @@ import com.wat.melody.common.ssh.impl.transfer.TransferMultiThread;
  */
 public class DownloaderMultiThread extends TransferMultiThread {
 
-	// TODO : should contain a templating handler
-
 	public DownloaderMultiThread(SshSession session,
-			List<ResourcesSpecification> rss, int maxPar) {
-		super(session, rss, maxPar);
+			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th) {
+		super(session, rss, maxPar, th);
 	}
 
 	@Override
@@ -76,7 +75,8 @@ public class DownloaderMultiThread extends TransferMultiThread {
 	public void transfer(ChannelSftp channel, Resource rr)
 			throws TransferException {
 		try {
-			new DownloaderNoThread(channel, rr).download();
+			new DownloaderNoThread(channel, rr, getTemplatingHandler())
+					.download();
 		} catch (DownloaderException Ex) {
 			throw new TransferException(Ex);
 		}

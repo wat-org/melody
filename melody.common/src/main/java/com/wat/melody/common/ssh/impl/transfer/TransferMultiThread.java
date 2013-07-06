@@ -11,6 +11,7 @@ import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
+import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
 import com.wat.melody.common.ssh.impl.SshSession;
@@ -37,6 +38,7 @@ public abstract class TransferMultiThread {
 	private List<ResourcesSpecification> _resourcesSpecifications;
 	private int _maxPar;
 	private List<Resource> _resources;
+	private TemplatingHandler _templatingHandler;
 
 	private short _state;
 	private ThreadGroup _threadGroup;
@@ -44,7 +46,7 @@ public abstract class TransferMultiThread {
 	private ConsolidatedException _exceptions;
 
 	public TransferMultiThread(SshSession session,
-			List<ResourcesSpecification> r, int maxPar) {
+			List<ResourcesSpecification> r, int maxPar, TemplatingHandler th) {
 		/*
 		 * TODO : should accept a local and a remote FileSystem (and a transfer
 		 * protocol) make operation on it. Doing this, Uploader and Downloader
@@ -54,6 +56,7 @@ public abstract class TransferMultiThread {
 		setResourcesSpecifications(r);
 		setMaxPar(maxPar);
 		setResources(new ArrayList<Resource>());
+		setTemplatingHandler(th);
 
 		markState(SUCCEED);
 		setThreadGroup(null);
@@ -300,6 +303,16 @@ public abstract class TransferMultiThread {
 		return previous;
 	}
 
+	protected TemplatingHandler getTemplatingHandler() {
+		return _templatingHandler;
+	}
+
+	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		TemplatingHandler previous = getTemplatingHandler();
+		_templatingHandler = th;
+		return previous;
+	}
+
 	/**
 	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
 	 *         managed by this object.
@@ -336,7 +349,7 @@ public abstract class TransferMultiThread {
 	/**
 	 * @return the exceptions that append during the transfer.
 	 */
-	protected ConsolidatedException getExceptions() {
+	private ConsolidatedException getExceptions() {
 		return _exceptions;
 	}
 

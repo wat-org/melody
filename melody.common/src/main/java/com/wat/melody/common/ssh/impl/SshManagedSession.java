@@ -162,9 +162,10 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	@Override
-	public void download(List<ResourcesSpecification> rrss, int maxPar)
-			throws SshSessionException, InterruptedException {
-		_session.download(rrss, maxPar);
+	public void download(List<ResourcesSpecification> rrss, int maxPar,
+			TemplatingHandler th) throws SshSessionException,
+			InterruptedException {
+		_session.download(rrss, maxPar, th);
 	}
 
 	@Override

@@ -162,8 +162,8 @@ public class Ssh extends AbstractSshManagedOperation {
 				}
 				_commandToExecute += fileContent + "\n";
 			} catch (IOException Ex) {
-				throw new SshException(Msg.bind(Messages.SshEx_READ_IO_ERROR,
-						is.getFile()), Ex);
+				throw new SshException(Msg.bind(
+						Messages.TransferEx_READ_IO_ERROR, is.getFile()), Ex);
 			}
 		} else {
 			throw new SshException(Msg.bind(
