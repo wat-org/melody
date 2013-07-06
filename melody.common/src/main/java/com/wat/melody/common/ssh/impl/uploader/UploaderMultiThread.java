@@ -66,11 +66,7 @@ public class UploaderMultiThread extends TransferMultiThread {
 	@Override
 	public void transfer(ChannelSftp channel, Resource r)
 			throws TransferException {
-		try {
-			new UploaderNoThread(channel, r, getTemplatingHandler()).upload();
-		} catch (UploaderException Ex) {
-			throw new TransferException(Ex);
-		}
+		new UploaderNoThread(channel, r, getTemplatingHandler()).transfer();
 	}
 
 }

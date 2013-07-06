@@ -74,12 +74,7 @@ public class DownloaderMultiThread extends TransferMultiThread {
 	@Override
 	public void transfer(ChannelSftp channel, Resource rr)
 			throws TransferException {
-		try {
-			new DownloaderNoThread(channel, rr, getTemplatingHandler())
-					.download();
-		} catch (DownloaderException Ex) {
-			throw new TransferException(Ex);
-		}
+		new DownloaderNoThread(channel, rr, getTemplatingHandler()).transfer();
 	}
 
 }

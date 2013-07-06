@@ -15,7 +15,6 @@ import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileTreeWalker;
 import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteSimpleFileVisitor;
-import com.wat.melody.common.ssh.impl.downloader.DownloaderException;
 import com.wat.melody.common.systool.SysTool;
 
 /**
@@ -26,8 +25,7 @@ import com.wat.melody.common.systool.SysTool;
 public abstract class RemoteResourcesFinder {
 
 	public static List<Resource> findResources(ChannelSftp chan,
-			ResourcesSpecification rspec) throws DownloaderException,
-			SshSessionException {
+			ResourcesSpecification rspec) throws SshSessionException {
 		if (rspec == null) {
 			return new ArrayList<Resource>();
 		}

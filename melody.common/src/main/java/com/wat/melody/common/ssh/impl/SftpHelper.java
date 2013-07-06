@@ -86,8 +86,8 @@ public abstract class SftpHelper {
 	 * @param chan
 	 * @param file
 	 * 
-	 * @return <tt>true</tt> if the file was deleted, <tt>false</tt> if the file
-	 *         didn't exists.
+	 * @return <tt>true</tt> if the file/link was deleted, <tt>false</tt> if the
+	 *         file/link didn't exists.
 	 * 
 	 * @throws SshSessionException
 	 *             if an error occurred.
