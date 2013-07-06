@@ -5,6 +5,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
@@ -24,23 +25,26 @@ import com.wat.melody.common.systool.SysTool;
  */
 public abstract class LocalResourcesFinder {
 
-	public static List<LocalResource> findResources(ResourcesSpecification rs)
+	public static List<Resource> findResources(ResourcesSpecification rspec)
 			throws IOException {
-		List<LocalResource> rrs = new Finder(rs).findFiles();
-		for (ResourcesUpdater ru : rs.getResourcesUpdaters()) {
-			ru.update(rrs);
+		if (rspec == null) {
+			return new ArrayList<Resource>();
 		}
-		return rrs;
+		List<Resource> rs = new Finder(rspec).findFiles();
+		for (ResourcesUpdater ru : rspec.getResourcesUpdaters()) {
+			ru.update(rs);
+		}
+		return rs;
 	}
 
 }
 
 class Finder extends SimpleFileVisitor<Path> {
 
-	private ResourcesSpecification _rs;
+	private ResourcesSpecification _rspec;
 	private Path _topdir;
 	private final PathMatcher _matcher;
-	private final List<LocalResource> _localResources;
+	private final List<Resource> _resources;
 
 	public Finder(ResourcesSpecification rs) {
 		super();
@@ -49,8 +53,8 @@ class Finder extends SimpleFileVisitor<Path> {
 					+ "Must be a valid "
 					+ ResourcesSpecification.class.getCanonicalName() + ".");
 		}
-		_localResources = new ArrayList<LocalResource>();
-		_rs = rs;
+		_resources = new ArrayList<Resource>();
+		_rspec = rs;
 		_topdir = Paths.get(rs.getSrcBaseDir()).normalize();
 		String match = _topdir + SysTool.FILE_SEPARATOR + rs.getMatch();
 		/*
@@ -61,45 +65,60 @@ class Finder extends SimpleFileVisitor<Path> {
 		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
 	}
 
-	public List<LocalResource> findFiles() throws IOException {
+	public List<Resource> findFiles() throws IOException {
 		Set<FileVisitOption> set = new HashSet<FileVisitOption>();
 		set.add(FileVisitOption.FOLLOW_LINKS);
 		// will go into visitFileFailed if the path doesn't exists
-		Files.walkFileTree(Paths.get(_rs.getSrcBaseDir()).normalize(), set,
+		Files.walkFileTree(Paths.get(_rspec.getSrcBaseDir()).normalize(), set,
 				Integer.MAX_VALUE, this);
-		return _localResources;
+		return _resources;
 	}
 
-	private void matches(Path path, BasicFileAttributes attrs) {
+	private void matches(Path path, EnhancedFileAttributes attrs) {
 		if (path != null && _matcher.matches(path)) {
 			/*
 			 * TODO : include path parent til topdir is reached.
 			 */
 			// include path
-			_localResources.add(new LocalResource(path, _rs));
+			_resources.add(new Resource(path, attrs, _rspec));
 		}
+	}
+
+	private EnhancedFileAttributes newLocalFileAttributes(Path path,
+			BasicFileAttributes attrs) throws IOException {
+		Path target = null;
+		BasicFileAttributes targetAttrs = null;
+		if (Files.isSymbolicLink(path)) {
+			target = Files.readSymbolicLink(path);
+			// necessary because attrs contains the link's target attributes!
+			targetAttrs = attrs;
+			attrs = Files.readAttributes(path, BasicFileAttributes.class,
+					LinkOption.NOFOLLOW_LINKS);
+		}
+		return new LocalFileAttributes(attrs, target, targetAttrs);
 	}
 
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 			throws IOException {
-		matches(file, attrs);
+		matches(file, newLocalFileAttributes(file, attrs));
 		return FileVisitResult.CONTINUE;
 	}
 
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 			throws IOException {
-		LocalResource sr = new LocalResource(dir, _rs);
-		matches(dir, attrs);
-		if (sr.isSymbolicLink()) {
-			switch (sr.getLinkOption()) {
+		EnhancedFileAttributes hattrs = newLocalFileAttributes(dir, attrs);
+		Resource lr = new Resource(dir, hattrs, _rspec);
+		matches(dir, hattrs);
+		if (lr.isSymbolicLink()) {
+			switch (lr.getLinkOption()) {
 			case COPY_LINKS:
 				return FileVisitResult.CONTINUE;
 			case KEEP_LINKS:
 				return FileVisitResult.SKIP_SUBTREE;
 			case COPY_UNSAFE_LINKS:
-				if (sr.isSafeLink()) {
+				if (lr.isSafeLink()) {
 					return FileVisitResult.SKIP_SUBTREE;
 				} else {
 					return FileVisitResult.CONTINUE;

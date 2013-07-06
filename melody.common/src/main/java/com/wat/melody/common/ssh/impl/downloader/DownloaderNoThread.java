@@ -12,9 +12,8 @@ import com.jcraft.jsch.SftpATTRS;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.RemoteResource;
+import com.wat.melody.common.ssh.filesfinder.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.filesfinder.Resource;
-import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileAttributes;
 import com.wat.melody.common.ssh.impl.FSHelper;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 import com.wat.melody.common.ssh.types.GroupID;
@@ -56,10 +55,9 @@ class DownloaderNoThread {
 				mkdir(rr.getDestination());
 				chmod(rr.getDestination(), rr.getDirModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
-			} else if (rr.isFile()) {
-				// TODO : bad bad bad. What's this cast doing here ?
-				get(rr.getPath(), ((RemoteResource) rr).getRemoteAttrs(),
-						rr.getDestination(), rr.getTransferBehavior());
+			} else if (rr.isRegularFile()) {
+				get(rr.getPath(), rr.getAttributes(), rr.getDestination(),
+						rr.getTransferBehavior());
 				chmod(rr.getDestination(), rr.getFileModifiers());
 				chgrp(rr.getDestination(), rr.getGroup());
 			} else {
@@ -74,6 +72,7 @@ class DownloaderNoThread {
 	}
 
 	protected void ln(Resource rr) throws IOException, SshSessionException {
+		// TODO : use getResource instead
 		switch (rr.getLinkOption()) {
 		case KEEP_LINKS:
 			ln_keep(rr);
@@ -119,10 +118,9 @@ class DownloaderNoThread {
 			}
 			log.warn(Messages.bind(Messages.DownloadMsg_COPY_UNSAFE_IMPOSSIBLE,
 					rr));
-		} else if (rr.isFile()) {
-			// TODO : bad bad bad. What's this cast doing here ?
-			get(rr.getPath(), ((RemoteResource) rr).getRemoteAttrs(),
-					rr.getDestination(), rr.getTransferBehavior());
+		} else if (rr.isRegularFile()) {
+			get(rr.getPath(), rr.getAttributes(), rr.getDestination(),
+					rr.getTransferBehavior());
 			chmod(rr.getDestination(), rr.getFileModifiers());
 			chgrp(rr.getDestination(), rr.getGroup());
 		} else {
@@ -145,7 +143,7 @@ class DownloaderNoThread {
 		FSHelper.mkdir(dir);
 	}
 
-	protected void get(Path source, RemoteFileAttributes remoteFileAttrs,
+	protected void get(Path source, EnhancedFileAttributes remoteFileAttrs,
 			Path dest, TransferBehavior tb) throws IOException,
 			SshSessionException {
 		if (source == null) {

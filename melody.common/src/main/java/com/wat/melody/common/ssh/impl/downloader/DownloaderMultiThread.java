@@ -5,7 +5,6 @@ import java.util.List;
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.RemoteResource;
 import com.wat.melody.common.ssh.filesfinder.RemoteResourcesFinder;
 import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
@@ -52,12 +51,12 @@ public class DownloaderMultiThread extends TransferMultiThread {
 		ChannelSftp chan = null;
 		try {
 			chan = getSession().openSftpChannel();
-			for (ResourcesSpecification rs : getResourcesSpecifications()) {
+			for (ResourcesSpecification rspec : getResourcesSpecifications()) {
 				try {
-					List<RemoteResource> rrs;
-					rrs = RemoteResourcesFinder.findResources(chan, rs);
-					getResources().removeAll(rrs); // remove duplicated
-					getResources().addAll(rrs);
+					List<Resource> rs;
+					rs = RemoteResourcesFinder.findResources(chan, rspec);
+					getResources().removeAll(rs); // remove duplicated
+					getResources().addAll(rs);
 				} catch (SshSessionException Ex) {
 					throw new TransferException(
 							Messages.DownloadEx_IO_ERROR_WHILE_FINDING, Ex);

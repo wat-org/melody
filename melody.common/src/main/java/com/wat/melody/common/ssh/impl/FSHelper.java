@@ -1,17 +1,18 @@
 package com.wat.melody.common.ssh.impl;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.commons.io.FileUtils;
 
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.remotefiletreewalker.RemoteFileAttributes;
+import com.wat.melody.common.ssh.filesfinder.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.types.TransferBehavior;
 
 /**
@@ -33,6 +34,12 @@ public abstract class FSHelper {
 	public static void mkdir(Path dir) throws SshSessionException {
 		try {
 			Files.createDirectory(dir);
+		} catch (FileAlreadyExistsException Ex) {
+			if (Files.isDirectory(dir, LinkOption.NOFOLLOW_LINKS)) {
+				// ignored
+			}
+			throw new SshSessionException(Msg.bind(Messages.FSEx_MKDIR, dir),
+					Ex);
 		} catch (IOException Ex) {
 			throw new SshSessionException(Msg.bind(Messages.FSEx_MKDIR, dir),
 					Ex);
@@ -148,7 +155,7 @@ public abstract class FSHelper {
 	 * 
 	 * @throws IOException
 	 */
-	public static boolean ensureFile(RemoteFileAttributes remotefileAttrs,
+	public static boolean ensureFile(EnhancedFileAttributes remotefileAttrs,
 			Path path, TransferBehavior tb) throws IOException,
 			SshSessionException {
 		if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
@@ -194,15 +201,20 @@ public abstract class FSHelper {
 	 *         modification time ;</li>
 	 *         <li>return <tt>false</tt> otherwise ;</li>
 	 *         </ul>
+	 * 
+	 * @throws IOException
 	 */
 	private static boolean shouldTranferFile(
-			RemoteFileAttributes remotefileAttrs, Path path, TransferBehavior tb) {
+			EnhancedFileAttributes remotefileAttrs, Path path,
+			TransferBehavior tb) throws IOException {
 		if (tb == TransferBehavior.FORCE_OVERWRITE) {
 			return true;
 		}
-		File f = path.toFile();
-		return remotefileAttrs.getSize() != f.length()
-				|| remotefileAttrs.getMTime() > f.lastModified() / 1000;
+		BasicFileAttributes attrs = Files.readAttributes(path,
+				BasicFileAttributes.class);
+		return remotefileAttrs.size() != attrs.size()
+				|| remotefileAttrs.lastModifiedTime().compareTo(
+						attrs.lastModifiedTime()) > 0;
 	}
 
 }

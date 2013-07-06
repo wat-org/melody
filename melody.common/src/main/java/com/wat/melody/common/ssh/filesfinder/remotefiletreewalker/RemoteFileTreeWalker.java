@@ -16,6 +16,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.filesfinder.RemoteFileAttributes;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 
 /**
@@ -106,11 +107,14 @@ public class RemoteFileTreeWalker {
 		}
 
 		// if this is a link, retrieve link's target
-		String unixTarget = null;
+		Path target = null;
 		SftpATTRS targetAttrs = null;
 		if (attrs.isLink()) {
 			try {
-				unixTarget = SftpHelper.scp_readlink(_chan, unixPath);
+				String unixTarget = SftpHelper.scp_readlink(_chan, unixPath);
+				if (unixTarget != null) {
+					target = Paths.get(unixTarget);
+				}
 				targetAttrs = SftpHelper.scp_stat(_chan, unixPath);
 			} catch (SshSessionException Ex) {
 				return _visitor.visitFileFailed(path, Ex);
@@ -121,7 +125,7 @@ public class RemoteFileTreeWalker {
 		if ((depth >= _maxDepth || !attrs.isDir())
 				&& !(_followLinks && targetAttrs != null && targetAttrs.isDir())) {
 			return _visitor.visitFile(path, new RemoteFileAttributes(attrs,
-					unixTarget, targetAttrs));
+					target, targetAttrs));
 		}
 
 		// check for cycles when following links
@@ -158,7 +162,7 @@ public class RemoteFileTreeWalker {
 
 			// invoke preVisitDirectory and then visit each entry
 			result = _visitor.preVisitDirectory(path, new RemoteFileAttributes(
-					attrs, unixTarget, targetAttrs));
+					attrs, target, targetAttrs));
 			if (result != FileVisitResult.CONTINUE) {
 				return result;
 			}

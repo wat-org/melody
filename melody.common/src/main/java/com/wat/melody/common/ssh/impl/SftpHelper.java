@@ -1,6 +1,5 @@
 package com.wat.melody.common.ssh.impl;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Vector;
 
@@ -11,6 +10,7 @@ import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.filesfinder.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.types.GroupID;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.TransferBehavior;
@@ -66,6 +66,12 @@ public abstract class SftpHelper {
 		}
 	}
 
+	/**
+	 * @param chan
+	 * @param file
+	 * @throws SshSessionException
+	 *             if an error occurred. Or if the file doesn't exists.
+	 */
 	public static void scp_rm(ChannelSftp chan, String file)
 			throws SshSessionException {
 		try {
@@ -74,6 +80,30 @@ public abstract class SftpHelper {
 			throw new SshSessionException(Msg.bind(Messages.SftpEx_RM, file),
 					Ex);
 		}
+	}
+
+	/**
+	 * @param chan
+	 * @param file
+	 * 
+	 * @return <tt>true</tt> if the file was deleted, <tt>false</tt> if the file
+	 *         didn't exists.
+	 * 
+	 * @throws SshSessionException
+	 *             if an error occurred.
+	 */
+	public static boolean scp_rmIfExists(ChannelSftp chan, String file)
+			throws SshSessionException {
+		try {
+			chan.rm(file);
+		} catch (SftpException Ex) {
+			if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				return false;
+			}
+			throw new SshSessionException(Msg.bind(Messages.SftpEx_RM, file),
+					Ex);
+		}
+		return true;
 	}
 
 	public static String scp_readlink(ChannelSftp chan, String link)
@@ -267,7 +297,7 @@ public abstract class SftpHelper {
 					return true;
 				}
 			}
-			scp_rm(chan, path);
+			scp_rmIfExists(chan, path);
 		}
 		// delete operation works ? or not (permission issue) ?
 		if (scp_lexists(chan, path)) {
@@ -303,7 +333,7 @@ public abstract class SftpHelper {
 		if (attrs.isDir()) {
 			return true;
 		}
-		scp_rm(chan, path);
+		scp_rmIfExists(chan, path);
 		// delete operation works ? or not (permission issue) ?
 		// but another thread may have create this directory between ...
 		/*
@@ -344,8 +374,9 @@ public abstract class SftpHelper {
 	 * 
 	 * @throws SshSessionException
 	 */
-	public static boolean scp_ensureFile(ChannelSftp chan, Path localfile,
-			String path, TransferBehavior tb) throws SshSessionException {
+	public static boolean scp_ensureFile(EnhancedFileAttributes localfileAttrs,
+			ChannelSftp chan, String path, TransferBehavior tb)
+			throws SshSessionException {
 		SftpATTRS attrs = scp_lstat(chan, path);
 		if (attrs == null) {
 			return false;
@@ -353,10 +384,11 @@ public abstract class SftpHelper {
 		if (attrs.isDir()) {
 			scp_rmdirs(chan, path);
 		} else {
-			if (!attrs.isLink() && !shouldTranferFile(localfile, attrs, tb)) {
+			if (!attrs.isLink()
+					&& !shouldTranferFile(localfileAttrs, attrs, tb)) {
 				return true;
 			}
-			scp_rm(chan, path);
+			scp_rmIfExists(chan, path);
 		}
 		// delete operation works ? or not (permission issue) ?
 		if (scp_lexists(chan, path)) {
@@ -390,14 +422,15 @@ public abstract class SftpHelper {
 	 *         <li>return <tt>false</tt> otherwise ;</li>
 	 *         </ul>
 	 */
-	private static boolean shouldTranferFile(Path localfile,
-			SftpATTRS remotefileAttrs, TransferBehavior tb) {
+	private static boolean shouldTranferFile(
+			EnhancedFileAttributes localfileAttrs, SftpATTRS remotefileAttrs,
+			TransferBehavior tb) {
 		if (tb == TransferBehavior.FORCE_OVERWRITE) {
 			return true;
 		}
-		File f = localfile.toFile();
-		return remotefileAttrs.getSize() != f.length()
-				|| remotefileAttrs.getMTime() < f.lastModified() / 1000;
+		return remotefileAttrs.getSize() != localfileAttrs.size()
+				|| remotefileAttrs.getMTime() < localfileAttrs
+						.lastModifiedTime().toMillis() / 1000;
 	}
 
 	public static String convertToUnixPath(String path) {

@@ -1,7 +1,7 @@
-package com.wat.melody.common.ssh.filesfinder.remotefiletreewalker;
+package com.wat.melody.common.ssh.filesfinder;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 
 import com.jcraft.jsch.SftpATTRS;
 
@@ -19,8 +19,9 @@ import com.jcraft.jsch.SftpATTRS;
  * @author Guillaume Cornet
  * 
  */
-public class RemoteFileAttributes {
+public class RemoteFileAttributes implements EnhancedFileAttributes {
 
+	// TODO : move this in ssh.impls, because it is using JSch
 	private SftpATTRS _attrs;
 	private Path _target;
 	private SftpATTRS _realAttrs;
@@ -45,7 +46,7 @@ public class RemoteFileAttributes {
 	 *             direct target is <tt>null</tt> ;</li>
 	 *             </ul>
 	 */
-	public RemoteFileAttributes(SftpATTRS attrs, String target,
+	public RemoteFileAttributes(SftpATTRS attrs, Path target,
 			SftpATTRS realAttrs) {
 		if (attrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -57,79 +58,80 @@ public class RemoteFileAttributes {
 					+ "provided.");
 		}
 		_attrs = attrs;
-		_target = (target == null) ? null : Paths.get(target).normalize();
+		_target = target;
 		_realAttrs = realAttrs;
 	}
 
 	/**
 	 * @return <tt>true</tt> if this object's path points to a regular file
-	 *         (follow link). Note that {@link #isLink()} can return
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
 	 *         <tt>true</tt> too.
 	 */
-	public boolean isFile() {
+	@Override
+	public boolean isRegularFile() {
 		return (!_attrs.isDir() && !_attrs.isLink())
 				|| (_realAttrs != null && !_realAttrs.isDir());
 	}
 
 	/**
 	 * @return <tt>true</tt> if this object's path points to a regular directory
-	 *         (follow link). Note that {@link #isLink()} can return
+	 *         (follow link). Note that {@link #isSymbolicLink()} can return
 	 *         <tt>true</tt> too.
 	 */
-	public boolean isDir() {
+	@Override
+	public boolean isDirectory() {
 		return _attrs.isDir() || (_realAttrs != null && _realAttrs.isDir());
 	}
 
 	/**
 	 * @return <tt>true</tt> if this object's path points to a link (no follow
-	 *         link). Note that {@link #isFile()} or {@link #isDir()} can return
-	 *         <tt>true</tt> too. Also note that if this returns <tt>true</tt>,
-	 *         and if {@link #isFile()} and {@link #isDir()} both return
+	 *         link). Note that {@link #isRegularFile()} or
+	 *         {@link #isDirectory()} can return <tt>true</tt> too. Also note
+	 *         that if this returns <tt>true</tt>, and if
+	 *         {@link #isRegularFile()} and {@link #isDirectory()} both return
 	 *         <tt>false</tt>, then it means that this object's path points to a
 	 *         link, and this link's target is a non existent file or directory.
 	 */
-	public boolean isLink() {
+	@Override
+	public boolean isSymbolicLink() {
 		return _attrs.isLink();
 	}
 
+	@Override
+	public boolean isOther() {
+		// TODO
+		return false;
+	}
+
+	@Override
 	public Path getLinkTarget() {
 		return _target;
 	}
 
-	public int getATime() {
-		return _attrs.getATime();
+	@Override
+	public FileTime lastAccessTime() {
+		return FileTime.fromMillis(_attrs.getATime()*1000L);
 	}
 
-	public String getAtimeString() {
-		return _attrs.getAtimeString();
+	@Override
+	public FileTime lastModifiedTime() {
+		return FileTime.fromMillis(_attrs.getMTime()*1000L);
 	}
 
-	public int getMTime() {
-		return _attrs.getMTime();
+	@Override
+	public FileTime creationTime() {
+		// TODO
+		return null;
 	}
 
-	public String getMtimeString() {
-		return _attrs.getMtimeString();
-	}
-
-	public int getPermissions() {
-		return _attrs.getPermissions();
-	}
-
-	public String getPermissionsString() {
-		return _attrs.getPermissionsString();
-	}
-
-	public long getSize() {
+	@Override
+	public long size() {
 		return _attrs.getSize();
 	}
 
-	public int getUId() {
-		return _attrs.getUId();
-	}
-
-	public int getGId() {
-		return _attrs.getGId();
+	@Override
+	public Object fileKey() {
+		return null;
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.wat.melody.common.ssh.impl.uploader;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
@@ -13,6 +12,7 @@ import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.exception.TemplatingException;
+import com.wat.melody.common.ssh.filesfinder.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.impl.SftpHelper;
 import com.wat.melody.common.ssh.types.GroupID;
@@ -57,7 +57,7 @@ class UploaderNoThread {
 				mkdir(lr.getDestination());
 				chmod(lr.getDestination(), lr.getDirModifiers());
 				chgrp(lr.getDestination(), lr.getGroup());
-			} else if (lr.isFile()) {
+			} else if (lr.isRegularFile()) {
 				template(lr);
 				chmod(lr.getDestination(), lr.getFileModifiers());
 				chgrp(lr.getDestination(), lr.getGroup());
@@ -86,26 +86,17 @@ class UploaderNoThread {
 	}
 
 	protected void ln_copy_unsafe(Resource lr) throws SshSessionException {
-		try {
-			if (lr.isSafeLink()) {
-				ln_keep(lr);
-			} else {
-				ln_copy(lr);
-			}
-		} catch (IOException Ex) {
-			throw new SshSessionException(Ex);
+		if (lr.isSafeLink()) {
+			ln_keep(lr);
+		} else {
+			ln_copy(lr);
 		}
 	}
 
 	protected void ln_keep(Resource lr) throws SshSessionException {
 		String unixLink = SftpHelper.convertToUnixPath(lr.getDestination());
-		String unixTarget;
-		try {
-			unixTarget = SftpHelper.convertToUnixPath(lr
-					.getSymbolicLinkTarget());
-		} catch (IOException Ex) {
-			throw new SshSessionException(Ex);
-		}
+		String unixTarget = SftpHelper.convertToUnixPath(lr
+				.getSymbolicLinkTarget());
 		if (SftpHelper.scp_ensureLink(getChannel(), unixTarget, unixLink)) {
 			log.info(Messages.UploadMsg_DONT_UPLOAD_CAUSE_LINK_ALREADY_EXISTS);
 			return;
@@ -126,7 +117,7 @@ class UploaderNoThread {
 			}
 			log.warn(Messages.bind(Messages.UploadMsg_COPY_UNSAFE_IMPOSSIBLE,
 					lr));
-		} else if (lr.isFile()) {
+		} else if (lr.isRegularFile()) {
 			template(lr);
 			chmod(lr.getDestination(), lr.getFileModifiers());
 			chgrp(lr.getDestination(), lr.getGroup());
@@ -163,14 +154,16 @@ class UploaderNoThread {
 			} catch (TemplatingException Ex) {
 				throw new SshSessionException(Ex);
 			}
-			put(template, lr.getDestination(), lr.getTransferBehavior());
+			put(template, lr.getAttributes(), lr.getDestination(),
+					lr.getTransferBehavior());
 		} else {
-			put(lr.getPath(), lr.getDestination(), lr.getTransferBehavior());
+			put(lr.getPath(), lr.getAttributes(), lr.getDestination(),
+					lr.getTransferBehavior());
 		}
 	}
 
-	protected void put(Path source, Path dest, TransferBehavior tb)
-			throws SshSessionException {
+	protected void put(Path source, EnhancedFileAttributes localFileAttrs,
+			Path dest, TransferBehavior tb) throws SshSessionException {
 		if (source == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid " + Path.class.getCanonicalName()
@@ -182,7 +175,8 @@ class UploaderNoThread {
 					+ " (the destination file Path).");
 		}
 		String unixFile = SftpHelper.convertToUnixPath(dest);
-		if (SftpHelper.scp_ensureFile(getChannel(), source, unixFile, tb)) {
+		if (SftpHelper.scp_ensureFile(localFileAttrs, getChannel(), unixFile,
+				tb)) {
 			log.info(Messages.UploadMsg_DONT_UPLOAD_CAUSE_FILE_ALREADY_EXISTS);
 			return;
 		}

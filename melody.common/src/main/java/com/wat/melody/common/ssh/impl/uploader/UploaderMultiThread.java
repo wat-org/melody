@@ -6,7 +6,6 @@ import java.util.List;
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.TemplatingHandler;
-import com.wat.melody.common.ssh.filesfinder.LocalResource;
 import com.wat.melody.common.ssh.filesfinder.LocalResourcesFinder;
 import com.wat.melody.common.ssh.filesfinder.Resource;
 import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
@@ -51,12 +50,12 @@ public class UploaderMultiThread extends TransferMultiThread {
 
 	@Override
 	public void computeResources() throws TransferException {
-		for (ResourcesSpecification rs : getResourcesSpecifications()) {
+		for (ResourcesSpecification rspec : getResourcesSpecifications()) {
 			try { // Add all found LocalResource to the global list
-				List<LocalResource> lrs;
-				lrs = LocalResourcesFinder.findResources(rs);
-				getResources().removeAll(lrs); // remove duplicated
-				getResources().addAll(lrs);
+				List<Resource> rs;
+				rs = LocalResourcesFinder.findResources(rspec);
+				getResources().removeAll(rs); // remove duplicated
+				getResources().addAll(rs);
 			} catch (IOException Ex) {
 				throw new TransferException(
 						Messages.UploadEx_IO_ERROR_WHILE_FINDING, Ex);

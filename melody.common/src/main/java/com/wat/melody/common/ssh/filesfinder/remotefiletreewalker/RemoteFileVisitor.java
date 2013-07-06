@@ -3,6 +3,7 @@ package com.wat.melody.common.ssh.filesfinder.remotefiletreewalker;
 import java.nio.file.FileVisitResult;
 
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.ssh.filesfinder.RemoteFileAttributes;
 
 /**
  * 
