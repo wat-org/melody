@@ -38,7 +38,7 @@ public abstract class TransferNoThread {
 
 	public void transfer() throws TransferException {
 		Resource r = getResource();
-		log.debug(Msg.bind(Messages.UploadMsg_BEGIN, r));
+		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, r));
 		try {
 			// ensure parent directory exists
 			createParentDirectory();
@@ -55,13 +55,13 @@ public abstract class TransferNoThread {
 				chmodFile();
 				chgrp();
 			} else {
-				log.warn(Msg.bind(Messages.UploadMsg_NOTFOUND, r));
+				log.warn(Msg.bind(Messages.TransferMsg_NOTFOUND, r));
 				return;
 			}
 		} catch (IOException | SshSessionException Ex) {
 			throw new TransferException(Ex);
 		}
-		log.info(Msg.bind(Messages.UploadMsg_END, r));
+		log.info(Msg.bind(Messages.TransferMsg_END, r));
 	}
 
 	protected void ln() throws IOException, SshSessionException {
@@ -90,8 +90,8 @@ public abstract class TransferNoThread {
 		Resource r = getResource();
 		if (!r.exists()) {
 			deleteDestination();
-			log.warn(Messages
-					.bind(Messages.UploadMsg_COPY_UNSAFE_IMPOSSIBLE, r));
+			log.warn(Messages.bind(Messages.TransferMsg_COPY_UNSAFE_IMPOSSIBLE,
+					r));
 		} else if (r.isRegularFile()) {
 			template();
 			chmodFile();
@@ -130,7 +130,7 @@ public abstract class TransferNoThread {
 		if (r.getTemplate() == true) {
 			if (getTemplatingHandler() == null) {
 				throw new SshSessionException(
-						Messages.UploadEx_NO_TEMPLATING_HANDLER);
+						Messages.TransferEx_NO_TEMPLATING_HANDLER);
 			}
 			Path template;
 			try {
