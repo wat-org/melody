@@ -4,8 +4,8 @@ import java.io.File;
 
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.LocalResourcesSpecification;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
+import com.wat.melody.common.transfer.resources.LocalResourcesSpecification;
+import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.plugin.ssh.common.Transfer;
 
 /**

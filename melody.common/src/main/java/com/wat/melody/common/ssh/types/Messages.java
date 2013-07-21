@@ -34,9 +34,6 @@ public class Messages extends NLS {
 	public static String ServerAliveMaxCountEx_NOT_A_NUMBER;
 	public static String ServerAliveMaxCountEx_NEGATIVE;
 
-	public static String TransferBehaviorEx_EMPTY;
-	public static String TransferBehaviorEx_INVALID;
-
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

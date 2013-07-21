@@ -24,13 +24,13 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
-import com.wat.melody.common.ssh.impl.downloader.DownloaderMultiThread;
-import com.wat.melody.common.ssh.impl.transfer.TransferException;
-import com.wat.melody.common.ssh.impl.uploader.UploaderMultiThread;
+import com.wat.melody.common.ssh.impl.transfer.SftpDownloaderMultiThread;
+import com.wat.melody.common.ssh.impl.transfer.SftpUploaderMultiThread;
+import com.wat.melody.common.transfer.TemplatingHandler;
+import com.wat.melody.common.transfer.exception.TransferException;
+import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
 /**
  * 
@@ -156,7 +156,7 @@ public class SshSession implements ISshSession {
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
 		try {
-			new UploaderMultiThread(this, rss, maxPar, th).transfer();
+			new SftpUploaderMultiThread(this, rss, maxPar, th).transfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}
@@ -167,7 +167,7 @@ public class SshSession implements ISshSession {
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
 		try {
-			new DownloaderMultiThread(this, rrss, maxPar, th).transfer();
+			new SftpDownloaderMultiThread(this, rrss, maxPar, th).transfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}

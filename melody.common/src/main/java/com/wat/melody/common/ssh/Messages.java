@@ -15,38 +15,6 @@ public class Messages extends NLS {
 	public static String SessionMsg_CNX;
 	public static String SessionMsg_CNX_OK;
 
-	public static String TransferEx_FAILED;
-	public static String TransferEx_UNMANAGED;
-	public static String TransferEx_MANAGED;
-	public static String TransferEx_INTERRUPTED;
-	public static String TransferEx_NO_TEMPLATING_HANDLER;
-	public static String TransferMsg_GRACEFUL_SHUTDOWN;
-	public static String TransferMsg_START;
-	public static String TransferMsg_FINISH;
-	public static String TransferMsg_BEGIN;
-	public static String TransferMsg_END;
-	public static String TransferMsg_NOTFOUND;
-	public static String TransferMsg_COPY_UNSAFE_IMPOSSIBLE;
-
-	public static String DownloadEx_IO_ERROR_WHILE_FINDING;
-	public static String DownloadEx_ENSURE_DIR_FAILED;
-	public static String DownloadEx_ENSURE_LINK_FAILED;
-	public static String DownloadEx_ENSURE_FILE_FAILED;
-	public static String DownloadMsg_DONT_DOWNLOAD_CAUSE_DIR_ALREADY_EXISTS;
-	public static String DownloadMsg_DONT_DOWNLOAD_CAUSE_LINK_ALREADY_EXISTS;
-	public static String DownloadMsg_DONT_DOWNLOAD_CAUSE_FILE_ALREADY_EXISTS;
-
-	public static String FSEx_LN;
-	public static String FSEx_MKDIR;
-
-	public static String UploadEx_IO_ERROR_WHILE_FINDING;
-	public static String UploadEx_ENSURE_DIR_FAILED;
-	public static String UploadEx_ENSURE_LINK_FAILED;
-	public static String UploadEx_ENSURE_FILE_FAILED;
-	public static String UploadMsg_DONT_UPLOAD_CAUSE_DIR_ALREADY_EXISTS;
-	public static String UploadMsg_DONT_UPLOAD_CAUSE_LINK_ALREADY_EXISTS;
-	public static String UploadMsg_DONT_UPLOAD_CAUSE_FILE_ALREADY_EXISTS;
-
 	public static String SftpEx_LSTAT;
 	public static String SftpEx_STAT;
 	public static String SftpEx_LN;

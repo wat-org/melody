@@ -5,7 +5,8 @@ import java.util.List;
 
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
+import com.wat.melody.common.transfer.TemplatingHandler;
+import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
 /**
  * 

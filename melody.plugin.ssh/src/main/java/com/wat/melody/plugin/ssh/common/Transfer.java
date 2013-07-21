@@ -16,10 +16,10 @@ import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.ISshSession;
-import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.exception.TemplatingException;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
+import com.wat.melody.common.transfer.TemplatingHandler;
+import com.wat.melody.common.transfer.exception.TemplatingException;
+import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 

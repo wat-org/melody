@@ -20,10 +20,10 @@ import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.Messages;
-import com.wat.melody.common.ssh.TemplatingHandler;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
-import com.wat.melody.common.ssh.filesfinder.ResourcesSpecification;
+import com.wat.melody.common.transfer.TemplatingHandler;
+import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
 /**
  * 
