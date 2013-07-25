@@ -33,10 +33,10 @@ public abstract class TransferNoThread {
 	private FileSystem _destinationFileSystem;
 
 	public TransferNoThread(FileSystem srcFS, FileSystem destFS,
-			Transferable r, TemplatingHandler th) {
+			Transferable t, TemplatingHandler th) {
 		setSourceFileSystem(srcFS);
 		setDestinationFileSystem(destFS);
-		setTransferable(r);
+		setTransferable(t);
 		setTemplatingHandler(th);
 	}
 
@@ -195,14 +195,14 @@ public abstract class TransferNoThread {
 		return _transferable;
 	}
 
-	private Transferable setTransferable(Transferable lr) {
-		if (lr == null) {
+	private Transferable setTransferable(Transferable t) {
+		if (t == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ Transferable.class.getCanonicalName() + ".");
 		}
 		Transferable previous = getTransferable();
-		_transferable = lr;
+		_transferable = t;
 		return previous;
 	}
 

@@ -92,10 +92,6 @@ public class TransferablesTree {
 		return _t;
 	}
 
-	public int size() {
-		return getFilesCount() + getDirectoriesCount();
-	}
-
 	public int getFilesCount() {
 		return _innerfile.size();
 	}
@@ -106,6 +102,14 @@ public class TransferablesTree {
 
 	public void putFile(Transferable t) {
 		_innerfile.add(t);
+	}
+
+	public int getAllFilesCount() {
+		int dirsize = 0;
+		for (Path elmt : getDirectoriesKeySet()) {
+			dirsize += getDirectory(elmt).getAllFilesCount();
+		}
+		return _innerfile.size() + dirsize;
 	}
 
 	public TransferableFilesIterator getAllFiles() {
@@ -131,6 +135,14 @@ public class TransferablesTree {
 		TransferablesTree inserted = new TransferablesTree(t);
 		_innerdir.put(elmt, inserted);
 		return inserted;
+	}
+
+	public int getAllDirectoriesCount() {
+		int dirsize = 0;
+		for (Path elmt : getDirectoriesKeySet()) {
+			dirsize += getDirectory(elmt).getAllDirectoriesCount();
+		}
+		return _innerdir.size() + dirsize;
 	}
 
 	public TransferableDirectoriesIterator getAllDirectories() {

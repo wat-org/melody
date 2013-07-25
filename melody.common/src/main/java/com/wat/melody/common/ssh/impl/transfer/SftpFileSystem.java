@@ -24,6 +24,12 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
+import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
+import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
+import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
+import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
+import com.wat.melody.common.files.exception.WrapperNotDirectoryException;
+import com.wat.melody.common.files.exception.WrapperNotLinkException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.Messages;
 
@@ -132,18 +138,7 @@ public class SftpFileSystem implements FileSystem {
 	public void createDirectory(Path dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, AccessDeniedException {
-		try {
-			createDirectory(convertToUnixPath(dir), attrs);
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (FileAlreadyExistsException Ex) {
-			throw new FileAlreadyExistsException(Ex.getMessage()
-					+ ": FileAlreadyExistsException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
 	private void createDirectory(String dir, FileAttribute<?>... attrs)
@@ -153,10 +148,10 @@ public class SftpFileSystem implements FileSystem {
 			_channel.mkdir(dir);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(dir, Ex);
+				throw new WrapperAccessDeniedException(dir);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				// mean the parent dir doesn't exists
-				throw newNoSuchFileException(dir, Ex);
+				throw new WrapperNoSuchFileException(dir);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
 				try {
 					if (readAttributes0(dir, LinkOption.NOFOLLOW_LINKS).isDir()) {
@@ -164,7 +159,7 @@ public class SftpFileSystem implements FileSystem {
 						return;
 					} else {
 						// a link or file exists => error
-						throw new FileAlreadyExistsException(dir);
+						throw new WrapperFileAlreadyExistsException(dir);
 					}
 				} catch (NoSuchFileException Exx) {
 					// concurrency pb : should recreate ?
@@ -181,15 +176,7 @@ public class SftpFileSystem implements FileSystem {
 	public void createDirectories(Path dir, FileAttribute<?>... attrs)
 			throws IOException, FileAlreadyExistsException,
 			AccessDeniedException {
-		try {
-			_createDirectories(dir, attrs);
-		} catch (FileAlreadyExistsException Ex) {
-			throw new FileAlreadyExistsException(Ex.getMessage()
-					+ ": FileAlreadyExistsException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		_createDirectories(dir, attrs);
 	}
 
 	private void _createDirectories(Path dir, FileAttribute<?>... attrs)
@@ -243,19 +230,8 @@ public class SftpFileSystem implements FileSystem {
 	public void createSymbolicLink(Path link, Path target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, AccessDeniedException {
-		try {
-			createSymbolicLink(convertToUnixPath(link),
-					convertToUnixPath(target), attrs);
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (FileAlreadyExistsException Ex) {
-			throw new FileAlreadyExistsException(Ex.getMessage()
-					+ ": FileAlreadyExistsException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		createSymbolicLink(convertToUnixPath(link), convertToUnixPath(target),
+				attrs);
 	}
 
 	private void createSymbolicLink(String link, String target,
@@ -265,12 +241,12 @@ public class SftpFileSystem implements FileSystem {
 			_channel.symlink(target, link);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(link, Ex);
+				throw new WrapperAccessDeniedException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw newNoSuchFileException(link, Ex);
+				throw new WrapperNoSuchFileException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& exists(link, LinkOption.NOFOLLOW_LINKS)) {
-				throw newFileAlreadyExistsException(link, Ex);
+				throw new WrapperFileAlreadyExistsException(link);
 			} else {
 				throw new IOException(
 						Msg.bind(Messages.SftpEx_LN, target, link), Ex);
@@ -281,17 +257,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public Path readSymbolicLink(Path link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
-		try {
-			return readSymbolicLink(convertToUnixPath(link));
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (NotLinkException Ex) {
-			throw new NotLinkException(Ex.getMessage() + ": NotLinkException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		return readSymbolicLink(convertToUnixPath(link));
 	}
 
 	private Path readSymbolicLink(String link) throws IOException,
@@ -300,11 +266,11 @@ public class SftpFileSystem implements FileSystem {
 			return Paths.get(_channel.readlink(link));
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(link, Ex);
+				throw new WrapperAccessDeniedException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw newNoSuchFileException(link, Ex);
+				throw new WrapperNoSuchFileException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_BAD_MESSAGE) {
-				throw newNotLinkException(link, Ex);
+				throw new WrapperNotLinkException(link);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_READLINK, link),
 						Ex);
@@ -315,18 +281,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public void delete(Path path) throws IOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		try {
-			delete(convertToUnixPath(path));
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (DirectoryNotEmptyException Ex) {
-			throw new DirectoryNotEmptyException(Ex.getMessage()
-					+ ": DirectoryNotEmptyException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		delete(convertToUnixPath(path));
 	}
 
 	private void delete(String path) throws IOException,
@@ -336,9 +291,9 @@ public class SftpFileSystem implements FileSystem {
 			_channel.rm(path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(path, Ex);
+				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw newNoSuchFileException(path, Ex);
+				throw new WrapperNoSuchFileException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
 				deleteEmptyDir(path);
 			} else {
@@ -354,16 +309,16 @@ public class SftpFileSystem implements FileSystem {
 			_channel.rmdir(path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(path, Ex);
+				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				// will raise SSH_FX_NO_SUCH_FILE if it is not a dir
 				if (exists(path, LinkOption.NOFOLLOW_LINKS)) {
-					throw newNotDirectoryException(path, Ex);
+					throw new WrapperNotDirectoryException(path);
 				} else {
-					throw newNoSuchFileException(path, Ex);
+					throw new WrapperNoSuchFileException(path);
 				}
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
-				throw newDirectoryNotEmptyException(path, Ex);
+				throw new WrapperDirectoryNotEmptyException(path);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_RMDIR, path), Ex);
 			}
@@ -384,15 +339,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public boolean deleteIfExists(Path path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		try {
-			return deleteIfExists(convertToUnixPath(path));
-		} catch (DirectoryNotEmptyException Ex) {
-			throw new DirectoryNotEmptyException(Ex.getMessage()
-					+ ": NotLinkException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		return deleteIfExists(convertToUnixPath(path));
 	}
 
 	private boolean deleteIfExists(String path) throws IOException,
@@ -408,15 +355,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public void deleteDirectory(Path dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
-		try {
-			deleteDirectory(convertToUnixPath(dir));
-		} catch (NotDirectoryException Ex) {
-			throw new NotDirectoryException(Ex.getMessage()
-					+ ": NotDirectoryException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		deleteDirectory(convertToUnixPath(dir));
 	}
 
 	private void deleteDirectory(String dir) throws IOException,
@@ -454,15 +393,15 @@ public class SftpFileSystem implements FileSystem {
 			throws IOException, NoSuchFileException, NotDirectoryException,
 			AccessDeniedException {
 		if (!readAttributes0(path).isDir()) {
-			throw new NotDirectoryException(path);
+			throw new WrapperNotDirectoryException(path);
 		}
 		try {
 			_channel.ls(path, selector);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(path, Ex);
+				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw newNoSuchFileException(path, Ex);
+				throw new WrapperNoSuchFileException(path);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_LS, path), Ex);
 			}
@@ -472,15 +411,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException {
-		try {
-			return readAttributes(convertToUnixPath(path));
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		return readAttributes(convertToUnixPath(path));
 	}
 
 	private EnhancedFileAttributes readAttributes(String path)
@@ -508,9 +439,9 @@ public class SftpFileSystem implements FileSystem {
 			}
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw newAccessDeniedException(path, Ex);
+				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw newNoSuchFileException(path, Ex);
+				throw new WrapperNoSuchFileException(path);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_LSTAT, path), Ex);
 			}
@@ -519,18 +450,7 @@ public class SftpFileSystem implements FileSystem {
 
 	public DirectoryStream<Path> newDirectoryStream(Path path)
 			throws IOException, NotDirectoryException, NoSuchFileException {
-		try {
-			return newDirectoryStream(convertToUnixPath(path));
-		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
-		} catch (NotDirectoryException Ex) {
-			throw new NotDirectoryException(Ex.getMessage()
-					+ ": NotDirectoryException.");
-		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
-		}
+		return newDirectoryStream(convertToUnixPath(path));
 	}
 
 	private DirectoryStream<Path> newDirectoryStream(final String path)
@@ -562,73 +482,54 @@ public class SftpFileSystem implements FileSystem {
 		};
 	}
 
-	public void upload(Path source, Path destination) throws IOException {
+	public void upload(Path source, Path destination) throws IOException,
+			AccessDeniedException, NoSuchFileException {
 		upload(source.toString(), convertToUnixPath(destination));
 	}
 
-	public void upload(String source, String destination) throws IOException {
+	public void upload(String source, String destination) throws IOException,
+			AccessDeniedException, NoSuchFileException {
 		try {
 			_channel.put(source, destination);
 		} catch (SftpException Ex) {
-			// TODO : throw dedicated exception
-			throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
-					destination), Ex);
+			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+				throw new WrapperAccessDeniedException(destination);
+			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				throw new WrapperNoSuchFileException(destination);
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() != null) {
+				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
+						destination), Ex.getCause());
+			} else {
+				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
+						destination), Ex);
+			}
 		}
 	}
 
-	public void download(Path source, Path destination) throws IOException {
+	public void download(Path source, Path destination) throws IOException,
+			AccessDeniedException, NoSuchFileException {
 		download(convertToUnixPath(source), destination.toString());
 	}
 
-	public void download(String source, String destination) throws IOException {
+	public void download(String source, String destination) throws IOException,
+			AccessDeniedException, NoSuchFileException {
 		try {
 			_channel.get(source, destination);
 		} catch (SftpException Ex) {
-			// TODO : throw dedicated exception
-			throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
-					destination), Ex);
+			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+				throw new WrapperAccessDeniedException(source);
+			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				throw new WrapperNoSuchFileException(source);
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() != null) {
+				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
+						destination), Ex.getCause());
+			} else {
+				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
+						destination), Ex);
+			}
 		}
-	}
-
-	private NoSuchFileException newNoSuchFileException(String path,
-			Exception cause) {
-		NoSuchFileException e = new NoSuchFileException(path);
-		e.initCause(cause);
-		return e;
-	}
-
-	private FileAlreadyExistsException newFileAlreadyExistsException(
-			String path, Exception cause) {
-		FileAlreadyExistsException e = new FileAlreadyExistsException(path);
-		e.initCause(cause);
-		return e;
-	}
-
-	private NotLinkException newNotLinkException(String path, Exception cause) {
-		NotLinkException e = new NotLinkException(path);
-		e.initCause(cause);
-		return e;
-	}
-
-	private DirectoryNotEmptyException newDirectoryNotEmptyException(
-			String path, Exception cause) {
-		DirectoryNotEmptyException e = new DirectoryNotEmptyException(path);
-		e.initCause(cause);
-		return e;
-	}
-
-	private NotDirectoryException newNotDirectoryException(String path,
-			Exception cause) {
-		NotDirectoryException e = new NotDirectoryException(path);
-		e.initCause(cause);
-		return e;
-	}
-
-	private AccessDeniedException newAccessDeniedException(String path,
-			Exception cause) {
-		AccessDeniedException e = new AccessDeniedException(path);
-		e.initCause(cause);
-		return e;
 	}
 
 }

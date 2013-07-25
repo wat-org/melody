@@ -2,9 +2,9 @@ package com.wat.melody.common.transfer.resources;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.LinkOption;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
+import com.wat.melody.common.transfer.LinkOption;
 import com.wat.melody.common.transfer.TransferBehavior;
 
 /**

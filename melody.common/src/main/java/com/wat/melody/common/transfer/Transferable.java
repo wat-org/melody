@@ -4,7 +4,6 @@ import java.nio.file.Path;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.LinkOption;
 import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 

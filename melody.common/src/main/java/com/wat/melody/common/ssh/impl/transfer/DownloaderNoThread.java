@@ -16,8 +16,8 @@ import com.wat.melody.common.transfer.Transferable;
 class DownloaderNoThread extends TransferNoThread {
 
 	public DownloaderNoThread(SftpFileSystem srcFS, FileSystem destFS,
-			Transferable r, TemplatingHandler th) {
-		super(srcFS, destFS, r, th);
+			Transferable t, TemplatingHandler th) {
+		super(srcFS, destFS, t, th);
 	}
 
 	@Override

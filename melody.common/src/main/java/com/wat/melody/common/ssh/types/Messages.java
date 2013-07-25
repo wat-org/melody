@@ -17,9 +17,6 @@ public class Messages extends NLS {
 	public static String GroupIDEx_EMPTY;
 	public static String GroupIDEx_INVALID;
 
-	public static String LinkOptionEx_EMPTY;
-	public static String LinkOptionEx_INVALID;
-
 	public static String ModifiersEx_EMPTY;
 	public static String ModifiersEx_INVALID;
 

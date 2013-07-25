@@ -16,8 +16,8 @@ import com.wat.melody.common.transfer.Transferable;
 class UploaderNoThread extends TransferNoThread {
 
 	public UploaderNoThread(FileSystem srcFS, SftpFileSystem destFS,
-			Transferable r, TemplatingHandler th) {
-		super(srcFS, destFS, r, th);
+			Transferable t, TemplatingHandler th) {
+		super(srcFS, destFS, t, th);
 	}
 
 	@Override

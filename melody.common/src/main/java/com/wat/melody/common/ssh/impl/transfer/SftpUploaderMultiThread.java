@@ -7,7 +7,6 @@ import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.transfer.TemplatingHandler;
-import com.wat.melody.common.transfer.TransferMultiThread;
 import com.wat.melody.common.transfer.TransferNoThread;
 import com.wat.melody.common.transfer.Transferable;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -17,14 +16,11 @@ import com.wat.melody.common.transfer.resources.ResourcesSpecification;
  * @author Guillaume Cornet
  * 
  */
-public class SftpUploaderMultiThread extends TransferMultiThread {
-
-	private SshSession _session;
+public class SftpUploaderMultiThread extends SftpBaseTransferMultiThread {
 
 	public SftpUploaderMultiThread(SshSession session,
 			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th) {
-		super(rss, maxPar, th);
-		setSession(session);
+		super(session, rss, maxPar, th);
 	}
 
 	@Override
@@ -43,11 +39,6 @@ public class SftpUploaderMultiThread extends TransferMultiThread {
 	}
 
 	@Override
-	public String getTransferProtocolDescription() {
-		return "sftp";
-	}
-
-	@Override
 	public FileSystem newSourceFileSystem() {
 		return new LocalFileSystem();
 	}
@@ -60,25 +51,10 @@ public class SftpUploaderMultiThread extends TransferMultiThread {
 
 	@Override
 	public TransferNoThread newTransferNoThread(FileSystem sourceFileSystem,
-			FileSystem destinationFileSystem, Transferable r) {
+			FileSystem destinationFileSystem, Transferable t) {
 		return new UploaderNoThread(sourceFileSystem,
-				(SftpFileSystem) destinationFileSystem, r,
+				(SftpFileSystem) destinationFileSystem, t,
 				getTemplatingHandler());
-	}
-
-	protected SshSession getSession() {
-		return _session;
-	}
-
-	private SshSession setSession(SshSession session) {
-		if (session == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + SshSession.class.getCanonicalName()
-					+ ".");
-		}
-		SshSession previous = getSession();
-		_session = session;
-		return previous;
 	}
 
 }

@@ -3,6 +3,7 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +46,9 @@ public abstract class TransferMultiThread {
 	private List<TransferThread> _threads;
 	private ConsolidatedException _exceptions;
 
-	public TransferMultiThread(List<ResourcesSpecification> r, int maxPar,
+	public TransferMultiThread(List<ResourcesSpecification> rss, int maxPar,
 			TemplatingHandler th) {
-		setResourcesSpecifications(r);
+		setResourcesSpecifications(rss);
 		setMaxPar(maxPar);
 		setTemplatingHandler(th);
 
@@ -58,12 +59,12 @@ public abstract class TransferMultiThread {
 	}
 
 	public void transfer() throws TransferException, InterruptedException {
-		// compute resources to transfer
 		if (getResourcesSpecifications().size() == 0) {
 			return;
 		}
+		// compute transferables to transfer
 		computeTransferables();
-		if (getTransferablesTree().size() == 0) {
+		if (getTransferablesTree().getDirectoriesCount() == 0) {
 			return;
 		}
 		// do transfer
@@ -72,11 +73,9 @@ public abstract class TransferMultiThread {
 					getSourceSystemDescription(),
 					getDestinationSystemDescription(),
 					getTransferProtocolDescription()));
-			// create destination directories
+			// create destination directories first
 			createDestinationDirectories();
-			// get iterator on all files to transfer
-			_filesIterator = getTransferablesTree().getAllFiles();
-			// multi-thread file transfer
+			// then launch multi-thread file transfer
 			setThreadGroup(new ThreadGroup(Thread.currentThread().getName()
 					+ ">" + getThreadName()));
 			getThreadGroup().setDaemon(true);
@@ -105,8 +104,9 @@ public abstract class TransferMultiThread {
 
 	private void initializeTransferThreads() {
 		int max = getMaxPar();
-		if (getTransferablesTree().size() < max) {
-			max = getTransferablesTree().size();
+		int filesCount = getTransferablesTree().getAllFilesCount();
+		if (filesCount < max) {
+			max = filesCount;
 		}
 		for (int i = 0; i < max; i++) {
 			getThreads().add(
@@ -200,50 +200,76 @@ public abstract class TransferMultiThread {
 	}
 
 	protected void computeTransferables() throws TransferException {
-		FileSystem fs = null;
+		FileSystem sfs = null;
 		try {
-			fs = newSourceFileSystem();
-			setTransferablesTree(TransferablesFinder.find(fs,
-					getResourcesSpecifications()));
-		} catch (IOException Ex) {
-			throw new TransferException(
-					Messages.TransferEx_IOE_WHILE_FINDING_TRANSFERABLES, Ex);
+			sfs = newSourceFileSystem();
+			try {
+				setTransferablesTree(TransferablesFinder.find(sfs,
+						getResourcesSpecifications()));
+			} catch (IOException Ex) {
+				throw new TransferException(Msg.bind(
+						Messages.TransferEx_FAILED_TO_FIND_TRANSFERABLES,
+						getSourceSystemDescription()), Ex);
+			}
+		} catch (TransferException Ex) {
+			throw new TransferException(Msg.bind(Messages.TransferEx_MANAGED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), Ex);
+		} catch (Throwable Ex) {
+			throw new TransferException(Msg.bind(Messages.TransferEx_UNMANAGED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), Ex);
 		} finally {
-			if (fs != null) {
-				fs.release();
-				fs = null;
+			if (sfs != null) {
+				sfs.release();
+				sfs = null;
 			}
 		}
-		System.out.println("begin");
 		System.out.println(getTransferablesTree());
-		System.out.println("end");
 	}
 
 	protected void createDestinationDirectories() throws TransferException {
-		FileSystem dtfs = null;
+		FileSystem dfs = null;
 		try {
-			dtfs = newDestinationFileSystem();
+			dfs = newDestinationFileSystem();
 			for (Transferable t : getTransferablesTree().getAllDirectories()) {
 				log.debug(Msg.bind(Messages.TransferMsg_BEGIN, t));
-				if (t.isSymbolicLink()) {
-					TransferHelper.createSymbolicLink(dtfs,
-							t.getDestinationPath(), t.getSymbolicLinkTarget());
-				} else {
-					TransferHelper.createDirectory(dtfs,
-							t.getDestinationPath(), t.getGroup(),
-							t.getModifiers());
+				try {
+					if (!t.linkShouldBeConvertedToFile()) {
+						TransferHelper.createSymbolicLink(dfs,
+								t.getDestinationPath(),
+								t.getSymbolicLinkTarget());
+					} else {
+						TransferHelper.createDirectory(dfs,
+								t.getDestinationPath(), t.getGroup(),
+								t.getModifiers());
+					}
+				} catch (IOException Ex) {
+					throw new TransferException(Msg.bind(
+							Messages.TransferEx_FAILED, t), Ex);
 				}
 				log.info(Msg.bind(Messages.TransferMsg_END, t));
 			}
-		} catch (IOException Ex) {
-			throw new TransferException(
-					Messages.TransferEx_IOE_WHILE_CREATING_DEST_DIRECTORIES, Ex);
+		} catch (TransferException Ex) {
+			throw new TransferException(Msg.bind(Messages.TransferEx_MANAGED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), Ex);
+		} catch (Throwable Ex) {
+			throw new TransferException(Msg.bind(Messages.TransferEx_UNMANAGED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), Ex);
 		} finally {
-			if (dtfs != null) {
-				dtfs.release();
-				dtfs = null;
+			if (dfs != null) {
+				dfs.release();
+				dfs = null;
 			}
 		}
+		// store iterator on all files to transfer
+		_filesIterator = getTransferablesTree().getAllFiles();
 	}
 
 	/**
@@ -251,21 +277,22 @@ public abstract class TransferMultiThread {
 	 *         transfer.
 	 */
 	public Transferable getNextTransferable() {
-		if (_filesIterator.hasNext()) {
+		try {
 			return _filesIterator.next();
+		} catch (NoSuchElementException ignored) {
+			return null;
 		}
-		return null;
 	}
 
 	public void _transfer(FileSystem sourceFileSystem,
-			FileSystem destinationFileSystem, Transferable r)
+			FileSystem destinationFileSystem, Transferable t)
 			throws TransferException, InterruptedException {
 		try {
-			newTransferNoThread(sourceFileSystem, destinationFileSystem, r)
+			newTransferNoThread(sourceFileSystem, destinationFileSystem, t)
 					.doTransfer();
 		} catch (TransferException Ex) {
 			TransferException e = new TransferException(Msg.bind(
-					Messages.TransferEx_FAILED, r), Ex);
+					Messages.TransferEx_FAILED, t), Ex);
 			markState(FAILED);
 			getExceptions().addCause(e);
 		}
@@ -285,21 +312,21 @@ public abstract class TransferMultiThread {
 
 	public abstract TransferNoThread newTransferNoThread(
 			FileSystem sourceFileSystem, FileSystem destinationFileSystem,
-			Transferable r);
+			Transferable t);
 
 	protected List<ResourcesSpecification> getResourcesSpecifications() {
 		return _resourcesSpecifications;
 	}
 
 	private List<ResourcesSpecification> setResourcesSpecifications(
-			List<ResourcesSpecification> lrss) {
-		if (lrss == null) {
+			List<ResourcesSpecification> rss) {
+		if (rss == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + List.class.getCanonicalName() + "<"
 					+ ResourcesSpecification.class.getCanonicalName() + ">.");
 		}
 		List<ResourcesSpecification> previous = getResourcesSpecifications();
-		_resourcesSpecifications = lrss;
+		_resourcesSpecifications = rss;
 		return previous;
 	}
 

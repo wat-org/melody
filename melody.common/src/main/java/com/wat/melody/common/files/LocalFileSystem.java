@@ -17,6 +17,13 @@ import java.nio.file.attribute.FileAttribute;
 
 import org.apache.commons.io.FileUtils;
 
+import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
+import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
+import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
+import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
+import com.wat.melody.common.files.exception.WrapperNotDirectoryException;
+import com.wat.melody.common.files.exception.WrapperNotLinkException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -58,16 +65,13 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.createDirectory(dir, attrs);
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (FileAlreadyExistsException Ex) {
 			if (!isDirectory(dir, LinkOption.NOFOLLOW_LINKS)) {
-				throw new FileAlreadyExistsException(Ex.getMessage()
-						+ ": FileAlreadyExistsException.");
+				throw new WrapperFileAlreadyExistsException(Ex.getFile());
 			}
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -78,11 +82,9 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.createDirectories(dir, attrs);
 		} catch (FileAlreadyExistsException Ex) {
-			throw new FileAlreadyExistsException(Ex.getMessage()
-					+ ": FileAlreadyExistsException.");
+			throw new WrapperFileAlreadyExistsException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -93,14 +95,11 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.createSymbolicLink(link, target, attrs);
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (FileAlreadyExistsException Ex) {
-			throw new FileAlreadyExistsException(Ex.getMessage()
-					+ ": FileAlreadyExistsException.");
+			throw new WrapperFileAlreadyExistsException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -111,13 +110,11 @@ public class LocalFileSystem implements FileSystem {
 			// /!\ This will remove the trailing '/'
 			return Paths.get(Files.readSymbolicLink(link).toString());
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (NotLinkException Ex) {
-			throw new NotLinkException(Ex.getMessage() + ": NotLinkException.");
+			throw new WrapperNotLinkException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -127,14 +124,11 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.delete(path);
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (DirectoryNotEmptyException Ex) {
-			throw new DirectoryNotEmptyException(Ex.getMessage()
-					+ ": DirectoryNotEmptyException.");
+			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -144,11 +138,9 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			return Files.deleteIfExists(path);
 		} catch (DirectoryNotEmptyException Ex) {
-			throw new DirectoryNotEmptyException(Ex.getMessage()
-					+ ": NotLinkException.");
+			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -166,11 +158,9 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			return _readAttributes(path);
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
@@ -196,19 +186,17 @@ public class LocalFileSystem implements FileSystem {
 		return Files.readAttributes(path, BasicFileAttributes.class, options);
 	}
 
+	@Override
 	public DirectoryStream<Path> newDirectoryStream(Path path)
 			throws IOException, NotDirectoryException, NoSuchFileException {
 		try {
 			return Files.newDirectoryStream(path);
 		} catch (NoSuchFileException Ex) {
-			throw new NoSuchFileException(Ex.getMessage()
-					+ ": NoSuchFileException.");
+			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (NotDirectoryException Ex) {
-			throw new NotDirectoryException(Ex.getMessage()
-					+ ": NotDirectoryException.");
+			throw new WrapperNotDirectoryException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
-			throw new AccessDeniedException(Ex.getMessage()
-					+ ": AccessDeniedException.");
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 

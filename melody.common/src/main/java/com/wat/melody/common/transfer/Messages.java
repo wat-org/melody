@@ -6,6 +6,9 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.transfer.messages";
 
+	public static String LinkOptionEx_EMPTY;
+	public static String LinkOptionEx_INVALID;
+
 	public static String TransferBehaviorEx_EMPTY;
 	public static String TransferBehaviorEx_INVALID;
 
@@ -13,8 +16,7 @@ public class Messages extends NLS {
 	public static String TransferEx_UNMANAGED;
 	public static String TransferEx_MANAGED;
 	public static String TransferEx_INTERRUPTED;
-	public static String TransferEx_IOE_WHILE_FINDING_TRANSFERABLES;
-	public static String TransferEx_IOE_WHILE_CREATING_DEST_DIRECTORIES;
+	public static String TransferEx_FAILED_TO_FIND_TRANSFERABLES;
 	public static String TransferEx_NO_TEMPLATING_HANDLER;
 	public static String TransferMsg_GRACEFUL_SHUTDOWN;
 	public static String TransferMsg_START;

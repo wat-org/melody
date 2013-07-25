@@ -1,9 +1,9 @@
-package com.wat.melody.common.ssh.types;
+package com.wat.melody.common.transfer;
 
 import java.util.Arrays;
 
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.types.exception.IllegalLinkOptionException;
+import com.wat.melody.common.transfer.exception.IllegalLinkOptionException;
 
 /**
  * 
