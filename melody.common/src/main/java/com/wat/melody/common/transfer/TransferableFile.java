@@ -2,10 +2,13 @@ package com.wat.melody.common.transfer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
+import com.wat.melody.common.transfer.resources.ResourceAttribute;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
@@ -49,14 +52,6 @@ public class TransferableFile implements Transferable {
 		return getResourcesSpecification().getDestBaseDir();
 	}
 
-	private Modifiers getFileModifiers() {
-		return getResourceSpecification().getFileModifiers();
-	}
-
-	private Modifiers getDirModifiers() {
-		return getResourceSpecification().getDirModifiers();
-	}
-
 	@Override
 	public LinkOption getLinkOption() {
 		return getResourceSpecification().getLinkOption();
@@ -73,12 +68,34 @@ public class TransferableFile implements Transferable {
 	}
 
 	@Override
-	public GroupID getGroup() {
-		return getResourceSpecification().getGroup();
+	public FileAttribute<?>[] getExpectedAttributes() {
+		if (isSymbolicLink()) {
+			return null;
+		}
+		if (isDirectory()) {
+			return getResourceSpecification().getDirExpectedAttributes();
+		}
+		return getResourceSpecification().getFileExpectedAttributes();
+	}
+
+	private Collection<ResourceAttribute> getExpectedAttributesAsList() {
+		if (isSymbolicLink()) {
+			return new ArrayList<ResourceAttribute>();
+		}
+		Map<String, ResourceAttribute> map;
+		if (isDirectory()) {
+			map = getResourceSpecification().getDirExpectedAttributesMap();
+		} else {
+			map = getResourceSpecification().getFileExpectedAttributesMap();
+		}
+		if (map == null) {
+			return new ArrayList<ResourceAttribute>();
+		}
+		return map.values();
 	}
 
 	private String getDestPath() {
-		return getResourceSpecification().getDestPath();
+		return getResourceSpecification().getDestName();
 	}
 
 	/**
@@ -226,16 +243,8 @@ public class TransferableFile implements Transferable {
 				return true;
 			}
 		default:
-			throw new RuntimeException("shoudln't get here");
+			throw new RuntimeException("shouldn't go here");
 		}
-	}
-
-	@Override
-	public Modifiers getModifiers() {
-		if (isDirectory()) {
-			return getDirModifiers();
-		}
-		return getFileModifiers();
 	}
 
 	@Override
@@ -257,10 +266,8 @@ public class TransferableFile implements Transferable {
 		str.append(getSourcePath());
 		str.append(", destination:");
 		str.append(getDestinationPath());
-		str.append(", modifiers:");
-		str.append(getModifiers());
-		str.append(", group:");
-		str.append(getGroup());
+		str.append(", attributes:");
+		str.append(getExpectedAttributesAsList());
 		str.append(", link-option:");
 		str.append(getLinkOption());
 		str.append(", transfer-behavior:");

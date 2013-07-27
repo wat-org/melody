@@ -17,6 +17,8 @@ public class Messages extends NLS {
 	public static String FileEx_CANT_WRITE;
 	public static String FileEx_NOT_FOUND;
 
+	public static String LocalFSMsg_SKIP_ATTR;
+
 	public static String TarGzEx_NOT_A_TARGZ;
 	public static String TarGzEx_INVALID_EXTENSION;
 

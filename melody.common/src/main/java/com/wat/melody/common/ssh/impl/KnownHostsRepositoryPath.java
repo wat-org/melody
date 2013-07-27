@@ -9,7 +9,6 @@ import com.wat.melody.common.files.IFileBased;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.KnownHostsRepositoryPathException;
 
 /**

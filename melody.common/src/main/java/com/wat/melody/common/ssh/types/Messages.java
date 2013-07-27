@@ -14,12 +14,6 @@ public class Messages extends NLS {
 
 	public static String CnxTimeoutEx_INVALID;
 
-	public static String GroupIDEx_EMPTY;
-	public static String GroupIDEx_INVALID;
-
-	public static String ModifiersEx_EMPTY;
-	public static String ModifiersEx_INVALID;
-
 	public static String ProxyTypeEx_EMPTY;
 	public static String ProxyTypeEx_INVALID;
 

@@ -3,14 +3,13 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
 
 /**
  * 
@@ -22,14 +21,13 @@ public abstract class TransferHelper {
 	private static Logger log = LoggerFactory.getLogger(TransferHelper.class);
 
 	protected static void createDirectory(FileSystem destFS, Path dir,
-			GroupID group, Modifiers mod) throws IOException {
+			FileAttribute<?>... attrs) throws IOException {
 		if (ensureDestinationIsDirectory(destFS, dir)) {
+			destFS.setAttributes(dir, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
 		} else {
-			destFS.createDirectory(dir);
+			destFS.createDirectory(dir, attrs);
 		}
-		chmod(destFS, dir, mod);
-		chgrp(destFS, dir, group);
 	}
 
 	/**
@@ -65,12 +63,13 @@ public abstract class TransferHelper {
 	}
 
 	protected static void createSymbolicLink(FileSystem destFS, Path link,
-			Path target) throws IOException {
+			Path target, FileAttribute<?>... attrs) throws IOException {
 		if (ensureDestinationIsSymbolicLink(destFS, link, target)) {
+			destFS.setAttributes(link, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_LINK_ALREADY_EXISTS);
-			return;
+		} else {
+			destFS.createSymbolicLink(link, target, attrs);
 		}
-		destFS.createSymbolicLink(link, target);
 	}
 
 	/**
@@ -196,22 +195,6 @@ public abstract class TransferHelper {
 		return sourcefileAttrs.size() != destinationfileAttrs.size()
 				|| sourcefileAttrs.lastModifiedTime().compareTo(
 						destinationfileAttrs.lastModifiedTime()) > 0;
-	}
-
-	protected static void chmod(FileSystem destFS, Path path,
-			Modifiers modifiers) throws IOException {
-		if (modifiers == null) {
-			return;
-		}
-		// TODO : destFS.setAttribute(path, attribute, value, options)
-	}
-
-	protected static void chgrp(FileSystem destFS, Path path, GroupID group)
-			throws IOException {
-		if (group == null) {
-			return;
-		}
-		// TODO : destFS.setAttribute(path, attribute, value, options)
 	}
 
 }

@@ -1,9 +1,10 @@
 package com.wat.melody.common.transfer.resources;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.wat.melody.api.annotation.Attribute;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
-import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
+import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.common.transfer.LinkOption;
 import com.wat.melody.common.transfer.TransferBehavior;
 
@@ -18,31 +19,17 @@ import com.wat.melody.common.transfer.TransferBehavior;
  */
 public abstract class ResourceSpecification extends ResourceSelector {
 
-	private static Modifiers createModifiers(String modifiers) {
-		try {
-			return Modifiers.parseString(modifiers);
-		} catch (IllegalModifiersException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "a FileModifiers with its default value. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
-
-	private static Modifiers DEFAULT_FILE_MODIFIERS = createModifiers("660");
-	private static Modifiers DEFAULT_DIR_MODIFIERS = createModifiers("774");
+	/**
+	 * Attribute, which specifies the behavior when the file to transfer is a
+	 * link.
+	 */
+	public static final String LINK_OPTION_ATTR = "link-option";
 
 	/**
-	 * Attribute, which specifies the file's modifier.
+	 * Attribute, which specifies the behavior when the file to transfer already
+	 * exists.
 	 */
-	public static final String FILE_MODIFIERS_ATTR = "file-modifiers";
-
-	/**
-	 * Attribute, which specifies the directory's modifier.
-	 */
-	public static final String DIR_MODIFIERS_ATTR = "dir-modifiers";
+	public static final String TRANSFER_BEHAVIOR_ATTR = "transfer-behavior";
 
 	/**
 	 * Attribute, which indicates if the matching resource should be templated
@@ -51,35 +38,39 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	public static final String TEMPLATE_ATTR = "template";
 
 	/**
-	 * Attribute, which specifies the group to apply.
+	 * Attribute, which specifies the name of the destination.
 	 */
-	public static final String GROUP_ATTR = "group";
+	public static final String DEST_NAME_ATTR = "dest-name";
 
 	/**
-	 * Attribute, which specifies the behavior when a link found.
+	 * Nested element, which specifies the attributes of the resource to
+	 * transfer.
 	 */
-	public static final String LINK_OPTION_ATTR = "link-option";
+	public static final String ATTIBUTE_NE = "attribute";
 
 	/**
-	 * Attribute, which specifies the behavior when the to file transfer already
-	 * exists.
+	 * Nested element, which specifies the attributes of the resource to
+	 * transfer.
 	 */
-	public static final String TRANSFER_BEHAVIOR_ATTR = "transfer-behavior";
+	public static final String FILE_ONLY_ATTIBUTE_NE = "file-attribute";
 
 	/**
-	 * Attribute, which specifies the path of the destination.
+	 * Nested element, which specifies the attributes of the resource to
+	 * transfer.
 	 */
-	public static final String DEST_PATH_ATTR = "dest-path";
+	public static final String DIR_ONLY_ATTIBUTE_NE = "dir-attribute";
 
 	// Mandatory (with a default value)
-	private Modifiers _fileModifiers = DEFAULT_FILE_MODIFIERS;
-	private Modifiers _dirModifiers = DEFAULT_DIR_MODIFIERS;
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
 	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_SRC_NEWER;
 	private boolean _template = false;
 	// Optional
-	private GroupID _group = null;
-	private String _destPath = null;
+	private String _destName = null;
+	private Map<String, ResourceAttribute> _fileExpectedAttributes = null;
+	private Map<String, ResourceAttribute> _dirExpectedAttributes = null;
+	// Optimization
+	private ResourceAttribute[] _fileExpectedAttributesCache = null;
+	private ResourceAttribute[] _dirExpectedAttributesCache = null;
 
 	public ResourceSpecification() {
 		super();
@@ -87,49 +78,78 @@ public abstract class ResourceSpecification extends ResourceSelector {
 
 	public ResourceSpecification(ResourceSpecification r) {
 		super();
-		setFileModifiers(r.getFileModifiers());
-		setDirModifiers(r.getDirModifiers());
 		setLinkOption(r.getLinkOption());
 		setTransferBehavior(r.getTransferBehavior());
 		setTemplate(r.getTemplate());
-		if (r.getGroup() != null) {
-			setGroup(r.getGroup());
-		}
-		if (r.getDestPath() != null) {
-			setDestPath(r.getDestPath());
+		setDestName(r.getDestName());
+		putAllFileExpectedAttributes(r);
+		putAllDirExpectedAttributes(r);
+	}
+
+	private void initFileExpectedAttributesMap() {
+		if (getFileExpectedAttributesMap() == null) {
+			_fileExpectedAttributes = new HashMap<String, ResourceAttribute>();
 		}
 	}
 
-	public Modifiers getFileModifiers() {
-		return _fileModifiers;
+	private void updateFileExpectedAttributesCache() {
+		_fileExpectedAttributesCache = getFileExpectedAttributesMap()
+				.values()
+				.toArray(
+						_fileExpectedAttributesCache == null ? new ResourceAttribute[0]
+								: _fileExpectedAttributesCache);
 	}
 
-	@Attribute(name = FILE_MODIFIERS_ATTR)
-	public Modifiers setFileModifiers(Modifiers modifiers) {
-		if (modifiers == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Modifiers.class.getCanonicalName()
-					+ ".");
+	private void putAllFileExpectedAttributes(ResourceSpecification r) {
+		if (r.getFileExpectedAttributesMap() == null) {
+			return;
 		}
-		Modifiers previous = getFileModifiers();
-		_fileModifiers = modifiers;
-		return previous;
+		initFileExpectedAttributesMap();
+		getFileExpectedAttributesMap().putAll(r.getFileExpectedAttributesMap());
+		updateFileExpectedAttributesCache();
 	}
 
-	public Modifiers getDirModifiers() {
-		return _dirModifiers;
+	private void putFileExpectedAttributes(ResourceAttribute attribute) {
+		initFileExpectedAttributesMap();
+		getFileExpectedAttributesMap().put(attribute.name(), attribute);
+		updateFileExpectedAttributesCache();
 	}
 
-	@Attribute(name = DIR_MODIFIERS_ATTR)
-	public Modifiers setDirModifiers(Modifiers modifiers) {
-		if (modifiers == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Modifiers.class.getCanonicalName()
-					+ ".");
+	public ResourceAttribute[] getFileExpectedAttributes() {
+		return _fileExpectedAttributesCache;
+	}
+
+	private void initDirExpectedAttributesMap() {
+		if (getDirExpectedAttributesMap() == null) {
+			_dirExpectedAttributes = new HashMap<String, ResourceAttribute>();
 		}
-		Modifiers previous = getDirModifiers();
-		_dirModifiers = modifiers;
-		return previous;
+	}
+
+	private void updateDirExpectedAttributesCache() {
+		_dirExpectedAttributesCache = getDirExpectedAttributesMap()
+				.values()
+				.toArray(
+						_dirExpectedAttributesCache == null ? new ResourceAttribute[0]
+								: _dirExpectedAttributesCache);
+	}
+
+	private void putAllDirExpectedAttributes(ResourceSpecification r) {
+		if (r.getDirExpectedAttributesMap() == null) {
+			return;
+		}
+		initDirExpectedAttributesMap();
+		getDirExpectedAttributesMap().putAll(r.getDirExpectedAttributesMap());
+		updateDirExpectedAttributesCache();
+	}
+
+	private void putDirExpectedAttributes(ResourceAttribute attribute) {
+		initDirExpectedAttributesMap();
+		getDirExpectedAttributesMap().put(attribute.name(), attribute);
+		updateDirExpectedAttributesCache();
+	}
+
+	public ResourceAttribute[] getDirExpectedAttributes() {
+		return _dirExpectedAttributesCache;
 	}
 
 	public LinkOption getLinkOption() {
@@ -176,36 +196,58 @@ public abstract class ResourceSpecification extends ResourceSelector {
 		return previous;
 	}
 
-	public GroupID getGroup() {
-		return _group;
+	public String getDestName() {
+		return _destName;
 	}
 
-	@Attribute(name = GROUP_ATTR)
-	public GroupID setGroup(GroupID group) {
-		if (group == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + GroupID.class.getCanonicalName()
-					+ ".");
-		}
-		GroupID previous = getGroup();
-		_group = group;
+	@Attribute(name = DEST_NAME_ATTR)
+	public String setDestName(String DestPath) {
+		// can be null
+		String previous = getDestName();
+		_destName = DestPath;
 		return previous;
 	}
 
-	public String getDestPath() {
-		return _destPath;
+	@NestedElement(name = ATTIBUTE_NE)
+	public void addAttribute(ResourceAttribute attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ResourceAttribute.class.getCanonicalName() + ".");
+		}
+		// will replace if the same if is already in
+		putFileExpectedAttributes(attr);
+		putDirExpectedAttributes(attr);
 	}
 
-	@Attribute(name = DEST_PATH_ATTR)
-	public String setDestPath(String DestPath) {
-		if (DestPath == null) {
+	public Map<String, ResourceAttribute> getFileExpectedAttributesMap() {
+		return _fileExpectedAttributes;
+	}
+
+	@NestedElement(name = FILE_ONLY_ATTIBUTE_NE)
+	public void addFileAttribute(ResourceAttribute attr) {
+		if (attr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " " + "(the destination path).");
+					+ "Must be a valid "
+					+ ResourceAttribute.class.getCanonicalName() + ".");
 		}
-		String previous = getDestPath();
-		_destPath = DestPath;
-		return previous;
+		// will replace if the same if is already in
+		putFileExpectedAttributes(attr);
+	}
+
+	public Map<String, ResourceAttribute> getDirExpectedAttributesMap() {
+		return _dirExpectedAttributes;
+	}
+
+	@NestedElement(name = DIR_ONLY_ATTIBUTE_NE)
+	public void addDirAttribute(ResourceAttribute attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ResourceAttribute.class.getCanonicalName() + ".");
+		}
+		// will replace if the same if is already in
+		putDirExpectedAttributes(attr);
 	}
 
 }

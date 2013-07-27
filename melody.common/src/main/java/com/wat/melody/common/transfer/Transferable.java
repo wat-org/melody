@@ -1,10 +1,9 @@
 package com.wat.melody.common.transfer;
 
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 
 /**
@@ -18,7 +17,18 @@ public interface Transferable {
 
 	public Path getDestinationPath();
 
-	public EnhancedFileAttributes getAttributes();
+	public boolean getTemplate();
+
+	public LinkOption getLinkOption();
+
+	public TransferBehavior getTransferBehavior();
+
+	public ResourceSpecification getResourceSpecification();
+
+	public ResourceSpecification setResourceSpecification(
+			ResourceSpecification resourceSpecification);
+
+	public FileAttribute<?>[] getExpectedAttributes();
 
 	public boolean exists();
 
@@ -32,21 +42,8 @@ public interface Transferable {
 
 	public Path getSymbolicLinkTarget();
 
-	public boolean getTemplate();
-
-	public Modifiers getModifiers();
-
-	public GroupID getGroup();
-
-	public LinkOption getLinkOption();
-
-	public TransferBehavior getTransferBehavior();
-
 	public boolean linkShouldBeConvertedToFile();
 
-	public ResourceSpecification getResourceSpecification();
-
-	public ResourceSpecification setResourceSpecification(
-			ResourceSpecification resourceSpecification);
+	public EnhancedFileAttributes getAttributes();
 
 }

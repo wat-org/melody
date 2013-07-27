@@ -1,7 +1,8 @@
-package com.wat.melody.common.ssh.types;
+package com.wat.melody.common.ssh.impl.transfer;
 
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.types.exception.IllegalGroupIDException;
+import com.wat.melody.common.ssh.impl.Messages;
+import com.wat.melody.common.ssh.impl.transfer.exception.IllegalGroupIDException;
 
 /**
  * 

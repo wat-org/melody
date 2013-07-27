@@ -1,20 +1,21 @@
-package com.wat.melody.common.ssh.types;
+package com.wat.melody.common.ssh.impl.transfer;
 
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.types.exception.IllegalModifiersException;
+import com.wat.melody.common.ssh.impl.Messages;
+import com.wat.melody.common.ssh.impl.transfer.exception.IllegalPermissionsException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class Modifiers {
+public class Permissions {
 
 	public static final String PATTERN = "[0-7]{3}";
 
 	/**
 	 * <p>
-	 * Convert the given <tt>String</tt> to a {@link Modifiers} object.
+	 * Convert the given <tt>String</tt> to a {@link Permissions} object.
 	 * </p>
 	 * 
 	 * <p>
@@ -22,30 +23,30 @@ public class Modifiers {
 	 * <tt>[0-7]{3}</tt>
 	 * </p>
 	 * 
-	 * @param modifiers
+	 * @param permissions
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a {@link Modifiers} object, which is equal to the given
+	 * @return a {@link Permissions} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
-	 * @throws IllegalModifiersException
+	 * @throws IllegalPermissionsException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is empty ;</li>
 	 *             <li>if the given <tt>String</tt> is doesn't respect the
 	 *             pattern {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static Modifiers parseString(String modifiers)
-			throws IllegalModifiersException {
-		return new Modifiers(modifiers);
+	public static Permissions parseString(String permissions)
+			throws IllegalPermissionsException {
+		return new Permissions(permissions);
 	}
 
 	private String _value;
 
-	public Modifiers(String modifiers) throws IllegalModifiersException {
-		setValue(modifiers);
+	public Permissions(String permissions) throws IllegalPermissionsException {
+		setValue(permissions);
 	}
 
 	@Override
@@ -63,8 +64,8 @@ public class Modifiers {
 		if (this == anObject) {
 			return true;
 		}
-		if (anObject instanceof Modifiers) {
-			Modifiers inter = (Modifiers) anObject;
+		if (anObject instanceof Permissions) {
+			Permissions inter = (Permissions) anObject;
 			return getValue().equals(inter.getValue());
 		}
 		return false;
@@ -83,21 +84,22 @@ public class Modifiers {
 		return _value;
 	}
 
-	private String setValue(String modifiers) throws IllegalModifiersException {
+	private String setValue(String permissions)
+			throws IllegalPermissionsException {
 		String previous = toString();
-		if (modifiers == null) {
+		if (permissions == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a "
-					+ Modifiers.class.getCanonicalName() + ").");
+					+ Permissions.class.getCanonicalName() + ").");
 		}
-		if (modifiers.trim().length() == 0) {
-			throw new IllegalModifiersException(Msg.bind(
-					Messages.ModifiersEx_EMPTY, modifiers));
-		} else if (!modifiers.matches("^" + PATTERN + "$")) {
-			throw new IllegalModifiersException(Msg.bind(
-					Messages.ModifiersEx_INVALID, modifiers, PATTERN));
+		if (permissions.trim().length() == 0) {
+			throw new IllegalPermissionsException(Msg.bind(
+					Messages.PermissionsEx_EMPTY, permissions));
+		} else if (!permissions.matches("^" + PATTERN + "$")) {
+			throw new IllegalPermissionsException(Msg.bind(
+					Messages.PermissionsEx_INVALID, permissions, PATTERN));
 		}
-		_value = modifiers;
+		_value = permissions;
 		return previous;
 	}
 

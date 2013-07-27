@@ -240,11 +240,12 @@ public abstract class TransferMultiThread {
 					if (!t.linkShouldBeConvertedToFile()) {
 						TransferHelper.createSymbolicLink(dfs,
 								t.getDestinationPath(),
-								t.getSymbolicLinkTarget());
+								t.getSymbolicLinkTarget(),
+								t.getExpectedAttributes());
 					} else {
 						TransferHelper.createDirectory(dfs,
-								t.getDestinationPath(), t.getGroup(),
-								t.getModifiers());
+								t.getDestinationPath(),
+								t.getExpectedAttributes());
 					}
 				} catch (IOException Ex) {
 					throw new TransferException(Msg.bind(

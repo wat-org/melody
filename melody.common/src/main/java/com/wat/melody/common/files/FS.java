@@ -5,12 +5,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.io.FileUtils;
 
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -416,30 +419,35 @@ public abstract class FS {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
-	 * @throws IOException
-	 *             if an IO error occurred while deleting a directory.
 	 * @throws IllegalDirectoryException
 	 *             <ul>
 	 *             <li>if sPath points to a file ;</li>
 	 *             <li>if sPath points to a non readable directory ;</li>
 	 *             <li>if sPath points to a non writable directory ;</li>
 	 *             </ul>
+	 * @throws AccessDeniedException
+	 *             if the given directory, its content or an empty parent
+	 *             directory cannot be deleted because of permissions issue.
+	 * @throws IOException
+	 *             if an IO error occurred while deleting a directory.
 	 */
 	public static void deleteDirectoryAndEmptyParentDirectory(String path)
-			throws IOException, IllegalDirectoryException {
+			throws IOException, IllegalDirectoryException,
+			AccessDeniedException {
 		validateDirPath(path);
-		File dir = new File(path);
-		FileUtils.deleteDirectory(dir);
-		File parentDir = dir;
-		while (true) {
-			parentDir = parentDir.getParentFile();
-			String[] content = parentDir.list();
-			if (content == null) {
-				break;
-			} else if (content.length != 0) {
+		FileSystem fs = new LocalFileSystem();
+		Path dir = Paths.get(path).normalize();
+		fs.deleteDirectory(dir);
+		Path parentDir = dir;
+		while ((parentDir = parentDir.getParent()) != null) {
+			try {
+				if (fs.newDirectoryStream(parentDir).iterator().hasNext()) {
+					break;
+				}
+			} catch (NoSuchFileException ignored) {
 				break;
 			}
-			FileUtils.deleteDirectory(parentDir);
+			fs.deleteDirectory(parentDir);
 		}
 	}
 

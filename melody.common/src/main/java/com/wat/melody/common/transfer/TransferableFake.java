@@ -1,10 +1,9 @@
 package com.wat.melody.common.transfer;
 
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 
 /**
@@ -34,7 +33,22 @@ public class TransferableFake implements Transferable {
 	}
 
 	@Override
-	public EnhancedFileAttributes getAttributes() {
+	public LinkOption getLinkOption() {
+		return LinkOption.KEEP_LINKS;
+	}
+
+	@Override
+	public TransferBehavior getTransferBehavior() {
+		return TransferBehavior.FORCE_OVERWRITE;
+	}
+
+	@Override
+	public boolean getTemplate() {
+		return false;
+	}
+
+	@Override
+	public FileAttribute<?>[] getExpectedAttributes() {
 		return null;
 	}
 
@@ -69,33 +83,13 @@ public class TransferableFake implements Transferable {
 	}
 
 	@Override
-	public boolean getTemplate() {
-		return false;
-	}
-
-	@Override
-	public Modifiers getModifiers() {
-		return null;
-	}
-
-	@Override
-	public GroupID getGroup() {
-		return null;
-	}
-
-	@Override
-	public LinkOption getLinkOption() {
-		return LinkOption.KEEP_LINKS;
-	}
-
-	@Override
-	public TransferBehavior getTransferBehavior() {
-		return TransferBehavior.FORCE_OVERWRITE;
-	}
-
-	@Override
 	public boolean linkShouldBeConvertedToFile() {
 		return true;
+	}
+
+	@Override
+	public EnhancedFileAttributes getAttributes() {
+		return null;
 	}
 
 	@Override

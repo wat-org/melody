@@ -3,15 +3,13 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.types.GroupID;
-import com.wat.melody.common.ssh.types.Modifiers;
 import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.exception.TransferException;
 
@@ -22,9 +20,6 @@ import com.wat.melody.common.transfer.exception.TransferException;
  */
 public abstract class TransferNoThread {
 
-	/*
-	 * TODO : remove link to ssh.types.GroupID and ssh.types.Modifiers
-	 */
 	private static Logger log = LoggerFactory.getLogger(TransferNoThread.class);
 
 	private Transferable _transferable;
@@ -48,8 +43,6 @@ public abstract class TransferNoThread {
 				ln();
 			} else {
 				template();
-				chmod();
-				chgrp();
 			}
 		} catch (IOException Ex) {
 			throw new TransferException(Ex);
@@ -81,10 +74,9 @@ public abstract class TransferNoThread {
 
 	protected void createSymlink() throws IOException {
 		Transferable t = getTransferable();
-		Path link = t.getDestinationPath();
-		Path target = t.getSymbolicLinkTarget();
-		TransferHelper.createSymbolicLink(getDestinationFileSystem(), link,
-				target);
+		TransferHelper.createSymbolicLink(getDestinationFileSystem(),
+				t.getDestinationPath(), t.getSymbolicLinkTarget(),
+				t.getExpectedAttributes());
 	}
 
 	protected void ln_copy() throws IOException, TransferException {
@@ -96,8 +88,6 @@ public abstract class TransferNoThread {
 			return;
 		}
 		template();
-		chmod();
-		chgrp();
 	}
 
 	protected void deleteDestination() throws IOException {
@@ -133,33 +123,18 @@ public abstract class TransferNoThread {
 
 	public void transfer(Path source) throws IOException {
 		Transferable t = getTransferable();
-		EnhancedFileAttributes sourceFileAttrs = t.getAttributes();
 		Path dest = t.getDestinationPath();
-		TransferBehavior tb = t.getTransferBehavior();
 		if (TransferHelper.ensureDestinationIsRegularFile(
-				getDestinationFileSystem(), sourceFileAttrs, dest, tb)) {
+				getDestinationFileSystem(), t.getAttributes(), dest,
+				t.getTransferBehavior())) {
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
 			return;
 		}
-		transferFile(source, dest);
+		transferFile(source, dest, t.getExpectedAttributes());
 	}
 
-	public abstract void transferFile(Path source, Path dest)
-			throws IOException;
-
-	protected void chmod() throws IOException {
-		Transferable t = getTransferable();
-		Path path = t.getDestinationPath();
-		Modifiers modifiers = t.getModifiers();
-		TransferHelper.chmod(getDestinationFileSystem(), path, modifiers);
-	}
-
-	protected void chgrp() throws IOException {
-		Transferable t = getTransferable();
-		Path path = t.getDestinationPath();
-		GroupID group = t.getGroup();
-		TransferHelper.chgrp(getDestinationFileSystem(), path, group);
-	}
+	public abstract void transferFile(Path source, Path dest,
+			FileAttribute<?>... attrs) throws IOException;
 
 	protected FileSystem getSourceFileSystem() {
 		return _sourceFileSystem;

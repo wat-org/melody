@@ -63,12 +63,10 @@ public abstract class ResourcesSpecification extends ResourceSpecification {
 		str.append(getSrcBaseDir());
 		str.append(", dest-basedir:");
 		str.append(getDestBaseDir());
-		str.append(", file-modifiers:");
-		str.append(getFileModifiers());
-		str.append(", dir-modifiers:");
-		str.append(getDirModifiers());
-		str.append(", group:");
-		str.append(getGroup());
+		str.append(", file-attributes:");
+		str.append(getFileExpectedAttributesMap().values());
+		str.append(", dir-attributes:");
+		str.append(getDirExpectedAttributesMap().values());
 		str.append(", link-option:");
 		str.append(getLinkOption());
 		str.append(", transfer-behavior:");

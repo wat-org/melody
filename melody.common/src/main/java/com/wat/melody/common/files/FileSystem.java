@@ -12,7 +12,6 @@ import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
-
 /**
  * 
  * @author Guillaume Cornet
@@ -166,11 +165,14 @@ public interface FileSystem {
 	public void deleteDirectory(Path dir) throws IOException,
 			NotDirectoryException, AccessDeniedException;
 
-	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
-			NoSuchFileException, AccessDeniedException;
-
 	public DirectoryStream<Path> newDirectoryStream(Path path)
 			throws IOException, NoSuchFileException, NotDirectoryException,
 			AccessDeniedException;
+
+	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+			NoSuchFileException, AccessDeniedException;
+
+	public void setAttributes(Path path, FileAttribute<?>... attributes)
+			throws IOException, NoSuchFileException, AccessDeniedException;
 
 }

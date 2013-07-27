@@ -15,11 +15,11 @@
 				src-basedir="/tmp/melody/scp/UC_1_upload"
 				match="**"
 				dest-basedir="./download/§[IP]§"
-				dir-modifiers="770"
-				link-option="COPY_UNSAFE_LINKS" >
+				link-option="KEEP_LINKS" >
+				<dir-attribute name="permissions" value="770"/>
 				<exclude match="**/file1.*"/>
 				<include	match="**/file2.tmpl"
-							dest-path="templates/§[IP]§/file2.§[IP]§"
+							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />
 			</resources>
 		</download>

@@ -14,7 +14,6 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.network.Host;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.IKnownHostsRepository;
-import com.wat.melody.common.ssh.Messages;
 import com.wat.melody.common.ssh.exception.KnownHostsException;
 import com.wat.melody.common.ssh.types.HostKeyCheckState;
 
