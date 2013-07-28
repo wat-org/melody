@@ -26,14 +26,6 @@ public @interface TextContent {
 
 	/**
 	 * <p>
-	 * If <tt>true</tt>, the text content will be trim (e.g. leading and
-	 * trailing 'space' character will be removed).
-	 * </p>
-	 */
-	boolean trim() default false;
-
-	/**
-	 * <p>
 	 * Specifies the description of the attribute.
 	 * </p>
 	 */
