@@ -32,8 +32,8 @@ public abstract class Msg {
 	 */
 	public static String bind(String message, Object... bindings) {
 		for (int i = 0; i < bindings.length; i++) {
-			bindings[i] = bindings[i].toString().replaceAll(SysTool.NEW_LINE,
-					SysTool.NEW_LINE + "  ");
+			bindings[i] = String.valueOf(bindings[i]).replaceAll(
+					SysTool.NEW_LINE, SysTool.NEW_LINE + "  ");
 		}
 		return NLS.bind(message, bindings);
 	}

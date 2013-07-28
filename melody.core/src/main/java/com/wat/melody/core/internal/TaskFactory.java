@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
@@ -23,11 +24,13 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
+import com.wat.melody.api.annotation.TextContent;
 import com.wat.melody.api.event.State;
 import com.wat.melody.api.exception.AttributeRelatedException;
 import com.wat.melody.api.exception.NestedElementRelatedException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryException;
+import com.wat.melody.api.exception.TextContentRelatedException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.files.IFileBased;
@@ -93,6 +96,10 @@ public class TaskFactory {
 	private Method findSetMethod(Class<?> c, String attrName)
 			throws TaskFactoryException {
 		return getCache().getSetMethod(c, attrName);
+	}
+
+	private Method findTextMethod(Class<?> c) throws TaskFactoryException {
+		return getCache().getTextMethod(c);
 	}
 
 	private Method findAddMethod(Class<?> c, String elmtName)
@@ -286,8 +293,9 @@ public class TaskFactory {
 		}
 
 		synchronized (elmt.getOwnerDocument()) {
-			setAllMembers(t, elmt.getAttributes(), elmt.getNodeName());
-			setAllNestedElements(t, elmt.getChildNodes(), elmt.getNodeName());
+			setAllMembers(t, elmt.getAttributes());
+			setTextContent(t, elmt.getChildNodes());
+			setAllNestedElements(t, elmt.getChildNodes());
 		}
 		try {
 			t.validate();
@@ -297,9 +305,10 @@ public class TaskFactory {
 		return t;
 	}
 
-	private void setAllMembers(Object base, NamedNodeMap attrs, String sNodeName)
+	private void setAllMembers(Object base, NamedNodeMap attrs)
 			throws TaskFactoryException {
 		if (attrs == null) {
+			detectsUndefinedMandatoryAttributes(base.getClass(), attrs);
 			return;
 		}
 		for (int i = 0; i < attrs.getLength(); i++) {
@@ -307,9 +316,9 @@ public class TaskFactory {
 			String sAttrName = attr.getNodeName();
 			Method m = findSetMethod(base.getClass(), sAttrName);
 			if (m != null) {
-				String sAttrVal = null;
+				String value = attr.getNodeValue();
 				try {
-					sAttrVal = Melody.getContext().expand(attr.getNodeValue());
+					value = Melody.getContext().expand(value);
 				} catch (ExpressionSyntaxException Ex) {
 					throw new TaskFactoryException(
 							new AttributeRelatedException(attr, m, Msg.bind(
@@ -321,7 +330,7 @@ public class TaskFactory {
 									Messages.TaskFactoryEx_EXPAND_ATTR,
 									sAttrName, State.CRITICAL), Ex));
 				}
-				setMember(base, m, m.getParameterTypes()[0], attr, sAttrVal);
+				setMember(base, m, m.getParameterTypes()[0], attr, value);
 			} else {
 				throw new TaskFactoryException(new SimpleNodeRelatedException(
 						attr, Msg.bind(Messages.TaskFactoryEx_INVALID_ATTR,
@@ -354,9 +363,58 @@ public class TaskFactory {
 		}
 	}
 
-	private void setAllNestedElements(Object base, NodeList nestedNodes,
-			String sNodeName) throws TaskFactoryException {
+	private void setTextContent(Object base, NodeList nestedNodes)
+			throws TaskFactoryException {
+		// Ignore if child elements exists
+		if (nestedNodes == null || nestedNodes.getLength() != 1
+				|| nestedNodes.item(0).getNodeType() != Node.TEXT_NODE) {
+			detectsUndefinedMandatoryText(base.getClass(), nestedNodes);
+			return;
+		}
+		Text text = (Text) nestedNodes.item(0);
+		Method m = findTextMethod(base.getClass());
+		if (m != null) {
+			String value = text.getNodeValue();
+			try {
+				value = Melody.getContext().expand(value);
+			} catch (ExpressionSyntaxException Ex) {
+				throw new TaskFactoryException(new TextContentRelatedException(
+						text, m, Msg.bind(Messages.TaskFactoryEx_EXPAND_TEXT,
+								State.FAILED), Ex));
+			} catch (Throwable Ex) {
+				throw new TaskFactoryException(new TextContentRelatedException(
+						text, m, Msg.bind(Messages.TaskFactoryEx_EXPAND_TEXT,
+								State.CRITICAL), Ex));
+			}
+			setText(base, m, m.getParameterTypes()[0], text, value);
+		} else {
+			throw new TaskFactoryException(Messages.TaskFactoryEx_INVALID_TEXT);
+		}
+		detectsUndefinedMandatoryText(base.getClass(), nestedNodes);
+	}
+
+	private void detectsUndefinedMandatoryText(Class<?> base,
+			NodeList nestedNodes) throws TaskFactoryException {
+		Method m = findTextMethod(base);
+		if (m == null) {
+			return;
+		}
+		if (!m.getAnnotation(TextContent.class).mandatory()) {
+			return;
+		}
+		if (nestedNodes == null || nestedNodes.getLength() != 1
+				|| nestedNodes.item(0).getNodeType() != Node.TEXT_NODE) {
+			throw new TaskFactoryException(
+					Messages.TaskFactoryEx_MANDATORY_TEXT_NOT_FOUND);
+
+		}
+	}
+
+	private void setAllNestedElements(Object base, NodeList nestedNodes)
+			throws TaskFactoryException {
 		if (nestedNodes == null) {
+			detectsUndefinedMandatoryNestedElements(base.getClass(),
+					nestedNodes);
 			return;
 		}
 		for (int i = 0; i < nestedNodes.getLength(); i++) {
@@ -417,8 +475,9 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 
-			setAllMembers(o, elmt.getAttributes(), elmt.getNodeName());
-			setAllNestedElements(o, elmt.getChildNodes(), elmt.getNodeName());
+			setAllMembers(o, elmt.getAttributes());
+			setTextContent(o, elmt.getChildNodes());
+			setAllNestedElements(o, elmt.getChildNodes());
 
 			try {
 				m.invoke(base, o);
@@ -462,8 +521,9 @@ public class TaskFactory {
 				throw new TaskFactoryException(Ex.getCause());
 			}
 
-			setAllMembers(o, elmt.getAttributes(), elmt.getNodeName());
-			setAllNestedElements(o, elmt.getChildNodes(), elmt.getNodeName());
+			setAllMembers(o, elmt.getAttributes());
+			setTextContent(o, elmt.getChildNodes());
+			setAllNestedElements(o, elmt.getChildNodes());
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new NestedElementRelatedException(
 					elmt, m, Msg.bind(Messages.TaskFactoryEx_SET_NE, elmt
@@ -492,12 +552,12 @@ public class TaskFactory {
 
 	private void setMember(Object base, Method m, Class<?> param, Attr attr,
 			String attrVal) throws TaskFactoryException {
-		String sAttrName = attr.getNodeName();
+		String attrName = attr.getNodeName();
 		Object o = null;
 		try {
-			o = createNewPrimitiveType(param, attrVal, base, sAttrName);
+			o = createNewPrimitiveType(param, attrVal);
 			if (o == null) {
-				o = createNewEnumConstant(param, attrVal, base, sAttrName);
+				o = createNewEnumConstant(param, attrVal);
 			}
 			if (o == null) {
 				o = createNewFile(param, attrVal);
@@ -507,11 +567,11 @@ public class TaskFactory {
 			}
 		} catch (TaskFactoryException Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
+					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, attrName,
 							State.FAILED), Ex));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, sAttrName,
+					m, Msg.bind(Messages.TaskFactoryEx_CREATE_ATTR, attrName,
 							State.CRITICAL), Ex));
 		}
 
@@ -524,17 +584,59 @@ public class TaskFactory {
 					+ "have been introduced.", Ex);
 		} catch (InvocationTargetException Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
+					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, attrName,
 							State.FAILED), Ex.getCause()));
 		} catch (Throwable Ex) {
 			throw new TaskFactoryException(new AttributeRelatedException(attr,
-					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, sAttrName,
+					m, Msg.bind(Messages.TaskFactoryEx_SET_ATTR, attrName,
 							State.CRITICAL), Ex));
 		}
 	}
 
-	private Object createNewPrimitiveType(Class<?> param, String attrVal,
-			Object base, String attrName) throws TaskFactoryException {
+	private void setText(Object base, Method m, Class<?> param, Text text,
+			String textVal) throws TaskFactoryException {
+		Object o = null;
+		try {
+			o = createNewPrimitiveType(param, textVal);
+			if (o == null) {
+				o = createNewEnumConstant(param, textVal);
+			}
+			if (o == null) {
+				o = createNewFile(param, textVal);
+			}
+			if (o == null) {
+				o = createNewObject(param, textVal);
+			}
+		} catch (TaskFactoryException Ex) {
+			throw new TaskFactoryException(new TextContentRelatedException(
+					text, m, Msg.bind(Messages.TaskFactoryEx_CREATE_TEXT,
+							State.FAILED), Ex));
+		} catch (Throwable Ex) {
+			throw new TaskFactoryException(new TextContentRelatedException(
+					text, m, Msg.bind(Messages.TaskFactoryEx_CREATE_TEXT,
+							State.CRITICAL), Ex));
+		}
+
+		try {
+			m.invoke(base, o);
+		} catch (IllegalAccessException | IllegalArgumentException Ex) {
+			throw new RuntimeException("Unexpected error while setting an "
+					+ "attribute by reflection. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.", Ex);
+		} catch (InvocationTargetException Ex) {
+			throw new TaskFactoryException(new TextContentRelatedException(
+					text, m, Msg.bind(Messages.TaskFactoryEx_SET_TEXT,
+							State.FAILED), Ex.getCause()));
+		} catch (Throwable Ex) {
+			throw new TaskFactoryException(new TextContentRelatedException(
+					text, m, Msg.bind(Messages.TaskFactoryEx_SET_TEXT,
+							State.CRITICAL), Ex));
+		}
+	}
+
+	private Object createNewPrimitiveType(Class<?> param, String value)
+			throws TaskFactoryException {
 		if (!param.isPrimitive()) {
 			return null;
 		}
@@ -542,89 +644,89 @@ public class TaskFactory {
 		Object o = null;
 		if (param == Boolean.TYPE) {
 			try {
-				o = Bool.parseString(attrVal);
+				o = Bool.parseString(value);
 			} catch (IllegalBooleanException e) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Boolean.class.getSimpleName()));
 			}
 		} else if (param == Character.TYPE) {
-			if (attrVal != null && attrVal.length() == 1) {
-				o = attrVal.charAt(0);
+			if (value != null && value.length() == 1) {
+				o = value.charAt(0);
 			} else {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Character.class.getSimpleName()));
 			}
 		} else if (param == Byte.TYPE) {
 			try {
-				o = Byte.parseByte(attrVal);
+				o = Byte.parseByte(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Byte.class.getSimpleName()));
 			}
 		} else if (param == Short.TYPE) {
 			try {
-				o = Short.parseShort(attrVal);
+				o = Short.parseShort(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Short.class.getSimpleName()));
 			}
 		} else if (param == Integer.TYPE) {
 			try {
-				o = Integer.parseInt(attrVal);
+				o = Integer.parseInt(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Integer.class.getSimpleName()));
 			}
 		} else if (param == Long.TYPE) {
 			try {
-				o = Long.parseLong(attrVal);
+				o = Long.parseLong(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Long.class.getSimpleName()));
 			}
 		} else if (param == Float.TYPE) {
 			try {
-				o = Float.parseFloat(attrVal);
+				o = Float.parseFloat(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Float.class.getSimpleName()));
 			}
 		} else if (param == Double.TYPE) {
 			try {
-				o = Double.parseDouble(attrVal);
+				o = Double.parseDouble(value);
 			} catch (NumberFormatException Ex) {
 				throw new TaskFactoryException(Msg.bind(
-						Messages.TaskFactoryEx_CONVERT_ATTR, attrVal,
+						Messages.TaskFactoryEx_CONVERT_ATTR, value,
 						Double.class.getSimpleName()));
 			}
 		}
 		return o;
 	}
 
-	private Object createNewEnumConstant(Class<?> param, String attrVal,
-			Object base, String attrName) throws TaskFactoryException {
+	private Object createNewEnumConstant(Class<?> param, String value)
+			throws TaskFactoryException {
 		if (!param.isEnum()) {
 			return null;
 		}
 
 		for (Object v : param.getEnumConstants()) {
-			if (v.toString().equalsIgnoreCase(attrVal)) {
+			if (v.toString().equalsIgnoreCase(value)) {
 				return v;
 			}
 		}
 		throw new TaskFactoryException(Msg.bind(
-				Messages.TaskFactoryEx_CONVERT_ATTR_TO_ENUM, attrVal,
+				Messages.TaskFactoryEx_CONVERT_ATTR_TO_ENUM, value,
 				Arrays.asList(param.getEnumConstants())));
 	}
 
-	private Object createNewFile(Class<?> param, String attrVal)
+	private Object createNewFile(Class<?> param, String value)
 			throws TaskFactoryException {
 		if (!ReflectionHelper.implement(param, Path.class)
 				&& !ReflectionHelper.herit(param, File.class)
@@ -632,27 +734,27 @@ public class TaskFactory {
 			return null;
 		}
 		// make an absolute path, relative to the sequence descriptor basedir
-		if (!new File(attrVal).isAbsolute()) {
+		if (!new File(value).isAbsolute()) {
 			File sBaseDir = Melody.getContext().getProcessorManager()
 					.getSequenceDescriptor().getBaseDir();
 			try {
-				attrVal = new File(sBaseDir, attrVal).getCanonicalPath();
+				value = new File(sBaseDir, value).getCanonicalPath();
 			} catch (IOException Ex) {
 				throw new RuntimeException("IO error while get the Canonical "
-						+ "Path of '" + attrVal + "'.", Ex);
+						+ "Path of '" + value + "'.", Ex);
 			}
 		}
 		if (param == Path.class) {
-			return Paths.get(attrVal);
+			return Paths.get(value);
 		} else {
-			return createNewObject(param, attrVal);
+			return createNewObject(param, value);
 		}
 	}
 
-	private Object createNewObject(Class<?> param, String attrVal)
+	private Object createNewObject(Class<?> param, String value)
 			throws TaskFactoryException {
 		try {
-			return param.getConstructor(String.class).newInstance(attrVal);
+			return param.getConstructor(String.class).newInstance(value);
 		} catch (NoSuchMethodException | InstantiationException
 				| IllegalAccessException Ex) {
 			throw new TaskFactoryException(Msg.bind(

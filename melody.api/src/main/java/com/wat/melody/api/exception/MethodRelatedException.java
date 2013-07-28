@@ -48,7 +48,7 @@ public abstract class MethodRelatedException extends SimpleNodeRelatedException 
 	}
 
 	private static String formatDescription(String desc) {
-		if (desc == null) {
+		if (desc == null || desc.trim().length() == 0) {
 			return "";
 		}
 		desc = "\n--------- DOC / HELP / TIP ---------\n" + desc;

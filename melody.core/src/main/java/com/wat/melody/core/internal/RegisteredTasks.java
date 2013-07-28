@@ -6,7 +6,9 @@ import java.util.Hashtable;
 
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.attributes.RemoveAttribute;
 import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
@@ -84,13 +86,19 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 					+ ". This Java Class is either not public, or abstract "
 					+ "or it as no 0-arg constructor. ");
 		}
+		String taskName = c.getSimpleName().toLowerCase();
 		Task a = c.getAnnotation(Task.class);
 		if (a != null) {
 			// declare an entry TaskAnnotaionName->canonicalCalssName
-			super.put(a.name().toLowerCase(), c);
+			taskName = a.name().toLowerCase();
 		}
-		// declare an entry className->canonicalCalssName
-		return super.put(c.getSimpleName().toLowerCase(), c);
+		// detects duplicate task declaration
+		if (contains(taskName)) {
+			throw new RuntimeException(Msg.bind(
+					Messages.TaskRegistrationEx_DUPLICATE, taskName));
+		}
+		// declare an entry className|Task.name()->canonicalCalssName
+		return super.put(taskName, c);
 	}
 
 	@Override

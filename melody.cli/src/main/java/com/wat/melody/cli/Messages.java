@@ -28,6 +28,7 @@ public class Messages extends NLS {
 	public static String ConfEx_NCDF_TASKS_DIRECTIVE;
 	public static String ConfEx_IS_TASKS_DIRECTIVE;
 	public static String ConfEx_IE_TASKS_DIRECTIVE;
+	public static String ConfEx_RT_TASKS_DIRECTIVE;
 
 	public static String ConfEx_MISSING_PLUGINS_DIRECTIVE;
 	public static String ConfEx_EMPTY_PLUGINS_DIRECTIVE;

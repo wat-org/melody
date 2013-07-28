@@ -1246,12 +1246,13 @@ public class ProcessorManagerLoader {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_IE_TASKS_DIRECTIVE, pi, pic), Ex.getCause());
 		}
-		/*
-		 * Will throw a RuntimeException if the given Class<ITask> doesn't
-		 * respect ITask specification. Should only happened during Task
-		 * Development. No need to catch/re-throw.
-		 */
-		rts.put(c);
+		try {
+			rts.put(c);
+		} catch (RuntimeException Ex) {
+			throw new ConfigurationLoadingException(Msg.bind(
+					Messages.ConfEx_RT_TASKS_DIRECTIVE, pi, pic),
+					new MelodyException(Ex.getMessage()));
+		}
 	}
 
 	private void loadAllPlugInsConfiguration(PropertySet oProps)
