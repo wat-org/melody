@@ -8,9 +8,9 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.wat.melody.common.files.EnhancedFileAttributes;
-import com.wat.melody.common.transfer.resources.ResourceAttribute;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
+import com.wat.melody.common.transfer.resources.attributes.ResourceAttribute;
 
 /**
  * <p>
@@ -70,28 +70,25 @@ public class TransferableFile implements Transferable {
 	@Override
 	public FileAttribute<?>[] getExpectedAttributes() {
 		if (isSymbolicLink()) {
-			return null;
-		}
-		if (isDirectory()) {
+			return getResourceSpecification().getLinkAttributes();
+		} else if (isDirectory()) {
 			return getResourceSpecification().getDirExpectedAttributes();
+		} else if (isRegularFile()) {
+			return getResourceSpecification().getFileAttributes();
 		}
-		return getResourceSpecification().getFileExpectedAttributes();
+		return null;
 	}
 
-	private Collection<ResourceAttribute> getExpectedAttributesAsList() {
+	private Collection<ResourceAttribute<?>> getExpectedAttributesAsList() {
+		Map<String, ResourceAttribute<?>> m = null;
 		if (isSymbolicLink()) {
-			return new ArrayList<ResourceAttribute>();
+			m = getResourceSpecification().getLinkAttributesMap();
+		} else if (isDirectory()) {
+			m = getResourceSpecification().getDirAttributesMap();
+		} else if (isRegularFile()) {
+			m = getResourceSpecification().getFileAttributesMap();
 		}
-		Map<String, ResourceAttribute> map;
-		if (isDirectory()) {
-			map = getResourceSpecification().getDirExpectedAttributesMap();
-		} else {
-			map = getResourceSpecification().getFileExpectedAttributesMap();
-		}
-		if (map == null) {
-			return new ArrayList<ResourceAttribute>();
-		}
-		return map.values();
+		return m != null ? m.values() : new ArrayList<ResourceAttribute<?>>();
 	}
 
 	private String getDestPath() {

@@ -16,8 +16,10 @@
 				match="**"
 				dest-basedir="./download/§[IP]§"
 				link-option="KEEP_LINKS" >
-				<dir-attribute name="permissions" value="770"/>
-				<exclude match="**/file1.*"/>
+				<posix-permissions scope="directories">770</posix-permissions>
+				<include	match="templates/file1.tmpl" >
+					<posix-permissions scope="files">740</posix-permissions>
+				</include>
 				<include	match="**/file2.tmpl"
 							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />

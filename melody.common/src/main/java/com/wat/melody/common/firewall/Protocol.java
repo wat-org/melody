@@ -2,7 +2,6 @@ package com.wat.melody.common.firewall;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalProtocolException;
 import com.wat.melody.common.messages.Msg;
 
@@ -23,12 +22,12 @@ public enum Protocol {
 	 * @param protocol
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <tt>Protocol</tt> object, which is equal to the given
+	 * @return a {@link Protocol} object, which is equal to the given
 	 *         <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
-	 * @throws IllegalAccessException
+	 * @throws IllegalProtocolException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a valid
 	 *             {@link Protocol} Enumeration Constant ;</li>

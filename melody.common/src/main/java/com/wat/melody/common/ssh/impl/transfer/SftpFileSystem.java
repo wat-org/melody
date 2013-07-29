@@ -38,6 +38,8 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.Messages;
 import com.wat.melody.common.ssh.impl.transfer.exception.IllegalGroupIDException;
 import com.wat.melody.common.ssh.impl.transfer.exception.IllegalPermissionsException;
+import com.wat.melody.common.transfer.resources.attributes.PosixGroup;
+import com.wat.melody.common.transfer.resources.attributes.PosixPermissions;
 
 /**
  * 
@@ -47,9 +49,6 @@ import com.wat.melody.common.ssh.impl.transfer.exception.IllegalPermissionsExcep
 public class SftpFileSystem implements FileSystem {
 
 	private static Logger log = LoggerFactory.getLogger(SftpFileSystem.class);
-
-	public static String UNIX_PERMISSIONS = "permissions";
-	public static String UNIX_GROUP = "group";
 
 	/**
 	 * Returns {@code false} if NOFOLLOW_LINKS is present.
@@ -550,10 +549,10 @@ public class SftpFileSystem implements FileSystem {
 		for (FileAttribute<?> attr : attributes) {
 			if (attr == null) {
 				continue;
-			} else if (attr.name().equals(UNIX_GROUP)) {
-				chgrp(path, String.valueOf(attr.value()));
-			} else if (attr.name().equals(UNIX_PERMISSIONS)) {
-				chmod(path, String.valueOf(attr.value()));
+			} else if (attr instanceof PosixGroup) {
+				chgrp(path, ((PosixGroup) attr).getStringValue());
+			} else if (attr instanceof PosixPermissions) {
+				chmod(path, ((PosixPermissions) attr).getStringValue());
 			} else {
 				log.warn(Msg.bind(Messages.SftpFSMsg_SKIP_ATTR, attr, path));
 			}

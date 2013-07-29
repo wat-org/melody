@@ -15,10 +15,11 @@
 						match="**"
 						dest-basedir="/tmp/melody/scp/UC_1_upload"
 						link-option="KEEP_LINKS" >
-				<dir-attribute name="permissions" value="770"/>
+				<posix-permissions scope="directories">770</posix-permissions>
+				<posix-group scope="directories,files">jboss</posix-group>
 				<include	match="templates/file1.tmpl"
 							template="y" >
-					<file-attribute name="permissions" value="740"/>
+					<posix-permissions scope="files">740</posix-permissions>
 				</include>
 				<include	match="templates/file2.tmpl"
 							dest-name="templates/§[IP]§/file2.§[IP]§"

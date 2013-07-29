@@ -2,7 +2,6 @@ package com.wat.melody.common.firewall;
 
 import java.util.Arrays;
 
-import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionException;
 import com.wat.melody.common.messages.Msg;
 
@@ -28,7 +27,7 @@ public enum Direction {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
-	 * @throws IllegalAccessException
+	 * @throws IllegalDirectionException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a valid
 	 *             {@link Direction} Enumeration Constant ;</li>

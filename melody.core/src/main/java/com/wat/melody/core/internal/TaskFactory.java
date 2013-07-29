@@ -345,7 +345,7 @@ public class TaskFactory {
 		// Detect if all mandatory attribute are defined
 		for (Method m : base.getMethods()) {
 			// Look for the annotation TaskAttrbiute
-			Attribute a = m.getAnnotation(Attribute.class);
+			Attribute a = ReflectionHelper.getAnnotation(m, Attribute.class);
 			if (a != null && a.mandatory()) {
 				boolean found = false;
 				for (int i = 0; i < attrs.getLength(); i++) {
@@ -399,7 +399,7 @@ public class TaskFactory {
 		if (m == null) {
 			return;
 		}
-		if (!m.getAnnotation(TextContent.class).mandatory()) {
+		if (!ReflectionHelper.getAnnotation(m, TextContent.class).mandatory()) {
 			return;
 		}
 		if (nestedNodes == null || nestedNodes.getLength() != 1
@@ -436,7 +436,8 @@ public class TaskFactory {
 	private void detectsUndefinedMandatoryNestedElements(Class<?> base,
 			NodeList nestedNodes) throws TaskFactoryException {
 		for (Method m : base.getMethods()) {
-			NestedElement a = m.getAnnotation(NestedElement.class);
+			NestedElement a = ReflectionHelper.getAnnotation(m,
+					NestedElement.class);
 			if (a != null && a.mandatory()) {
 				boolean found = false;
 				for (int i = 0; i < nestedNodes.getLength(); i++) {

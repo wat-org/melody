@@ -12,6 +12,13 @@ public class Messages extends NLS {
 	public static String TransferBehaviorEx_EMPTY;
 	public static String TransferBehaviorEx_INVALID;
 
+	public static String ScopeEx_EMPTY;
+	public static String ScopeEx_INVALID;
+
+	public static String ScopesEx_EMPTY_SCOPE;
+	public static String ScopesEx_INVALID_SCOPE;
+	public static String ScopesEx_EMPTY;
+
 	public static String TransferEx_FAILED;
 	public static String TransferEx_UNMANAGED;
 	public static String TransferEx_MANAGED;
