@@ -16,7 +16,7 @@
 						dest-basedir="/tmp/melody/scp/UC_1_upload"
 						link-option="KEEP_LINKS" >
 				<posix-permissions scope="directories">770</posix-permissions>
-				<posix-group scope="directories,files">jboss</posix-group>
+				<posix-group scope="directories,files">502</posix-group>
 				<include	match="templates/file1.tmpl"
 							template="y" >
 					<posix-permissions scope="files">740</posix-permissions>

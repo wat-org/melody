@@ -85,7 +85,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ "a bug have been introduced.", Ex);
 		}
 		try {
-			setBaseDir(new File(sPath).getParentFile().getCanonicalFile());
+			setBaseDir(new File(sPath).getCanonicalFile().getParentFile());
 		} catch (IllegalDirectoryException Ex) {
 			throw new RuntimeException("Unexecpted error while setting the "
 					+ "default baseDir of the Sequence Descriptor. "

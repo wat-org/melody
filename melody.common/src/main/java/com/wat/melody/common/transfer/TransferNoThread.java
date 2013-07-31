@@ -124,13 +124,15 @@ public abstract class TransferNoThread {
 	public void transfer(Path source) throws IOException {
 		Transferable t = getTransferable();
 		Path dest = t.getDestinationPath();
-		if (TransferHelper.ensureDestinationIsRegularFile(
-				getDestinationFileSystem(), t.getAttributes(), dest,
-				t.getTransferBehavior())) {
+		FileAttribute<?>[] attrs = t.getExpectedAttributes();
+		FileSystem destFS = getDestinationFileSystem();
+		if (TransferHelper.ensureDestinationIsRegularFile(destFS,
+				t.getAttributes(), dest, t.getTransferBehavior())) {
+			destFS.setAttributes(dest, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
 			return;
 		}
-		transferFile(source, dest, t.getExpectedAttributes());
+		transferFile(source, dest, attrs);
 	}
 
 	public abstract void transferFile(Path source, Path dest,

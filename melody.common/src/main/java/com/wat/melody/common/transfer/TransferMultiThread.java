@@ -227,7 +227,8 @@ public abstract class TransferMultiThread {
 				sfs = null;
 			}
 		}
-		System.out.println(getTransferablesTree());
+		log.debug("The resources tree to transfer is:" + "\n  "
+				+ getTransferablesTree().toString().replaceAll("\\n", "\n  "));
 	}
 
 	protected void createDestinationDirectories() throws TransferException {

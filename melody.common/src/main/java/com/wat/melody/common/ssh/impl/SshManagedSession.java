@@ -261,7 +261,7 @@ public class SshManagedSession implements ISshSession {
 	private String createDeployKeyCommand(String k) throws SshSessionException {
 		String login = getUserDatas().getLogin();
 		String c = DEPLOY_KEY_COMMAND.replaceAll("[{][{]LOGIN[}][}]", login);
-		String f = "KEY=\"" + k + "\" || exit 99\n";
+		String f = "\nKEY=\"" + k + "\" || exit 99\n";
 		f += "CMD=\"" + c + "\" || exit 98\n";
 		f += "[ $(id -g) = 0 ] && eval \"$CMD\"\n";
 		f += "test -x /usr/bin/sudo || exit 97\n";

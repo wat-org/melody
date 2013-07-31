@@ -46,9 +46,6 @@ public abstract class TransferablesFinder {
 				found.addAll(rs);
 			}
 		}
-		for (Transferable t : found) {
-			System.out.println(t);
-		}
 		return TransferablesTree.build(found);
 	}
 

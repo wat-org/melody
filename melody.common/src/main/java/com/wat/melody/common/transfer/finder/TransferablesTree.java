@@ -1,7 +1,9 @@
 package com.wat.melody.common.transfer.finder;
 
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,14 +165,26 @@ public class TransferablesTree {
 				type = "filelink";
 			}
 			str += "\n" + type + ":" + t.getDestinationPath().getFileName();
+			FileAttribute<?>[] attrs = t.getExpectedAttributes();
+			if (attrs != null) {
+				str += "   " + Arrays.asList(attrs);
+			}
 		}
 		for (Path path : getDirectoriesKeySet()) {
-			if (!getDirectory(path).getTransferable()
-					.linkShouldBeConvertedToFile()) {
+			Transferable t = getDirectory(path).getTransferable();
+			if (!t.linkShouldBeConvertedToFile()) {
 				str += "\n" + "dirlink:" + path;
+				FileAttribute<?>[] attrs = t.getExpectedAttributes();
+				if (attrs != null) {
+					str += "   " + Arrays.asList(attrs);
+				}
 				continue;
 			}
 			str += "\n" + "dir:" + path;
+			FileAttribute<?>[] attrs = t.getExpectedAttributes();
+			if (attrs != null) {
+				str += "   " + Arrays.asList(attrs);
+			}
 			String content = getDirectory(path).toString();
 			if (content != null && content.length() != 0) {
 				str += ("\n" + content).replaceAll("\\n", "\n  ");
