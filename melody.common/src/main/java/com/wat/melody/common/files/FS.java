@@ -6,6 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,8 +17,13 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.files.exception.IllegalTarGzException;
 import com.wat.melody.common.messages.Msg;
@@ -27,6 +35,8 @@ import com.wat.melody.common.systool.SysTool;
  * 
  */
 public abstract class FS {
+
+	private static Logger log = LoggerFactory.getLogger(FS.class);
 
 	/**
 	 * <p>
@@ -313,6 +323,10 @@ public abstract class FS {
 	 * @param sOutPutDir
 	 *            is the path of the directory where the archive will be
 	 *            extracted.
+	 * @param continueOnAtributeError
+	 *            indicate if this method should fail (or not) if an error
+	 *            occurred when setting an entry's user-id, owner-id or
+	 *            permissions
 	 * 
 	 * @throws IllegalArgumentException
 	 *             <ul>
@@ -321,8 +335,10 @@ public abstract class FS {
 	 *             </ul>
 	 * @throws IOException
 	 *             if an IO error occurred.
-	 * @throws IllegalTarGzException
-	 *             if sPath points to a directory.
+	 * @throws IllegalFileAttributeException
+	 *             if <tt>continueOnAtributeError</tt> is <tt>false</tt> and an
+	 *             error occurred when setting an entry's user-id, owner-id or
+	 *             permissions.
 	 * @throws IllegalTarGzException
 	 *             <ul>
 	 *             <li>if the given TarGz archive points to a directory ;</li>
@@ -343,8 +359,9 @@ public abstract class FS {
 	 *             writable directory ;</li>
 	 *             </ul>
 	 */
-	public static void extractTarGz(String path, String outdir)
-			throws IOException, IllegalTarGzException,
+	public static void extractTarGz(String path, String outdir,
+			boolean continueOnAtributeError) throws IOException,
+			IllegalFileAttributeException, IllegalTarGzException,
 			IllegalDirectoryException {
 		// Validate input parameter
 		// If the given path is not a valid targz archive => raise an error
@@ -372,27 +389,40 @@ public abstract class FS {
 			// For each entry in the tar archive
 			while ((entry = (TarArchiveEntry) tis.getNextEntry()) != null) {
 				// Create a new File instance in the given output directory
-				final File outputFile = new File(outdir, entry.getName());
-				if (entry.isFile()) {
-					// If the current entry is a file => extract it to the disk
-					// (using a file output stream)
-					// Note the if the file already exists, it will be replaced
-					fos = new FileOutputStream(outputFile);
-					IOUtils.copy(tis, fos);
-					fos.flush();
-					fos.close();
-					fos = null;
-					// TODO : Set file attributes (user id, group id, ...)
-				} else if (outputFile.exists() || outputFile.mkdirs()) {
-					// If the current entry is a directory => create it
-					// TODO : Set directory attributes (user id, group id, ...)
-					continue;
-				} else {
-					// If an error occurred while creating the directory =>
-					// raise an
-					// error
-					throw new IOException("Couldn't create directory '"
-							+ outputFile.getAbsolutePath() + "'.");
+				Path outpath = Paths.get(outdir, entry.getName());
+				if (entry.isSymbolicLink()) {
+					if (!Files.exists(outpath)) {
+						Files.createSymbolicLink(outpath,
+								Paths.get(entry.getLinkName()));
+					}
+					// what to do if the file exists ? Should callback
+					applyAttributes(outpath, entry, continueOnAtributeError);
+				} else if (entry.isFile()) {
+					if (!Files.exists(outpath)) {
+						// If the current entry is a file => extract it
+						fos = new FileOutputStream(outpath.toFile());
+						IOUtils.copy(tis, fos);
+						fos.flush();
+						fos.close();
+						fos = null;
+					}
+					// what to do if the file exists ? Should callback
+					applyAttributes(outpath, entry, continueOnAtributeError);
+				} else if (entry.isDirectory()) {
+					if (!Files.exists(outpath)) {
+						// If the current entry is a directory => create it
+						Files.createDirectory(outpath);
+					}
+					// what to do if the file exists ? Should callback
+					applyAttributes(outpath, entry, continueOnAtributeError);
+				} else if (entry.isFIFO()) {
+					log.info(outpath + ": pipes are not supported.");
+				} else if (entry.isLink()) {
+					log.info(outpath + ": links are not supported.");
+				} else if (entry.isBlockDevice()) {
+					log.info(outpath + ": block devices are not supported.");
+				} else if (entry.isCharacterDevice()) {
+					log.info(outpath + ": character devices are not supported.");
 				}
 			}
 		} finally {
@@ -405,6 +435,70 @@ public abstract class FS {
 				gzis.close();
 			if (fis != null)
 				fis.close();
+		}
+	}
+
+	private static void applyAttributes(Path path, TarArchiveEntry entry,
+			boolean continueOnAtributeError)
+			throws IllegalFileAttributeException {
+		ConsolidatedException full = new ConsolidatedException(Msg.bind(
+				Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTES, path));
+
+		try {
+			PosixUser user = new PosixUser(entry.getUserId());
+			applyAttribute(path, "owner:owner", user.toUserPrincipal());
+		} catch (MelodyException Ex) {
+			full.addCause(Ex);
+		}
+
+		try {
+			PosixGroup group = new PosixGroup(entry.getGroupId());
+			applyAttribute(path, "posix:group", group.toGroupPrincipal());
+		} catch (MelodyException Ex) {
+			full.addCause(Ex);
+		}
+
+		try {
+			PosixPermissions perms = new PosixPermissions(entry.getMode());
+			applyAttribute(path, "posix:permissions",
+					perms.toPosixFilePermissionSet());
+		} catch (MelodyException Ex) {
+			full.addCause(Ex);
+		}
+
+		if (full.countCauses() != 0) {
+			if (continueOnAtributeError) {
+				log.info(new MelodyException(full).toString());
+			} else {
+				throw new IllegalFileAttributeException(full);
+			}
+		}
+	}
+
+	private static void applyAttribute(Path path, String name, Object value)
+			throws MelodyException {
+		String attr = name + "=" + value;
+		try {
+			Files.setAttribute(path, name, value, LinkOption.NOFOLLOW_LINKS);
+		} catch (FileSystemException Ex) {
+			// don't want neither the stack trace nor the file name
+			String msg = Ex.getReason();
+			if (msg == null || msg.length() == 0) {
+				msg = Ex.getClass().getName();
+			} else {
+				msg = Ex.getClass().getName() + " - " + msg;
+			}
+			throw new MelodyException(Msg.bind(
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg));
+		} catch (UnsupportedOperationException | IllegalArgumentException
+				| ClassCastException | IOException Ex) {
+			// don't want the stack trace
+			throw new MelodyException(Msg.bind(
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex));
+		} catch (Throwable Ex) {
+			// want the stack trace
+			throw new MelodyException(Msg.bind(
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex);
 		}
 	}
 

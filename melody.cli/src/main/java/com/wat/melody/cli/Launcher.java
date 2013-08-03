@@ -35,12 +35,11 @@ public class Launcher {
 	 */
 	public static void main(String[] args) {
 
-		ProcessorManagerLoader pml = null;
+		ProcessorManagerLoader pml = new ProcessorManagerLoader();
 		IProcessorManager pm = null;
 
 		// Before the logger is created, log into stderr
 		try {
-			pml = new ProcessorManagerLoader();
 			pm = pml.parseCommandLine(args);
 		} catch (MelodyException Ex) {
 			System.err.println(Ex.toString());
@@ -54,13 +53,11 @@ public class Launcher {
 
 		// The logger can only be created after log4j's initialization
 		Logger log = LoggerFactory.getLogger(Launcher.class);
-		ShutdownHook sdh = null;
-		// DefaultProcessingListener dpl = null;
+		ShutdownHook sdh = new ShutdownHook(pm, Thread.currentThread());
+		// DefaultProcessingListener dpl = new DefaultProcessingListener(pm);
 		ReturnCode iReturnCode = ReturnCode.ERRGEN;
 
 		try {
-			sdh = new ShutdownHook(pm, Thread.currentThread());
-			// dpl = new DefaultProcessingListener(pm);
 			pm.startProcessing();
 			pm.waitTillProcessingIsDone();
 			if (pm.getProcessingFinalError() != null) {
