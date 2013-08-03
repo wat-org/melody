@@ -1,5 +1,7 @@
 package com.wat.melody.common.transfer;
 
+import static com.wat.melody.common.transfer.LinkOption.SKIP_LINKS;
+
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.LinkOption;
@@ -55,24 +57,13 @@ public abstract class TransferNoThread {
 	}
 
 	protected void ln() throws IOException, TransferException {
-		switch (getTransferable().getLinkOption()) {
-		case KEEP_LINKS:
-			createSymlink();
-			break;
-		case COPY_LINKS:
+		Transferable t = getTransferable();
+		if (t.getLinkOption() == SKIP_LINKS) {
+			ln_skip();
+		} else if (t.linkShouldBeConvertedToFile()) {
 			ln_copy();
-			break;
-		case COPY_UNSAFE_LINKS:
-			ln_copy_unsafe();
-			break;
-		}
-	}
-
-	protected void ln_copy_unsafe() throws IOException, TransferException {
-		if (getTransferable().isSafeLink()) {
-			createSymlink();
 		} else {
-			ln_copy();
+			createSymlink();
 		}
 	}
 
@@ -87,11 +78,14 @@ public abstract class TransferNoThread {
 		Transferable t = getTransferable();
 		if (!t.exists()) {
 			deleteDestination();
-			log.warn(Messages.bind(Messages.TransferMsg_COPY_UNSAFE_IMPOSSIBLE,
-					t));
+			log.info(Messages.TransferMsg_LINK_COPY_UNSAFE_IMPOSSIBLE);
 			return;
 		}
 		template();
+	}
+
+	protected void ln_skip() {
+		log.info(Messages.TransferMsg_LINK_SKIPPED);
 	}
 
 	protected void deleteDestination() throws IOException {

@@ -229,6 +229,8 @@ public class TransferableFile implements Transferable {
 			return true;
 		}
 		switch (getLinkOption()) {
+		case SKIP_LINKS:
+			return false;
 		case COPY_LINKS:
 			return true;
 		case KEEP_LINKS:

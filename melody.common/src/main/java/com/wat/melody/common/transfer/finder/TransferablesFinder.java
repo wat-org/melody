@@ -92,31 +92,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 		return _resources;
 	}
 
-	private void matchesRegularFileLink(TransferableFile r) {
-		Path path = r.getSourcePath();
-		if (path == null || !_matcher.matches(path)) {
-			return;
-		}
-		_resources.add(r);
-	}
-
-	private void matchesRegularFile(TransferableFile r) {
-		Path path = r.getSourcePath();
-		if (path == null || !_matcher.matches(path)) {
-			return;
-		}
-		_resources.add(r);
-	}
-
-	private void matchesDirLink(TransferableFile r) {
-		Path path = r.getSourcePath();
-		if (path == null || !_matcher.matches(path)) {
-			return;
-		}
-		_resources.add(r);
-	}
-
-	private void matchesDir(TransferableFile r) {
+	private void matches(TransferableFile r) {
 		Path path = r.getSourcePath();
 		if (path == null || !_matcher.matches(path)) {
 			return;
@@ -128,11 +104,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 	public FileVisitResult visitFile(Path file, EnhancedFileAttributes attrs)
 			throws IOException {
 		TransferableFile sr = new TransferableFile(file, attrs, _rspec);
-		if (sr.linkShouldBeConvertedToFile()) {
-			matchesRegularFile(sr);
-		} else {
-			matchesRegularFileLink(sr);
-		}
+		matches(sr);
 		return FileVisitResult.CONTINUE;
 	}
 
@@ -140,11 +112,10 @@ class Finder extends EnhancedFileVisitor<Path> {
 	public FileVisitResult preVisitDirectory(Path dir,
 			EnhancedFileAttributes attrs) throws IOException {
 		TransferableFile sr = new TransferableFile(dir, attrs, _rspec);
+		matches(sr);
 		if (sr.linkShouldBeConvertedToFile()) {
-			matchesDir(sr);
 			return FileVisitResult.CONTINUE;
 		} else {
-			matchesDirLink(sr);
 			return FileVisitResult.SKIP_SUBTREE;
 		}
 	}

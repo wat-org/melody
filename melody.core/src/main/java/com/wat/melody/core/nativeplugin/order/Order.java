@@ -274,8 +274,8 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					Messages.OrderEx_DUPLICATE_NAME_RESUME, name, ORDER,
 					NAME_ATTR));
 			for (Node node : new NodeCollection(nl)) {
-				causes.addCause(new SimpleNodeRelatedException(node, Messages
-						.bind(Messages.OrderEx_DUPLICATE_NAME, name)));
+				causes.addCause(new SimpleNodeRelatedException(node, Msg.bind(
+						Messages.OrderEx_DUPLICATE_NAME, name)));
 			}
 			throw new OrderException(causes);
 		}

@@ -238,14 +238,17 @@ public abstract class TransferMultiThread {
 			for (Transferable t : getTransferablesTree().getAllDirectories()) {
 				log.debug(Msg.bind(Messages.TransferMsg_BEGIN, t));
 				try {
-					if (!t.linkShouldBeConvertedToFile()) {
+					if (t.isSymbolicLink()
+							&& t.getLinkOption() == LinkOption.SKIP_LINKS) {
+						log.info(Messages.TransferMsg_LINK_SKIPPED);
+					} else if (t.linkShouldBeConvertedToFile()) {
+						TransferHelper.createDirectory(dfs,
+								t.getDestinationPath(),
+								t.getExpectedAttributes());
+					} else {
 						TransferHelper.createSymbolicLink(dfs,
 								t.getDestinationPath(),
 								t.getSymbolicLinkTarget(),
-								t.getExpectedAttributes());
-					} else {
-						TransferHelper.createDirectory(dfs,
-								t.getDestinationPath(),
 								t.getExpectedAttributes());
 					}
 				} catch (IOException Ex) {

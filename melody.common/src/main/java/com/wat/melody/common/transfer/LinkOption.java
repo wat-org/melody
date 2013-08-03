@@ -13,19 +13,21 @@ import com.wat.melody.common.transfer.exception.IllegalLinkOptionException;
 public enum LinkOption {
 
 	/*
-	 * keep-links : will keep the symlink as a symlink ;
+	 * keep-links : will keep the symbolic link as a symbolic link ;
 	 * 
-	 * copy-links : will copy the symlink target into a file or a directory. If
-	 * the symlink target is invalid, it will be skipped ;
+	 * copy-links : will copy the symbolic link's target into the corresponding
+	 * file or a directory. If the symbolic link's target is invalid (ex: target
+	 * doesn't exist), it will be skipped ;
 	 * 
-	 * copy-unsafe-links : will copy symlink target into a file or a directory
-	 * if the symlink is "unsafe". If the symlink target is invalid, it will be
-	 * skipped ;
+	 * copy-unsafe-links : will copy the symbolic link's target into the
+	 * corresponding file or a directory if the symbolic link is "unsafe". If
+	 * the symbolic link's target is invalid (ex: target doesn't exist), it will
+	 * be skipped ;
 	 * 
-	 * TODO : skip-links : will skip symlink ;
+	 * skip-links : will skip the symbolic link ;
 	 */
 	KEEP_LINKS("keep_links"), COPY_LINKS("copy_links"), COPY_UNSAFE_LINKS(
-			"copy_unsafe_links");
+			"copy_unsafe_links"), SKIP_LINKS("skip_links");
 
 	/**
 	 * <p>

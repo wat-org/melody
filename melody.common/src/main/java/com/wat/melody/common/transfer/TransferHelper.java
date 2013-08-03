@@ -24,6 +24,9 @@ public abstract class TransferHelper {
 
 	protected static void createDirectory(FileSystem destFS, Path dir,
 			FileAttribute<?>... attrs) throws IOException {
+		/*
+		 * TODO : introduce a FORCE option, which will delete existing if true
+		 */
 		if (ensureDestinationIsDirectory(destFS, dir)) {
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
 			try {

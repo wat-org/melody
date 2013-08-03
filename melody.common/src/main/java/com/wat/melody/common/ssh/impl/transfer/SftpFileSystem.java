@@ -602,7 +602,7 @@ public class SftpFileSystem implements FileSystem {
 					chgrp(path, ((AttributePosixGroup) attr).getPosixGroup()
 							.toInt());
 				} else if (attr instanceof AttributePosixUser) {
-					chown("/tmp", ((AttributePosixUser) attr).getPosixUser()
+					chown(path, ((AttributePosixUser) attr).getPosixUser()
 							.toInt());
 				} else if (attr instanceof AttributePosixPermissions) {
 					chmod(path, ((AttributePosixPermissions) attr)
