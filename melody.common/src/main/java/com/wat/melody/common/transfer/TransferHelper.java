@@ -8,8 +8,10 @@ import java.nio.file.attribute.FileAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 
 /**
  * 
@@ -23,10 +25,20 @@ public abstract class TransferHelper {
 	protected static void createDirectory(FileSystem destFS, Path dir,
 			FileAttribute<?>... attrs) throws IOException {
 		if (ensureDestinationIsDirectory(destFS, dir)) {
-			destFS.setAttributes(dir, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
+			try {
+				destFS.setAttributes(dir, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
 		} else {
-			destFS.createDirectory(dir, attrs);
+			try {
+				destFS.createDirectory(dir, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
 		}
 	}
 
@@ -65,10 +77,20 @@ public abstract class TransferHelper {
 	protected static void createSymbolicLink(FileSystem destFS, Path link,
 			Path target, FileAttribute<?>... attrs) throws IOException {
 		if (ensureDestinationIsSymbolicLink(destFS, link, target)) {
-			destFS.setAttributes(link, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_LINK_ALREADY_EXISTS);
+			try {
+				destFS.setAttributes(link, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
 		} else {
-			destFS.createSymbolicLink(link, target, attrs);
+			try {
+				destFS.createSymbolicLink(link, target, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
 		}
 	}
 

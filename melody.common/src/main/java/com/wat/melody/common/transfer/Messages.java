@@ -9,15 +9,15 @@ public class Messages extends NLS {
 	public static String LinkOptionEx_EMPTY;
 	public static String LinkOptionEx_INVALID;
 
-	public static String TransferBehaviorEx_EMPTY;
-	public static String TransferBehaviorEx_INVALID;
-
 	public static String ScopeEx_EMPTY;
 	public static String ScopeEx_INVALID;
 
 	public static String ScopesEx_EMPTY_SCOPE;
 	public static String ScopesEx_INVALID_SCOPE;
 	public static String ScopesEx_EMPTY;
+
+	public static String TransferBehaviorEx_EMPTY;
+	public static String TransferBehaviorEx_INVALID;
 
 	public static String TransferEx_FAILED;
 	public static String TransferEx_UNMANAGED;
@@ -30,6 +30,7 @@ public class Messages extends NLS {
 	public static String TransferMsg_FINISH;
 	public static String TransferMsg_BEGIN;
 	public static String TransferMsg_END;
+	public static String TransferMsg_SKIP_ATTR;
 	public static String TransferMsg_COPY_UNSAFE_IMPOSSIBLE;
 	public static String TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS;
 	public static String TransferMsg_DONT_TRANSFER_CAUSE_LINK_ALREADY_EXISTS;

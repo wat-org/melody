@@ -5,6 +5,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
@@ -12,22 +13,30 @@ import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.ChannelSftp.LsEntrySelector;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
+import com.wat.melody.common.files.PosixGroup;
+import com.wat.melody.common.files.PosixPermissions;
+import com.wat.melody.common.files.PosixUser;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.files.exception.IllegalPosixGroupException;
+import com.wat.melody.common.files.exception.IllegalPosixUserException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
@@ -36,10 +45,9 @@ import com.wat.melody.common.files.exception.WrapperNotDirectoryException;
 import com.wat.melody.common.files.exception.WrapperNotLinkException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.Messages;
-import com.wat.melody.common.ssh.impl.transfer.exception.IllegalGroupIDException;
-import com.wat.melody.common.ssh.impl.transfer.exception.IllegalPermissionsException;
-import com.wat.melody.common.transfer.resources.attributes.PosixGroup;
-import com.wat.melody.common.transfer.resources.attributes.PosixPermissions;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixGroup;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixPermissions;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
 
 /**
  * 
@@ -47,8 +55,6 @@ import com.wat.melody.common.transfer.resources.attributes.PosixPermissions;
  * 
  */
 public class SftpFileSystem implements FileSystem {
-
-	private static Logger log = LoggerFactory.getLogger(SftpFileSystem.class);
 
 	/**
 	 * Returns {@code false} if NOFOLLOW_LINKS is present.
@@ -147,13 +153,15 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
 	private void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		if (dir == null || dir.trim().length() == 0) {
 			throw new IllegalArgumentException(dir + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -190,7 +198,7 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public void createDirectories(Path dir, FileAttribute<?>... attrs)
 			throws IOException, FileAlreadyExistsException,
-			AccessDeniedException {
+			IllegalFileAttributeException, AccessDeniedException {
 		if (dir == null || dir.toString().length() == 0
 				|| dir.getNameCount() < 1) {
 			return;
@@ -205,7 +213,7 @@ public class SftpFileSystem implements FileSystem {
 				throw Ex;
 			}
 		} catch (FileAlreadyExistsException Ex) {
-			// if the file is a link on a dir or a dir => no error
+			// if the file is a link on a dir => no error
 			try {
 				if (readAttributes0(unixDir).isDir()) {
 					return;
@@ -224,7 +232,7 @@ public class SftpFileSystem implements FileSystem {
 		try {
 			createDirectory(unixDir, attrs);
 		} catch (FileAlreadyExistsException Ex) {
-			// if the file is a link on a dir or a dir => no error
+			// if the file is a link on a dir => no error
 			try {
 				if (readAttributes0(unixDir).isDir()) {
 					return;
@@ -239,14 +247,16 @@ public class SftpFileSystem implements FileSystem {
 	@Override
 	public void createSymbolicLink(Path link, Path target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		createSymbolicLink(convertToUnixPath(link), convertToUnixPath(target),
 				attrs);
 	}
 
 	private void createSymbolicLink(String link, String target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		if (link == null || link.trim().length() == 0) {
 			throw new IllegalArgumentException(link + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -445,7 +455,8 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	public DirectoryStream<Path> newDirectoryStream(Path path)
-			throws IOException, NotDirectoryException, NoSuchFileException {
+			throws IOException, NotDirectoryException, NoSuchFileException,
+			AccessDeniedException {
 		return newDirectoryStream(convertToUnixPath(path));
 	}
 
@@ -528,12 +539,15 @@ public class SftpFileSystem implements FileSystem {
 
 	@Override
 	public void setAttributes(Path path, FileAttribute<?>... attributes)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException {
 		setAttributes(convertToUnixPath(path), attributes);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void setAttributes(String path, FileAttribute<?>... attributes)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -542,24 +556,127 @@ public class SftpFileSystem implements FileSystem {
 		if (attributes == null) {
 			return;
 		}
-		/*
-		 * TODO: should be wrapped in an IllegalFileAttributeException, with
-		 * responsibilities to the caller to deal with.
-		 */
+		Boolean isLink = false;
+		if (isSymbolicLink(path)) {
+			isLink = true;
+		}
+		ConsolidatedException full = new ConsolidatedException(Msg.bind(
+				Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTES, path));
 		for (FileAttribute<?> attr : attributes) {
 			if (attr == null) {
 				continue;
-			} else if (attr instanceof PosixGroup) {
-				chgrp(path, ((PosixGroup) attr).getStringValue());
-			} else if (attr instanceof PosixPermissions) {
-				chmod(path, ((PosixPermissions) attr).getStringValue());
-			} else {
-				log.warn(Msg.bind(Messages.SftpFSMsg_SKIP_ATTR, attr, path));
 			}
+			try {
+				/*
+				 * will throw NullPointerException if attr.name() is null.
+				 * 
+				 * will throw UnsupportedOperationException if attr.name()
+				 * denotes an unrecognized view.
+				 * 
+				 * will throw IllegalArgumentException if attr.name() denotes a
+				 * know view but an unrecognized attribute.
+				 * 
+				 * will throw NullPointerException if attr.valiue() is null.
+				 * 
+				 * will throw ClassCastException if attr.name() denotes a known
+				 * view and a known but attr.value() is not of the correct type.
+				 * 
+				 * will throw IllegalArgumentException if attr.name() denotes a
+				 * known view and a known and attr.value() is of the correct
+				 * type but as an invalid value.
+				 * 
+				 * will throw IOException the operation failed (access denied,
+				 * no such file, ...).
+				 * 
+				 * will throw FileSystemException if the subject of the
+				 * operation is a link.
+				 */
+				if (isLink) {
+					throw new FileSystemException(
+							path,
+							null,
+							Messages.SftpFSEx_SET_ATTRIBUTES_NOT_SUPPORTED_ON_LINK);
+				}
+				// optim
+				else if (attr instanceof AttributePosixGroup) {
+					chgrp(path, ((AttributePosixGroup) attr).getPosixGroup()
+							.toInt());
+				} else if (attr instanceof AttributePosixUser) {
+					chown("/tmp", ((AttributePosixUser) attr).getPosixUser()
+							.toInt());
+				} else if (attr instanceof AttributePosixPermissions) {
+					chmod(path, ((AttributePosixPermissions) attr)
+							.getPosixPermissions().toInt());
+				}
+				// end optim
+				else if (attr.name().equals(AttributePosixGroup.NAME)) {
+					try {
+						chgrp(path,
+								PosixGroup.fromGroupPrincipal(
+										(GroupPrincipal) attr.value()).toInt());
+					} catch (IllegalPosixGroupException Ex) {
+						throw new IllegalArgumentException(Ex);
+					}
+				} else if (attr.name().equals(AttributePosixUser.NAME)) {
+					try {
+						chown(path,
+								PosixUser.fromUserPrincipal(
+										(UserPrincipal) attr.value()).toInt());
+					} catch (IllegalPosixUserException Ex) {
+						throw new MelodyException(Ex);
+					}
+				} else if (attr.name().equals(AttributePosixPermissions.NAME)) {
+					chmod(path,
+							PosixPermissions.fromPosixFilePermissionSet(
+									(Set<PosixFilePermission>) attr.value())
+									.toInt());
+				} else if (attr.name().indexOf("posix:") == 0
+						|| attr.name().indexOf("owner:") == 0) {
+					// view is known but attribute name is not recognized
+					throw new IllegalArgumentException("'" + attr.name() + "'"
+							+ " not recognized.");
+				} else {
+					// view is not recognized
+					throw new UnsupportedOperationException("View '"
+							+ attr.name() + "'" + " is not availbale.");
+				}
+			} catch (WrapperNoSuchFileException | WrapperAccessDeniedException Ex) {
+				// unwrap needed
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex
+								.getClass().getSuperclass().getName())));
+			} catch (FileSystemException Ex) {
+				// don't want neither the stack trace nor the file name
+				String msg = Ex.getReason();
+				if (msg == null || msg.length() == 0) {
+					msg = Ex.getClass().getName();
+				} else {
+					msg = Ex.getClass().getName() + " - " + msg;
+				}
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+			} catch (UnsupportedOperationException | IllegalArgumentException
+					| ClassCastException | IOException Ex) {
+				// don't want the stack trace
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+			} catch (Throwable Ex) {
+				// want the stack trace
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
+			}
+		}
+		if (full.countCauses() != 0) {
+			throw new IllegalFileAttributeException(full);
 		}
 	}
 
-	public void chmod(String path, String permissions) throws IOException,
+	public void chmod(Path path, int permissions) throws IOException,
+			NoSuchFileException, AccessDeniedException {
+		chmod(convertToUnixPath(path), permissions);
+	}
+
+	private void chmod(String path, int permissions) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -567,10 +684,7 @@ public class SftpFileSystem implements FileSystem {
 					+ ".");
 		}
 		try {
-			_channel.chmod(Permissions.parseString(permissions).toInt(), path);
-		} catch (IllegalPermissionsException Ex) {
-			log.error(new MelodyException(Msg.bind(Messages.SftpEx_CHMOD,
-					permissions, path), Ex).toString());
+			_channel.chmod(permissions, path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(path);
@@ -583,7 +697,12 @@ public class SftpFileSystem implements FileSystem {
 		}
 	}
 
-	public void chgrp(String path, String groupid) throws IOException,
+	public void chgrp(Path path, int groupid) throws IOException,
+			NoSuchFileException, AccessDeniedException {
+		chgrp(convertToUnixPath(path), groupid);
+	}
+
+	private void chgrp(String path, int groupid) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -591,10 +710,7 @@ public class SftpFileSystem implements FileSystem {
 					+ ".");
 		}
 		try {
-			_channel.chgrp(GroupID.parseString(groupid).toInt(), path);
-		} catch (IllegalGroupIDException Ex) {
-			log.error(new MelodyException(Msg.bind(Messages.SftpEx_CHGRP,
-					groupid, path), Ex).toString());
+			_channel.chgrp(groupid, path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(path);
@@ -607,13 +723,39 @@ public class SftpFileSystem implements FileSystem {
 		}
 	}
 
+	public void chown(Path path, int userid) throws IOException,
+			NoSuchFileException, AccessDeniedException {
+		chown(convertToUnixPath(path), userid);
+	}
+
+	private void chown(String path, int userid) throws IOException,
+			NoSuchFileException, AccessDeniedException {
+		if (path == null || path.trim().length() == 0) {
+			throw new IllegalArgumentException(path + ": Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		try {
+			_channel.chown(userid, path);
+		} catch (SftpException Ex) {
+			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+				throw new WrapperAccessDeniedException(path);
+			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+				throw new WrapperNoSuchFileException(path);
+			} else {
+				throw new IOException(Msg.bind(Messages.SftpEx_CHOWN, userid,
+						path), Ex);
+			}
+		}
+	}
+
 	public void upload(Path source, Path destination) throws IOException,
-			AccessDeniedException, NoSuchFileException {
+			NoSuchFileException, AccessDeniedException {
 		upload(source.toString(), convertToUnixPath(destination));
 	}
 
 	public void upload(String source, String destination) throws IOException,
-			AccessDeniedException, NoSuchFileException {
+			NoSuchFileException, AccessDeniedException {
 		if (source == null || source.trim().length() == 0) {
 			throw new IllegalArgumentException(source + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -643,12 +785,12 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	public void download(Path source, Path destination) throws IOException,
-			AccessDeniedException, NoSuchFileException {
+			NoSuchFileException, AccessDeniedException {
 		download(convertToUnixPath(source), destination.toString());
 	}
 
 	public void download(String source, String destination) throws IOException,
-			AccessDeniedException, NoSuchFileException {
+			NoSuchFileException, AccessDeniedException {
 		if (source == null || source.trim().length() == 0) {
 			throw new IllegalArgumentException(source + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()

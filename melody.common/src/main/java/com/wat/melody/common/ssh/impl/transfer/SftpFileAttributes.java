@@ -98,7 +98,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 
 	@Override
 	public boolean isOther() {
-		// TODO
+		// it may be possible to get the info ...
 		return false;
 	}
 
@@ -119,7 +119,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 
 	@Override
 	public FileTime creationTime() {
-		// TODO
+		// Sftp doesn't handle this info ...
 		return null;
 	}
 

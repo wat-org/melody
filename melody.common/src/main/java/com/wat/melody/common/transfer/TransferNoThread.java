@@ -1,14 +1,18 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FileSystem;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.exception.TransferException;
@@ -128,15 +132,26 @@ public abstract class TransferNoThread {
 		FileSystem destFS = getDestinationFileSystem();
 		if (TransferHelper.ensureDestinationIsRegularFile(destFS,
 				t.getAttributes(), dest, t.getTransferBehavior())) {
-			destFS.setAttributes(dest, attrs);
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
-			return;
+			try {
+				destFS.setAttributes(dest, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
+		} else {
+			try {
+				transferFile(source, dest, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
 		}
-		transferFile(source, dest, attrs);
 	}
 
 	public abstract void transferFile(Path source, Path dest,
-			FileAttribute<?>... attrs) throws IOException;
+			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
+			AccessDeniedException, IllegalFileAttributeException;;
 
 	protected FileSystem getSourceFileSystem() {
 		return _sourceFileSystem;

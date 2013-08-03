@@ -6,12 +6,6 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.ssh.impl.messages";
 
-	public static String GroupIDEx_EMPTY;
-	public static String GroupIDEx_INVALID;
-
-	public static String PermissionsEx_EMPTY;
-	public static String PermissionsEx_INVALID;
-
 	public static String KnownHostsEx_INVALID_CONTENT;
 
 	public static String KnownHostsRepoPathEx_INVALID_REPO_PATH;
@@ -32,8 +26,13 @@ public class Messages extends NLS {
 	public static String SftpEx_READLINK;
 	public static String SftpEx_LS;
 	public static String SftpEx_CHMOD;
+	public static String SftpEx_CHOWN;
 	public static String SftpEx_CHGRP;
-	public static String SftpFSMsg_SKIP_ATTR;
+
+	public static String SftpFSEx_SET_ATTRIBUTES_NOT_SUPPORTED_ON_LINK;
+	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTES;
+	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTE;
+	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X;
 
 	public static String ExecEx_INTERRUPTED;
 	public static String ExecMsg_GRACEFULL_SHUTDOWN;

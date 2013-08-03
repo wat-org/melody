@@ -10,21 +10,40 @@
 
 		<echo message="Transferring files to 'IP:§[IP]§' ..."/>
 
-		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
+		<upload host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10">
 			<resources	src-basedir=""
 						match="**"
 						dest-basedir="/tmp/melody/scp/UC_1_upload"
 						link-option="KEEP_LINKS" >
 				<posix-permissions scope="directories">770</posix-permissions>
-				<posix-group scope="directories,files">502</posix-group>
+				<posix-permissions scope="files">660</posix-permissions>
+
 				<include	match="templates/file1.tmpl"
 							template="y" >
 					<posix-permissions scope="files">740</posix-permissions>
 				</include>
+				
 				<include	match="templates/file2.tmpl"
 							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />
 				<exclude	match="static_myApp_myMod/content2.*" />
+				
+				<!-- will generate warnings -->
+				<include	match="static_myApp_myMod/content1.txt" >
+					<posix-group scope="files">60000</posix-group>
+					<posix-user scope="files">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod" >
+					<posix-group scope="directories">60000</posix-group>
+					<posix-user scope="directories">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod/link.txt" >
+					<posix-group scope="links">502</posix-group>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-user scope="links">501</posix-user>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+				</include>
 			</resources>
 		</upload>
 

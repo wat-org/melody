@@ -1,10 +1,13 @@
 package com.wat.melody.common.ssh.impl.transfer;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.files.FileSystem;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferNoThread;
 import com.wat.melody.common.transfer.Transferable;
@@ -34,7 +37,8 @@ class DownloaderNoThread extends TransferNoThread {
 
 	@Override
 	public void transferFile(Path source, Path dest, FileAttribute<?>... attrs)
-			throws IOException {
+			throws IOException, NoSuchFileException, AccessDeniedException,
+			IllegalFileAttributeException {
 		getSourceFileSystem().download(source, dest);
 		getDestinationFileSystem().setAttributes(dest, attrs);
 	}

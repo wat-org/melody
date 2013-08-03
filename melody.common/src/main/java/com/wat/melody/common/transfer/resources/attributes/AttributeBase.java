@@ -4,20 +4,21 @@ import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.TextContent;
+import com.wat.melody.common.ex.MelodyException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public abstract class ResourceAttribute<T> implements FileAttribute<T> {
+public abstract class AttributeBase<T> implements FileAttribute<T> {
 
 	private static final String SCOPE_ATTR = "scope";
 
 	private Scopes _scopes = Scopes.ALL;
 	private String _value = null;
 
-	public ResourceAttribute() {
+	public AttributeBase() {
 	}
 
 	@Override
@@ -46,7 +47,7 @@ public abstract class ResourceAttribute<T> implements FileAttribute<T> {
 	}
 
 	@TextContent(mandatory = true)
-	public String setStringValue(String value) {
+	public String setStringValue(String value) throws MelodyException {
 		if (value == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
 					+ "Must be a valid " + String.class.getCanonicalName()

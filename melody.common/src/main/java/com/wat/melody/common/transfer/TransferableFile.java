@@ -10,7 +10,7 @@ import java.util.Map;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
-import com.wat.melody.common.transfer.resources.attributes.ResourceAttribute;
+import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
 
 /**
  * <p>
@@ -79,8 +79,8 @@ public class TransferableFile implements Transferable {
 		return null;
 	}
 
-	private Collection<ResourceAttribute<?>> getExpectedAttributesAsList() {
-		Map<String, ResourceAttribute<?>> m = null;
+	private Collection<AttributeBase<?>> getExpectedAttributesAsList() {
+		Map<String, AttributeBase<?>> m = null;
 		if (isSymbolicLink()) {
 			m = getResourceSpecification().getLinkAttributesMap();
 		} else if (isDirectory()) {
@@ -88,7 +88,7 @@ public class TransferableFile implements Transferable {
 		} else if (isRegularFile()) {
 			m = getResourceSpecification().getFileAttributesMap();
 		}
-		return m != null ? m.values() : new ArrayList<ResourceAttribute<?>>();
+		return m != null ? m.values() : new ArrayList<AttributeBase<?>>();
 	}
 
 	private String getDestPath() {

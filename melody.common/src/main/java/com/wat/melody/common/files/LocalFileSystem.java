@@ -5,6 +5,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
@@ -15,9 +16,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
@@ -32,8 +33,6 @@ import com.wat.melody.common.messages.Msg;
  * 
  */
 public class LocalFileSystem implements FileSystem {
-
-	private static Logger log = LoggerFactory.getLogger(LocalFileSystem.class);
 
 	public LocalFileSystem() {
 	}
@@ -81,7 +80,8 @@ public class LocalFileSystem implements FileSystem {
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		if (dir == null || dir.toString().length() == 0) {
 			throw new IllegalArgumentException(dir + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -91,6 +91,8 @@ public class LocalFileSystem implements FileSystem {
 		} catch (NoSuchFileException Ex) {
 			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (FileAlreadyExistsException Ex) {
+			// the dir already exists => no error
+			// a link or file exists => error
 			if (!isDirectory(dir, LinkOption.NOFOLLOW_LINKS)) {
 				throw new WrapperFileAlreadyExistsException(Ex.getFile());
 			}
@@ -103,7 +105,7 @@ public class LocalFileSystem implements FileSystem {
 	@Override
 	public void createDirectories(Path dir, FileAttribute<?>... attrs)
 			throws IOException, FileAlreadyExistsException,
-			AccessDeniedException {
+			IllegalFileAttributeException, AccessDeniedException {
 		if (dir == null || dir.toString().length() == 0
 				|| dir.getNameCount() < 1) {
 			return;
@@ -117,7 +119,7 @@ public class LocalFileSystem implements FileSystem {
 				throw Ex;
 			}
 		} catch (FileAlreadyExistsException Ex) {
-			// if the file is a link on a dir or a dir => no error
+			// if the file is a link on a dir => no error
 			try {
 				if (readAttributes0(dir).isDirectory()) {
 					return;
@@ -136,7 +138,7 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			createDirectory(dir, attrs);
 		} catch (FileAlreadyExistsException Ex) {
-			// if the file is a link on a dir or a dir => no error
+			// if the file is a link on a dir => no error
 			try {
 				if (readAttributes0(dir).isDirectory()) {
 					return;
@@ -151,7 +153,8 @@ public class LocalFileSystem implements FileSystem {
 	@Override
 	public void createSymbolicLink(Path link, Path target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		if (link == null || link.toString().length() == 0) {
 			throw new IllegalArgumentException(link + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -243,7 +246,8 @@ public class LocalFileSystem implements FileSystem {
 
 	@Override
 	public DirectoryStream<Path> newDirectoryStream(Path path)
-			throws IOException, NotDirectoryException, NoSuchFileException {
+			throws IOException, NotDirectoryException, NoSuchFileException,
+			AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -299,7 +303,8 @@ public class LocalFileSystem implements FileSystem {
 
 	@Override
 	public void setAttributes(Path path, FileAttribute<?>... attributes)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -307,23 +312,59 @@ public class LocalFileSystem implements FileSystem {
 		if (attributes == null) {
 			return;
 		}
-		/*
-		 * TODO: should be wrapped in an IllegalFileAttributeException, with
-		 * responsibilities to the caller to deal with.
-		 */
+		ConsolidatedException full = new ConsolidatedException(Msg.bind(
+				Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTES, path));
 		for (FileAttribute<?> attr : attributes) {
 			if (attr == null) {
 				continue;
 			}
 			try {
+				/*
+				 * will throw NullPointerException if attr.name() is null.
+				 * 
+				 * will throw UnsupportedOperationException if attr.name()
+				 * denotes an unrecognized view.
+				 * 
+				 * will throw IllegalArgumentException if attr.name() denotes a
+				 * know view but an unrecognized attribute.
+				 * 
+				 * will throw NullPointerException if attr.valiue() is null.
+				 * 
+				 * will throw ClassCastException if attr.name() denotes a known
+				 * view and a known but attr.value() is not of the correct type.
+				 * 
+				 * will throw IllegalArgumentException if attr.name() denotes a
+				 * known view and a known and attr.value() is of the correct
+				 * type but as an invalid value.
+				 * 
+				 * will throw IOException the operation failed (access denied,
+				 * no such file, permissions on symbolic link...).
+				 */
 				Files.setAttribute(path, attr.name(), attr.value(),
 						LinkOption.NOFOLLOW_LINKS);
+			} catch (FileSystemException Ex) {
+				// don't want neither the stack trace nor the file name
+				String msg = Ex.getReason();
+				if (msg == null || msg.length() == 0) {
+					msg = Ex.getClass().getName();
+				} else {
+					msg = Ex.getClass().getName() + " - " + msg;
+				}
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
 			} catch (UnsupportedOperationException | IllegalArgumentException
-					| ClassCastException Ex) {
-				log.warn(Msg.bind(Messages.LocalFSMsg_SKIP_ATTR, attr, path));
+					| ClassCastException | IOException Ex) {
+				// don't want the stack trace
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+			} catch (Throwable Ex) {
+				// want the stack trace
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
 			}
-
+		}
+		if (full.countCauses() != 0) {
+			throw new IllegalFileAttributeException(full);
 		}
 	}
-
 }

@@ -7,9 +7,10 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.common.transfer.LinkOption;
 import com.wat.melody.common.transfer.TransferBehavior;
-import com.wat.melody.common.transfer.resources.attributes.PosixGroup;
-import com.wat.melody.common.transfer.resources.attributes.PosixPermissions;
-import com.wat.melody.common.transfer.resources.attributes.ResourceAttribute;
+import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixGroup;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixPermissions;
+import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
 import com.wat.melody.common.transfer.resources.attributes.Scope;
 
 /**
@@ -64,19 +65,25 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	 */
 	public static final String POSIX_GROUP_ATTIBUTE_NE = "posix-group";
 
+	/**
+	 * Nested element, which specifies the attributes of the resource to
+	 * transfer.
+	 */
+	public static final String POSIX_USER_ATTIBUTE_NE = "posix-user";
+
 	// Mandatory (with a default value)
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
 	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_SRC_NEWER;
 	private boolean _template = false;
 	// Optional
 	private String _destName = null;
-	private Map<String, ResourceAttribute<?>> _fileAttributes = null;
-	private Map<String, ResourceAttribute<?>> _dirAttributes = null;
-	private Map<String, ResourceAttribute<?>> _linkAttributes = null;
+	private Map<String, AttributeBase<?>> _fileAttributes = null;
+	private Map<String, AttributeBase<?>> _dirAttributes = null;
+	private Map<String, AttributeBase<?>> _linkAttributes = null;
 	// Optimization
-	private ResourceAttribute<?>[] _fileAttributesCache = null;
-	private ResourceAttribute<?>[] _dirAttributesCache = null;
-	private ResourceAttribute<?>[] _linkAttributesCache = null;
+	private AttributeBase<?>[] _fileAttributesCache = null;
+	private AttributeBase<?>[] _dirAttributesCache = null;
+	private AttributeBase<?>[] _linkAttributesCache = null;
 
 	public ResourceSpecification() {
 		super();
@@ -95,19 +102,19 @@ public abstract class ResourceSpecification extends ResourceSelector {
 
 	private void initFileAttributesMap() {
 		if (getFileAttributesMap() == null) {
-			_fileAttributes = new HashMap<String, ResourceAttribute<?>>();
+			_fileAttributes = new HashMap<String, AttributeBase<?>>();
 		}
 	}
 
 	private void initDirAttributesMap() {
 		if (getDirAttributesMap() == null) {
-			_dirAttributes = new HashMap<String, ResourceAttribute<?>>();
+			_dirAttributes = new HashMap<String, AttributeBase<?>>();
 		}
 	}
 
 	private void initLinkAttributesMap() {
 		if (getLinkAttributesMap() == null) {
-			_linkAttributes = new HashMap<String, ResourceAttribute<?>>();
+			_linkAttributes = new HashMap<String, AttributeBase<?>>();
 		}
 	}
 
@@ -138,19 +145,19 @@ public abstract class ResourceSpecification extends ResourceSelector {
 		updateLinkAttributesCache();
 	}
 
-	private void putFileAttribute(ResourceAttribute<?> attribute) {
+	private void putFileAttribute(AttributeBase<?> attribute) {
 		initFileAttributesMap();
 		getFileAttributesMap().put(attribute.name(), attribute);
 		updateFileAttributesCache();
 	}
 
-	private void putDirAttribute(ResourceAttribute<?> attribute) {
+	private void putDirAttribute(AttributeBase<?> attribute) {
 		initDirAttributesMap();
 		getDirAttributesMap().put(attribute.name(), attribute);
 		updateDirAttributesCache();
 	}
 
-	private void putLinkAttribute(ResourceAttribute<?> attribute) {
+	private void putLinkAttribute(AttributeBase<?> attribute) {
 		initLinkAttributesMap();
 		getLinkAttributesMap().put(attribute.name(), attribute);
 		updateLinkAttributesCache();
@@ -158,28 +165,28 @@ public abstract class ResourceSpecification extends ResourceSelector {
 
 	private void updateFileAttributesCache() {
 		_fileAttributesCache = getFileAttributesMap().values().toArray(
-				new ResourceAttribute<?>[0]);
+				new AttributeBase<?>[0]);
 	}
 
 	private void updateDirAttributesCache() {
 		_dirAttributesCache = getDirAttributesMap().values().toArray(
-				new ResourceAttribute<?>[0]);
+				new AttributeBase<?>[0]);
 	}
 
 	private void updateLinkAttributesCache() {
 		_linkAttributesCache = getLinkAttributesMap().values().toArray(
-				new ResourceAttribute<?>[0]);
+				new AttributeBase<?>[0]);
 	}
 
-	public ResourceAttribute<?>[] getFileAttributes() {
+	public AttributeBase<?>[] getFileAttributes() {
 		return _fileAttributesCache;
 	}
 
-	public ResourceAttribute<?>[] getDirExpectedAttributes() {
+	public AttributeBase<?>[] getDirExpectedAttributes() {
 		return _dirAttributesCache;
 	}
 
-	public ResourceAttribute<?>[] getLinkAttributes() {
+	public AttributeBase<?>[] getLinkAttributes() {
 		return _linkAttributesCache;
 	}
 
@@ -239,19 +246,19 @@ public abstract class ResourceSpecification extends ResourceSelector {
 		return previous;
 	}
 
-	public Map<String, ResourceAttribute<?>> getFileAttributesMap() {
+	public Map<String, AttributeBase<?>> getFileAttributesMap() {
 		return _fileAttributes;
 	}
 
-	public Map<String, ResourceAttribute<?>> getDirAttributesMap() {
+	public Map<String, AttributeBase<?>> getDirAttributesMap() {
 		return _dirAttributes;
 	}
 
-	public Map<String, ResourceAttribute<?>> getLinkAttributesMap() {
+	public Map<String, AttributeBase<?>> getLinkAttributesMap() {
 		return _linkAttributes;
 	}
 
-	private void putAttribute(ResourceAttribute<?> attr) {
+	private void putAttribute(AttributeBase<?> attr) {
 		// will replace if the same if is already in
 		if (attr.getScopes().contains(Scope.DIRECTORIES)) {
 			putDirAttribute(attr);
@@ -265,21 +272,31 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	}
 
 	@NestedElement(name = POSIX_PERMISSIONS_ATTIBUTE_NE)
-	public void addPosixPermissions(PosixPermissions attr) {
+	public void addPosixPermissions(AttributePosixPermissions attr) {
 		if (attr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ PosixPermissions.class.getCanonicalName() + ".");
+					+ AttributePosixPermissions.class.getCanonicalName() + ".");
 		}
 		putAttribute(attr);
 	}
 
 	@NestedElement(name = POSIX_GROUP_ATTIBUTE_NE)
-	public void addPosixGroup(PosixGroup attr) {
+	public void addPosixGroup(AttributePosixGroup attr) {
 		if (attr == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PosixGroup.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ AttributePosixGroup.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = POSIX_USER_ATTIBUTE_NE)
+	public void addPosixGroup(AttributePosixUser attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ AttributePosixUser.class.getCanonicalName() + ".");
 		}
 		putAttribute(attr);
 	}

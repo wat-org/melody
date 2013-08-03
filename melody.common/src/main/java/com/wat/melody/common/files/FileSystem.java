@@ -12,6 +12,8 @@ import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -46,13 +48,27 @@ public interface FileSystem {
 	 *             same name already exists but is not a directory.
 	 * @throws AccessDeniedException
 	 *             if a permission problem occurred.
+	 * @throws IllegalFileAttributeException
+	 *             if any file attribute is invalid. This exception can contains
+	 *             multiple causes :
+	 *             <ul>
+	 *             <li>{@link UnsupportedOperationException} if the attribute
+	 *             view is not available ;</li>
+	 *             <li>{@link IllegalArgumentException} if the attribute name is
+	 *             not specified, or is not recognized, or the attribute value
+	 *             is of the correct type but has an inappropriate value ;</li>
+	 *             <li> {@link ClassCastException} if the attribute value is not
+	 *             of the expected type or is a collection containing elements
+	 *             that are not of the expected type ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if the given directory cannot be created for any other
 	 *             reason.
 	 */
 	public abstract void createDirectory(Path dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException;
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException;
 
 	/**
 	 * <p>
@@ -69,13 +85,26 @@ public interface FileSystem {
 	 *             directory.
 	 * @throws AccessDeniedException
 	 *             if a permission problem occurred.
+	 * @throws IllegalFileAttributeException
+	 *             if any file attribute is invalid. This exception can contains
+	 *             multiple causes :
+	 *             <ul>
+	 *             <li>{@link UnsupportedOperationException} if the attribute
+	 *             view is not available ;</li>
+	 *             <li>{@link IllegalArgumentException} if the attribute name is
+	 *             not specified, or is not recognized, or the attribute value
+	 *             is of the correct type but has an inappropriate value ;</li>
+	 *             <li> {@link ClassCastException} if the attribute value is not
+	 *             of the expected type or is a collection containing elements
+	 *             that are not of the expected type ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if the given directories cannot be created for any other
 	 *             reason.
 	 */
 	public abstract void createDirectories(Path dir, FileAttribute<?>... attrs)
-			throws IOException, FileAlreadyExistsException,
-			AccessDeniedException;
+			throws IOException, IllegalFileAttributeException,
+			FileAlreadyExistsException, AccessDeniedException;
 
 	/**
 	 * @param link
@@ -90,12 +119,26 @@ public interface FileSystem {
 	 *             link.
 	 * @throws AccessDeniedException
 	 *             if a permission problem occurred.
+	 * @throws IllegalFileAttributeException
+	 *             if any file attribute is invalid. This exception can contains
+	 *             multiple causes :
+	 *             <ul>
+	 *             <li>{@link UnsupportedOperationException} if the attribute
+	 *             view is not available ;</li>
+	 *             <li>{@link IllegalArgumentException} if the attribute name is
+	 *             not specified, or is not recognized, or the attribute value
+	 *             is of the correct type but has an inappropriate value ;</li>
+	 *             <li> {@link ClassCastException} if the attribute value is not
+	 *             of the expected type or is a collection containing elements
+	 *             that are not of the expected type ;</li>
+	 *             </ul>
 	 * @throws IOException
 	 *             if the given link cannot be created for any other reason.
 	 */
 	public void createSymbolicLink(Path link, Path target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException;
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException;
 
 	/**
 	 * @param link
@@ -172,7 +215,32 @@ public interface FileSystem {
 	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException;
 
+	/**
+	 * @param path
+	 * @param attributes
+	 * 
+	 * @throws NoSuchFileException
+	 *             if the provided path is not a file.
+	 * @throws IllegalFileAttributeException
+	 *             if any file attribute is invalid. This exception can contains
+	 *             multiple causes :
+	 *             <ul>
+	 *             <li>{@link UnsupportedOperationException} if the attribute
+	 *             view is not available ;</li>
+	 *             <li>{@link IllegalArgumentException} if the attribute name is
+	 *             not specified, or is not recognized, or the attribute value
+	 *             is of the correct type but has an inappropriate value ;</li>
+	 *             <li> {@link ClassCastException} if the attribute value is not
+	 *             of the expected type or is a collection containing elements
+	 *             that are not of the expected type ;</li>
+	 *             </ul>
+	 * @throws AccessDeniedException
+	 *             if a permission problem occurred.
+	 * @throws IOException
+	 *             if an I/O error occurred.
+	 */
 	public void setAttributes(Path path, FileAttribute<?>... attributes)
-			throws IOException, NoSuchFileException, AccessDeniedException;
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException;
 
 }

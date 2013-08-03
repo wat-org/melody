@@ -17,7 +17,18 @@ public class Messages extends NLS {
 	public static String FileEx_CANT_WRITE;
 	public static String FileEx_NOT_FOUND;
 
-	public static String LocalFSMsg_SKIP_ATTR;
+	public static String LocalFSEx_FAILED_TO_SET_ATTRIBUTES;
+	public static String LocalFSEx_FAILED_TO_SET_ATTRIBUTE;
+	public static String LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X;
+
+	public static String PoxixGroupEx_EMPTY;
+	public static String PoxixGroupEx_INVALID;
+
+	public static String PosixPermissionsEx_EMPTY;
+	public static String PosixPermissionsEx_INVALID;
+
+	public static String PoxixUserEx_EMPTY;
+	public static String PoxixUserEx_INVALID;
 
 	public static String TarGzEx_NOT_A_TARGZ;
 	public static String TarGzEx_INVALID_EXTENSION;
