@@ -1,13 +1,14 @@
 package com.wat.melody.common.transfer.resources;
 
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.List;
 
 import com.wat.melody.common.systool.SysTool;
-import com.wat.melody.common.transfer.TransferableFile;
 import com.wat.melody.common.transfer.Transferable;
+import com.wat.melody.common.transfer.TransferableFile;
 
 /**
  * <p>
@@ -22,13 +23,16 @@ public class ResourcesUpdaterExcludes extends ResourceSelector implements
 		ResourcesUpdater {
 
 	private ResourcesSpecification _r;
+	PathMatcher _matcher;
 
 	public ResourcesUpdaterExcludes(ResourcesSpecification r) {
 		_r = r;
 	}
 
 	@Override
-	public void update(List<Transferable> list) {
+	public String setMatch(String match) {
+		String previous = super.setMatch(match);
+
 		String path = Paths.get(_r.getSrcBaseDir()).normalize()
 				+ SysTool.FILE_SEPARATOR + getMatch();
 		/*
@@ -36,13 +40,19 @@ public class ResourcesUpdaterExcludes extends ResourceSelector implements
 		 * the backslash is escaped; string literal example : "C:\\\\*"
 		 */
 		String pattern = "glob:" + path.replaceAll("\\\\", "\\\\\\\\");
-		PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
-		for (int i = list.size() - 1; i >= 0; i--) {
-			Transferable r = list.get(i);
-			if (matcher.matches(r.getSourcePath())) {
-				list.remove(i);
-			}
-		}
+		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
+
+		return previous;
+	}
+
+	@Override
+	public boolean isMatching(Path path) {
+		return _matcher.matches(path);
+	}
+
+	@Override
+	public void update(List<Transferable> list, Transferable t) {
+		list.remove(t);
 	}
 
 }

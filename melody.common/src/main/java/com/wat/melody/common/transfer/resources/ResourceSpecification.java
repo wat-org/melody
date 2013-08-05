@@ -48,25 +48,19 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	public static final String DEST_NAME_ATTR = "dest-name";
 
 	/**
-	 * Nested element, which specifies the attributes of the resource to
-	 * transfer.
-	 */
-	public static final String ATTIBUTE_NE = "attribute";
-
-	/**
-	 * Nested element, which specifies the attributes of the resource to
+	 * Nested element, which specifies the posix-permissions of the resource to
 	 * transfer.
 	 */
 	public static final String POSIX_PERMISSIONS_ATTIBUTE_NE = "posix-permissions";
 
 	/**
-	 * Nested element, which specifies the attributes of the resource to
+	 * Nested element, which specifies the posix-group-id of the resource to
 	 * transfer.
 	 */
 	public static final String POSIX_GROUP_ATTIBUTE_NE = "posix-group";
 
 	/**
-	 * Nested element, which specifies the attributes of the resource to
+	 * Nested element, which specifies the posix-user-id of the resource to
 	 * transfer.
 	 */
 	public static final String POSIX_USER_ATTIBUTE_NE = "posix-user";

@@ -26,6 +26,7 @@
 				<include	match="templates/file2.tmpl"
 							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />
+				
 				<exclude	match="static_myApp_myMod/content2.*" />
 				
 				<!-- will generate warnings -->

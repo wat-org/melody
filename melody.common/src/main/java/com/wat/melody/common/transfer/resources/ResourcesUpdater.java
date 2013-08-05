@@ -1,5 +1,6 @@
 package com.wat.melody.common.transfer.resources;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import com.wat.melody.common.transfer.Transferable;
@@ -11,6 +12,8 @@ import com.wat.melody.common.transfer.Transferable;
  */
 public interface ResourcesUpdater {
 
-	public void update(List<Transferable> root);
+	public boolean isMatching(Path path);
+
+	public void update(List<Transferable> list, Transferable t);
 
 }

@@ -79,28 +79,6 @@ public abstract class ResourcesSpecification extends ResourceSpecification {
 		return str.toString();
 	}
 
-	public ResourcesUpdater newResourcesUpdaterInclude(ResourcesSpecification rs) {
-		return new ResourcesUpdaterIncludes(rs);
-	}
-
-	public ResourcesUpdater newResourcesUpdaterExclude(ResourcesSpecification rs) {
-		return new ResourcesUpdaterExcludes(rs);
-	}
-
-	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
-	public ResourcesUpdater createInclude() {
-		ResourcesUpdater include = newResourcesUpdaterInclude(this);
-		getResourcesUpdaters().add(include);
-		return include;
-	}
-
-	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
-	public ResourcesUpdater createExclude() {
-		ResourcesUpdater exclude = newResourcesUpdaterExclude(this);
-		getResourcesUpdaters().add(exclude);
-		return exclude;
-	}
-
 	public String getSrcBaseDir() {
 		return _srcBaseDir;
 	}
@@ -148,6 +126,20 @@ public abstract class ResourcesSpecification extends ResourceSpecification {
 		List<ResourcesUpdater> previous = getResourcesUpdaters();
 		_resourcesUpdaters = rulist;
 		return previous;
+	}
+
+	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
+	public ResourcesUpdater createInclude() {
+		ResourcesUpdater include = new ResourcesUpdaterIncludes(this);
+		getResourcesUpdaters().add(include);
+		return include;
+	}
+
+	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
+	public ResourcesUpdater createExclude() {
+		ResourcesUpdater exclude = new ResourcesUpdaterExcludes(this);
+		getResourcesUpdaters().add(exclude);
+		return exclude;
 	}
 
 }

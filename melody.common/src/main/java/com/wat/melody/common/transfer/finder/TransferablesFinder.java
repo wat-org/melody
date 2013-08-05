@@ -39,9 +39,6 @@ public abstract class TransferablesFinder {
 		if (rss != null) {
 			for (ResourcesSpecification rspec : rss) {
 				List<Transferable> rs = new Finder(fs, rspec).findFiles();
-				for (ResourcesUpdater ru : rspec.getResourcesUpdaters()) {
-					ru.update(rs);
-				}
 				found.removeAll(rs); // remove duplicated
 				found.addAll(rs);
 			}
@@ -92,12 +89,25 @@ class Finder extends EnhancedFileVisitor<Path> {
 		return _resources;
 	}
 
-	private void matches(TransferableFile r) {
-		Path path = r.getSourcePath();
+	private void matches(TransferableFile t) {
+		Path path = t.getSourcePath();
 		if (path == null || !_matcher.matches(path)) {
 			return;
 		}
-		_resources.add(r);
+		// if the transferable is matching => store it
+		_resources.add(t);
+		
+		// find the last matching updater
+		ResourcesUpdater winner = null;
+		for (ResourcesUpdater ru : _rspec.getResourcesUpdaters()) {
+			if (ru.isMatching(path)) {
+				winner = ru;
+			}
+		}
+		// apply the found updater
+		if (winner != null) {
+			winner.update(_resources, t);
+		}
 	}
 
 	@Override
