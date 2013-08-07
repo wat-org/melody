@@ -57,6 +57,9 @@ class RemoteExec {
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException Ex) {
+					/*
+					 * TODO : should wait XX seconds and stop
+					 */
 					if (iex == null) {
 						log.info(Messages.ExecMsg_GRACEFULL_SHUTDOWN);
 						iex = new MelodyInterruptedException(

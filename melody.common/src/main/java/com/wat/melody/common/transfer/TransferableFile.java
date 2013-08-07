@@ -1,5 +1,8 @@
 package com.wat.melody.common.transfer;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
@@ -7,7 +10,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
+import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.transfer.exception.TemplatingException;
+import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
@@ -23,6 +34,8 @@ import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
  * 
  */
 public class TransferableFile implements Transferable {
+
+	private static Logger log = LoggerFactory.getLogger(TransferableFile.class);
 
 	private Path _sourcePath;
 	private ResourcesSpecification _resourcesSpecification;
@@ -42,6 +55,117 @@ public class TransferableFile implements Transferable {
 		setResourcesSpecification(rs);
 		setResourceSpecification(rs);
 		setAttributes(attrs);
+	}
+
+	/*
+	 * TODO : should create TransferableRegularFile, TransferableDir,
+	 * TransferableSymbolicLink
+	 */
+	@Override
+	public void transfer(TransferableFileSystem fs) throws IOException,
+			IllegalFileAttributeException, AccessDeniedException {
+		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
+		if (isDirectory()) { // dir link will return true
+			if (linkShouldBeConvertedToFile()) {
+				TransferHelper.createDirectory(fs, getDestinationPath(),
+						getExpectedAttributes());
+			} else {
+				TransferHelper.createSymbolicLink(fs, getDestinationPath(),
+						getSymbolicLinkTarget(), getExpectedAttributes());
+			}
+		} else if (isSymbolicLink()) {
+			ln(fs);
+		} else {
+			template(fs);
+		}
+		log.info(Msg.bind(Messages.TransferMsg_END, this));
+	}
+
+	protected void ln(TransferableFileSystem fs) throws IOException {
+		if (getLinkOption() == LinkOption.SKIP_LINKS) {
+			ln_skip(fs);
+		} else if (linkShouldBeConvertedToFile()) {
+			ln_copy(fs);
+		} else {
+			createSymlink(fs);
+		}
+	}
+
+	protected void createSymlink(TransferableFileSystem fs) throws IOException {
+		TransferHelper.createSymbolicLink(fs, getDestinationPath(),
+				getSymbolicLinkTarget(), getExpectedAttributes());
+	}
+
+	protected void ln_copy(TransferableFileSystem fs) throws IOException {
+		if (!exists()) {
+			deleteDestination(fs);
+			log.info(new TransferException(Messages.TransferMsg_SKIP_LINK,
+					new TransferException(Msg.bind(
+							Messages.TransferMsg_LINK_COPY_UNSAFE_IMPOSSIBLE,
+							getSourcePath()))).toString());
+			return;
+		}
+		template(fs);
+	}
+
+	protected void template(TransferableFileSystem fs) throws IOException {
+		if (getTemplate() == true) {
+			if (fs.getTemplatingHandler() == null) {
+				throw new IllegalArgumentException(
+						Messages.TransferEx_NO_TEMPLATING_HANDLER);
+			}
+			Path template;
+			try {
+				template = fs.getTemplatingHandler()
+						.doTemplate(getSourcePath());
+			} catch (TemplatingException Ex) {
+				throw new IOException(Ex);
+			}
+			transfer(fs, template);
+		} else {
+			transfer(fs, getSourcePath());
+		}
+	}
+
+	protected void transfer(TransferableFileSystem fs, Path source)
+			throws IOException, AccessDeniedException {
+		Path dest = getDestinationPath();
+		FileAttribute<?>[] attrs = getExpectedAttributes();
+		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),
+				dest, getTransferBehavior())) {
+			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
+			try {
+				fs.setAttributes(dest, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
+		} else {
+			try {
+				fs.transferRegularFile(source, dest, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
+		}
+	}
+
+	protected void ln_skip(TransferableFileSystem fs) {
+		log.info(Messages.TransferMsg_LINK_SKIPPED);
+	}
+
+	protected void deleteDestination(TransferableFileSystem fs)
+			throws IOException {
+		Path path = getDestinationPath();
+		try {
+			EnhancedFileAttributes attrs = fs.readAttributes(path);
+			if (attrs.isDirectory() && !attrs.isSymbolicLink()) {
+				fs.deleteDirectory(path);
+			} else {
+				fs.deleteIfExists(path);
+			}
+		} catch (NoSuchFileException ignored) {
+		}
 	}
 
 	private String getSrcBaseDir() {
@@ -69,7 +193,7 @@ public class TransferableFile implements Transferable {
 
 	@Override
 	public FileAttribute<?>[] getExpectedAttributes() {
-		if (isSymbolicLink()) {
+		if (isSymbolicLink() && !linkShouldBeConvertedToFile()) {
 			return getResourceSpecification().getLinkAttributes();
 		} else if (isDirectory()) {
 			return getResourceSpecification().getDirExpectedAttributes();
@@ -81,7 +205,7 @@ public class TransferableFile implements Transferable {
 
 	private Collection<AttributeBase<?>> getExpectedAttributesAsList() {
 		Map<String, AttributeBase<?>> m = null;
-		if (isSymbolicLink()) {
+		if (isSymbolicLink() && !linkShouldBeConvertedToFile()) {
 			m = getResourceSpecification().getLinkAttributesMap();
 		} else if (isDirectory()) {
 			m = getResourceSpecification().getDirAttributesMap();

@@ -58,7 +58,7 @@ public abstract class TransferMultiThread {
 		setExceptions(new ConsolidatedException());
 	}
 
-	public void transfer() throws TransferException, InterruptedException {
+	public void doTransfer() throws TransferException, InterruptedException {
 		if (getResourcesSpecifications().size() == 0) {
 			return;
 		}
@@ -109,9 +109,9 @@ public abstract class TransferMultiThread {
 			max = filesCount;
 		}
 		for (int i = 0; i < max; i++) {
-			getThreads().add(
-					new TransferThread(this, newSourceFileSystem(),
-							newDestinationFileSystem(), i + 1));
+			getThreads()
+					.add(new TransferThread(this, newDestinationFileSystem(),
+							i + 1));
 		}
 	}
 
@@ -232,30 +232,16 @@ public abstract class TransferMultiThread {
 	}
 
 	protected void createDestinationDirectories() throws TransferException {
-		FileSystem dfs = null;
+		TransferableFileSystem dfs = null;
 		try {
 			dfs = newDestinationFileSystem();
 			for (Transferable t : getTransferablesTree().getAllDirectories()) {
-				log.debug(Msg.bind(Messages.TransferMsg_BEGIN, t));
 				try {
-					if (t.isSymbolicLink()
-							&& t.getLinkOption() == LinkOption.SKIP_LINKS) {
-						log.info(Messages.TransferMsg_LINK_SKIPPED);
-					} else if (t.linkShouldBeConvertedToFile()) {
-						TransferHelper.createDirectory(dfs,
-								t.getDestinationPath(),
-								t.getExpectedAttributes());
-					} else {
-						TransferHelper.createSymbolicLink(dfs,
-								t.getDestinationPath(),
-								t.getSymbolicLinkTarget(),
-								t.getExpectedAttributes());
-					}
+					t.transfer(dfs);
 				} catch (IOException Ex) {
 					throw new TransferException(Msg.bind(
 							Messages.TransferEx_FAILED, t), Ex);
 				}
-				log.info(Msg.bind(Messages.TransferMsg_END, t));
 			}
 		} catch (TransferException Ex) {
 			throw new TransferException(Msg.bind(Messages.TransferEx_MANAGED,
@@ -281,7 +267,7 @@ public abstract class TransferMultiThread {
 	 * @return <tt>null</tt> if there is no more {@link transferable} to
 	 *         transfer.
 	 */
-	public Transferable getNextTransferable() {
+	protected Transferable getNextTransferable() {
 		try {
 			return _filesIterator.next();
 		} catch (NoSuchElementException ignored) {
@@ -289,13 +275,11 @@ public abstract class TransferMultiThread {
 		}
 	}
 
-	public void _transfer(FileSystem sourceFileSystem,
-			FileSystem destinationFileSystem, Transferable t)
-			throws TransferException, InterruptedException {
+	protected void transfer(TransferableFileSystem destinationFileSystem,
+			Transferable t) throws TransferException, InterruptedException {
 		try {
-			newTransferNoThread(sourceFileSystem, destinationFileSystem, t)
-					.doTransfer();
-		} catch (TransferException Ex) {
+			t.transfer(destinationFileSystem);
+		} catch (IOException Ex) {
 			TransferException e = new TransferException(Msg.bind(
 					Messages.TransferEx_FAILED, t), Ex);
 			markState(FAILED);
@@ -307,17 +291,13 @@ public abstract class TransferMultiThread {
 
 	public abstract FileSystem newSourceFileSystem();
 
-	public abstract FileSystem newDestinationFileSystem();
+	public abstract TransferableFileSystem newDestinationFileSystem();
 
 	public abstract String getSourceSystemDescription();
 
 	public abstract String getDestinationSystemDescription();
 
 	public abstract String getTransferProtocolDescription();
-
-	public abstract TransferNoThread newTransferNoThread(
-			FileSystem sourceFileSystem, FileSystem destinationFileSystem,
-			Transferable t);
 
 	protected List<ResourcesSpecification> getResourcesSpecifications() {
 		return _resourcesSpecifications;
@@ -343,9 +323,6 @@ public abstract class TransferMultiThread {
 	 * @param maxPar
 	 *            is the maximum number of {@link TransferThread} this object
 	 *            can run simultaneously.
-	 * 
-	 * @throws ForeachException
-	 *             if the given value is not >= 1 and < 10.
 	 */
 	private int setMaxPar(int maxPar) {
 		if (maxPar < 1) {
@@ -388,7 +365,7 @@ public abstract class TransferMultiThread {
 	}
 
 	/**
-	 * @return the {@link ThreadGroup} which holds all {@link ForeachThread}
+	 * @return the {@link ThreadGroup} which holds all {@link TransferThread}
 	 *         managed by this object.
 	 */
 	protected ThreadGroup getThreadGroup() {

@@ -31,6 +31,7 @@ public class Messages extends NLS {
 	public static String TransferMsg_BEGIN;
 	public static String TransferMsg_END;
 	public static String TransferMsg_SKIP_ATTR;
+	public static String TransferMsg_SKIP_LINK;
 	public static String TransferMsg_LINK_COPY_UNSAFE_IMPOSSIBLE;
 	public static String TransferMsg_LINK_SKIPPED;
 	public static String TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS;

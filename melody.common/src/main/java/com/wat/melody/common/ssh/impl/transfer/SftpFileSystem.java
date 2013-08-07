@@ -56,6 +56,14 @@ import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
  */
 public class SftpFileSystem implements FileSystem {
 
+	public static String convertToUnixPath(String path) {
+		return path.replaceAll("\\\\", "/");
+	}
+
+	public static String convertToUnixPath(Path path) {
+		return convertToUnixPath(path.toString());
+	}
+
 	/**
 	 * Returns {@code false} if NOFOLLOW_LINKS is present.
 	 */
@@ -72,14 +80,6 @@ public class SftpFileSystem implements FileSystem {
 			throw new AssertionError("Should not get here");
 		}
 		return followLinks;
-	}
-
-	protected static String convertToUnixPath(String path) {
-		return path.replaceAll("\\\\", "/");
-	}
-
-	protected static String convertToUnixPath(Path path) {
-		return convertToUnixPath(path.toString());
 	}
 
 	private ChannelSftp _channel;
@@ -745,76 +745,6 @@ public class SftpFileSystem implements FileSystem {
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_CHOWN, userid,
 						path), Ex);
-			}
-		}
-	}
-
-	public void upload(Path source, Path destination) throws IOException,
-			NoSuchFileException, AccessDeniedException {
-		upload(source.toString(), convertToUnixPath(destination));
-	}
-
-	public void upload(String source, String destination) throws IOException,
-			NoSuchFileException, AccessDeniedException {
-		if (source == null || source.trim().length() == 0) {
-			throw new IllegalArgumentException(source + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		try {
-			_channel.put(source, destination);
-		} catch (SftpException Ex) {
-			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(destination);
-			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(destination);
-			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
-					&& Ex.getCause() != null) {
-				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
-						destination), Ex.getCause());
-			} else {
-				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
-						destination), Ex);
-			}
-		}
-	}
-
-	public void download(Path source, Path destination) throws IOException,
-			NoSuchFileException, AccessDeniedException {
-		download(convertToUnixPath(source), destination.toString());
-	}
-
-	public void download(String source, String destination) throws IOException,
-			NoSuchFileException, AccessDeniedException {
-		if (source == null || source.trim().length() == 0) {
-			throw new IllegalArgumentException(source + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		try {
-			_channel.get(source, destination);
-		} catch (SftpException Ex) {
-			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(source);
-			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(source);
-			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
-					&& Ex.getCause() != null) {
-				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
-						destination), Ex.getCause());
-			} else {
-				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
-						destination), Ex);
 			}
 		}
 	}

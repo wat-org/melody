@@ -155,7 +155,7 @@ public class SshSession implements ISshSession {
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
 		try {
-			new SftpUploaderMultiThread(this, rss, maxPar, th).transfer();
+			new SftpUploaderMultiThread(this, rss, maxPar, th).doTransfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}
@@ -166,7 +166,7 @@ public class SshSession implements ISshSession {
 			TemplatingHandler th) throws SshSessionException,
 			InterruptedException {
 		try {
-			new SftpDownloaderMultiThread(this, rrss, maxPar, th).transfer();
+			new SftpDownloaderMultiThread(this, rrss, maxPar, th).doTransfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}

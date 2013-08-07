@@ -7,8 +7,7 @@ import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.transfer.TemplatingHandler;
-import com.wat.melody.common.transfer.TransferNoThread;
-import com.wat.melody.common.transfer.Transferable;
+import com.wat.melody.common.transfer.TransferableFileSystem;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
 /**
@@ -30,7 +29,7 @@ public class SftpUploaderMultiThread extends SftpBaseTransferMultiThread {
 
 	@Override
 	public String getSourceSystemDescription() {
-		return "local";
+		return "local file system";
 	}
 
 	@Override
@@ -44,17 +43,9 @@ public class SftpUploaderMultiThread extends SftpBaseTransferMultiThread {
 	}
 
 	@Override
-	public FileSystem newDestinationFileSystem() {
+	public TransferableFileSystem newDestinationFileSystem() {
 		ChannelSftp channel = getSession().openSftpChannel();
-		return new SftpFileSystem(channel);
-	}
-
-	@Override
-	public TransferNoThread newTransferNoThread(FileSystem sourceFileSystem,
-			FileSystem destinationFileSystem, Transferable t) {
-		return new UploaderNoThread(sourceFileSystem,
-				(SftpFileSystem) destinationFileSystem, t,
-				getTemplatingHandler());
+		return new SftpFileSystem4Upload(channel, getTemplatingHandler());
 	}
 
 }

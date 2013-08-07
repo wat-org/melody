@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -23,7 +24,8 @@ public abstract class TransferHelper {
 	private static Logger log = LoggerFactory.getLogger(TransferHelper.class);
 
 	protected static void createDirectory(FileSystem destFS, Path dir,
-			FileAttribute<?>... attrs) throws IOException {
+			FileAttribute<?>... attrs) throws IOException,
+			IllegalFileAttributeException, AccessDeniedException {
 		/*
 		 * TODO : introduce a FORCE option, which will delete existing if true
 		 */
@@ -63,7 +65,7 @@ public abstract class TransferHelper {
 	 * @throws IOException
 	 */
 	protected static boolean ensureDestinationIsDirectory(FileSystem destFS,
-			Path path) throws IOException {
+			Path path) throws IOException, AccessDeniedException {
 		EnhancedFileAttributes destfileAttrs = null;
 		try {
 			destfileAttrs = destFS.readAttributes(path);

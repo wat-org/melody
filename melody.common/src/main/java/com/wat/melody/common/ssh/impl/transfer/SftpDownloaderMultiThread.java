@@ -4,11 +4,9 @@ import java.util.List;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.files.FileSystem;
-import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.transfer.TemplatingHandler;
-import com.wat.melody.common.transfer.TransferNoThread;
-import com.wat.melody.common.transfer.Transferable;
+import com.wat.melody.common.transfer.TransferableFileSystem;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
 /**
@@ -35,7 +33,7 @@ public class SftpDownloaderMultiThread extends SftpBaseTransferMultiThread {
 
 	@Override
 	public String getDestinationSystemDescription() {
-		return "local";
+		return "local file system";
 	}
 
 	@Override
@@ -45,15 +43,9 @@ public class SftpDownloaderMultiThread extends SftpBaseTransferMultiThread {
 	}
 
 	@Override
-	public FileSystem newDestinationFileSystem() {
-		return new LocalFileSystem();
-	}
-
-	@Override
-	public TransferNoThread newTransferNoThread(FileSystem sourceFileSystem,
-			FileSystem destinationFileSystem, Transferable t) {
-		return new DownloaderNoThread((SftpFileSystem) sourceFileSystem,
-				destinationFileSystem, t, getTemplatingHandler());
+	public TransferableFileSystem newDestinationFileSystem() {
+		ChannelSftp channel = getSession().openSftpChannel();
+		return new SftpFileSystem4Download(channel, getTemplatingHandler());
 	}
 
 }
