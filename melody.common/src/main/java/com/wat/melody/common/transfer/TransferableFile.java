@@ -461,8 +461,7 @@ public class TransferableFile implements Transferable {
 		return previous;
 	}
 
-	@Override
-	public ResourceSpecification getResourceSpecification() {
+	protected ResourceSpecification getResourceSpecification() {
 		return _resourceSpecification;
 	}
 

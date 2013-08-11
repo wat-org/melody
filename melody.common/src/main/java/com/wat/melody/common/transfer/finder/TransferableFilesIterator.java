@@ -1,5 +1,6 @@
 package com.wat.melody.common.transfer.finder;
 
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -16,7 +17,7 @@ public class TransferableFilesIterator implements Iterable<Transferable>,
 	private TransferablesTree _tree;
 	private TransferablesTreesIterator _it;
 	private TransferablesTree _currentTree;
-	private int _currentFile;
+	private Iterator<Path> _entriesIt;
 
 	public TransferableFilesIterator(TransferablesTree tree) {
 		if (tree == null) {
@@ -37,22 +38,22 @@ public class TransferableFilesIterator implements Iterable<Transferable>,
 		_it = _tree.getAllTransferablesTrees();
 		if (_it.hasNext()) {
 			_currentTree = _it.next();
-			_currentFile = 0;
+			_entriesIt = _currentTree.getFilesKeySet().iterator();
 		} else {
 			_currentTree = null;
-			_currentFile = 0;
+			_entriesIt = null;
 		}
 	}
 
 	@Override
 	public synchronized boolean hasNext() {
-		while (_currentTree != null
-				&& _currentFile >= _currentTree.getFilesCount()) {
+		while (_currentTree != null && !_entriesIt.hasNext()) {
 			if (_it.hasNext()) {
 				_currentTree = _it.next();
-				_currentFile = 0;
+				_entriesIt = _currentTree.getFilesKeySet().iterator();
 			} else {
 				_currentTree = null;
+				_entriesIt = null;
 			}
 		}
 		return _currentTree != null;
@@ -61,7 +62,7 @@ public class TransferableFilesIterator implements Iterable<Transferable>,
 	@Override
 	public synchronized Transferable next() {
 		if (hasNext()) {
-			return _currentTree.getFile(_currentFile++);
+			return _currentTree.getFile(_entriesIt.next());
 		}
 		throw new NoSuchElementException();
 	}

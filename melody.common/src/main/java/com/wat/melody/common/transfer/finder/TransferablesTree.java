@@ -2,13 +2,12 @@ package com.wat.melody.common.transfer.finder;
 
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.transfer.Transferable;
 import com.wat.melody.common.transfer.TransferableFake;
 
@@ -19,132 +18,231 @@ import com.wat.melody.common.transfer.TransferableFake;
  */
 public class TransferablesTree {
 
-	public static TransferablesTree build(List<Transferable> resources) {
-		TransferablesTree root = new TransferablesTree(null);
-		for (Transferable r : resources) {
-			includeTransferable(root, r);
-		}
-		return root;
-	}
+	private static boolean DEBUG = Bool
+			.easyParseString(System.getProperty(
+					"com.wat.melody.common.transfer.finder.TransferablesTree",
+					"false"));
 
-	private static TransferablesTree includeParentTree(TransferablesTree root,
-			Transferable r) {
-		TransferablesTree rt = root;
-		// get the parent directory
-		Path parent = r.getDestinationPath().getParent();
-		if (parent == null) {
-			return rt;
-		}
-		// insert / if parent directory is absolute
-		Path cur = parent.getRoot();
-		if (cur != null) {
-			TransferablesTree crt = rt.getDirectory(cur);
-			if (crt == null) {
-				crt = rt.putDirectory(cur,
-						new TransferableFake(cur, r.getResourceSpecification()));
-			}
-			rt = crt;
-		}
-		// insert each parent directory
-		for (Path elmt : parent) {
-			if (cur == null) {
-				cur = elmt;
-			} else {
-				cur = cur.resolve(elmt);
-			}
-			TransferablesTree crt = rt.getDirectory(elmt);
-			if (crt == null) {
-				crt = rt.putDirectory(elmt,
-						new TransferableFake(cur, r.getResourceSpecification()));
-			}
-			rt = crt;
-		}
-		// return the parent directory's Tree
-		return rt;
-	}
-
-	private static void includeTransferable(TransferablesTree root,
-			Transferable r) {
-		TransferablesTree ft = includeParentTree(root, r);
-
-		if (r.isDirectory()) {
-			ft.putDirectory(r.getDestinationPath().getFileName(), r);
-		} else {
-			ft.putFile(r);
-		}
-	}
-
-	private Transferable _t;
+	private TransferablesTree _parent = null;
+	private Transferable _t = null;
 
 	private Map<Path, TransferablesTree> _innerdir;
-	private List<Transferable> _innerfile;
+	private Map<Path, Transferable> _innerfile;
+
+	public TransferablesTree() {
+		_innerdir = new HashMap<Path, TransferablesTree>();
+		_innerfile = new HashMap<Path, Transferable>();
+	}
 
 	/**
-	 * @param rs
-	 *            Can be <tt>null</tt>, if it is the root Element of the
-	 *            structure.
+	 * @param parent
+	 *            Can be <tt>null</tt>, if this object is the root Element of
+	 *            the tree.
+	 * @param t
+	 *            Can be <tt>null</tt>, if this object is the root Element of
+	 *            the tree.
 	 */
-	public TransferablesTree(Transferable t) {
+	private TransferablesTree(TransferablesTree parent, Transferable t) {
+		this();
+		if (DEBUG) {
+			if (parent == null) {
+				throw new IllegalArgumentException("null: Not accepted. "
+						+ "Must be a valid "
+						+ TransferablesTree.class.getCanonicalName() + ".");
+			}
+			if (t == null) {
+				throw new IllegalArgumentException("null: Not accepted. "
+						+ "Must be a valid "
+						+ Transferable.class.getCanonicalName() + ".");
+			}
+
+			// only accept direct child
+			if (parent.getTransferable() != null) {
+				Path path = t.getDestinationPath();
+				Path parentpath = parent.getTransferable().getDestinationPath();
+				if (path.equals(parentpath)) {
+					throw new IllegalArgumentException(path
+							+ ": Not accepted. " + "Must be diffenret than "
+							+ parentpath + ".");
+				}
+				if (!path.startsWith(parentpath)) {
+					throw new IllegalArgumentException(path
+							+ ": Not accepted. " + "Must be a child of "
+							+ parentpath + ".");
+				}
+				if (parentpath.relativize(path).getNameCount() > 1) {
+					throw new IllegalArgumentException(path
+							+ ": Not accepted. " + "Must be a direct child of "
+							+ parentpath + ".");
+				}
+			} else {
+				Path path = t.getDestinationPath();
+				if (path.getNameCount() > 1) {
+					throw new IllegalArgumentException(path
+							+ ": Not accepted. "
+							+ "Must be a direct child of root.");
+				}
+			}
+		}
+
+		_parent = parent;
 		_t = t;
-		_innerdir = new HashMap<Path, TransferablesTree>();
-		_innerfile = new ArrayList<Transferable>();
 	}
 
 	public Transferable getTransferable() {
 		return _t;
 	}
 
-	public int getFilesCount() {
+	public TransferablesTree getParent() {
+		return _parent;
+	}
+
+	public boolean contains(Transferable t) {
+		Path path = t.getDestinationPath();
+		Path parent = null;
+		Path cetofind = null;
+
+		if (_t != null) {
+			Path treepath = _t.getDestinationPath();
+			if (!path.startsWith(treepath) || path.equals(treepath)) {
+				return false;
+			}
+			parent = treepath.relativize(path).getParent();
+		} else {
+			cetofind = path.getRoot();
+			parent = path.getParent();
+		}
+
+		if (cetofind == null && parent != null) {
+			cetofind = parent.getName(0);
+		}
+		if (cetofind != null) {
+			TransferablesTree ct = getDirectory(cetofind);
+			if (ct == null) {
+				return false;
+			}
+			return ct.contains(t);
+		} else {
+			if (t.isDirectory()) {
+				return _innerdir.containsKey(path.getFileName());
+			} else {
+				return _innerfile.containsKey(path.getFileName());
+			}
+		}
+	}
+
+	public void put(Transferable t) {
+		Path path = t.getDestinationPath();
+		Path parent = null;
+		Path cetoput = null;
+
+		if (_t != null) {
+			Path treepath = _t.getDestinationPath();
+			if (!path.startsWith(treepath) || path.equals(treepath)) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Not a child of " + _t);
+			}
+			parent = treepath.relativize(path).getParent();
+		} else {
+			cetoput = path.getRoot();
+			parent = path.getParent();
+		}
+
+		if (cetoput == null && parent != null) {
+			cetoput = parent.getName(0);
+		}
+		if (cetoput != null) {
+			TransferablesTree ct = getDirectory(cetoput);
+			if (ct == null) {
+				ct = putDirectory(new TransferableFake(_t == null ? cetoput
+						: _t.getDestinationPath().resolve(cetoput)));
+			}
+			ct.put(t);
+		} else {
+			if (t.isDirectory()) {
+				putDirectory(t);
+			} else {
+				putFile(t);
+			}
+		}
+	}
+
+	public void remove(Transferable t) {
+		Path path = t.getDestinationPath();
+		Path parent = null;
+		Path cetoremove = null;
+
+		if (_t != null) {
+			Path treepath = _t.getDestinationPath();
+			if (!path.startsWith(treepath) || path.equals(treepath)) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Not a child of " + _t);
+			}
+			parent = treepath.relativize(path).getParent();
+		} else {
+			parent = path.getParent();
+			cetoremove = path.getRoot();
+		}
+
+		if (cetoremove == null && parent != null) {
+			cetoremove = parent.getName(0);
+		}
+		if (cetoremove != null) {
+			TransferablesTree ct = getDirectory(cetoremove);
+			if (ct != null) {
+				ct.remove(t);
+			}
+		} else {
+			if (t.isDirectory()) {
+				removeDirectory(t);
+			} else {
+				removeFile(t);
+			}
+		}
+	}
+
+	public int countFiles() {
 		return _innerfile.size();
 	}
 
-	public Transferable getFile(int i) {
-		return _innerfile.get(i);
+	public int countDirectories() {
+		return _innerdir.size();
 	}
 
-	public void putFile(Transferable t) {
-		_innerfile.add(t);
-	}
-
-	public int getAllFilesCount() {
+	public int countAllFiles() {
 		int dirsize = 0;
 		for (Path elmt : getDirectoriesKeySet()) {
-			dirsize += getDirectory(elmt).getAllFilesCount();
+			dirsize += getDirectory(elmt).countAllFiles();
 		}
 		return _innerfile.size() + dirsize;
 	}
 
-	public TransferableFilesIterator getAllFiles() {
-		return new TransferableFilesIterator(this);
+	public int countAllDirectories() {
+		int dirsize = 0;
+		for (Path elmt : getDirectoriesKeySet()) {
+			dirsize += getDirectory(elmt).countAllDirectories();
+		}
+		return _innerdir.size() + dirsize;
 	}
 
-	public int getDirectoriesCount() {
-		return _innerdir.size();
+	public Transferable getFile(Path elmt) {
+		return _innerfile.get(elmt);
 	}
 
 	public TransferablesTree getDirectory(Path elmt) {
 		return _innerdir.get(elmt);
 	}
 
+	public Set<Path> getFilesKeySet() {
+		return _innerfile.keySet();
+	}
+
 	public Set<Path> getDirectoriesKeySet() {
 		return _innerdir.keySet();
 	}
 
-	public TransferablesTree putDirectory(Path elmt, Transferable t) {
-		if (_innerdir.containsKey(elmt)) {
-			throw new RuntimeException("fuck");
-		}
-		TransferablesTree inserted = new TransferablesTree(t);
-		_innerdir.put(elmt, inserted);
-		return inserted;
-	}
-
-	public int getAllDirectoriesCount() {
-		int dirsize = 0;
-		for (Path elmt : getDirectoriesKeySet()) {
-			dirsize += getDirectory(elmt).getAllDirectoriesCount();
-		}
-		return _innerdir.size() + dirsize;
+	public TransferableFilesIterator getAllFiles() {
+		return new TransferableFilesIterator(this);
 	}
 
 	public TransferableDirectoriesIterator getAllDirectories() {
@@ -155,9 +253,152 @@ public class TransferablesTree {
 		return new TransferablesTreesIterator(this);
 	}
 
+	private void putFile(Transferable t) {
+		Path elmt = t.getDestinationPath().getFileName();
+		if (DEBUG) {
+			// can only insert regular file or link on regular file
+			if (t.isDirectory()) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Only accept file or link on regular file.");
+			}
+
+			// can only insert direct child
+
+			// reject if it already exists in directories
+			if (_innerdir.containsKey(elmt)) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "A directory has already ben added with this name.");
+			}
+		}
+
+		// insert (replace if already in)
+		_innerfile.put(elmt, t);
+	}
+
+	private TransferablesTree putDirectory(Transferable t) {
+		Path elmt = t.getDestinationPath().getFileName();
+		if (DEBUG) {
+			// can only insert directory or link on directory
+			if (!t.isDirectory()) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Only accept directory or link on directory.");
+			}
+
+			// can only insert direct child
+
+			// reject if it already exists in files
+			if (elmt != null && _innerfile.containsKey(elmt)) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "A file has already ben added with this name.");
+			}
+		}
+
+		// if /
+		if (elmt == null) {
+			elmt = t.getDestinationPath().getRoot();
+		}
+
+		// replace t if already in
+		TransferablesTree child = getDirectory(elmt);
+		if (child != null) {
+			child._t = t;
+			return child;
+		}
+
+		// insert
+		TransferablesTree inserted = new TransferablesTree(this, t);
+		_innerdir.put(elmt, inserted);
+		return inserted;
+	}
+
+	private void removeFile(Transferable t) {
+		Path path = t.getDestinationPath();
+		if (DEBUG) {
+			// can only remove regular file or link on regular file
+			if (t.isDirectory()) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Only accept file or link on regular file.");
+			}
+
+			// can only remove direct child
+			if (_t != null) {
+				Path treepath = _t.getDestinationPath();
+				if (!path.startsWith(treepath) || path.equals(treepath)) {
+					throw new IllegalArgumentException(t + ": Not accepted. "
+							+ "Not a child of " + _t);
+				}
+			} else {
+				if (path.getNameCount() > 1) {
+					throw new IllegalArgumentException(t + ": Not accepted. "
+							+ "Not a child of root");
+				}
+			}
+		}
+		// remove
+		Path elmt = path.getFileName();
+		_innerfile.remove(elmt);
+
+		// if parent != null, if current is Fake and if current is empty
+		// => remove current from parent's directory
+		if (_parent != null && _t instanceof TransferableFake
+				&& countDirectories() + countFiles() == 0) {
+			_parent.removeDirectory(_t);
+		}
+	}
+
+	private void removeDirectory(Transferable t) {
+		Path path = t.getDestinationPath();
+		if (DEBUG) {
+			// can only remove directory or link on directory
+			if (!t.isDirectory()) {
+				throw new IllegalArgumentException(t + ": Not accepted. "
+						+ "Only accept directory or link on directory.");
+			}
+
+			// can only remove direct child
+			if (_t != null) {
+				Path treepath = _t.getDestinationPath();
+				if (!path.startsWith(treepath) || path.equals(treepath)) {
+					throw new IllegalArgumentException(t + ": Not accepted. "
+							+ "Not a child of " + _t);
+				}
+			} else {
+				if (path.getNameCount() > 1) {
+					throw new IllegalArgumentException(t + ": Not accepted. "
+							+ "Not a child of root");
+				}
+			}
+		}
+
+		Path elmt = path.getFileName();
+		// if /
+		if (elmt == null) {
+			elmt = t.getDestinationPath().getRoot();
+		}
+
+		TransferablesTree ct = _innerdir.get(elmt);
+		if (ct != null && ct.countFiles() + ct.countDirectories() != 0) {
+			// convert to Fake if not empty
+			ct._t = new TransferableFake(elmt);
+		} else {
+			// remove if empty
+			// will not fail if it doesn't exists
+			_innerdir.remove(elmt);
+		}
+
+		// if parent != null, if current is Fake and if current is empty
+		// => remove current from parent's dir
+		if (_parent != null && _t instanceof TransferableFake
+				&& countDirectories() + countFiles() == 0) {
+			_parent.removeDirectory(_t);
+		}
+	}
+
+	@Override
 	public String toString() {
 		String str = "";
-		for (Transferable t : _innerfile) {
+		for (Path path : getFilesKeySet()) {
+			Transferable t = getFile(path);
 			String type = "file";
 			if (!t.exists()) {
 				type = "invalidlink";

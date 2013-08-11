@@ -21,16 +21,13 @@ public class TransferableFake implements Transferable {
 
 	private static Logger log = LoggerFactory.getLogger(TransferableFake.class);
 
-	private Path _destinationPath;
 	/*
-	 * TODO : maybye there's no more need for this ...
+	 * TODO : should have attributes. Defines them ResourceSpecification ?
 	 */
-	private ResourceSpecification _resourceSpecification;
+	private Path _destinationPath;
 
-	public TransferableFake(Path destinationPath,
-			ResourceSpecification resourceSpecification) {
-		_destinationPath = destinationPath;
-		_resourceSpecification = resourceSpecification;
+	public TransferableFake(Path destinationPath) {
+		setDestinationPath(destinationPath);
 	}
 
 	@Override
@@ -55,6 +52,16 @@ public class TransferableFake implements Transferable {
 	@Override
 	public Path getDestinationPath() {
 		return _destinationPath;
+	}
+
+	public Path setDestinationPath(Path destinationPath) {
+		if (destinationPath == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
+		}
+		Path previous = getDestinationPath();
+		_destinationPath = destinationPath;
+		return previous;
 	}
 
 	@Override
@@ -127,14 +134,9 @@ public class TransferableFake implements Transferable {
 	}
 
 	@Override
-	public ResourceSpecification getResourceSpecification() {
-		return _resourceSpecification;
-	}
-
-	@Override
 	public ResourceSpecification setResourceSpecification(
 			ResourceSpecification resourceSpecification) {
-		return _resourceSpecification;
+		return null;
 	}
 
 }

@@ -64,7 +64,9 @@ public abstract class TransferMultiThread {
 		}
 		// compute transferables to transfer
 		computeTransferables();
-		if (getTransferablesTree().getDirectoriesCount() == 0) {
+		// exit if nothing to transfer
+		if (getTransferablesTree().countDirectories()
+				+ getTransferablesTree().countFiles() == 0) {
 			return;
 		}
 		// do transfer
@@ -104,7 +106,7 @@ public abstract class TransferMultiThread {
 
 	private void initializeTransferThreads() {
 		int max = getMaxPar();
-		int filesCount = getTransferablesTree().getAllFilesCount();
+		int filesCount = getTransferablesTree().countAllFiles();
 		if (filesCount < max) {
 			max = filesCount;
 		}
@@ -264,7 +266,7 @@ public abstract class TransferMultiThread {
 	}
 
 	/**
-	 * @return <tt>null</tt> if there is no more {@link transferable} to
+	 * @return <tt>null</tt> if there is no more {@link Transferable} to
 	 *         transfer.
 	 */
 	protected Transferable getNextTransferable() {

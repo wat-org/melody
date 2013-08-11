@@ -21,7 +21,7 @@ public abstract class Bool {
 	 * @param bool
 	 *            is the given <tt>String</tt> to convert.
 	 * 
-	 * @return a <tt>boolean</tt>, which is equal to the given <tt>String</tt>.
+	 * @return <tt>boolean</tt>, which is equal to the given <tt>String</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given <tt>String</tt> is <tt>null</tt>.
@@ -43,6 +43,26 @@ public abstract class Bool {
 		}
 		throw new IllegalBooleanException(Msg.bind(Messages.BooleanEx_INVALID,
 				bool, TRUE_PATTERN, FALSE_PATTERN));
+	}
+
+	/**
+	 * <p>
+	 * Convert the given <tt>String</tt> to a <tt>boolean</tt>.
+	 * </p>
+	 * 
+	 * @param bool
+	 *            is the given <tt>String</tt> to convert.
+	 * 
+	 * @return a <tt>boolean</tt>, which is equal to the given <tt>String</tt>.
+	 */
+	public static boolean easyParseString(String bool) {
+		if (bool == null) {
+			return false;
+		}
+		if (bool.matches("^" + TRUE_PATTERN + "$")) {
+			return true;
+		}
+		return false;
 	}
 
 }

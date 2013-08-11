@@ -64,13 +64,13 @@ public class TransferThread implements Runnable {
 	@Override
 	public void run() {
 		try {
+			TransferMultiThread tmt = getTransferMultiThread();
 			while (true) {
-				Transferable r = getTransferMultiThread().getNextTransferable();
-				if (r == null) {
+				Transferable t = tmt.getNextTransferable();
+				if (t == null) {
 					return;
 				}
-				getTransferMultiThread().transfer(getDestinationFileSystem(),
-						r);
+				tmt.transfer(getDestinationFileSystem(), t);
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);

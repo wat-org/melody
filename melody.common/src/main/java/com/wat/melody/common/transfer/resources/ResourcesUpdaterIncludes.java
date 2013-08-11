@@ -4,11 +4,11 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.List;
 
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.transfer.Transferable;
 import com.wat.melody.common.transfer.TransferableFile;
+import com.wat.melody.common.transfer.finder.TransferablesTree;
 
 /**
  * <p>
@@ -52,8 +52,16 @@ public class ResourcesUpdaterIncludes extends ResourceSpecification implements
 	}
 
 	@Override
-	public void update(List<Transferable> list, Transferable t) {
+	public void update(TransferablesTree root, Transferable t) {
+		/*
+		 * Because the new {@link ResourceSpecification} can override
+		 * destination path, we must 'move' the {@link Transferable} in the
+		 * tree. In order to do that move, we remove it, change {@link
+		 * ResourceSpecification}, and put it back at its new location.
+		 */
+		root.remove(t);
 		t.setResourceSpecification(this);
+		root.put(t);
 	}
 
 }

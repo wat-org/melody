@@ -29,8 +29,6 @@ public interface Transferable {
 
 	public TransferBehavior getTransferBehavior();
 
-	public ResourceSpecification getResourceSpecification();
-
 	public ResourceSpecification setResourceSpecification(
 			ResourceSpecification resourceSpecification);
 

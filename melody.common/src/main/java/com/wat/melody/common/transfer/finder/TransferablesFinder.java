@@ -7,7 +7,6 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import com.wat.melody.common.files.EnhancedFileTreeWalker;
 import com.wat.melody.common.files.EnhancedFileVisitor;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.systool.SysTool;
-import com.wat.melody.common.transfer.Transferable;
 import com.wat.melody.common.transfer.TransferableFile;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesUpdater;
@@ -35,15 +33,13 @@ public abstract class TransferablesFinder {
 					+ "Must be a valid " + FileSystem.class.getCanonicalName()
 					+ ".");
 		}
-		List<Transferable> found = new ArrayList<Transferable>();
+		TransferablesTree root = new TransferablesTree();
 		if (rss != null) {
 			for (ResourcesSpecification rspec : rss) {
-				List<Transferable> rs = new Finder(fs, rspec).findFiles();
-				found.removeAll(rs); // remove duplicated
-				found.addAll(rs);
+				new Finder(fs, rspec, root).findFiles();
 			}
 		}
-		return TransferablesTree.build(found);
+		return root;
 	}
 
 }
@@ -53,10 +49,11 @@ class Finder extends EnhancedFileVisitor<Path> {
 	private FileSystem _fs;
 	private ResourcesSpecification _rspec;
 	private Path _srcBaseDir;
-	private List<Transferable> _resources;
+	private TransferablesTree _root;
 	private final PathMatcher _matcher;
 
-	public Finder(FileSystem fs, ResourcesSpecification rs) {
+	public Finder(FileSystem fs, ResourcesSpecification rs,
+			TransferablesTree root) {
 		super();
 		if (fs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -70,8 +67,8 @@ class Finder extends EnhancedFileVisitor<Path> {
 		}
 		_fs = fs;
 		_rspec = rs;
+		_root = root;
 		_srcBaseDir = Paths.get(rs.getSrcBaseDir()).normalize();
-		_resources = new ArrayList<Transferable>();
 		String match = _srcBaseDir + SysTool.FILE_SEPARATOR + rs.getMatch();
 		/*
 		 * As indicated in the javadoc of {@link FileSystem#getPathMatcher()},
@@ -81,12 +78,11 @@ class Finder extends EnhancedFileVisitor<Path> {
 		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
 	}
 
-	public List<Transferable> findFiles() throws IOException {
+	public void findFiles() throws IOException {
 		// will go into visitFileFailed if the path doesn't exists
 		new EnhancedFileTreeWalker(_fs,
 				EnumSet.<FileVisitOption> of(FileVisitOption.FOLLOW_LINKS),
 				this, Integer.MAX_VALUE).walk(_srcBaseDir);
-		return _resources;
 	}
 
 	private void matches(TransferableFile t) {
@@ -95,8 +91,8 @@ class Finder extends EnhancedFileVisitor<Path> {
 			return;
 		}
 		// if the transferable is matching => store it
-		_resources.add(t);
-		
+		_root.put(t);
+
 		// find the last matching updater
 		ResourcesUpdater winner = null;
 		for (ResourcesUpdater ru : _rspec.getResourcesUpdaters()) {
@@ -106,7 +102,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 		}
 		// apply the found updater
 		if (winner != null) {
-			winner.update(_resources, t);
+			winner.update(_root, t);
 		}
 	}
 
