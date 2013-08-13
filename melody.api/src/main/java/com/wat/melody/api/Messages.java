@@ -44,7 +44,6 @@ public class Messages extends NLS {
 
 	public static String TargetEx_NOT_MATCH_ELEMENT;
 
-	public static String ProcMgrEx_HARD_KILL_TIMEOUT;
 	public static String ProcMgrEx_MAX_PAR;
 	public static String ProcMgrEx_UNDEF_MANDOTORY_DIRECTIVE;
 	public static String ProcMgrEx_PROCESS_FINAL_STATE;
