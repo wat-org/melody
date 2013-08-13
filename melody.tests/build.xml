@@ -76,6 +76,18 @@
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}" mode="740">
 				<include name="**/*.sh" />
 			</tarfileset>
+			<!-- Include ssh plug-in tests-->
+			<tarfileset dir="./../melody.plugin.ssh/tests" prefix="tests/plugin/ssh/" username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+			</tarfileset>
+			<!-- Include aws plug-in tests-->
+			<tarfileset dir="./../melody.plugin.aws/tests" prefix="tests/plugin/aws/" username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+			</tarfileset>
+			<!-- Include libvirt plug-in tests-->
+			<tarfileset dir="./../melody.plugin.libvirt/tests" prefix="tests/plugin/libvirt/" username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+			</tarfileset>
 		</tar>
 
 		<echo>Building source package for project ${project.name}_${project.version}</echo>
@@ -90,6 +102,7 @@
 				<exclude name="**/*.sh" />
 				<exclude name="**/*.tar.gz" />
 				<exclude name="melody.tests/archives/**" />
+				<exclude name="melody.tests/common/lib/**" />
 				<exclude name="melody.tests/logs/**" />
 				<exclude name="melody.tests/tmp/**" />
 				<exclude name="melody.tests/config/**/*.properties" />

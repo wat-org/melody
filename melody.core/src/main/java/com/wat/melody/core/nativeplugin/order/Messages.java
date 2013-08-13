@@ -9,8 +9,6 @@ public class Messages extends NLS {
 	public static String OrderEx_DUPLICATE_NAME;
 	public static String OrderEx_DUPLICATE_NAME_RESUME;
 
-	public static String OrderEx_INTERRUPTED;
-
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

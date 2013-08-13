@@ -3,6 +3,7 @@ package com.wat.melody.api;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
+import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.xpath.XPathResolver;
 
 /**
@@ -34,10 +35,9 @@ public interface IProcessorManager {
 	public int setMaxSimultaneousStep(int v)
 			throws ProcessorManagerConfigurationException;
 
-	public int getHardKillTimeout();
+	public GenericTimeout getHardKillTimeout();
 
-	public int setHardKillTimeout(int v)
-			throws ProcessorManagerConfigurationException;
+	public GenericTimeout setHardKillTimeout(GenericTimeout v);
 
 	public boolean setBatchMode(boolean v);
 

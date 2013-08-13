@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
@@ -34,6 +35,10 @@ public interface ISshSession {
 	public void disconnect();
 
 	public boolean isConnected();
+
+	public int execRemoteCommand(String command, boolean requiretty,
+			OutputStream out, OutputStream err, GenericTimeout killTimeout)
+			throws SshSessionException, InterruptedException;
 
 	public int execRemoteCommand(String command, boolean requiretty,
 			OutputStream out, OutputStream err) throws SshSessionException,

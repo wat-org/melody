@@ -62,7 +62,10 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 					+ ".");
 		}
 		try {
-			getChannel().put(source, destination);
+			/*
+			 * TODO : should deal with InterruptedException in progressMonitor
+			 */
+			getChannel().put(source, destination, null, ChannelSftp.OVERWRITE);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(destination);

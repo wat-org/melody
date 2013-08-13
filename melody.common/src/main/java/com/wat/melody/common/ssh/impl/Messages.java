@@ -35,8 +35,10 @@ public class Messages extends NLS {
 	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X;
 
 	public static String ExecEx_INTERRUPTED;
-	public static String ExecMsg_GRACEFULL_SHUTDOWN;
-	public static String ExecMsg_FORCE_SHUTDOWN;
+	public static String ExecMsg_GRACEFULL_STOP;
+	public static String ExecMsg_FORCE_STOP;
+	public static String ExecMsg_FORCE_STOP_DONE;
+	public static String ExecMsg_FORCE_STOP_AVOID;
 
 	public static String SshMgmtCnxEx_GENERIC_FAIL;
 	public static String SshMgmtCnxEx_INVALID_MASTER_CREDENTIALS;

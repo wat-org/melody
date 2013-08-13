@@ -190,7 +190,9 @@ public abstract class AbstractSshOperation implements ITask {
 					+ " [STDOUT]", LogThreshold.DEBUG);
 			LoggerOutputStream err = new LoggerOutputStream(outputPrefix
 					+ " [STDERR]", LogThreshold.ERROR);
-			return session.execRemoteCommand(sCommand, requiretty, out, err);
+			return session.execRemoteCommand(sCommand, requiretty, out, err,
+					Melody.getContext().getProcessorManager()
+							.getHardKillTimeout());
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		} finally {

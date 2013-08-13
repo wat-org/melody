@@ -12,6 +12,7 @@ import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 import com.wat.melody.core.nativeplugin.foreach.ForeachThread;
@@ -168,6 +169,7 @@ public class Call extends Ref implements ITask {
 			try {
 				startProcessing();
 			} catch (InterruptedException Ex) {
+				getExceptionsSet().addCause(Ex);
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
 				getExceptionsSet().addCause(Ex);
@@ -291,6 +293,7 @@ public class Call extends Ref implements ITask {
 			if (ex == null) {
 				continue;
 			} else if (ex instanceof InterruptedException) {
+				getExceptionsSet().addCause(ex);
 				markState(INTERRUPTED);
 			} else if (ex instanceof MelodyException) {
 				getExceptionsSet().addCause(ex);
@@ -306,8 +309,7 @@ public class Call extends Ref implements ITask {
 		} else if (isFailed()) {
 			throw new CallException(getExceptionsSet());
 		} else if (isInterrupted()) {
-			throw new InterruptedException(Msg.bind(
-					Messages.CallEx_INTERRUPTED, CALL));
+			throw new MelodyInterruptedException(getExceptionsSet());
 		}
 	}
 

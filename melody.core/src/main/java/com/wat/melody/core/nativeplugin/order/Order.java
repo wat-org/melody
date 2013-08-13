@@ -220,9 +220,6 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 			for (Element n : getInnerTasks()) {
 				Melody.getContext().processTask(n);
 			}
-		} catch (InterruptedException Ex) {
-			throw new InterruptedException(Msg.bind(
-					Messages.OrderEx_INTERRUPTED, ORDER, getName()));
 		} catch (TaskException Ex) {
 			throw new OrderException(Ex);
 		}

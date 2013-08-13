@@ -27,6 +27,7 @@ import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.transfer.SftpDownloaderMultiThread;
 import com.wat.melody.common.ssh.impl.transfer.SftpUploaderMultiThread;
+import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -148,6 +149,15 @@ public class SshSession implements ISshSession {
 			throws SshSessionException, InterruptedException {
 		return new RemoteExec(this, command, requiretty, outStream, errStream)
 				.exec();
+	}
+
+	@Override
+	public int execRemoteCommand(String command, boolean requiretty,
+			OutputStream outStream, OutputStream errStream,
+			GenericTimeout killTimeout) throws SshSessionException,
+			InterruptedException {
+		return new RemoteExec(this, command, requiretty, outStream, errStream,
+				killTimeout).exec();
 	}
 
 	@Override

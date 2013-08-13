@@ -41,6 +41,7 @@ import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.properties.exception.IllegalPropertiesSetException;
 import com.wat.melody.common.systool.SysTool;
+import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.xpath.exception.XPathFunctionResolverLoadingException;
 import com.wat.melody.common.xpath.exception.XPathNamespaceContextResolverLoadingException;
 
@@ -899,13 +900,9 @@ public class ProcessorManagerLoader {
 				throw new ConfigurationLoadingException(
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
-			try {
-				IProcessorManager pm = getProcessorManager();
-				pm.setHardKillTimeout(Integer.parseInt(val));
-			} catch (NumberFormatException Ex) {
-				throw new ConfigurationLoadingException(Msg.bind(
-						Messages.ConfEx_INVALID_INTEGER_FORMAT, val));
-			}
+			IProcessorManager pm = getProcessorManager();
+			// Given in second in the configuration; convert it to millis
+			pm.setHardKillTimeout(GenericTimeout.parseString(val).factor(1000));
 		} catch (MelodyException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, HARD_KILL_TIMEOUT), Ex);

@@ -9,6 +9,9 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.log.LogThreshold;
+import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.timeout.GenericTimeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
  * 
@@ -19,11 +22,27 @@ class RemoteExec {
 
 	private static Logger log = LoggerFactory.getLogger(RemoteExec.class);
 
+	private static GenericTimeout createGenericTimeout(int timeout) {
+		try {
+			return new GenericTimeout(timeout);
+		} catch (IllegalTimeoutException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a GenericTimeout with value '" + timeout + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
+	private static final GenericTimeout DEFAULT_KILL_TIMEOUT = createGenericTimeout(30000);
+
 	private SshSession _session;
 	private String _cmd;
 	private boolean _requiretty;
 	private OutputStream _out;
 	private OutputStream _err;
+	private GenericTimeout _killTimeout = DEFAULT_KILL_TIMEOUT;
 
 	protected RemoteExec(SshSession session, String command,
 			boolean requiretty, OutputStream outStream, OutputStream errStream) {
@@ -34,9 +53,18 @@ class RemoteExec {
 		setErrorStream(errStream);
 	}
 
+	protected RemoteExec(SshSession session, String command,
+			boolean requiretty, OutputStream outStream, OutputStream errStream,
+			GenericTimeout killTimeout) {
+		this(session, command, requiretty, outStream, errStream);
+		setKillTimeout(killTimeout);
+	}
+
 	public int exec() throws InterruptedException {
 		ChannelExec channel = null;
 		InterruptedException iex = null;
+		long start = 0;
+		long timeout = getKillTimeout().getTimeoutInMillis();
 		try {
 			channel = getSession().openExecChannel();
 			channel.setCommand(getCommand());
@@ -54,33 +82,46 @@ class RemoteExec {
 				if (channel.isClosed()) {
 					break;
 				}
+				// were we interrupted ?
+				if (iex != null && System.currentTimeMillis() - start > timeout) {
+					log.warn(Msg.bind(Messages.ExecMsg_FORCE_STOP, timeout));
+					throw iex;
+				}
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException Ex) {
-					/*
-					 * TODO : should wait XX seconds and stop
-					 */
-					if (iex == null) {
-						log.info(Messages.ExecMsg_GRACEFULL_SHUTDOWN);
-						iex = new MelodyInterruptedException(
-								Messages.ExecEx_INTERRUPTED, Ex);
-					} else {
-						log.warn(Messages.ExecMsg_FORCE_SHUTDOWN);
-						throw new MelodyInterruptedException(
-								Messages.ExecEx_INTERRUPTED, Ex);
+					if (iex != null) {
+						continue;
 					}
+					start = System.currentTimeMillis();
+					iex = new MelodyInterruptedException(
+							Messages.ExecEx_INTERRUPTED, Ex);
+					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
+				}
+				if (Thread.interrupted()) {
+					if (iex != null) {
+						continue;
+					}
+					start = System.currentTimeMillis();
+					iex = new MelodyInterruptedException(
+							Messages.ExecEx_INTERRUPTED);
+					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
 				}
 			}
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Failed to exec an ssh command "
 					+ "through a JSch 'exec' Channel.", Ex);
+		} catch (InterruptedException Ex) {
+			throw new MelodyInterruptedException(Msg.bind(
+					Messages.ExecMsg_FORCE_STOP_DONE, getSession()
+							.getConnectionDatas()), Ex);
 		} finally {
 			if (channel != null) {
 				channel.disconnect(); // This closes stream
 			}
 		}
 		if (iex != null) {
-			throw iex;
+			log.info(Messages.ExecMsg_FORCE_STOP_AVOID);
 		}
 
 		return channel.getExitStatus();
@@ -162,6 +203,19 @@ class RemoteExec {
 		_err = errorStream;
 		if (_err == null) { // provide a default impl
 			_err = new LoggerOutputStream("[STDERR]", LogThreshold.ERROR);
+		}
+		return previous;
+	}
+
+	protected GenericTimeout getKillTimeout() {
+		return _killTimeout;
+	}
+
+	private GenericTimeout setKillTimeout(GenericTimeout killTimeout) {
+		GenericTimeout previous = getKillTimeout();
+		_killTimeout = killTimeout;
+		if (_killTimeout == null) { // provide a default value
+			_killTimeout = DEFAULT_KILL_TIMEOUT;
 		}
 		return previous;
 	}

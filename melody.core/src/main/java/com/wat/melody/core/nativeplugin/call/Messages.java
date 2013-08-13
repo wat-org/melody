@@ -9,10 +9,6 @@ public class Messages extends NLS {
 	public static String CallEx_MISSING_REF;
 	public static String CallEx_MISSING_ORDERS;
 
-	public static String CallEx_IO_ERROR;
-
-	public static String CallEx_INTERRUPTED;
-
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

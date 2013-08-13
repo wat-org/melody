@@ -16,6 +16,7 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.ITopLevelTask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.MelodyThread;
 import com.wat.melody.api.Messages;
@@ -41,12 +42,13 @@ import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.reflection.ReflectionHelper;
+import com.wat.melody.common.timeout.GenericTimeout;
+import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionResolver;
 import com.wat.melody.common.xpath.XPathNamespaceContextResolver;
 import com.wat.melody.common.xpath.XPathResolver;
-import com.wat.melody.core.nativeplugin.sequence.exception.SequenceException;
 
 /**
  * <p>
@@ -76,10 +78,25 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 
 	private static Logger log = LoggerFactory.getLogger(ProcessorManager.class);
 
+	private static GenericTimeout createGenericTimeout(int timeout) {
+		try {
+			return new GenericTimeout(timeout);
+		} catch (IllegalTimeoutException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a GenericTimeout with value '" + timeout + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
+	private static final GenericTimeout DEFAULT_KILL_TIMEOUT = createGenericTimeout(30000);
+
 	private TaskFactory _taskFactory;
 	private String _workingFolderPath;
 	private int _maxSimultaneousStep;
-	private int _hardKillTimeout;
+	private GenericTimeout _hardKillTimeout;
 	private boolean _batchMode;
 	private boolean _preserveTemporayFilesMode;
 	private boolean _runDryMode;
@@ -111,16 +128,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced. ", Ex);
 		}
-		try {
-			setHardKillTimeout(0);
-		} catch (ProcessorManagerConfigurationException Ex) {
-			throw new RuntimeException("Unexpected error while setting the "
-					+ "maximal kill timeout to 0. "
-					+ "Because this value is hard coded, such error cannot "
-					+ "happened."
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced. ", Ex);
-		}
+		setHardKillTimeout(DEFAULT_KILL_TIMEOUT);
 
 		// Optional Configuration Directives
 		setBatchMode(false);
@@ -195,7 +203,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			throws ProcessorManagerConfigurationException {
 		if (v < 0) {
 			throw new ProcessorManagerConfigurationException(Msg.bind(
-					Messages.ProcMgrEx_HARD_KILL_TIMEOUT, v));
+					Messages.ProcMgrEx_MAX_PAR, v));
 		}
 		int previous = _maxSimultaneousStep;
 		_maxSimultaneousStep = v;
@@ -203,18 +211,18 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	}
 
 	@Override
-	public int getHardKillTimeout() {
+	public GenericTimeout getHardKillTimeout() {
 		return _hardKillTimeout;
 	}
 
 	@Override
-	public int setHardKillTimeout(int v)
-			throws ProcessorManagerConfigurationException {
-		if (v < 0) {
-			throw new ProcessorManagerConfigurationException(Msg.bind(
-					Messages.ProcMgrEx_MAX_PAR, v));
+	public GenericTimeout setHardKillTimeout(GenericTimeout v) {
+		if (v == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ GenericTimeout.class.getCanonicalName() + ".");
 		}
-		int previous = _hardKillTimeout;
+		GenericTimeout previous = _hardKillTimeout;
 		_hardKillTimeout = v;
 		return previous;
 	}
@@ -775,18 +783,22 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			processSequenceDescriptor();
 			fireProcessorFinishedEvent(State.SUCCESS, null);
 		} catch (InterruptedException Ex) {
+			String msg = Msg.bind(Messages.ProcMgrEx_PROCESS_FINAL_STATE,
+					State.INTERRUPTED);
 			InterruptedException e = new MelodyInterruptedException(
 					new ProcessorException(getSequenceDescriptor()
-							.getSourceFile(), Msg.bind(
-							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
-							State.INTERRUPTED)));
+							.getSourceFile(), msg, Ex));
 			fireProcessorFinishedEvent(State.INTERRUPTED, e);
-			setFinalError(e);
+			if (isSameSequenceDescriptorAsParent()) {
+				setFinalError(Ex);
+			} else {
+				setFinalError(e);
+			}
 		} catch (TaskException Ex) {
+			String msg = Msg.bind(Messages.ProcMgrEx_PROCESS_FINAL_STATE,
+					State.FAILED);
 			ProcessorException e = new ProcessorException(
-					getSequenceDescriptor().getSourceFile(), Msg.bind(
-							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
-							State.FAILED), Ex);
+					getSequenceDescriptor().getSourceFile(), msg, Ex);
 			fireProcessorFinishedEvent(State.FAILED, e);
 			if (isSameSequenceDescriptorAsParent()) {
 				setFinalError(Ex);
@@ -794,10 +806,10 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 				setFinalError(e);
 			}
 		} catch (Throwable Ex) {
+			String msg = Msg.bind(Messages.ProcMgrEx_PROCESS_FINAL_STATE,
+					State.CRITICAL);
 			ProcessorException e = new ProcessorException(
-					getSequenceDescriptor().getSourceFile(), Msg.bind(
-							Messages.ProcMgrEx_PROCESS_FINAL_STATE,
-							State.CRITICAL), Ex);
+					getSequenceDescriptor().getSourceFile(), msg, Ex);
 			fireProcessorFinishedEvent(State.CRITICAL, e);
 			setFinalError(e);
 		} finally {
@@ -893,9 +905,13 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 					State.INTERRUPTED);
 			InterruptedException e = new MelodyInterruptedException(
 					new SimpleNodeRelatedException(Melody.getContext()
-							.getRelatedElement(), msg));
+							.getRelatedElement(), msg, Ex));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);
-			throw e;
+			if (task instanceof ITopLevelTask) {
+				throw Ex;
+			} else {
+				throw e;
+			}
 		} catch (TaskException Ex) {
 			String msg = Messages
 					.bind(Messages.TaskEx_PROCESS_FINAL_STATE, task.getClass()
@@ -903,7 +919,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			TaskException e = new TaskException(new SimpleNodeRelatedException(
 					Melody.getContext().getRelatedElement(), msg, Ex));
 			fireTaskFinishedEvent(task, State.FAILED, e);
-			if (Ex instanceof SequenceException) {
+			if (task instanceof ITopLevelTask) {
 				throw Ex;
 			} else {
 				throw e;

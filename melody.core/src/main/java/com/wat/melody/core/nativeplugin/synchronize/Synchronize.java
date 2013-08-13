@@ -12,8 +12,6 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
-import com.wat.melody.core.nativeplugin.order.exception.OrderException;
 import com.wat.melody.core.nativeplugin.synchronize.exception.SynchronizeException;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockScope;
@@ -88,7 +86,7 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 	 * in the semaphore to start processing.
 	 * </p>
 	 * 
-	 * @throws OrderException
+	 * @throws SynchronizeException
 	 *             if an error occurred during processing.
 	 * @throws InterruptedException
 	 *             if the processing was interrupted.
@@ -111,9 +109,6 @@ public class Synchronize implements ITask, ITaskContainer, LockCallback {
 			for (Element n : getInnerTask()) {
 				Melody.getContext().processTask(n);
 			}
-		} catch (InterruptedException Ex) {
-			throw new MelodyInterruptedException("Synchronize task have been "
-					+ "interrupted.", Ex);
 		} catch (TaskException Ex) {
 			throw new SynchronizeException(Ex);
 		}

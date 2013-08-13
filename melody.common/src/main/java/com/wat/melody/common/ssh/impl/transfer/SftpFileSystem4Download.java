@@ -75,7 +75,10 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 					+ ".");
 		}
 		try {
-			getChannel().get(source, destination);
+			/*
+			 * TODO : should deal with InterruptedException in progressMonitor
+			 */
+			getChannel().get(source, destination, null, ChannelSftp.OVERWRITE);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(source);

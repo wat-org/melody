@@ -14,6 +14,7 @@ import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.MelodyInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
@@ -137,6 +138,7 @@ public class Foreach implements ITask, ITaskContainer {
 			try {
 				startForeachThreads();
 			} catch (InterruptedException Ex) {
+				getExceptionsSet().addCause(Ex);
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
 				getExceptionsSet().addCause(Ex);
@@ -253,8 +255,9 @@ public class Foreach implements ITask, ITaskContainer {
 	 */
 	private void quit() throws ForeachException, InterruptedException {
 		for (ForeachThread ft : getThreadsList()) {
-			markState(ft.getFinalState());
-			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
+			short tfs = ft.getFinalState();
+			markState(tfs);
+			if (tfs == FAILED || tfs == CRITICAL || tfs == INTERRUPTED) {
 				getExceptionsSet().addCause(ft.getFinalError());
 			}
 		}
@@ -264,8 +267,7 @@ public class Foreach implements ITask, ITaskContainer {
 		} else if (isFailed()) {
 			throw new ForeachException(getExceptionsSet());
 		} else if (isInterrupted()) {
-			throw new InterruptedException(Msg.bind(
-					Messages.ForeachEx_INTERRUPTED, FOREACH));
+			throw new MelodyInterruptedException(getExceptionsSet());
 		}
 	}
 

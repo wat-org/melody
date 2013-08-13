@@ -21,6 +21,7 @@ import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 
@@ -144,6 +145,14 @@ public class SshManagedSession implements ISshSession {
 	@Override
 	public synchronized boolean isConnected() {
 		return _session.isConnected();
+	}
+
+	@Override
+	public int execRemoteCommand(String command, boolean requiretty,
+			OutputStream out, OutputStream err, GenericTimeout killTimeout)
+			throws SshSessionException, InterruptedException {
+		return _session.execRemoteCommand(command, requiretty, out, err,
+				killTimeout);
 	}
 
 	@Override

@@ -6,8 +6,7 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.core.nativeplugin.sequence.messages";
 
-	public static String SequenceEx_IO_ERROR;
-	public static String SequenceEx_INTERRUPTED;
+	// currently, no messages are defined
 
 	static {
 		// initialize resource bundle
