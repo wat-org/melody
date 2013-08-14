@@ -7,7 +7,7 @@
 ######## variables definition
 # Get the basedir of the called script
 #
-declare homedir="$(dirname $0)"
+declare homedir="$(dirname "$(readlink -f "$0")")"
 
 # Folder where are stored JARs. All JAR will be included
 export CLASSPATH="${homedir}/common/lib/*"

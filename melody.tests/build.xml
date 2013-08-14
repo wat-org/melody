@@ -97,6 +97,7 @@
 				<exclude name="**/.*" />
 				<exclude name="**/.svn" />
 				<exclude name="**/.git" />
+				<exclude name="**/.settings/**" />
 				<exclude name="**/target/**" />
 				<exclude name="**/*.prefs" />
 				<exclude name="**/*.sh" />
