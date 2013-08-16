@@ -1,6 +1,7 @@
 package com.wat.melody.common.files;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -69,7 +70,7 @@ public class EnhancedFileTreeWalker {
 	/**
 	 * Walk file tree starting at the given file
 	 */
-	public void walk(Path start) throws IOException {
+	public void walk(Path start) throws IOException, InterruptedIOException {
 		FileVisitResult result = walk(start, 0,
 				new ArrayList<AncestorDirectory>());
 		Objects.requireNonNull(result, "FileVisitor returned null");
@@ -84,7 +85,12 @@ public class EnhancedFileTreeWalker {
 	 *            use when cycle detection is enabled
 	 */
 	private FileVisitResult walk(Path path, int depth,
-			List<AncestorDirectory> ancestors) throws IOException {
+			List<AncestorDirectory> ancestors) throws IOException,
+			InterruptedIOException {
+		if (Thread.interrupted()) {
+			throw new InterruptedIOException("listing interrupted");
+		}
+
 		EnhancedFileAttributes attrs = null;
 
 		// attempt to get attributes of file. If fails and we are following
@@ -126,6 +132,8 @@ public class EnhancedFileTreeWalker {
 			// open the directory
 			try {
 				stream = _fs.newDirectoryStream(path);
+			} catch (InterruptedIOException Ex) {
+				throw Ex;
 			} catch (IOException Ex) {
 				return _visitor.visitFileFailed(path, Ex);
 			}
@@ -152,6 +160,8 @@ public class EnhancedFileTreeWalker {
 					if (result == FileVisitResult.SKIP_SIBLINGS) {
 						break;
 					}
+				} catch (InterruptedIOException Ex) {
+					throw Ex;
 				} catch (IOException Ex) {
 					causes.addCause(Ex);
 				}

@@ -13,7 +13,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.JSchExceptionInterrupted;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
@@ -316,7 +316,7 @@ public class SshSession implements ISshSession {
 		try {
 			_session.connect(cnxTimeout);
 		} catch (JSchExceptionInterrupted Ex) {
-			throw new MelodyInterruptedException(Ex);
+			throw new WrapperInterruptedException(Ex);
 		} catch (JSchException Ex) {
 			String msg;
 			msg = Msg.bind(Messages.SessionEx_FAILED_TO_CONNECT,

@@ -14,7 +14,7 @@ import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.ex.ConsolidatedException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.properties.PropertyName;
@@ -65,14 +65,14 @@ public class Foreach implements ITask, ITaskContainer {
 	private short _state;
 	private ThreadGroup _threadGroup;
 	private List<ForeachThread> _threadsList;
-	private ConsolidatedException _exceptionsSet;
+	private ConsolidatedException _exceptions;
 
 	public Foreach() {
 		setInnerTasks(new LinkedHashSet<Element>());
 		markState(SUCCEED);
 		setThreadGroup(null);
 		setThreadsList(new ArrayList<ForeachThread>());
-		setExceptionsSet(new ConsolidatedException());
+		setExceptions(new ConsolidatedException());
 	}
 
 	/**
@@ -138,10 +138,9 @@ public class Foreach implements ITask, ITaskContainer {
 			try {
 				startForeachThreads();
 			} catch (InterruptedException Ex) {
-				getExceptionsSet().addCause(Ex);
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 				markState(CRITICAL);
 			} finally {
 				// If an error occurred while starting thread, some thread may
@@ -193,7 +192,11 @@ public class Foreach implements ITask, ITaskContainer {
 	private void startForeachThreads() throws InterruptedException {
 		if (getMaxPar() == 0) {
 			for (ForeachThread ft : getThreadsList()) {
-				Melody.getContext().handleProcessorStateUpdates();
+				try {
+					Melody.getContext().handleProcessorStateUpdates();
+				} catch (InterruptedException Ex) {
+					getExceptions().addCause(Ex);
+				}
 				ft.startProcessing();
 			}
 			return;
@@ -203,7 +206,11 @@ public class Foreach implements ITask, ITaskContainer {
 		List<ForeachThread> runningThreads = new ArrayList<ForeachThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
-			Melody.getContext().handleProcessorStateUpdates();
+			try {
+				Melody.getContext().handleProcessorStateUpdates();
+			} catch (InterruptedException Ex) {
+				getExceptions().addCause(Ex);
+			}
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
 				ForeachThread ft = getThreadsList().get(--threadToLaunchID);
@@ -240,7 +247,7 @@ public class Foreach implements ITask, ITaskContainer {
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
-				+ "for " + FOREACH + " inner Task to finish.");
+				+ "for " + FOREACH + " inner Task to finish.", getExceptions());
 	}
 
 	/**
@@ -258,16 +265,16 @@ public class Foreach implements ITask, ITaskContainer {
 			short tfs = ft.getFinalState();
 			markState(tfs);
 			if (tfs == FAILED || tfs == CRITICAL || tfs == INTERRUPTED) {
-				getExceptionsSet().addCause(ft.getFinalError());
+				getExceptions().addCause(ft.getFinalError());
 			}
 		}
 
 		if (isCritical()) {
-			throw new ForeachException(getExceptionsSet());
+			throw new ForeachException(getExceptions());
 		} else if (isFailed()) {
-			throw new ForeachException(getExceptionsSet());
+			throw new ForeachException(getExceptions());
 		} else if (isInterrupted()) {
-			throw new MelodyInterruptedException(getExceptionsSet());
+			throw new WrapperInterruptedException(getExceptions());
 		}
 	}
 
@@ -448,18 +455,18 @@ public class Foreach implements ITask, ITaskContainer {
 	/**
 	 * @return the exceptions that append during the processing of this object.
 	 */
-	private ConsolidatedException getExceptionsSet() {
-		return _exceptionsSet;
+	private ConsolidatedException getExceptions() {
+		return _exceptions;
 	}
 
-	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
+	private ConsolidatedException setExceptions(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		ConsolidatedException previous = getExceptionsSet();
-		_exceptionsSet = cex;
+		ConsolidatedException previous = getExceptions();
+		_exceptions = cex;
 		return previous;
 	}
 

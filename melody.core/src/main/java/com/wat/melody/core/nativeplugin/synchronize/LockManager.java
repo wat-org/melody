@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.synchronize.exception.IllegalLockIdException;
 import com.wat.melody.core.nativeplugin.synchronize.types.LockId;
@@ -83,7 +83,8 @@ public abstract class LockManager {
 				try {
 					semaphore.wait();
 				} catch (InterruptedException Ex) {
-					throw new MelodyInterruptedException("wait interrupted", Ex);
+					throw new WrapperInterruptedException("wait interrupted",
+							Ex);
 				}
 				log.trace(Messages.LockMgmtMsg_END_WAIT);
 			}

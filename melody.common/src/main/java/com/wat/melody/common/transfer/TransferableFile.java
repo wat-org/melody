@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -63,7 +64,8 @@ public class TransferableFile implements Transferable {
 	 */
 	@Override
 	public void transfer(TransferableFileSystem fs) throws IOException,
-			IllegalFileAttributeException, AccessDeniedException {
+			InterruptedIOException, IllegalFileAttributeException,
+			AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		if (isDirectory()) { // dir link will return true
 			if (linkShouldBeConvertedToFile()) {
@@ -78,10 +80,11 @@ public class TransferableFile implements Transferable {
 		} else {
 			template(fs);
 		}
-		log.info(Msg.bind(Messages.TransferMsg_END, this));
+		log.debug(Msg.bind(Messages.TransferMsg_END, this));
 	}
 
-	protected void ln(TransferableFileSystem fs) throws IOException {
+	protected void ln(TransferableFileSystem fs) throws IOException,
+			InterruptedIOException {
 		if (getLinkOption() == LinkOption.SKIP_LINKS) {
 			ln_skip(fs);
 		} else if (linkShouldBeConvertedToFile()) {
@@ -96,7 +99,8 @@ public class TransferableFile implements Transferable {
 				getSymbolicLinkTarget(), getExpectedAttributes());
 	}
 
-	protected void ln_copy(TransferableFileSystem fs) throws IOException {
+	protected void ln_copy(TransferableFileSystem fs) throws IOException,
+			InterruptedIOException {
 		if (!exists()) {
 			deleteDestination(fs);
 			log.info(new TransferException(Messages.TransferMsg_SKIP_LINK,
@@ -108,7 +112,8 @@ public class TransferableFile implements Transferable {
 		template(fs);
 	}
 
-	protected void template(TransferableFileSystem fs) throws IOException {
+	protected void template(TransferableFileSystem fs) throws IOException,
+			InterruptedIOException {
 		if (getTemplate() == true) {
 			if (fs.getTemplatingHandler() == null) {
 				throw new IllegalArgumentException(
@@ -128,7 +133,7 @@ public class TransferableFile implements Transferable {
 	}
 
 	protected void transfer(TransferableFileSystem fs, Path source)
-			throws IOException, AccessDeniedException {
+			throws IOException, InterruptedIOException, AccessDeniedException {
 		Path dest = getDestinationPath();
 		FileAttribute<?>[] attrs = getExpectedAttributes();
 		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),

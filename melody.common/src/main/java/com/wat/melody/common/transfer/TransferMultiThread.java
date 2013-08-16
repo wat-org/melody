@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -9,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.ConsolidatedException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.transfer.exception.TransferException;
@@ -149,11 +150,7 @@ public abstract class TransferMultiThread {
 				return;
 			} catch (InterruptedException Ex) {
 				// If the processing was stopped wait for each thread to end
-				if (!isInterrupted()) {
-					log.info(Messages.TransferMsg_GRACEFUL_SHUTDOWN);
-				}
 				markState(INTERRUPTED);
-				getExceptions().addCause(Ex);
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
@@ -162,10 +159,11 @@ public abstract class TransferMultiThread {
 	}
 
 	private void quit() throws TransferException, InterruptedException {
-		for (TransferThread ft : getThreads()) {
-			markState(ft.getFinalState());
-			if (ft.getFinalState() == FAILED || ft.getFinalState() == CRITICAL) {
-				getExceptions().addCause(ft.getFinalError());
+		for (TransferThread tt : getThreads()) {
+			short tfs = tt.getFinalState();
+			markState(tfs);
+			if (tfs == FAILED || tfs == CRITICAL || tfs == INTERRUPTED) {
+				getExceptions().addCause(tt.getFinalError());
 			}
 		}
 
@@ -180,8 +178,11 @@ public abstract class TransferMultiThread {
 					getDestinationSystemDescription(),
 					getTransferProtocolDescription()), getExceptions());
 		} else if (isInterrupted()) {
-			throw new MelodyInterruptedException(
-					Messages.TransferEx_INTERRUPTED, getExceptions());
+			throw new WrapperInterruptedException(Msg.bind(
+					Messages.TransferEx_INTERRUPTED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), getExceptions());
 		}
 	}
 
@@ -201,28 +202,31 @@ public abstract class TransferMultiThread {
 		return CRITICAL == (_state & CRITICAL);
 	}
 
-	protected void computeTransferables() throws TransferException {
+	protected void computeTransferables() throws TransferException,
+			InterruptedException {
 		FileSystem sfs = null;
 		try {
 			sfs = newSourceFileSystem();
 			try {
 				setTransferablesTree(TransferablesFinder.find(sfs,
 						getResourcesSpecifications()));
+			} catch (InterruptedIOException Ex) {
+				throw new WrapperInterruptedException(Ex);
 			} catch (IOException Ex) {
-				throw new TransferException(Msg.bind(
-						Messages.TransferEx_FAILED_TO_FIND_TRANSFERABLES,
-						getSourceSystemDescription()), Ex);
+				throw new TransferException(Ex);
 			}
+		} catch (InterruptedException Ex) {
+			throw new WrapperInterruptedException(Msg.bind(
+					Messages.TransferEx_LISTING_INTERRUPTED,
+					getSourceSystemDescription()), Ex);
 		} catch (TransferException Ex) {
-			throw new TransferException(Msg.bind(Messages.TransferEx_MANAGED,
-					getSourceSystemDescription(),
-					getDestinationSystemDescription(),
-					getTransferProtocolDescription()), Ex);
+			throw new TransferException(Msg.bind(
+					Messages.TransferEx_LISTING_MANAGED,
+					getSourceSystemDescription()), Ex);
 		} catch (Throwable Ex) {
-			throw new TransferException(Msg.bind(Messages.TransferEx_UNMANAGED,
-					getSourceSystemDescription(),
-					getDestinationSystemDescription(),
-					getTransferProtocolDescription()), Ex);
+			throw new TransferException(Msg.bind(
+					Messages.TransferEx_LISTING_UNMANAGED,
+					getSourceSystemDescription()), Ex);
 		} finally {
 			if (sfs != null) {
 				sfs.release();
@@ -233,18 +237,28 @@ public abstract class TransferMultiThread {
 				+ getTransferablesTree().toString().replaceAll("\\n", "\n  "));
 	}
 
-	protected void createDestinationDirectories() throws TransferException {
+	protected void createDestinationDirectories() throws TransferException,
+			InterruptedException {
 		TransferableFileSystem dfs = null;
 		try {
 			dfs = newDestinationFileSystem();
 			for (Transferable t : getTransferablesTree().getAllDirectories()) {
 				try {
 					t.transfer(dfs);
+				} catch (InterruptedIOException Ex) {
+					throw new WrapperInterruptedException(Msg.bind(
+							Messages.TransferEx_FAILED, t), Ex);
 				} catch (IOException Ex) {
 					throw new TransferException(Msg.bind(
 							Messages.TransferEx_FAILED, t), Ex);
 				}
 			}
+		} catch (InterruptedException Ex) {
+			throw new WrapperInterruptedException(Msg.bind(
+					Messages.TransferEx_INTERRUPTED,
+					getSourceSystemDescription(),
+					getDestinationSystemDescription(),
+					getTransferProtocolDescription()), Ex);
 		} catch (TransferException Ex) {
 			throw new TransferException(Msg.bind(Messages.TransferEx_MANAGED,
 					getSourceSystemDescription(),
@@ -281,6 +295,11 @@ public abstract class TransferMultiThread {
 			Transferable t) throws TransferException, InterruptedException {
 		try {
 			t.transfer(destinationFileSystem);
+		} catch (InterruptedIOException Ex) {
+			InterruptedException e = new WrapperInterruptedException(Msg.bind(
+					Messages.TransferEx_FAILED, t), Ex);
+			markState(INTERRUPTED);
+			getExceptions().addCause(e);
 		} catch (IOException Ex) {
 			TransferException e = new TransferException(Msg.bind(
 					Messages.TransferEx_FAILED, t), Ex);

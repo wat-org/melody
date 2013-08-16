@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
@@ -241,7 +241,7 @@ public class SshManagedSession implements ISshSession {
 		try {
 			res = execRemoteCommand(dkc, true, errStream, errStream);
 		} catch (InterruptedException Ex) {
-			throw new MelodyInterruptedException(
+			throw new WrapperInterruptedException(
 					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED, Ex);
 		}
 		analyzeDeployKeyCommandResult(res, k, errStream.toString());

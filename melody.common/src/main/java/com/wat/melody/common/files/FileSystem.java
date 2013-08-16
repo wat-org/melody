@@ -1,6 +1,7 @@
 package com.wat.melody.common.files;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -209,8 +210,8 @@ public interface FileSystem {
 			NotDirectoryException, AccessDeniedException;
 
 	public DirectoryStream<Path> newDirectoryStream(Path path)
-			throws IOException, NoSuchFileException, NotDirectoryException,
-			AccessDeniedException;
+			throws IOException, InterruptedIOException, NoSuchFileException,
+			NotDirectoryException, AccessDeniedException;
 
 	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException;

@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer.finder;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -27,7 +28,8 @@ import com.wat.melody.common.transfer.resources.ResourcesUpdater;
 public abstract class TransferablesFinder {
 
 	public static TransferablesTree find(FileSystem fs,
-			List<ResourcesSpecification> rss) throws IOException {
+			List<ResourcesSpecification> rss) throws IOException,
+			InterruptedIOException {
 		if (fs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + FileSystem.class.getCanonicalName()
@@ -78,7 +80,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 		_matcher = FileSystems.getDefault().getPathMatcher(pattern);
 	}
 
-	public void findFiles() throws IOException {
+	public void findFiles() throws IOException, InterruptedIOException {
 		// will go into visitFileFailed if the path doesn't exists
 		new EnhancedFileTreeWalker(_fs,
 				EnumSet.<FileVisitOption> of(FileVisitOption.FOLLOW_LINKS),

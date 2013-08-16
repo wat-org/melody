@@ -19,13 +19,14 @@ public class Messages extends NLS {
 	public static String TransferBehaviorEx_EMPTY;
 	public static String TransferBehaviorEx_INVALID;
 
-	public static String TransferEx_FAILED;
+	public static String TransferEx_LISTING_UNMANAGED;
+	public static String TransferEx_LISTING_MANAGED;
+	public static String TransferEx_LISTING_INTERRUPTED;
 	public static String TransferEx_UNMANAGED;
 	public static String TransferEx_MANAGED;
 	public static String TransferEx_INTERRUPTED;
-	public static String TransferEx_FAILED_TO_FIND_TRANSFERABLES;
+	public static String TransferEx_FAILED;
 	public static String TransferEx_NO_TEMPLATING_HANDLER;
-	public static String TransferMsg_GRACEFUL_SHUTDOWN;
 	public static String TransferMsg_START;
 	public static String TransferMsg_FINISH;
 	public static String TransferMsg_BEGIN;

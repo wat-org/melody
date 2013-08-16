@@ -12,7 +12,7 @@ import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.core.nativeplugin.call.exception.CallException;
 import com.wat.melody.core.nativeplugin.foreach.ForeachThread;
@@ -43,7 +43,7 @@ public class Call extends Ref implements ITask {
 
 	private short _state;
 	private ThreadGroup _threadGroup;
-	private ConsolidatedException _exceptionsSet;
+	private ConsolidatedException _exceptions;
 
 	/**
 	 * <p>
@@ -57,7 +57,7 @@ public class Call extends Ref implements ITask {
 		setCallRefs(new ArrayList<Ref>());
 		markState(SUCCEED);
 		setThreadGroup(null);
-		setExceptionsSet(new ConsolidatedException());
+		setExceptions(new ConsolidatedException());
 	}
 
 	/**
@@ -169,10 +169,9 @@ public class Call extends Ref implements ITask {
 			try {
 				startProcessing();
 			} catch (InterruptedException Ex) {
-				getExceptionsSet().addCause(Ex);
 				markState(INTERRUPTED);
 			} catch (Throwable Ex) {
-				getExceptionsSet().addCause(Ex);
+				getExceptions().addCause(Ex);
 				markState(FAILED);
 			} finally {
 				// Even if an error occurred while creating and starting thread,
@@ -207,7 +206,11 @@ public class Call extends Ref implements ITask {
 	 */
 	private void startProcessing()
 			throws ProcessorManagerConfigurationException, InterruptedException {
-		Melody.getContext().handleProcessorStateUpdates();
+		try {
+			Melody.getContext().handleProcessorStateUpdates();
+		} catch (InterruptedException Ex) {
+			getExceptions().addCause(Ex);
+		}
 
 		int index = 1;
 		for (IProcessorManager pm : getIProcessorManagers()) {
@@ -273,7 +276,7 @@ public class Call extends Ref implements ITask {
 			}
 		}
 		throw new RuntimeException("Fatal error occurred while waiting "
-				+ "for " + CALL + " inner Task to finish.");
+				+ "for " + CALL + " inner Task to finish.", getExceptions());
 	}
 
 	/**
@@ -293,23 +296,23 @@ public class Call extends Ref implements ITask {
 			if (ex == null) {
 				continue;
 			} else if (ex instanceof InterruptedException) {
-				getExceptionsSet().addCause(ex);
+				getExceptions().addCause(ex);
 				markState(INTERRUPTED);
 			} else if (ex instanceof MelodyException) {
-				getExceptionsSet().addCause(ex);
+				getExceptions().addCause(ex);
 				markState(FAILED);
 			} else {
-				getExceptionsSet().addCause(ex);
+				getExceptions().addCause(ex);
 				markState(CRITICAL);
 			}
 		}
 
 		if (isCritical()) {
-			throw new CallException(getExceptionsSet());
+			throw new CallException(getExceptions());
 		} else if (isFailed()) {
-			throw new CallException(getExceptionsSet());
+			throw new CallException(getExceptions());
 		} else if (isInterrupted()) {
-			throw new MelodyInterruptedException(getExceptionsSet());
+			throw new WrapperInterruptedException(getExceptions());
 		}
 	}
 
@@ -345,18 +348,18 @@ public class Call extends Ref implements ITask {
 	/**
 	 * @return the exceptions that append during the processing of this object.
 	 */
-	private ConsolidatedException getExceptionsSet() {
-		return _exceptionsSet;
+	private ConsolidatedException getExceptions() {
+		return _exceptions;
 	}
 
-	private ConsolidatedException setExceptionsSet(ConsolidatedException cex) {
+	private ConsolidatedException setExceptions(ConsolidatedException cex) {
 		if (cex == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ConsolidatedException.class.getCanonicalName() + ".");
 		}
-		ConsolidatedException previous = getExceptionsSet();
-		_exceptionsSet = cex;
+		ConsolidatedException previous = getExceptions();
+		_exceptions = cex;
 		return previous;
 	}
 

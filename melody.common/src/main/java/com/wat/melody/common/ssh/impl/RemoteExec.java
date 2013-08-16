@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
@@ -94,7 +94,7 @@ class RemoteExec {
 						continue;
 					}
 					start = System.currentTimeMillis();
-					iex = new MelodyInterruptedException(
+					iex = new WrapperInterruptedException(
 							Messages.ExecEx_INTERRUPTED, Ex);
 					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
 				}
@@ -103,7 +103,7 @@ class RemoteExec {
 						continue;
 					}
 					start = System.currentTimeMillis();
-					iex = new MelodyInterruptedException(
+					iex = new WrapperInterruptedException(
 							Messages.ExecEx_INTERRUPTED);
 					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
 				}
@@ -112,7 +112,7 @@ class RemoteExec {
 			throw new RuntimeException("Failed to exec an ssh command "
 					+ "through a JSch 'exec' Channel.", Ex);
 		} catch (InterruptedException Ex) {
-			throw new MelodyInterruptedException(Msg.bind(
+			throw new WrapperInterruptedException(Msg.bind(
 					Messages.ExecMsg_FORCE_STOP_DONE, getSession()
 							.getConnectionDatas()), Ex);
 		} finally {

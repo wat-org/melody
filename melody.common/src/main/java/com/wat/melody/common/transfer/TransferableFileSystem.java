@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -16,9 +17,10 @@ import com.wat.melody.common.files.exception.IllegalFileAttributeException;
  */
 public interface TransferableFileSystem extends FileSystem {
 
-	public void transferRegularFile(Path source, Path dest,
-			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			AccessDeniedException, IllegalFileAttributeException;
+	public void transferRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws IOException,
+			InterruptedIOException, NoSuchFileException, AccessDeniedException,
+			IllegalFileAttributeException;
 
 	/*
 	 * TODO : should better if it provide a method transformRegularFile(Path)

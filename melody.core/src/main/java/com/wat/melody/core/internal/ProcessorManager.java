@@ -36,7 +36,7 @@ import com.wat.melody.api.exception.ProcessorManagerConfigurationException;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.exception.TaskFactoryException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.ex.MelodyInterruptedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.messages.Msg;
@@ -785,7 +785,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		} catch (InterruptedException Ex) {
 			String msg = Msg.bind(Messages.ProcMgrEx_PROCESS_FINAL_STATE,
 					State.INTERRUPTED);
-			InterruptedException e = new MelodyInterruptedException(
+			InterruptedException e = new WrapperInterruptedException(
 					new ProcessorException(getSequenceDescriptor()
 							.getSourceFile(), msg, Ex));
 			fireProcessorFinishedEvent(State.INTERRUPTED, e);
@@ -903,7 +903,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			String msg = Msg.bind(Messages.TaskEx_PROCESS_FINAL_STATE, task
 					.getClass().getSimpleName().toLowerCase(),
 					State.INTERRUPTED);
-			InterruptedException e = new MelodyInterruptedException(
+			InterruptedException e = new WrapperInterruptedException(
 					new SimpleNodeRelatedException(Melody.getContext()
 							.getRelatedElement(), msg, Ex));
 			fireTaskFinishedEvent(task, State.INTERRUPTED, e);

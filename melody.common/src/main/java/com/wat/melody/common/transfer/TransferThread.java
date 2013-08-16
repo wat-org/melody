@@ -12,15 +12,15 @@ import com.wat.melody.common.ex.MelodyException;
 public class TransferThread implements Runnable {
 
 	private TransferMultiThread _transferMultiThread;
-	private TransferableFileSystem _destinationFileSystem;
+	private TransferableFileSystem _transferableFileSystem;
 
 	private Thread _thread;
 	private Throwable _finalError;
 
 	protected TransferThread(TransferMultiThread p,
-			TransferableFileSystem destFS, int index) {
+			TransferableFileSystem transferableFileSystem, int index) {
 		setTransferMultiThread(p);
-		setDestinationFileSystem(destFS);
+		setTransferableFileSystem(transferableFileSystem);
 
 		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
 				.getName() + "-" + index));
@@ -70,12 +70,12 @@ public class TransferThread implements Runnable {
 				if (t == null) {
 					return;
 				}
-				tmt.transfer(getDestinationFileSystem(), t);
+				tmt.transfer(getTransferableFileSystem(), t);
 			}
 		} catch (Throwable Ex) {
 			setFinalError(Ex);
 		} finally {
-			getDestinationFileSystem().release();
+			getTransferableFileSystem().release();
 		}
 	}
 
@@ -92,19 +92,19 @@ public class TransferThread implements Runnable {
 		_transferMultiThread = p;
 	}
 
-	protected TransferableFileSystem getDestinationFileSystem() {
-		return _destinationFileSystem;
+	protected TransferableFileSystem getTransferableFileSystem() {
+		return _transferableFileSystem;
 	}
 
-	private TransferableFileSystem setDestinationFileSystem(
-			TransferableFileSystem destinationFileSystem) {
-		if (destinationFileSystem == null) {
+	private TransferableFileSystem setTransferableFileSystem(
+			TransferableFileSystem transferableFileSystem) {
+		if (transferableFileSystem == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ TransferableFileSystem.class.getCanonicalName() + ".");
 		}
-		TransferableFileSystem previous = getDestinationFileSystem();
-		_destinationFileSystem = destinationFileSystem;
+		TransferableFileSystem previous = getTransferableFileSystem();
+		_transferableFileSystem = transferableFileSystem;
 		return previous;
 	}
 

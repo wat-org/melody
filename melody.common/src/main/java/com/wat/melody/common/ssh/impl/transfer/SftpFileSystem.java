@@ -1,6 +1,7 @@
 package com.wat.melody.common.ssh.impl.transfer;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -29,6 +30,7 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.PosixGroup;
@@ -420,7 +422,8 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	public Vector<LsEntry> listDirectory(String path) throws IOException,
-			NoSuchFileException, NotDirectoryException, AccessDeniedException {
+			NoSuchFileException, InterruptedIOException, NotDirectoryException,
+			AccessDeniedException {
 		final Vector<LsEntry> content = new Vector<LsEntry>();
 		listDirectory(path, new LsEntrySelector() {
 			public int select(LsEntry entry) {
@@ -436,18 +439,28 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	private void listDirectory(String path, LsEntrySelector selector)
-			throws IOException, NoSuchFileException, NotDirectoryException,
-			AccessDeniedException {
+			throws IOException, InterruptedIOException, NoSuchFileException,
+			NotDirectoryException, AccessDeniedException {
 		if (!readAttributes0(path).isDir()) {
 			throw new WrapperNotDirectoryException(path);
 		}
 		try {
+			/*
+			 * if interrupted: may throw a 'java.io.InterruptedIOException',
+			 * wrapped in an SftpException.
+			 */
 			_channel.ls(path, selector);
 		} catch (SftpException Ex) {
-			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+			if (Thread.interrupted()) {
+				throw new InterruptedIOException("listing interrupted");
+			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(path);
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() instanceof InterruptedIOException) {
+				throw new WrapperInterruptedIOException("listing interrupted",
+						(InterruptedIOException) Ex.getCause());
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_LS, path), Ex);
 			}
@@ -455,14 +468,14 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	public DirectoryStream<Path> newDirectoryStream(Path path)
-			throws IOException, NotDirectoryException, NoSuchFileException,
-			AccessDeniedException {
+			throws IOException, InterruptedIOException, NotDirectoryException,
+			NoSuchFileException, AccessDeniedException {
 		return newDirectoryStream(convertToUnixPath(path));
 	}
 
 	private DirectoryStream<Path> newDirectoryStream(final String path)
-			throws IOException, NoSuchFileException, NotDirectoryException,
-			AccessDeniedException {
+			throws IOException, InterruptedIOException, NoSuchFileException,
+			NotDirectoryException, AccessDeniedException {
 		final List<Path> content = new ArrayList<Path>();
 		listDirectory(path, new LsEntrySelector() {
 			public int select(LsEntry entry) {

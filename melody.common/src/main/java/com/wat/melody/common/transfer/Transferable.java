@@ -1,6 +1,7 @@
 package com.wat.melody.common.transfer;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -17,7 +18,8 @@ import com.wat.melody.common.transfer.resources.ResourceSpecification;
 public interface Transferable {
 
 	public void transfer(TransferableFileSystem fs) throws IOException,
-			IllegalFileAttributeException, AccessDeniedException;
+			InterruptedIOException, IllegalFileAttributeException,
+			AccessDeniedException;
 
 	public Path getSourcePath();
 
