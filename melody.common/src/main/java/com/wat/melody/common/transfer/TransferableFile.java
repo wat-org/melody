@@ -124,7 +124,7 @@ public class TransferableFile implements Transferable {
 				template = fs.getTemplatingHandler()
 						.doTemplate(getSourcePath());
 			} catch (TemplatingException Ex) {
-				throw new IOException(Ex);
+				throw new IOException(null, Ex);
 			}
 			transfer(fs, template);
 		} else {

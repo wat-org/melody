@@ -1,7 +1,6 @@
 package com.wat.melody.cli;
 
 import java.io.IOException;
-import java.lang.Thread.State;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,14 +89,14 @@ public class Launcher {
 			// If we call System.exit while the processing has already been
 			// stopped by user (i.e. the shutdownHook is started), it will block
 			// indefinitely. (See Runtine.getRuntime().exit)
-			// This test is able to detect if the shutdownHook is running or
-			// not.
-			if (sdh == null || sdh.getState() == State.NEW) {
-				if (sdh != null) {
-					Runtime.getRuntime().removeShutdownHook(sdh);
-				}
+			// removeShutdownHook will throw IllegalStateException if the
+			// shutdownHook is running.
+			try {
+				Runtime.getRuntime().removeShutdownHook(sdh);
 				System.exit(iReturnCode.getValue());
+			} catch (IllegalStateException ignored) {
 			}
 		}
 	}
+
 }

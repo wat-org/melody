@@ -1,5 +1,6 @@
 package com.wat.melody.core.nativeplugin.foreach;
 
+import java.io.InterruptedIOException;
 import java.lang.Thread.State;
 
 import org.w3c.dom.Element;
@@ -107,6 +108,8 @@ public class ForeachThread implements Runnable {
 		} else if (getFinalError() instanceof MelodyException) {
 			return Foreach.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
+			return Foreach.INTERRUPTED;
+		} else if (getFinalError() instanceof InterruptedIOException) {
 			return Foreach.INTERRUPTED;
 		} else {
 			return Foreach.CRITICAL;

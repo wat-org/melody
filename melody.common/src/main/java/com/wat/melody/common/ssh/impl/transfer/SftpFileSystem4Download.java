@@ -7,13 +7,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
@@ -31,9 +27,6 @@ import com.wat.melody.common.transfer.TransferableFileSystem;
  */
 public class SftpFileSystem4Download extends LocalFileSystem implements
 		TransferableFileSystem {
-
-	private static Logger log = LoggerFactory
-			.getLogger(SftpFileSystem4Download.class);
 
 	private ChannelSftp _channel;
 	private TemplatingHandler _templatingHandler;
@@ -102,22 +95,20 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 				 * if 'java.io.IOException: Pipe closed' or
 				 * 'java.net.SocketException: Broken pipe'
 				 */
-				throw new InterruptedIOException("transfer interrupted");
+				throw new InterruptedIOException("download interrupted");
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(source);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(source);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
-				throw new WrapperInterruptedIOException("transfer interrupted",
+				throw new WrapperInterruptedIOException("download interrupted",
 						(InterruptedIOException) Ex.getCause());
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() != null) {
-				log.warn(MelodyException.getStackTrace(Ex));
 				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
 						destination), Ex.getCause());
 			} else {
-				log.warn(MelodyException.getStackTrace(Ex));
 				throw new IOException(Msg.bind(Messages.SfptEx_GET, source,
 						destination), Ex);
 			}
@@ -125,4 +116,5 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 			throw new RuntimeException("Shouldn't happened.");
 		}
 	}
+
 }

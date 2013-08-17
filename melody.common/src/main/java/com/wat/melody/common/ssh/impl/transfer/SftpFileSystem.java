@@ -303,12 +303,22 @@ public class SftpFileSystem implements FileSystem {
 		try {
 			return Paths.get(_channel.readlink(link));
 		} catch (SftpException Ex) {
-			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+			if (Thread.interrupted()) {
+				/*
+				 * if 'java.io.IOException: Pipe closed' or
+				 * 'java.net.SocketException: Broken pipe'
+				 */
+				throw new InterruptedIOException("readlink interrupted");
+			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(link);
 			} else if (Ex.id == ChannelSftp.SSH_FX_BAD_MESSAGE) {
 				throw new WrapperNotLinkException(link);
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() instanceof InterruptedIOException) {
+				throw new WrapperInterruptedIOException("readlink interrupted",
+						(InterruptedIOException) Ex.getCause());
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_READLINK, link),
 						Ex);
@@ -538,10 +548,20 @@ public class SftpFileSystem implements FileSystem {
 				return _channel.lstat(path);
 			}
 		} catch (SftpException Ex) {
-			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
+			if (Thread.interrupted()) {
+				/*
+				 * if 'java.io.IOException: Pipe closed' or
+				 * 'java.net.SocketException: Broken pipe'
+				 */
+				throw new InterruptedIOException("(l)stat interrupted");
+			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(path);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(path);
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() instanceof InterruptedIOException) {
+				throw new WrapperInterruptedIOException("(l)stat interrupted",
+						(InterruptedIOException) Ex.getCause());
 			} else {
 				throw new IOException(Msg.bind(
 						followlink ? Messages.SftpEx_STAT

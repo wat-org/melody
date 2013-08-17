@@ -1,6 +1,7 @@
 package com.wat.melody.core.nativeplugin.call;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -210,6 +211,7 @@ public class Call extends Ref implements ITask {
 			Melody.getContext().handleProcessorStateUpdates();
 		} catch (InterruptedException Ex) {
 			getExceptions().addCause(Ex);
+			throw Ex;
 		}
 
 		int index = 1;
@@ -296,6 +298,9 @@ public class Call extends Ref implements ITask {
 			if (ex == null) {
 				continue;
 			} else if (ex instanceof InterruptedException) {
+				getExceptions().addCause(ex);
+				markState(INTERRUPTED);
+			} else if (ex instanceof InterruptedIOException) {
 				getExceptions().addCause(ex);
 				markState(INTERRUPTED);
 			} else if (ex instanceof MelodyException) {

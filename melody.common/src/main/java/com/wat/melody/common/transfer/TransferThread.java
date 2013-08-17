@@ -1,5 +1,6 @@
 package com.wat.melody.common.transfer;
 
+import java.io.InterruptedIOException;
 import java.lang.Thread.State;
 
 import com.wat.melody.common.ex.MelodyException;
@@ -37,6 +38,8 @@ public class TransferThread implements Runnable {
 		} else if (getFinalError() instanceof MelodyException) {
 			return TransferMultiThread.FAILED;
 		} else if (getFinalError() instanceof InterruptedException) {
+			return TransferMultiThread.INTERRUPTED;
+		} else if (getFinalError() instanceof InterruptedIOException) {
 			return TransferMultiThread.INTERRUPTED;
 		} else {
 			return TransferMultiThread.CRITICAL;

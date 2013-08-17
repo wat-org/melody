@@ -43,7 +43,8 @@ public class SftpUploaderMultiThread extends SftpBaseTransferMultiThread {
 	}
 
 	@Override
-	public TransferableFileSystem newDestinationFileSystem() {
+	public TransferableFileSystem newDestinationFileSystem()
+			throws InterruptedException {
 		ChannelSftp channel = getSession().openSftpChannel();
 		return new SftpFileSystem4Upload(channel, getTemplatingHandler());
 	}

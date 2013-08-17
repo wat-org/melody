@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.messages.Msg;
@@ -63,7 +64,7 @@ public abstract class TransferMultiThread {
 		if (getResourcesSpecifications().size() == 0) {
 			return;
 		}
-		// compute transferables to transfer
+		// compute Transferables to transfer
 		computeTransferables();
 		// exit if nothing to transfer
 		if (getTransferablesTree().countDirectories()
@@ -82,8 +83,8 @@ public abstract class TransferMultiThread {
 			setThreadGroup(new ThreadGroup(Thread.currentThread().getName()
 					+ ">" + getThreadName()));
 			getThreadGroup().setDaemon(true);
-			initializeTransferThreads();
 			try {
+				initializeTransferThreads();
 				startTransferThreads();
 			} catch (InterruptedException Ex) {
 				markState(INTERRUPTED);
@@ -105,16 +106,21 @@ public abstract class TransferMultiThread {
 		}
 	}
 
-	private void initializeTransferThreads() {
+	private void initializeTransferThreads() throws InterruptedException {
 		int max = getMaxPar();
 		int filesCount = getTransferablesTree().countAllFiles();
 		if (filesCount < max) {
 			max = filesCount;
 		}
-		for (int i = 0; i < max; i++) {
-			getThreads()
-					.add(new TransferThread(this, newDestinationFileSystem(),
-							i + 1));
+		try {
+			for (int i = 0; i < max; i++) {
+				getThreads().add(
+						new TransferThread(this, newDestinationFileSystem(),
+								i + 1));
+			}
+		} catch (InterruptedException Ex) {
+			getExceptions().addCause(Ex);
+			throw Ex;
 		}
 	}
 
@@ -123,6 +129,9 @@ public abstract class TransferMultiThread {
 		List<TransferThread> runningThreads = new ArrayList<TransferThread>();
 
 		while (threadToLaunchID > 0 || runningThreads.size() > 0) {
+			if (Thread.interrupted()) {
+				throw new InterruptedException();
+			}
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {
 				TransferThread ft = getThreads().get(--threadToLaunchID);
@@ -145,8 +154,12 @@ public abstract class TransferMultiThread {
 		int nbTry = 2;
 		while (nbTry-- > 0) {
 			try {
-				for (TransferThread ft : getThreads())
+				for (TransferThread ft : getThreads()) {
+					if (Thread.interrupted()) {
+						throw new InterruptedException();
+					}
 					ft.waitTillProcessingIsDone();
+				}
 				return;
 			} catch (InterruptedException Ex) {
 				// If the processing was stopped wait for each thread to end
@@ -207,19 +220,13 @@ public abstract class TransferMultiThread {
 		FileSystem sfs = null;
 		try {
 			sfs = newSourceFileSystem();
-			try {
-				setTransferablesTree(TransferablesFinder.find(sfs,
-						getResourcesSpecifications()));
-			} catch (InterruptedIOException Ex) {
-				throw new WrapperInterruptedException(Ex);
-			} catch (IOException Ex) {
-				throw new TransferException(Ex);
-			}
-		} catch (InterruptedException Ex) {
+			setTransferablesTree(TransferablesFinder.find(sfs,
+					getResourcesSpecifications()));
+		} catch (InterruptedIOException Ex) {
 			throw new WrapperInterruptedException(Msg.bind(
 					Messages.TransferEx_LISTING_INTERRUPTED,
 					getSourceSystemDescription()), Ex);
-		} catch (TransferException Ex) {
+		} catch (IOException Ex) {
 			throw new TransferException(Msg.bind(
 					Messages.TransferEx_LISTING_MANAGED,
 					getSourceSystemDescription()), Ex);
@@ -243,12 +250,20 @@ public abstract class TransferMultiThread {
 		try {
 			dfs = newDestinationFileSystem();
 			for (Transferable t : getTransferablesTree().getAllDirectories()) {
+				if (Thread.interrupted()) {
+					throw new InterruptedException(Msg.bind(
+							Messages.TransferEx_FAILED, t));
+				}
 				try {
 					t.transfer(dfs);
 				} catch (InterruptedIOException Ex) {
 					throw new WrapperInterruptedException(Msg.bind(
 							Messages.TransferEx_FAILED, t), Ex);
 				} catch (IOException Ex) {
+					/*
+					 * may receive (strange) IOException instead of
+					 * InterruptedException or InterruptedIOException
+					 */
 					throw new TransferException(Msg.bind(
 							Messages.TransferEx_FAILED, t), Ex);
 				}
@@ -292,7 +307,7 @@ public abstract class TransferMultiThread {
 	}
 
 	protected void transfer(TransferableFileSystem destinationFileSystem,
-			Transferable t) throws TransferException, InterruptedException {
+			Transferable t) {
 		try {
 			t.transfer(destinationFileSystem);
 		} catch (InterruptedIOException Ex) {
@@ -301,18 +316,37 @@ public abstract class TransferMultiThread {
 			markState(INTERRUPTED);
 			getExceptions().addCause(e);
 		} catch (IOException Ex) {
-			TransferException e = new TransferException(Msg.bind(
-					Messages.TransferEx_FAILED, t), Ex);
-			markState(FAILED);
-			getExceptions().addCause(e);
+			/*
+			 * If interrupted, Transferable.transfer can throw (strange)
+			 * IOException instead of InterruptedException or
+			 * InterruptedIOException ... We must detect this situation.
+			 */
+			if (Thread.interrupted() || isInterrupted()) {
+				log.debug(MelodyException
+						.getStackTrace(new WrapperInterruptedException(
+								"Transfer interrupted. Ignoring following exception:",
+								Ex)));
+				InterruptedException e = new WrapperInterruptedException(
+						Msg.bind(Messages.TransferEx_FAILED, t),
+						new WrapperInterruptedException("transfer interrupted"));
+				markState(INTERRUPTED);
+				getExceptions().addCause(e);
+			} else {
+				TransferException e = new TransferException(Msg.bind(
+						Messages.TransferEx_FAILED, t), Ex);
+				markState(FAILED);
+				getExceptions().addCause(e);
+			}
 		}
 	}
 
 	public abstract String getThreadName();
 
-	public abstract FileSystem newSourceFileSystem();
+	public abstract FileSystem newSourceFileSystem()
+			throws InterruptedException;
 
-	public abstract TransferableFileSystem newDestinationFileSystem();
+	public abstract TransferableFileSystem newDestinationFileSystem()
+			throws InterruptedException;
 
 	public abstract String getSourceSystemDescription();
 

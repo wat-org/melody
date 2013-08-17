@@ -196,6 +196,7 @@ public class Foreach implements ITask, ITaskContainer {
 					Melody.getContext().handleProcessorStateUpdates();
 				} catch (InterruptedException Ex) {
 					getExceptions().addCause(Ex);
+					throw Ex;
 				}
 				ft.startProcessing();
 			}
@@ -210,6 +211,7 @@ public class Foreach implements ITask, ITaskContainer {
 				Melody.getContext().handleProcessorStateUpdates();
 			} catch (InterruptedException Ex) {
 				getExceptions().addCause(Ex);
+				throw Ex;
 			}
 			// Start ready threads
 			while (threadToLaunchID > 0 && runningThreads.size() < getMaxPar()) {

@@ -37,13 +37,14 @@ public class SftpDownloaderMultiThread extends SftpBaseTransferMultiThread {
 	}
 
 	@Override
-	public FileSystem newSourceFileSystem() {
+	public FileSystem newSourceFileSystem() throws InterruptedException {
 		ChannelSftp channel = getSession().openSftpChannel();
 		return new SftpFileSystem(channel);
 	}
 
 	@Override
-	public TransferableFileSystem newDestinationFileSystem() {
+	public TransferableFileSystem newDestinationFileSystem()
+			throws InterruptedException {
 		ChannelSftp channel = getSession().openSftpChannel();
 		return new SftpFileSystem4Download(channel, getTemplatingHandler());
 	}

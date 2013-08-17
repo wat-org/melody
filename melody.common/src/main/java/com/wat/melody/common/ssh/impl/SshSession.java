@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.impl;
 
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -345,7 +346,7 @@ public class SshSession implements ISshSession {
 		return channel;
 	}
 
-	public ChannelSftp openSftpChannel() {
+	public ChannelSftp openSftpChannel() throws InterruptedException {
 		if (!isConnected()) {
 			throw new IllegalStateException("session: Not accepted. "
 					+ "Session must be connected.");
@@ -357,6 +358,10 @@ public class SshSession implements ISshSession {
 		} catch (JSchException Ex) {
 			if (channel != null) {
 				channel.disconnect();
+			}
+			if (Ex.getCause() instanceof InterruptedIOException) {
+				throw new WrapperInterruptedException(
+						"open sftp channel interrupted", Ex.getCause());
 			}
 			throw new RuntimeException(
 					"Failed to connect a JSch 'sftp' Channel.", Ex);
