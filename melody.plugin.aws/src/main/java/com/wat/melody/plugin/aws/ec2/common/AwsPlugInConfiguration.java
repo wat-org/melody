@@ -14,7 +14,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsEc2PooledConnection;
 import com.wat.melody.api.IPlugInConfiguration;
-import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
@@ -28,9 +28,10 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationExce
 public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		AWSCredentials {
 
-	public static AwsPlugInConfiguration get(IProcessorManager pm)
+	public static AwsPlugInConfiguration get()
 			throws PlugInConfigurationException {
-		return (AwsPlugInConfiguration) pm
+		return (AwsPlugInConfiguration) Melody.getContext()
+				.getProcessorManager()
 				.getPluginConfiguration(AwsPlugInConfiguration.class);
 	}
 

@@ -113,8 +113,7 @@ abstract public class AbstractOperation implements ITask,
 	protected AwsPlugInConfiguration getAwsPlugInConfiguration()
 			throws AwsException {
 		try {
-			return AwsPlugInConfiguration.get(Melody.getContext()
-					.getProcessorManager());
+			return AwsPlugInConfiguration.get();
 		} catch (PlugInConfigurationException Ex) {
 			throw new AwsException(Ex);
 		}
@@ -123,8 +122,7 @@ abstract public class AbstractOperation implements ITask,
 	protected SshPlugInConfiguration getSshPlugInConfiguration()
 			throws AwsException {
 		try {
-			return SshPlugInConfiguration.get(Melody.getContext()
-					.getProcessorManager());
+			return SshPlugInConfiguration.get();
 		} catch (PlugInConfigurationException Ex) {
 			throw new AwsException(Ex);
 		}

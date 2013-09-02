@@ -204,8 +204,7 @@ public abstract class AbstractSshOperation implements ITask {
 
 	protected SshPlugInConfiguration getSshPlugInConf() throws SshException {
 		try {
-			return SshPlugInConfiguration.get(Melody.getContext()
-					.getProcessorManager());
+			return SshPlugInConfiguration.get();
 		} catch (PlugInConfigurationException Ex) {
 			throw new SshException(Ex);
 		}

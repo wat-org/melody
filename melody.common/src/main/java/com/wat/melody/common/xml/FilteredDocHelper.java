@@ -10,7 +10,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.messages.Msg;
@@ -431,38 +430,6 @@ public abstract class FilteredDocHelper {
 			return;
 		}
 		insertElement(dest, parent, true);
-	}
-
-	/**
-	 * <p>
-	 * Remove 'useless' {@link Text} {@link Node}s from the given tree, starting
-	 * at the given {@link Element}.
-	 * </p>
-	 * 
-	 * <p>
-	 * 'useless' {@link Text} {@link Node}s are :
-	 * <ul>
-	 * <li>{@link Text} {@link Node}s which are not leaves ;</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param e
-	 *            is the starting {@link Element}.
-	 */
-	protected static void removeTextNode(Element e) {
-		NodeList childs = e.getChildNodes();
-		if (childs.getLength() == 1
-				&& childs.item(0).getNodeType() == Node.TEXT_NODE) {
-			return;
-		}
-		for (int i = childs.getLength() - 1; i >= 0; i--) {
-			Node child = childs.item(i);
-			if (child.getNodeType() == Node.ELEMENT_NODE) {
-				removeTextNode((Element) child);
-			} else if (child.getNodeType() == Node.TEXT_NODE) {
-				e.removeChild(child);
-			}
-		}
 	}
 
 }

@@ -11,11 +11,15 @@ public class Messages extends NLS {
 	public static String DirEx_CANT_WRITE;
 	public static String DirEx_NOT_FOUND;
 	public static String DirEx_INVALID_PARENT;
+	public static String DirEx_NOT_ABSOLUTE;
+	public static String DirEx_NOT_RELATIVE;
 
 	public static String FileEx_NOT_A_FILE;
 	public static String FileEx_CANT_READ;
 	public static String FileEx_CANT_WRITE;
 	public static String FileEx_NOT_FOUND;
+	public static String FileEx_NOT_ABSOLUTE;
+	public static String FileEx_NOT_RELATIVE;
 
 	public static String LocalFSEx_FAILED_TO_SET_ATTRIBUTES;
 	public static String LocalFSEx_FAILED_TO_SET_ATTRIBUTE;

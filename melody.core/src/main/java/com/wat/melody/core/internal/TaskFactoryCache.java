@@ -3,6 +3,7 @@ package com.wat.melody.core.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -193,6 +194,19 @@ public class TaskFactoryCache {
 		}
 
 		Class<?> param = m.getParameterTypes()[0];
+
+		/*
+		 * TODO : feature request : Attribute annotation should have a 'factory'
+		 * attribute,which specifies a static method to create the param from a
+		 * string.
+		 * 
+		 * Til this feature is not impl, we must deal with Path in a specific
+		 * way ...
+		 */
+		if (ReflectionHelper.implement(param, Path.class)) {
+			return;
+		}
+
 		if (!Modifier.isPublic(param.getModifiers())
 				|| (Modifier.isAbstract(param.getModifiers()) && !(param
 						.isEnum() || param.isPrimitive()))
@@ -338,6 +352,11 @@ public class TaskFactoryCache {
 	 */
 	private void validateCreateMethod(Class<?> c, NestedElement a, Method m)
 			throws TaskFactoryException {
+		/*
+		 * TODO : the given create method return type must be public. Not easy
+		 * to validate because a create method can return a private subtype...
+		 * Don't see how to validate this...
+		 */
 		if (!Modifier.isPublic(m.getModifiers())
 				|| Modifier.isAbstract(m.getModifiers())
 				|| m.getReturnType() == Void.TYPE

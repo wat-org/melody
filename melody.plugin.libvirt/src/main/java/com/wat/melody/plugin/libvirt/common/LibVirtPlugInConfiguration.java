@@ -6,7 +6,7 @@ import org.libvirt.ConnectAuth;
 import com.wat.cloud.libvirt.LibVirtCloudServicesEndpoint;
 import com.wat.cloud.libvirt.LibVirtPooledConnection;
 import com.wat.melody.api.IPlugInConfiguration;
-import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
@@ -27,9 +27,10 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtPlugInConfiguration
  */
 public class LibVirtPlugInConfiguration implements IPlugInConfiguration {
 
-	public static LibVirtPlugInConfiguration get(IProcessorManager pm)
+	public static LibVirtPlugInConfiguration get()
 			throws PlugInConfigurationException {
-		return (LibVirtPlugInConfiguration) pm
+		return (LibVirtPlugInConfiguration) Melody.getContext()
+				.getProcessorManager()
 				.getPluginConfiguration(LibVirtPlugInConfiguration.class);
 	}
 

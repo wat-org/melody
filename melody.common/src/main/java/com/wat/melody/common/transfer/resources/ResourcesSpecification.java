@@ -22,7 +22,7 @@ import com.wat.melody.api.annotation.NestedElement.Type;
  * @author Guillaume Cornet
  * 
  */
-public abstract class ResourcesSpecification extends ResourceSpecification {
+public class ResourcesSpecification extends ResourceSpecification {
 
 	/**
 	 * Attribute, which specifies the source directory.
@@ -83,7 +83,7 @@ public abstract class ResourcesSpecification extends ResourceSpecification {
 		return _srcBaseDir;
 	}
 
-	@Attribute(name = SRC_BASEDIR_ATTR, mandatory = true)
+	@Attribute(name = SRC_BASEDIR_ATTR)
 	public String setSrcBaseDir(String dir) {
 		if (dir == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

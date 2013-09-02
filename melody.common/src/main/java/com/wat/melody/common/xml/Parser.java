@@ -81,8 +81,7 @@ public abstract class Parser {
 	 * @throws SAXException
 	 *             {@inheritDoc}
 	 */
-	public static Document parse(final File file) throws IOException,
-			SAXException {
+	public static Document parse(File file) throws IOException, SAXException {
 		if (file == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + File.class.getCanonicalName() + ".");
@@ -123,8 +122,7 @@ public abstract class Parser {
 	 * @throws SAXException
 	 *             {@inheritDoc}
 	 */
-	public static Document parse(final String xml) throws IOException,
-			SAXException {
+	public static Document parse(String xml) throws IOException, SAXException {
 		if (xml == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String.");
@@ -155,7 +153,7 @@ public abstract class Parser {
 	 * @throws SAXException
 	 *             {@inheritDoc}
 	 */
-	private static Document parse(final InputSource is) throws IOException,
+	private static Document parse(InputSource is) throws IOException,
 			SAXException {
 		MySAXHandler handler = new MySAXHandler();
 		SAXParser parser = handler.getParser();

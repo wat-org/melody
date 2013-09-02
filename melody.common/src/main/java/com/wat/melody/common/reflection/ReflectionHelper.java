@@ -39,6 +39,9 @@ public abstract class ReflectionHelper {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
 		}
+		if (c == base) {
+			return true;
+		}
 		for (Class<?> i : c.getInterfaces()) {
 			if (i == base) {
 				return true;

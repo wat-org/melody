@@ -114,8 +114,7 @@ public abstract class AbstractOperation implements ITask,
 	protected LibVirtPlugInConfiguration getLibVirtPlugInConfiguration()
 			throws LibVirtException {
 		try {
-			return LibVirtPlugInConfiguration.get(Melody.getContext()
-					.getProcessorManager());
+			return LibVirtPlugInConfiguration.get();
 		} catch (PlugInConfigurationException Ex) {
 			throw new LibVirtException(Ex);
 		}
@@ -124,8 +123,7 @@ public abstract class AbstractOperation implements ITask,
 	protected SshPlugInConfiguration getSshPlugInConfiguration()
 			throws LibVirtException {
 		try {
-			return SshPlugInConfiguration.get(Melody.getContext()
-					.getProcessorManager());
+			return SshPlugInConfiguration.get();
 		} catch (PlugInConfigurationException Ex) {
 			throw new LibVirtException(Ex);
 		}

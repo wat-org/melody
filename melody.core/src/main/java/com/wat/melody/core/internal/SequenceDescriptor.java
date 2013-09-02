@@ -72,8 +72,14 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 	@Override
 	public void load(String sPath) throws IllegalDocException,
 			IllegalFileException, IllegalOrderException, IOException {
+		File f = new File(sPath);
+		if (!f.isAbsolute()) {
+			throw new IllegalFileException(Msg.bind(
+					com.wat.melody.common.files.Messages.FileEx_NOT_ABSOLUTE,
+					sPath));
+		}
 		try {
-			super.load(sPath);
+			super.load(f.toString());
 		} catch (IllegalDocException | IllegalFileException | IOException Ex) {
 			throw Ex;
 		} catch (MelodyException Ex) {
@@ -85,7 +91,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ "a bug have been introduced.", Ex);
 		}
 		try {
-			setBaseDir(new File(sPath).getCanonicalFile().getParentFile());
+			setBaseDir(f.getParentFile());
 		} catch (IllegalDirectoryException Ex) {
 			throw new RuntimeException("Unexecpted error while setting the "
 					+ "default baseDir of the Sequence Descriptor. "
@@ -278,7 +284,7 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ "Must be a valid " + File.class.getCanonicalName()
 					+ " (a Directory Path).");
 		}
-		FS.validateDirExists(dir.getAbsolutePath());
+		FS.validateDirExists(dir.toString());
 		File previous = getBaseDir();
 		_baseDir = dir;
 		return previous;

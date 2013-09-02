@@ -23,7 +23,7 @@ public class XPathFunctionResolver implements
 	private static String SUFFIX_CLASS = ".class";
 	private static String SUFFIX_ARITY = ".arity";
 
-	private static String FUNCTION_NAME_PATTERN = "[a-zA-Z]+";
+	private static String FUNCTION_NAME_PATTERN = "[a-zA-Z]+[a-zA-Z0-9]*";
 
 	private List<XPathFunctionDefinition> _funcDefinition;
 

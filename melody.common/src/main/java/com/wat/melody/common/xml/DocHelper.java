@@ -18,6 +18,8 @@ import javax.xml.xpath.XPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import com.wat.melody.common.files.FS;
@@ -336,4 +338,43 @@ public abstract class DocHelper {
 		Object obj = d.getUserData(XPATH);
 		return (obj == null) ? null : (XPath) obj;
 	}
+
+	/**
+	 * <p>
+	 * Remove 'useless' {@link Text} {@link Node}s from the given tree, starting
+	 * at the given {@link Element}.
+	 * </p>
+	 * 
+	 * <p>
+	 * Remove all Text Nodes in the current document, without impact on the
+	 * original document (improve xpath query performance and reduce memory
+	 * usage).
+	 * </p>
+	 * 
+	 * <p>
+	 * 'useless' {@link Text} {@link Node}s are :
+	 * <ul>
+	 * <li>{@link Text} {@link Node}s which are not sole leaves ;</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param e
+	 *            is the starting {@link Element}.
+	 */
+	public static void removeTextNode(Element e) {
+		NodeList childs = e.getChildNodes();
+		if (childs.getLength() == 1
+				&& childs.item(0).getNodeType() == Node.TEXT_NODE) {
+			return;
+		}
+		for (int i = childs.getLength() - 1; i >= 0; i--) {
+			Node child = childs.item(i);
+			if (child.getNodeType() == Node.ELEMENT_NODE) {
+				removeTextNode((Element) child);
+			} else if (child.getNodeType() == Node.TEXT_NODE) {
+				e.removeChild(child);
+			}
+		}
+	}
+
 }

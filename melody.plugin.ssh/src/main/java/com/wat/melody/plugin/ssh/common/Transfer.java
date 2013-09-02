@@ -42,19 +42,20 @@ public abstract class Transfer extends AbstractSshManagedOperation implements
 	 */
 	public static final String RESOURCES_NE = "resources";
 
-	private List<ResourcesSpecification> _resourcesSpecifications;
-	private int _maxPar;
+	private List<ResourcesSpecification> _resourcesSpecifications = new ArrayList<ResourcesSpecification>();
+	private int _maxPar = 10;
 
 	private ITaskContext _taskContext;
 
 	public Transfer() {
 		super();
-		setResourcesSpecifications(new ArrayList<ResourcesSpecification>());
-		try {
-			setMaxPar(10);
-		} catch (SshException Ex) {
-			throw new RuntimeException("TODO impossible");
-		}
+	}
+
+	@Override
+	public void validate() throws SshException {
+		super.validate();
+
+		// keep the current context, necessary for templating operations
 		setContext(Melody.getContext());
 	}
 
@@ -95,7 +96,7 @@ public abstract class Transfer extends AbstractSshManagedOperation implements
 		Path template = null;
 		try {
 			Files.createDirectories(Paths.get(getContext()
-					.getProcessorManager().getWorkingFolderPath().toString()));
+					.getProcessorManager().getWorkingFolderPath()));
 			template = Files.createTempFile(Paths.get(getContext()
 					.getProcessorManager().getWorkingFolderPath()),
 					"transfer.", ".ted");
@@ -111,25 +112,13 @@ public abstract class Transfer extends AbstractSshManagedOperation implements
 		return _resourcesSpecifications;
 	}
 
-	public List<ResourcesSpecification> setResourcesSpecifications(
-			List<ResourcesSpecification> rrss) {
-		if (rrss == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + List.class.getCanonicalName() + "<"
-					+ ResourcesSpecification.class.getCanonicalName() + ">.");
-		}
-		List<ResourcesSpecification> previous = getResourcesSpecifications();
-		_resourcesSpecifications = rrss;
-		return previous;
-	}
-
 	@NestedElement(name = RESOURCES_NE, mandatory = true, type = Type.CREATE)
 	public ResourcesSpecification createResourcesSpecification() {
 		File basedir = Melody.getContext().getProcessorManager()
 				.getSequenceDescriptor().getBaseDir();
-		ResourcesSpecification rrs = newResourcesSpecification(basedir);
-		getResourcesSpecifications().add(rrs);
-		return rrs;
+		ResourcesSpecification rss = newResourcesSpecification(basedir);
+		getResourcesSpecifications().add(rss);
+		return rss;
 	}
 
 	public abstract ResourcesSpecification newResourcesSpecification(

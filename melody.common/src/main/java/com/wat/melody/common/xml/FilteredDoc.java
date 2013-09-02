@@ -568,15 +568,14 @@ public class FilteredDoc extends DUNIDDoc {
 						true);
 			}
 
-			// this return false as soon as the first filter is applied
+			// this return true as soon as the first filter is applied
 			if (!areFiltersDefined()) {
 				/*
 				 * Remove all Text Nodes in the current document, without impact
 				 * on the original document (improve xpath query performance and
 				 * reduce memory usage)
 				 */
-				FilteredDocHelper.removeTextNode((Element) filtered
-						.getFirstChild());
+				DocHelper.removeTextNode((Element) filtered.getFirstChild());
 			}
 			setDocument(filtered);
 		}

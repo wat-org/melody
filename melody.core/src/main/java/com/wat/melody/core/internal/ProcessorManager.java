@@ -1,5 +1,6 @@
 package com.wat.melody.core.internal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,6 +188,11 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	@Override
 	public String setWorkingFolderPath(String v)
 			throws IllegalDirectoryException {
+		File f = new File(v);
+		if (!f.isAbsolute()) {
+			throw new IllegalDirectoryException(Msg.bind(
+					com.wat.melody.common.files.Messages.DirEx_NOT_ABSOLUTE, v));
+		}
 		FS.validateDirPath(v);
 		String previous = _workingFolderPath;
 		_workingFolderPath = v;

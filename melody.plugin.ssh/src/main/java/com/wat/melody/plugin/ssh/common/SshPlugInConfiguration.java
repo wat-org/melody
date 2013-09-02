@@ -3,7 +3,7 @@ package com.wat.melody.plugin.ssh.common;
 import java.io.File;
 
 import com.wat.melody.api.IPlugInConfiguration;
-import com.wat.melody.api.IProcessorManager;
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
@@ -49,9 +49,10 @@ import com.wat.melody.plugin.ssh.common.exception.SshPlugInConfigurationExceptio
 public class SshPlugInConfiguration implements IPlugInConfiguration,
 		ISshSessionConfiguration {
 
-	public static SshPlugInConfiguration get(IProcessorManager pm)
+	public static SshPlugInConfiguration get()
 			throws PlugInConfigurationException {
-		return (SshPlugInConfiguration) pm
+		return (SshPlugInConfiguration) Melody.getContext()
+				.getProcessorManager()
 				.getPluginConfiguration(SshPlugInConfiguration.class);
 	}
 

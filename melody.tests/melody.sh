@@ -19,7 +19,7 @@ declare melodyMainClass="com.wat.melody.cli.Launcher"
 declare defaultGlobalConfigurationFilePath="${homedir}/config/melody.properties"
 
 # Melody's Java Options
-declare JAVA_OPTS="-Dmelody.default.global.configuration.file=${defaultGlobalConfigurationFilePath}"
+declare JAVA_OPTS="-Dmelody.default.global.configuration.file=\"${defaultGlobalConfigurationFilePath}\""
 
 #################
 # Severity of log messages 
@@ -54,7 +54,7 @@ main() {
   }
   
   # Execute Melody
-  java ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
+  eval java ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
     local res=$?
     [ $res = 130 ] && myecho -e "Melody was interrupted (code '$res'). Exiting" "${WARNING}" || myecho -e "Melody return an error (code '$res'). Exiting" "${ERROR}"
     return $res

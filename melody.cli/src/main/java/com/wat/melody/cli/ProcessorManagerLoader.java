@@ -1,5 +1,6 @@
 package com.wat.melody.cli;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -574,12 +575,18 @@ public class ProcessorManagerLoader {
 					Messages.CmdEx_MISSING_OPTION_VALUE, 'f'));
 		}
 		try {
+			String val = cmdLine[i];
+			// make it absolute
+			File f = new File(val);
+			if (!f.isAbsolute()) {
+				val = f.getCanonicalPath();
+			}
 			IProcessorManager pm = getProcessorManager();
-			pm.getSequenceDescriptor().load(cmdLine[i]);
+			pm.getSequenceDescriptor().load(val);
 		} catch (IllegalOrderException Ex) {
 			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'o'), Ex);
-		} catch (MelodyException Ex) {
+		} catch (MelodyException | IOException Ex) {
 			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'f'), Ex);
 		}
@@ -854,9 +861,14 @@ public class ProcessorManagerLoader {
 				throw new ConfigurationLoadingException(
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
+			// make it absolute
+			File f = new File(val);
+			if (!f.isAbsolute()) {
+				val = f.getCanonicalPath();
+			}
 			IProcessorManager pm = getProcessorManager();
 			pm.setWorkingFolderPath(val);
-		} catch (MelodyException Ex) {
+		} catch (MelodyException | IOException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, WORKING_FOLDER_PATH), Ex);
 		}
@@ -1006,7 +1018,7 @@ public class ProcessorManagerLoader {
 	}
 
 	private void loadSequenceDescriptor(PropertySet oProps)
-			throws ConfigurationLoadingException, IOException {
+			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(SEQUENCE_DESCRIPTOR_FILE_PATH)) {
 			return;
 		}
@@ -1016,12 +1028,17 @@ public class ProcessorManagerLoader {
 				throw new ConfigurationLoadingException(
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
+			// make it absolute
+			File f = new File(val);
+			if (!f.isAbsolute()) {
+				val = f.getCanonicalPath();
+			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().load(val);
 		} catch (IllegalOrderException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ORDERS), Ex);
-		} catch (MelodyException Ex) {
+		} catch (MelodyException | IOException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
 					SEQUENCE_DESCRIPTOR_FILE_PATH), Ex);

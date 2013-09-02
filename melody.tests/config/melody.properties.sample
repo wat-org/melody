@@ -52,10 +52,27 @@ log4j.defaultLoggingLevel=WARN
 ### needed for Plug-In loading
 
 ### List Configuration Directives which will contains Task Java Classes
-tasks.directives=tasks.standard
+tasks.directives=tasks.standard,tasks.xml,tasks.ssh
 
 ### Standard Tasks Java Classes
-tasks.standard=com.wat.melody.plugin.echo.Echo,com.wat.melody.plugin.sleep.Sleep,com.wat.melody.plugin.ssh.Ssh,com.wat.melody.plugin.ssh.Upload
+tasks.standard=\
+com.wat.melody.plugin.echo.Echo, \
+com.wat.melody.plugin.sleep.Sleep, \
+com.wat.melody.plugin.copy.Copy
+
+### File-Mod Plug-In Tasks Java Classes
+tasks.xml=\
+com.wat.melody.plugin.xml.XmlElementsRemove, \
+com.wat.melody.plugin.xml.XmlElementsInsertBefore, \
+com.wat.melody.plugin.xml.XmlElementsAppend, \
+com.wat.melody.plugin.xml.XmlAttributesSet, \
+com.wat.melody.plugin.xml.XmlAttributesRemove
+
+### Ssh Plug-In Tasks Java Classes
+tasks.ssh=\
+com.wat.melody.plugin.ssh.Ssh, \
+com.wat.melody.plugin.ssh.Upload, \
+com.wat.melody.plugin.ssh.Download
 
 ### Folder where plugins configuration are stored (used to eliminate redundancy in folder declaration)
 pluginConfigurationFolderPath=${rootFolderPath}/config/plugin
@@ -84,21 +101,28 @@ xpath.function.directives=xpath.function.standard
 
 ### Standard XPath Functions
 xpath.function.standard=\
-xpath.function.getHeritedAttributeValue,\
-xpath.function.getHeritedContent,\
-xpath.function.getNetworkActivationDeviceElement,\
-xpath.function.getNetworkActivationDeviceName,\
-xpath.function.getNetworkActivationHost,\
-xpath.function.getNetworkActivationPort,\
-xpath.function.getNetworkActivationProtocol,\
-xpath.function.getNetworkDeviceElementByName,\
-xpath.function.getNetworkDeviceElements,\
-xpath.function.getInstanceId,\
-xpath.function.getInstanceImageId,\
-xpath.function.getInstanceKeyPairName,\
-xpath.function.getInstanceRegion,\
-xpath.function.getInstanceSite,\
-xpath.function.getInstanceType
+xpath.function.getBaseDir, \
+xpath.function.getSequenceDescriptorPath, \
+xpath.function.getWorkingFolder, \
+xpath.function.newTmpFile, \
+xpath.function.getHeritedAttributeValue, \
+xpath.function.getHeritedContent
+
+xpath.function.getBaseDir.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getBaseDir.class=com.wat.melody.core.nativeplugin.sequence.xpathfunctions.GetBaseDir
+xpath.function.getBaseDir.arity=0
+
+xpath.function.getSequenceDescriptorPath.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getSequenceDescriptorPath.class=com.wat.melody.core.nativeplugin.sequence.xpathfunctions.GetSequenceDescriptorPath
+xpath.function.getSequenceDescriptorPath.arity=0
+
+xpath.function.getWorkingFolder.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.getWorkingFolder.class=com.wat.melody.core.xpathfunctions.GetWorkingFolder
+xpath.function.getWorkingFolder.arity=0
+
+xpath.function.newTmpFile.namespace.uri=${xpath.namespace.melody.uri}
+xpath.function.newTmpFile.class=com.wat.melody.core.xpathfunctions.NewTmpFile
+xpath.function.newTmpFile.arity=0
 
 xpath.function.getHeritedAttributeValue.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.getHeritedAttributeValue.class=com.wat.melody.xpathextensions.GetHeritedAttribute
@@ -107,58 +131,6 @@ xpath.function.getHeritedAttributeValue.arity=2
 xpath.function.getHeritedContent.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.getHeritedContent.class=com.wat.melody.xpathextensions.GetHeritedContent
 xpath.function.getHeritedContent.arity=2
-
-xpath.function.getNetworkActivationDeviceElement.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationDeviceElement.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceElement
-xpath.function.getNetworkActivationDeviceElement.arity=1
-
-xpath.function.getNetworkActivationDeviceName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationDeviceName.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceName
-xpath.function.getNetworkActivationDeviceName.arity=1
-
-xpath.function.getNetworkActivationHost.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationHost.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationHost
-xpath.function.getNetworkActivationHost.arity=1
-
-xpath.function.getNetworkActivationPort.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationPort.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationPort
-xpath.function.getNetworkActivationPort.arity=1
-
-xpath.function.getNetworkActivationProtocol.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationProtocol.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationProtocol
-xpath.function.getNetworkActivationProtocol.arity=1
-
-xpath.function.getNetworkDeviceElementByName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkDeviceElementByName.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElementByName
-xpath.function.getNetworkDeviceElementByName.arity=2
-
-xpath.function.getNetworkDeviceElements.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkDeviceElements.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElements
-xpath.function.getNetworkDeviceElements.arity=1
-
-xpath.function.getInstanceId.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceId
-xpath.function.getInstanceId.arity=1
-
-xpath.function.getInstanceImageId.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceImageId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceImageId
-xpath.function.getInstanceImageId.arity=1
-
-xpath.function.getInstanceKeyPairName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceKeyPairName.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceKeyPairName
-xpath.function.getInstanceKeyPairName.arity=1
-
-xpath.function.getInstanceRegion.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceRegion.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceRegion
-xpath.function.getInstanceRegion.arity=1
-
-xpath.function.getInstanceSite.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceSite.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceSite
-xpath.function.getInstanceSite.arity=1
-
-xpath.function.getInstanceType.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceType.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceType
-xpath.function.getInstanceType.arity=1
 
 
 ####################################################
@@ -186,7 +158,7 @@ xpath.function.getInstanceType.arity=1
 #runDryMode=true
 
 ### Path of the TarGz archive or Sequence Descriptor file
-### Can be override by Command Line Option -f <TarGz Archive or Sequence Descriptor File Path>
+### Can be override by Command Line Option -f <Sequence Descriptor File Path>
 #sequenceDescriptorFilePath=${rootFolderPath}/input/sequence.xml
 
 ### Path of the specific configuration
@@ -200,15 +172,15 @@ xpath.function.getInstanceType.arity=1
 
 ### The properties to pass to the process
 ### Can be override by Command Line Option -V <Property>
-### Accepted values : one or more string of the form '<name>=<value>', separated by a comma.
+### Accepted values : a string of the form '<prop1>,<prop2>,<prop3>'. Then declare each property on a dedicated line (e.g. '<prop1>=<value1>')
 #properties=
 
-### The Resources filters
+### The Resources Filters
 ### Can be override by Command Line Option -F <Filter>
 ### Accepted values : one or more XPath expression, separated by a comma.
 #resourcesFilters=
 
-### The target filters
+### The target Filters
 ### Can be override by Command Line Option -T <Filter>
 ### Accepted values : one or more XPath expression, separated by a comma.
 #targetFilters=
