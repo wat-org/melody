@@ -81,7 +81,8 @@ public abstract class AwsEc2CloudFireWall {
 			String sSGName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sSGName == null || sSGName.trim().length() == 0) {
 			throw new IllegalArgumentException(sSGName + ": Not accepted. "
@@ -96,7 +97,9 @@ public abstract class AwsEc2CloudFireWall {
 			return ec2.describeSecurityGroups(dsgreq).getSecurityGroups()
 					.get(0).getIpPermissions();
 		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return null;
 			} else {
 				throw Ex;

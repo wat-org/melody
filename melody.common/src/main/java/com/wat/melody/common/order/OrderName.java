@@ -15,7 +15,7 @@ public class OrderName {
 	 * Convert the given <tt>String</tt> to an {@link OrderName} object.
 	 * </p>
 	 * 
-	 * @param sOrderName
+	 * @param orderName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return an {@link OrderName} object, which is equal to the given
@@ -30,9 +30,9 @@ public class OrderName {
 	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static OrderName parseString(String sOrderName)
+	public static OrderName parseString(String orderName)
 			throws IllegalOrderNameException {
-		return new OrderName(sOrderName);
+		return new OrderName(orderName);
 	}
 
 	/**
@@ -42,8 +42,8 @@ public class OrderName {
 
 	private String _value;
 
-	public OrderName(String sOrderName) throws IllegalOrderNameException {
-		setValue(sOrderName);
+	public OrderName(String orderName) throws IllegalOrderNameException {
+		setValue(orderName);
 	}
 
 	@Override
@@ -72,21 +72,21 @@ public class OrderName {
 		return _value;
 	}
 
-	private String setValue(String sOrderName) throws IllegalOrderNameException {
-		if (sOrderName == null) {
+	private String setValue(String orderName) throws IllegalOrderNameException {
+		if (orderName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (an "
 					+ OrderName.class.getCanonicalName() + ").");
 		}
-		if (sOrderName.trim().length() == 0) {
+		if (orderName.trim().length() == 0) {
 			throw new IllegalOrderNameException(Msg.bind(
-					Messages.OrderNameEx_EMPTY, sOrderName));
-		} else if (!sOrderName.matches("^" + PATTERN + "$")) {
+					Messages.OrderNameEx_EMPTY, orderName));
+		} else if (!orderName.matches("^" + PATTERN + "$")) {
 			throw new IllegalOrderNameException(Msg.bind(
-					Messages.OrderNameEx_INVALID, sOrderName, PATTERN));
+					Messages.OrderNameEx_INVALID, orderName, PATTERN));
 		}
 		String previous = toString();
-		_value = sOrderName;
+		_value = orderName;
 		return previous;
 	}
 

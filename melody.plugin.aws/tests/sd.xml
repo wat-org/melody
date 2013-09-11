@@ -2,51 +2,77 @@
 <!DOCTYPE project>
 
 <sequence default="all" basedir="." >
-	
-	<property name="melody.extensions.vm.path" value="§[melody.extensions.path]§/vm/sd.xml"/>
-	
-	
-	<order name="create_all_vm" >
-		<call orders="create_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="stop_all_vm" >
-		<call orders="stop_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="resize_all_vm" >
-		<call orders="resize_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="start_all_vm" >
-		<call orders="start_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="destroy_all_vm" >
-		<call orders="destroy_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="update_disk_devices" >
-		<call orders="update_disk_devices" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="update_network_devices" >
-		<call orders="update_network_devices" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	<order name="update_firewall" >
-		<call orders="update_firewall" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-	</order>
-	
-	
-	<order name="all" >
-		<call	orders="create_all_vm"/>
-		<sleep	millis="2000" />
-		<call	orders="stop_all_vm"/>
-		<sleep	millis="2000" />
-		<call	orders="start_all_vm"/>
-		<sleep	millis="2000" />
-		<call	orders="destroy_all_vm"/>
-	</order>
+    
+    <property name="melody.extensions.vm.path" value="§[melody.extensions.path]§/vm/sd.xml"/>
+    
+    
+    <order name="create_all_vm" >
+        <call orders="create_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="stop_all_vm" >
+        <call orders="stop_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="resize_all_vm" >
+        <call orders="resize_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="start_all_vm" >
+        <call orders="start_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="destroy_all_vm" >
+        <call orders="destroy_all_vm" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="update_disk_devices" >
+        <call orders="update_disk_devices" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="update_network_devices" >
+        <call orders="update_network_devices" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="update_firewall" >
+        <call orders="update_firewall" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+    
+    <order name="create_all_buckets" >
+        <echo message="Creating Aws S3 buckets ..."/>
+        <foreach    items="//buckets/bucket"
+                    item-name="bucket" >
+            <property name="bn" value="§[§[bucket]§/@name]§"/>
+            <property name="br" value="§[§[bucket]§/@region]§"/>
+
+            <create-bucket name="§[bn]§" region="§[br]§"/>
+            <echo message="+ Aws S3 bucket '§[bn]§' (region '§[br]§') created."/>
+        </foreach>
+        <echo message="-- Aws S3 buckets created."/>
+    </order>
+    
+    <order name="destroy_all_buckets" >
+        <echo message="Destroying Aws S3 buckets ..."/>
+        <foreach    items="//buckets/bucket"
+                    item-name="bucket" >
+            <property name="bn" value="§[§[bucket]§/@name]§"/>
+            <property name="br" value="§[§[bucket]§/@region]§"/>
+
+            <delete-bucket name="§[bn]§" region="§[br]§"/>
+            <echo message="+ Aws S3 bucket '§[bn]§' (region '§[br]§') deleted."/>
+        </foreach>
+        <echo message="-- Aws S3 buckets destroyed."/>
+    </order>
+    
+    
+    <order name="all" >
+        <call    orders="create_all_vm"/>
+        <sleep    millis="2000" />
+        <call    orders="stop_all_vm"/>
+        <sleep    millis="2000" />
+        <call    orders="start_all_vm"/>
+        <sleep    millis="2000" />
+        <call    orders="destroy_all_vm"/>
+    </order>
 
 </sequence>

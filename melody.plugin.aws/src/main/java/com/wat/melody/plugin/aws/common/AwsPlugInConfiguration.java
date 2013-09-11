@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common;
+package com.wat.melody.plugin.aws.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,14 +11,16 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsEc2PooledConnection;
+import com.wat.cloud.aws.s3.AwsS3PooledConnection;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInConfigurationException;
+import com.wat.melody.plugin.aws.common.exception.AwsPlugInConfigurationException;
 
 /**
  * 
@@ -36,24 +38,24 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	// MANDATORY CONFIGURATION DIRECTIVE
-	public static final String EC2_ACCESS_KEY = "accessKey";
-	public static final String EC2_SECRET_KEY = "secretKey";
+	public static final String AWS_ACCESS_KEY = "accessKey";
+	public static final String AWS_SECRET_KEY = "secretKey";
 
 	// OPTIONNAL CONFIGURATION DIRECTIVE
-	public static final String EC2_CONNECTION_TIMEOUT = "aws.conn.socket.connect.timeout";
-	public static final String EC2_READ_TIMEOUT = "aws.conn.socket.read.timeout";
-	public static final String EC2_CONNECTION_RETRY = "aws.conn.socket.max.error.retry";
-	public static final String EC2_SEND_BUFFER_SIZE_HINT = "aws.conn.socket.buffer.size.send";
-	public static final String EC2_RECEIVE_BUFFER_SIZE_HINTS = "aws.conn.socket.buffer.size.receive";
-	public static final String EC2_MAX_CONNECTION = "aws.conn.max.pool.size";
+	public static final String AWS_CONNECTION_TIMEOUT = "aws.conn.socket.connect.timeout";
+	public static final String AWS_READ_TIMEOUT = "aws.conn.socket.read.timeout";
+	public static final String AWS_CONNECTION_RETRY = "aws.conn.socket.max.error.retry";
+	public static final String AWS_SEND_BUFFER_SIZE_HINT = "aws.conn.socket.buffer.size.send";
+	public static final String AWS_RECEIVE_BUFFER_SIZE_HINTS = "aws.conn.socket.buffer.size.receive";
+	public static final String AWS_MAX_CONNECTION = "aws.conn.max.pool.size";
 
-	public static final String EC2_PROTOCOL = "aws.conn.http.protocol";
-	public static final String EC2_USER_AGENT = "aws.conn.http.useragent";
+	public static final String AWS_PROTOCOL = "aws.conn.http.protocol";
+	public static final String AWS_USER_AGENT = "aws.conn.http.useragent";
 
-	public static final String EC2_PROXY_HOST = "aws.conn.proxy.host";
-	public static final String EC2_PROXY_PORT = "aws.conn.proxy.port";
-	public static final String EC2_PROXY_USERNAME = "aws.conn.proxy.username";
-	public static final String EC2_PROXY_PASSWORD = "aws.conn.proxy.password";
+	public static final String AWS_PROXY_HOST = "aws.conn.proxy.host";
+	public static final String AWS_PROXY_PORT = "aws.conn.proxy.port";
+	public static final String AWS_PROXY_USERNAME = "aws.conn.proxy.username";
+	public static final String AWS_PROXY_PASSWORD = "aws.conn.proxy.password";
 
 	private String _configurationFilePath;
 	private String _accessKey;
@@ -73,7 +75,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (fp == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (an AWS EC2 Plug-In Configuration file path).");
+					+ " (an AWS Plug-In Configuration file path).");
 		}
 		_configurationFilePath = fp;
 	}
@@ -107,190 +109,190 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 
 	private void loadAccessKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_ACCESS_KEY)) {
+		if (!ps.containsKey(AWS_ACCESS_KEY)) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_MISSING_DIRECTIVE, EC2_ACCESS_KEY));
+					Messages.ConfEx_MISSING_DIRECTIVE, AWS_ACCESS_KEY));
 		}
 		try {
-			setAccessKey(ps.get(EC2_ACCESS_KEY));
+			setAccessKey(ps.get(AWS_ACCESS_KEY));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_ACCESS_KEY), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_ACCESS_KEY), Ex);
 		}
 	}
 
 	private void loadSecretKey(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_SECRET_KEY)) {
+		if (!ps.containsKey(AWS_SECRET_KEY)) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_MISSING_DIRECTIVE, EC2_SECRET_KEY));
+					Messages.ConfEx_MISSING_DIRECTIVE, AWS_SECRET_KEY));
 		}
 		try {
-			setSecretKey(ps.get(EC2_SECRET_KEY));
+			setSecretKey(ps.get(AWS_SECRET_KEY));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_SECRET_KEY), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_SECRET_KEY), Ex);
 		}
 	}
 
 	private void loadConnectionTimeout(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_CONNECTION_TIMEOUT)) {
+		if (!ps.containsKey(AWS_CONNECTION_TIMEOUT)) {
 			return;
 		}
 		try {
-			setConnectionTimeout(ps.get(EC2_CONNECTION_TIMEOUT));
+			setConnectionTimeout(ps.get(AWS_CONNECTION_TIMEOUT));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_TIMEOUT),
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_CONNECTION_TIMEOUT),
 					Ex);
 		}
 	}
 
 	private void loadSocketTimeout(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_READ_TIMEOUT)) {
+		if (!ps.containsKey(AWS_READ_TIMEOUT)) {
 			return;
 		}
 		try {
-			setSocketTimeout(ps.get(EC2_READ_TIMEOUT));
+			setSocketTimeout(ps.get(AWS_READ_TIMEOUT));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_READ_TIMEOUT), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_READ_TIMEOUT), Ex);
 		}
 	}
 
 	private void loadMaxErrorRetry(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_CONNECTION_RETRY)) {
+		if (!ps.containsKey(AWS_CONNECTION_RETRY)) {
 			return;
 		}
 		try {
-			setMaxErrorRetry(ps.get(EC2_CONNECTION_RETRY));
+			setMaxErrorRetry(ps.get(AWS_CONNECTION_RETRY));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_CONNECTION_RETRY),
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_CONNECTION_RETRY),
 					Ex);
 		}
 	}
 
 	private void loadMaxConnections(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_MAX_CONNECTION)) {
+		if (!ps.containsKey(AWS_MAX_CONNECTION)) {
 			return;
 		}
 		try {
-			setMaxConnections(ps.get(EC2_MAX_CONNECTION));
+			setMaxConnections(ps.get(AWS_MAX_CONNECTION));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_MAX_CONNECTION), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_MAX_CONNECTION), Ex);
 		}
 	}
 
 	private void loadSocketSendBufferSizeHints(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_SEND_BUFFER_SIZE_HINT)) {
+		if (!ps.containsKey(AWS_SEND_BUFFER_SIZE_HINT)) {
 			return;
 		}
 		try {
-			setSocketSendBufferSizeHints(ps.get(EC2_SEND_BUFFER_SIZE_HINT));
+			setSocketSendBufferSizeHints(ps.get(AWS_SEND_BUFFER_SIZE_HINT));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
-					EC2_SEND_BUFFER_SIZE_HINT), Ex);
+					AWS_SEND_BUFFER_SIZE_HINT), Ex);
 		}
 	}
 
 	private void loadSocketReceiveBufferSizeHints(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_RECEIVE_BUFFER_SIZE_HINTS)) {
+		if (!ps.containsKey(AWS_RECEIVE_BUFFER_SIZE_HINTS)) {
 			return;
 		}
 		try {
 			setSocketReceiveBufferSizeHints(ps
-					.get(EC2_RECEIVE_BUFFER_SIZE_HINTS));
+					.get(AWS_RECEIVE_BUFFER_SIZE_HINTS));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE,
-					EC2_RECEIVE_BUFFER_SIZE_HINTS), Ex);
+					AWS_RECEIVE_BUFFER_SIZE_HINTS), Ex);
 		}
 	}
 
 	private void loadProtocol(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_PROTOCOL)) {
+		if (!ps.containsKey(AWS_PROTOCOL)) {
 			return;
 		}
 		try {
-			setProtocol(ps.get(EC2_PROTOCOL));
+			setProtocol(ps.get(AWS_PROTOCOL));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROTOCOL), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_PROTOCOL), Ex);
 		}
 	}
 
 	private void loadUserAgent(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_USER_AGENT)) {
+		if (!ps.containsKey(AWS_USER_AGENT)) {
 			return;
 		}
 		try {
-			setUserAgent(ps.get(EC2_USER_AGENT));
+			setUserAgent(ps.get(AWS_USER_AGENT));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_USER_AGENT), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_USER_AGENT), Ex);
 		}
 	}
 
 	private void loadProxyHost(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_PROXY_HOST)) {
+		if (!ps.containsKey(AWS_PROXY_HOST)) {
 			return;
 		}
 		try {
-			setProxyHost(ps.get(EC2_PROXY_HOST));
+			setProxyHost(ps.get(AWS_PROXY_HOST));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_HOST), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_PROXY_HOST), Ex);
 		}
 	}
 
 	private void loadProxyPort(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_PROXY_PORT)) {
+		if (!ps.containsKey(AWS_PROXY_PORT)) {
 			return;
 		}
 		try {
-			setProxyPort(ps.get(EC2_PROXY_PORT));
+			setProxyPort(ps.get(AWS_PROXY_PORT));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PORT), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_PROXY_PORT), Ex);
 		}
 	}
 
 	private void loadProxyUsername(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_PROXY_USERNAME)) {
+		if (!ps.containsKey(AWS_PROXY_USERNAME)) {
 			return;
 		}
 		try {
-			setProxyUsername(ps.get(EC2_PROXY_USERNAME));
+			setProxyUsername(ps.get(AWS_PROXY_USERNAME));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_USERNAME), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_PROXY_USERNAME), Ex);
 		}
 	}
 
 	private void loadProxyPassword(PropertySet ps)
 			throws AwsPlugInConfigurationException {
-		if (!ps.containsKey(EC2_PROXY_PASSWORD)) {
+		if (!ps.containsKey(AWS_PROXY_PASSWORD)) {
 			return;
 		}
 		try {
-			setProxyPassword(ps.get(EC2_PROXY_PASSWORD));
+			setProxyPassword(ps.get(AWS_PROXY_PASSWORD));
 		} catch (AwsPlugInConfigurationException Ex) {
 			throw new AwsPlugInConfigurationException(Msg.bind(
-					Messages.ConfEx_INVALID_DIRECTIVE, EC2_PROXY_PASSWORD), Ex);
+					Messages.ConfEx_INVALID_DIRECTIVE, AWS_PROXY_PASSWORD), Ex);
 		}
 	}
 
@@ -301,8 +303,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
 				throw new AwsPlugInConfigurationException(Msg.bind(
 						Messages.ConfEx_INVALID_AWS_CREDENTIALS,
-						getAWSAccessKeyId(), getAWSSecretKey(), EC2_ACCESS_KEY,
-						EC2_SECRET_KEY, getFilePath()));
+						getAWSAccessKeyId(), getAWSSecretKey(), AWS_ACCESS_KEY,
+						AWS_SECRET_KEY, getFilePath()));
 			} else {
 				throw new AwsPlugInConfigurationException(
 						Messages.ConfEx_VALIDATION, Ex);
@@ -338,7 +340,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (accessKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the AWS EC2 accesKey).");
+					+ " (the AWS Acces Key ID).");
 		}
 		if (accessKey.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -359,7 +361,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (secretKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the AWS EC2 secretKey).");
+					+ " (the AWS Secret Key).");
 		}
 		if (secretKey.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -636,7 +638,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ " (the Proxy Host FQDN or IP address used to connect"
-					+ " to AWS EC2).");
+					+ " to AWS).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -661,7 +663,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the Proxy Port used to connect to AWS EC2; "
+					+ " (the Proxy Port used to connect to AWS; "
 					+ "a positive Integer).");
 		}
 		if (val.trim().length() == 0) {
@@ -695,7 +697,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the Proxy Username used to connect to AWS EC2).");
+					+ " (the Proxy Username used to connect to AWS).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -715,7 +717,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		if (val == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
-					+ " (the Proxy Password used to connect to AWS EC2).");
+					+ " (the Proxy Password used to connect to AWS).");
 		}
 		if (val.trim().length() == 0) {
 			throw new AwsPlugInConfigurationException(
@@ -736,12 +738,25 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 * @throws IllegalArgumentException
 	 *             if the given region is <tt>null</tt>.
 	 * @throws AmazonServiceException
-	 *             if the operation fails.
+	 *             if the operation fails (ex: credentials not valid).
 	 * @throws AmazonClientException
-	 *             if the operation fails.
+	 *             if the operation fails (ex: network error).
 	 */
-	public AmazonEC2 getCloudConnection(String region) {
-		return AwsEc2PooledConnection.getCloudConnection(region, this, getCC());
+	public AmazonEC2 getAwsEc2Connection(String region) {
+		return AwsEc2PooledConnection
+				.getPooledConnection(region, this, getCC());
+	}
+
+	/**
+	 * @return an {@link AmazonS3} object.
+	 * 
+	 * @throws AmazonServiceException
+	 *             if the operation fails (ex: credentials not valid).
+	 * @throws AmazonClientException
+	 *             if the operation fails (ex: network error).
+	 */
+	public AmazonS3 getAwsS3Connection() {
+		return AwsS3PooledConnection.getPooledConnection(this, getCC());
 	}
 
 }

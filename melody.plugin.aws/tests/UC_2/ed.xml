@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><environment>
+	
+	<buckets>
+		<bucket name="couille" region="eu-west-1"/>
+		<bucket name="new-one-super-bucket2" region="us-east-1"/>
+		<bucket name="bucket3" region="us-west-1"/>
+	</buckets>
+		
+</environment>

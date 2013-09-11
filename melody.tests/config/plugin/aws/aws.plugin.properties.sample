@@ -7,22 +7,22 @@
 #####################
 
 ### the class which will load this configuration
-plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.ec2.common.AwsPlugInConfiguration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.aws.common.AwsPlugInConfiguration
 
 
 #####################
-### AWS EC2 credentials
+### AWS credentials
 #####################
 
-### the AWS EC2 access key
+### the AWS access key
 accessKey=<replace me with your AWS Acces Key>
 
-### the AWS EC2 access key
+### the AWS access key
 secretKey=<replace it with your AWS Secret Key>
 
 
 #####################
-### AWS EC2 Client Configuration
+### AWS Client Configuration
 #####################
 
 ### Socket settings

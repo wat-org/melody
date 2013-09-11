@@ -7,19 +7,19 @@ import com.wat.melody.api.exception.TaskException;
  * @author Guillaume Cornet
  * 
  */
-public class AwsException extends TaskException {
+public class AwsPlugInEc2Exception extends TaskException {
 
 	private static final long serialVersionUID = 7682456925787679884L;
 
-	public AwsException(String msg) {
+	public AwsPlugInEc2Exception(String msg) {
 		super(msg);
 	}
 
-	public AwsException(Throwable cause) {
+	public AwsPlugInEc2Exception(Throwable cause) {
 		super(cause);
 	}
 
-	public AwsException(String msg, Throwable cause) {
+	public AwsPlugInEc2Exception(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 

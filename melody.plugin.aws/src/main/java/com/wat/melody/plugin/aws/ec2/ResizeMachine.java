@@ -7,7 +7,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
+import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 
 /**
  * 
@@ -27,16 +27,18 @@ public class ResizeMachine extends AbstractOperation {
 	}
 
 	@Override
-	public void doProcessing() throws AwsException, InterruptedException {
+	public void doProcessing() throws AwsPlugInEc2Exception,
+			InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceSizing(
 					getInstanceDatas().getInstanceType());
 		} catch (OperationException Ex) {
-			throw new AwsException(new NodeRelatedException(getTargetElement(),
-					Msg.bind(Messages.ResizeEx_GENERIC_FAIL, getInstanceDatas()
-							.getInstanceType()), Ex));
+			throw new AwsPlugInEc2Exception(new NodeRelatedException(
+					getTargetElement(), Msg.bind(
+							Messages.ResizeEx_GENERIC_FAIL, getInstanceDatas()
+									.getInstanceType()), Ex));
 		}
 	}
 

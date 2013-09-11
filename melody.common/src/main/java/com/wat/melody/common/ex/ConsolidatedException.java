@@ -87,4 +87,8 @@ public class ConsolidatedException extends MelodyException {
 		return msg != null ? msg + err : err.toString();
 	}
 
+	/*
+	 * TODO : override printStackTrace
+	 */
+
 }

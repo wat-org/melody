@@ -30,7 +30,7 @@ public abstract class AwsEc2PooledConnection {
 	 *            Connection to the requested region. Can be <tt>null</tt>. If
 	 *            <tt>null</tt>, default settings will be used.
 	 * 
-	 * @return a {@link AmazonEC2} object which is already configured for the
+	 * @return an {@link AmazonEC2} object which is already configured for the
 	 *         requested region, or <tt>null</tt> if the requested region is not
 	 *         valid.
 	 * 
@@ -40,11 +40,11 @@ public abstract class AwsEc2PooledConnection {
 	 *             <li>if the given {@link AWSCredentials} is <tt>null</tt> ;</li>
 	 *             </ul>
 	 * @throws AmazonServiceException
-	 *             if the operation fails.
+	 *             if the operation fails (ex: credentials not valid).
 	 * @throws AmazonClientException
-	 *             if the operation fails.
+	 *             if the operation fails (ex: network error).
 	 */
-	public static AmazonEC2 getCloudConnection(String region,
+	public static AmazonEC2 getPooledConnection(String region,
 			AWSCredentials cred, ClientConfiguration cc) {
 		if (region == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -56,9 +56,11 @@ public abstract class AwsEc2PooledConnection {
 					+ "Must be a valid "
 					+ AWSCredentials.class.getCanonicalName() + ".");
 		}
+
+		String hkey = cred.getAWSAccessKeyId() + "-" + region;
 		AmazonEC2 connect = null;
-		if (_connectionPool.containsKey(region)) {
-			connect = _connectionPool.get(region);
+		if (_connectionPool.containsKey(hkey)) {
+			connect = _connectionPool.get(hkey);
 		}
 		if (connect == null) {
 			connect = new AmazonEC2Client(cred, cc);
@@ -67,7 +69,7 @@ public abstract class AwsEc2PooledConnection {
 				return null;
 			}
 			connect.setEndpoint(ep);
-			_connectionPool.put(region, connect);
+			_connectionPool.put(hkey, connect);
 		}
 		return connect;
 	}

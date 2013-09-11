@@ -727,6 +727,11 @@ public class ProcessorManagerLoader {
 	public void loadGlobalConfigurationFile(String gcfPath)
 			throws ConfigurationLoadingException, IOException {
 		try {
+			// make it absolute
+			File f = new File(gcfPath);
+			if (!f.isAbsolute()) {
+				gcfPath = f.getCanonicalPath();
+			}
 			PropertySet oProps = new PropertySet(gcfPath);
 
 			// Mandatory Configuration Directives
@@ -815,9 +820,14 @@ public class ProcessorManagerLoader {
 				throw new ConfigurationLoadingException(
 						Messages.ConfEx_EMPTY_DIRECTIVE);
 			}
+			// make it absolute
+			File f = new File(val);
+			if (!f.isAbsolute()) {
+				val = f.getCanonicalPath();
+			}
 			FS.validateFileExists(val);
 			org.apache.log4j.xml.DOMConfigurator.configure(val);
-		} catch (MelodyException | FactoryConfigurationError Ex) {
+		} catch (MelodyException | FactoryConfigurationError | IOException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, LOGGING_CONFIG_FILE), Ex);
 		}
@@ -1321,6 +1331,11 @@ public class ProcessorManagerLoader {
 			IOException {
 		PropertySet pcps = null;
 		try {
+			// make it absolute
+			File f = new File(pcf);
+			if (!f.isAbsolute()) {
+				pcf = f.getCanonicalPath();
+			}
 			pcps = new PropertySet(pcf);
 		} catch (IllegalFileException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(

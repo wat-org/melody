@@ -68,11 +68,13 @@ public class AwsEc2CloudDisk {
 	public static List<Volume> getInstanceVolumes(AmazonEC2 ec2, Instance i) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Instance.");
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
 		}
 		Filter f = new Filter();
 		f.withName("attachment.instance-id");
@@ -166,7 +168,8 @@ public class AwsEc2CloudDisk {
 	public static Volume getVolume(AmazonEC2 ec2, String sAwsVolumeId) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsVolumeId == null || sAwsVolumeId.trim().length() == 0) {
 			return null;
@@ -178,8 +181,10 @@ public class AwsEc2CloudDisk {
 		try {
 			return ec2.describeVolumes(dvreq).getVolumes().get(0);
 		} catch (AmazonServiceException Ex) {
-			// Means that the given AwsVolumeID is not valid
-			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+				// Means that the given AwsVolumeID is not valid
 				return null;
 			} else {
 				throw Ex;
@@ -275,7 +280,8 @@ public class AwsEc2CloudDisk {
 			long sleepfirst) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsVolumeId == null || sAwsVolumeId.trim().length() == 0) {
 			throw new IllegalArgumentException(timeout + ": Not accepted. "
@@ -445,7 +451,8 @@ public class AwsEc2CloudDisk {
 			throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsVolumeId == null || sAwsVolumeId.trim().length() == 0) {
 			throw new IllegalArgumentException(timeout + ": Not accepted. "
@@ -525,11 +532,13 @@ public class AwsEc2CloudDisk {
 			throws InterruptedException, WaitVolumeStatusException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (volumes == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid List<Volume>.");
+					+ "Must be a valid " + List.class.getCanonicalName() + "<"
+					+ Volume.class.getCanonicalName() + ">.");
 		}
 		for (DiskDevice disk : volumes) {
 			// Detach volume
@@ -603,7 +612,8 @@ public class AwsEc2CloudDisk {
 			WaitVolumeAttachmentStatusException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -615,7 +625,8 @@ public class AwsEc2CloudDisk {
 		}
 		if (diskList == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DiskList.");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		for (DiskDevice disk : diskList) {
 			// Create volume
@@ -677,7 +688,8 @@ public class AwsEc2CloudDisk {
 			String sAwsInstanceId, DiskDeviceList diskList) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -685,7 +697,8 @@ public class AwsEc2CloudDisk {
 		}
 		if (diskList == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid DiskList.");
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
 		}
 		for (DiskDevice disk : diskList) {
 			// Modify the deleteOnTermimation flag

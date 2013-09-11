@@ -1,4 +1,4 @@
-package com.wat.melody.plugin.aws.ec2.common.exception;
+package com.wat.melody.plugin.aws.common.exception;
 
 import com.wat.melody.api.exception.PlugInConfigurationException;
 

@@ -74,13 +74,14 @@ com.wat.melody.plugin.ssh.Ssh, \
 com.wat.melody.plugin.ssh.Upload, \
 com.wat.melody.plugin.ssh.Download
 
-### Folder where plugins configuration are stored (used to eliminate redundancy in folder declaration)
+### Folder where Plug-In configuration are stored (used to eliminate redundancy in folder declaration)
 pluginConfigurationFolderPath=${rootFolderPath}/config/plugin
 
-### list all Plugin Configuration Directive
+### list all Plug-In Configuration Directive
 ### comma separated list
 plugin.configuration.directives=ssh.plugin.configuration.filepath
 
+# The path to the configuration file of the SSH SCP Plug-In
 ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugin.properties
 
 

@@ -176,6 +176,29 @@
 		</java>
 	</target>
 
+
+	<!-- USE CASE 02 -->
+
+	<target name="UC2_01_create_buckets">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_2/mc.properties" />
+			<arg value="-o" />
+			<arg value="create_all_buckets" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC2_01_delete_buckets">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_2/mc.properties" />
+			<arg value="-o" />
+			<arg value="delete_all_buckets" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
 	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroyenv" />
 
 </project>

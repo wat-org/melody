@@ -8,7 +8,7 @@ import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
+import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 
 /**
  * 
@@ -30,27 +30,29 @@ public class UpdateDiskDevices extends AbstractOperation {
 	}
 
 	@Override
-	public void validate() throws AwsException {
+	public void validate() throws AwsPlugInEc2Exception {
 		super.validate();
 
 		// Build a DiskDeviceList with Disk Device Nodes found in the RD
 		try {
 			setDiskDeviceList(new DiskDevicesLoader().load(getTargetElement()));
 		} catch (NodeRelatedException Ex) {
-			throw new AwsException(Ex);
+			throw new AwsPlugInEc2Exception(Ex);
 		}
 	}
 
 	@Override
-	public void doProcessing() throws AwsException, InterruptedException {
+	public void doProcessing() throws AwsPlugInEc2Exception,
+			InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
 			getInstance().ensureInstanceDiskDevicesAreUpToDate(
 					getDiskDeviceList());
 		} catch (OperationException Ex) {
-			throw new AwsException(new NodeRelatedException(getTargetElement(),
-					Messages.UpdateDiskDevEx_GENERIC_FAIL, Ex));
+			throw new AwsPlugInEc2Exception(new NodeRelatedException(
+					getTargetElement(), Messages.UpdateDiskDevEx_GENERIC_FAIL,
+					Ex));
 		}
 	}
 

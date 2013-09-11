@@ -61,7 +61,8 @@ public abstract class AwsEc2Cloud {
 			AmazonClientException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 
 		/*
@@ -95,7 +96,8 @@ public abstract class AwsEc2Cloud {
 	public static Instance getInstance(AmazonEC2 ec2, String sAwsInstanceId) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			return null;
@@ -108,8 +110,10 @@ public abstract class AwsEc2Cloud {
 			return ec2.describeInstances(direq).getReservations().get(0)
 					.getInstances().get(0);
 		} catch (AmazonServiceException Ex) {
-			// Means that the given AwsInstanceID is not valid
-			if (Ex.getErrorCode().indexOf("InvalidInstanceID") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidInstanceID") != -1) {
+				// Means that the given AwsInstanceID is not valid
 				return null;
 			} else {
 				throw Ex;
@@ -141,7 +145,8 @@ public abstract class AwsEc2Cloud {
 	public static String getEndpoint(AmazonEC2 ec2, String sRegion) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sRegion == null || sRegion.trim().length() == 0) {
 			return null;
@@ -153,8 +158,10 @@ public abstract class AwsEc2Cloud {
 		try {
 			return ec2.describeRegions(drreq).getRegions().get(0).getEndpoint();
 		} catch (AmazonServiceException Ex) {
-			// Means that the given region is not valid
-			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+				// Means that the given region is not valid
 				return null;
 			} else {
 				throw Ex;
@@ -186,7 +193,8 @@ public abstract class AwsEc2Cloud {
 	public static Image getImageId(AmazonEC2 ec2, String sImageId) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sImageId == null || sImageId.trim().length() == 0) {
 			return null;
@@ -197,8 +205,10 @@ public abstract class AwsEc2Cloud {
 		try {
 			return ec2.describeImages(direq).getImages().get(0);
 		} catch (AmazonServiceException Ex) {
-			// Means that the given AMI Id is not valid
-			if (Ex.getErrorCode().indexOf("InvalidAMIID") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidAMIID") != -1) {
+				// Means that the given AMI Id is not valid
 				return null;
 			} else {
 				throw Ex;
@@ -252,10 +262,6 @@ public abstract class AwsEc2Cloud {
 	 *             if ec2 is <code>null</code>.
 	 */
 	public static boolean instanceExists(AmazonEC2 ec2, String sAwsInstanceId) {
-		if (ec2 == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
-		}
 		return getInstance(ec2, sAwsInstanceId) != null;
 	}
 
@@ -290,7 +296,8 @@ public abstract class AwsEc2Cloud {
 	public static boolean availabilityZoneExists(AmazonEC2 ec2, String sAZ) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAZ == null || sAZ.trim().length() == 0) {
 			return false;
@@ -305,8 +312,10 @@ public abstract class AwsEc2Cloud {
 					.getZoneName();
 			return true;
 		} catch (AmazonServiceException Ex) {
-			// Means that the given Availability Zone is not valid
-			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+				// Means that the given Availability Zone is not valid
 				return false;
 			} else {
 				throw Ex;
@@ -490,7 +499,8 @@ public abstract class AwsEc2Cloud {
 			long sleepfirst) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException(sAwsInstanceId
@@ -573,7 +583,8 @@ public abstract class AwsEc2Cloud {
 			String sImageId, String sAZ, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 
 		String sSGName = AwsEc2CloudNetwork.newSecurityGroupName();
@@ -631,7 +642,8 @@ public abstract class AwsEc2Cloud {
 			String sAwsInstanceId, long timeout) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException(sAwsInstanceId
@@ -678,7 +690,8 @@ public abstract class AwsEc2Cloud {
 			long timeout) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException(sAwsInstanceId
@@ -724,7 +737,8 @@ public abstract class AwsEc2Cloud {
 			long timeout) throws InterruptedException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -777,7 +791,8 @@ public abstract class AwsEc2Cloud {
 			String sAwsInstanceId, InstanceType type) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (sAwsInstanceId == null || sAwsInstanceId.trim().length() == 0) {
 			throw new IllegalArgumentException(sAwsInstanceId
@@ -786,7 +801,8 @@ public abstract class AwsEc2Cloud {
 		}
 		if (type == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be an InstanceType.");
+					+ "Must be a valid "
+					+ InstanceType.class.getCanonicalName() + ".");
 		}
 
 		ModifyInstanceAttributeRequest miareq = null;
@@ -797,8 +813,10 @@ public abstract class AwsEc2Cloud {
 		try {
 			ec2.modifyInstanceAttribute(miareq);
 		} catch (AmazonServiceException Ex) {
-			// Means that the operating failed
-			if (Ex.getErrorCode().indexOf("InternalError") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InternalError") != -1) {
+				// Means that the operating failed
 				return false;
 			} else {
 				throw Ex;

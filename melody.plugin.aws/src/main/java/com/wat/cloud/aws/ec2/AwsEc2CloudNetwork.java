@@ -61,6 +61,11 @@ public class AwsEc2CloudNetwork {
 
 	public static void detachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceList toRemove) throws InterruptedException {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
 		if (toRemove == null) {
 			return;
 		}
@@ -73,6 +78,11 @@ public class AwsEc2CloudNetwork {
 
 	public static void attachNetworkDevices(AmazonEC2 ec2, Instance i,
 			NetworkDeviceList toAdd) throws InterruptedException {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
 		if (toAdd == null) {
 			return;
 		}
@@ -85,6 +95,11 @@ public class AwsEc2CloudNetwork {
 
 	public static String getSecurityGroup(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
+		if (i == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Instance.class.getCanonicalName()
+					+ ".");
+		}
 		/*
 		 * always return the security group associated to eth0 : with Aws Ec2,
 		 * only 1 network device (e.g. eth0) can be allocated.
@@ -198,7 +213,9 @@ public class AwsEc2CloudNetwork {
 			ec2.deleteSecurityGroup(dsgreq);
 			log.debug("Security Group '" + sgname + "' deleted.");
 		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return;
 			} else {
 				throw Ex;

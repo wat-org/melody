@@ -45,7 +45,8 @@ public class AwsEc2CloudKeyPair {
 	public static KeyPairInfo getKeyPair(AmazonEC2 ec2, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (keyPairName == null) {
 			return null;
@@ -56,8 +57,10 @@ public class AwsEc2CloudKeyPair {
 		try {
 			return ec2.describeKeyPairs(dkpreq).getKeyPairs().get(0);
 		} catch (AmazonServiceException Ex) {
-			// Means that the given Key Pair Name is not valid
-			if (Ex.getErrorCode().indexOf("InvalidKeyPair") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidKeyPair") != -1) {
+				// Means that the given Key Pair Name is not valid
 				return null;
 			} else {
 				throw Ex;
@@ -143,15 +146,17 @@ public class AwsEc2CloudKeyPair {
 			String sPublicKey) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an Aws KeyPair Name).");
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
 		}
 		if (sPublicKey == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid File (a Public Key File).");
+					+ "Must be a valid String (an Open SSH Public Key).");
 		}
 
 		log.trace(Msg.bind(Messages.CommonMsg_GENKEY_BEGIN, keyPairName));
@@ -162,8 +167,10 @@ public class AwsEc2CloudKeyPair {
 		try {
 			ec2.importKeyPair(ikpreq);
 		} catch (AmazonServiceException Ex) {
-			// Means that the given Key Pair Name is not valid
-			if (Ex.getErrorCode().indexOf("InvalidKeyPair.Duplicate") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidKeyPair.Duplicate") != -1) {
+				// Means that the given Key Pair Name is not valid
 				log.debug(Msg.bind(Messages.CommonMsg_GENKEY_DUP, keyPairName));
 				return;
 			} else {
@@ -193,11 +200,13 @@ public class AwsEc2CloudKeyPair {
 	public static void deleteKeyPair(AmazonEC2 ec2, KeyPairName keyPairName) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid AmazonEC2.");
+					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
+					+ ".");
 		}
 		if (keyPairName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an Aws KeyPair Name).");
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
 		}
 
 		log.trace(Msg.bind(Messages.CommonMsg_DELKEY_BEGIN, keyPairName));

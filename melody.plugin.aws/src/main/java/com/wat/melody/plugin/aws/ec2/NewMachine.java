@@ -17,7 +17,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.ec2.common.AbstractOperation;
 import com.wat.melody.plugin.aws.ec2.common.Messages;
-import com.wat.melody.plugin.aws.ec2.common.exception.AwsException;
+import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 
 /**
  * 
@@ -37,7 +37,8 @@ public class NewMachine extends AbstractOperation {
 	}
 
 	@Override
-	public void doProcessing() throws AwsException, InterruptedException {
+	public void doProcessing() throws AwsPlugInEc2Exception,
+			InterruptedException {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
@@ -48,7 +49,7 @@ public class NewMachine extends AbstractOperation {
 					getInstanceDatas().getKeyPairName(),
 					getInstanceDatas().getCreateTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
-			throw new AwsException(
+			throw new AwsPlugInEc2Exception(
 					new NodeRelatedException(getTargetElement(),
 							Msg.bind(Messages.CreateEx_GENERIC_FAIL,
 									getInstanceDatas()), Ex));
@@ -62,7 +63,7 @@ public class NewMachine extends AbstractOperation {
 	@Override
 	public InstanceController newAwsInstanceController() {
 		// create AwsInstanceControllerWithKeyPairManagement class ?
-		return new AwsInstanceController(getCloudConnection(), getInstanceId()) {
+		return new AwsInstanceController(getEc2Connection(), getInstanceId()) {
 
 			public String createInstance(InstanceType type, String site,
 					String imageId, KeyPairName keyPairName, long createTimeout)
