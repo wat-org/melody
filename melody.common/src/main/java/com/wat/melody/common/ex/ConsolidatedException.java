@@ -47,7 +47,8 @@ public class ConsolidatedException extends MelodyException {
 	private Set<Throwable> setCauses(Set<Throwable> causes) {
 		if (causes == null) {
 			throw new IllegalArgumentException("null:Not accepted. "
-					+ "Must be a Set<Throwable>.");
+					+ "Must be a " + Set.class.getCanonicalName() + "<"
+					+ Throwable.class.getCanonicalName() + ">.");
 		}
 		Set<Throwable> previous = getCauses();
 		_causes = causes;

@@ -7,6 +7,7 @@ import com.amazonaws.AmazonClientException;
 import com.wat.cloud.aws.s3.AwsS3Cloud;
 import com.wat.cloud.aws.s3.exception.BucketDoesNotExistsException;
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
@@ -25,6 +26,10 @@ public class DeleteBucket extends AbstractOperation {
 
 	public static final String DELETE_BUCKET = "delete-bucket";
 
+	public static final String CLEAN_ATTR = "remove-all-objects";
+
+	private boolean _clean = true;
+
 	@Override
 	public void validate() throws AwsPlugInS3Exception {
 		super.validate();
@@ -36,6 +41,10 @@ public class DeleteBucket extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
+			if (getClean() == true) {
+				AwsS3Cloud.removeAllKeys(getS3Connection(), getBucketName()
+						.getValue());
+			}
 			AwsS3Cloud.deleteBucket(getS3Connection(), getBucketName()
 					.getValue());
 		} catch (BucketDoesNotExistsException Ex) {
@@ -46,6 +55,17 @@ public class DeleteBucket extends AbstractOperation {
 					Messages.DeleteBucketEx_GENERIC_FAIL, getBucketName()), Ex);
 		}
 
+	}
+
+	public boolean getClean() {
+		return _clean;
+	}
+
+	@Attribute(name = CLEAN_ATTR)
+	public boolean setClean(boolean b) {
+		boolean previous = getClean();
+		_clean = b;
+		return previous;
 	}
 
 }

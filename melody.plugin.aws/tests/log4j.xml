@@ -46,6 +46,10 @@
 	<!--
 		log ALL messages from package 'com.amazonaws' and 'org.apache.http' into the a specific log file
 	-->
+	<logger name="com.wat.cloud.aws" additivity="false" >
+		<level value="ALL" />
+		<appender-ref ref="awsfile" />
+	</logger>
 	<logger name="com.amazonaws" additivity="false" >
 		<level value="ALL" />
 		<appender-ref ref="awsfile" />
