@@ -29,6 +29,7 @@ public class Messages extends NLS {
 	public static String TaskFactoryEx_NE_DUPLICATE;
 	public static String TaskFactoryEx_ADD_NE_SPEC_CONFLICT;
 	public static String TaskFactoryEx_CREATE_NE_SPEC_CONFLICT;
+	public static String TaskFactoryEx_CREATE_NE_SPEC_RT_CONFLICT;
 	public static String TaskFactoryEx_CONVERT_ATTR;
 	public static String TaskFactoryEx_CONVERT_ATTR_TO_ENUM;
 	public static String TaskFactoryEx_EXPAND_ATTR;

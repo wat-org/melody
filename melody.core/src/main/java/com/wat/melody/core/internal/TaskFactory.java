@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -520,6 +521,14 @@ public class TaskFactory {
 						+ "have been introduced.", Ex);
 			} catch (InvocationTargetException Ex) {
 				throw new TaskFactoryException(Ex.getCause());
+			}
+			/*
+			 * Verify that the object returned by the Create method is public.
+			 */
+			if (!Modifier.isPublic(o.getClass().getModifiers())) {
+				throw new TaskFactoryException(Msg.bind(
+						Messages.TaskFactoryEx_CREATE_NE_SPEC_RT_CONFLICT, m,
+						elmt.getNodeName(), o.getClass().getCanonicalName()));
 			}
 
 			setAllMembers(o, elmt.getAttributes());

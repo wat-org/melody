@@ -197,11 +197,11 @@ public class TaskFactoryCache {
 
 		/*
 		 * TODO : feature request : Attribute annotation should have a 'factory'
-		 * attribute,which specifies a static method to create the param from a
-		 * string.
+		 * attribute, which specifies a static method to create the parameter
+		 * from a string.
 		 * 
-		 * Til this feature is not impl, we must deal with Path in a specific
-		 * way ...
+		 * Till this feature is not implemented, we must deal with Path in a
+		 * specific way ...
 		 */
 		if (ReflectionHelper.implement(param, Path.class)) {
 			return;
@@ -334,13 +334,21 @@ public class TaskFactoryCache {
 	 * The create's method should respect the following specifications :
 	 * <ul>
 	 * <li>must be <tt>public</tt> ;</li>
-	 * <li>must not be an <tt>abstract</tt> ;</li>
+	 * <li>must not be <tt>abstract</tt> ;</li>
 	 * <li>must have an {@link NestedElement} annotation whose name is equal to
 	 * the given attribute name (no case match) and whose type is equal to
 	 * {@link NestedElement.Type#CREATE} ;</li>
 	 * <li>must not return <tt>void</tt> ;</li>
 	 * <li>must have 0 argument ;</li>
 	 * </ul>
+	 * 
+	 * <p>
+	 * Also note that the object returned by the Create method must be public
+	 * (For example, if the object returned by the Create method is a subclass
+	 * of the Create Method returned type, and if this subclass is private, we
+	 * will only know it at runtime). So we can't verify this here. Because we
+	 * can't verify this here, this verification should be done at runtime.
+	 * </p>
 	 * 
 	 * @param c
 	 * @param a
@@ -352,11 +360,6 @@ public class TaskFactoryCache {
 	 */
 	private void validateCreateMethod(Class<?> c, NestedElement a, Method m)
 			throws TaskFactoryException {
-		/*
-		 * TODO : the given create method return type must be public. Not easy
-		 * to validate because a create method can return a private subtype...
-		 * Don't see how to validate this...
-		 */
 		if (!Modifier.isPublic(m.getModifiers())
 				|| Modifier.isAbstract(m.getModifiers())
 				|| m.getReturnType() == Void.TYPE

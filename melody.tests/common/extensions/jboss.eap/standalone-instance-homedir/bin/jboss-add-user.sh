@@ -14,6 +14,12 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
   exit 1 
 }
 
+if [ -z "${JBOSS_BASE_DIR}" ]; then
+  echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss EAP Standalone instance's base dir." >&2
+  echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
+  exit 1 
+fi
+
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
@@ -29,13 +35,13 @@ ADD_USER_CMD="LANG=\"${LANG}\" \
 ### validate some stuff
 [ -e "${JBOSS_ADD_USER}" ] || {
   echo "File '${JBOSS_ADD_USER}' doesn't exists."
-  echo "The variable \$JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
+  echo "The variable JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
   exit 1 
 }
 
 [ -x "${JBOSS_ADD_USER}" ] || {
   echo "File '${JBOSS_ADD_USER}' is not executable."
-  echo "The variable \$JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
+  echo "The variable JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
   exit 1 
 }
 
