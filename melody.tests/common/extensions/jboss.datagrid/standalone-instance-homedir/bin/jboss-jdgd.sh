@@ -63,6 +63,7 @@ JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JBOSS_HOME=\"${JBOSS_HOME}\" \
               JBOSS_BASE_DIR=\"${JBOSS_BASE_DIR}\" \
               JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
+              LISTEN_IP=\"${LISTEN_IP}\" \
               RUN_CONF=\"${RUN_CONF}\" \
               \"${JBOSS_HOME}/bin/standalone.sh\" \
               -b ${LISTEN_IP} \
