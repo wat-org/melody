@@ -20,7 +20,7 @@
 			resources, i.e. build is platform dependent! -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<libvirt.maven.repo>http://libvirt.org/maven2/</libvirt.maven.repo>
-		<libvirt.version>0.4.9</libvirt.version>
+		<libvirt.version>0.5.1</libvirt.version>
 	</properties>
 
 	<dependencies>
@@ -93,7 +93,7 @@
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
 			<artifactId>jna</artifactId>
-			<version>3.0.9</version>
+			<version>3.5.0</version>
 		</dependency>
 	</dependencies>
 

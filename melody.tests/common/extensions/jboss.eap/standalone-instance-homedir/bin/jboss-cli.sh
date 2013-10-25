@@ -6,12 +6,12 @@
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 [ -r "${JBOSS_CONF}" ] || {
   echo "Cannot read configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
 . "${JBOSS_CONF}" || {
   echo "Failed to load configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
 ## Set defaults.
@@ -34,13 +34,13 @@ CLI_CMD="LANG=\"${LANG}\" \
 [ -e "${JBOSS_CLI}" ] || {
   echo "File '${JBOSS_CLI}' doesn't exists."
   echo "The variable JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine CLI script." >&2
-  exit 1 
+  exit 1
 }
 
 [ -x "${JBOSS_CLI}" ] || {
   echo "File '${JBOSS_CLI}' is not executable."
   echo "The variable JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine CLI script." >&2
-  exit 1 
+  exit 1
 }
 
 ###

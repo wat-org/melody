@@ -9,25 +9,25 @@
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 [ -r "${JBOSS_CONF}" ] || {
   echo "Cannot read configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
 . "${JBOSS_CONF}" || {
   echo "Failed to load configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
-## Verify that the script is launched by the jboss user 
+## Verify that the script is launched by the jboss user
 #
 if [ -z "${JBOSS_USER}" ]; then
   echo "Variable JBOSS_USER is not defined or empty. It should contain the JBoss EAP Standalone instance's user owner." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
-  exit 1 
+  exit 1
 fi
 
 if [ "$(id -un)" != "${JBOSS_USER}" ]; then
   echo "Should be run as '${JBOSS_USER}'." >&2
-  exit 1 
+  exit 1
 fi
 
 ## define java program
@@ -44,8 +44,8 @@ fi
 cd "$(dirname "$(readlink -f "$0")")"
 
 ######## variables definition
-# Main class
-declare jarfile="update-password-0.0.1-jar-with-dependencies.jar"
+# jar, which defines the main class
+declare jarfile="lib/update-password/update-password-0.0.1-jar-with-dependencies.jar"
 
 # Default Global Configuration file path
 declare configurationFile="../configuration/update-password.properties"
@@ -54,7 +54,7 @@ declare configurationFile="../configuration/update-password.properties"
 declare JAVA_OPTS="-Dcom.wat.jboss.update-password.configuration.file=${configurationFile}"
 
 #################
-# Severity of log messages 
+# Severity of log messages
 #
 declare FATAL="FATAL"
 declare ERROR="ERROR"
@@ -69,7 +69,7 @@ declare TRACE="TRACE"
 myecho() {
   # $1 : same as echo ; is either "-n" or "-e" or "ne" or ""
   # $2 : message
-  # $3 : severity (DEBUG, INFO, WARN, ERROR, FATAL) 
+  # $3 : severity (DEBUG, INFO, WARN, ERROR, FATAL)
   echo $1 $(date "+[%F] [%T,%3N]") "[$3]" "$2"
   return 0
 }
@@ -84,7 +84,7 @@ main() {
     myecho -e "'${JAVA}' not found (code '$res'). Exiting" "${ERROR}"
     return $res
   }
-  
+
   # Execute
   "${JAVA}" ${JAVA_OPTS} -jar "${jarfile}" "$@" || {
     local res=$?

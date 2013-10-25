@@ -6,12 +6,12 @@
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 [ -r "${JBOSS_CONF}" ] || {
   echo "Cannot read configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
 . "${JBOSS_CONF}" || {
   echo "Failed to load configuration file '${JBOSS_CONF}'." >&2
-  exit 1 
+  exit 1
 }
 
 ## Set defaults.
@@ -30,13 +30,13 @@ ADD_USER_CMD="LANG=\"${LANG}\" \
 [ -e "${JBOSS_ADD_USER}" ] || {
   echo "File '${JBOSS_ADD_USER}' doesn't exists."
   echo "The variable \$JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
-  exit 1 
+  exit 1
 }
 
 [ -x "${JBOSS_ADD_USER}" ] || {
   echo "File '${JBOSS_ADD_USER}' is not executable."
   echo "The variable \$JBOSS_ADD_USER must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Add-User script." >&2
-  exit 1 
+  exit 1
 }
 
 ###
