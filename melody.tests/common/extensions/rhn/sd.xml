@@ -57,8 +57,7 @@
 			<ssh description="[rhn_unreg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
 				<exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
 				<declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
-				<exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot;" />
-				<!-- TODO : need to test the exit code ! -->
+				<exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot; || exit $?" />
 				<exec command="rm -vf /etc/sysconfig/rhn/systemid" />
 			</ssh>
 			
