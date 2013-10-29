@@ -45,7 +45,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 ######## variables definition
 # jar, which defines the main class
-declare jarfile="lib/update-password/update-password-0.0.1-jar-with-dependencies.jar"
+declare jarfile="lib/update-password/update-password-jar-with-dependencies.jar"
 
 # Default Global Configuration file path
 declare configurationFile="../configuration/update-password.properties"

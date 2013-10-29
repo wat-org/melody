@@ -27,7 +27,7 @@
                  
                 <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
                     <!-- these permissions are strange, but they respect default JBoss packaging ... -->
-                    <resources src-basedir="./missing_jdg_cli/" 
+                    <resources src-basedir="./missing_in_engine/" 
                                match="**"
                                dest-basedir="§[jbossEnginePath]§/bin/" >
                         <posix-permissions scope="files">664</posix-permissions>

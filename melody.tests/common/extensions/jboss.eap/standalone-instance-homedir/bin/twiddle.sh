@@ -18,7 +18,7 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 }
 
 ## Set defaults.
-[ "${JAVA_HOME}x" != "x" ]            && JAVA=${JAVA_HOME}/bin/java               || JAVA="java"
+[ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
@@ -33,7 +33,7 @@ MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 cd "$(dirname "$(readlink -f "$0")")/.."
 
 # compute the java classpath
-CLASSPATH="bin/lib/twiddle/*"
+CLASSPATH="bin/lib/twiddle/twiddle-jar-with-dependencies.jar"
 
 MODULES="org/jboss/remoting-jmx org/jboss/remoting3 org/jboss/logging org/jboss/xnio org/jboss/xnio/nio org/jboss/sasl org/jboss/marshalling org/jboss/marshalling/river org/jboss/as/cli org/jboss/staxmapper org/jboss/as/protocol org/jboss/dmr org/jboss/as/controller-client org/jboss/threads"
 for MODULE in $MODULES; do

@@ -49,6 +49,7 @@ fi
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
+[ -z "${JBOSS_HEAP_DUMP_PATH}" ]      && JBOSS_HEAP_DUMP_PATH="${JBOSS_BASE_DIR}/log"
 [ -z "${LISTEN_IP}" ]                 && LISTEN_IP="127.0.0.1"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
@@ -334,7 +335,8 @@ thread_dump() {
 heap_dump() {
   local jboss_pid=$(get_pid)
   if [ "x${jboss_pid}" != "x" ]; then
-    local HEAP_DUMP_PATH="${JBOSS_BASE_DIR}/log/heap_dump.$(date "+%Y%m%d_%H%M%S_%3N").hprof"
+    local HEAP_DUMP_PATH="${JBOSS_HEAP_DUMP_PATH}/heap_dump.$(date "+%Y%m%d_%H%M%S_%3N").hprof"
+    echo "Generating a heap dump for ${SERVICE_NAME}. Please wait, this can take a long time..."
     ${JBOSS_BASE_DIR}/bin/twiddle.sh invoke "com.sun.management:type=HotSpotDiagnostic" dumpHeap "${HEAP_DUMP_PATH}" true 1>/dev/null
     local res=$?
     if [ "$res" = "0" ]; then
