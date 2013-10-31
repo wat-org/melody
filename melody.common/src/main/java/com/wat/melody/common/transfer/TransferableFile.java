@@ -58,10 +58,6 @@ public class TransferableFile implements Transferable {
 		setAttributes(attrs);
 	}
 
-	/*
-	 * TODO : should create TransferableRegularFile, TransferableDir,
-	 * TransferableSymbolicLink
-	 */
 	@Override
 	public void transfer(TransferableFileSystem fs) throws IOException,
 			InterruptedIOException, IllegalFileAttributeException,

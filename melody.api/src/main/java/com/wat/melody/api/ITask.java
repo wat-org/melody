@@ -26,6 +26,17 @@ public interface ITask {
 	 * <p>
 	 * Place holder where this object's processing is done.
 	 * </p>
+	 * <p>
+	 * Should call
+	 * {@link ITaskContext#reportActivity(com.wat.melody.api.report.ITaskReport)}
+	 * in order to report what was done. Get the current context with
+	 * {@link Melody#getContext()}.
+	 * </p>
+	 * <p>
+	 * Should call {@link ITaskContext#handleProcessorStateUpdates()} in order
+	 * to detect the state of the processing. Get the current context with
+	 * {@link Melody#getContext()}.
+	 * </p>
 	 * 
 	 * @throws TaskException
 	 *             if an error occurred during this object's processing.

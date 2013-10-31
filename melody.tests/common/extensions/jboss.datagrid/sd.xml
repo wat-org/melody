@@ -22,8 +22,8 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
 
-                <property name="jbossEnginePath"                value="§[§[srv]§/jboss-datagrid-engine[@version='§[jbossInstanceVersion]§']/@path]§" />
-                <property name="jbossEngineOwner"               value="§[§[srv]§/jboss-datagrid-engine[@version='§[jbossInstanceVersion]§']/owner/@login]§" />
+                <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
+                <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
                  
                 <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
                     <!-- these permissions are strange, but they respect default JBoss packaging ... -->
@@ -332,7 +332,7 @@
                             item-name="admin"
                             max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
                     <property name="admin.login" value="§[§[admin]§/@login]§"/>
-                    <property name="admin.pass" value="§[§[srv]§/credentials/credential[@login='§[admin.login]§']/@password]§"/>
+                    <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
                     
                     <ssh description="[datagrid.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                         <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />

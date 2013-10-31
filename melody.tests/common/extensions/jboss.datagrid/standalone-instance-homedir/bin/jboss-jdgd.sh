@@ -317,12 +317,12 @@ status() {
 }
 
 ###
-### generate a thread dump in ${JBOSS_CONSOLE_LOG}
+### generate a thread dump in "${JBOSS_CONSOLE_LOG}"
 thread_dump() {
   local jboss_pid=$(get_pid)
   if [ "x${jboss_pid}" != "x" ]; then
     kill -3 ${jboss_pid}
-    echo "A thread dump for ${SERVICE_NAME} have been generated in ${JBOSS_CONSOLE_LOG}."
+    echo "A thread dump for ${SERVICE_NAME} have been generated in '${JBOSS_CONSOLE_LOG}'."
     return 0
   fi
   echo "Cannot generate a thread dump for ${SERVICE_NAME} because it is not running."

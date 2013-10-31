@@ -2,12 +2,19 @@ package com.wat.melody.core.internal;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Date;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.ITaskContext;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.api.report.ITaskReport;
+import com.wat.melody.api.report.ITaskReportItem;
+import com.wat.melody.api.report.TaskReportItemType;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -84,6 +91,35 @@ public class TaskContext implements ITaskContext {
 	@Override
 	public void handleProcessorStateUpdates() throws InterruptedException {
 		_processorManager.handleProcessorStateUpdates();
+	}
+
+	private static Logger log = LoggerFactory.getLogger(TaskContext.class);
+
+	@Override
+	public void reportActivity(ITaskReport report) {
+		/*
+		 * TODO : implement. Should call a method in _processorManager.
+		 */
+		log.warn("Task reporting is not implemented yet");
+	}
+
+	@Override
+	public ITaskReport createTaskReport(Set<ITaskReportItem> reportItems) {
+		/*
+		 * TODO : implement. Should call a method in _processorManager.
+		 */
+		log.warn("Task reporting is not implemented yet");
+		return null;
+	}
+
+	@Override
+	public ITaskReportItem createTaskReportItem(Date date,
+			TaskReportItemType taskReportType, String message) {
+		/*
+		 * TODO : implement. Should call a method in _processorManager.
+		 */
+		log.warn("Task reporting is not implemented yet");
+		return null;
 	}
 
 	@Override

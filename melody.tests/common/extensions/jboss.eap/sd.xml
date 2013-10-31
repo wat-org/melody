@@ -16,10 +16,11 @@
                 <!-- upload JBoss EAP Instance directory tree -->
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />                
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
-                <property name="jbossEnginePath"                value="§[§[srv]§/jboss-eap-engine[@version='§[jbossInstanceVersion]§']/@path]§" />
-
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 
+                <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
+                <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
+
                 <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
                 <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
                 <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
@@ -211,7 +212,7 @@
                             item-name="admin"
                             max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
                     <property name="admin.login" value="§[§[admin]§/@login]§"/>
-                    <property name="admin.pass"  value="§[§[srv]§/credentials/credential[@login='§[admin.login]§']/@password]§"/>
+                    <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
                     
                     <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                         <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />

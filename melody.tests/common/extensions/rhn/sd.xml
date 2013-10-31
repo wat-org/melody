@@ -13,13 +13,13 @@
 			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-			<property name="hwinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-hardware-infos') ]§" />
+			<property name="hwinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-hardware-infos') ]§" />
 			<property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
-			<property name="pkginfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-packages-infos') ]§" />
+			<property name="pkginfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-packages-infos') ]§" />
 			<property name="pkginfos" value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§" />
-			<property name="virtinfos" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/upload-virtualization-infos') ]§" />
+			<property name="virtinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-virtualization-infos') ]§" />
 			<property name="virtinfos" value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§" />
-			<property name="rhnsd" value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rhn/start-rhnsd') ]§" />
+			<property name="rhnsd" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@start-rhnsd') ]§" />
 			<property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 			
 			<ssh description="[rhn_reg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >

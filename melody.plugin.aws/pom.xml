@@ -21,21 +21,92 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk</artifactId>
-			<version>1.5.6</version>
+			<version>1.6.3</version>
 			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-mapper-asl</artifactId>
-				</exclusion>
+				<!-- the whole melody project is using is own commons-logging version. 
+					So we exclude the one which is provided by aws-java-sdk -->
 				<exclusion>
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
+				<!-- aws-java-sdk requires commons-codec:commons-codec:1.3 but aws-java-sdk 
+					also requires org.apache.httpcomponents:httpclient:4.2 which requires commons-codec:commons-codec:1.6 
+					! -->
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
+				<!-- Not necessary for runtime -->
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+				<!-- JavaMail is only needed if you want to use the JavaMail provider 
+					for Amazon Simple Email Service -->
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+				<!-- The Amazon Simple Workflow Java Flow framework requires additional 
+					dependencies -->
+				<exclusion>
+					<groupId>org.freemarker</groupId>
+					<artifactId>freemarker</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-test</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjrt</artifactId>
+				</exclusion>
+				<!-- JDK 1.6 and above include StAX support by default, so these two 
+					dependencies are only needed for compiling/running against a 1.5 JVM. -->
+				<exclusion>
+					<groupId>stax</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>stax</groupId>
+					<artifactId>stax</artifactId>
+				</exclusion>
+				<!-- JUnit is needed to compile the support classes for the workflow 
+					service -->
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<!-- aws-java-sdk requires commons-codec:commons-codec:1.3 but aws-java-sdk 
+			also requires org.apache.httpcomponents:httpclient:4.2 which requires commons-codec:commons-codec:1.6 
+			! So, we exclude commons-codec:commons-codec from aws-java-sdk and we explicitly 
+			declare the dependency to commons-codec:commons-codec:1.6 here -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.wat.melody</groupId>
@@ -60,7 +131,7 @@
 		<dependency>
 			<groupId>org.eclipse.tycho</groupId>
 			<artifactId>org.eclipse.osgi</artifactId>
-			<version>3.8.0.v20120529-1548</version>
+			<version>3.9.1.v20130814-1242</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

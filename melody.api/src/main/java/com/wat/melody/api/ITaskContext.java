@@ -3,6 +3,8 @@ package com.wat.melody.api;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Date;
+import java.util.Set;
 
 import org.w3c.dom.Element;
 
@@ -10,6 +12,9 @@ import com.wat.melody.api.event.TaskCreatedEvent;
 import com.wat.melody.api.event.TaskFinishedEvent;
 import com.wat.melody.api.event.TaskStartedEvent;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.api.report.ITaskReport;
+import com.wat.melody.api.report.ITaskReportItem;
+import com.wat.melody.api.report.TaskReportItemType;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.order.OrderNameSet;
 import com.wat.melody.common.properties.PropertySet;
@@ -64,6 +69,20 @@ public interface ITaskContext {
 	 *             possible.
 	 */
 	public void handleProcessorStateUpdates() throws InterruptedException;
+
+	/**
+	 * <p>
+	 * Should be call by any task to report what was done.
+	 * </p>
+	 * 
+	 * @param report
+	 */
+	public void reportActivity(ITaskReport report);
+
+	public ITaskReport createTaskReport(Set<ITaskReportItem> reportItems);
+
+	public ITaskReportItem createTaskReportItem(Date date,
+			TaskReportItemType taskReportType, String message);
 
 	/**
 	 * <p>

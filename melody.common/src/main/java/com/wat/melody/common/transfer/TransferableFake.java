@@ -14,17 +14,34 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 
 /**
+ * <p>
+ * When transferring a file (e.g. a regular file, a directory or a link), when
+ * the parent base directory doesn't exists and is not explicitly define in the
+ * 'full transfer operation' directives, all levels of the parent directory are
+ * automatically added by the 'full transfer operation' provider. Because these
+ * directories are not explicitly defined, we have no indication concerning the
+ * attributes (ex : permissions, ower, group, etc) to set on. In this situation,
+ * the 'full transfer operation' provider will automatically add a
+ * {@link TransferableFake} for each levels of the parent directory which is not
+ * defined in the 'full transfer operation' directives.
+ * </p>
+ * <p>
+ * The transfer operation of a {@link TransferableFake} simply consist in the
+ * creation of the directory if it doesn't exists.
+ * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
 public class TransferableFake implements Transferable {
 
+	/*
+	 * This class have no attribute (ex: permission, user owner, group owner,
+	 * etc), meaning the default attribute will be set during the transfer
+	 * operation.
+	 */
 	private static Logger log = LoggerFactory.getLogger(TransferableFake.class);
 
-	/*
-	 * TODO : should have attributes. Defines them ResourceSpecification ?
-	 */
 	private Path _destinationPath;
 
 	public TransferableFake(Path destinationPath) {
