@@ -13,13 +13,14 @@
 
             <foreach    items="§[srv]§/jboss-eap-instance"
                         item-name="jboss_instance">
-                <!-- upload JBoss EAP Instance directory tree -->
-                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />                
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
-                
+                <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
+                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
 
                 <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
                 <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
@@ -27,18 +28,21 @@
                 <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '128m' else '§[jbossInstanceMemoryXms]§' ]§" />
                 <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '1024m' else '§[jbossInstanceMemoryXmx]§' ]§" />
                 <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
-                
+
                 <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
                 <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
                 <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
                 <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
                 <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
                 <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
+                <!-- upload JBoss EAP Instance directory tree -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-                    <resources src-basedir="./standalone-instance-homedir/" 
+                    <resources src-basedir="./standalone-instance-homedir/"
                                match="**"
                                dest-basedir="§[jbossInstancePath]§/">
                         <posix-permissions scope="directories">700</posix-permissions>
@@ -50,19 +54,29 @@
                         </include>
                     </resources>
                  </upload>
-                 
+
+                <!-- set the password of the jboss instance owner -->
+                <ssh description="[eap.owner.pwd:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
+                </ssh>
+
+                <!-- assign the jboss instance owner to the jboss engine group -->
+                <ssh description="[eap.owner.group:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
+                </ssh>
+
                 <!-- JBoss Configuration update -->
-				<property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
-				<property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-				<property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
-				<copy>
-					<resources	src-basedir="./standalone-instance-homedir/configuration"
-								match="standalone.xml"
-								dest-basedir="§[workingfolder.abs]§"
-								dest-name="§[tmpfile.rel]§" />
-				</copy>
-                
+                <copy>
+                    <resources    src-basedir="./standalone-instance-homedir/configuration"
+                                match="standalone.xml"
+                                dest-basedir="§[workingfolder.abs]§"
+                                dest-name="§[tmpfile.rel]§" />
+                </copy>
+
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
                 <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
@@ -71,7 +85,7 @@
                     </elements-selector>
                     <attribute name="pattern" value="%d{yyyy-MM-dd} %d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </set-xml-attributes>
-                
+
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
                 <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
@@ -80,7 +94,7 @@
                     </elements-selector>
                     <attribute name="name" value="ERROR"/>
                 </set-xml-attributes>
-                
+
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
                 <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
@@ -88,7 +102,7 @@
                         /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
                     </elements-selector>
                 </remove-xml-elements>
-                
+
                 <!-- JBoss Configuration update -->
                 <property name="jbossInstanceMgmtStorePath"     value="§[§[jboss_instance]§/keystore[exists(key[matches(@usage,'management')])]/@path]§" />
                 <property name="jbossInstanceMgmtStorePwd"      value="§[§[jboss_instance]§/keystore[exists(key[matches(@usage,'management')])]/@password]§" />
@@ -96,7 +110,7 @@
                 <property name="jbossInstanceMgmtKeyPwd"        value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@password]§" />
                 <property name="jbossInstanceMgmtKeyDName"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@dname]§"/>
                 <property name="jbossInstanceMgmtKeyDName"      value="§[ if (string-length('§[jbossInstanceMgmtKeyDName]§')=0) then 'CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR' else '§[jbossInstanceMgmtKeyDName]§' ]§" />
-                 
+
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (establish SSL server identity)" severity="info"/>
                 <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
@@ -133,7 +147,7 @@
                     <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
                     <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
                  </ssh>
-                
+
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
                 <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
@@ -160,7 +174,7 @@
                     </elements-selector>
                     <attribute name="https" value="management-https"/>
                 </set-xml-attributes>
-                
+
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Enable local authentication for the CLI" severity="info"/>
                 <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
@@ -198,35 +212,39 @@
                         ]]>
                     </node-content>
                 </append-xml-elements>
-                
+
                 <!-- upload customized configuration -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-					<resources	src-basedir="§[workingfolder.abs]§"
-								match="§[tmpfile.rel]§"
-								dest-basedir="§[jbossInstancePath]§/configuration"
-								dest-name="standalone.xml" />
+                    <resources    src-basedir="§[workingfolder.abs]§"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration"
+                                dest-name="standalone.xml" />
                 </upload>
 
                 <!-- register administrator -->
-                <foreach    items="§[jboss_instance]§/administrators/user"
-                            item-name="admin"
-                            max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
-                    <property name="admin.login" value="§[§[admin]§/@login]§"/>
-                    <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
-                    
-                    <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
-                        <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
-                     </ssh>
-                     
-                </foreach>                
-                
+                <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
+                     Don't know why. So we'ere doing a global synchronization -->
+                <synchronize scope="CALL" lock-id="eap.add.user">
+                    <foreach    items="§[jboss_instance]§/administrators/user"
+                                item-name="admin"
+                                max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
+                        <property name="admin.login" value="§[§[admin]§/@login]§"/>
+                        <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
+
+                        <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                            <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
+                        </ssh>
+
+                    </foreach>
+                </synchronize>
+
                 <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
          <echo message="-- All JBoss EAP instances successfully deployed." />
     </order>
-    
+
 
 
 
@@ -241,13 +259,13 @@
             <foreach    items="§[srv]§/jboss-eap-instance"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />                
+                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
-                
+
                 <ssh description="[start_jboss:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-eapd.sh start" />
                  </ssh>
-                
+
                 <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully started on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
@@ -265,19 +283,72 @@
 
             <foreach    items="§[srv]§/jboss-eap-instance"
                         item-name="jboss_instance">
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />                
+                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
-                
+
                 <ssh description="[stop_jboss:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-eapd.sh stop" />
                  </ssh>
-                
+
                 <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
         <echo message="-- All JBoss EAP instances successfully stopped" />
     </order>
+
+
+
+    <order name="deploy_jboss_custom_modules" >
+        <echo message="Deploying all Custom Modules on all JBoss instances ..." />
+
+        <foreach    items="./environment//instance[exists(jboss-eap-instance)]"
+                    item-name="srv" >
+            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <foreach    items="§[srv]§/jboss-eap-instance"
+                        item-name="jboss_instance">
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+
+                <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
+                <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
+                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
+
+                <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
+                <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
+                <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
+                <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '128m' else '§[jbossInstanceMemoryXms]§' ]§" />
+                <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '1024m' else '§[jbossInstanceMemoryXmx]§' ]§" />
+                <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
+
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
+                <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
+                <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
+                <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
+
+                <foreach    items="§[jboss_instance]§/custom-modules/custom-module"
+                            item-name="cm">
+                    <property name="cm.name"          value="§[§[cm]§/@name]§" />
+
+                    <call orders="§[callback]§.§[cm.name]§" sequence-descriptor="§[callback.sd]§"/>
+                    <echo message="+ Custom Module '§[cm.name]§' successfully deployed for user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§'." />
+                </foreach>
+            </foreach>
+
+        </foreach>
+
+        <echo message="-- All Custom Modules successfully deployed on all JBoss instances." />
+     </order>
 
 
 
@@ -291,19 +362,43 @@
 
             <foreach    items="§[srv]§/jboss-eap-instance"
                         item-name="jboss_instance">
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />                
-                <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
-                
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+
+                <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
+                <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
+                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
+
+                <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
+                <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
+                <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
+                <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '128m' else '§[jbossInstanceMemoryXms]§' ]§" />
+                <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '1024m' else '§[jbossInstanceMemoryXmx]§' ]§" />
+                <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
+
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
+                <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
+                <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
+                <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
+
                 <foreach    items="§[jboss_instance]§/applications/application"
                             item-name="application"
                             max-par="1"> <!-- the deployment will need to modify the standalone.conf, which can't be modified concurrently -->
                     <property name="appli.name"          value="§[§[application]§/@name]§" />
-                    
+
                     <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
                     <echo message="+ Application '§[appli.name]§' successfully deployed for user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§'." />
-                </foreach>                
+                </foreach>
             </foreach>
-    
+
         </foreach>
 
         <echo message="-- All Java applications successfully deployed on all JBoss instances." />

@@ -17,25 +17,14 @@
 
             <foreach    items="§[srv]§/jboss-datagrid-instance"
                         item-name="jboss_instance">
-                <!-- adding a script to connect to CLI in the JBoss DataGrid engine -->
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />                
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
-                 
-                <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
-                    <!-- these permissions are strange, but they respect default JBoss packaging ... -->
-                    <resources src-basedir="./missing_in_engine/" 
-                               match="**"
-                               dest-basedir="§[jbossEnginePath]§/bin/" >
-                        <posix-permissions scope="files">664</posix-permissions>
-                        <include match="*.sh" >
-                            <posix-permissions scope="files">755</posix-permissions>
-                        </include>
-                    </resources>
-                </upload>
+                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
                 
                 <!-- upload JBoss DataGrid Instance directory tree -->
                 <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
@@ -51,10 +40,26 @@
                 <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
                 <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
                 <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
                 <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
+                 
+                <!-- adding a script to connect to CLI in the JBoss DataGrid engine -->
+                <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+                    <!-- these permissions are strange, but they respect default JBoss packaging ... -->
+                    <resources src-basedir="./missing_in_engine/" 
+                               match="**"
+                               dest-basedir="§[jbossEnginePath]§/bin/" >
+                        <posix-permissions scope="files">664</posix-permissions>
+                        <include match="*.sh" >
+                            <posix-permissions scope="files">755</posix-permissions>
+                        </include>
+                    </resources>
+                </upload>
 
+                <!-- upload JBoss DataGrid Instance directory tree -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
                     <resources src-basedir="./standalone-instance-homedir/" 
                                match="**"
@@ -69,18 +74,28 @@
                         <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
                     </resources>
                  </upload>
+
+                <!-- set the password of the jboss instance owner -->
+                <ssh description="[datagrid.owner.pwd:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
+                </ssh>
+
+                <!-- assign the jdg instance owner to the jdg engine group -->
+                <ssh description="[datagrid.owner.group:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
+                </ssh>
     
                 <!-- JBoss Configuration update -->
-				<property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
-				<property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-				<property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
                 <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
-				<copy>
-					<resources	src-basedir="./standalone-instance-homedir/configuration"
-								match="standalone.xml"
-								dest-basedir="§[workingfolder.abs]§"
-								dest-name="§[tmpfile.rel]§" />
-				</copy>
+                <copy>
+                    <resources    src-basedir="./standalone-instance-homedir/configuration"
+                                match="standalone.xml"
+                                dest-basedir="§[workingfolder.abs]§"
+                                dest-name="§[tmpfile.rel]§" />
+                </copy>
                 
                 <!-- JBoss Configuration update -->
                 <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
@@ -93,7 +108,7 @@
                 
                 <!-- JBoss Configuration update -->
                 <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
-                <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
                         /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:console-handler[@name='CONSOLE']/*:level
                     </elements-selector>
@@ -101,8 +116,8 @@
                 </set-xml-attributes>
                 
                 <!-- JBoss Configuration update -->
-                <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
-                <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
+                <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
                         /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
                     </elements-selector>
@@ -155,27 +170,27 @@
                 
                 <!-- JBoss Configuration update -->
                 <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (disable HTTP acces to HttpsManagementRealm)" severity="info"/>
-                <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
-                 	    /*:server/*:management/*:management-interfaces/*:http-interface
+                         /*:server/*:management/*:management-interfaces/*:http-interface
                     </elements-selector>
                     <attribute name="security-realm" value="HttpsManagementRealm"/>
                 </set-xml-attributes>
-                <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
-                 	    /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+                         /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
                     </elements-selector>
                     <attribute name="http"/>
                 </remove-xml-attributes>
-                <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
                         /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
                     </elements-selector>
                     <attribute name="http"/>
                 </remove-xml-attributes>
-                <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
                     <elements-selector>
-                 	    /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+                         /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
                     </elements-selector>
                     <attribute name="https" value="management-https"/>
                 </set-xml-attributes>
@@ -321,25 +336,27 @@
                 
                 <!-- upload customized configuration -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-					<resources	src-basedir="§[workingfolder.abs]§"
-								match="§[tmpfile.rel]§"
-								dest-basedir="§[jbossInstancePath]§/configuration"
-								dest-name="standalone.xml" />
+                    <resources    src-basedir="§[workingfolder.abs]§"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration"
+                                dest-name="standalone.xml" />
                 </upload>
 
                 <!-- register administrator -->
-                <foreach    items="§[jboss_instance]§/administrators/user"
-                            item-name="admin"
-                            max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
-                    <property name="admin.login" value="§[§[admin]§/@login]§"/>
-                    <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
-                    
-                    <ssh description="[datagrid.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
-                        <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
-                     </ssh>
-                     
-                </foreach>                
-                
+                <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
+                     Don't know why. So we'ere doing a global synchronization -->
+                <synchronize scope="CALL" lock-id="jdg.add.user">
+                    <foreach    items="§[jboss_instance]§/administrators/user"
+                                item-name="admin">
+                        <property name="admin.login" value="§[§[admin]§/@login]§"/>
+                        <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
+                        
+                        <ssh description="[datagrid.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                            <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
+                         </ssh>
+                    </foreach>                
+                </synchronize>
+
                 <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>

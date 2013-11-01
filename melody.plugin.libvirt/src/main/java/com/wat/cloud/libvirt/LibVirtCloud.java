@@ -526,14 +526,15 @@ public abstract class LibVirtCloud {
 				ps.put(new Property("ram", String.valueOf(getRAM(type))));
 				ps.put(new Property("sgName", sSGName));
 				ps.put(new Property("eth", LibVirtCloudNetwork.eth0.getValue()));
-				log.trace("Creating domain '" + sInstanceId
-						+ "' based on the template '" + sImageId
-						+ "' ... MacAddress is '"
-						+ ps.getProperty("vmMacAddr").getValue() + "'.");
+				log.trace("Creating domain '" + sInstanceId + "' (template:"
+						+ sImageId + ", mac-address:"
+						+ ps.getProperty("vmMacAddr").getValue() + ") ...");
 				domain = cnx.domainDefineXML(XPathExpander
 						.expand(ddt, null, ps));
 			}
-			log.debug("Domain '" + sInstanceId + "' created.");
+			log.debug("Domain '" + sInstanceId + "' created (template:"
+					+ sImageId + ", mac-address:"
+					+ ps.getProperty("vmMacAddr").getValue() + ").");
 
 			// Associate the keypair
 			LibVirtCloudKeyPair.associateKeyPairToInstance(domain, keyPairName);
