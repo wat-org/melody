@@ -6,7 +6,7 @@
     <order name="deploy_jdg_instances" >
         <echo message="Deploying all JBoss DataGrid instances ..." />
 
-        <foreach    items="./environment//instance[exists(jboss-datagrid-instance)]"
+        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-datagrid-instance)]"
                     item-name="srv" >
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
@@ -370,7 +370,7 @@
     <order name="start_jdg_instances" >
         <echo message="Starting all JBoss DataGrid instances ..." />
 
-        <foreach    items="./environment//instance[exists(jboss-datagrid-instance)]"
+        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-datagrid-instance)]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
@@ -395,7 +395,7 @@
     <order name="stop_jdg_instances" >
         <echo message="Stopping all JBoss DataGrid instances ..." />
 
-        <foreach    items="./environment//instance[exists(jboss-datagrid-instance)]"
+        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-datagrid-instance)]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
