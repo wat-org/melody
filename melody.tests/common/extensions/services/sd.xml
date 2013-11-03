@@ -3,58 +3,66 @@
 
 <sequence basedir="." >
 
-	<order name="start_services" >
-		<echo message="Starting services ..." />
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]')))"/>
+    <property name="instance_match_criteria"    value="1=1"/>
 
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
-			
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;on&quot;]')"
-						item-name="service"
-						max-par="1">
-				<property name="servicename" value="§[§[service]§/@name]§" />
-						
-				<ssh description="[start_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-					<exec command="service §[servicename]§ restart" />
-					<exec command="chkconfig §[servicename]§ on" />
-				</ssh>
-	
-				<echo message="+ Service '§[servicename]§' successfully started on server '§[§[srv]§/@instance-id]§'." />
-			</foreach>
-		</foreach>
+    <property name="service_selector"           value="/services/service"/>
+    <property name="service_match_criteria"     value="1=1"/>
 
-		<echo message="-- Services successfully started." />
- 	</order>
+    <order name="start_services" >
+        <echo message="Starting services ..." />
 
-	<order name="stop_services" >
-		<echo message="Stopping services ..." />
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
-			
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/services/service[@state=&quot;off&quot;]')"
-						item-name="service"
-						max-par="1">
-				<property name="servicename" value="§[§[service]§/@name]§" />
-						
-				<ssh description="[stop_service_§[servicename]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-					<exec command="service §[servicename]§ stop" />
-					<exec command="chkconfig §[servicename]§ off" />
-				</ssh>
-	
-				<echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instance-id]§'." />
-			</foreach>
-		</foreach>
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;on&quot; and §[service_match_criteria]§ ]')"
+                        item-name="service"
+                        max-par="1">
+                <property name="servicename" value="§[§[service]§/@name]§" />
 
-		<echo message="-- Services successfully stopped." />
- 	</order>
- 	
- 	<order name="enable_services" >
- 		<call orders="stop_services, start_services" />
- 	</order>	
+                <ssh description="[start_service_§[servicename]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="service §[servicename]§ restart" />
+                    <exec command="chkconfig §[servicename]§ on" />
+                </ssh>
+
+                <echo message="+ Service '§[servicename]§' successfully started on server '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+        </foreach>
+
+        <echo message="-- Services successfully started." />
+    </order>
+
+    <order name="stop_services" >
+        <echo message="Stopping services ..." />
+
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;off&quot; and §[service_match_criteria]§ ]')"
+                        item-name="service"
+                        max-par="1">
+                <property name="servicename" value="§[§[service]§/@name]§" />
+
+                <ssh description="[stop_service_§[servicename]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="service §[servicename]§ stop" />
+                    <exec command="chkconfig §[servicename]§ off" />
+                </ssh>
+
+                <echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+        </foreach>
+
+        <echo message="-- Services successfully stopped." />
+     </order>
+
+     <order name="enable_services" >
+         <call orders="stop_services, start_services" />
+     </order>
 
 </sequence>

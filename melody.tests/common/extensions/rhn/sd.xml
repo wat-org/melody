@@ -3,68 +3,76 @@
 
 <sequence basedir="." >
 
-	<order name="rhn_register" >
-		<echo message="Registering servers on RHN ..." />
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]')))"/>
+    <property name="instance_match_criteria"    value="1=1"/>
 
-		<property name="RHN_ACTIVATIONKEY" value="§[./environment/rhn/activationkey/text()]§" />
-	
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+    <property name="channel_selector"           value="/rhn-channels/channel"/>
+    <property name="channel_match_criteria"     value="1=1"/>
 
-			<property name="hwinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-hardware-infos') ]§" />
-			<property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
-			<property name="pkginfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-packages-infos') ]§" />
-			<property name="pkginfos" value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§" />
-			<property name="virtinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-virtualization-infos') ]§" />
-			<property name="virtinfos" value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§" />
-			<property name="rhnsd" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@start-rhnsd') ]§" />
-			<property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
-			
-			<ssh description="[rhn_reg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-				<exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
-			</ssh>
+    <order name="rhn_register" >
+        <echo message="Registering servers on RHN ..." />
 
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/rhn-channels/channel')"
-						item-name="channel" >
-				<property name="channel_name" value="§[§[channel]§/@name]§" />
-					
-				<ssh description="[rhn_channel:§[channel_name]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-					<exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p §[RHN_PASSWORD]§" />
-				</ssh>
-				<echo message="+ server '§[§[srv]§/@instance-id]§' additionnally subscribed to §[channel_name]§." />
-			</foreach>
+        <property name="RHN_ACTIVATIONKEY" value="§[./environment/rhn/activationkey/text()]§" />
 
-			<echo message="+ server '§[§[srv]§/@instance-id]§' successfully registered in RHN." />
-		</foreach>
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-		<echo message="-- Servers successfully registered on RHN." />
- 	</order>
+            <property name="hwinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-hardware-infos') ]§" />
+            <property name="hwinfos" value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§" />
+            <property name="pkginfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-packages-infos') ]§" />
+            <property name="pkginfos" value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§" />
+            <property name="virtinfos" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@upload-virtualization-infos') ]§" />
+            <property name="virtinfos" value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§" />
+            <property name="rhnsd" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@start-rhnsd') ]§" />
+            <property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 
-	<order name="rhn_unregister" >
-		<echo message="Unregistering servers on RHN ..." />
+            <ssh description="[rhn_reg:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
+            </ssh>
 
-		<property name="RHN_SERVERIP" value="§[./environment/rhn/serverip/text()]§" />
-		<property name="RHN_LOGIN" value="§[./environment/rhn/login/text()]§" />
-		<property name="RHN_PASSWORD" value="§[./environment/rhn/password/text()]§" />
-	
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
-			
-			<ssh description="[rhn_unreg:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-				<exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
-				<declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
-				<exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot; || exit $?" />
-				<exec command="rm -vf /etc/sysconfig/rhn/systemid" />
-			</ssh>
-			
-			<echo message="+ server '§[§[srv]§/@instance-id]§' successfully unregistered in RHN." />
-		</foreach>
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[channel_selector]§[ §[channel_match_criteria]§ ]')"
+                        item-name="channel" >
+                <property name="channel_name" value="§[§[channel]§/@name]§" />
 
-		<echo message="-- Servers successfully unregistered on RHN." />
- 	</order>
+                <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p §[RHN_PASSWORD]§" />
+                </ssh>
+                <echo message="+ Server '§[§[srv]§/@instance-id]§' additionnally subscribed to RHN Channel '§[channel_name]§'." />
+            </foreach>
+
+            <echo message="+ Server '§[§[srv]§/@instance-id]§' successfully registered in RHN." />
+        </foreach>
+
+        <echo message="-- Servers successfully registered on RHN." />
+    </order>
+
+    <order name="rhn_unregister" >
+        <echo message="Unregistering servers on RHN ..." />
+
+        <property name="RHN_SERVERIP" value="§[./environment/rhn/serverip/text()]§" />
+        <property name="RHN_LOGIN" value="§[./environment/rhn/login/text()]§" />
+        <property name="RHN_PASSWORD" value="§[./environment/rhn/password/text()]§" />
+
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <ssh description="[rhn_unreg:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
+                <declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
+                <exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot; || exit $?" />
+                <exec command="rm -vf /etc/sysconfig/rhn/systemid" />
+            </ssh>
+
+            <echo message="+ Server '§[§[srv]§/@instance-id]§' successfully unregistered in RHN." />
+        </foreach>
+
+        <echo message="-- Servers successfully unregistered on RHN." />
+    </order>
 
 </sequence>

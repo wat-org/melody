@@ -3,15 +3,26 @@
 
 <sequence basedir="." >
 
+    <property name="eap_instance_node"          value="jboss-eap-instance"/>
+
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="exists(§[eap_instance_node]§)"/>
+    <property name="instance_match_criteria"    value="1=1"/>
+
+    <property name="eap_instance_selector"        value="/§[eap_instance_node]§"/>
+    <property name="eap_instance_exists_criteria" value="1=1"/>
+    <property name="eap_instance_match_criteria"  value="1=1"/>
+
     <order name="deploy_jboss_instances" >
         <echo message="Deploying all JBoss EAP instances ..." />
 
-        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-eap-instance)]"
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§/jboss-eap-instance"
+            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
@@ -66,12 +77,12 @@
                 </ssh>
 
                 <!-- JBoss Configuration update -->
-                <property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
+                <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
                 <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-                <property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
                 <copy>
-                    <resources    src-basedir="./standalone-instance-homedir/configuration"
+                    <resources  src-basedir="./standalone-instance-homedir/configuration"
                                 match="standalone.xml"
                                 dest-basedir="§[workingfolder.abs]§"
                                 dest-name="§[tmpfile.rel]§" />
@@ -218,25 +229,26 @@
                     <resources    src-basedir="§[workingfolder.abs]§"
                                 match="§[tmpfile.rel]§"
                                 dest-basedir="§[jbossInstancePath]§/configuration"
-                                dest-name="standalone.xml" />
+                                dest-name="standalone.xml" >
+                        <posix-permissions scope="files">600</posix-permissions>
+                    </resources>
                 </upload>
 
                 <!-- register administrator -->
-                <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
-                     Don't know why. So we'ere doing a global synchronization -->
-                <synchronize scope="CALL" lock-id="eap.add.user">
-                    <foreach    items="§[jboss_instance]§/administrators/user"
-                                item-name="admin"
-                                max-par="1"> <!-- no concurrency on jboss-add-user.sh -->
-                        <property name="admin.login" value="§[§[admin]§/@login]§"/>
-                        <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
+                <foreach    items="§[jboss_instance]§/administrators/user"
+                            item-name="admin">
+                    <property name="admin.login" value="§[§[admin]§/@login]§"/>
+                    <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
 
+                    <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
+                         Don't know why. So we'ere doing a global synchronization -->
+                    <synchronize scope="CALL" lock-id="eap.add.user">
                         <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                             <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
                         </ssh>
+                    </synchronize>
 
-                    </foreach>
-                </synchronize>
+                </foreach>
 
                 <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
@@ -251,12 +263,12 @@
     <order name="start_jboss_instances" >
         <echo message="Starting all JBoss EAP instances ..." />
 
-        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-eap-instance)]"
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§/jboss-eap-instance"
+            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
                 <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
@@ -276,12 +288,12 @@
     <order name="stop_jboss_instances" >
         <echo message="Stopping all JBoss EAP instances ..." />
 
-        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-eap-instance)]"
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§/jboss-eap-instance"
+            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
@@ -302,12 +314,12 @@
     <order name="deploy_jboss_custom_modules" >
         <echo message="Deploying all Custom Modules on all JBoss instances ..." />
 
-        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-eap-instance)]"
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§/jboss-eap-instance"
+            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
@@ -355,12 +367,12 @@
     <order name="deploy_jboss_applications" >
         <echo message="Deploying all Java applications on all JBoss instances ..." />
 
-        <foreach    items="./environment//instance[exists(@instance-id) and exists(jboss-eap-instance)]"
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§/jboss-eap-instance"
+            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />

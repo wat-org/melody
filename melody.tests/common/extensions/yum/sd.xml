@@ -3,47 +3,58 @@
 
 <sequence basedir="." >
 
-	<order name="install_packages" >
-		<echo message="Installing packages ..." />
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]')))"/>
+    <property name="instance_match_criteria"    value="1=1"/>
 
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
-			
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/package')"
-						item-name="pkg"
-						max-par="1">
-				<property name="pkgname" value="§[§[pkg]§/@name]§" />
-				<property name="pkgarch" value="§[§[pkg]§/@arch]§" />
-				<property name="pkgopt" value="§[§[pkg]§/@options]§" />
-				<property name="pkgrepo" value="§[§[pkg]§/@repo]§" />
-				<property name="pkgrepo" value="§[if (string-length('§[pkgrepo]§')!=0) then '--enablerepo=§[pkgrepo]§' else '']§" />
-						
-				<ssh description="[install_pkg:§[pkgname]§.§[pkgarch]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-					<exec command="rpm -q §[pkgname]§.§[pkgarch]§ || yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§" />
-				</ssh>
-	
-				<echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
-			</foreach>
-			
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/group')"
-						item-name="grp"
-						max-par="1">
-				<property name="grpname" value="§[§[grp]§/@name]§" />
-				<property name="grpopt" value="§[§[grp]§/@options]§" />
-				<property name="grprepo" value="§[§[grp]§/@repo]§" />
-				<property name="grprepo" value="§[if (string-length('§[grprepo]§')!=0) then '--enablerepo=§[grprepo]§' else '']§" />
-						
-				<ssh description="[install_grp:§[grpname]§:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-					<exec command="yum groupinstall §[grpopt]§ §[grprepo]§ -y '§[grpname]§'" />
-				</ssh>
-	
-				<echo message="+ Package Group '§[grpname]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
-			</foreach>
-		</foreach>
+    <property name="package_selector"           value="/packages/package"/>
+    <property name="package_match_criteria"     value="1=1"/>
 
-		<echo message="-- All packages successfully installed." />
- 	</order>
+    <property name="package_group_selector"       value="/packages/group"/>
+    <property name="package_group_match_criteria" value="1=1"/>
+
+    <order name="install_packages" >
+        <echo message="Installing packages ..." />
+
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[package_selector]§[ §[package_match_criteria]§ ]')"
+                        item-name="pkg"
+                        max-par="1">
+                <property name="pkgname" value="§[§[pkg]§/@name]§" />
+                <property name="pkgarch" value="§[§[pkg]§/@arch]§" />
+                <property name="pkgopt"  value="§[§[pkg]§/@options]§" />
+                <property name="pkgrepo" value="§[§[pkg]§/@repo]§" />
+                <property name="pkgrepo" value="§[if (string-length('§[pkgrepo]§')!=0) then '--enablerepo=§[pkgrepo]§' else '']§" />
+
+                <ssh description="[install_pkg:§[pkgname]§.§[pkgarch]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="rpm -q §[pkgname]§.§[pkgarch]§ || yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§" />
+                </ssh>
+
+                <echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[package_group_selector]§[ §[package_group_match_criteria]§ ]')"
+                        item-name="grp"
+                        max-par="1">
+                <property name="grpname" value="§[§[grp]§/@name]§" />
+                <property name="grpopt"  value="§[§[grp]§/@options]§" />
+                <property name="grprepo" value="§[§[grp]§/@repo]§" />
+                <property name="grprepo" value="§[if (string-length('§[grprepo]§')!=0) then '--enablerepo=§[grprepo]§' else '']§" />
+
+                <ssh description="[install_grp:§[grpname]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="yum groupinstall §[grpopt]§ §[grprepo]§ -y '§[grpname]§'" />
+                </ssh>
+
+                <echo message="+ Package Group '§[grpname]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+        </foreach>
+
+        <echo message="-- All packages successfully installed." />
+    </order>
 
 </sequence>

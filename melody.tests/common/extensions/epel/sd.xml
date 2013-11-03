@@ -3,26 +3,31 @@
 
 <sequence basedir="." >
 
-	<order name="deploy_epel_repo" >
-		<echo message="Deploying EPEL repository..." />
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]')))"/>
+    <property name="instance_match_criteria"    value="1=1"/>
 
-		<foreach	items="./environment//instance[ exists(@instance-id) and not(empty(melody:getHeritedContent(., '/packages/*[@repo=&quot;epel&quot;]'))) ]"
-					item-name="srv" >
-			<property name="IP" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-			<property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
-		
-			<ssh description="[deploy_epel_repo:§[IP]§]" host="§[IP]§" login="root" keypair-name="§[kp]§" >
-				<exec command="rpm -q epel-release &amp;&amp; exit 0"/>
-				 <!-- option 'nosignature' will suppress the message 'warning: /var/tmp/rpm-tmp.9SKcuI: Header V3 DSA/SHA1 Signature, key ID 217521f6: NOKEY' displayed by this command -->
-				<exec command="rpm -Uvh --nosignature http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm || exit 1" />
-				 <!-- this command will suppress the message 'Warning: RPMDB altered outside of yum.' when running next yum command -->
-				<exec command="yum clean all" />
- 			</ssh>
- 			
-			<echo message="+ EPEL repository successfully deployed on server '§[§[srv]§/@instance-id]§'." />
-		</foreach>
-		
-		<echo message="-- EPEL repository successfully deployed." />
- 	</order>
+    <property name="package_selector"           value="/packages/package"/>
+
+    <order name="deploy_epel_repo" >
+        <echo message="Deploying EPEL repository..." />
+
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and not(empty(melody:getHeritedContent(., '§[package_selector]§[ @repo=&quot;epel&quot; ]'))) and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <ssh description="[deploy_epel_repo:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <exec command="rpm -q epel-release &amp;&amp; exit 0"/>
+                <!-- option 'nosignature' will suppress the message 'warning: /var/tmp/rpm-tmp.9SKcuI: Header V3 DSA/SHA1 Signature, key ID 217521f6: NOKEY' displayed by this command -->
+                <exec command="rpm -Uvh --nosignature http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm || exit 1" />
+             </ssh>
+
+            <echo message="+ EPEL repository successfully deployed on server '§[§[srv]§/@instance-id]§'." />
+        </foreach>
+
+        <echo message="-- EPEL repository successfully deployed." />
+    </order>
 
 </sequence>
