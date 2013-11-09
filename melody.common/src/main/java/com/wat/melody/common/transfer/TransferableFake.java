@@ -3,6 +3,8 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
@@ -50,14 +52,15 @@ public class TransferableFake implements Transferable {
 
 	@Override
 	public void transfer(TransferableFileSystem fs) throws IOException,
-			InterruptedIOException, AccessDeniedException {
+			InterruptedIOException, NoSuchFileException,
+			FileAlreadyExistsException, AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		if (fs.isDirectory(getDestinationPath())) {
 			// don't create the dir if a dir or a link on a dir already exists
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
 		} else {
 			// don't set attributes
-			fs.createDirectory(getDestinationPath());
+			TransferHelper.createDirectory(fs, getDestinationPath());
 		}
 		log.debug(Msg.bind(Messages.TransferMsg_END, this));
 	}

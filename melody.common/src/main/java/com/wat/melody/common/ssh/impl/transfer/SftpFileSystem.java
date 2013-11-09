@@ -59,15 +59,24 @@ import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
 public class SftpFileSystem implements FileSystem {
 
 	public static String convertToUnixPath(String path) {
+		if (path == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
 		return path.replaceAll("\\\\", "/");
 	}
 
 	public static String convertToUnixPath(Path path) {
+		if (path == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
+		}
 		return convertToUnixPath(path.toString());
 	}
 
 	/**
-	 * Returns {@code false} if NOFOLLOW_LINKS is present.
+	 * Returns {@code false} if NOFOLLOW_LINKS is present in the given list.
 	 */
 	private static boolean followLinks(LinkOption... options) {
 		boolean followLinks = true;
@@ -87,6 +96,11 @@ public class SftpFileSystem implements FileSystem {
 	private ChannelSftp _channel;
 
 	public SftpFileSystem(ChannelSftp channel) {
+		if (channel == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + ChannelSftp.class.getCanonicalName()
+					+ ".");
+		}
 		_channel = channel;
 	}
 
@@ -104,7 +118,7 @@ public class SftpFileSystem implements FileSystem {
 		return exists(convertToUnixPath(path), options);
 	}
 
-	private boolean exists(String path, LinkOption... options) {
+	protected boolean exists(String path, LinkOption... options) {
 		try {
 			return readAttributes0(path, options) != null;
 		} catch (IOException Ex) {
@@ -117,7 +131,7 @@ public class SftpFileSystem implements FileSystem {
 		return isDirectory(convertToUnixPath(path), options);
 	}
 
-	private boolean isDirectory(String path, LinkOption... options) {
+	protected boolean isDirectory(String path, LinkOption... options) {
 		try {
 			return readAttributes0(path, options).isDir();
 		} catch (IOException Ex) {
@@ -130,7 +144,7 @@ public class SftpFileSystem implements FileSystem {
 		return isRegularFile(convertToUnixPath(path), options);
 	}
 
-	private boolean isRegularFile(String path, LinkOption... options) {
+	protected boolean isRegularFile(String path, LinkOption... options) {
 		try {
 			SftpATTRS attrs = readAttributes0(path, options);
 			return !attrs.isDir() && !attrs.isLink();
@@ -144,7 +158,7 @@ public class SftpFileSystem implements FileSystem {
 		return isSymbolicLink(convertToUnixPath(path));
 	}
 
-	private boolean isSymbolicLink(String path) {
+	protected boolean isSymbolicLink(String path) {
 		try {
 			return readAttributes0(path, LinkOption.NOFOLLOW_LINKS).isLink();
 		} catch (IOException Ex) {
@@ -160,7 +174,7 @@ public class SftpFileSystem implements FileSystem {
 		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
-	private void createDirectory(String dir, FileAttribute<?>... attrs)
+	protected void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
@@ -182,7 +196,7 @@ public class SftpFileSystem implements FileSystem {
 					if (readAttributes0(dir, LinkOption.NOFOLLOW_LINKS).isDir()) {
 						// the dir already exists => no error
 					} else {
-						// a link or file exists => error
+						// a link or a regular file exists => error
 						throw new WrapperFileAlreadyExistsException(dir);
 					}
 				} catch (NoSuchFileException Exx) {
@@ -255,7 +269,7 @@ public class SftpFileSystem implements FileSystem {
 				attrs);
 	}
 
-	private void createSymbolicLink(String link, String target,
+	protected void createSymbolicLink(String link, String target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
@@ -293,7 +307,7 @@ public class SftpFileSystem implements FileSystem {
 		return readSymbolicLink(convertToUnixPath(link));
 	}
 
-	private Path readSymbolicLink(String link) throws IOException,
+	protected Path readSymbolicLink(String link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
 		if (link == null || link.trim().length() == 0) {
 			throw new IllegalArgumentException(link + ": Not accepted. "
@@ -332,7 +346,7 @@ public class SftpFileSystem implements FileSystem {
 		delete(convertToUnixPath(path));
 	}
 
-	private void delete(String path) throws IOException,
+	protected void delete(String path) throws IOException,
 			DirectoryNotEmptyException, NoSuchFileException,
 			AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
@@ -400,7 +414,7 @@ public class SftpFileSystem implements FileSystem {
 		return deleteIfExists(convertToUnixPath(path));
 	}
 
-	private boolean deleteIfExists(String path) throws IOException,
+	protected boolean deleteIfExists(String path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		try {
 			delete(path);
@@ -416,7 +430,7 @@ public class SftpFileSystem implements FileSystem {
 		deleteDirectory(convertToUnixPath(dir));
 	}
 
-	private void deleteDirectory(String dir) throws IOException,
+	protected void deleteDirectory(String dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
 		try {
 			for (LsEntry entry : listDirectory(dir)) {
@@ -483,7 +497,7 @@ public class SftpFileSystem implements FileSystem {
 		return newDirectoryStream(convertToUnixPath(path));
 	}
 
-	private DirectoryStream<Path> newDirectoryStream(final String path)
+	protected DirectoryStream<Path> newDirectoryStream(final String path)
 			throws IOException, InterruptedIOException, NoSuchFileException,
 			NotDirectoryException, AccessDeniedException {
 		final List<Path> content = new ArrayList<Path>();
@@ -518,7 +532,7 @@ public class SftpFileSystem implements FileSystem {
 		return readAttributes(convertToUnixPath(path));
 	}
 
-	private EnhancedFileAttributes readAttributes(String path)
+	protected EnhancedFileAttributes readAttributes(String path)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		SftpATTRS pathAttrs = readAttributes0(path, LinkOption.NOFOLLOW_LINKS);
 		Path target = null;
@@ -578,7 +592,7 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void setAttributes(String path, FileAttribute<?>... attributes)
+	protected void setAttributes(String path, FileAttribute<?>... attributes)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
@@ -674,10 +688,10 @@ public class SftpFileSystem implements FileSystem {
 							+ attr.name() + "'" + " is not availbale.");
 				}
 			} catch (WrapperNoSuchFileException | WrapperAccessDeniedException Ex) {
-				// unwrap needed
+				// only need the reason
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex
-								.getClass().getSuperclass().getName())));
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
+						Ex.getReason())));
 			} catch (FileSystemException Ex) {
 				// don't want neither the stack trace nor the file name
 				String msg = Ex.getReason();
@@ -688,8 +702,11 @@ public class SftpFileSystem implements FileSystem {
 				}
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+			} catch (IOException Ex) {
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
 			} catch (UnsupportedOperationException | IllegalArgumentException
-					| ClassCastException | IOException Ex) {
+					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
@@ -709,7 +726,7 @@ public class SftpFileSystem implements FileSystem {
 		chmod(convertToUnixPath(path), permissions);
 	}
 
-	private void chmod(String path, int permissions) throws IOException,
+	protected void chmod(String path, int permissions) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -735,7 +752,7 @@ public class SftpFileSystem implements FileSystem {
 		chgrp(convertToUnixPath(path), groupid);
 	}
 
-	private void chgrp(String path, int groupid) throws IOException,
+	protected void chgrp(String path, int groupid) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -761,7 +778,7 @@ public class SftpFileSystem implements FileSystem {
 		chown(convertToUnixPath(path), userid);
 	}
 
-	private void chown(String path, int userid) throws IOException,
+	protected void chown(String path, int userid) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<project name="melody_test_plugin_cifs" basedir="../../melody.tests" default="all">
+
+	<path id="classpathElements">
+		<fileset dir="./common/lib/">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="Upload_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.cifs/tests/UC_1_upload/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Download_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.cifs/tests/UC_4_download/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="all" depends="Upload_UC0, Download_UC0" />
+
+</project>

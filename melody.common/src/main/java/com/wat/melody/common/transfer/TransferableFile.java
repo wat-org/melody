@@ -3,6 +3,7 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +61,8 @@ public class TransferableFile implements Transferable {
 
 	@Override
 	public void transfer(TransferableFileSystem fs) throws IOException,
-			InterruptedIOException, IllegalFileAttributeException,
+			InterruptedIOException, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		if (isDirectory()) { // dir link will return true
@@ -99,7 +101,7 @@ public class TransferableFile implements Transferable {
 			InterruptedIOException {
 		if (!exists()) {
 			deleteDestination(fs);
-			log.info(new TransferException(Messages.TransferMsg_SKIP_LINK,
+			log.warn(new TransferException(Messages.TransferMsg_SKIP_LINK,
 					new TransferException(Msg.bind(
 							Messages.TransferMsg_LINK_COPY_UNSAFE_IMPOSSIBLE,
 							getSourcePath()))).toString());
@@ -117,6 +119,9 @@ public class TransferableFile implements Transferable {
 			}
 			Path template;
 			try {
+				/*
+				 * TODO : this templating logic can't work for download...
+				 */
 				template = fs.getTemplatingHandler()
 						.doTemplate(getSourcePath());
 			} catch (TemplatingException Ex) {

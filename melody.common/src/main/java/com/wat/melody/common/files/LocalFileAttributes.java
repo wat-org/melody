@@ -51,6 +51,29 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 		_realAttrs = realAttrs;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("is-regular-file:");
+		str.append(isRegularFile());
+		str.append(", is-directory:");
+		str.append(isDirectory());
+		str.append(", is-symbolic-link:");
+		str.append(isSymbolicLink());
+		str.append(", is-other:");
+		str.append(isOther());
+		str.append(", size:");
+		str.append(size());
+		str.append(", creation-time:");
+		str.append(creationTime());
+		str.append(", last-modified-time:");
+		str.append(lastModifiedTime());
+		str.append(", last-access-time:");
+		str.append(lastAccessTime());
+		str.append(" }");
+		return str.toString();
+	}
+
 	/**
 	 * @return <tt>true</tt> if this object's path points to a regular file
 	 *         (follow link). Note that {@link #isSymbolicLink()} can return

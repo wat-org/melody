@@ -199,6 +199,11 @@ public interface FileSystem {
 	 * Delete a directory and all its content.
 	 * </p>
 	 * 
+	 * <p>
+	 * Will not throw {@link NoSuchFileException} if the given directory doesn't
+	 * exists.
+	 * </p>
+	 * 
 	 * @param dir
 	 * 
 	 * @throws NotDirectoryException

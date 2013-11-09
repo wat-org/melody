@@ -40,14 +40,22 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 	@Override
 	public void transferRegularFile(Path src, Path dest,
 			FileAttribute<?>... attrs) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		copy(src, dest);
 		setAttributes(dest, attrs);
 	}
 
 	private void copy(Path source, Path destination) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException {
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		if (isDirectory(source)) {
+			throw new WrapperDirectoryNotEmptyException(source.toString());
+		}
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination.toString());
+		}
 		try {
 			Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
 		} catch (NoSuchFileException Ex) {

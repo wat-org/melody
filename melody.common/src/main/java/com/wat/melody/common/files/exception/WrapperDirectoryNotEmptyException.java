@@ -13,7 +13,7 @@ public class WrapperDirectoryNotEmptyException extends
 	private static final long serialVersionUID = 1004490961415527888L;
 
 	public WrapperDirectoryNotEmptyException(String file) {
-		super("'" + file + "'" + ": Dircetory is not empty.");
+		super("'" + file + "'" + ": Directory is not empty.");
 	}
 
 	public WrapperDirectoryNotEmptyException(String file, Throwable cause) {

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="main" basedir=".">
+
+	<order name="main">
+
+		<property name="IP" value="192.168.122.9"/>
+		<property name="property1" value="salut les filles"/>
+
+		<echo message="Transferring files to 'IP:§[IP]§' ..."/>
+
+		<upload host="§[IP]§" login="\rdpuser1" password="abc@#123" max-par="10">
+			<resources	src-basedir=""
+						match="**"
+						dest-basedir="/Users/rdpuser1/Documents/tmp/melody/scp/UC_1_upload"
+						link-option="COPY_LINKS" >
+				<dos-archive scope="directories">false</dos-archive>
+				<dos-hidden scope="directories">false</dos-hidden>
+				<dos-system scope="directories">false</dos-system>
+
+				<include	match="templates/file1.tmpl"
+							template="y" >
+					<posix-permissions scope="files">740</posix-permissions>
+					<dos-readonly scope="files">true</dos-readonly>
+				</include>
+				
+				<include	match="static_myApp_myMod/content3.txt"
+							template="y" >
+					<posix-permissions scope="files">740</posix-permissions>
+					<dos-readonly scope="files">true</dos-readonly>
+					<dos-hidden scope="files">true</dos-hidden>
+				</include>
+				
+				<include	match="templates/file2.tmpl"
+							dest-name="templates/§[IP]§/file2.§[IP]§"
+							template="y" />
+				
+				<exclude	match="static_myApp_myMod/content2.*" />
+				
+				<!-- will generate warnings -->
+				<include	match="static_myApp_myMod/content1.txt" >
+					<posix-group scope="files">60000</posix-group>
+					<posix-user scope="files">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod" >
+					<posix-group scope="directories">60000</posix-group>
+					<posix-user scope="directories">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod/link.txt" >
+					<posix-group scope="links">502</posix-group>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-user scope="links">501</posix-user>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+				</include>
+			</resources>
+		</upload>
+
+		<echo message="Files successfully transferred to 'IP:§[IP]§'."/>
+
+	</order>
+
+</sequence>

@@ -50,6 +50,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.cifs</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
 			<artifactId>melody.plugin.ssh</artifactId>
 			<version>0.0.1</version>
 		</dependency>

@@ -275,7 +275,7 @@ public class LocalFileSystem implements FileSystem {
 		}
 	}
 
-	private EnhancedFileAttributes _readAttributes(Path path)
+	protected EnhancedFileAttributes _readAttributes(Path path)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -302,19 +302,19 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
-	public void setAttributes(Path path, FileAttribute<?>... attributes)
+	public void setAttributes(Path path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
-		if (attributes == null) {
+		if (attrs == null) {
 			return;
 		}
 		ConsolidatedException full = new ConsolidatedException(Msg.bind(
 				Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTES, path));
-		for (FileAttribute<?> attr : attributes) {
+		for (FileAttribute<?> attr : attrs) {
 			if (attr == null) {
 				continue;
 			}
@@ -340,8 +340,13 @@ public class LocalFileSystem implements FileSystem {
 				 * will throw IOException the operation failed (access denied,
 				 * no such file, permissions on symbolic link...).
 				 */
-				Files.setAttribute(path, attr.name(), attr.value(),
+				setAttribute(path, attr.name(), attr.value(),
 						LinkOption.NOFOLLOW_LINKS);
+			} catch (WrapperNoSuchFileException | WrapperAccessDeniedException Ex) {
+				// only need the reason
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
+						Ex.getReason())));
 			} catch (FileSystemException Ex) {
 				// don't want neither the stack trace nor the file name
 				String msg = Ex.getReason();
@@ -352,8 +357,11 @@ public class LocalFileSystem implements FileSystem {
 				}
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+			} catch (IOException Ex) {
+				full.addCause(new MelodyException(Msg.bind(
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
 			} catch (UnsupportedOperationException | IllegalArgumentException
-					| ClassCastException | IOException Ex) {
+					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
@@ -367,4 +375,17 @@ public class LocalFileSystem implements FileSystem {
 			throw new IllegalFileAttributeException(full);
 		}
 	}
+
+	private void setAttribute(Path path, String attrName, Object attrValue,
+			LinkOption... linkOptions) throws IOException, NoSuchFileException,
+			AccessDeniedException {
+		try {
+			Files.setAttribute(path, attrName, attrValue, linkOptions);
+		} catch (NoSuchFileException Ex) {
+			throw new WrapperNoSuchFileException(Ex.getFile());
+		} catch (AccessDeniedException Ex) {
+			throw new WrapperAccessDeniedException(Ex.getFile());
+		}
+	}
+
 }

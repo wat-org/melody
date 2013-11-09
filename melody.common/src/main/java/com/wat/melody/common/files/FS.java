@@ -490,8 +490,11 @@ public abstract class FS {
 			}
 			throw new MelodyException(Msg.bind(
 					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg));
+		} catch (IOException Ex) {
+			throw new MelodyException(Msg.bind(
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex);
 		} catch (UnsupportedOperationException | IllegalArgumentException
-				| ClassCastException | IOException Ex) {
+				| ClassCastException Ex) {
 			// don't want the stack trace
 			throw new MelodyException(Msg.bind(
 					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex));

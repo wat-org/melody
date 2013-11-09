@@ -218,7 +218,7 @@ public abstract class AbstractSshOperation implements ITask {
 	public Host setHost(Host host) {
 		if (host == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + Host.class.getCanonicalName() + ".");
 		}
 		return getConnectionDatas().setHost(host);
 	}
@@ -231,13 +231,9 @@ public abstract class AbstractSshOperation implements ITask {
 	public Port setPort(Port port) {
 		if (port == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Cannot be null.");
+					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
 		}
 		return getConnectionDatas().setPort(port);
-	}
-
-	public String getLogin() {
-		return getUserDatas().getLogin();
 	}
 
 	public boolean getTrust() {
@@ -245,17 +241,21 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	@Attribute(name = TRUST_ATTR)
-	public boolean setTrust(boolean b) {
-		return getConnectionDatas().setTrust(b);
+	public boolean setTrust(boolean trust) {
+		return getConnectionDatas().setTrust(trust);
+	}
+
+	public String getLogin() {
+		return getUserDatas().getLogin();
 	}
 
 	@Attribute(name = LOGIN_ATTR, mandatory = true)
-	public String setLogin(String sLogin) {
-		if (sLogin == null) {
+	public String setLogin(String login) {
+		if (login == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a login).");
 		}
-		return getUserDatas().setLogin(sLogin);
+		return getUserDatas().setLogin(login);
 	}
 
 	public String getPassword() {
@@ -263,8 +263,8 @@ public abstract class AbstractSshOperation implements ITask {
 	}
 
 	@Attribute(name = PASS_ATTR)
-	public String setPassword(String sPassword) {
-		return getUserDatas().setPassword(sPassword);
+	public String setPassword(String password) {
+		return getUserDatas().setPassword(password);
 	}
 
 	public KeyPairRepositoryPath getKeyPairRepositoryPath() {

@@ -21,6 +21,7 @@
 		<module>melody.plugin.sleep</module>
 		<module>melody.plugin.copy</module>
 		<module>melody.plugin.xml</module>
+		<module>melody.plugin.cifs</module>
 		<module>melody.plugin.ssh</module>
 		<module>melody.plugin.aws</module>
 		<module>melody.plugin.libvirt</module>

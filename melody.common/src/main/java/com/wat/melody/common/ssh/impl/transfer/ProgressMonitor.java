@@ -68,9 +68,12 @@ public class ProgressMonitor implements SftpProgressMonitor {
 			str.append(" -> ");
 			if (_destFS != null) {
 				str.append(_destFS);
-				str.append(":");
 			}
-			str.append(_dest);
+			if (_dest.charAt(0) == '/') {
+				str.append(_dest.substring(1));
+			} else {
+				str.append(_dest);
+			}
 			str.append(" (");
 			str.append(_uploadedpercent);
 			str.append("% - ");

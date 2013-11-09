@@ -3,6 +3,8 @@ package com.wat.melody.common.ssh.impl.transfer;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -14,6 +16,7 @@ import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
+import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.Messages;
@@ -54,14 +57,22 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 	@Override
 	public void transferRegularFile(Path src, Path dest,
 			FileAttribute<?>... attrs) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		download(src, dest);
 		setAttributes(dest, attrs);
 	}
 
 	public void download(Path source, Path destination) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException {
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		if (Files.isDirectory(source)) {
+			throw new WrapperDirectoryNotEmptyException(source.toString());
+		}
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination.toString());
+		}
 		download(SftpFileSystem.convertToUnixPath(source),
 				destination.toString());
 	}

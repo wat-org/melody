@@ -2,6 +2,7 @@ package com.wat.melody.common.transfer;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -24,8 +25,9 @@ public abstract class TransferHelper {
 	private static Logger log = LoggerFactory.getLogger(TransferHelper.class);
 
 	protected static void createDirectory(FileSystem destFS, Path dir,
-			FileAttribute<?>... attrs) throws IOException,
-			IllegalFileAttributeException, AccessDeniedException {
+			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
 		/*
 		 * TODO : introduce a FORCE option, which will delete existing if true
 		 */
@@ -80,7 +82,9 @@ public abstract class TransferHelper {
 	}
 
 	protected static void createSymbolicLink(FileSystem destFS, Path link,
-			Path target, FileAttribute<?>... attrs) throws IOException {
+			Path target, FileAttribute<?>... attrs) throws IOException,
+			NoSuchFileException, FileAlreadyExistsException,
+			AccessDeniedException {
 		if (ensureDestinationIsSymbolicLink(destFS, link, target)) {
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_LINK_ALREADY_EXISTS);
 			try {

@@ -8,6 +8,10 @@ import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.common.transfer.LinkOption;
 import com.wat.melody.common.transfer.TransferBehavior;
 import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
+import com.wat.melody.common.transfer.resources.attributes.AttributeDosArchive;
+import com.wat.melody.common.transfer.resources.attributes.AttributeDosHidden;
+import com.wat.melody.common.transfer.resources.attributes.AttributeDosReadOnly;
+import com.wat.melody.common.transfer.resources.attributes.AttributeDosSystem;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixGroup;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixPermissions;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
@@ -64,6 +68,30 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	 * transfer.
 	 */
 	public static final String POSIX_USER_ATTIBUTE_NE = "posix-user";
+
+	/**
+	 * Nested element, which specifies the dos-archive of the resource to
+	 * transfer.
+	 */
+	public static final String DOS_ARCHIVE_ATTIBUTE_NE = "dos-archive";
+
+	/**
+	 * Nested element, which specifies the dos-hidden of the resource to
+	 * transfer.
+	 */
+	public static final String DOS_HIDDEN_ATTIBUTE_NE = "dos-hidden";
+
+	/**
+	 * Nested element, which specifies the dos-readonly of the resource to
+	 * transfer.
+	 */
+	public static final String DOS_READONLY_ATTIBUTE_NE = "dos-readonly";
+
+	/**
+	 * Nested element, which specifies the dos-system of the resource to
+	 * transfer.
+	 */
+	public static final String DOS_SYSTEM_ATTIBUTE_NE = "dos-system";
 
 	// Mandatory (with a default value)
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
@@ -291,6 +319,46 @@ public abstract class ResourceSpecification extends ResourceSelector {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ AttributePosixUser.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = DOS_ARCHIVE_ATTIBUTE_NE)
+	public void addPosixGroup(AttributeDosArchive attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ AttributeDosArchive.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = DOS_HIDDEN_ATTIBUTE_NE)
+	public void addPosixGroup(AttributeDosHidden attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ AttributeDosHidden.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = DOS_READONLY_ATTIBUTE_NE)
+	public void addPosixGroup(AttributeDosReadOnly attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ AttributeDosReadOnly.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = DOS_SYSTEM_ATTIBUTE_NE)
+	public void addPosixGroup(AttributeDosSystem attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ AttributeDosSystem.class.getCanonicalName() + ".");
 		}
 		putAttribute(attr);
 	}
