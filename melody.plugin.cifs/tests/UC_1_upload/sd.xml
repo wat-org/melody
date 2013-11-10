@@ -10,7 +10,7 @@
 
 		<echo message="Transferring files to 'IP:§[IP]§' ..."/>
 
-		<upload host="§[IP]§" login="\rdpuser1" password="abc@#123" max-par="10">
+		<upload host="§[IP]§" login="rdpuser1" password="abc@#123" max-par="10">
 			<resources	src-basedir=""
 						match="**"
 						dest-basedir="/Users/rdpuser1/Documents/tmp/melody/scp/UC_1_upload"
@@ -21,13 +21,11 @@
 
 				<include	match="templates/file1.tmpl"
 							template="y" >
-					<posix-permissions scope="files">740</posix-permissions>
 					<dos-readonly scope="files">true</dos-readonly>
 				</include>
 				
 				<include	match="static_myApp_myMod/content3.txt"
 							template="y" >
-					<posix-permissions scope="files">740</posix-permissions>
 					<dos-readonly scope="files">true</dos-readonly>
 					<dos-hidden scope="files">true</dos-hidden>
 				</include>
@@ -38,8 +36,9 @@
 				
 				<exclude	match="static_myApp_myMod/content2.*" />
 				
-				<!-- will generate warnings -->
+				<!-- will generate warnings cause posix permissions are not supported by CIFS -->
 				<include	match="static_myApp_myMod/content1.txt" >
+					<posix-permissions scope="files">600</posix-permissions>
 					<posix-group scope="files">60000</posix-group>
 					<posix-user scope="files">60000</posix-user>
 				</include>
@@ -49,10 +48,11 @@
 					<posix-user scope="directories">60000</posix-user>
 				</include>
 				
+				<!-- these attributes will be ignored cause scope='links' cannot apply when link-option="COPY_LINKS". -->
 				<include	match="static_myApp_myMod/link.txt" >
-					<posix-group scope="links">502</posix-group>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
-					<posix-user scope="links">501</posix-user>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
-					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-group scope="links">502</posix-group>
+					<posix-user scope="links">501</posix-user>
+					<posix-permissions scope="links">740</posix-permissions>
 				</include>
 			</resources>
 		</upload>

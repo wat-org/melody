@@ -27,8 +27,11 @@ public class WrapperSmbException extends MelodyException {
 
 	@Override
 	public String getMessage() {
-		return String.format("[CIFS_ERR:Ox%X] %s", _cause.getNtStatus(),
-				_cause.getMessage());
+		String msg = _cause.getMessage();
+		if (msg == null) {
+			msg = "";
+		}
+		return String.format("[CIFS_ERR:Ox%X] %s", _cause.getNtStatus(), msg);
 	}
 
 }

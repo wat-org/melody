@@ -7,15 +7,20 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
 import jcifs.smb.NtStatus;
+import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
+import com.wat.melody.common.cifs.transfer.exception.WrapperNoSuchShareException;
 import com.wat.melody.common.cifs.transfer.exception.WrapperSmbException;
+import com.wat.melody.common.ex.WrapperInterruptedIOException;
+import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
@@ -30,15 +35,38 @@ import com.wat.melody.common.transfer.TransferableFileSystem;
  * @author Guillaume Cornet
  * 
  */
-public class CifsFileSystem4Download extends CifsFileSystem implements
+public class CifsFileSystem4Download extends LocalFileSystem implements
 		TransferableFileSystem {
 
+	private NtlmPasswordAuthentication _smbCredential;
+	private String _smbLocation;
 	private TemplatingHandler _templatingHandler;
 
 	public CifsFileSystem4Download(String location, String domain, String user,
 			String password, TemplatingHandler th) {
-		super(location, domain, user, password);
+		super();
+		if (location == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		// if domain, user or pass is null, default values will be used
+		_smbCredential = new NtlmPasswordAuthentication(domain, user, password);
+		_smbLocation = "smb://" + location + "/";
 		_templatingHandler = th;
+	}
+
+	protected SmbFile createSmbFile(String path, LinkOption... options) {
+		return CifsFileSystem.createSmbFile(getLocation(), path,
+				getCredential(), options);
+	}
+
+	public String getLocation() {
+		return _smbLocation;
+	}
+
+	public NtlmPasswordAuthentication getCredential() {
+		return _smbCredential;
 	}
 
 	@Override
@@ -52,18 +80,19 @@ public class CifsFileSystem4Download extends CifsFileSystem implements
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
-		upload(src, dest);
+		download(src, dest);
 		setAttributes(dest, attrs);
 	}
 
-	private void upload(Path source, Path destination) throws IOException,
+	private void download(Path source, Path destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		upload(source.toString(), convertToUnixPath(destination));
+		download(source.toString(),
+				CifsFileSystem.convertToUnixPath(destination));
 	}
 
-	private void upload(String source, String destination) throws IOException,
-			InterruptedIOException, NoSuchFileException,
+	private void download(String source, String destination)
+			throws IOException, InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		if (source == null || source.trim().length() == 0) {
 			throw new IllegalArgumentException(source + ": Not accepted. "
@@ -80,11 +109,6 @@ public class CifsFileSystem4Download extends CifsFileSystem implements
 		FileOutputStream fos = null;
 		byte[] datas = null;
 		try {
-			/* TODO : deal with INTERRUPED
-			 * if interrupted: may throw a 'java.io.IOException: Pipe closed', a
-			 * 'java.net.SocketException: Broken pipe', or a
-			 * 'java.io.InterruptedIOException', wrapped in an SftpException.
-			 */
 			SmbFile smbfile = createSmbFile(source);
 			fis = smbfile.getInputStream();
 			fos = new FileOutputStream(destination);
@@ -95,18 +119,23 @@ public class CifsFileSystem4Download extends CifsFileSystem implements
 			while ((read = fis.read(datas)) > 0) {
 				fos.write(datas, 0, read);
 				pm.count(read);
+				if (Thread.interrupted()) {
+					throw new InterruptedIOException();
+				}
 			}
 			pm.end();
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
-			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+			if (CifsFileSystem.containsInterruptedException(Ex)) {
+				throw new InterruptedIOException("upload interrupted");
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(source, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(source, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(source, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(source, wex);
+				throw new WrapperNoSuchShareException(source, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_FILE_IS_A_DIRECTORY) {
 				throw new WrapperDirectoryNotEmptyException(source, wex);
 			} else {
@@ -123,12 +152,10 @@ public class CifsFileSystem4Download extends CifsFileSystem implements
 			} else {
 				throw new WrapperNoSuchFileException(destination, Ex);
 			}
+		} catch (InterruptedIOException Ex) {
+			throw new WrapperInterruptedIOException("download interrupted", Ex);
 		} catch (IOException Ex) {
 			if (Thread.interrupted()) {
-				/*
-				 * if 'java.io.IOException: Pipe closed' or
-				 * 'java.net.SocketException: Broken pipe'
-				 */
 				throw new InterruptedIOException("download interrupted");
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_GET, source,

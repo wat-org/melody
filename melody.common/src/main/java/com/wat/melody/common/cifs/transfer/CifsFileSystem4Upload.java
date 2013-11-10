@@ -16,7 +16,9 @@ import jcifs.smb.NtStatus;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
+import com.wat.melody.common.cifs.transfer.exception.WrapperNoSuchShareException;
 import com.wat.melody.common.cifs.transfer.exception.WrapperSmbException;
+import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
@@ -81,11 +83,6 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 		OutputStream fos = null;
 		byte[] datas = null;
 		try {
-			/* TODO : deal with INTERRUPED
-			 * if interrupted: may throw a 'java.io.IOException: Pipe closed', a
-			 * 'java.net.SocketException: Broken pipe', or a
-			 * 'java.io.InterruptedIOException', wrapped in an SftpException.
-			 */
 			SmbFile smbfile = createSmbFile(destination);
 			fis = new FileInputStream(source);
 			fos = smbfile.getOutputStream();
@@ -96,18 +93,23 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 			while ((read = fis.read(datas)) > 0) {
 				fos.write(datas, 0, read);
 				pm.count(read);
+				if (Thread.interrupted()) {
+					throw new InterruptedIOException();
+				}
 			}
 			pm.end();
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
-			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+			if (containsInterruptedException(Ex)) {
+				throw new InterruptedIOException("upload interrupted");
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(destination, wex);
+				throw new WrapperNoSuchShareException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_FILE_IS_A_DIRECTORY) {
 				throw new WrapperDirectoryNotEmptyException(destination, wex);
 			} else {
@@ -124,12 +126,10 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 			} else {
 				throw new WrapperNoSuchFileException(source, Ex);
 			}
+		} catch (InterruptedIOException Ex) {
+			throw new WrapperInterruptedIOException("upload interrupted", Ex);
 		} catch (IOException Ex) {
 			if (Thread.interrupted()) {
-				/*
-				 * if 'java.io.IOException: Pipe closed' or
-				 * 'java.net.SocketException: Broken pipe'
-				 */
 				throw new InterruptedIOException("upload interrupted");
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_PUT, source,

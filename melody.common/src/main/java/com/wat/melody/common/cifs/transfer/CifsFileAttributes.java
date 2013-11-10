@@ -22,17 +22,20 @@ public class CifsFileAttributes implements EnhancedFileAttributes {
 					+ "Must be a valid " + SmbFile.class.getCanonicalName()
 					+ ".");
 		}
-		return new CifsFileAttributes(smbfile.lastModified(),
-				smbfile.createTime(), smbfile.length(), smbfile.getAttributes());
+		return new CifsFileAttributes(smbfile.getType(),
+				smbfile.lastModified(), smbfile.createTime(), smbfile.length(),
+				smbfile.getAttributes());
 	}
 
+	private int _type;
 	private long _lastModifiedTime;
 	private long _creationTime;
 	private long _size;
 	private int _attributes;
 
-	public CifsFileAttributes(long lastModifiedTime, long creationTime,
-			long size, int attributes) {
+	public CifsFileAttributes(int type, long lastModifiedTime,
+			long creationTime, long size, int attributes) {
+		_type = type;
 		_lastModifiedTime = lastModifiedTime;
 		_creationTime = creationTime;
 		_size = size;
@@ -80,12 +83,28 @@ public class CifsFileAttributes implements EnhancedFileAttributes {
 
 	@Override
 	public boolean isRegularFile() {
+		/*
+		 * holy shit ! there's a special rule in SmbFile.isDirectory, which
+		 * return false if getUncPath0().length() == 1. We have to do equal
+		 * stuff here.
+		 */
+		if ((_type & (SmbFile.TYPE_WORKGROUP | SmbFile.TYPE_SERVER | SmbFile.TYPE_SHARE)) != 0) {
+			return false;
+		}
 		return (_attributes & SmbFile.ATTR_DIRECTORY) == 0;
 	}
 
 	@Override
 	public boolean isDirectory() {
-		return (_attributes & SmbFile.ATTR_DIRECTORY) != 0;
+		/*
+		 * holy shit ! there's a special rule in SmbFile.isDirectory, which
+		 * return true if getUncPath0().length() == 1. We have to do equal stuff
+		 * here.
+		 */
+		if ((_type & (SmbFile.TYPE_WORKGROUP | SmbFile.TYPE_SERVER | SmbFile.TYPE_SHARE)) != 0) {
+			return true;
+		}
+		return (_attributes & SmbFile.ATTR_DIRECTORY) == SmbFile.ATTR_DIRECTORY;
 	}
 
 	@Override

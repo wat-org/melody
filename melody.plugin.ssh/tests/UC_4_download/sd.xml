@@ -26,7 +26,7 @@
 							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />
 
-				<!-- will generate warnings -->
+				<!-- will generate warnings, cause the current user can't chown/chgrp -->
 				<include	match="static_myApp_myMod/content1.txt" >
 					<posix-group scope="files">60000</posix-group>
 					<posix-user scope="files">60000</posix-user>
@@ -39,7 +39,7 @@
 				
 				<include	match="static_myApp_myMod/link.txt" >
 					<posix-group scope="links">501</posix-group>  <!-- operation allowed because 501 is the login group-id of my user -->
-					<posix-user scope="links">500</posix-user>  <!-- operation allowed because 500 is the user-id of my user -->
+					<posix-user scope="links">5000</posix-user>  <!-- operation not allowed because attributes of symbolic link can not be set -->
 					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set -->
 				</include>
 			</resources>

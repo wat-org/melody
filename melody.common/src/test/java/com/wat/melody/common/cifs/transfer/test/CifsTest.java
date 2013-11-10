@@ -15,17 +15,19 @@ public class CifsTest {
 	public static void main(String[] args) throws Exception {
 
 		TransferableFileSystem cifs = new CifsFileSystem4Upload(
-				"192.168.122.9", null, "Administrator", "Rf%9cRgf7", null);
+				"192.168.122.9", null, "rdpuser1", "abc@#123", null);
 
+		Path dir = Paths.get("/Usehhrs/rdpuser1/Documents/superdir");
 		Path src = Paths.get("/tmp/mescoudes.xml");
-		Path dest = Paths
-				.get("/Users/rdpuser1/Documents/tmp/melody/scp/UC_1_upload/templates/file1.tmpl");
+		Path dest = Paths.get("/Users/rdpuser1/Documents/mesgenoux.xml");
 
 		try {
+
 			AttributeDosReadOnly attr = new AttributeDosReadOnly();
 			attr.setScopes(Scopes.ALL);
 			attr.setStringValue("true");
 
+			cifs.createDirectory(dir, attr);
 			cifs.transferRegularFile(src, dest, attr);
 
 		} catch (IOException Ex) {

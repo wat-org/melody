@@ -29,7 +29,7 @@
 				
 				<exclude	match="static_myApp_myMod/content2.*" />
 				
-				<!-- will generate warnings -->
+				<!-- will generate warnings, cause the user jboss can't chown/chgrp -->
 				<include	match="static_myApp_myMod/content1.txt" >
 					<posix-group scope="files">60000</posix-group>
 					<posix-user scope="files">60000</posix-user>
@@ -40,10 +40,11 @@
 					<posix-user scope="directories">60000</posix-user>
 				</include>
 				
+				<!-- will generate warnings, cause attributes of symbolic link can not be set using sftp -->
 				<include	match="static_myApp_myMod/link.txt" >
-					<posix-group scope="links">502</posix-group>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
-					<posix-user scope="links">501</posix-user>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
-					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set using sftp -->
+					<posix-group scope="links">502</posix-group>
+					<posix-user scope="links">501</posix-user>
+					<posix-permissions scope="links">740</posix-permissions>
 				</include>
 			</resources>
 		</upload>

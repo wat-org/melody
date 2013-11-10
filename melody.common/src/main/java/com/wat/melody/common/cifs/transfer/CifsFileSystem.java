@@ -19,20 +19,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import jcifs.dcerpc.DcerpcException;
 import jcifs.smb.NtStatus;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import jcifs.util.transport.TransportException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.wat.melody.common.cifs.transfer.exception.WrapperNoSuchShareException;
 import com.wat.melody.common.cifs.transfer.exception.WrapperSmbException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
@@ -51,7 +52,37 @@ import com.wat.melody.common.transfer.resources.attributes.AttributeDosSystem;
  */
 public class CifsFileSystem implements FileSystem {
 
-	private static Logger log = LoggerFactory.getLogger(CifsFileSystem.class);
+	protected static boolean containsInterruptedException(Throwable Ex) {
+		/*
+		 * if interrupted: may throw an InterruptedException wrapped in a
+		 * TransportException wrapped in a SmbException.
+		 * 
+		 * if interrupted: may also throw an InterruptedIOException wrapped in a
+		 * SmbException.
+		 */
+		while (Ex != null) {
+			if (Ex instanceof InterruptedException) {
+				return true;
+			}
+			if (Ex instanceof InterruptedIOException) {
+				return true;
+			}
+			/*
+			 * CIFS exception are a BIG SHIT. They have a custom rootCause which
+			 * is not standard ...
+			 */
+			if (Ex instanceof SmbException) {
+				Ex = ((SmbException) Ex).getRootCause();
+			} else if (Ex instanceof TransportException) {
+				Ex = ((TransportException) Ex).getRootCause();
+			} else if (Ex instanceof DcerpcException) {
+				Ex = ((DcerpcException) Ex).getRootCause();
+			} else {
+				Ex = Ex.getCause();
+			}
+		}
+		return false;
+	}
 
 	public static String convertToUnixPath(String path) {
 		if (path == null) {
@@ -71,7 +102,9 @@ public class CifsFileSystem implements FileSystem {
 	}
 
 	/**
+	 * @param smbLocation
 	 * @param path
+	 * @param smbCredential
 	 * @param options
 	 *            is not used (because Samba link support can only be configured
 	 *            on the samba server side, client options have no
@@ -80,19 +113,20 @@ public class CifsFileSystem implements FileSystem {
 	 * @return an {@link SmbFile}, build from this object Samba Share + the
 	 *         given {@link path}.
 	 */
-	protected SmbFile createSmbFile(String path, LinkOption... options) {
+	protected static SmbFile createSmbFile(String smbLocation, String path,
+			NtlmPasswordAuthentication smbCredential, LinkOption... options) {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
-		String smbPath = _smbLocation;
+		String smbPath = smbLocation;
 		if (path.charAt(0) == '/') {
 			smbPath += path.substring(1);
 		} else {
 			smbPath += path;
 		}
 		try {
-			return new SmbFile(smbPath, _smbCredential);
+			return new SmbFile(smbPath, smbCredential);
 		} catch (MalformedURLException Ex) {
 			throw new RuntimeException(smbPath + ": Malformed URL.", Ex);
 		}
@@ -113,8 +147,16 @@ public class CifsFileSystem implements FileSystem {
 		_smbLocation = "smb://" + location + "/";
 	}
 
+	protected SmbFile createSmbFile(String path, LinkOption... options) {
+		return createSmbFile(getLocation(), path, getCredential(), options);
+	}
+
 	public String getLocation() {
 		return _smbLocation;
+	}
+
+	public NtlmPasswordAuthentication getCredential() {
+		return _smbCredential;
 	}
 
 	@Override
@@ -194,7 +236,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(dir, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(dir, wex);
+				throw new WrapperNoSuchShareException(dir, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_COLLISION) {
 				try {
 					if (readAttributes(dir).isDirectory()) {
@@ -267,11 +309,13 @@ public class CifsFileSystem implements FileSystem {
 
 	@Override
 	public void createSymbolicLink(Path link, Path target,
-			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
 		// Samba can't do that
-		log.warn("cifs doesn't support symbolic links.");
+		throw new SymbolicLinkNotSupported(link, target,
+				"CIFS doesn't support Symbolic links.");
 	}
 
 	@Override
@@ -315,7 +359,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_RM, smbfile),
 						wex);
@@ -404,7 +448,7 @@ public class CifsFileSystem implements FileSystem {
 				smbfile = createSmbFile(path);
 			}
 			for (String file : smbfile.list()) {
-				content.add(Paths.get(file));
+				content.add(Paths.get(path, file));
 			}
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
@@ -415,7 +459,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_LS, smbfile),
 						wex);
@@ -477,11 +521,10 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
 				/*
 				 * NtStatus.NT_STATUS_BAD_NETWORK_NAME is raised when, for
-				 * example, a resource smb://x.x.x.x/share1/ exists and the
-				 * requested resource is
-				 * smb://x.x.x.x/other-path-which-is-not-shared
+				 * example, when the requested resource is
+				 * smb://x.x.x.x/a-path-which-is-not-shared
 				 */
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			}
 			throw new IOException(Msg.bind(Messages.CifsEx_STAT, smbfile), wex);
 		}
@@ -501,7 +544,7 @@ public class CifsFileSystem implements FileSystem {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
-		if (attrs == null) {
+		if (attrs == null || attrs.length == 0) {
 			return;
 		}
 		ConsolidatedException full = new ConsolidatedException(Msg.bind(
@@ -621,7 +664,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_CHA, isArchive,
 						smbfile), wex);
@@ -658,7 +701,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_CHH, isHidden,
 						smbfile), wex);
@@ -696,7 +739,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_CHR, isReadOnly,
 						smbfile), wex);
@@ -733,7 +776,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchFileException(path, wex);
+				throw new WrapperNoSuchShareException(path, wex);
 			} else {
 			}
 			throw new IOException(Msg.bind(Messages.CifsEx_CHS, isSystem,

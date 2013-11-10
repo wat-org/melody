@@ -5,28 +5,32 @@
 
 	<order name="main">
 
-		<property name="IP" value="127.0.0.1"/>
+		<property name="IP" value="192.168.122.9"/>
 		<property name="property1" value="salut les filles"/>
 
 		<echo message="Transferring files from 'IP:§[IP]§' ..."/>
 
-		<download host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
-			<resources	src-basedir="/tmp/melody/scp/UC_1_upload"
+		<download host="§[IP]§" login="rdpuser1" password="abc@#123" max-par="10">
+			<resources	src-basedir="/Users/rdpuser1/Documents/tmp/melody/scp/UC_1_upload"
 						match="**"
 						dest-basedir="./download/§[IP]§"
-						link-option="KEEP_LINKS" >
-				<posix-permissions scope="directories">770</posix-permissions>
-				<posix-permissions scope="files">660</posix-permissions>
+						link-option="COPY_LINKS" >
 
-				<include	match="templates/file1.tmpl" >
-					<posix-permissions scope="files">740</posix-permissions>
+				<include	match="templates/§[IP]§/file2.§[IP]§"
+							dest-name="templates/file2.tmpl">
+					<posix-permissions scope="files">600</posix-permissions>
 				</include>
 
-				<include	match="**/file2.tmpl"
-							dest-name="templates/§[IP]§/file2.§[IP]§"
-							template="y" />
+				<exclude	match="templates/§[IP]§" />
 
-				<!-- will generate warnings -->
+				<!-- even if it has no effects, it will not generate warnings on Linux FS. don't really know why... -->
+				<include	match="templates/file1.tmpl" >
+					<dos-archive scope="files">true</dos-archive>
+					<dos-hidden scope="files">true</dos-hidden>
+					<dos-system scope="files">false</dos-system>
+				</include>
+
+				<!-- will generate warnings, cause the current user can't chown/chgrp -->
 				<include	match="static_myApp_myMod/content1.txt" >
 					<posix-group scope="files">60000</posix-group>
 					<posix-user scope="files">60000</posix-user>
@@ -37,10 +41,11 @@
 					<posix-user scope="directories">60000</posix-user>
 				</include>
 				
+				<!-- these attributes will be ignored cause scope='links' cannot apply when link-option="COPY_LINKS". -->
 				<include	match="static_myApp_myMod/link.txt" >
-					<posix-group scope="links">501</posix-group>  <!-- operation allowed because 501 is the login group-id of my user -->
-					<posix-user scope="links">500</posix-user>  <!-- operation allowed because 500 is the user-id of my user -->
-					<posix-permissions scope="links">740</posix-permissions>  <!-- operation not allowed because attributes of symbolic link can not be set -->
+					<posix-group scope="links">501</posix-group>
+					<posix-user scope="links">500</posix-user>
+					<posix-permissions scope="links">740</posix-permissions>
 				</include>
 			</resources>
 		</download>
