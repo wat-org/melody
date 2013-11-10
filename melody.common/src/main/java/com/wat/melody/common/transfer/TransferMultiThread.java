@@ -261,11 +261,23 @@ public abstract class TransferMultiThread {
 							Messages.TransferEx_FAILED, t), Ex);
 				} catch (IOException Ex) {
 					/*
-					 * may receive (strange) IOException instead of
-					 * InterruptedException or InterruptedIOException
+					 * If interrupted, Transferable.transfer can throw (strange)
+					 * IOException instead of InterruptedException or
+					 * InterruptedIOException ... We must detect this situation.
 					 */
-					throw new TransferException(Msg.bind(
-							Messages.TransferEx_FAILED, t), Ex);
+					if (Thread.interrupted() || isInterrupted()) {
+						log.debug(MelodyException
+								.getStackTrace(new WrapperInterruptedException(
+										"Transfer interrupted. Ignoring following exception:",
+										Ex)));
+						throw new WrapperInterruptedException(Msg.bind(
+								Messages.TransferEx_FAILED, t),
+								new WrapperInterruptedException(
+										"transfer interrupted"));
+					} else {
+						throw new TransferException(Msg.bind(
+								Messages.TransferEx_FAILED, t), Ex);
+					}
 				}
 			}
 		} catch (InterruptedException Ex) {

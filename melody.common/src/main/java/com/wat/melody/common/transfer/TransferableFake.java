@@ -55,14 +55,9 @@ public class TransferableFake implements Transferable {
 			InterruptedIOException, NoSuchFileException,
 			FileAlreadyExistsException, AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
-		if (fs.isDirectory(getDestinationPath())) {
-			// don't create the dir if a dir or a link on a dir already exists
-			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
-		} else {
-			// don't set attributes
-			TransferHelper.createDirectory(fs, getDestinationPath());
-		}
-		log.debug(Msg.bind(Messages.TransferMsg_END, this));
+		// don't set attributes
+		TransferHelper.createDirectory(fs, getDestinationPath());
+		log.info(Msg.bind(Messages.TransferMsg_END, this));
 	}
 
 	@Override

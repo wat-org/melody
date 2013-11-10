@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.exception.TransferException;
@@ -69,16 +70,17 @@ public class TransferableFile implements Transferable {
 			if (linkShouldBeConvertedToFile()) {
 				TransferHelper.createDirectory(fs, getDestinationPath(),
 						getExpectedAttributes());
+			} else if (getLinkOption() == LinkOption.SKIP_LINKS) {
+				ln_skip(fs);
 			} else {
-				TransferHelper.createSymbolicLink(fs, getDestinationPath(),
-						getSymbolicLinkTarget(), getExpectedAttributes());
+				createSymlink(fs);
 			}
 		} else if (isSymbolicLink()) {
 			ln(fs);
 		} else {
 			template(fs);
 		}
-		log.debug(Msg.bind(Messages.TransferMsg_END, this));
+		log.info(Msg.bind(Messages.TransferMsg_END, this));
 	}
 
 	protected void ln(TransferableFileSystem fs) throws IOException,
@@ -93,8 +95,13 @@ public class TransferableFile implements Transferable {
 	}
 
 	protected void createSymlink(TransferableFileSystem fs) throws IOException {
-		TransferHelper.createSymbolicLink(fs, getDestinationPath(),
-				getSymbolicLinkTarget(), getExpectedAttributes());
+		try {
+			TransferHelper.createSymbolicLink(fs, getDestinationPath(),
+					getSymbolicLinkTarget(), getExpectedAttributes());
+		} catch (SymbolicLinkNotSupported Ex) {
+			log.warn(new TransferException(Messages.TransferMsg_SKIP_LINK, Ex)
+					.toString());
+		}
 	}
 
 	protected void ln_copy(TransferableFileSystem fs) throws IOException,
