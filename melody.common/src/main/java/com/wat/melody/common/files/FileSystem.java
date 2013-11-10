@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
 
 /**
  * 
@@ -112,6 +113,8 @@ public interface FileSystem {
 	 * @param target
 	 * @param attrs
 	 * 
+	 * @throws SymbolicLinkNotSupported
+	 *             if the file system doesn't support symbolic links.
 	 * @throws NoSuchFileException
 	 *             if a parent directory doesn't exists.
 	 * @throws FileAlreadyExistsException
@@ -137,7 +140,8 @@ public interface FileSystem {
 	 *             if the given link cannot be created for any other reason.
 	 */
 	public void createSymbolicLink(Path link, Path target,
-			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException;
 

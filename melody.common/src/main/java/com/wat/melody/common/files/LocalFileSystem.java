@@ -19,6 +19,7 @@ import java.nio.file.attribute.FileAttribute;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperFileAlreadyExistsException;
@@ -152,7 +153,8 @@ public class LocalFileSystem implements FileSystem {
 
 	@Override
 	public void createSymbolicLink(Path link, Path target,
-			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
 		if (link == null || link.toString().length() == 0) {
@@ -165,6 +167,8 @@ public class LocalFileSystem implements FileSystem {
 		}
 		try {
 			Files.createSymbolicLink(link, target);
+		} catch (UnsupportedOperationException Ex) {
+			throw new SymbolicLinkNotSupported(link, target, Ex);
 		} catch (NoSuchFileException Ex) {
 			throw new WrapperNoSuchFileException(Ex.getFile());
 		} catch (FileAlreadyExistsException Ex) {
@@ -309,7 +313,7 @@ public class LocalFileSystem implements FileSystem {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
-		if (attrs == null) {
+		if (attrs == null || attrs.length == 0) {
 			return;
 		}
 		ConsolidatedException full = new ConsolidatedException(Msg.bind(
