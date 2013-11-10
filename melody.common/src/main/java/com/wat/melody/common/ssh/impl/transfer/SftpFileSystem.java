@@ -585,14 +585,14 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	@Override
-	public void setAttributes(Path path, FileAttribute<?>... attributes)
+	public void setAttributes(Path path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
-		setAttributes(convertToUnixPath(path), attributes);
+		setAttributes(convertToUnixPath(path), attrs);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void setAttributes(String path, FileAttribute<?>... attributes)
+	protected void setAttributes(String path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
@@ -600,7 +600,7 @@ public class SftpFileSystem implements FileSystem {
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		if (attributes == null) {
+		if (attrs == null || attrs.length == 0) {
 			return;
 		}
 		Boolean isLink = false;
@@ -609,7 +609,7 @@ public class SftpFileSystem implements FileSystem {
 		}
 		ConsolidatedException full = new ConsolidatedException(Msg.bind(
 				Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTES, path));
-		for (FileAttribute<?> attr : attributes) {
+		for (FileAttribute<?> attr : attrs) {
 			if (attr == null) {
 				continue;
 			}

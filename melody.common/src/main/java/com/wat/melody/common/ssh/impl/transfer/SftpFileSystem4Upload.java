@@ -1,5 +1,6 @@
 package com.wat.melody.common.ssh.impl.transfer;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
@@ -10,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
@@ -103,6 +103,21 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 				throw new WrapperInterruptedIOException("upload interrupted",
 						(InterruptedIOException) Ex.getCause());
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
+					&& Ex.getCause() instanceof FileNotFoundException) {
+				String msg = Ex.getCause().getMessage();
+				if (msg != null
+						&& msg.indexOf(" (No such file or directory)") != -1) {
+					throw new WrapperNoSuchFileException(source);
+				} else if (msg != null
+						&& msg.indexOf(" (Permission denied)") != -1) {
+					throw new WrapperAccessDeniedException(source);
+				} else if (msg != null
+						&& msg.indexOf(" (Is a directory)") != -1) {
+					throw new WrapperDirectoryNotEmptyException(source);
+				} else {
+					throw new WrapperNoSuchFileException(source, Ex.getCause());
+				}
+			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() != null) {
 				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
 						destination), Ex.getCause());
@@ -110,8 +125,6 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 				throw new IOException(Msg.bind(Messages.SfptEx_PUT, source,
 						destination), Ex);
 			}
-		} catch (JSchException e) {
-			throw new RuntimeException("Shouldn't happened.");
 		}
 	}
 
