@@ -93,15 +93,16 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 				 * if 'java.io.IOException: Pipe closed' or
 				 * 'java.net.SocketException: Broken pipe'
 				 */
-				throw new InterruptedIOException("upload interrupted");
+				throw new InterruptedIOException(
+						Messages.SfptEx_PUT_INTERRUPTED);
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(destination);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(destination);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
-				throw new WrapperInterruptedIOException("upload interrupted",
-						(InterruptedIOException) Ex.getCause());
+				throw new WrapperInterruptedIOException(
+						Messages.SfptEx_PUT_INTERRUPTED, Ex.getCause());
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof FileNotFoundException) {
 				String msg = Ex.getCause().getMessage();

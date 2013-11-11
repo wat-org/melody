@@ -10,11 +10,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 
+import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.LocalFileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
+import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.transfer.Messages;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
 
@@ -64,6 +67,12 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
 		} catch (AccessDeniedException Ex) {
 			throw new WrapperAccessDeniedException(Ex.getFile());
+		} catch (InterruptedIOException Ex) {
+			throw new WrapperInterruptedIOException(
+					Messages.LocalFSEx_COPY_INTERRUPTED, Ex);
+		} catch (IOException Ex) {
+			throw new IOException(Msg.bind(Messages.LocalFSEx_COPY, source,
+					destination), Ex);
 		}
 	}
 

@@ -106,15 +106,16 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 				 * if 'java.io.IOException: Pipe closed' or
 				 * 'java.net.SocketException: Broken pipe'
 				 */
-				throw new InterruptedIOException("download interrupted");
+				throw new InterruptedIOException(
+						Messages.SfptEx_GET_INTERRUPTED);
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(source);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				throw new WrapperNoSuchFileException(source);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
-				throw new WrapperInterruptedIOException("download interrupted",
-						(InterruptedIOException) Ex.getCause());
+				throw new WrapperInterruptedIOException(
+						Messages.SfptEx_GET_INTERRUPTED, Ex.getCause());
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof FileNotFoundException) {
 				String msg = Ex.getCause().getMessage();

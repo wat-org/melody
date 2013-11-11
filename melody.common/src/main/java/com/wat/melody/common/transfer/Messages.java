@@ -9,6 +9,9 @@ public class Messages extends NLS {
 	public static String LinkOptionEx_EMPTY;
 	public static String LinkOptionEx_INVALID;
 
+	public static String LocalFSEx_COPY;
+	public static String LocalFSEx_COPY_INTERRUPTED;
+
 	public static String ScopeEx_EMPTY;
 	public static String ScopeEx_INVALID;
 
@@ -27,6 +30,9 @@ public class Messages extends NLS {
 	public static String TransferEx_INTERRUPTED;
 	public static String TransferEx_FAILED;
 	public static String TransferEx_NO_TEMPLATING_HANDLER;
+	public static String TransferEx_TRANSFER_INTERRUPTED;
+	public static String TransferMsg_DISPLAY_RESOURCE_TREE;
+	public static String TransferMsg_IGNORE_IOERROR;
 	public static String TransferMsg_START;
 	public static String TransferMsg_FINISH;
 	public static String TransferMsg_BEGIN;

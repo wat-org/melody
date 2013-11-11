@@ -18,6 +18,9 @@ public class Messages extends NLS {
 	public static String CifsEx_PUT;
 	public static String CifsEx_GET;
 
+	public static String CifsEx_PUT_INTERRUPTED;
+	public static String CifsEx_GET_INTERRUPTED;
+
 	public static String CifsFSEx_FAILED_TO_SET_ATTRIBUTES;
 	public static String CifsFSEx_FAILED_TO_SET_ATTRIBUTE;
 	public static String CifsFSEx_FAILED_TO_SET_ATTRIBUTE_X;

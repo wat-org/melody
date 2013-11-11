@@ -29,6 +29,9 @@ public class Messages extends NLS {
 	public static String SftpEx_CHOWN;
 	public static String SftpEx_CHGRP;
 
+	public static String SfptEx_PUT_INTERRUPTED;
+	public static String SfptEx_GET_INTERRUPTED;
+
 	public static String SftpFSEx_SET_ATTRIBUTES_NOT_SUPPORTED_ON_LINK;
 	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTES;
 	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTE;

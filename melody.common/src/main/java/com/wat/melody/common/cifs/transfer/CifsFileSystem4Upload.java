@@ -101,7 +101,8 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (containsInterruptedException(Ex)) {
-				throw new InterruptedIOException("upload interrupted");
+				throw new InterruptedIOException(
+						Messages.CifsEx_PUT_INTERRUPTED);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
@@ -127,10 +128,12 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 				throw new WrapperNoSuchFileException(source, Ex);
 			}
 		} catch (InterruptedIOException Ex) {
-			throw new WrapperInterruptedIOException("upload interrupted", Ex);
+			throw new WrapperInterruptedIOException(
+					Messages.CifsEx_PUT_INTERRUPTED, Ex);
 		} catch (IOException Ex) {
 			if (Thread.interrupted()) {
-				throw new InterruptedIOException("upload interrupted");
+				throw new InterruptedIOException(
+						Messages.CifsEx_PUT_INTERRUPTED);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_PUT, source,
 						destination), Ex);

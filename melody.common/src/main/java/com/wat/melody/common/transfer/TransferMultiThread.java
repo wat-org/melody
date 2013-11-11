@@ -240,8 +240,8 @@ public abstract class TransferMultiThread {
 				sfs = null;
 			}
 		}
-		log.debug("The resources tree to transfer is:" + "\n  "
-				+ getTransferablesTree().toString().replaceAll("\\n", "\n  "));
+		log.debug(Msg.bind(Messages.TransferMsg_DISPLAY_RESOURCE_TREE,
+				getTransferablesTree()));
 	}
 
 	protected void createDestinationDirectories() throws TransferException,
@@ -266,14 +266,12 @@ public abstract class TransferMultiThread {
 					 * InterruptedIOException ... We must detect this situation.
 					 */
 					if (Thread.interrupted() || isInterrupted()) {
-						log.debug(MelodyException
-								.getStackTrace(new WrapperInterruptedException(
-										"Transfer interrupted. Ignoring following exception:",
-										Ex)));
-						throw new WrapperInterruptedException(Msg.bind(
-								Messages.TransferEx_FAILED, t),
+						log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
+								MelodyException.getStackTrace(Ex)));
+						throw new WrapperInterruptedException(
+								Msg.bind(Messages.TransferEx_FAILED, t),
 								new WrapperInterruptedException(
-										"transfer interrupted"));
+										Messages.TransferEx_TRANSFER_INTERRUPTED));
 					} else {
 						throw new TransferException(Msg.bind(
 								Messages.TransferEx_FAILED, t), Ex);
@@ -334,13 +332,12 @@ public abstract class TransferMultiThread {
 			 * InterruptedIOException ... We must detect this situation.
 			 */
 			if (Thread.interrupted() || isInterrupted()) {
-				log.debug(MelodyException
-						.getStackTrace(new WrapperInterruptedException(
-								"Transfer interrupted. Ignoring following exception:",
-								Ex)));
+				log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
+						MelodyException.getStackTrace(Ex)));
 				InterruptedException e = new WrapperInterruptedException(
 						Msg.bind(Messages.TransferEx_FAILED, t),
-						new WrapperInterruptedException("transfer interrupted"));
+						new WrapperInterruptedException(
+								Messages.TransferEx_TRANSFER_INTERRUPTED));
 				markState(INTERRUPTED);
 				getExceptions().addCause(e);
 			} else {

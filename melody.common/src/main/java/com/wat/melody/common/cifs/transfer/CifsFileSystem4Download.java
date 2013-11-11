@@ -127,7 +127,8 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (CifsFileSystem.containsInterruptedException(Ex)) {
-				throw new InterruptedIOException("upload interrupted");
+				throw new InterruptedIOException(
+						Messages.CifsEx_GET_INTERRUPTED);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(source, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
@@ -139,7 +140,7 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_FILE_IS_A_DIRECTORY) {
 				throw new WrapperDirectoryNotEmptyException(source, wex);
 			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_PUT, source,
+				throw new IOException(Msg.bind(Messages.CifsEx_GET, source,
 						destination), wex);
 			}
 		} catch (FileNotFoundException Ex) {
@@ -153,10 +154,12 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 				throw new WrapperNoSuchFileException(destination, Ex);
 			}
 		} catch (InterruptedIOException Ex) {
-			throw new WrapperInterruptedIOException("download interrupted", Ex);
+			throw new WrapperInterruptedIOException(
+					Messages.CifsEx_GET_INTERRUPTED, Ex);
 		} catch (IOException Ex) {
 			if (Thread.interrupted()) {
-				throw new InterruptedIOException("download interrupted");
+				throw new InterruptedIOException(
+						Messages.CifsEx_GET_INTERRUPTED);
 			} else {
 				throw new IOException(Msg.bind(Messages.CifsEx_GET, source,
 						destination), Ex);
