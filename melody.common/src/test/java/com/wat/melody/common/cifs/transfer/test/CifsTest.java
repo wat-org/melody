@@ -17,7 +17,7 @@ public class CifsTest {
 		TransferableFileSystem cifs = new CifsFileSystem4Upload(
 				"192.168.122.9", null, "rdpuser1", "abc@#123", null);
 
-		Path dir = Paths.get("/Usehhrs/rdpuser1/Documents/superdir");
+		Path dir = Paths.get("/Users/rdpuser1/Documents/superdir");
 		Path src = Paths.get("/tmp/mescoudes.xml");
 		Path dest = Paths.get("/Users/rdpuser1/Documents/mesgenoux.xml");
 

@@ -105,6 +105,20 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 						Messages.CifsEx_PUT_INTERRUPTED);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(destination, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(destination, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {

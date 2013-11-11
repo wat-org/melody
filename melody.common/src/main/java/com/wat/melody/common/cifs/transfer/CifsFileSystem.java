@@ -233,6 +233,22 @@ public class CifsFileSystem implements FileSystem {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+				throw new WrapperAccessDeniedException(dir, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(dir, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
@@ -354,6 +370,20 @@ public class CifsFileSystem implements FileSystem {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
@@ -409,6 +439,20 @@ public class CifsFileSystem implements FileSystem {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(dir, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(dir, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				// don't do anything
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
@@ -453,6 +497,20 @@ public class CifsFileSystem implements FileSystem {
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
 				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
@@ -500,6 +558,40 @@ public class CifsFileSystem implements FileSystem {
 				 * NtStatus.NT_STATUS_ACCESS_DENIED is raised when, for example,
 				 * a resource smb://x.x.x.x/share1/ exists and is accessed by a
 				 * user which is not allowed to.
+				 */
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				/*
+				 * NtStatus.NT_STATUS_LOGON_FAILURE is raised when, for example,
+				 * a resource smb://x.x.x.x/share1/ exists and is accessed by an
+				 * invalid username/password.
+				 */
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				/*
+				 * NtStatus.NT_STATUS_INVALID_LOGON_HOURS is raised when, for
+				 * example, a resource smb://x.x.x.x/share1/ exists and is
+				 * accessed by a valid user outside his valid login hours.
+				 */
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				/*
+				 * NtStatus.NT_STATUS_PASSWORD_EXPIRED is raised when, for
+				 * example, a resource smb://x.x.x.x/share1/ exists and is
+				 * accessed by a valid user whose password is expired.
+				 */
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				/*
+				 * NtStatus.NT_STATUS_ACCOUNT_DISABLED is raised when, for
+				 * example, a resource smb://x.x.x.x/share1/ exists and is
+				 * accessed by a valid user whose account is disabled.
 				 */
 				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
@@ -659,6 +751,20 @@ public class CifsFileSystem implements FileSystem {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
@@ -695,6 +801,20 @@ public class CifsFileSystem implements FileSystem {
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
 				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
@@ -734,6 +854,20 @@ public class CifsFileSystem implements FileSystem {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
 				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
+				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
@@ -770,6 +904,20 @@ public class CifsFileSystem implements FileSystem {
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
+				throw new WrapperAccessDeniedException(path, wex);
+			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
 				throw new WrapperAccessDeniedException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
 				throw new WrapperNoSuchFileException(path, wex);
