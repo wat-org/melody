@@ -27,6 +27,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.transfer.ProgressMonitor;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -41,12 +42,22 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 	public CifsFileSystem4Upload(String location, String domain, String user,
 			String password, TemplatingHandler th) {
 		super(location, domain, user, password);
-		_templatingHandler = th;
+		setTemplatingHandler(th);
 	}
 
-	@Override
-	public TemplatingHandler getTemplatingHandler() {
+	protected TemplatingHandler getTemplatingHandler() {
 		return _templatingHandler;
+	}
+
+	protected TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		if (th == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TemplatingHandler.class.getCanonicalName() + ".");
+		}
+		TemplatingHandler previous = getTemplatingHandler();
+		_templatingHandler = th;
+		return previous;
 	}
 
 	@Override
@@ -56,6 +67,17 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		upload(src, dest);
+		setAttributes(dest, attrs);
+	}
+
+	@Override
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException {
+		// expand src into a tmpfile and upload the tmpfile into dest
+		upload(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
 

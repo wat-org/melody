@@ -151,11 +151,11 @@ public class CifsFileSystem implements FileSystem {
 		return createSmbFile(getLocation(), path, getCredential(), options);
 	}
 
-	public String getLocation() {
+	protected String getLocation() {
 		return _smbLocation;
 	}
 
-	public NtlmPasswordAuthentication getCredential() {
+	protected NtlmPasswordAuthentication getCredential() {
 		return _smbCredential;
 	}
 

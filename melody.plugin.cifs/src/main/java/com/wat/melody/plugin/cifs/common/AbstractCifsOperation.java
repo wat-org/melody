@@ -3,6 +3,7 @@ package com.wat.melody.plugin.cifs.common;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.network.Host;
+import com.wat.melody.common.network.Port;
 import com.wat.melody.plugin.cifs.common.exception.CifsException;
 
 /**
@@ -18,6 +19,12 @@ public abstract class AbstractCifsOperation implements ITask {
 	public static final String HOST_ATTR = "host";
 
 	/**
+	 * Defines the remote system port (e.g. the port of cifs daemon on the
+	 * remote system).
+	 */
+	public static final String PORT_ATTR = "port";
+
+	/**
 	 * Defines the domain-user to connect with on the remote system. Can be
 	 * "domain\\username", "username@domain", or "username".
 	 */
@@ -29,6 +36,7 @@ public abstract class AbstractCifsOperation implements ITask {
 	public static final String PASS_ATTR = "password";
 
 	private Host _host = null;
+	private Port _port = null;
 	private String _login = null;
 	private String _password = null;
 
@@ -40,7 +48,11 @@ public abstract class AbstractCifsOperation implements ITask {
 	}
 
 	public String getLocation() {
-		return getHost().getAddress();
+		String res = getHost().getAddress();
+		if (getPort() != null) {
+			res += ":" + getPort();
+		}
+		return res;
 	}
 
 	public String getDomain() {
@@ -79,6 +91,21 @@ public abstract class AbstractCifsOperation implements ITask {
 		}
 		Host previous = getHost();
 		_host = host;
+		return previous;
+	}
+
+	public Port getPort() {
+		return _port;
+	}
+
+	@Attribute(name = PORT_ATTR)
+	public Port setPort(Port port) {
+		if (port == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Port.class.getCanonicalName() + ".");
+		}
+		Port previous = getPort();
+		_port = port;
 		return previous;
 	}
 

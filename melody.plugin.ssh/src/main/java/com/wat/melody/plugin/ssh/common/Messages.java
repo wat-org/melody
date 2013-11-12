@@ -20,11 +20,10 @@ public class Messages extends NLS {
 	public static String BaseEx_INVALID_MGMT_PASSPHRASE;
 
 	public static String TransferEx_INVALID_MAXPAR_ATTR;
-	public static String TransferEx_READ_IO_ERROR;
-	public static String TransferEx_WRITE_IO_ERROR;
 
 	public static String SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR;
 	public static String SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR;
+	public static String SshEx_READ_IO_ERROR;
 
 	static {
 		// initialize resource bundle

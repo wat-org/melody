@@ -29,7 +29,6 @@ public class Messages extends NLS {
 	public static String TransferEx_MANAGED;
 	public static String TransferEx_INTERRUPTED;
 	public static String TransferEx_FAILED;
-	public static String TransferEx_NO_TEMPLATING_HANDLER;
 	public static String TransferEx_TRANSFER_INTERRUPTED;
 	public static String TransferMsg_DISPLAY_RESOURCE_TREE;
 	public static String TransferMsg_IGNORE_IOERROR;

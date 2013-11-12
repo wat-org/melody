@@ -29,6 +29,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.transfer.ProgressMonitor;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -53,25 +54,35 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 		// if domain, user or pass is null, default values will be used
 		_smbCredential = new NtlmPasswordAuthentication(domain, user, password);
 		_smbLocation = "smb://" + location + "/";
+		setTemplatingHandler(th);
+	}
+
+	protected String getLocation() {
+		return _smbLocation;
+	}
+
+	protected NtlmPasswordAuthentication getCredential() {
+		return _smbCredential;
+	}
+
+	protected TemplatingHandler getTemplatingHandler() {
+		return _templatingHandler;
+	}
+
+	protected TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		if (th == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TemplatingHandler.class.getCanonicalName() + ".");
+		}
+		TemplatingHandler previous = getTemplatingHandler();
 		_templatingHandler = th;
+		return previous;
 	}
 
 	protected SmbFile createSmbFile(String path, LinkOption... options) {
 		return CifsFileSystem.createSmbFile(getLocation(), path,
 				getCredential(), options);
-	}
-
-	public String getLocation() {
-		return _smbLocation;
-	}
-
-	public NtlmPasswordAuthentication getCredential() {
-		return _smbCredential;
-	}
-
-	@Override
-	public TemplatingHandler getTemplatingHandler() {
-		return _templatingHandler;
 	}
 
 	@Override
@@ -81,6 +92,19 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		download(src, dest);
+		setAttributes(dest, attrs);
+	}
+
+	@Override
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException {
+		// download the file
+		download(src, dest);
+		// expand the into itself
+		getTemplatingHandler().doTemplate(dest, dest);
 		setAttributes(dest, attrs);
 	}
 

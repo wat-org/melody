@@ -3,6 +3,7 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -120,28 +121,53 @@ public class TransferableFile implements Transferable {
 	protected void template(TransferableFileSystem fs) throws IOException,
 			InterruptedIOException {
 		if (getTemplate() == true) {
-			if (fs.getTemplatingHandler() == null) {
-				throw new IllegalArgumentException(
-						Messages.TransferEx_NO_TEMPLATING_HANDLER);
-			}
-			Path template;
-			try {
-				/*
-				 * TODO : this templating logic can't work for download...
-				 */
-				template = fs.getTemplatingHandler()
-						.doTemplate(getSourcePath());
-			} catch (TemplatingException Ex) {
-				throw new IOException(null, Ex);
-			}
-			transfer(fs, template);
+			transformRegularFile(fs);
 		} else {
-			transfer(fs, getSourcePath());
+			transferRegularFile(fs);
 		}
 	}
 
-	protected void transfer(TransferableFileSystem fs, Path source)
-			throws IOException, InterruptedIOException, AccessDeniedException {
+	protected void transformRegularFile(TransferableFileSystem fs)
+			throws IOException, NoSuchFileException,
+			DirectoryNotEmptyException, InterruptedIOException,
+			AccessDeniedException {
+		Path source = getSourcePath();
+		Path dest = getDestinationPath();
+		FileAttribute<?>[] attrs = getExpectedAttributes();
+		/*
+		 * This call is important because it will remove the destination file
+		 * (prior to copy) if it a link or a directory.
+		 */
+		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),
+				dest, getTransferBehavior())) {
+			/*
+			 * should never go there cause source (template) have a different
+			 * size than dest (result).
+			 */
+			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
+			try {
+				fs.setAttributes(dest, attrs);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
+		} else {
+			try {
+				fs.transformRegularFile(source, dest, attrs);
+			} catch (TemplatingException Ex) {
+				throw new IOException(null, Ex);
+			} catch (IllegalFileAttributeException Ex) {
+				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+						.toString());
+			}
+		}
+	}
+
+	protected void transferRegularFile(TransferableFileSystem fs)
+			throws IOException, NoSuchFileException,
+			DirectoryNotEmptyException, InterruptedIOException,
+			AccessDeniedException {
+		Path source = getSourcePath();
 		Path dest = getDestinationPath();
 		FileAttribute<?>[] attrs = getExpectedAttributes();
 		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),

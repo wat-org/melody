@@ -10,6 +10,7 @@ import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -24,9 +25,10 @@ public interface TransferableFileSystem extends FileSystem {
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException;
 
-	/*
-	 * TODO : should better if it provide a method transformRegularFile(Path)
-	 */
-	public TemplatingHandler getTemplatingHandler();
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException;
 
 }

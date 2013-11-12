@@ -1,7 +1,9 @@
 package com.wat.melody.core.internal;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Set;
 
@@ -15,6 +17,8 @@ import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.api.report.ITaskReport;
 import com.wat.melody.api.report.ITaskReportItem;
 import com.wat.melody.api.report.TaskReportItemType;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.XPathExpander;
@@ -135,6 +139,43 @@ public class TaskContext implements ITaskContext {
 		return XPathExpander.expand(fileToExpand, _processorManager
 				.getResourcesDescriptor().getDocument().getFirstChild(),
 				getProperties());
+	}
+
+	@Override
+	public Path expand(Path fileToExpand, Path fileToStoreRes)
+			throws ExpressionSyntaxException, IllegalFileException, IOException {
+		if (fileToStoreRes == null) {
+			String wf = getProcessorManager().getWorkingFolderPath();
+			Path wfp = Paths.get(wf);
+			try {
+				Files.createDirectories(wfp);
+				fileToStoreRes = Files.createTempFile(wfp, "transfer.", ".ted");
+			} catch (IOException Ex) {
+				throw new IOException("fail to create output file", Ex);
+			}
+		} else {
+			try {
+				FS.validateFilePath(fileToStoreRes.toString());
+			} catch (IllegalDirectoryException Ex) {
+				throw new IllegalFileException("invalid output file", Ex);
+			} catch (IllegalFileException Ex) {
+				throw new IllegalFileException("invalid output file", Ex);
+			}
+		}
+		String expanded = null;
+		try {
+			expanded = expand(fileToExpand);
+		} catch (IllegalFileException Ex) {
+			throw new IllegalFileException("fail to open input file", Ex);
+		} catch (IOException Ex) {
+			throw new IOException("fail to read input file", Ex);
+		}
+		try {
+			Files.write(fileToStoreRes, expanded.getBytes());
+		} catch (IOException Ex) {
+			throw new IOException("fail to write output file", Ex);
+		}
+		return fileToStoreRes;
 	}
 
 	@Override

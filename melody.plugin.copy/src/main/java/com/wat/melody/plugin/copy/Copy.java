@@ -2,9 +2,7 @@ package com.wat.melody.plugin.copy;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,34 +72,17 @@ public class Copy implements ITask, TemplatingHandler {
 	}
 
 	@Override
-	public Path doTemplate(Path r) throws TemplatingException {
-		String fileContent = null;
+	public Path doTemplate(Path template, Path destination)
+			throws TemplatingException {
 		try {
-			fileContent = getContext().expand(r);
+			return getContext().expand(template, destination);
 		} catch (IllegalFileException Ex) {
-			throw new RuntimeException("Unexpected error while "
-					+ "templating the file " + r + "."
-					+ "Source code has certainly been modified "
-					+ "and a bug have been introduced.", Ex);
+			throw new TemplatingException(Ex);
 		} catch (IOException Ex) {
-			throw new TemplatingException(Msg.bind(
-					Messages.CopyEx_READ_IO_ERROR, r), Ex);
+			throw new TemplatingException(Ex);
 		} catch (ExpressionSyntaxException Ex) {
 			throw new TemplatingException(Ex);
 		}
-		Path template = null;
-		try {
-			Files.createDirectories(Paths.get(getContext()
-					.getProcessorManager().getWorkingFolderPath()));
-			template = Files.createTempFile(Paths.get(getContext()
-					.getProcessorManager().getWorkingFolderPath()), "copy.",
-					".ted");
-			Files.write(template, fileContent.getBytes());
-		} catch (IOException Ex) {
-			throw new TemplatingException(Msg.bind(
-					Messages.CopyEx_WRITE_IO_ERROR, template), Ex);
-		}
-		return template;
 	}
 
 	public List<ResourcesSpecification> getResourcesSpecifications() {

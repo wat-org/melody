@@ -20,6 +20,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.transfer.Messages;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -28,16 +29,27 @@ import com.wat.melody.common.transfer.TransferableFileSystem;
  */
 public class LocalFileSystem4Transfer extends LocalFileSystem implements
 		TransferableFileSystem {
+
 	private TemplatingHandler _templatingHandler;
 
 	public LocalFileSystem4Transfer(TemplatingHandler th) {
 		super();
-		_templatingHandler = th;
+		setTemplatingHandler(th);
 	}
 
-	@Override
-	public TemplatingHandler getTemplatingHandler() {
+	protected TemplatingHandler getTemplatingHandler() {
 		return _templatingHandler;
+	}
+
+	protected TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		if (th == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TemplatingHandler.class.getCanonicalName() + ".");
+		}
+		TemplatingHandler previous = getTemplatingHandler();
+		_templatingHandler = th;
+		return previous;
 	}
 
 	@Override
@@ -47,6 +59,17 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		copy(src, dest);
+		setAttributes(dest, attrs);
+	}
+
+	@Override
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException {
+		// expand src into a tmpfile and copy the tmpfile into dest
+		copy(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
 

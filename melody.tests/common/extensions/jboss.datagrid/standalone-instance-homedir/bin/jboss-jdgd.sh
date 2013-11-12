@@ -193,7 +193,10 @@ validate_server_state() {
   }
 
   # does the log contains error ?
-  grep -iE "[ \[](ERROR|FATAL)" "${JBOSS_CONSOLE_LOG}" 1>/dev/null && {
+  # JBREM000200: discarded because it should be a WARN
+  cat "${JBOSS_CONSOLE_LOG}"   | \
+  grep -v "ERROR.*JBREM000200" | \
+  grep -iE "[ \[](ERROR|FATAL)" 1>/dev/null && {
     warning
     echo
     echo "------------------------------------"

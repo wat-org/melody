@@ -21,6 +21,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.Messages;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -34,12 +35,22 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 
 	public SftpFileSystem4Upload(ChannelSftp channel, TemplatingHandler th) {
 		super(channel);
-		_templatingHandler = th;
+		setTemplatingHandler(th);
 	}
 
-	@Override
-	public TemplatingHandler getTemplatingHandler() {
+	protected TemplatingHandler getTemplatingHandler() {
 		return _templatingHandler;
+	}
+
+	protected TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		if (th == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TemplatingHandler.class.getCanonicalName() + ".");
+		}
+		TemplatingHandler previous = getTemplatingHandler();
+		_templatingHandler = th;
+		return previous;
 	}
 
 	@Override
@@ -49,6 +60,17 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		upload(src, dest);
+		setAttributes(dest, attrs);
+	}
+
+	@Override
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException {
+		// expand src into a tmpfile and upload the tmpfile into dest
+		upload(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
 

@@ -22,6 +22,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.impl.Messages;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 
 /**
  * 
@@ -36,16 +37,26 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 
 	public SftpFileSystem4Download(ChannelSftp channel, TemplatingHandler th) {
 		_channel = channel;
+		setTemplatingHandler(th);
+	}
+
+	protected TemplatingHandler getTemplatingHandler() {
+		return _templatingHandler;
+	}
+
+	protected TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
+		if (th == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ TemplatingHandler.class.getCanonicalName() + ".");
+		}
+		TemplatingHandler previous = getTemplatingHandler();
 		_templatingHandler = th;
+		return previous;
 	}
 
 	protected ChannelSftp getChannel() {
 		return _channel;
-	}
-
-	@Override
-	public TemplatingHandler getTemplatingHandler() {
-		return _templatingHandler;
 	}
 
 	@Override
@@ -61,6 +72,19 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		download(src, dest);
+		setAttributes(dest, attrs);
+	}
+
+	@Override
+	public void transformRegularFile(Path src, Path dest,
+			FileAttribute<?>... attrs) throws TemplatingException, IOException,
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException,
+			IllegalFileAttributeException {
+		// download the file
+		download(src, dest);
+		// expand the into itself
+		getTemplatingHandler().doTemplate(dest, dest);
 		setAttributes(dest, attrs);
 	}
 

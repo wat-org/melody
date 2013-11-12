@@ -22,9 +22,11 @@
 					<posix-permissions scope="files">740</posix-permissions>
 				</include>
 
-				<include	match="**/file2.tmpl"
-							dest-name="templates/§[IP]§/file2.§[IP]§"
+				<include	match="templates/§[IP]§/file2.§[IP]§"
+							dest-name="templates/file2.tmpl"
 							template="y" />
+
+				<exclude	match="templates/§[IP]§" />
 
 				<!-- will generate warnings, cause the current user can't chown/chgrp -->
 				<include	match="static_myApp_myMod/content1.txt" >
