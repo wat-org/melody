@@ -156,9 +156,7 @@ public class TaskContext implements ITaskContext {
 		} else {
 			try {
 				FS.validateFilePath(fileToStoreRes.toString());
-			} catch (IllegalDirectoryException Ex) {
-				throw new IllegalFileException("invalid output file", Ex);
-			} catch (IllegalFileException Ex) {
+			} catch (IllegalDirectoryException | IllegalFileException Ex) {
 				throw new IllegalFileException("invalid output file", Ex);
 			}
 		}

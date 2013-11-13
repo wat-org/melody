@@ -26,6 +26,8 @@ import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.files.exception.IllegalTarGzException;
+import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
+import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 
@@ -479,7 +481,12 @@ public abstract class FS {
 			throws MelodyException {
 		String attr = name + "=" + value;
 		try {
-			Files.setAttribute(path, name, value, LinkOption.NOFOLLOW_LINKS);
+			setAttribute(path, name, value, LinkOption.NOFOLLOW_LINKS);
+		} catch (WrapperNoSuchFileException | WrapperAccessDeniedException Ex) {
+			// only need the reason
+			throw new MelodyException(Msg.bind(
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
+					Ex.getReason()));
 		} catch (FileSystemException Ex) {
 			// don't want neither the stack trace nor the file name
 			String msg = Ex.getReason();
@@ -502,6 +509,18 @@ public abstract class FS {
 			// want the stack trace
 			throw new MelodyException(Msg.bind(
 					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex);
+		}
+	}
+
+	private static void setAttribute(Path path, String attrName,
+			Object attrValue, LinkOption... linkOptions) throws IOException,
+			NoSuchFileException, AccessDeniedException {
+		try {
+			Files.setAttribute(path, attrName, attrValue, linkOptions);
+		} catch (NoSuchFileException Ex) {
+			throw new WrapperNoSuchFileException(Ex.getFile());
+		} catch (AccessDeniedException Ex) {
+			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
 	}
 
