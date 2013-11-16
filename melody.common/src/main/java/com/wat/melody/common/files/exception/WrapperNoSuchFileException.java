@@ -1,6 +1,7 @@
 package com.wat.melody.common.files.exception;
 
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 
 /**
  * 
@@ -15,9 +16,17 @@ public class WrapperNoSuchFileException extends NoSuchFileException {
 		super("'" + file + "'", null, "No such file.");
 	}
 
+	public WrapperNoSuchFileException(Path file) {
+		this(file.toString());
+	}
+
 	public WrapperNoSuchFileException(String file, Throwable cause) {
 		this(file);
 		initCause(cause);
+	}
+
+	public WrapperNoSuchFileException(Path file, Throwable cause) {
+		this(file.toString(), cause);
 	}
 
 }

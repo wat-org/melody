@@ -1,6 +1,7 @@
 package com.wat.melody.common.files.exception;
 
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Path;
 
 /**
  * 
@@ -16,9 +17,17 @@ public class WrapperDirectoryNotEmptyException extends
 		super("'" + file + "'" + ": Directory is not empty.");
 	}
 
+	public WrapperDirectoryNotEmptyException(Path file) {
+		this(file.toString());
+	}
+
 	public WrapperDirectoryNotEmptyException(String file, Throwable cause) {
 		this(file);
 		initCause(cause);
+	}
+
+	public WrapperDirectoryNotEmptyException(Path file, Throwable cause) {
+		this(file.toString(), cause);
 	}
 
 }

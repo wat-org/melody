@@ -1,6 +1,7 @@
 package com.wat.melody.common.files.exception;
 
 import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 
 /**
  * 
@@ -15,9 +16,17 @@ public class WrapperNotDirectoryException extends NotDirectoryException {
 		super("'" + file + "'" + ": Not a directory.");
 	}
 
+	public WrapperNotDirectoryException(Path file) {
+		this(file.toString());
+	}
+
 	public WrapperNotDirectoryException(String file, Throwable cause) {
 		this(file);
 		initCause(cause);
+	}
+
+	public WrapperNotDirectoryException(Path file, Throwable cause) {
+		this(file.toString(), cause);
 	}
 
 }
