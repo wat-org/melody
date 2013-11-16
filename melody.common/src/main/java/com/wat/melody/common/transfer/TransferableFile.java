@@ -3,7 +3,6 @@ package com.wat.melody.common.transfer;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -16,12 +15,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourceSpecification;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -69,8 +66,8 @@ public class TransferableFile implements Transferable {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		if (isDirectory()) { // dir link will return true
 			if (linkShouldBeConvertedToFile()) {
-				TransferHelper.createDirectory(fs, getDestinationPath(),
-						getExpectedAttributes());
+				TransferHelper.createDirectory(fs, getTransferBehaviors(),
+						getDestinationPath(), getExpectedAttributes());
 			} else if (getLinkOption() == LinkOption.SKIP_LINKS) {
 				ln_skip(fs);
 			} else {
@@ -97,8 +94,9 @@ public class TransferableFile implements Transferable {
 
 	protected void createSymlink(TransferableFileSystem fs) throws IOException {
 		try {
-			TransferHelper.createSymbolicLink(fs, getDestinationPath(),
-					getSymbolicLinkTarget(), getExpectedAttributes());
+			TransferHelper.createSymbolicLink(fs, getTransferBehaviors(),
+					getDestinationPath(), getSymbolicLinkTarget(),
+					getExpectedAttributes());
 		} catch (SymbolicLinkNotSupported Ex) {
 			log.warn(new TransferException(Messages.TransferMsg_SKIP_LINK, Ex)
 					.getUserFriendlyStackTrace());
@@ -120,72 +118,17 @@ public class TransferableFile implements Transferable {
 
 	protected void template(TransferableFileSystem fs) throws IOException,
 			InterruptedIOException {
+		Path src = getSourcePath();
+		Path dest = getDestinationPath();
+		EnhancedFileAttributes srcAttrs = getAttributes();
+		FileAttribute<?>[] destAttrs = getExpectedAttributes();
+		TransferBehaviors tb = getTransferBehaviors();
 		if (getTemplate() == true) {
-			transformRegularFile(fs);
+			TransferHelper.transformRegularFile(fs, tb, src, srcAttrs, dest,
+					destAttrs);
 		} else {
-			transferRegularFile(fs);
-		}
-	}
-
-	protected void transformRegularFile(TransferableFileSystem fs)
-			throws IOException, NoSuchFileException,
-			DirectoryNotEmptyException, InterruptedIOException,
-			AccessDeniedException {
-		Path source = getSourcePath();
-		Path dest = getDestinationPath();
-		FileAttribute<?>[] attrs = getExpectedAttributes();
-		/*
-		 * This call is important because it will remove the destination file
-		 * (prior to copy) if it a link or a directory.
-		 */
-		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),
-				dest, getTransferBehavior())) {
-			/*
-			 * should never go there cause source (template) have a different
-			 * size than dest (result).
-			 */
-			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
-			try {
-				fs.setAttributes(dest, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
-		} else {
-			try {
-				fs.transformRegularFile(source, dest, attrs);
-			} catch (TemplatingException Ex) {
-				throw new IOException(null, Ex);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
-		}
-	}
-
-	protected void transferRegularFile(TransferableFileSystem fs)
-			throws IOException, NoSuchFileException,
-			DirectoryNotEmptyException, InterruptedIOException,
-			AccessDeniedException {
-		Path source = getSourcePath();
-		Path dest = getDestinationPath();
-		FileAttribute<?>[] attrs = getExpectedAttributes();
-		if (TransferHelper.ensureDestinationIsRegularFile(fs, getAttributes(),
-				dest, getTransferBehavior())) {
-			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
-			try {
-				fs.setAttributes(dest, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
-		} else {
-			try {
-				fs.transferRegularFile(source, dest, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
+			TransferHelper.transferRegularFile(fs, tb, src, srcAttrs, dest,
+					destAttrs);
 		}
 	}
 
@@ -221,8 +164,8 @@ public class TransferableFile implements Transferable {
 	}
 
 	@Override
-	public TransferBehavior getTransferBehavior() {
-		return getResourceSpecification().getTransferBehavior();
+	public TransferBehaviors getTransferBehaviors() {
+		return getResourceSpecification().getTransferBehaviors();
 	}
 
 	@Override
@@ -433,7 +376,7 @@ public class TransferableFile implements Transferable {
 		str.append(", link-option:");
 		str.append(getLinkOption());
 		str.append(", transfer-behavior:");
-		str.append(getTransferBehavior());
+		str.append(getTransferBehaviors());
 		str.append(", is-template:");
 		str.append(getTemplate());
 		str.append(" }");

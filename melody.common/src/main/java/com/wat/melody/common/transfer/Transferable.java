@@ -32,7 +32,7 @@ public interface Transferable {
 
 	public LinkOption getLinkOption();
 
-	public TransferBehavior getTransferBehavior();
+	public TransferBehaviors getTransferBehaviors();
 
 	public ResourceSpecification setResourceSpecification(
 			ResourceSpecification resourceSpecification);

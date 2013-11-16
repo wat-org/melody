@@ -44,6 +44,9 @@ public class TransferableFake implements Transferable {
 	 */
 	private static Logger log = LoggerFactory.getLogger(TransferableFake.class);
 
+	private static TransferBehaviors TRANSFER_BEHAVIOR = TransferBehaviors
+			.createTransferBehaviors(TransferBehavior.FORCE_OVERWRITE);
+
 	private Path _destinationPath;
 
 	public TransferableFake(Path destinationPath) {
@@ -56,7 +59,8 @@ public class TransferableFake implements Transferable {
 			FileAlreadyExistsException, AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		// don't set attributes
-		TransferHelper.createDirectory(fs, getDestinationPath());
+		TransferHelper.createDirectory(fs, getTransferBehaviors(),
+				getDestinationPath());
 		log.info(Msg.bind(Messages.TransferMsg_END, this));
 	}
 
@@ -86,8 +90,8 @@ public class TransferableFake implements Transferable {
 	}
 
 	@Override
-	public TransferBehavior getTransferBehavior() {
-		return TransferBehavior.FORCE_OVERWRITE;
+	public TransferBehaviors getTransferBehaviors() {
+		return TRANSFER_BEHAVIOR;
 	}
 
 	@Override

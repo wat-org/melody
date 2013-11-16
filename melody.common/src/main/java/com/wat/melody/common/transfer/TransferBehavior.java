@@ -12,7 +12,8 @@ import com.wat.melody.common.transfer.exception.IllegalTransferBehaviorException
  */
 public enum TransferBehavior {
 
-	FORCE_OVERWRITE("force-overwrite"), OVERWRITE_IF_SRC_NEWER(
+	FAIL_IF_DIFFRENT_TYPE("fail-if-different-type"), FORCE_OVERWRITE(
+			"force-overwrite"), OVERWRITE_IF_SRC_NEWER(
 			"overwrite-if-source-is-newer");
 
 	/**

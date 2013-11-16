@@ -70,7 +70,7 @@ public class ResourcesSpecification extends ResourceSpecification {
 		str.append(", link-option:");
 		str.append(getLinkOption());
 		str.append(", transfer-behavior:");
-		str.append(getTransferBehavior());
+		str.append(getTransferBehaviors());
 		str.append(", is-template:");
 		str.append(getTemplate());
 		str.append(", includes-excludes:");

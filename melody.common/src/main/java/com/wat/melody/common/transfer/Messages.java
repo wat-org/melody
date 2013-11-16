@@ -22,6 +22,10 @@ public class Messages extends NLS {
 	public static String TransferBehaviorEx_EMPTY;
 	public static String TransferBehaviorEx_INVALID;
 
+	public static String TransferBehaviorsEx_EMPTY;
+	public static String TransferBehaviorsEx_EMPTY_TRANSFER_BEHAVIOR;
+	public static String TransferBehaviorsEx_INVALID_TRANSFER_BEHAVIOR;
+
 	public static String TransferEx_LISTING_UNMANAGED;
 	public static String TransferEx_LISTING_MANAGED;
 	public static String TransferEx_LISTING_INTERRUPTED;

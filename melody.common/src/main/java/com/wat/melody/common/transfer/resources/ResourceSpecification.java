@@ -6,7 +6,7 @@ import java.util.Map;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.common.transfer.LinkOption;
-import com.wat.melody.common.transfer.TransferBehavior;
+import com.wat.melody.common.transfer.TransferBehaviors;
 import com.wat.melody.common.transfer.resources.attributes.AttributeBase;
 import com.wat.melody.common.transfer.resources.attributes.AttributeDosArchive;
 import com.wat.melody.common.transfer.resources.attributes.AttributeDosHidden;
@@ -95,7 +95,7 @@ public abstract class ResourceSpecification extends ResourceSelector {
 
 	// Mandatory (with a default value)
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
-	private TransferBehavior _transferBehavior = TransferBehavior.OVERWRITE_IF_SRC_NEWER;
+	private TransferBehaviors _transferBehaviors = TransferBehaviors.DEFAULT;
 	private boolean _template = false;
 	// Optional
 	private String _destName = null;
@@ -114,7 +114,7 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	public ResourceSpecification(ResourceSpecification r) {
 		super();
 		setLinkOption(r.getLinkOption());
-		setTransferBehavior(r.getTransferBehavior());
+		setTransferBehaviors(r.getTransferBehaviors());
 		setTemplate(r.getTemplate());
 		setDestName(r.getDestName());
 		putAllFileAttributes(r);
@@ -228,20 +228,20 @@ public abstract class ResourceSpecification extends ResourceSelector {
 		return previous;
 	}
 
-	public TransferBehavior getTransferBehavior() {
-		return _transferBehavior;
+	public TransferBehaviors getTransferBehaviors() {
+		return _transferBehaviors;
 	}
 
 	@Attribute(name = TRANSFER_BEHAVIOR_ATTR)
-	public TransferBehavior setTransferBehavior(
-			TransferBehavior transferBehavior) {
-		if (transferBehavior == null) {
+	public TransferBehaviors setTransferBehaviors(
+			TransferBehaviors transferBehaviors) {
+		if (transferBehaviors == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ TransferBehavior.class.getCanonicalName() + ".");
+					+ TransferBehaviors.class.getCanonicalName() + ".");
 		}
-		TransferBehavior previous = getTransferBehavior();
-		_transferBehavior = transferBehavior;
+		TransferBehaviors previous = getTransferBehaviors();
+		_transferBehaviors = transferBehaviors;
 		return previous;
 	}
 
