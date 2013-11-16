@@ -77,7 +77,11 @@
 				<include name="**/*.sh" />
 			</tarfileset>
 			<!-- Include ssh plug-in tests-->
-			<tarfileset dir="./../melody.plugin.ssh/tests" prefix="tests/plugin/ssh/" username="${deploy.user.login}" group="${deploy.user.login}">
+			<tarfileset followsymlinks="no" dir="./../melody.plugin.ssh/tests" prefix="tests/plugin/ssh/" username="${deploy.user.login}" group="${deploy.user.login}">
+				<include name="**" />
+			</tarfileset>
+			<!-- Include cifs plug-in tests-->
+			<tarfileset followsymlinks="no" dir="./../melody.plugin.cifs/tests" prefix="tests/plugin/cifs/" username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name="**" />
 			</tarfileset>
 			<!-- Include aws plug-in tests-->
