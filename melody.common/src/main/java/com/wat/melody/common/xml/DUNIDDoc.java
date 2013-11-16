@@ -317,10 +317,12 @@ public class DUNIDDoc extends Doc implements EventListener {
 			}
 		} catch (MelodyException Ex) {
 			log.error(new NodeRelatedException((Node) e.getTarget(),
-					Messages.DUNIDDocEx_FORBIDDEN_OP, Ex).toString());
+					Messages.DUNIDDocEx_FORBIDDEN_OP, Ex)
+					.getUserFriendlyStackTrace());
 		} catch (Throwable Ex) {
 			log.error(new NodeRelatedException((Node) e.getTarget(),
-					Messages.DUNIDDocEx_UNEXPECTED_ERR, Ex).toString());
+					Messages.DUNIDDocEx_UNEXPECTED_ERR, Ex)
+					.getUserFriendlyStackTrace());
 		}
 	}
 

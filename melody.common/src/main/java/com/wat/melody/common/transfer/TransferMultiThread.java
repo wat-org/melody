@@ -267,7 +267,7 @@ public abstract class TransferMultiThread {
 					 */
 					if (Thread.interrupted() || isInterrupted()) {
 						log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
-								MelodyException.getStackTrace(Ex)));
+								MelodyException.getFullStackTrace(Ex)));
 						throw new WrapperInterruptedException(
 								Msg.bind(Messages.TransferEx_FAILED, t),
 								new WrapperInterruptedException(
@@ -333,7 +333,7 @@ public abstract class TransferMultiThread {
 			 */
 			if (Thread.interrupted() || isInterrupted()) {
 				log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
-						MelodyException.getStackTrace(Ex)));
+						MelodyException.getFullStackTrace(Ex)));
 				InterruptedException e = new WrapperInterruptedException(
 						Msg.bind(Messages.TransferEx_FAILED, t),
 						new WrapperInterruptedException(

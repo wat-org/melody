@@ -470,7 +470,7 @@ public abstract class FS {
 
 		if (full.countCauses() != 0) {
 			if (continueOnAtributeError) {
-				log.info(new MelodyException(full).toString());
+				log.info(new MelodyException(full).getUserFriendlyStackTrace());
 			} else {
 				throw new IllegalFileAttributeException(full);
 			}

@@ -101,7 +101,7 @@ public class TransferableFile implements Transferable {
 					getSymbolicLinkTarget(), getExpectedAttributes());
 		} catch (SymbolicLinkNotSupported Ex) {
 			log.warn(new TransferException(Messages.TransferMsg_SKIP_LINK, Ex)
-					.toString());
+					.getUserFriendlyStackTrace());
 		}
 	}
 
@@ -112,7 +112,7 @@ public class TransferableFile implements Transferable {
 			log.warn(new TransferException(Messages.TransferMsg_SKIP_LINK,
 					new TransferException(Msg.bind(
 							Messages.TransferMsg_LINK_COPY_UNSAFE_IMPOSSIBLE,
-							getSourcePath()))).toString());
+							getSourcePath()))).getUserFriendlyStackTrace());
 			return;
 		}
 		template(fs);
@@ -149,7 +149,7 @@ public class TransferableFile implements Transferable {
 				fs.setAttributes(dest, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		} else {
 			try {
@@ -158,7 +158,7 @@ public class TransferableFile implements Transferable {
 				throw new IOException(null, Ex);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		}
 	}
@@ -177,14 +177,14 @@ public class TransferableFile implements Transferable {
 				fs.setAttributes(dest, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		} else {
 			try {
 				fs.transferRegularFile(source, dest, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		}
 	}

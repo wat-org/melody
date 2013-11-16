@@ -37,14 +37,14 @@ public abstract class TransferHelper {
 				destFS.setAttributes(dir, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		} else {
 			try {
 				destFS.createDirectory(dir, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		}
 	}
@@ -91,14 +91,14 @@ public abstract class TransferHelper {
 				destFS.setAttributes(link, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		} else {
 			try {
 				destFS.createSymbolicLink(link, target, attrs);
 			} catch (IllegalFileAttributeException Ex) {
 				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.toString());
+						.getUserFriendlyStackTrace());
 			}
 		}
 	}

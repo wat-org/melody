@@ -851,7 +851,7 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 			log.debug("Temporary resources cleaned.");
 		} catch (Throwable Ex) {
 			log.warn(new MelodyException("Fail to remove temporary resources.",
-					Ex).toString());
+					Ex).getUserFriendlyStackTrace());
 		}
 	}
 

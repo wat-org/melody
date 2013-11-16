@@ -12,6 +12,18 @@ import com.wat.melody.common.systool.SysTool;
  */
 public class MelodyException extends Exception {
 
+	/*
+	 * This object can't override neither toString() nor getMessage() methods
+	 * cause they are used by the standard printStackTrace method. In other
+	 * words, if toString() or getMessage() were used, the output of the
+	 * standard printStackTrace method will be crazy.
+	 * 
+	 * For this reason, we're providing the method getUserFriendlyStackTarce().
+	 * 
+	 * For the same reason, we can't override getStackTrace() and we're
+	 * providing getFulStackTrace().
+	 */
+
 	private static final long serialVersionUID = -1184066155132415814L;
 
 	public MelodyException(String msg) {
@@ -28,7 +40,7 @@ public class MelodyException extends Exception {
 
 	/**
 	 * <p>
-	 * Return the user-oriented stack trace of this object.
+	 * Return the user-oriented stack trace of this object as a <tt>String</tt>.
 	 * </p>
 	 * 
 	 * <p>
@@ -63,8 +75,19 @@ public class MelodyException extends Exception {
 	 * @return a <tt>String</tt>, which holds the user-oriented stack trace of
 	 *         this object.
 	 */
-	public String toString() {
+	public String getUserFriendlyStackTrace() {
 		return getUserFriendlyStackTrace(this).toString();
+	}
+
+	/**
+	 * <p>
+	 * Return the full stack trace of this object as a <tt>String</tt>.
+	 * </p>
+	 * 
+	 * @return a <tt>String</tt> which represent the stack trace of this object.
+	 */
+	public String getFullStackTrace() {
+		return getFullStackTrace(this);
 	}
 
 	/**
@@ -80,7 +103,7 @@ public class MelodyException extends Exception {
 	 *         {@link Throwable} object, or an empty <tt>String</tt> if the
 	 *         given {@link Throwable} object is <tt>null</tt>.
 	 */
-	public static String getStackTrace(Throwable ex) {
+	public static String getFullStackTrace(Throwable ex) {
 		if (ex == null) {
 			return "";
 		}
@@ -144,8 +167,12 @@ public class MelodyException extends Exception {
 		String current;
 		while (ex != null) {
 			if (ex instanceof RuntimeException || !(ex instanceof Exception)) {
-				current = getStackTrace(ex);
+				current = getFullStackTrace(ex);
 				ex = null; // break loop
+			} else if (ex instanceof ConsolidatedException) {
+				current = ((ConsolidatedException) ex)
+						.getUserFriendlyStackTrace();
+				ex = ex.getCause();
 			} else {
 				current = ex.getMessage();
 				ex = ex.getCause();

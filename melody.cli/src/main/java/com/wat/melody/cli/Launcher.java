@@ -41,12 +41,12 @@ public class Launcher {
 		try {
 			pm = pml.parseCommandLine(args);
 		} catch (MelodyException Ex) {
-			System.err.println(Ex.toString());
+			System.err.println(Ex.getUserFriendlyStackTrace());
 			System.exit(ReturnCode.KO.getValue());
 		} catch (Throwable Ex) {
 			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			System.err.println(e.toString());
+			System.err.println(e.getUserFriendlyStackTrace());
 			System.exit(ReturnCode.ERRGEN.getValue());
 		}
 
@@ -65,15 +65,15 @@ public class Launcher {
 			iReturnCode = ReturnCode.OK;
 		} catch (InterruptedException Ex) {
 			MelodyException e = new MelodyException(Ex);
-			log.warn(e.toString());
+			log.warn(e.getUserFriendlyStackTrace());
 			iReturnCode = ReturnCode.INTERRUPTED;
 		} catch (MelodyException Ex) {
-			log.error(Ex.toString());
+			log.error(Ex.getUserFriendlyStackTrace());
 			iReturnCode = ReturnCode.KO;
 		} catch (Throwable Ex) {
 			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
-			log.error(e.toString());
+			log.error(e.getUserFriendlyStackTrace());
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
 			// if (pm != null && dpl != null) {
@@ -84,7 +84,7 @@ public class Launcher {
 			} catch (IOException Ex) {
 				MelodyException e = new MelodyException("Fail to delete CLI "
 						+ "temporary resources.", Ex);
-				log.warn(e.toString());
+				log.warn(e.getUserFriendlyStackTrace());
 			}
 			// If we call System.exit while the processing has already been
 			// stopped by user (i.e. the shutdownHook is started), it will block

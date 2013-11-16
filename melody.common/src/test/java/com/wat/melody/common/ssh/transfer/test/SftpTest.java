@@ -50,7 +50,8 @@ public class SftpTest {
 			cifs.transferRegularFile(src, dest, attr);
 
 		} catch (IOException Ex) {
-			System.out.println(new MelodyException(Ex).toString());
+			System.out.println(new MelodyException(Ex)
+					.getUserFriendlyStackTrace());
 		}
 		channel.disconnect();
 		session.disconnect();

@@ -31,9 +31,10 @@ public class CifsTest {
 			cifs.transferRegularFile(src, dest, attr);
 
 		} catch (IOException Ex) {
-			System.out.println(new MelodyException(Ex).toString());
+			System.out.println(new MelodyException(Ex)
+					.getUserFriendlyStackTrace());
 		}
-		//
+
 		// LocalFileSystem lfs = new LocalFileSystem();
 		//
 		// Path dir =
@@ -41,7 +42,8 @@ public class CifsTest {
 		// try {
 		// lfs.setAttributes(dir, attr);
 		// } catch (IOException Ex) {
-		// System.out.println(new MelodyException(Ex).toString());
+		// System.out.println(new
+		// MelodyException(Ex).getUserFriendlyStackTrace());
 		// }
 
 	}
