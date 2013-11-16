@@ -13,7 +13,9 @@ import com.wat.melody.common.ssh.impl.SshConnectionDatas;
 import com.wat.melody.common.ssh.impl.SshSession;
 import com.wat.melody.common.ssh.impl.SshUserDatas;
 import com.wat.melody.common.ssh.impl.transfer.SftpFileSystem4Download;
+import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.resources.attributes.AttributeDosReadOnly;
 import com.wat.melody.common.transfer.resources.attributes.Scopes;
 
@@ -21,9 +23,19 @@ public class SftpTest {
 
 	public static void main(String[] args) throws Exception {
 
+		TemplatingHandler th = new TemplatingHandler() {
+
+			@Override
+			public Path doTemplate(Path template, Path destination)
+					throws TemplatingException {
+				// don't want to template anything in this test case
+				return template;
+			}
+		};
+
 		ISshUserDatas ud = new SshUserDatas();
 		ud.setLogin("login");
-		ud.setPassword("pass");
+		ud.setPassword("password");
 		ISshConnectionDatas cd = new SshConnectionDatas();
 		cd.setHost(Host.parseString("127.0.0.1"));
 		cd.setTrust(true);
@@ -32,11 +44,11 @@ public class SftpTest {
 		session.connect();
 
 		ChannelSftp channel = session.openSftpChannel();
-		TransferableFileSystem cifs = new SftpFileSystem4Download(channel, null);
+		TransferableFileSystem sftpfs = new SftpFileSystem4Download(channel, th);
 
-		Path dir = Paths.get("/Usehhrs/rdpuser1/Documents/superdir");
+		Path dir = Paths.get("/tmp/rdpuser1/Documents/superdir");
 		Path src = Paths.get("/tmp/mescoudes.xml");
-		Path dest = Paths.get("/Usehhrs/rdpuser1/Documents/superdir");
+		Path dest = Paths.get("/tmp/rdpuser1/Documents/superdir");
 
 		try {
 
@@ -45,9 +57,9 @@ public class SftpTest {
 			attr.setStringValue("true");
 
 			// will fail cause parent doesn't exists
-			cifs.createDirectory(dir, attr);
+			sftpfs.createDirectory(dir, attr);
 			// will fail cause dest parent doesn't exists
-			cifs.transferRegularFile(src, dest, attr);
+			sftpfs.transferRegularFile(src, dest, attr);
 
 		} catch (IOException Ex) {
 			System.out.println(new MelodyException(Ex)

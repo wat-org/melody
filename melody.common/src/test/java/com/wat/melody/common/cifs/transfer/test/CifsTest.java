@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 
 import com.wat.melody.common.cifs.transfer.CifsFileSystem4Upload;
 import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
+import com.wat.melody.common.transfer.exception.TemplatingException;
 import com.wat.melody.common.transfer.resources.attributes.AttributeDosReadOnly;
 import com.wat.melody.common.transfer.resources.attributes.Scopes;
 
@@ -14,8 +16,18 @@ public class CifsTest {
 
 	public static void main(String[] args) throws Exception {
 
+		TemplatingHandler th = new TemplatingHandler() {
+
+			@Override
+			public Path doTemplate(Path template, Path destination)
+					throws TemplatingException {
+				// don't want to template anything in this test case
+				return template;
+			}
+		};
+
 		TransferableFileSystem cifs = new CifsFileSystem4Upload(
-				"192.168.122.9", null, "rdpuser1", "abc@#123", null);
+				"192.168.122.9", null, "rdpuser1", "abc@#123", th);
 
 		Path dir = Paths.get("/Users/rdpuser1/Documents/superdir");
 		Path src = Paths.get("/tmp/mescoudes.xml");
