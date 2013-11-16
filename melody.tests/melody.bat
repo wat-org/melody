@@ -23,7 +23,7 @@ set JAVA_OPTS=-Dmelody.default.global.configuration.file="%defaultGlobalConfigur
 
 rem # Execute Melody
 rem #
-java %JAVA_OPTS% %melodyMainClass% %*
+java -Dfile.encoding=UTF-8 %JAVA_OPTS% %melodyMainClass% %*
 
 rem # free variables
 rem #

@@ -54,7 +54,7 @@ main() {
   }
   
   # Execute Melody
-  eval java ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
+  eval java -Dfile.encoding=UTF-8 ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
     local res=$?
     [ $res = 130 ] && myecho -e "Melody was interrupted (code '$res'). Exiting" "${WARNING}" || myecho -e "Melody return an error (code '$res'). Exiting" "${ERROR}"
     return $res
