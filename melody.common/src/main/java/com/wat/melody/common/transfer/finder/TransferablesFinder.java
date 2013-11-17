@@ -130,6 +130,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 
 	@Override
 	public FileVisitResult visitFileFailed(Path file, IOException exc) {
+		// TODO : when a remote FS listing failed, the error is lost ...
 		return FileVisitResult.CONTINUE;
 	}
 
