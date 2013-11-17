@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.WrapperFile;
 import com.wat.melody.common.files.exception.IllegalFileException;
 
 /**
@@ -24,13 +25,13 @@ public class Exec {
 	public static final String FILE_ATTR = "file";
 
 	/**
-	 * Exec's attribute, which indicates if the script contains XPath Expression
-	 * to be resolved or not.
+	 * Exec's attribute, which indicates if the script contains Melody
+	 * Expression to be resolved.
 	 */
 	public static final String TEMPLATE_ATTR = "template";
 
 	/**
-	 * Exec's attribute, which specifies the command.
+	 * Exec's attribute, which specifies an in-line command.
 	 */
 	public static final String COMMAND_ATTR = "command";
 
@@ -46,7 +47,8 @@ public class Exec {
 	public String setCommand(String c) {
 		if (c == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a String (a shell command).");
+					+ "Must be a " + String.class.getCanonicalName()
+					+ " (a shell command).");
 		}
 		String previous = getCommand();
 		_command = c;
@@ -58,14 +60,15 @@ public class Exec {
 	}
 
 	@Attribute(name = FILE_ATTR)
-	public File setFile(File c) throws IllegalFileException {
-		if (c == null) {
+	public File setFile(WrapperFile f) throws IllegalFileException {
+		if (f == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a File (which list shell commands).");
+					+ "Must be a " + File.class.getCanonicalName()
+					+ " (which list shell commands).");
 		}
-		FS.validateFileExists(c.toString());
+		FS.validateFileExists(f.toString());
 		File previous = getFile();
-		_file = c;
+		_file = f;
 		return previous;
 	}
 

@@ -3,7 +3,6 @@ package com.wat.melody.core.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -173,6 +172,8 @@ public class TaskFactoryCache {
 	 * <li>the argument type must not be an abstract ;</li>
 	 * <li>the argument type must not be an array ;</li>
 	 * <li>the argument type must not be an interface ;</li>
+	 * <li>the argument type must be an enumeration or a primitive or a class
+	 * which have a public 1-string-argument constructor ;</li>
 	 * </ul>
 	 * 
 	 * @param c
@@ -185,32 +186,7 @@ public class TaskFactoryCache {
 	 */
 	private void validateSetMethod(Class<?> c, Attribute a, Method m)
 			throws TaskFactoryException {
-		if (!Modifier.isPublic(m.getModifiers())
-				|| Modifier.isAbstract(m.getModifiers())
-				|| m.getParameterTypes().length != 1) {
-			throw new TaskFactoryException(Msg.bind(
-					Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
-					c.getCanonicalName(), a.name()));
-		}
-
-		Class<?> param = m.getParameterTypes()[0];
-
-		/*
-		 * TODO : feature request : Attribute annotation should have a 'factory'
-		 * attribute, which specifies a static method to create the parameter
-		 * from a string.
-		 * 
-		 * Till this feature is not implemented, we must deal with Path in a
-		 * specific way ...
-		 */
-		if (ReflectionHelper.implement(param, Path.class)) {
-			return;
-		}
-
-		if (!Modifier.isPublic(param.getModifiers())
-				|| (Modifier.isAbstract(param.getModifiers()) && !(param
-						.isEnum() || param.isPrimitive()))
-				|| param.isInterface() || param.isArray()) {
+		if (!setterSignatureIsValid(m) || !setterParameterIsValid(m)) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_ATTR_SPEC_CONFLICT, m.getName(),
 					c.getCanonicalName(), a.name()));
@@ -232,6 +208,8 @@ public class TaskFactoryCache {
 	 * <li>the argument type must not be an abstract ;</li>
 	 * <li>the argument type must not be an array ;</li>
 	 * <li>the argument type must not be an interface ;</li>
+	 * <li>the argument type must be an enumeration or a primitive or a class
+	 * which have a public 1-string-argument constructor ;</li>
 	 * </ul>
 	 * 
 	 * @param c
@@ -244,23 +222,50 @@ public class TaskFactoryCache {
 	 */
 	private void validateTextMethod(Class<?> c, TextContent t, Method m)
 			throws TaskFactoryException {
-		if (!Modifier.isPublic(m.getModifiers())
-				|| Modifier.isAbstract(m.getModifiers())
-				|| m.getParameterTypes().length != 1) {
+		if (!setterSignatureIsValid(m) || !setterParameterIsValid(m)) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_TEXT_SPEC_CONFLICT, m.getName(),
 					c.getCanonicalName()));
 		}
+	}
 
+	private boolean setterSignatureIsValid(Method m) {
+		return Modifier.isPublic(m.getModifiers())
+				&& !Modifier.isAbstract(m.getModifiers())
+				&& m.getParameterTypes().length == 1;
+	}
+
+	private boolean setterParameterIsValid(Method m) {
 		Class<?> param = m.getParameterTypes()[0];
+
 		if (!Modifier.isPublic(param.getModifiers())
 				|| (Modifier.isAbstract(param.getModifiers()) && !(param
 						.isEnum() || param.isPrimitive()))
 				|| param.isInterface() || param.isArray()) {
-			throw new TaskFactoryException(Msg.bind(
-					Messages.TaskFactoryEx_TEXT_SPEC_CONFLICT, m.getName(),
-					c.getCanonicalName()));
+			return false;
 		}
+		if (!param.isEnum() && !param.isPrimitive()) {
+			/*
+			 * validate that the parameter class have a 1-string-arg constructor
+			 */
+			for (Constructor<?> ct : param.getConstructors()) {
+				if (!Modifier.isPublic(ct.getModifiers())) {
+					continue;
+				}
+				Class<?>[] args = ct.getParameterTypes();
+				if (args.length == 1 && args[0] == String.class) {
+					// found
+					return true;
+				}
+				if (args.length == 2 && args[0] == String.class
+						&& args[1].isArray()) {
+					// found
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 
 	/**

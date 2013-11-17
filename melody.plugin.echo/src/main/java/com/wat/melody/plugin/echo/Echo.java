@@ -11,6 +11,7 @@ import com.wat.melody.api.ITask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.WrapperFile;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.log.LogThreshold;
@@ -197,7 +198,7 @@ public class Echo implements ITask {
 			+ "the message will be written.\n"
 			+ "If this attribute is not specified, the message will be "
 			+ "displayed in the standard output.")
-	public File setFile(File f) throws IllegalFileException,
+	public File setFile(WrapperFile f) throws IllegalFileException,
 			IllegalDirectoryException {
 		FS.validateFilePath(f.getPath());
 		File previous = getFile();

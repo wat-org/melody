@@ -16,6 +16,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
 import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.common.files.WrapperFile;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.properties.Property;
@@ -169,7 +170,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	 *             if the given path is <tt>null</tt>.
 	 */
 	@Attribute(name = BASEDIR_ATTR)
-	public File setBaseDir(File path) throws SequenceException {
+	public File setBaseDir(WrapperFile path) throws SequenceException {
 		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Cannot be null.");

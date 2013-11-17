@@ -1,6 +1,5 @@
 package com.wat.melody.core.nativeplugin.call;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +9,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.exception.IllegalOrderException;
+import com.wat.melody.common.files.WrapperFile;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.order.OrderName;
 import com.wat.melody.common.order.OrderNameSet;
@@ -78,7 +78,7 @@ public class Ref {
 	 * sub-ProcessorManager owned by this object.
 	 * </p>
 	 * 
-	 * @param sPath
+	 * @param path
 	 *            is the path of the file to load.
 	 * 
 	 * @throws CallException
@@ -97,9 +97,9 @@ public class Ref {
 	 *             if the given path is <code>null</code>.
 	 */
 	@Attribute(name = SD_ATTR)
-	public void setSequenceDescriptor(File sPath) throws CallException,
+	public void setSequenceDescriptor(WrapperFile path) throws CallException,
 			IOException {
-		setSDPath(sPath.getCanonicalPath());
+		setSDPath(path.getCanonicalPath());
 		try {
 			for (IProcessorManager pm : getIProcessorManagers()) {
 				pm.getSequenceDescriptor().load(getSDPath());

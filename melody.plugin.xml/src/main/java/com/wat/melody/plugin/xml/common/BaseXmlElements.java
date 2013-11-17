@@ -20,6 +20,7 @@ import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.WrapperPath;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.Doc;
@@ -150,7 +151,7 @@ public abstract class BaseXmlElements implements ITask {
 	}
 
 	@Attribute(name = FILE_ATTR, mandatory = true)
-	public Path setPreparedFile(Path path) throws IllegalDocException,
+	public Path setPreparedFile(WrapperPath path) throws IllegalDocException,
 			IllegalFileException, MelodyException, IOException {
 		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -239,12 +240,23 @@ public abstract class BaseXmlElements implements ITask {
 	}
 
 	@NestedElement(name = ONLY_IF_NOT_EXISTS_NE)
-	public void addOnlyIfNotExistsCondition(ConditionIfNotExists condition) {
+	public void addOnlyIfNotExistsCondition(ConditionIfNotExists condition)
+			throws XmlPluginException {
 		if (condition == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Condition.class.getCanonicalName()
 					+ ".");
 		}
+
+		// condition must be valid XPath expr
+		String xpr = condition.getCondition();
+		try {
+			getPreparedDoc().evaluateAsNodeList(xpr);
+		} catch (XPathExpressionException Ex) {
+			throw new XmlPluginException(Msg.bind(
+					Messages.ConditionEx_NOT_XPATH, xpr), Ex);
+		}
+
 		_conditions.add(condition);
 	}
 

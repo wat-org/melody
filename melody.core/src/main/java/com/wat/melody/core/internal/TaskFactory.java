@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.w3c.dom.Attr;
@@ -570,7 +568,7 @@ public class TaskFactory {
 				o = createNewEnumConstant(param, attrVal);
 			}
 			if (o == null) {
-				o = createNewFile(param, attrVal);
+				o = createNewFileBased(param, attrVal);
 			}
 			if (o == null) {
 				o = createNewObject(param, attrVal);
@@ -612,7 +610,7 @@ public class TaskFactory {
 				o = createNewEnumConstant(param, textVal);
 			}
 			if (o == null) {
-				o = createNewFile(param, textVal);
+				o = createNewFileBased(param, textVal);
 			}
 			if (o == null) {
 				o = createNewObject(param, textVal);
@@ -736,11 +734,9 @@ public class TaskFactory {
 				Arrays.asList(param.getEnumConstants())));
 	}
 
-	private Object createNewFile(Class<?> param, String value)
+	private Object createNewFileBased(Class<?> param, String value)
 			throws TaskFactoryException {
-		if (!ReflectionHelper.implement(param, Path.class)
-				&& !ReflectionHelper.herit(param, File.class)
-				&& !ReflectionHelper.implement(param, IFileBased.class)) {
+		if (!ReflectionHelper.implement(param, IFileBased.class)) {
 			return null;
 		}
 		// make an absolute path, relative to the sequence descriptor basedir
@@ -754,11 +750,7 @@ public class TaskFactory {
 						+ "Path of '" + value + "'.", Ex);
 			}
 		}
-		if (param == Path.class) {
-			return Paths.get(value);
-		} else {
-			return createNewObject(param, value);
-		}
+		return createNewObject(param, value);
 	}
 
 	private Object createNewObject(Class<?> param, String value)
