@@ -4,8 +4,8 @@
 <sequence default="do" basedir="/tmp">
 
 	<order name="do">
-		<echo message="hello world" file="./created/out.log" createparentdir="true" append="true" />
-		<echo file="./created/out.log" createparentdir="true" append="true" />
+		<echo message="hello world" file="./created/out.log" create-parent-directory="true" append="true" />
+		<echo file="./created/out.log" create-parent-directory="true" append="true" />
 	</order>
 
 </sequence>
