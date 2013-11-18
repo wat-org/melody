@@ -109,8 +109,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 	}
 
 	@Override
-	public FileVisitResult visitFile(Path file, EnhancedFileAttributes attrs)
-			throws IOException {
+	public FileVisitResult visitFile(Path file, EnhancedFileAttributes attrs) {
 		TransferableFile sr = new TransferableFile(file, attrs, _rspec);
 		matches(sr);
 		return FileVisitResult.CONTINUE;
@@ -118,7 +117,7 @@ class Finder extends EnhancedFileVisitor<Path> {
 
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir,
-			EnhancedFileAttributes attrs) throws IOException {
+			EnhancedFileAttributes attrs) {
 		TransferableFile sr = new TransferableFile(dir, attrs, _rspec);
 		matches(sr);
 		if (sr.linkShouldBeConvertedToFile()) {
@@ -129,9 +128,23 @@ class Finder extends EnhancedFileVisitor<Path> {
 	}
 
 	@Override
-	public FileVisitResult visitFileFailed(Path file, IOException exc) {
-		// TODO : when a remote FS listing failed, the error is lost ...
-		return FileVisitResult.CONTINUE;
+	public FileVisitResult visitFileFailed(Path file, IOException Ex)
+			throws IOException {
+		if (Ex != null) {
+			throw Ex;
+		} else if (file != null) {
+			throw new RuntimeException("'" + file + "'"
+					+ ": An error occured while visiting this file (don't "
+					+ "know which error). "
+					+ " The source code of the caller side should be enhanced "
+					+ "to provide a more accurate error message.");
+		} else {
+			throw new RuntimeException("An error occured while visiting "
+					+ "a file (don't know which error, don't know which file)."
+					+ " The source code of the caller side should be enhanced "
+					+ "to provide a more accurate error message.");
+		}
+
 	}
 
 }

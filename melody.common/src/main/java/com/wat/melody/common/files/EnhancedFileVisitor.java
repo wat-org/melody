@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.util.Objects;
 
-
 /**
  * <p>
  * A simple visitor of files with default behavior to visit all files and to
