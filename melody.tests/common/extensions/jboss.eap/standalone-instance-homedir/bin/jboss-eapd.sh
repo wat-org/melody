@@ -194,9 +194,11 @@ validate_server_state() {
   }
 
   # does the log contains error ?
-  # JBREM000200: discarded because it should be a WARN
+  # "JBREM000200: Remote connection failed": discarded because it should be a WARN :
+  # "JBREM000201: Received invalid message on Remoting connection": discarded because it should be a WARN
   cat "${JBOSS_CONSOLE_LOG}"   | \
   grep -v "ERROR.*JBREM000200" | \
+  grep -v "ERROR.*JBREM000201" | \
   grep -iE "[ \[](ERROR|FATAL)" 1>/dev/null && {
     warning
     echo
