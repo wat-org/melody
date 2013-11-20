@@ -71,7 +71,7 @@ public class ProcessorManagerFactory {
 				| InvocationTargetException Ex) {
 			throw new RuntimeException("Unexecpted error while creating a new "
 					+ _pmClass.getCanonicalName() + " object. "
-					+ "Since the validity of this no contructor have been "
+					+ "Since the validity of this 0-arg constructor have been "
 					+ "previously validated, such error cannot happened. "
 					+ "Source code has certainly been modified "
 					+ "and a bug have been introduced.", Ex);
