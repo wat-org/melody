@@ -14,6 +14,10 @@ public class Messages extends NLS {
 	public static String DeleteBucketMsg_NOT_EXISTS;
 	public static String DeleteBucketEx_GENERIC_FAIL;
 
+	public static String EnableLoggingEx_GENERIC_FAIL;
+
+	public static String DisableLoggingEx_GENERIC_FAIL;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -226,8 +226,8 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	}
 
 	/**
-	 * Can be <tt>null</tt>, when the current instance has no underlying LibVirt
-	 * Domain.
+	 * Can be <tt>null</tt>, when the current instance has no underlying 'Amazon
+	 * EC2 Instance'.
 	 * 
 	 * @param instance
 	 * @return

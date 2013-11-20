@@ -194,7 +194,7 @@
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_2/mc.properties" />
 			<arg value="-o" />
-			<arg value="delete_all_buckets" />
+			<arg value="destroy_all_buckets" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk</artifactId>
-			<version>1.6.3</version>
+			<version>1.6.6</version>
 			<exclusions>
 				<!-- the whole melody project is using is own commons-logging version. 
 					So we exclude the one which is provided by aws-java-sdk -->

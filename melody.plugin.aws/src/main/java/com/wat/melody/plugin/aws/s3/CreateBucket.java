@@ -46,7 +46,6 @@ public class CreateBucket extends AbstractOperation {
 					Messages.CreateBucketEx_GENERIC_FAIL, getBucketName(),
 					getBucketRegion()), Ex);
 		}
-
 	}
 
 }

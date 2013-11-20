@@ -1,6 +1,7 @@
 package com.wat.cloud.aws.s3;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,10 +12,16 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.BucketLoggingConfiguration;
 import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.DeleteVersionRequest;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.S3VersionSummary;
+import com.amazonaws.services.s3.model.SetBucketLoggingConfigurationRequest;
 import com.amazonaws.services.s3.model.VersionListing;
 import com.wat.cloud.aws.s3.exception.BucketAlreadyOwnedByYouException;
 import com.wat.cloud.aws.s3.exception.BucketDoesNotExistsException;
@@ -33,6 +40,8 @@ public abstract class AwsS3Cloud {
 	 *            is an {@link AmazonS3} object.
 	 * @param bucketName
 	 * @param bucketRegion
+	 *            can be <tt>null</tt>. If <tt>null</tt>, the default region
+	 *            (e.g. 'us-east-1') will be used.
 	 * 
 	 * @throws BucketAlreadyOwnedByYouException
 	 *             if a bucket with the given name already exists and is yours.
@@ -57,7 +66,8 @@ public abstract class AwsS3Cloud {
 		}
 		if (bucketName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid String (an Aws S3 Bucket Name).");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (an Aws S3 Bucket Name).");
 		}
 
 		try {
@@ -72,6 +82,141 @@ public abstract class AwsS3Cloud {
 			} else if (Ex.getErrorCode().indexOf("BucketAlreadyOwnedByYou") != -1) {
 				// Means that the given bucket already exists and is yours
 				throw new BucketAlreadyOwnedByYouException(Ex);
+			} else {
+				throw Ex;
+			}
+		}
+	}
+
+	/**
+	 * @param s3
+	 *            is an {@link AmazonS3} object.
+	 * @param bucketName
+	 * @param loggingBucket
+	 * @param logPrefix
+	 * 
+	 * @throws AmazonServiceException
+	 *             if the operation fails (typically when the requested bucket
+	 *             already exists and is not owned by you).
+	 * @throws AmazonClientException
+	 *             if the operation fails (typically when network communication
+	 *             encountered problems).
+	 * @throws IllegalArgumentException
+	 *             if s3 is <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             if bucketName is <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             if loggingBucket is <code>null</code>.
+	 */
+	public static void enableLogging(AmazonS3 s3, String bucketName,
+			String loggingBucket, String logPrefix)
+			throws AmazonServiceException, AmazonClientException {
+		if (s3 == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + AmazonS3.class.getCanonicalName()
+					+ ".");
+		}
+		if (bucketName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Aws S3 Bucket Name to active logging on).");
+		}
+		if (loggingBucket == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Aws S3 Bucket Name which will receive logging).");
+		}
+		if (logPrefix == null) {
+			logPrefix = "";
+		}
+
+		/*
+		 * Must give the log-delivery group WRITE and READ_ACP permissions to
+		 * the target bucket. Bucket ACL is updated only if needed.
+		 */
+		AccessControlList acl = s3.getBucketAcl(loggingBucket);
+		boolean updACL = false;
+		Set<Grant> grants = acl.getGrants();
+		Grant write = new Grant(GroupGrantee.LogDelivery, Permission.Write);
+		if (!grants.contains(write)) {
+			acl.grantAllPermissions(write);
+			updACL = true;
+		}
+		Grant read = new Grant(GroupGrantee.LogDelivery, Permission.ReadAcp);
+		if (!grants.contains(read)) {
+			acl.grantAllPermissions(read);
+			updACL = true;
+		}
+
+		if (updACL == true) {
+			try {
+				s3.setBucketAcl(loggingBucket, acl);
+			} catch (AmazonServiceException Ex) {
+				if (Ex.getErrorCode() == null) {
+					throw Ex;
+				} else {
+					throw Ex;
+				}
+			}
+		}
+
+		BucketLoggingConfiguration lc = null;
+		lc = new BucketLoggingConfiguration(loggingBucket, logPrefix);
+		SetBucketLoggingConfigurationRequest sblcreq = null;
+		sblcreq = new SetBucketLoggingConfigurationRequest(bucketName, lc);
+
+		try {
+			s3.setBucketLoggingConfiguration(sblcreq);
+		} catch (AmazonServiceException Ex) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else {
+				throw Ex;
+			}
+		}
+	}
+
+	/**
+	 * @param s3
+	 *            is an {@link AmazonS3} object.
+	 * @param bucketName
+	 * 
+	 * @throws AmazonServiceException
+	 *             if the operation fails (typically when the requested bucket
+	 *             already exists and is not owned by you).
+	 * @throws AmazonClientException
+	 *             if the operation fails (typically when network communication
+	 *             encountered problems).
+	 * @throws IllegalArgumentException
+	 *             if s3 is <code>null</code>.
+	 */
+	public static void disableLogging(AmazonS3 s3, String bucketName)
+			throws AmazonServiceException, AmazonClientException {
+		if (s3 == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + AmazonS3.class.getCanonicalName()
+					+ ".");
+		}
+		if (bucketName == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the Aws S3 Bucket Name to active logging on).");
+		}
+
+		/*
+		 * If either the targetBucketName or logfilePrefix are null, this object
+		 * represents a disabled logging configuration
+		 */
+		BucketLoggingConfiguration lc = null;
+		lc = new BucketLoggingConfiguration(null, null);
+		SetBucketLoggingConfigurationRequest sblcreq = null;
+		sblcreq = new SetBucketLoggingConfigurationRequest(bucketName, lc);
+
+		try {
+			s3.setBucketLoggingConfiguration(sblcreq);
+		} catch (AmazonServiceException Ex) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
 			} else {
 				throw Ex;
 			}

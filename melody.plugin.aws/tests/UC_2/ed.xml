@@ -2,8 +2,13 @@
 	
 	<buckets>
 		<bucket name="couille" region="eu-west-1"/>
-		<bucket name="new-one-super-bucket2" region="us-east-1"/>
+		<bucket name="new-one-super-bucket2" region="us-east-1">
+			<logging enabled='true' destination-bucket-name="new-one-super-bucket2" log-file-prefix="couillelog/" />
+		</bucket>
+        <!-- 
+             This one will fail cause 'bucket3' already exists and is not owned by you
 		<bucket name="bucket3" region="us-west-1"/>
+        -->
 	</buckets>
 		
 </environment>

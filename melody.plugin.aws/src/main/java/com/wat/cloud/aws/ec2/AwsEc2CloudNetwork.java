@@ -158,7 +158,9 @@ public class AwsEc2CloudNetwork {
 			ec2.createSecurityGroup(csgreq);
 			log.debug("Security Group '" + sgname + "' created.");
 		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidParameterValue") != -1) {
 				throw new RuntimeException("Unexpected error while creating "
 						+ "an empty AWS Security Group. "
 						+ "Because the SGName and the SGDescription have "

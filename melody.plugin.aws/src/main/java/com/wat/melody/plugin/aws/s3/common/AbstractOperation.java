@@ -20,8 +20,6 @@ public abstract class AbstractOperation implements ITask {
 
 	public static final String BUCKET_REGION_ATTR = "region";
 
-	// TODO : add support for bucket logging
-
 	private BucketName _bucketName = null;
 	private String _bucketRegion = null;
 	private AmazonS3 _s3Connection = null;
@@ -60,7 +58,7 @@ public abstract class AbstractOperation implements ITask {
 		return _bucketRegion;
 	}
 
-	@Attribute(name = BUCKET_REGION_ATTR, mandatory = true)
+	@Attribute(name = BUCKET_REGION_ATTR)
 	public String setBucketRegion(String bucketRegion)
 			throws AwsPlugInS3Exception {
 		if (bucketRegion == null) {
