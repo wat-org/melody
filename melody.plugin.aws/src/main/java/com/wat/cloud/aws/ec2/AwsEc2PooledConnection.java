@@ -44,7 +44,7 @@ public abstract class AwsEc2PooledConnection {
 	 * @throws AmazonClientException
 	 *             if the operation fails (ex: network error).
 	 */
-	public static AmazonEC2 getPooledConnection(String region,
+	public synchronized static AmazonEC2 getPooledConnection(String region,
 			AWSCredentials cred, ClientConfiguration cc) {
 		if (region == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

@@ -1,7 +1,9 @@
 package com.wat.melody.plugin.aws.common;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.KeyPair;
 import java.util.Arrays;
 
 import com.amazonaws.AmazonClientException;
@@ -12,12 +14,18 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.EncryptionMaterials;
 import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsEc2PooledConnection;
 import com.wat.cloud.aws.s3.AwsS3PooledConnection;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
+import com.wat.melody.common.keypair.KeyPairName;
+import com.wat.melody.common.keypair.KeyPairRepository;
+import com.wat.melody.common.keypair.KeyPairRepositoryPath;
+import com.wat.melody.common.keypair.KeyPairSize;
+import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.plugin.aws.common.exception.AwsPlugInConfigurationException;
@@ -756,7 +764,62 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 *             if the operation fails (ex: network error).
 	 */
 	public AmazonS3 getAwsS3Connection() {
-		return AwsS3PooledConnection.getPooledConnection(this, getCC());
+		return AwsS3PooledConnection.getPooledConnection(this, getCC(), null,
+				null);
+	}
+
+	/**
+	 * @param kprp
+	 *            specifies the key-pair repository path, where stand the
+	 *            key-pair.
+	 * @param kpn
+	 *            specifies the key-pair name of the desired key-pair which will
+	 *            be used for the client-side encryption. If the key-pair
+	 *            doesn't exists in the given key-pair repository, it will be
+	 *            created.
+	 * @param kpn
+	 *            specifies the passphrase of the desired key-pair.
+	 * 
+	 * @return an {@link AmazonS3} object.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if either the repo, the name or the size is <tt>null</tt>.
+	 * @throws IOException
+	 *             if an IO error occurred while reading the keypair.
+	 * @throws IllegalPassphraseException
+	 *             if the given passphrase is not correct.
+	 * @throws AmazonServiceException
+	 *             if the operation fails (ex: credentials not valid).
+	 * @throws AmazonClientException
+	 *             if the operation fails (ex: network error).
+	 */
+	public AmazonS3 getAwsS3Connection(KeyPairRepositoryPath kprp,
+			KeyPairName kpn, KeyPairSize kps, String passphrase)
+			throws IOException, IllegalPassphraseException {
+		if (kprp == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ KeyPairRepositoryPath.class.getCanonicalName() + ".");
+		}
+		if (kpn == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
+					+ ".");
+		}
+		if (kps == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPairSize.class.getCanonicalName()
+					+ ".");
+		}
+
+		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
+		KeyPair kp = kpr.createKeyPair(kpn, kps, passphrase);
+		EncryptionMaterials enc = new EncryptionMaterials(kp);
+		/*
+		 * TODO : should provide a CryptoConfiguration instead of null.
+		 */
+		return AwsS3PooledConnection.getPooledConnection(this, getCC(), enc,
+				null);
 	}
 
 }
