@@ -14,7 +14,7 @@ import com.wat.melody.common.files.EnhancedFileAttributes;
  * 
  * <p>
  * if it describes a link, also give informations about this link's target and
- * the real file or directory attributes.
+ * the targeted file or directory attributes.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -24,7 +24,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 
 	private SftpATTRS _attrs;
 	private Path _target;
-	private SftpATTRS _realAttrs;
+	private SftpATTRS _targetAttrs;
 
 	/**
 	 * @param attrs
@@ -33,7 +33,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 	 *            if the given attributes describes a link, it is the direct
 	 *            link target. Can be <tt>null</tt>, if the given attributes
 	 *            doesn't describe a link.
-	 * @param realAttrs
+	 * @param targetAttrs
 	 *            if the given attributes describes a link, it is the final file
 	 *            or directory target attributes. Can be <tt>null</tt>, if the
 	 *            given link points - at any degree - to a non existing file or
@@ -46,7 +46,8 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 	 *             direct target is <tt>null</tt> ;</li>
 	 *             </ul>
 	 */
-	public SftpFileAttributes(SftpATTRS attrs, Path target, SftpATTRS realAttrs) {
+	public SftpFileAttributes(SftpATTRS attrs, Path target,
+			SftpATTRS targetAttrs) {
 		if (attrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + SftpATTRS.class.getCanonicalName()
@@ -58,7 +59,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 		}
 		_attrs = attrs;
 		_target = target;
-		_realAttrs = realAttrs;
+		_targetAttrs = targetAttrs;
 	}
 
 	@Override
@@ -92,7 +93,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 	@Override
 	public boolean isRegularFile() {
 		return (!_attrs.isDir() && !_attrs.isLink())
-				|| (_realAttrs != null && !_realAttrs.isDir());
+				|| (_targetAttrs != null && !_targetAttrs.isDir());
 	}
 
 	/**
@@ -102,7 +103,7 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 	 */
 	@Override
 	public boolean isDirectory() {
-		return _attrs.isDir() || (_realAttrs != null && _realAttrs.isDir());
+		return _attrs.isDir() || (_targetAttrs != null && _targetAttrs.isDir());
 	}
 
 	/**
