@@ -18,6 +18,8 @@ public class Messages extends NLS {
 
 	public static String DisableLoggingEx_GENERIC_FAIL;
 
+	public static String TransferEx_INVALID_MAXPAR_ATTR;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

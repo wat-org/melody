@@ -23,12 +23,6 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>1.6.6</version>
 			<exclusions>
-				<!-- the whole melody project is using is own commons-logging version. 
-					So we exclude the one which is provided by aws-java-sdk -->
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
 				<!-- aws-java-sdk requires commons-codec:commons-codec:1.3 but aws-java-sdk 
 					also requires org.apache.httpcomponents:httpclient:4.2 which requires commons-codec:commons-codec:1.6 
 					! -->

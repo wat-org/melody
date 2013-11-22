@@ -10,7 +10,7 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
+import com.wat.melody.plugin.aws.s3.common.AbstractBucketOperation;
 import com.wat.melody.plugin.aws.s3.common.Messages;
 import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
 
@@ -20,7 +20,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = DeleteBucket.DELETE_BUCKET)
-public class DeleteBucket extends AbstractOperation {
+public class DeleteBucket extends AbstractBucketOperation {
 
 	private static Logger log = LoggerFactory.getLogger(DeleteBucket.class);
 

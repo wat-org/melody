@@ -9,7 +9,7 @@ import com.wat.cloud.aws.s3.exception.BucketAlreadyOwnedByYouException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
+import com.wat.melody.plugin.aws.s3.common.AbstractBucketOperation;
 import com.wat.melody.plugin.aws.s3.common.Messages;
 import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
 
@@ -19,7 +19,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = CreateBucket.CREATE_BUCKET)
-public class CreateBucket extends AbstractOperation {
+public class CreateBucket extends AbstractBucketOperation {
 
 	private static Logger log = LoggerFactory.getLogger(CreateBucket.class);
 
