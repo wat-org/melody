@@ -26,6 +26,7 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 CLI_CMD="LANG=\"${LANG}\" \
          JAVA_HOME=\"${JAVA_HOME}\" \
+         JAVA_OPTS=\"-Djava.io.tmpdir=${JBOSS_BASE_DIR}/tmp/\" \
          \"${JBOSS_CLI}\" \
          -c --controller=\"${MGMT_ADDR}\""
 
