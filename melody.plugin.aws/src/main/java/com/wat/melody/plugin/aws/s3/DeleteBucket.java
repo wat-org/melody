@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.AmazonClientException;
 import com.wat.cloud.aws.s3.AwsS3Cloud;
 import com.wat.cloud.aws.s3.exception.BucketDoesNotExistsException;
+import com.wat.cloud.aws.s3.exception.DeleteKeyException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
@@ -50,7 +51,7 @@ public class DeleteBucket extends AbstractBucketOperation {
 		} catch (BucketDoesNotExistsException Ex) {
 			log.info(Msg.bind(Messages.DeleteBucketMsg_NOT_EXISTS,
 					getBucketName()));
-		} catch (AmazonClientException Ex) {
+		} catch (DeleteKeyException | AmazonClientException Ex) {
 			throw new AwsPlugInS3Exception(Msg.bind(
 					Messages.DeleteBucketEx_GENERIC_FAIL, getBucketName()), Ex);
 		}

@@ -13,11 +13,13 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.BucketLoggingConfiguration;
 import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.DeleteVersionRequest;
 import com.amazonaws.services.s3.model.Grant;
 import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.S3VersionSummary;
@@ -25,6 +27,10 @@ import com.amazonaws.services.s3.model.SetBucketLoggingConfigurationRequest;
 import com.amazonaws.services.s3.model.VersionListing;
 import com.wat.cloud.aws.s3.exception.BucketAlreadyOwnedByYouException;
 import com.wat.cloud.aws.s3.exception.BucketDoesNotExistsException;
+import com.wat.cloud.aws.s3.exception.DeleteKeyException;
+import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.WrapperInterruptedException;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -265,7 +271,9 @@ public abstract class AwsS3Cloud {
 	}
 
 	public static void removeAllKeys(AmazonS3 s3, String bucketName)
-			throws BucketDoesNotExistsException, InterruptedException {
+			throws BucketDoesNotExistsException, DeleteKeyException,
+			InterruptedException, AmazonClientException,
+			AmazonServiceException, AmazonS3Exception {
 		if (s3 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonS3.class.getCanonicalName()
@@ -298,7 +306,15 @@ public abstract class AwsS3Cloud {
 
 	public static void removeAllKeysInVersionningEnabledBucket(
 			final AmazonS3 s3, final String bucketName)
-			throws InterruptedException {
+			throws InterruptedException, DeleteKeyException,
+			AmazonClientException, AmazonServiceException, AmazonS3Exception {
+		removeAllKeysInVersionningEnabledBucket(s3, bucketName, null);
+	}
+
+	public static void removeAllKeysInVersionningEnabledBucket(
+			final AmazonS3 s3, final String bucketName, final String prefix)
+			throws InterruptedException, DeleteKeyException,
+			AmazonClientException, AmazonServiceException, AmazonS3Exception {
 		if (s3 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonS3.class.getCanonicalName()
@@ -309,16 +325,19 @@ public abstract class AwsS3Cloud {
 		}
 
 		// Set up a new thread pool to delete 20 objects at a time.
-		ExecutorService _pool = Executors.newFixedThreadPool(20);
+		ExecutorService _pool = Executors.newFixedThreadPool(10);
+
+		// place all errors in a Consolidated exception
+		final ConsolidatedException full = new ConsolidatedException(
+				Messages.DeleteKeyEx_ERROR_SUMMARY);
+		boolean interrupted = false;
 
 		// List all key in the bucket
-		VersionListing versionListing = s3.listVersions(bucketName, "");
-		List<S3VersionSummary> versionSummaries = versionListing
-				.getVersionSummaries();
-		while (versionSummaries != null && versionSummaries.size() > 0) {
-			final CountDownLatch latch = new CountDownLatch(
-					versionSummaries.size());
-			for (final S3VersionSummary objectSummary : versionSummaries) {
+		VersionListing listing = s3.listVersions(bucketName, prefix);
+		List<S3VersionSummary> summaries = listing.getVersionSummaries();
+		while (summaries != null && summaries.size() > 0) {
+			final CountDownLatch latch = new CountDownLatch(summaries.size());
+			for (final S3VersionSummary objectSummary : summaries) {
 				_pool.execute(new Runnable() {
 					@Override
 					public void run() {
@@ -328,17 +347,20 @@ public abstract class AwsS3Cloud {
 							keyName = objectSummary.getKey();
 							versionId = objectSummary.getVersionId();
 
-							log.info("Deleting object { bucket-name:"
-									+ bucketName + ", key:" + keyName
-									+ ", version-id:" + versionId + " }");
+							log.debug(Msg.bind(
+									Messages.DeleteKeyMsg_DELETING_VERSION,
+									bucketName, keyName, versionId));
 
 							s3.deleteVersion(new DeleteVersionRequest(
 									bucketName, keyName, versionId));
-						} catch (AmazonClientException e) {
-							log.error("Failed to delete object { bucket-name:"
-									+ bucketName + ", key:" + keyName
-									+ ", version-id:" + versionId + " }");
-							throw e;
+
+							log.info(Msg.bind(
+									Messages.DeleteKeyMsg_DELETED_VERSION,
+									bucketName, keyName, versionId));
+						} catch (Throwable Ex) {
+							full.addCause(new DeleteKeyException(Msg.bind(
+									Messages.DeleteKeyEx_FAILED_VERSION,
+									bucketName, keyName, versionId), Ex));
 						} finally {
 							latch.countDown();
 						}
@@ -355,21 +377,40 @@ public abstract class AwsS3Cloud {
 				latch.await();
 			} catch (InterruptedException Ex) {
 				latch.await();
-				throw Ex;
+				full.addCause(new WrapperInterruptedException(
+						Messages.DeleteKeyEx_INTERRUPTED, Ex));
+				interrupted = true;
+				break;
 			}
 
 			// Paging over all S3 keys...
-			versionListing = s3.listNextBatchOfVersions(versionListing);
-			versionSummaries = versionListing.getVersionSummaries();
+			listing = s3.listNextBatchOfVersions(listing);
+			summaries = listing.getVersionSummaries();
 		}
 
 		_pool.shutdown();
 
+		// raise error
+		if (full.countCauses() != 0) {
+			if (interrupted == true && full.countCauses() == 1) {
+				throw new WrapperInterruptedException(full);
+			} else {
+				throw new DeleteKeyException(full);
+			}
+		}
 	}
 
 	public static void removeAllKeysInVersionningDisabledBucket(
 			final AmazonS3 s3, final String bucketName)
-			throws InterruptedException {
+			throws InterruptedException, DeleteKeyException,
+			AmazonClientException, AmazonServiceException, AmazonS3Exception {
+		removeAllKeysInVersionningDisabledBucket(s3, bucketName, null);
+	}
+
+	public static void removeAllKeysInVersionningDisabledBucket(
+			final AmazonS3 s3, final String bucketName, final String prefix)
+			throws InterruptedException, DeleteKeyException,
+			AmazonClientException, AmazonServiceException, AmazonS3Exception {
 		if (s3 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonS3.class.getCanonicalName()
@@ -378,22 +419,26 @@ public abstract class AwsS3Cloud {
 		if (bucketName == null) {
 			return;
 		}
-
 		// Set up a new thread pool to delete 20 objects at a time.
-		ExecutorService pool__ = Executors.newFixedThreadPool(20);
+		ExecutorService pool__ = Executors.newFixedThreadPool(10);
 
-		List<S3ObjectSummary> objects = null;
-		do {
+		// place all errors in a Consolidated exception
+		final ConsolidatedException full = new ConsolidatedException(
+				Messages.DeleteKeyEx_ERROR_SUMMARY);
+		boolean interrupted = false;
+
+		ObjectListing listing = s3.listObjects(bucketName, prefix);
+		List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+		while (summaries != null && summaries.size() > 0) {
 			// List all key in the bucket
-			objects = s3.listObjects(bucketName).getObjectSummaries();
 			/*
 			 * Create a new CountDownLatch with a size of how many objects we
 			 * fetched. Each worker thread will decrement the latch on
 			 * completion; the parent waits until all workers are finished
 			 * before starting a new batch of delete worker threads.
 			 */
-			final CountDownLatch latch = new CountDownLatch(objects.size());
-			for (final S3ObjectSummary object : objects) {
+			final CountDownLatch latch = new CountDownLatch(summaries.size());
+			for (final S3ObjectSummary object : summaries) {
 				pool__.execute(new Runnable() {
 					@Override
 					public void run() {
@@ -401,14 +446,17 @@ public abstract class AwsS3Cloud {
 						try {
 							keyName = object.getKey();
 
-							log.info("Deleting object { bucket-name:"
-									+ bucketName + ", key:" + keyName + " }");
+							log.debug(Msg.bind(Messages.DeleteKeyMsg_DELETING,
+									bucketName, keyName));
 
 							s3.deleteObject(bucketName, keyName);
-						} catch (AmazonClientException e) {
-							log.error("Failed to delete object { bucket-name:"
-									+ bucketName + ", key:" + keyName + " }");
-							throw e;
+
+							log.info(Msg.bind(Messages.DeleteKeyMsg_DELETED,
+									bucketName, keyName));
+						} catch (Throwable Ex) {
+							full.addCause(new DeleteKeyException(Msg.bind(
+									Messages.DeleteKeyEx_FAILED, bucketName,
+									keyName), Ex));
 						} finally {
 							latch.countDown();
 						}
@@ -424,11 +472,27 @@ public abstract class AwsS3Cloud {
 				latch.await();
 			} catch (InterruptedException Ex) {
 				latch.await();
-				throw Ex;
+				full.addCause(new WrapperInterruptedException(
+						Messages.DeleteKeyEx_INTERRUPTED, Ex));
+				interrupted = true;
+				break;
 			}
-		} while (objects != null && !objects.isEmpty());
+
+			// Paging over all S3 keys...
+			listing = s3.listNextBatchOfObjects(listing);
+			summaries = listing.getObjectSummaries();
+		}
 
 		pool__.shutdown();
+
+		// raise error
+		if (full.countCauses() != 0) {
+			if (interrupted == true && full.countCauses() == 1) {
+				throw new WrapperInterruptedException(full);
+			} else {
+				throw new DeleteKeyException(full);
+			}
+		}
 	}
 
 }
