@@ -169,7 +169,7 @@ public class CifsFileSystem implements FileSystem {
 		return exists(convertToUnixPath(path), options);
 	}
 
-	protected boolean exists(String path, LinkOption... options) {
+	public boolean exists(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).exists();
 		} catch (SmbException Ex) {
@@ -182,7 +182,7 @@ public class CifsFileSystem implements FileSystem {
 		return isDirectory(convertToUnixPath(path), options);
 	}
 
-	protected boolean isDirectory(String path, LinkOption... options) {
+	public boolean isDirectory(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).isDirectory();
 		} catch (SmbException Ex) {
@@ -195,7 +195,7 @@ public class CifsFileSystem implements FileSystem {
 		return isRegularFile(convertToUnixPath(path));
 	}
 
-	protected boolean isRegularFile(String path, LinkOption... options) {
+	public boolean isRegularFile(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).isFile();
 		} catch (SmbException Ex) {
@@ -209,6 +209,11 @@ public class CifsFileSystem implements FileSystem {
 		return false;
 	}
 
+	public boolean isSymbolicLink(String path) {
+		// Samba doesn't support links
+		return false;
+	}
+
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
@@ -217,7 +222,7 @@ public class CifsFileSystem implements FileSystem {
 		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
-	protected void createDirectory(String dir, FileAttribute<?>... attrs)
+	public void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException {
@@ -229,6 +234,10 @@ public class CifsFileSystem implements FileSystem {
 		SmbFile smbfile = createSmbFile(dir);
 		try {
 			smbfile.mkdir();
+			/*
+			 * TODO : should raise NoSuchFileException if the parent element
+			 * exists but is not a directory
+			 */
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
@@ -324,7 +333,24 @@ public class CifsFileSystem implements FileSystem {
 	}
 
 	@Override
+	public void createDirectories(String dir, FileAttribute<?>... attrs)
+			throws IOException, IllegalFileAttributeException,
+			FileAlreadyExistsException, AccessDeniedException {
+		createDirectories(Paths.get(dir));
+	}
+
+	@Override
 	public void createSymbolicLink(Path link, Path target,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
+		// Samba can't do that
+		throw new SymbolicLinkNotSupported(link, target,
+				"CIFS doesn't support Symbolic links.");
+	}
+
+	public void createSymbolicLink(String link, String target,
 			FileAttribute<?>... attrs) throws IOException,
 			SymbolicLinkNotSupported, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
@@ -336,6 +362,12 @@ public class CifsFileSystem implements FileSystem {
 
 	@Override
 	public Path readSymbolicLink(Path link) throws IOException,
+			NoSuchFileException, NotLinkException, AccessDeniedException {
+		// Samba can't do that
+		return null;
+	}
+
+	public Path readSymbolicLink(String link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
 		// Samba can't do that
 		return null;
@@ -403,7 +435,7 @@ public class CifsFileSystem implements FileSystem {
 		return deleteIfExists(convertToUnixPath(path));
 	}
 
-	protected boolean deleteIfExists(String path) throws IOException,
+	public boolean deleteIfExists(String path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		try {
 			delete(path);
@@ -419,7 +451,7 @@ public class CifsFileSystem implements FileSystem {
 		deleteDirectory(convertToUnixPath(dir));
 	}
 
-	protected void deleteDirectory(String dir) throws IOException,
+	public void deleteDirectory(String dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(dir);
 		try {
@@ -473,7 +505,7 @@ public class CifsFileSystem implements FileSystem {
 		return newDirectoryStream(convertToUnixPath(path));
 	}
 
-	protected DirectoryStream<Path> newDirectoryStream(String path)
+	public DirectoryStream<Path> newDirectoryStream(String path)
 			throws IOException, InterruptedIOException, NoSuchFileException,
 			NotDirectoryException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(path);
@@ -545,7 +577,7 @@ public class CifsFileSystem implements FileSystem {
 		return readAttributes(convertToUnixPath(path));
 	}
 
-	protected EnhancedFileAttributes readAttributes(String path)
+	public EnhancedFileAttributes readAttributes(String path)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(path);
 		try {
@@ -629,7 +661,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributes(convertToUnixPath(path), attrs);
 	}
 
-	protected void setAttributes(String path, FileAttribute<?>... attrs)
+	public void setAttributes(String path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
@@ -731,7 +763,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributeArchive(convertToUnixPath(path), isArchive);
 	}
 
-	protected void setAttributeArchive(String path, boolean isArchive)
+	public void setAttributeArchive(String path, boolean isArchive)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -783,7 +815,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributeHidden(convertToUnixPath(path), isHidden);
 	}
 
-	protected void setAttributeHidden(String path, boolean isHidden)
+	public void setAttributeHidden(String path, boolean isHidden)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -834,7 +866,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributeReadOnly(convertToUnixPath(path), isReadOnly);
 	}
 
-	protected void setAttributeReadOnly(String path, boolean isReadOnly)
+	public void setAttributeReadOnly(String path, boolean isReadOnly)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -886,7 +918,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributeSystem(convertToUnixPath(path), isSystem);
 	}
 
-	protected void setAttributeSystem(String path, boolean isSystem)
+	public void setAttributeSystem(String path, boolean isSystem)
 			throws IOException, NoSuchFileException, AccessDeniedException {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "

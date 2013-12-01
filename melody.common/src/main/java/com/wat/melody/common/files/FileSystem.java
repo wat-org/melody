@@ -27,11 +27,19 @@ public interface FileSystem {
 
 	public boolean exists(Path path, LinkOption... options);
 
+	public boolean exists(String path, LinkOption... options);
+
 	public boolean isDirectory(Path path, LinkOption... options);
+
+	public boolean isDirectory(String path, LinkOption... options);
 
 	public boolean isRegularFile(Path path, LinkOption... options);
 
+	public boolean isRegularFile(String path, LinkOption... options);
+
 	public boolean isSymbolicLink(Path path);
+
+	public boolean isSymbolicLink(String path);
 
 	/**
 	 * 
@@ -44,7 +52,9 @@ public interface FileSystem {
 	 * @param attrs
 	 * 
 	 * @throws NoSuchFileException
-	 *             if a parent directory doesn't exists.
+	 *             if the given dir cannot be created because the parent element
+	 *             doesn't exists or because the parent element exists but is
+	 *             not a directory.
 	 * @throws FileAlreadyExistsException
 	 *             if the given dir cannot be created because a file with the
 	 *             same name already exists but is not a directory.
@@ -68,6 +78,11 @@ public interface FileSystem {
 	 *             reason.
 	 */
 	public abstract void createDirectory(Path dir, FileAttribute<?>... attrs)
+			throws IOException, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException;
+
+	public abstract void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException;
@@ -108,6 +123,11 @@ public interface FileSystem {
 			throws IOException, IllegalFileAttributeException,
 			FileAlreadyExistsException, AccessDeniedException;
 
+	public abstract void createDirectories(String dir,
+			FileAttribute<?>... attrs) throws IOException,
+			IllegalFileAttributeException, FileAlreadyExistsException,
+			AccessDeniedException;
+
 	/**
 	 * @param link
 	 * @param target
@@ -145,6 +165,12 @@ public interface FileSystem {
 			FileAlreadyExistsException, IllegalFileAttributeException,
 			AccessDeniedException;
 
+	public void createSymbolicLink(String link, String target,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException;
+
 	/**
 	 * @param link
 	 * 
@@ -158,6 +184,9 @@ public interface FileSystem {
 	 *             if the given link cannot be read for any other reason.
 	 */
 	public Path readSymbolicLink(Path link) throws IOException,
+			NoSuchFileException, NotLinkException, AccessDeniedException;
+
+	public Path readSymbolicLink(String link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException;
 
 	/**
@@ -180,6 +209,9 @@ public interface FileSystem {
 	public void delete(Path path) throws IOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException;
 
+	public void delete(String path) throws IOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException;
+
 	/**
 	 * <p>
 	 * Delete file (a regular file, a directory or a link). If the given path
@@ -196,6 +228,9 @@ public interface FileSystem {
 	 *             if the given path cannot be deleted for any other reason.
 	 */
 	public boolean deleteIfExists(Path path) throws IOException,
+			DirectoryNotEmptyException, AccessDeniedException;
+
+	public boolean deleteIfExists(String path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException;
 
 	/**
@@ -218,12 +253,22 @@ public interface FileSystem {
 	public void deleteDirectory(Path dir) throws IOException,
 			NotDirectoryException, AccessDeniedException;
 
+	public void deleteDirectory(String dir) throws IOException,
+			NotDirectoryException, AccessDeniedException;
+
 	public DirectoryStream<Path> newDirectoryStream(Path path)
+			throws IOException, InterruptedIOException, NoSuchFileException,
+			NotDirectoryException, AccessDeniedException;
+
+	public DirectoryStream<Path> newDirectoryStream(String path)
 			throws IOException, InterruptedIOException, NoSuchFileException,
 			NotDirectoryException, AccessDeniedException;
 
 	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException;
+
+	public EnhancedFileAttributes readAttributes(String path)
+			throws IOException, NoSuchFileException, AccessDeniedException;
 
 	/**
 	 * @param path
@@ -250,6 +295,10 @@ public interface FileSystem {
 	 *             if an I/O error occurred.
 	 */
 	public void setAttributes(Path path, FileAttribute<?>... attributes)
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException;
+
+	public void setAttributes(String path, FileAttribute<?>... attributes)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException;
 

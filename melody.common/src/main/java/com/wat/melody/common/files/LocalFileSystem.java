@@ -35,6 +35,23 @@ import com.wat.melody.common.messages.Msg;
  */
 public class LocalFileSystem implements FileSystem {
 
+	public static Path convertToLocalPath(String path) {
+		if (path == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		return Paths.get(path);
+	}
+
+	public static Path convertToLocalPath(Path path) {
+		if (path == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
+		}
+		return convertToLocalPath(path.toString());
+	}
+
 	public LocalFileSystem() {
 	}
 
@@ -52,12 +69,22 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public boolean exists(String path, LinkOption... options) {
+		return exists(convertToLocalPath(path), options);
+	}
+
+	@Override
 	public boolean isDirectory(Path path, LinkOption... options) {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
 		return Files.isDirectory(path, options);
+	}
+
+	@Override
+	public boolean isDirectory(String path, LinkOption... options) {
+		return isDirectory(convertToLocalPath(path), options);
 	}
 
 	@Override
@@ -70,12 +97,22 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public boolean isRegularFile(String path, LinkOption... options) {
+		return isRegularFile(convertToLocalPath(path), options);
+	}
+
+	@Override
 	public boolean isSymbolicLink(Path path) {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
 		}
 		return Files.isSymbolicLink(path);
+	}
+
+	@Override
+	public boolean isSymbolicLink(String path) {
+		return isSymbolicLink(convertToLocalPath(path));
 	}
 
 	@Override
@@ -99,8 +136,23 @@ public class LocalFileSystem implements FileSystem {
 			}
 		} catch (AccessDeniedException Ex) {
 			throw new WrapperAccessDeniedException(Ex.getFile());
+		} catch (FileSystemException Ex) {
+			if (Ex.getMessage() != null
+					&& Ex.getMessage().indexOf(": Not a directory") != -1) {
+				throw new WrapperNoSuchFileException(Ex.getFile());
+			} else {
+				throw Ex;
+			}
 		}
 		setAttributes(dir, attrs);
+	}
+
+	@Override
+	public void createDirectory(String dir, FileAttribute<?>... attrs)
+			throws IOException, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
+		createDirectory(convertToLocalPath(dir), attrs);
 	}
 
 	@Override
@@ -152,6 +204,13 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public void createDirectories(String dir, FileAttribute<?>... attrs)
+			throws IOException, IllegalFileAttributeException,
+			FileAlreadyExistsException, AccessDeniedException {
+		createDirectories(convertToLocalPath(dir));
+	}
+
+	@Override
 	public void createSymbolicLink(Path link, Path target,
 			FileAttribute<?>... attrs) throws IOException,
 			SymbolicLinkNotSupported, NoSuchFileException,
@@ -180,6 +239,15 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public void createSymbolicLink(String link, String target,
+			FileAttribute<?>... attrs) throws IOException,
+			SymbolicLinkNotSupported, NoSuchFileException,
+			FileAlreadyExistsException, IllegalFileAttributeException,
+			AccessDeniedException {
+		createSymbolicLink(convertToLocalPath(link), convertToLocalPath(target));
+	}
+
+	@Override
 	public Path readSymbolicLink(Path link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
 		if (link == null || link.toString().length() == 0) {
@@ -196,6 +264,12 @@ public class LocalFileSystem implements FileSystem {
 		} catch (AccessDeniedException Ex) {
 			throw new WrapperAccessDeniedException(Ex.getFile());
 		}
+	}
+
+	@Override
+	public Path readSymbolicLink(String link) throws IOException,
+			NoSuchFileException, NotLinkException, AccessDeniedException {
+		return readSymbolicLink(convertToLocalPath(link));
 	}
 
 	@Override
@@ -217,6 +291,12 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public void delete(String path) throws IOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		delete(convertToLocalPath(path));
+	}
+
+	@Override
 	public boolean deleteIfExists(Path path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
@@ -233,6 +313,12 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
+	public boolean deleteIfExists(String path) throws IOException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		return deleteIfExists(convertToLocalPath(path));
+	}
+
+	@Override
 	public void deleteDirectory(Path dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
 		try {
@@ -246,6 +332,12 @@ public class LocalFileSystem implements FileSystem {
 		} catch (NoSuchFileException ignored) {
 		}
 		deleteIfExists(dir);
+	}
+
+	@Override
+	public void deleteDirectory(String dir) throws IOException,
+			NotDirectoryException, AccessDeniedException {
+		deleteDirectory(convertToLocalPath(dir));
 	}
 
 	@Override
@@ -268,19 +360,15 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
-	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+	public DirectoryStream<Path> newDirectoryStream(String path)
+			throws IOException, NotDirectoryException, NoSuchFileException,
 			AccessDeniedException {
-		try {
-			return _readAttributes(path);
-		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
-		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
-		}
+		return newDirectoryStream(convertToLocalPath(path));
 	}
 
-	protected EnhancedFileAttributes _readAttributes(Path path)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+	@Override
+	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
 					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
@@ -299,10 +387,23 @@ public class LocalFileSystem implements FileSystem {
 		return new LocalFileAttributes(pathAttrs, target, realAttrs);
 	}
 
+	@Override
+	public EnhancedFileAttributes readAttributes(String path)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		return readAttributes(convertToLocalPath(path));
+	}
+
 	private BasicFileAttributes readAttributes0(Path path,
 			LinkOption... options) throws IOException, NoSuchFileException,
 			AccessDeniedException {
-		return Files.readAttributes(path, BasicFileAttributes.class, options);
+		try {
+			return Files.readAttributes(path, BasicFileAttributes.class,
+					options);
+		} catch (NoSuchFileException Ex) {
+			throw new WrapperNoSuchFileException(Ex.getFile());
+		} catch (AccessDeniedException Ex) {
+			throw new WrapperAccessDeniedException(Ex.getFile());
+		}
 	}
 
 	@Override
@@ -378,6 +479,13 @@ public class LocalFileSystem implements FileSystem {
 		if (full.countCauses() != 0) {
 			throw new IllegalFileAttributeException(full);
 		}
+	}
+
+	@Override
+	public void setAttributes(String path, FileAttribute<?>... attrs)
+			throws IOException, NoSuchFileException,
+			IllegalFileAttributeException, AccessDeniedException {
+		setAttributes(convertToLocalPath(path), attrs);
 	}
 
 	private void setAttribute(Path path, String attrName, Object attrValue,
