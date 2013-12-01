@@ -57,11 +57,11 @@ public class ConsolidatedException extends MelodyException {
 		return previous;
 	}
 
-	public int countCauses() {
+	public synchronized int countCauses() {
 		return getCauses().size();
 	}
 
-	public void addCause(Throwable ex) {
+	public synchronized void addCause(Throwable ex) {
 		getCauses().add(ex);
 	}
 
