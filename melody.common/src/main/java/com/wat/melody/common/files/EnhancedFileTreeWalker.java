@@ -148,23 +148,29 @@ public class EnhancedFileTreeWalker {
 				return result;
 			}
 
-			for (Path entry : stream) {
-				try {
-					result = walk(entry, depth + 1, ancestors);
+			try {
+				// DirectoryStream's iterator can throw runtime exception
+				for (Path entry : stream) {
+					try {
+						result = walk(entry, depth + 1, ancestors);
 
-					// returning null will cause NPE to be thrown
-					if (result == null || result == FileVisitResult.TERMINATE) {
-						return result;
+						// returning null will cause NPE to be thrown
+						if (result == null
+								|| result == FileVisitResult.TERMINATE) {
+							return result;
+						}
+						// skip remaining siblings in this directory
+						if (result == FileVisitResult.SKIP_SIBLINGS) {
+							break;
+						}
+					} catch (InterruptedIOException Ex) {
+						throw Ex;
+					} catch (IOException Ex) {
+						causes.addCause(Ex);
 					}
-					// skip remaining siblings in this directory
-					if (result == FileVisitResult.SKIP_SIBLINGS) {
-						break;
-					}
-				} catch (InterruptedIOException Ex) {
-					throw Ex;
-				} catch (IOException Ex) {
-					causes.addCause(Ex);
 				}
+			} catch (Throwable Ex) {
+				causes.addCause(Ex);
 			}
 
 			// invoke postVisitDirectory last
