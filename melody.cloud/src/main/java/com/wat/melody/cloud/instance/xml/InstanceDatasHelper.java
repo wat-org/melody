@@ -26,7 +26,7 @@ import com.wat.melody.xpathextensions.XPathHelper;
 public abstract class InstanceDatasHelper {
 
 	/*
-	 * TODO : create method //node[melody:instanceIdExists()]
+	 * TODO : create method melody:instanceIdExists(//instancenodepath)
 	 */
 
 	public static List<String> findInstanceId(List<Element> instanceElmts)
