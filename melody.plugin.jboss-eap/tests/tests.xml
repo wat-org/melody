@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<project name="melody_test_plugin_jboss-eap" basedir="../../melody.tests" default="all">
+
+	<path id="classpathElements">
+		<fileset dir="./common/lib/">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="JBoss_UC0">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.jboss-eap/tests/UC_0/mc.properties" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="all" depends="JBoss_UC0" />
+
+</project>

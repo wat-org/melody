@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." default="do">
+	<order name="do">
+		<echo message="§[ jboss:maskKeyStorePassword('supasalt', '69', 'changeit!') ]§" />
+	</order>
+</sequence>
