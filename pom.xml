@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
+
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>com.wat.melody</groupId>
 	<artifactId>melody.project</artifactId>
 	<version>0.0.1</version>
@@ -25,6 +25,8 @@
 		<module>melody.plugin.ssh</module>
 		<module>melody.plugin.aws</module>
 		<module>melody.plugin.libvirt</module>
+		<module>melody.plugin.jboss-eap</module>
 	</modules>
-	
+
 </project>
+
