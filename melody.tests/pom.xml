@@ -68,6 +68,11 @@
 			<artifactId>melody.plugin.libvirt</artifactId>
 			<version>0.0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.wat.melody</groupId>
+			<artifactId>melody.plugin.jboss-eap</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>

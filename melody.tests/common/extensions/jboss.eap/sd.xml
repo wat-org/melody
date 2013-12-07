@@ -37,8 +37,9 @@
                 <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
                 <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
                 <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '128m' else '§[jbossInstanceMemoryXms]§' ]§" />
-                <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '1024m' else '§[jbossInstanceMemoryXmx]§' ]§" />
+                <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '512m' else '§[jbossInstanceMemoryXmx]§' ]§" />
                 <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
+                <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
 
                 <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
                 <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
@@ -51,7 +52,24 @@
                 <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
+                <property name="jbossVaultEncDir"               value="§[§[jboss_instance]§/vault/enc-dir/@path]§" />
+                <property name="jbossVaultKeystore"             value="§[§[jboss_instance]§/vault/keystore/@path]§" />
+                <property name="jbossVaultKeystorePass"         value="§[§[jboss_instance]§/vault/keystore/@password]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[§[jboss_instance]§/vault/keystore/@alias]§" />
+                <property name="jbossVaultIterationCount"       value="§[§[jboss_instance]§/vault/secret/@iteration-count]§" />
+                <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
+                <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
+                <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
+                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit!' else '§[jbossVaultKeystorePass]§' ]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
+                <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
+                <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
+
                 <!-- upload JBoss EAP Instance directory tree -->
+                <!-- WARNING : because of the modules directory structure introduced in eap 6.1, the given TWIDDLE script is not applicable for EAP 6.0.x -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
                     <resources src-basedir="./standalone-instance-homedir/"
                                match="**"
@@ -63,16 +81,14 @@
                         <include match="bin/*.sh">
                             <posix-permissions scope="files">700</posix-permissions>
                         </include>
+                        <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
                     </resources>
                  </upload>
 
-                <!-- set the password of the jboss instance owner -->
-                <ssh description="[eap.owner.pwd:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <ssh description="[eap.owner:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <!-- set the password of the jboss instance owner -->
                     <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
-                </ssh>
-
-                <!-- assign the jboss instance owner to the jboss engine group -->
-                <ssh description="[eap.owner.group:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <!-- assign the jboss instance owner to the jboss engine group -->
                     <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
                 </ssh>
 
@@ -87,6 +103,38 @@
                                 dest-basedir="§[workingfolder.abs]§"
                                 dest-name="§[tmpfile.rel]§" />
                 </copy>
+
+                <!-- JBoss Configuration update -->
+                <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
+                <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                    <elements-selector>
+                        /*:server/*:vault
+                    </elements-selector>
+                </remove-xml-elements>
+                <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+                    <elements-selector>
+                        /*:server/*:management
+                    </elements-selector>
+                    <node-content>
+                        <![CDATA[
+                        <vault>
+                            <vault-option name="ENC_FILE_DIR" value="§[jbossVaultEncDir]§"/>
+                            <vault-option name="KEYSTORE_URL" value="§[jbossVaultKeystore]§"/>
+                            <vault-option name="KEYSTORE_PASSWORD" value="§[jbossVaultKeystoreMaskedPass]§"/>
+                            <vault-option name="KEYSTORE_ALIAS" value="§[jbossVaultKeystoreAlias]§"/>
+                            <vault-option name="SALT" value="§[jbossVaultSalt]§"/>
+                            <vault-option name="ITERATION_COUNT" value="§[jbossVaultIterationCount]§"/>
+                        </vault>
+                        ]]>
+                    </node-content>
+                </insert-xml-elements-before>
+
+                <ssh description="[eap.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                    <exec command="umask 0077" />
+                    <exec command="mkdir -p §[jbossVaultEncDir]§" />
+                    <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
+                    <exec command="keytool -list -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
+                 </ssh>
 
                 <!-- JBoss Configuration update -->
                 <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
@@ -226,7 +274,7 @@
 
                 <!-- upload customized configuration -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-                    <resources    src-basedir="§[workingfolder.abs]§"
+                    <resources  src-basedir="§[workingfolder.abs]§"
                                 match="§[tmpfile.rel]§"
                                 dest-basedir="§[jbossInstancePath]§/configuration"
                                 dest-name="standalone.xml" >
@@ -234,7 +282,7 @@
                     </resources>
                 </upload>
 
-                <!-- register administrator -->
+                <!-- register administrators -->
                 <foreach    items="§[jboss_instance]§/administrators/user"
                             item-name="admin">
                     <property name="admin.login" value="§[§[admin]§/@login]§"/>
@@ -348,6 +396,22 @@
                 <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
+                <property name="jbossVaultEncDir"               value="§[§[jboss_instance]§/vault/enc-dir/@path]§" />
+                <property name="jbossVaultKeystore"             value="§[§[jboss_instance]§/vault/keystore/@path]§" />
+                <property name="jbossVaultKeystorePass"         value="§[§[jboss_instance]§/vault/keystore/@password]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[§[jboss_instance]§/vault/keystore/@alias]§" />
+                <property name="jbossVaultIterationCount"       value="§[§[jboss_instance]§/vault/secret/@iteration-count]§" />
+                <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
+                <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
+                <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
+                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit!' else '§[jbossVaultKeystorePass]§' ]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
+                <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
+                <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
+
                 <foreach    items="§[jboss_instance]§/custom-modules/custom-module"
                             item-name="cm">
                     <property name="cm.name"          value="§[§[cm]§/@name]§" />
@@ -400,6 +464,22 @@
                 <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
                 <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
+
+                <property name="jbossVaultEncDir"               value="§[§[jboss_instance]§/vault/enc-dir/@path]§" />
+                <property name="jbossVaultKeystore"             value="§[§[jboss_instance]§/vault/keystore/@path]§" />
+                <property name="jbossVaultKeystorePass"         value="§[§[jboss_instance]§/vault/keystore/@password]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[§[jboss_instance]§/vault/keystore/@alias]§" />
+                <property name="jbossVaultIterationCount"       value="§[§[jboss_instance]§/vault/secret/@iteration-count]§" />
+                <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
+                <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
+                <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
+                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit!' else '§[jbossVaultKeystorePass]§' ]§" />
+                <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
+                <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jbossVaultSalt]§' ]§" />
+                <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
+                <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
 
                 <foreach    items="§[jboss_instance]§/applications/application"
                             item-name="application"

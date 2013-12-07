@@ -49,9 +49,11 @@ fi
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
+[ -z "${JBOSS_HEAP_DUMP_PATH}" ]      && JBOSS_HEAP_DUMP_PATH="${JBOSS_BASE_DIR}/log"
 [ -z "${LISTEN_IP}" ]                 && LISTEN_IP="127.0.0.1"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
+[ -z "${REMOTE_DEBUG_PORT}" ]         && REMOTE_DEBUG_PORT="8787"
 [ -z "${PORT_OFFSET}" ]               && PORT_OFFSET="0"
 [ -z "${SERVER_NAME}" ]               && SERVER_NAME="default-server-name"
 [ -z "${SERVICE_NAME}" ]              && SERVICE_NAME="jboss-datagrid[${SERVER_NAME}]"
@@ -64,6 +66,7 @@ JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JBOSS_BASE_DIR=\"${JBOSS_BASE_DIR}\" \
               JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
               LISTEN_IP=\"${LISTEN_IP}\" \
+              REMOTE_DEBUG_PORT=\"$((REMOTE_DEBUG_PORT+PORT_OFFSET))\" \
               RUN_CONF=\"${RUN_CONF}\" \
               \"${JBOSS_HOME}/bin/standalone.sh\" \
               -b ${LISTEN_IP} \
@@ -335,6 +338,27 @@ thread_dump() {
 }
 
 ###
+### generate a thread dump in "${JBOSS_BASE_DIR}/log/heap_dump.hprof"
+heap_dump() {
+  local jboss_pid=$(get_pid)
+  if [ "x${jboss_pid}" != "x" ]; then
+    local HEAP_DUMP_PATH="${JBOSS_HEAP_DUMP_PATH}/heap_dump.$(date "+%Y%m%d_%H%M%S_%3N").hprof"
+    echo "Generating a heap dump for ${SERVICE_NAME}. Please wait, this can take a long time..."
+    ${JBOSS_BASE_DIR}/bin/twiddle.sh invoke "com.sun.management:type=HotSpotDiagnostic" dumpHeap "${HEAP_DUMP_PATH}" true 1>/dev/null
+    local res=$?
+    if [ "$res" = "0" ]; then
+      echo "A heap dump for ${SERVICE_NAME} have been generated in '${HEAP_DUMP_PATH}'."
+      return 0
+    else
+      echo "Fail to generate a heap dump for ${SERVICE_NAME} in '${HEAP_DUMP_PATH}'."
+      return 1
+    fi
+  fi
+  echo "Cannot generate a heap dump for ${SERVICE_NAME} because it is not running."
+  return 3
+}
+
+###
 ### main
 case "$1" in
   start)
@@ -376,9 +400,14 @@ case "$1" in
       thread_dump
       exit $?
       ;;
+  hdump)
+      heap_dump
+      exit $?
+      ;;
   *)
       ## If no parameters are given, print which are available.
-      echo "Usage: $0 {start|stop|status|restart|start-async|restart-async|start-async-tail|restart-async-tail|tdump}"
+      echo "Usage: $0 {start|stop|status|restart|start-async|restart-async|start-async-tail|restart-async-tail|tdump|hdump}"
       exit 1
       ;;
 esac
+
