@@ -66,7 +66,7 @@ public class TransferableFile implements Transferable {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		if (isDirectory()) { // dir link will return true
 			if (linkShouldBeConvertedToFile()) {
-				TransferHelper.createDirectory(fs, getTransferBehaviors(),
+				TransferHelper.ensureDirectory(fs, getTransferBehaviors(),
 						getDestinationPath(), getExpectedAttributes());
 			} else if (getLinkOption() == LinkOption.SKIP_LINKS) {
 				ln_skip(fs);
@@ -94,7 +94,7 @@ public class TransferableFile implements Transferable {
 
 	protected void createSymlink(TransferableFileSystem fs) throws IOException {
 		try {
-			TransferHelper.createSymbolicLink(fs, getTransferBehaviors(),
+			TransferHelper.ensureSymbolicLink(fs, getTransferBehaviors(),
 					getDestinationPath(), getSymbolicLinkTarget(),
 					getExpectedAttributes());
 		} catch (SymbolicLinkNotSupported Ex) {

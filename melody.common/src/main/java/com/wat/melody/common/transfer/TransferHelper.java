@@ -29,32 +29,13 @@ public abstract class TransferHelper {
 
 	private static Logger log = LoggerFactory.getLogger(TransferHelper.class);
 
-	protected static void createDirectory(FileSystem destFS,
-			TransferBehaviors tb, Path dir, FileAttribute<?>... attrs)
-			throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, IllegalFileAttributeException,
-			AccessDeniedException {
-		if (ensureDestinationIsDirectory(destFS, tb, dir)) {
-			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
-			try {
-				destFS.setAttributes(dir, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
-		} else {
-			try {
-				destFS.createDirectory(dir, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
-		}
-	}
-
 	/**
+	 * <p>
+	 * Ensure the given path exists and is a directory (no follow link).
+	 * </p>
 	 * <ul>
-	 * <li>if the destination path exists and is a file : it will be deleted ;</li>
+	 * <li>if the destination path exists and is a regular file : it will be
+	 * deleted ;</li>
 	 * <li>if the destination path exists and is a link : it will be deleted ;</li>
 	 * <li>if the deletion failed : throws an exception ;</li>
 	 * </ul>
@@ -66,64 +47,106 @@ public abstract class TransferHelper {
 	 * @param path
 	 *            is the path of the directory to validate.
 	 * 
-	 * @return <tt>true</tt> if the destination path exists and is a directory
-	 *         (no follow link), meaning it is not necessary to create such
-	 *         directory, or <tt>false</tt> otherwise, meaning it is now safe to
-	 *         create such directory.
-	 * 
 	 * @throws FileAlreadyExistsException
-	 *             if the given file exists, is not a directory and tb contains
+	 *             if the given file exists, is not a directory (no follow link)
+	 *             and tb contains
 	 *             {@link TransferBehavior#FAIL_IF_DIFFRENT_TYPE}.
 	 * @throws IOException
 	 */
-	protected static boolean ensureDestinationIsDirectory(FileSystem fs,
-			TransferBehaviors tb, Path path) throws IOException,
-			FileAlreadyExistsException, AccessDeniedException {
+	protected static void ensureDirectory(FileSystem fs, TransferBehaviors tb,
+			Path path, FileAttribute<?>... attrs) throws IOException,
+			NoSuchFileException, FileAlreadyExistsException,
+			IllegalFileAttributeException, AccessDeniedException {
 		EnhancedFileAttributes destfileAttrs = null;
 		try {
 			destfileAttrs = fs.readAttributes(path);
-		} catch (NoSuchFileException Ex) {
-			return false;
+		} catch (NoSuchFileException ignore) {
 		}
-		if (destfileAttrs.isDirectory() && !destfileAttrs.isSymbolicLink()) {
-			return true;
-		}
-		if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
-			throw new WrapperFileAlreadyExistsException(path);
-		}
-		fs.deleteIfExists(path);
-		return false;
-	}
 
-	protected static void createSymbolicLink(FileSystem destFS,
-			TransferBehaviors tb, Path link, Path target,
-			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
-			FileAlreadyExistsException, AccessDeniedException {
-		if (ensureDestinationIsSymbolicLink(destFS, tb, link, target)) {
-			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_LINK_ALREADY_EXISTS);
-			try {
-				destFS.setAttributes(link, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
+		if (destfileAttrs == null) {
+			fs.createDirectory(path);
+		} else if (!destfileAttrs.isDirectory()
+				|| destfileAttrs.isSymbolicLink()) {
+			if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
+				throw new WrapperFileAlreadyExistsException(path);
 			}
+			fs.deleteIfExists(path);
+			fs.createDirectory(path);
 		} else {
-			try {
-				destFS.createSymbolicLink(link, target, attrs);
-			} catch (IllegalFileAttributeException Ex) {
-				log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
-						.getUserFriendlyStackTrace());
-			}
+			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
+		}
+
+		try {
+			fs.setAttributes(path, attrs);
+		} catch (IllegalFileAttributeException Ex) {
+			log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+					.getUserFriendlyStackTrace());
 		}
 	}
 
 	/**
+	 * <p>
+	 * Ensure the given path exists and is a directory (follow link).
+	 * </p>
+	 * <ul>
+	 * <li>if the destination path exists and is a regular file : it will be
+	 * deleted ;</li>
+	 * <li>if the deletion failed : throws an exception ;</li>
+	 * </ul>
+	 * 
+	 * @param fs
+	 *            is the file system where the operation will be performed.
+	 * @param tb
+	 *            specifies what to do if the file already exists.
+	 * @param path
+	 *            is the path of the directory to validate.
+	 * 
+	 * @throws FileAlreadyExistsException
+	 *             if the given file exists, is not a directory (follow link)
+	 *             and tb contains
+	 *             {@link TransferBehavior#FAIL_IF_DIFFRENT_TYPE}.
+	 * @throws IOException
+	 */
+	protected static void ensureDirectoryOrLInk(FileSystem fs,
+			TransferBehaviors tb, Path path, FileAttribute<?>... attrs)
+			throws IOException, AccessDeniedException {
+		EnhancedFileAttributes destfileAttrs = null;
+		try {
+			destfileAttrs = fs.readAttributes(path);
+		} catch (NoSuchFileException ignore) {
+		}
+
+		if (destfileAttrs == null) {
+			fs.createDirectory(path);
+		} else if (!destfileAttrs.isDirectory()) {
+			if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
+				throw new WrapperFileAlreadyExistsException(path);
+			}
+			fs.deleteIfExists(path);
+			fs.createDirectory(path);
+		} else {
+			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_DIR_ALREADY_EXISTS);
+		}
+
+		try {
+			fs.setAttributes(path, attrs);
+		} catch (IllegalFileAttributeException Ex) {
+			log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+					.getUserFriendlyStackTrace());
+		}
+	}
+
+	/**
+	 * <p>
+	 * Ensure the given path exists, is a link and point to the given target.
+	 * </p>
 	 * <ul>
 	 * <li>if the destination path exists and is a directory : it will be
 	 * deleted (recurs) ;</li>
-	 * <li>if the destination path exists and is a file : it will be deleted ;</li>
-	 * <li>if the destination path exists and is a link and is target is not
-	 * valid : it will be deleted ;</li>
+	 * <li>if the destination path exists and is a regular file : it will be
+	 * deleted ;</li>
+	 * <li>if the destination path exists, is a link and is target is not valid
+	 * : it will be deleted ;</li>
 	 * <li>if the deletion failed : throws an exception ;</li>
 	 * </ul>
 	 * 
@@ -146,35 +169,46 @@ public abstract class TransferHelper {
 	 *             contains {@link TransferBehavior#FAIL_IF_DIFFRENT_TYPE}.
 	 * @throws IOException
 	 */
-	public static boolean ensureDestinationIsSymbolicLink(FileSystem fs,
-			TransferBehaviors tb, Path path, Path target) throws IOException,
+	protected static void ensureSymbolicLink(FileSystem fs,
+			TransferBehaviors tb, Path link, Path target,
+			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, AccessDeniedException {
 		EnhancedFileAttributes destfileAttrs = null;
 		try {
-			destfileAttrs = fs.readAttributes(path);
+			destfileAttrs = fs.readAttributes(link);
 		} catch (NoSuchFileException Ex) {
-			return false;
 		}
-		if (destfileAttrs.isDirectory() && !destfileAttrs.isSymbolicLink()) {
+
+		if (destfileAttrs == null) {
+			fs.createSymbolicLink(link, target);
+		} else if (destfileAttrs.isDirectory()
+				&& !destfileAttrs.isSymbolicLink()) {
 			if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
-				throw new WrapperDirectoryAlreadyExistsException(path);
+				throw new WrapperDirectoryAlreadyExistsException(link);
 			}
-			fs.deleteDirectory(path);
+			fs.deleteDirectory(link);
+			fs.createSymbolicLink(link, target);
+		} else if (destfileAttrs.isSymbolicLink()) {
+			Path destTarget = destfileAttrs.getLinkTarget();
+			if (!target.toString().equals(destTarget.toString())) {
+				fs.deleteIfExists(link);
+				fs.createSymbolicLink(link, target);
+			}
 		} else {
-			if (destfileAttrs.isSymbolicLink()) {
-				Path destTarget = destfileAttrs.getLinkTarget();
-				if (target.toString().equals(destTarget.toString())) {
-					return true;
-				}
-			} else {
-				// if file
-				if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
-					throw new WrapperSymbolicLinkAlreadyExistsException(path);
-				}
+			// if file
+			if (tb.contains(TransferBehavior.FAIL_IF_DIFFRENT_TYPE)) {
+				throw new WrapperSymbolicLinkAlreadyExistsException(link);
 			}
-			fs.deleteIfExists(path);
+			fs.deleteIfExists(link);
+			fs.createSymbolicLink(link, target);
 		}
-		return false;
+
+		try {
+			fs.setAttributes(link, attrs);
+		} catch (IllegalFileAttributeException Ex) {
+			log.warn(new MelodyException(Messages.TransferMsg_SKIP_ATTR, Ex)
+					.getUserFriendlyStackTrace());
+		}
 	}
 
 	public static void transformRegularFile(TransferableFileSystem fs,
@@ -186,8 +220,7 @@ public abstract class TransferHelper {
 		 * This call is important because it will remove the destination file
 		 * (prior to copy) if it a link or a directory.
 		 */
-		if (TransferHelper.ensureDestinationIsRegularFile(fs, tb, srcAttrs,
-				dest)) {
+		if (TransferHelper.ensureIsRegularFile(fs, tb, srcAttrs, dest)) {
 			/*
 			 * should never go there cause source (template) have a different
 			 * size than dest (result).
@@ -216,8 +249,7 @@ public abstract class TransferHelper {
 			Path dest, FileAttribute<?>[] destAttrs) throws IOException,
 			FileAlreadyExistsException, InterruptedIOException,
 			AccessDeniedException {
-		if (TransferHelper.ensureDestinationIsRegularFile(fs, tb, srcAttrs,
-				dest)) {
+		if (TransferHelper.ensureIsRegularFile(fs, tb, srcAttrs, dest)) {
 			log.info(Messages.TransferMsg_DONT_TRANSFER_CAUSE_FILE_ALREADY_EXISTS);
 			try {
 				fs.setAttributes(dest, destAttrs);
@@ -264,7 +296,7 @@ public abstract class TransferHelper {
 	 *             contains {@link TransferBehavior#FAIL_IF_DIFFRENT_TYPE}.
 	 * @throws IOException
 	 */
-	public static boolean ensureDestinationIsRegularFile(FileSystem fs,
+	public static boolean ensureIsRegularFile(FileSystem fs,
 			TransferBehaviors tb, EnhancedFileAttributes srcAttrs, Path dest)
 			throws IOException, FileAlreadyExistsException,
 			AccessDeniedException {

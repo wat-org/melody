@@ -59,7 +59,7 @@ public class TransferableFake implements Transferable {
 			FileAlreadyExistsException, AccessDeniedException {
 		log.debug(Msg.bind(Messages.TransferMsg_BEGIN, this));
 		// don't set attributes
-		TransferHelper.createDirectory(fs, getTransferBehaviors(),
+		TransferHelper.ensureDirectoryOrLInk(fs, getTransferBehaviors(),
 				getDestinationPath());
 		log.info(Msg.bind(Messages.TransferMsg_END, this));
 	}
