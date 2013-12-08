@@ -64,7 +64,7 @@
             <enable-bucket-logging name="§[bn]§" destination-bucket-name="§[dbn]§" log-file-prefix="§[lpf]§"/>
             <echo message="+ Enable logging (in '§[dbn]§') for Aws S3 bucket '§[bn]§' (region '§[br]§')."/>
         </foreach>
-        <foreach    items="./environment//buckets/bucket[ not(exists(.//logging/@enabled)) or .//logging/@enabled='false' ]"
+        <foreach    items="./environment//buckets/bucket[ not(exists(.//logging/@enabled)) or .//logging/@enabled!='true' ]"
                     item-name="bucket" >
             <property name="bn" value="§[§[bucket]§/@name]§"/>
             <property name="br" value="§[§[bucket]§/@region]§"/>
@@ -77,7 +77,7 @@
 
     <order name="destroy_all_buckets" >
         <echo message="Destroying Aws S3 buckets ..."/>
-        <foreach    items="//buckets/bucket"
+        <foreach    items="./environment//buckets/bucket"
                     item-name="bucket" >
             <property name="bn" value="§[§[bucket]§/@name]§"/>
             <property name="br" value="§[§[bucket]§/@region]§"/>
