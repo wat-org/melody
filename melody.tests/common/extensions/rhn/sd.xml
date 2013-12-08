@@ -39,7 +39,7 @@
                 <property name="channel_name" value="§[§[channel]§/@name]§" />
 
                 <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
-                    <exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p §[RHN_PASSWORD]§" />
+                    <exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p &quot;§[RHN_PASSWORD]§&quot;" />
                 </ssh>
                 <echo message="+ Server '§[§[srv]§/@instance-id]§' additionnally subscribed to RHN Channel '§[channel_name]§'." />
             </foreach>

@@ -26,7 +26,7 @@ fi
 [ -z "${JBOSS_VAULT}" ]               && JBOSS_VAULT="${JBOSS_HOME}/bin/vault.sh"
 [ -z "${VAULT_ENC_DIR}" ]             && VAULT_ENC_DIR="${JBOSS_BASE_DIR}/configuration/vault/secret/"
 [ -z "${VAULT_KEYSTORE}" ]            && VAULT_KEYSTORE="${JBOSS_BASE_DIR}/configuration/vault/vault.keystore"
-[ -z "${VAULT_KEYSTORE_PASSWORD}" ]   && VAULT_KEYSTORE_PASSWORD="changeit!"
+[ -z "${VAULT_KEYSTORE_PASSWORD}" ]   && VAULT_KEYSTORE_PASSWORD="changeit"
 [ -z "${VAULT_KEYSTORE_ALIAS}" ]      && VAULT_KEYSTORE_ALIAS="vault"
 [ -z "${VAULT_ITERATION_COUNT}" ]     && VAULT_ITERATION_COUNT="69"
 [ -z "${VAULT_SALT}" ]                && VAULT_SALT="supasalt"

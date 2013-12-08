@@ -64,7 +64,7 @@
                 <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
                 <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
                 <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
-                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit!' else '§[jbossVaultKeystorePass]§' ]§" />
+                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit' else '§[jbossVaultKeystorePass]§' ]§" />
                 <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
                 <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
                 <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
@@ -421,7 +421,7 @@
             </foreach>
         </foreach>
 
-         <echo message="-- All JBoss DataGrid instances successfully deployed." />
+        <echo message="-- All JBoss DataGrid instances successfully deployed." />
     </order>
 
 
