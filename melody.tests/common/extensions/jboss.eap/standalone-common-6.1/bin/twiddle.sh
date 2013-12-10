@@ -24,7 +24,6 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
 [ -z "${PORT_OFFSET}" ]               && PORT_OFFSET="0"
 
-
 ## Compute some variables
 # compute the management address
 MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
@@ -36,17 +35,19 @@ cd "$(dirname "$(readlink -f "$0")")/.."
 CLASSPATH="bin/lib/twiddle/*"
 
 MODULES="org/jboss/remoting-jmx org/jboss/remoting3 org/jboss/logging org/jboss/xnio org/jboss/xnio/nio org/jboss/sasl org/jboss/marshalling org/jboss/marshalling/river org/jboss/as/cli org/jboss/staxmapper org/jboss/as/protocol org/jboss/dmr org/jboss/as/controller-client org/jboss/threads"
-for MODULE in $MODULES; do
-  for JAR in $(find "${JBOSS_HOME}/modules/system/layers/base/$MODULE/main/" -type f -iname "*.jar"); do
-    CLASSPATH="$CLASSPATH:$JAR"
-  done
+for MODULE in ${MODULES}; do
+  CLASSPATH="${CLASSPATH}:${JBOSS_HOME}/modules/system/layers/base/${MODULE}/main/*"
 done
 
 # export the classpath, so that the below java command will use it
 export CLASSPATH
 
+# the main class
+declare mainClass="org.jboss.console.twiddle.Twiddle"
+
+# Java Options
+JAVA_OPTS="${JAVA_OPTS} -Dprogram.name=\"twiddle[${SERVER_NAME}]\""
+
 # Execute the JVM
-exec "$JAVA" \
-  $JAVA_OPTS \
-  -Dprogram.name="twiddle[${SERVER_NAME}]" \
-  org.jboss.console.twiddle.Twiddle -s service:jmx:remoting-jmx://${MGMT_ADDR} "$@"
+exec "${JAVA}" ${JAVA_OPTS} \
+  ${mainClass} -s service:jmx:remoting-jmx://${MGMT_ADDR} "$@"

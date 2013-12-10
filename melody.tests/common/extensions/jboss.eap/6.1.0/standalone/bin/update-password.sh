@@ -1,1 +1,1 @@
-../../../standalone-common/bin/update-password.sh
+../../../standalone-common-6.1/bin/update-password.sh

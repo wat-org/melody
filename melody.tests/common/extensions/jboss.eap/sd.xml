@@ -3,6 +3,7 @@
 
 <sequence basedir="." >
 
+    <property name="eap_engine_node"            value="jboss-eap-engine"/>
     <property name="eap_instance_node"          value="jboss-eap-instance"/>
 
     <property name="instance_selector"          value="./environment//instance"/>
@@ -10,9 +11,43 @@
     <property name="instance_eligible_criteria" value="exists(§[eap_instance_node]§)"/>
     <property name="instance_match_criteria"    value="1=1"/>
 
+    <property name="eap_engine_selector"          value="/§[eap_engine_node]§"/>
+    <property name="jboss.eap.binaries.repo.path" value="MY BE DEFINED BY THE CALLER"/>
+    
     <property name="eap_instance_selector"        value="/§[eap_instance_node]§"/>
     <property name="eap_instance_exists_criteria" value="1=1"/>
     <property name="eap_instance_match_criteria"  value="1=1"/>
+
+
+
+
+    <order name="deploy_jboss_engines" >
+        <echo message="Deploying all JBoss EAP engines ..." />
+
+        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv" >
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[eap_engine_selector]§')"
+                        item-name="jboss_engine">
+                <property name="jbossEnginePath"                value="§[ §[jboss_engine]§/@path ]§" />
+                <property name="jbossEngineVersion"             value="§[ §[jboss_engine]§/@version ]§" />
+                <property name="jbossEngineOwner"               value="§[ §[jboss_engine]§/owner/@login ]§" />
+                <property name="jbossEngineOwnerPwd"            value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@password') ]§" />
+                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
+
+                <call orders="deploy_jboss_engine-§[jbossEngineVersion]§" sequence-descriptor="./§[jbossEngineVersion]§/sd.xml"/>
+
+                <echo message="+ JBoss EAP engine '§[jbossEngineVersion]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+        </foreach>
+
+        <echo message="-- All JBoss EAP engines successfully deployed." />
+    </order>
+
+
+
 
     <order name="deploy_jboss_instances" >
         <echo message="Deploying all JBoss EAP instances ..." />

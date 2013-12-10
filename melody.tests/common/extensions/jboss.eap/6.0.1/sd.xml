@@ -3,6 +3,32 @@
 
 <sequence basedir="." >
 
+    <order name="deploy_jboss_engine-6.0.1" >
+        <!-- upload JBoss EAP engine archive -->
+        <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-§[jbossEngineVersion]§.zip"
+                        dest-basedir="/tmp" >
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+         </upload>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+            <!-- set the password of the jboss engine owner -->
+            <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
+            <exec command="umask 0022" />
+            <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <exec command="unzip -n /tmp/jboss-eap-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
+            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+    </order>
+    
+    
+    
     <order name="deploy_jboss_instance-6.0.1" >
         <!-- upload JBoss EAP Instance directory tree -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
@@ -19,7 +45,7 @@
                 </include>
                 <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
-         </upload>
+        </upload>
 
         <ssh description="[eap.owner:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss instance owner -->
