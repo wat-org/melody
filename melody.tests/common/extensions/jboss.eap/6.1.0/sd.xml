@@ -253,7 +253,7 @@
 
             <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
                  Don't know why. So we'ere doing a global synchronization -->
-            <synchronize scope="CALL" lock-id="eap.add.user">
+            <synchronize scope="GLOBAL" lock-id="eap.add.user">
                 <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
                 </ssh>
