@@ -279,79 +279,23 @@
 
         <!-- JBoss Configuration update -->
         <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Localize DataGrid" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
             </elements-selector>
-        </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
-            <!--  'transport' element must be the first child of the 'stack' element. That's why we insert before the first child -->
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*[position()=1]
-            </elements-selector>
-            <node-content>
-                <![CDATA[
-                <transport type="UDP" socket-binding="jgroups-udp" site="§[instanceSite]§" rack="§[instanceRack]§" machine="§[instanceName]§">
-                    <property name="timer_type">new</property>
-                    <property name="timer.min_threads">4</property>
-                    <property name="timer.max_threads">4</property>
-                    <property name="timer.keep_alive_time">5000000000</property>
-                    <property name="timer.queue_max_size">500</property>
-                    <property name="thread_pool.enabled">true</property>
-                    <property name="thread_pool.min_threads">200</property>
-                    <property name="thread_pool.max_threads">200</property>
-                    <property name="thread_pool.keep_alive_time">5000000000</property>
-                    <property name="thread_pool.queue_enabled">true</property>
-                    <property name="thread_pool.queue_max_size">100000</property>
-                    <property name="thread_pool.rejection_policy">discard</property>
-                    <property name="oob_thread_pool.enabled">true</property>
-                    <property name="oob_thread_pool.min_threads">200</property>
-                    <property name="oob_thread_pool.max_threads">200</property>
-                    <property name="oob_thread_pool.keep_alive_time">1000000000</property>
-                    <property name="oob_thread_pool.queue_enabled">true</property>
-                    <property name="oob_thread_pool.queue_max_size">100000</property>
-                    <property name="oob_thread_pool.rejection_policy">discard</property>
-                </transport>
-                ]]>
-            </node-content>
-        </insert-xml-elements-before>
+            <attribute name="site" value="§[instanceSite]§"/>
+            <attribute name="rack" value="§[instanceRack]§"/>
+            <attribute name="machine" value="§[instanceName]§"/>
+        </set-xml-attributes>
 
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='tcp']/*:transport
             </elements-selector>
-        </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
-            <!--  'transport' element must be the first child of the 'stack' element. That's why we insert before the first child -->
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='tcp']/*[position()=1]
-            </elements-selector>
-            <node-content>
-                <![CDATA[
-                <transport type="TCP" socket-binding="jgroups-tcp" site="§[instanceSite]§" rack="§[instanceRack]§" machine="§[instanceName]§">
-                    <property name="timer_type">new</property>
-                    <property name="timer.min_threads">4</property>
-                    <property name="timer.max_threads">4</property>
-                    <property name="timer.keep_alive_time">5000000000</property>
-                    <property name="timer.queue_max_size">500</property>
-                    <property name="thread_pool.enabled">true</property>
-                    <property name="thread_pool.min_threads">200</property>
-                    <property name="thread_pool.max_threads">200</property>
-                    <property name="thread_pool.keep_alive_time">5000000000</property>
-                    <property name="thread_pool.queue_enabled">true</property>
-                    <property name="thread_pool.queue_max_size">100000</property>
-                    <property name="thread_pool.rejection_policy">discard</property>
-                    <property name="oob_thread_pool.enabled">true</property>
-                    <property name="oob_thread_pool.min_threads">200</property>
-                    <property name="oob_thread_pool.max_threads">200</property>
-                    <property name="oob_thread_pool.keep_alive_time">1000000000</property>
-                    <property name="oob_thread_pool.queue_enabled">true</property>
-                    <property name="oob_thread_pool.queue_max_size">100000</property>
-                    <property name="oob_thread_pool.rejection_policy">discard</property>
-                </transport>
-                ]]>
-            </node-content>
-        </insert-xml-elements-before>
+            <attribute name="site" value="§[instanceSite]§"/>
+            <attribute name="rack" value="§[instanceRack]§"/>
+            <attribute name="machine" value="§[instanceName]§"/>
+        </set-xml-attributes>
 
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
