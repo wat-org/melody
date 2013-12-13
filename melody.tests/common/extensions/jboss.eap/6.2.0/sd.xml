@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <order name="deploy_jboss_engine-6.2.0" >
+        <!-- upload JBoss EAP engine archive -->
+        <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-§[jbossEngineVersion]§.zip"
+                        dest-basedir="/tmp" >
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+         </upload>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+            <!-- set the password of the jboss engine owner -->
+            <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
+            <exec command="umask 0022" />
+            <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <exec command="unzip -n /tmp/jboss-eap-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
+            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+    </order>
+    
+    
+    
+    <order name="deploy_jboss_instance-6.2.0" >
+        <!-- upload JBoss EAP Instance directory tree -->
+        <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <resources  src-basedir="./standalone"
+                        match="**"
+                        dest-basedir="§[jbossInstancePath]§/"
+                        link-option="COPY_LINKS" >
+                <posix-permissions scope="directories">700</posix-permissions>
+                <posix-permissions scope="files">600</posix-permissions>
+                <include match="configuration/standalone.conf" template="y" />
+                <include match="configuration/jboss-eapd.conf" template="y" />
+                <include match="bin/*.sh">
+                    <posix-permissions scope="files">700</posix-permissions>
+                </include>
+                <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
+            </resources>
+        </upload>
+
+        <ssh description="[eap.owner:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+            <!-- set the password of the jboss instance owner -->
+            <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
+            <!-- assign the jboss instance owner to the jboss engine group -->
+            <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
+        </ssh>
+
+        <!-- JBoss Configuration update -->
+        <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+        <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+        <copy>
+            <resources  src-basedir="./standalone/configuration"
+                        match="standalone.xml"
+                        dest-basedir="§[workingfolder.abs]§"
+                        dest-name="§[tmpfile.rel]§"
+                        link-option="COPY_LINKS" />
+        </copy>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <vault>
+                    <vault-option name="ENC_FILE_DIR" value="§[jbossVaultEncDir]§"/>
+                    <vault-option name="KEYSTORE_URL" value="§[jbossVaultKeystore]§"/>
+                    <vault-option name="KEYSTORE_PASSWORD" value="§[jbossVaultKeystoreMaskedPass]§"/>
+                    <vault-option name="KEYSTORE_ALIAS" value="§[jbossVaultKeystoreAlias]§"/>
+                    <vault-option name="SALT" value="§[jbossVaultSalt]§"/>
+                    <vault-option name="ITERATION_COUNT" value="§[jbossVaultIterationCount]§"/>
+                </vault>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <ssh description="[eap.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <exec command="umask 0077" />
+            <exec command="mkdir -p §[jbossVaultEncDir]§" />
+            <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
+            <!--
+                BUG in 6.2.0 with the vault: the keystore is corrupted as sson as the jboss server starts.
+                The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."  
+            -->
+            <exec command="[ -f &quot;§[jbossVaultKeystore]§&quot; ] || keytool -list -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
+         </ssh>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*/*:formatter/*:pattern-formatter
+            </elements-selector>
+            <attribute name="pattern" value="%d{yyyy-MM-dd} %d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </set-xml-attributes>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:console-handler[@name='CONSOLE']/*:level
+            </elements-selector>
+            <attribute name="name" value="ERROR"/>
+        </set-xml-attributes>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
+            </elements-selector>
+        </remove-xml-elements>
+
+        <!-- JBoss Configuration update -->
+        <property name="jbossInstanceMgmtStorePath"     value="§[§[jboss_instance]§/keystore[exists(key[matches(@usage,'management')])]/@path]§" />
+        <property name="jbossInstanceMgmtStorePwd"      value="§[§[jboss_instance]§/keystore[exists(key[matches(@usage,'management')])]/@password]§" />
+        <property name="jbossInstanceMgmtKeyAlias"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@alias]§" />
+        <property name="jbossInstanceMgmtKeyPwd"        value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@password]§" />
+        <property name="jbossInstanceMgmtKeyDName"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@dname]§"/>
+        <property name="jbossInstanceMgmtKeyDName"      value="§[ if (string-length('§[jbossInstanceMgmtKeyDName]§')=0) then 'CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR' else '§[jbossInstanceMgmtKeyDName]§' ]§" />
+
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure http management console (establish SSL server identity)" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:security-realms/*:security-realm[@*:name='HttpsManagementRealm']
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:security-realms
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <security-realm name="HttpsManagementRealm">
+                    <server-identities>
+                        <ssl>
+                            <keystore relative-to="jboss.server.config.dir"
+                                      path="§[jbossInstanceMgmtStorePath]§"
+                                      keystore-password="§[jbossInstanceMgmtStorePwd]§"
+                                      alias="§[jbossInstanceMgmtKeyAlias]§"
+                                      key-password="§[jbossInstanceMgmtKeyPwd]§" />
+                        </ssl>
+                    </server-identities>
+                    <authentication>
+                       <local default-user="$local"/>
+                       <properties path="https-mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                    </authentication>
+                    <authorization map-groups-to-roles="false">
+                       <properties path="https-mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                    </authorization>
+                </security-realm>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <ssh description="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <exec command="cd §[jbossInstancePath]§/configuration" />
+            <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
+            <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
+         </ssh>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:management-interfaces/*:http-interface
+            </elements-selector>
+            <attribute name="security-realm" value="HttpsManagementRealm"/>
+        </set-xml-attributes>
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+            </elements-selector>
+            <attribute name="http"/>
+        </remove-xml-attributes>
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
+            </elements-selector>
+            <attribute name="http"/>
+        </remove-xml-attributes>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+            </elements-selector>
+            <attribute name="https" value="management-https"/>
+        </set-xml-attributes>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Enable local authentication for the CLI" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication/*:local
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <local default-user="$local"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Enable access log" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:virtual-server/*:access-log
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:virtual-server
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <access-log pattern="%h %l %u %t &quot;%r&quot; %s %b %{User-Agent}i %{JSESSIONID}c" resolve-hosts="false" prefix="access_log." rotate="true">
+                    <directory path="." relative-to="jboss.server.log.dir" />
+                </access-log>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- upload customized configuration -->
+        <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <resources  src-basedir="§[workingfolder.abs]§"
+                        match="§[tmpfile.rel]§"
+                        dest-basedir="§[jbossInstancePath]§/configuration"
+                        dest-name="standalone.xml" >
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- register administrators -->
+        <foreach    items="§[jboss_instance]§/administrators/user"
+                    item-name="admin">
+            <property name="admin.login" value="§[§[admin]§/@login]§"/>
+            <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
+
+            <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
+                 Don't know why. So we'ere doing a global synchronization -->
+            <synchronize scope="GLOBAL" lock-id="eap.add.user">
+                <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                	<!-- TODO : should use RBAC, and manage group/roles mapping -->
+                    <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§" />
+                    <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§ --user-properties https-mgmt-users.properties --realm HttpsManagementRealm" />
+                </ssh>
+            </synchronize>
+
+        </foreach>
+    </order>
+
+</sequence>

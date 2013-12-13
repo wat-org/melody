@@ -1,0 +1,1 @@
+../../standalone-common-6.1/bin/update-password.sh
