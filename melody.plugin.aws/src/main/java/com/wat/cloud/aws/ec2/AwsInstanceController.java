@@ -98,6 +98,11 @@ public class AwsInstanceController extends DefaultInstanceController implements
 			throw new OperationException(Msg.bind(Messages.StartEx_TIMEOUT,
 					getInstanceId(), startTimeout));
 		}
+		/*
+		 * After a successfull start, must retresh aws instance object, so that
+		 * ips are up to date
+		 */
+		refreshInternalDatas();
 	}
 
 	@Override
