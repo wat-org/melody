@@ -7,7 +7,7 @@
 	This configuration provides :
 		- log of ERROR messages from all packages into the log file and the console
 		- log of ALL messages from package 'com.wat.melody' into the log file and the console
-		- log of ALL messages from package 'com.amazonaws' and 'org.apache.http' into the a specific log file
+		- log of ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
 		- log threshold of the console is driven by Command Line Options -v and -q
 	-->
 
@@ -44,7 +44,7 @@
 	</appender>
 
 	<!--
-		log ALL messages from package 'com.amazonaws' and 'org.apache.http' into the a specific log file
+		log ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
 	-->
 	<logger name="com.wat.cloud.aws" additivity="false" >
 		<level value="ALL" />
