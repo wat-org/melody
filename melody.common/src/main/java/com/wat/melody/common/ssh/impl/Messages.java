@@ -49,9 +49,8 @@ public class Messages extends NLS {
 	public static String SshMgmtCnxEx_USERADD_FAIL;
 	public static String SshMgmtCnxEx_UMASK_FAIL;
 	public static String SshMgmtCnxEx_MKDIR_FAIL;
-	public static String SshMgmtCnxEx_CHOWN_SSH_FAIL;
 	public static String SshMgmtCnxEx_TOUCH_AUTH_FAIL;
-	public static String SshMgmtCnxEx_CHOWN_AUTH_FAIL;
+	public static String SshMgmtCnxEx_CHOWN_FAIL;
 	public static String SshMgmtCnxEx_ADD_KEY_FAIL;
 	public static String SshMgmtCnxEx_SELIUNX_FAIL;
 	public static String SshMgmtCnxEx_DEPLOY_FAIL;

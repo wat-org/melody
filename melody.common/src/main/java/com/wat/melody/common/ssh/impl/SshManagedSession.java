@@ -309,18 +309,15 @@ public class SshManagedSession implements ISshSession {
 		case 102:
 			msg = Msg.bind(Messages.SshMgmtCnxEx_MKDIR_FAIL, login);
 		case 103:
-			msg = Msg.bind(Messages.SshMgmtCnxEx_CHOWN_SSH_FAIL, login);
-			break;
-		case 104:
 			msg = Msg.bind(Messages.SshMgmtCnxEx_TOUCH_AUTH_FAIL, login);
 			break;
-		case 105:
-			msg = Msg.bind(Messages.SshMgmtCnxEx_CHOWN_AUTH_FAIL, login);
+		case 104:
+			msg = Msg.bind(Messages.SshMgmtCnxEx_CHOWN_FAIL, login);
 			break;
-		case 106:
+		case 105:
 			msg = Msg.bind(Messages.SshMgmtCnxEx_ADD_KEY_FAIL, login, k);
 			break;
-		case 107:
+		case 106:
 			msg = Msg.bind(Messages.SshMgmtCnxEx_SELIUNX_FAIL, login);
 		default:
 			msg = Msg.bind(Messages.SshMgmtCnxEx_DEPLOY_FAIL, login, k);
@@ -336,13 +333,11 @@ public class SshManagedSession implements ISshSession {
 	private static final String DEPLOY_KEY_COMMAND = "id {{LOGIN}} 1>/dev/null 2>&1 || useradd {{LOGIN}} 1>/dev/null || exit 100 ;"
 			+ "umask 077 || exit 101 ;"
 			+ "mkdir -p ~{{LOGIN}}/.ssh || exit 102 ;"
-			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh || exit 103 ;"
-			+ "touch ~{{LOGIN}}/.ssh/authorized_keys || exit 104 ;"
-			+ "chown {{LOGIN}}:{{LOGIN}} ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
-			+ "grep \\\"${KEY}\\\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \\\"${KEY} {{LOGIN}}@melody\\\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 106 ;"
+			+ "touch ~{{LOGIN}}/.ssh/authorized_keys || exit 103 ;"
+			+ "chown {{LOGIN}}: -R ~{{LOGIN}} || exit 104 ;"
+			+ "grep \\\"${KEY}\\\" ~{{LOGIN}}/.ssh/authorized_keys 1>/dev/null || echo \\\"${KEY} {{LOGIN}}@melody\\\" >> ~{{LOGIN}}/.ssh/authorized_keys || exit 105 ;"
 			+ "test -x /sbin/restorecon || exit 0 ;"
-			+ "/sbin/restorecon ~{{LOGIN}}/.ssh/authorized_keys ;" // selinux_support
-			+ "/sbin/restorecon ~{{LOGIN}}/.ssh/ ;" // selinux_support
+			+ "/sbin/restorecon -R ~{{LOGIN}} || exit 106 ;" // selinux_support
 			+ "exit 0";
 
 }
