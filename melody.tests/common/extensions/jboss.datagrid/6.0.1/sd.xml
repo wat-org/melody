@@ -13,7 +13,7 @@
             </resources>
          </upload>
 
-        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
             <exec command="umask 0022" />
@@ -21,7 +21,7 @@
             <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§" />
         </ssh>
 
-        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
             <exec command="unzip -n /tmp/jboss-datagrid-server-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
             <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-datagrid-§[jbossEngineVersion]§" />
         </ssh>
@@ -84,13 +84,13 @@
         </copy>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
             <elements-selector>
                 /*:server/*:vault
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
             <elements-selector>
                 /*:server/*:management
             </elements-selector>
@@ -108,7 +108,7 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <ssh description="[eap.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec command="umask 0077" />
             <exec command="mkdir -p §[jbossVaultEncDir]§" />
             <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
