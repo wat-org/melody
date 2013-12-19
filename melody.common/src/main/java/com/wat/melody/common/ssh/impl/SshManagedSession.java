@@ -238,6 +238,9 @@ public class SshManagedSession implements ISshSession {
 				getUserDatas().getLogin()));
 		OutputStream errStream = new ByteArrayOutputStream();
 		int res = -1;
+		/*
+		 * TODO : should be protected against concurrent execution.
+		 */
 		try {
 			res = execRemoteCommand(dkc, true, errStream, errStream);
 		} catch (InterruptedException Ex) {

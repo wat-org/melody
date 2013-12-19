@@ -234,10 +234,6 @@ public class CifsFileSystem implements FileSystem {
 		SmbFile smbfile = createSmbFile(dir);
 		try {
 			smbfile.mkdir();
-			/*
-			 * TODO : should raise NoSuchFileException if the parent element
-			 * exists but is not a directory
-			 */
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
 			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
