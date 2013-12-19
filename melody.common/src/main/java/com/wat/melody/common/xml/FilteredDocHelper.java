@@ -342,6 +342,18 @@ public abstract class FilteredDocHelper {
 		Node imported = DUNIDDocHelper.getElement(dest,
 				DUNIDDocHelper.getDUNID(toImport));
 		if (imported != null) {
+			/*
+			 * Node can be already inserted, but without its child... so, we
+			 * have to insert childs
+			 */
+			if (importChilds == true) {
+				for (int i = 0; i < toImport.getChildNodes().getLength(); i++) {
+					Node child = toImport.getChildNodes().item(i);
+					if (child.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+					insertElement(dest, (Element) child, true);
+				}
+			}
 			return (Element) imported;
 		}
 
