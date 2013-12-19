@@ -675,9 +675,11 @@ public abstract class LibVirtCloud {
 			log.trace("Stopping Domain '" + sInstanceId + "' ...");
 			d.shutdown();
 			/*
-			 * TODO : Windows VM doesn't stop on the first call to shutdown.
-			 * Need to call stop twice ?
+			 * Sometimes, Windows VM doesn't stop on the first call to shutdown.
+			 * Need to call shutdown twice.
 			 */
+			Thread.sleep(1000);
+			d.shutdown();
 			// Wait for the Domain to stop
 			if (!waitUntilInstanceStatusBecomes(d.getConnect(), sInstanceId,
 					InstanceState.STOPPED, stopTimeout, 5000)) {
