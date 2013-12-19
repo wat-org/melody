@@ -3,7 +3,9 @@ package com.wat.melody.common.ssh.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,6 +226,8 @@ public class SshManagedSession implements ISshSession {
 		}
 	}
 
+	private static Map<String, Object> _protectionTable = new HashMap<String, Object>();
+
 	/**
 	 * @throws SshException
 	 * @throws InterruptedException
@@ -238,15 +242,35 @@ public class SshManagedSession implements ISshSession {
 				getUserDatas().getLogin()));
 		OutputStream errStream = new ByteArrayOutputStream();
 		int res = -1;
+
 		/*
-		 * TODO : should be protected against concurrent execution.
+		 * key deployment is protected against concurrent execution, on the same
+		 * remote machine, with the same user.
 		 */
+
+		String protectionID = getConnectionDatas().getHost().getAddress() + "-"
+				+ getUserDatas().getLogin();
+		Object protection = null;
+		synchronized (_protectionTable) {
+			protection = _protectionTable.get(protectionID);
+			if (protection == null) {
+				_protectionTable.put(protectionID, protection = new Object());
+			}
+		}
+
 		try {
-			res = execRemoteCommand(dkc, true, errStream, errStream);
+			synchronized (protection) {
+				res = execRemoteCommand(dkc, true, errStream, errStream);
+			}
 		} catch (InterruptedException Ex) {
 			throw new WrapperInterruptedException(
 					Messages.SshMgmtCnxEx_DEPLOY_INTERRUPTED, Ex);
 		}
+
+		synchronized (_protectionTable) {
+			_protectionTable.remove(protectionID);
+		}
+
 		analyzeDeployKeyCommandResult(res, k, errStream.toString());
 	}
 
@@ -285,6 +309,7 @@ public class SshManagedSession implements ISshSession {
 	private void analyzeDeployKeyCommandResult(int res, String k, String errmsg)
 			throws SshSessionException {
 		String login = getUserDatas().getLogin();
+		String mgmtLogin = getManagementUserDatas().getLogin();
 		if (res == 0) {
 			log.trace(Msg.bind(Messages.SshMgmtCnxMsg_DEPLOYED, login));
 			return;
@@ -292,10 +317,10 @@ public class SshManagedSession implements ISshSession {
 		String msg = null;
 		switch (res) {
 		case 96:
-			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_AUTH_SUDO, mgmtLogin);
 			break;
 		case 97:
-			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_SUDO, login);
+			msg = Msg.bind(Messages.SshMgmtCnxEx_NO_SUDO, mgmtLogin);
 			break;
 		case 98:
 			throw new RuntimeException("BUG during the construction of CMD."
