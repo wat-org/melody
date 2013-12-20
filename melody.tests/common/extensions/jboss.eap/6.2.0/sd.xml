@@ -11,6 +11,12 @@
                         dest-basedir="/tmp" >
                 <posix-permissions scope="files">644</posix-permissions>
             </resources>
+            <!-- specific to native components -->
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-native-§[jbossEngineVersion]§-*.zip"
+                        dest-basedir="/tmp" >
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
          </upload>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
@@ -22,13 +28,24 @@
         </ssh>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- specific to native components -->
+            <exec command="unzip -n /tmp/jboss-eap-native-§[jbossEngineVersion]§-*.zip -d /tmp/§[jbossEngineVersion]§" />
+            <!-- for jboss.web (e.g. tomcat) -->
+            <exec command="cd /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/org/jboss/as/web/main/lib/linux-x86_64/" />
+            <exec command="[ -h libz.so ] || ln -vs /lib64/libz.so.1 libz.so" />
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/jboss/as/web/main/module.xml"/>
+            <!-- for hornetq -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/hornetq/main/module.xml"/>
+        </ssh>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
             <exec command="unzip -n /tmp/jboss-eap-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
             <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-eap-§[jbossEngineVersion]§" />
         </ssh>
     </order>
-    
-    
-    
+
+
+
     <order name="deploy_jboss_instance-6.2.0" >
         <!-- upload JBoss EAP Instance directory tree -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
@@ -98,7 +115,7 @@
             <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
             <!--
                 BUG in 6.2.0 with the vault: the keystore is corrupted as sson as the jboss server starts.
-                The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."  
+                The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."
             -->
             <exec command="[ -f &quot;§[jbossVaultKeystore]§&quot; ] || keytool -list -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
          </ssh>
@@ -241,6 +258,48 @@
                 ]]>
             </node-content>
         </append-xml-elements>
+        
+        <!-- specific to native components -->
+        <property name="jbossInstanceUsesNative"        value="§[§[jboss_instance]§/jboss-web/@uses-native-components]§"/>
+        <property name="jbossInstanceUsesNative"        value="§[ if (string-length('§[jbossInstanceUsesNative]§')=0) then 'false' else '§[jbossInstanceUsesNative]§' ]§" />
+
+        <!--
+            when the web subsystem's native components are enabled, 'org.apache.catalina.core' will display the following message during startup sequence :
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: apr-1
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: z
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: crypto
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: ssl
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: tcnative-1
+                DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001068: Loaded native library 1.1.27 with APR capabilities: IPv6 [true], sendfile [true], random [true]
+                DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001136: Starting service jboss.web
+                INFO  [org.apache.coyote.http11] (MSC service thread 1-1) JBWEB003000: Coyote HTTP/1.1 starting on: http-/192.168.122.4:8480
+         -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.apache.catalina.core']
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <logger category="org.apache.catalina.core">
+                    <level name="DEBUG"/>
+                </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Uses native components: §[jbossInstanceUsesNative]§" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
+            </elements-selector>
+            <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
+        </set-xml-attributes>
 
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
@@ -262,7 +321,7 @@
                  Don't know why. So we'ere doing a global synchronization -->
             <synchronize scope="GLOBAL" lock-id="eap.add.user">
                 <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
-                	<!-- TODO : should use RBAC, and manage group/roles mapping -->
+                    <!-- TODO : should use RBAC, and manage group/roles mapping -->
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§" />
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§ --user-properties https-mgmt-users.properties --realm HttpsManagementRealm" />
                 </ssh>

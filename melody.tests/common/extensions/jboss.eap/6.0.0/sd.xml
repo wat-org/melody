@@ -11,6 +11,12 @@
                         dest-basedir="/tmp" >
                 <posix-permissions scope="files">644</posix-permissions>
             </resources>
+            <!-- specific to native components -->
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-native-§[jbossEngineVersion]§-*.zip"
+                        dest-basedir="/tmp" >
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
          </upload>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
@@ -19,6 +25,17 @@
             <exec command="umask 0022" />
             <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§" />
             <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- specific to native components -->
+            <exec command="unzip -n /tmp/jboss-eap-native-§[jbossEngineVersion]§-*.zip -d /tmp/§[jbossEngineVersion]§" />
+            <!-- for jboss.web (e.g. tomcat) -->
+            <exec command="cd /tmp/§[jbossEngineVersion]§/*/modules/org/jboss/as/web/main/lib/linux-x86_64/" />
+            <exec command="[ -h libz.so ] || ln -vs /lib64/libz.so.1 libz.so" />
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml"/>
+            <!-- for hornetq -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml"/>
         </ssh>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
@@ -234,6 +251,49 @@
                 ]]>
             </node-content>
         </append-xml-elements>
+        
+        <!-- specific to native components -->
+        <property name="jbossInstanceUsesNative"        value="§[§[jboss_instance]§/jboss-web/@uses-native-components]§"/>
+        <property name="jbossInstanceUsesNative"        value="§[ if (string-length('§[jbossInstanceUsesNative]§')=0) then 'false' else '§[jbossInstanceUsesNative]§' ]§" />
+
+        <!--
+             when the web subsystem's native components are enabled, 'org.apache.catalina.core' will display the following message during startup sequence :
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded: apr-1
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded: z
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded: crypto
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded: ssl
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded: tcnative-1
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) Loaded Apache Tomcat Native library 1.1.24.
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-1) APR capabilities: IPv6 [true], sendfile [true], random [true].
+                DEBUG [org.apache.catalina.core.StandardService] (MSC service thread 1-1) Starting service jboss.web
+                INFO  [org.apache.coyote.http11.Http11AprProtocol] (MSC service thread 1-1) Starting Coyote HTTP/1.1 on http-/192.168.122.2:8080
+         -->
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.apache.catalina.core']
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <logger category="org.apache.catalina.core">
+                    <level name="DEBUG"/>
+                </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Uses native components: §[jbossInstanceUsesNative]§" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
+            </elements-selector>
+            <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
+        </set-xml-attributes>
 
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
