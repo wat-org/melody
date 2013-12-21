@@ -467,8 +467,8 @@ public abstract class LibVirtCloud {
 		Thread.sleep(sleepfirst);
 		InstanceState is = null;
 		while ((is = getInstanceState(cnx, sInstanceId)) != state) {
-			log.debug("Domain for Instance '" + sInstanceId + "' to become '"
-					+ state + "'. Currently '" + is + "'.");
+			log.debug("Waiting for Domain for Instance '" + sInstanceId
+					+ "' to become '" + state + "'. Currently '" + is + "'.");
 			if (timeout == 0) {
 				Thread.sleep(WAIT_STEP);
 				continue;
