@@ -367,7 +367,7 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
-	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+	public LocalFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		if (path == null || path.toString().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
@@ -388,8 +388,8 @@ public class LocalFileSystem implements FileSystem {
 	}
 
 	@Override
-	public EnhancedFileAttributes readAttributes(String path)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+	public LocalFileAttributes readAttributes(String path) throws IOException,
+			NoSuchFileException, AccessDeniedException {
 		return readAttributes(convertToLocalPath(path));
 	}
 
