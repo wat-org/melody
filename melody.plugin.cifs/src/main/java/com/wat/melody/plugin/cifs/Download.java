@@ -18,7 +18,7 @@ public class Download extends Transfer {
 	/**
 	 * Task's name
 	 */
-	public static final String UPLOAD = "download";
+	public static final String DOWNLOAD = "download";
 
 	public Download() {
 		super();
