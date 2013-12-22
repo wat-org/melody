@@ -21,6 +21,7 @@ public class AttributePosixPermissions extends
 	private PosixPermissions _posixPermissions = null;
 
 	public AttributePosixPermissions() {
+		super();
 	}
 
 	@Override

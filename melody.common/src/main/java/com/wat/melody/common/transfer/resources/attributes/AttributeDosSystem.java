@@ -10,6 +10,7 @@ public class AttributeDosSystem extends AttributeDosBase {
 	public static final String NAME = "dos:system";
 
 	public AttributeDosSystem() {
+		super();
 	}
 
 	@Override

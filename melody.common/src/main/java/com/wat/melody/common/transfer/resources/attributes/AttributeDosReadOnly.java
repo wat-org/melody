@@ -10,6 +10,7 @@ public class AttributeDosReadOnly extends AttributeDosBase {
 	public static final String NAME = "dos:readonly";
 
 	public AttributeDosReadOnly() {
+		super();
 	}
 
 	@Override

@@ -10,6 +10,7 @@ public class AttributeDosHidden extends AttributeDosBase {
 	public static final String NAME = "dos:hidden";
 
 	public AttributeDosHidden() {
+		super();
 	}
 
 	@Override

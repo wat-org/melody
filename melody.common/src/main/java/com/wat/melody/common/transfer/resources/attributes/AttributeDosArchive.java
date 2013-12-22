@@ -10,6 +10,7 @@ public class AttributeDosArchive extends AttributeDosBase {
 	public static final String NAME = "dos:archive";
 
 	public AttributeDosArchive() {
+		super();
 	}
 
 	@Override

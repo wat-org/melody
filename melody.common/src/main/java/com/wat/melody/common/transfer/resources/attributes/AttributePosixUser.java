@@ -19,6 +19,7 @@ public class AttributePosixUser extends AttributeBase<UserPrincipal> {
 	private PosixUser _posixUser = null;
 
 	public AttributePosixUser() {
+		super();
 	}
 
 	@Override

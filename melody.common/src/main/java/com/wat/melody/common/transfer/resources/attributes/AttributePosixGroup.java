@@ -19,6 +19,7 @@ public class AttributePosixGroup extends AttributeBase<GroupPrincipal> {
 	private PosixGroup _posixGroup = null;
 
 	public AttributePosixGroup() {
+		super();
 	}
 
 	@Override
