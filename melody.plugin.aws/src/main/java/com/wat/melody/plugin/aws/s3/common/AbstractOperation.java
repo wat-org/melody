@@ -15,7 +15,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  */
 public abstract class AbstractOperation implements ITask {
 
-	public static final String BUCKET_NAME_ATTR = "name";
+	public static final String BUCKET_NAME_ATTR = "bucket-name";
 
 	private AmazonS3 _s3Connection = null;
 	private BucketName _bucketName = null;
@@ -31,6 +31,7 @@ public abstract class AbstractOperation implements ITask {
 
 	@Override
 	public void validate() throws AwsPlugInS3Exception {
+		setS3Connection(getAwsPlugInConfiguration().getAwsS3Connection());
 	}
 
 	protected AmazonS3 getS3Connection() {
