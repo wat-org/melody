@@ -111,8 +111,8 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 	private void download(Path source, Path destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		download(source.toString(),
-				CifsFileSystem.convertToUnixPath(destination));
+		download(CifsFileSystem.convertToUnixPath(source),
+				destination.toString());
 	}
 
 	private void download(String source, String destination)
