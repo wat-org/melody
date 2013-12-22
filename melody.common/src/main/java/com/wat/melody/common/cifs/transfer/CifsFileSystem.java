@@ -30,7 +30,6 @@ import com.wat.melody.common.cifs.transfer.exception.WrapperNoSuchShareException
 import com.wat.melody.common.cifs.transfer.exception.WrapperSmbException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
@@ -117,7 +116,8 @@ public class CifsFileSystem implements FileSystem {
 			NtlmPasswordAuthentication smbCredential, LinkOption... options) {
 		if (path == null || path.trim().length() == 0) {
 			throw new IllegalArgumentException(path + ": Not accepted. "
-					+ "Must be a valid " + Path.class.getCanonicalName() + ".");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
 		String smbPath = smbLocation;
 		if (path.charAt(0) == '/') {
@@ -169,6 +169,7 @@ public class CifsFileSystem implements FileSystem {
 		return exists(convertToUnixPath(path), options);
 	}
 
+	@Override
 	public boolean exists(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).exists();
@@ -182,6 +183,7 @@ public class CifsFileSystem implements FileSystem {
 		return isDirectory(convertToUnixPath(path), options);
 	}
 
+	@Override
 	public boolean isDirectory(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).isDirectory();
@@ -195,6 +197,7 @@ public class CifsFileSystem implements FileSystem {
 		return isRegularFile(convertToUnixPath(path));
 	}
 
+	@Override
 	public boolean isRegularFile(String path, LinkOption... options) {
 		try {
 			return createSmbFile(path, options).isFile();
@@ -209,6 +212,7 @@ public class CifsFileSystem implements FileSystem {
 		return false;
 	}
 
+	@Override
 	public boolean isSymbolicLink(String path) {
 		// Samba doesn't support links
 		return false;
@@ -222,6 +226,7 @@ public class CifsFileSystem implements FileSystem {
 		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
+	@Override
 	public void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
@@ -268,12 +273,11 @@ public class CifsFileSystem implements FileSystem {
 					}
 				} catch (NoSuchFileException Exx) {
 					// concurrency pb : should recreate ?
-					throw new IOException(Msg.bind(Messages.CifsEx_MKDIR,
-							smbfile), wex);
+					throw new IOException(Msg.bind(Messages.CifsEx_MKDIR, dir),
+							wex);
 				}
 			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_MKDIR, smbfile),
-						wex);
+				throw new IOException(Msg.bind(Messages.CifsEx_MKDIR, dir), wex);
 			}
 		}
 		setAttributes(dir, attrs);
@@ -346,6 +350,7 @@ public class CifsFileSystem implements FileSystem {
 				"CIFS doesn't support Symbolic links.");
 	}
 
+	@Override
 	public void createSymbolicLink(String link, String target,
 			FileAttribute<?>... attrs) throws IOException,
 			SymbolicLinkNotSupported, NoSuchFileException,
@@ -363,6 +368,7 @@ public class CifsFileSystem implements FileSystem {
 		return null;
 	}
 
+	@Override
 	public Path readSymbolicLink(String link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
 		// Samba can't do that
@@ -375,6 +381,7 @@ public class CifsFileSystem implements FileSystem {
 		delete(convertToUnixPath(path));
 	}
 
+	@Override
 	public void delete(String path) throws IOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(path);
@@ -419,8 +426,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
 				throw new WrapperNoSuchShareException(path, wex);
 			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_RM, smbfile),
-						wex);
+				throw new IOException(Msg.bind(Messages.CifsEx_RM, path), wex);
 			}
 		}
 	}
@@ -431,6 +437,7 @@ public class CifsFileSystem implements FileSystem {
 		return deleteIfExists(convertToUnixPath(path));
 	}
 
+	@Override
 	public boolean deleteIfExists(String path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		try {
@@ -447,6 +454,7 @@ public class CifsFileSystem implements FileSystem {
 		deleteDirectory(convertToUnixPath(dir));
 	}
 
+	@Override
 	public void deleteDirectory(String dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(dir);
@@ -488,8 +496,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
 				// don't do anything
 			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_RMDIR, smbfile),
-						wex);
+				throw new IOException(Msg.bind(Messages.CifsEx_RMDIR, dir), wex);
 			}
 		}
 	}
@@ -547,8 +554,7 @@ public class CifsFileSystem implements FileSystem {
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
 				throw new WrapperNoSuchShareException(path, wex);
 			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_LS, smbfile),
-						wex);
+				throw new IOException(Msg.bind(Messages.CifsEx_LS, path), wex);
 			}
 		}
 
@@ -568,13 +574,14 @@ public class CifsFileSystem implements FileSystem {
 	}
 
 	@Override
-	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+	public CifsFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		return readAttributes(convertToUnixPath(path));
 	}
 
-	public EnhancedFileAttributes readAttributes(String path)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+	@Override
+	public CifsFileAttributes readAttributes(String path) throws IOException,
+			NoSuchFileException, AccessDeniedException {
 		SmbFile smbfile = createSmbFile(path);
 		try {
 			return CifsFileAttributes
@@ -646,7 +653,7 @@ public class CifsFileSystem implements FileSystem {
 				 */
 				throw new WrapperNoSuchShareException(path, wex);
 			}
-			throw new IOException(Msg.bind(Messages.CifsEx_STAT, smbfile), wex);
+			throw new IOException(Msg.bind(Messages.CifsEx_STAT, path), wex);
 		}
 	}
 
@@ -657,6 +664,7 @@ public class CifsFileSystem implements FileSystem {
 		setAttributes(convertToUnixPath(path), attrs);
 	}
 
+	@Override
 	public void setAttributes(String path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
@@ -754,26 +762,74 @@ public class CifsFileSystem implements FileSystem {
 		}
 	}
 
-	public void setAttributeArchive(Path path, boolean isArchive)
+	public void setAttributeArchive(Path path, boolean archive)
 			throws IOException, NoSuchFileException, AccessDeniedException {
-		setAttributeArchive(convertToUnixPath(path), isArchive);
+		setAttributeArchive(convertToUnixPath(path), archive);
 	}
 
-	public void setAttributeArchive(String path, boolean isArchive)
+	public void setAttributeArchive(String path, boolean archive)
 			throws IOException, NoSuchFileException, AccessDeniedException {
-		if (path == null || path.trim().length() == 0) {
-			throw new IllegalArgumentException(path + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+		try {
+			setAttribute(path, SmbFile.ATTR_ARCHIVE, archive);
+		} catch (WrapperSmbException wex) {
+			throw new IOException(Msg.bind(Messages.CifsEx_CHA, archive, path),
+					wex);
 		}
+	}
+
+	public void setAttributeHidden(Path path, boolean hidden)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		setAttributeHidden(convertToUnixPath(path), hidden);
+	}
+
+	public void setAttributeHidden(String path, boolean hidden)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		try {
+			setAttribute(path, SmbFile.ATTR_HIDDEN, hidden);
+		} catch (WrapperSmbException wex) {
+			throw new IOException(Msg.bind(Messages.CifsEx_CHH, hidden, path),
+					wex);
+		}
+	}
+
+	public void setAttributeReadOnly(Path path, boolean readOnly)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		setAttributeReadOnly(convertToUnixPath(path), readOnly);
+	}
+
+	public void setAttributeReadOnly(String path, boolean readOnly)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		try {
+			setAttribute(path, SmbFile.ATTR_READONLY, readOnly);
+		} catch (WrapperSmbException wex) {
+			throw new IOException(
+					Msg.bind(Messages.CifsEx_CHR, readOnly, path), wex);
+		}
+	}
+
+	public void setAttributeSystem(Path path, boolean system)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		setAttributeSystem(convertToUnixPath(path), system);
+	}
+
+	public void setAttributeSystem(String path, boolean system)
+			throws IOException, NoSuchFileException, AccessDeniedException {
+		try {
+			setAttribute(path, SmbFile.ATTR_SYSTEM, system);
+		} catch (WrapperSmbException wex) {
+			throw new IOException(Msg.bind(Messages.CifsEx_CHS, system, path),
+					wex);
+		}
+	}
+
+	private void setAttribute(String path, int attr, boolean desired)
+			throws WrapperSmbException, NoSuchFileException,
+			AccessDeniedException {
 		SmbFile smbfile = createSmbFile(path);
 		try {
-			int attrs = smbfile.getAttributes();
-			if (isArchive == true && (attrs | SmbFile.ATTR_ARCHIVE) == 0) {
-				smbfile.setAttributes(attrs & SmbFile.ATTR_ARCHIVE);
-			} else if (isArchive == false
-					&& (attrs & SmbFile.ATTR_ARCHIVE) != 0) {
-				smbfile.setAttributes(attrs & ~SmbFile.ATTR_ARCHIVE);
+			int current = smbfile.getAttributes();
+			if (((current & attr) != 0) != desired) {
+				smbfile.setAttributes(current ^ attr);
 			}
 		} catch (SmbException Ex) {
 			WrapperSmbException wex = new WrapperSmbException(Ex);
@@ -799,164 +855,8 @@ public class CifsFileSystem implements FileSystem {
 				throw new WrapperNoSuchFileException(path, wex);
 			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
 				throw new WrapperNoSuchShareException(path, wex);
-			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_CHA, isArchive,
-						smbfile), wex);
 			}
-		}
-	}
-
-	public void setAttributeHidden(Path path, boolean isHidden)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		setAttributeHidden(convertToUnixPath(path), isHidden);
-	}
-
-	public void setAttributeHidden(String path, boolean isHidden)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		if (path == null || path.trim().length() == 0) {
-			throw new IllegalArgumentException(path + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		SmbFile smbfile = createSmbFile(path);
-		try {
-			int attrs = smbfile.getAttributes();
-			if (isHidden == true && (attrs & SmbFile.ATTR_HIDDEN) == 0) {
-				smbfile.setAttributes(attrs | SmbFile.ATTR_HIDDEN);
-			} else if (isHidden == false && (attrs & SmbFile.ATTR_HIDDEN) != 0) {
-				smbfile.setAttributes(attrs & ~SmbFile.ATTR_HIDDEN);
-			}
-		} catch (SmbException Ex) {
-			WrapperSmbException wex = new WrapperSmbException(Ex);
-			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchShareException(path, wex);
-			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_CHH, isHidden,
-						smbfile), wex);
-			}
-		}
-	}
-
-	public void setAttributeReadOnly(Path path, boolean isReadOnly)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		setAttributeReadOnly(convertToUnixPath(path), isReadOnly);
-	}
-
-	public void setAttributeReadOnly(String path, boolean isReadOnly)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		if (path == null || path.trim().length() == 0) {
-			throw new IllegalArgumentException(path + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		SmbFile smbfile = createSmbFile(path);
-		try {
-			int attrs = smbfile.getAttributes();
-			if (isReadOnly == true && (attrs & SmbFile.ATTR_READONLY) == 0) {
-				smbfile.setAttributes(attrs | SmbFile.ATTR_READONLY);
-			} else if (isReadOnly == false
-					&& (attrs & SmbFile.ATTR_READONLY) != 0) {
-				smbfile.setAttributes(attrs & ~SmbFile.ATTR_READONLY);
-			}
-		} catch (SmbException Ex) {
-			WrapperSmbException wex = new WrapperSmbException(Ex);
-			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchShareException(path, wex);
-			} else {
-				throw new IOException(Msg.bind(Messages.CifsEx_CHR, isReadOnly,
-						smbfile), wex);
-			}
-		}
-	}
-
-	public void setAttributeSystem(Path path, boolean isSystem)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		setAttributeSystem(convertToUnixPath(path), isSystem);
-	}
-
-	public void setAttributeSystem(String path, boolean isSystem)
-			throws IOException, NoSuchFileException, AccessDeniedException {
-		if (path == null || path.trim().length() == 0) {
-			throw new IllegalArgumentException(path + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		SmbFile smbfile = createSmbFile(path);
-		try {
-			int attrs = smbfile.getAttributes();
-			if (isSystem == true && (attrs & SmbFile.ATTR_SYSTEM) == 0) {
-				smbfile.setAttributes(attrs | SmbFile.ATTR_SYSTEM);
-			} else if (isSystem == false && (attrs & SmbFile.ATTR_SYSTEM) != 0) {
-				smbfile.setAttributes(attrs & ~SmbFile.ATTR_SYSTEM);
-			}
-		} catch (SmbException Ex) {
-			WrapperSmbException wex = new WrapperSmbException(Ex);
-			if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_NO_SUCH_USER) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_RESTRICTION) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_INVALID_LOGON_HOURS) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_PASSWORD_EXPIRED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_ACCOUNT_DISABLED) {
-				throw new WrapperAccessDeniedException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_NAME_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_OBJECT_PATH_NOT_FOUND) {
-				throw new WrapperNoSuchFileException(path, wex);
-			} else if (Ex.getNtStatus() == NtStatus.NT_STATUS_BAD_NETWORK_NAME) {
-				throw new WrapperNoSuchShareException(path, wex);
-			} else {
-			}
-			throw new IOException(Msg.bind(Messages.CifsEx_CHS, isSystem,
-					smbfile), wex);
+			throw wex;
 		}
 	}
 
