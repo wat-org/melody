@@ -31,7 +31,6 @@ import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedIOException;
-import com.wat.melody.common.files.EnhancedFileAttributes;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.PosixGroup;
 import com.wat.melody.common.files.PosixPermissions;
@@ -118,6 +117,7 @@ public class SftpFileSystem implements FileSystem {
 		return exists(convertToUnixPath(path), options);
 	}
 
+	@Override
 	public boolean exists(String path, LinkOption... options) {
 		try {
 			return readAttributes0(path, options) != null;
@@ -131,6 +131,7 @@ public class SftpFileSystem implements FileSystem {
 		return isDirectory(convertToUnixPath(path), options);
 	}
 
+	@Override
 	public boolean isDirectory(String path, LinkOption... options) {
 		try {
 			return readAttributes0(path, options).isDir();
@@ -144,6 +145,7 @@ public class SftpFileSystem implements FileSystem {
 		return isRegularFile(convertToUnixPath(path), options);
 	}
 
+	@Override
 	public boolean isRegularFile(String path, LinkOption... options) {
 		try {
 			SftpATTRS attrs = readAttributes0(path, options);
@@ -158,6 +160,7 @@ public class SftpFileSystem implements FileSystem {
 		return isSymbolicLink(convertToUnixPath(path));
 	}
 
+	@Override
 	public boolean isSymbolicLink(String path) {
 		try {
 			return readAttributes0(path, LinkOption.NOFOLLOW_LINKS).isLink();
@@ -174,6 +177,7 @@ public class SftpFileSystem implements FileSystem {
 		createDirectory(convertToUnixPath(dir), attrs);
 	}
 
+	@Override
 	public void createDirectory(String dir, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
@@ -276,6 +280,7 @@ public class SftpFileSystem implements FileSystem {
 				attrs);
 	}
 
+	@Override
 	public void createSymbolicLink(String link, String target,
 			FileAttribute<?>... attrs) throws IOException, NoSuchFileException,
 			FileAlreadyExistsException, IllegalFileAttributeException,
@@ -314,6 +319,7 @@ public class SftpFileSystem implements FileSystem {
 		return readSymbolicLink(convertToUnixPath(link));
 	}
 
+	@Override
 	public Path readSymbolicLink(String link) throws IOException,
 			NoSuchFileException, NotLinkException, AccessDeniedException {
 		if (link == null || link.trim().length() == 0) {
@@ -353,6 +359,7 @@ public class SftpFileSystem implements FileSystem {
 		delete(convertToUnixPath(path));
 	}
 
+	@Override
 	public void delete(String path) throws IOException,
 			DirectoryNotEmptyException, NoSuchFileException,
 			AccessDeniedException {
@@ -421,6 +428,7 @@ public class SftpFileSystem implements FileSystem {
 		return deleteIfExists(convertToUnixPath(path));
 	}
 
+	@Override
 	public boolean deleteIfExists(String path) throws IOException,
 			DirectoryNotEmptyException, AccessDeniedException {
 		try {
@@ -437,6 +445,7 @@ public class SftpFileSystem implements FileSystem {
 		deleteDirectory(convertToUnixPath(dir));
 	}
 
+	@Override
 	public void deleteDirectory(String dir) throws IOException,
 			NotDirectoryException, AccessDeniedException {
 		try {
@@ -457,6 +466,7 @@ public class SftpFileSystem implements FileSystem {
 			AccessDeniedException {
 		final Vector<LsEntry> content = new Vector<LsEntry>();
 		listDirectory(path, new LsEntrySelector() {
+			@Override
 			public int select(LsEntry entry) {
 				// don't add . and ..
 				if (!entry.getFilename().equals(".")
@@ -498,17 +508,20 @@ public class SftpFileSystem implements FileSystem {
 		}
 	}
 
+	@Override
 	public DirectoryStream<Path> newDirectoryStream(Path path)
 			throws IOException, InterruptedIOException, NotDirectoryException,
 			NoSuchFileException, AccessDeniedException {
 		return newDirectoryStream(convertToUnixPath(path));
 	}
 
+	@Override
 	public DirectoryStream<Path> newDirectoryStream(final String path)
 			throws IOException, InterruptedIOException, NoSuchFileException,
 			NotDirectoryException, AccessDeniedException {
 		final List<Path> content = new ArrayList<Path>();
 		listDirectory(path, new LsEntrySelector() {
+			@Override
 			public int select(LsEntry entry) {
 				// don't add . and ..
 				if (!entry.getFilename().equals(".")
@@ -534,13 +547,14 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	@Override
-	public EnhancedFileAttributes readAttributes(Path path) throws IOException,
+	public SftpFileAttributes readAttributes(Path path) throws IOException,
 			NoSuchFileException, AccessDeniedException {
 		return readAttributes(convertToUnixPath(path));
 	}
 
-	public EnhancedFileAttributes readAttributes(String path)
-			throws IOException, NoSuchFileException, AccessDeniedException {
+	@Override
+	public SftpFileAttributes readAttributes(String path) throws IOException,
+			NoSuchFileException, AccessDeniedException {
 		SftpATTRS pathAttrs = readAttributes0(path, LinkOption.NOFOLLOW_LINKS);
 		Path target = null;
 		SftpATTRS realAttrs = null;
@@ -599,6 +613,7 @@ public class SftpFileSystem implements FileSystem {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public void setAttributes(String path, FileAttribute<?>... attrs)
 			throws IOException, NoSuchFileException,
 			IllegalFileAttributeException, AccessDeniedException {
