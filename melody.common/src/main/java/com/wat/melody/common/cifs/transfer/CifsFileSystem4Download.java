@@ -118,15 +118,16 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 	private void download(String source, String destination)
 			throws IOException, InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
+		// must validate source
 		if (source == null || source.trim().length() == 0) {
 			throw new IllegalArgumentException(source + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+		// TODO : Should fail if source is a directory
+		// Fail if destination is a directory
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination);
 		}
 		ProgressMonitor pm = new ProgressMonitor(getLocation(), null);
 		InputStream fis = null;

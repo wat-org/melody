@@ -8,6 +8,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -66,6 +67,10 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
+		// Fail if source is a directory
+		if (Files.isDirectory(src)) {
+			throw new WrapperDirectoryNotEmptyException(src);
+		}
 		upload(src, dest);
 		setAttributes(dest, attrs);
 	}
@@ -77,6 +82,7 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		// expand src into a tmpfile and upload the tmpfile into dest
+		// doTemplate will fail if source is not a regular file
 		upload(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
@@ -90,15 +96,10 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 	private void upload(String source, String destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		if (source == null || source.trim().length() == 0) {
-			throw new IllegalArgumentException(source + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+		// source have already been validated
+		// Fail if destination is a directory
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination);
 		}
 		ProgressMonitor pm = new ProgressMonitor(null, getLocation());
 		FileInputStream fis = null;
