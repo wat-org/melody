@@ -22,7 +22,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  */
 @Task(name = DeleteBucket.DELETE_BUCKET)
 public class DeleteBucket extends AbstractOperation {
-	// TODO : should extends AbstractOperation
+
 	private static Logger log = LoggerFactory.getLogger(DeleteBucket.class);
 
 	public static final String DELETE_BUCKET = "delete-bucket";
