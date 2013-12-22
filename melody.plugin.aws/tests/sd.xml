@@ -3,7 +3,8 @@
 
 <sequence default="all" basedir="." >
 
-    <property name="melody.extensions.vm.path" value="§[melody.extensions.path]§/vm/sd.xml"/>
+    <property name="melody.extensions.vm.path"       value="§[melody.extensions.path]§/vm/sd.xml"/>
+    <property name="melody.extensions.aws.s3.path"   value="§[melody.extensions.path]§/aws.s3/sd.xml"/>
 
 
     <order name="create_all_vm" >
@@ -39,63 +40,21 @@
     </order>
 
     <order name="create_all_buckets" >
-        <echo message="Creating Aws S3 buckets ..."/>
-        <!--
-             must create all buckets without bucket-logging first ;
-             must create all other buckets after ;
-             if a bucket sends log to itself, there will be no problem because the create-bucket
-             task will create the bucket first and enable logging after ;
-        -->
-        <foreach    items="./environment//buckets/bucket"
-                    item-name="bucket" >
-            <property name="bn" value="§[§[bucket]§/@name]§"/>
-            <property name="br" value="§[§[bucket]§/@region]§"/>
-
-            <create-bucket name="§[bn]§" region="§[br]§"/>
-            <echo message="+ Aws S3 bucket '§[bn]§' (region '§[br]§') created."/>
-        </foreach>
-        <foreach    items="./environment//buckets/bucket[ .//logging/@enabled='true' ]"
-                    item-name="bucket" >
-            <property name="bn" value="§[§[bucket]§/@name]§"/>
-            <property name="br" value="§[§[bucket]§/@region]§"/>
-            <property name="dbn" value="§[§[bucket]§//logging/@destination-bucket-name]§"/>
-            <property name="lpf" value="§[§[bucket]§//logging/@log-file-prefix]§"/>
-
-            <enable-bucket-logging name="§[bn]§" destination-bucket-name="§[dbn]§" log-file-prefix="§[lpf]§"/>
-            <echo message="+ Enable logging (in '§[dbn]§') for Aws S3 bucket '§[bn]§' (region '§[br]§')."/>
-        </foreach>
-        <foreach    items="./environment//buckets/bucket[ not(exists(.//logging/@enabled)) or .//logging/@enabled!='true' ]"
-                    item-name="bucket" >
-            <property name="bn" value="§[§[bucket]§/@name]§"/>
-            <property name="br" value="§[§[bucket]§/@region]§"/>
-
-            <disable-bucket-logging name="§[bn]§"/>
-            <echo message="+ Disable logging for Aws S3 bucket '§[bn]§' (region '§[br]§')."/>
-        </foreach>
-        <echo message="-- Aws S3 buckets created."/>
+        <call orders="create_all_buckets" sequence-descriptor="§[melody.extensions.aws.s3.path]§"/>
     </order>
 
     <order name="destroy_all_buckets" >
-        <echo message="Destroying Aws S3 buckets ..."/>
-        <foreach    items="./environment//buckets/bucket"
-                    item-name="bucket" >
-            <property name="bn" value="§[§[bucket]§/@name]§"/>
-            <property name="br" value="§[§[bucket]§/@region]§"/>
-
-            <delete-bucket name="§[bn]§" region="§[br]§"/>
-            <echo message="+ Aws S3 bucket '§[bn]§' (region '§[br]§') deleted."/>
-        </foreach>
-        <echo message="-- Aws S3 buckets destroyed."/>
+        <call orders="destroy_all_buckets" sequence-descriptor="§[melody.extensions.aws.s3.path]§"/>
     </order>
 
 
     <order name="all" >
         <call    orders="create_all_vm"/>
-        <sleep    millis="2000" />
+        <sleep   millis="2000" />
         <call    orders="stop_all_vm"/>
-        <sleep    millis="2000" />
+        <sleep   millis="2000" />
         <call    orders="start_all_vm"/>
-        <sleep    millis="2000" />
+        <sleep   millis="2000" />
         <call    orders="destroy_all_vm"/>
     </order>
 
