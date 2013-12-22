@@ -58,6 +58,10 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
+		// Fail if source is a directory
+		if (isDirectory(src)) {
+			throw new WrapperDirectoryNotEmptyException(src);
+		}
 		copy(src, dest);
 		setAttributes(dest, attrs);
 	}
@@ -69,6 +73,7 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		// expand src into a tmpfile and copy the tmpfile into dest
+		// doTemplate will fail if source is not a regular file
 		copy(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
@@ -76,11 +81,10 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 	private void copy(Path source, Path destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		if (isDirectory(source)) {
-			throw new WrapperDirectoryNotEmptyException(source.toString());
-		}
+		// source have already been validated
+		// Fail if destination is a directory
 		if (isDirectory(destination)) {
-			throw new WrapperDirectoryNotEmptyException(destination.toString());
+			throw new WrapperDirectoryNotEmptyException(destination);
 		}
 		try {
 			Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
