@@ -8,7 +8,7 @@ import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.plugin.aws.s3.common.AbstractBucketOperation;
+import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
 import com.wat.melody.plugin.aws.s3.common.Messages;
 import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
 
@@ -18,7 +18,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = EnableBucketLogging.ENABLE_BUCKET_LOGGING)
-public class EnableBucketLogging extends AbstractBucketOperation {
+public class EnableBucketLogging extends AbstractOperation {
 
 	public static final String ENABLE_BUCKET_LOGGING = "enable-bucket-logging";
 

@@ -22,7 +22,6 @@ public abstract class AbstractBucketOperation extends AbstractOperation {
 	@Override
 	public void validate() throws AwsPlugInS3Exception {
 		super.validate();
-		setS3Connection(getAwsPlugInConfiguration().getAwsS3Connection());
 	}
 
 	public String getBucketRegion() {
