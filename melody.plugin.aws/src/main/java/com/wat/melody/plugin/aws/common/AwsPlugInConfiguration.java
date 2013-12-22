@@ -785,9 +785,10 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 * @throws IllegalArgumentException
 	 *             if either the repo, the name or the size is <tt>null</tt>.
 	 * @throws IOException
-	 *             if an IO error occurred while reading the keypair.
+	 *             if an IO error occurred while reading/creating the keypair.
 	 * @throws IllegalPassphraseException
-	 *             if the given passphrase is not correct.
+	 *             if the key pair exists and cannot be read using the given
+	 *             passphrase.
 	 * @throws AmazonServiceException
 	 *             if the operation fails (ex: credentials not valid).
 	 * @throws AmazonClientException
@@ -796,28 +797,10 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public AmazonS3 getAwsS3Connection(KeyPairRepositoryPath kprp,
 			KeyPairName kpn, KeyPairSize kps, String passphrase)
 			throws IOException, IllegalPassphraseException {
-		if (kprp == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid "
-					+ KeyPairRepositoryPath.class.getCanonicalName() + ".");
-		}
-		if (kpn == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + KeyPairName.class.getCanonicalName()
-					+ ".");
-		}
-		if (kps == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + KeyPairSize.class.getCanonicalName()
-					+ ".");
-		}
-
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		KeyPair kp = kpr.createKeyPair(kpn, kps, passphrase);
 		EncryptionMaterials enc = new EncryptionMaterials(kp);
-		/*
-		 * TODO : should provide a CryptoConfiguration instead of null.
-		 */
+		// TODO : should provide a CryptoConfiguration instead of null.
 		return AwsS3PooledConnection.getPooledConnection(this, getCC(), enc,
 				null);
 	}
