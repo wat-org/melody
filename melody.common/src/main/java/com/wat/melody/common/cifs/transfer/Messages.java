@@ -6,17 +6,17 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.cifs.transfer.messages";
 
+	public static String CifsEx_STAT;
 	public static String CifsEx_MKDIR;
+	public static String CifsEx_PUT;
+	public static String CifsEx_GET;
 	public static String CifsEx_RMDIR;
 	public static String CifsEx_RM;
-	public static String CifsEx_STAT;
 	public static String CifsEx_LS;
 	public static String CifsEx_CHA;
 	public static String CifsEx_CHH;
 	public static String CifsEx_CHR;
 	public static String CifsEx_CHS;
-	public static String CifsEx_PUT;
-	public static String CifsEx_GET;
 
 	public static String CifsEx_PUT_INTERRUPTED;
 	public static String CifsEx_GET_INTERRUPTED;
