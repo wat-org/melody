@@ -155,11 +155,13 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 						destination), wex);
 			}
 		} catch (FileNotFoundException Ex) {
-			if (Ex.getMessage().indexOf(" (Permission denied)") != -1) {
+			String msg = Ex.getMessage();
+			if (msg != null && msg.indexOf(" (Permission denied)") != -1) {
 				throw new WrapperAccessDeniedException(source);
-			} else if (Ex.getMessage().indexOf(" (No such file or directory)") != -1) {
+			} else if (msg != null
+					&& msg.indexOf(" (No such file or directory)") != -1) {
 				throw new WrapperNoSuchFileException(source);
-			} else if (Ex.getMessage().indexOf(" (Is a directory)") != -1) {
+			} else if (msg != null && msg.indexOf(" (Is a directory)") != -1) {
 				throw new WrapperDirectoryNotEmptyException(source);
 			} else {
 				throw new WrapperNoSuchFileException(source, Ex);

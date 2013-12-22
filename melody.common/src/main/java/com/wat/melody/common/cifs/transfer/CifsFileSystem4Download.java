@@ -183,11 +183,13 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 						destination), wex);
 			}
 		} catch (FileNotFoundException Ex) {
-			if (Ex.getMessage().indexOf(" (Permission denied)") != -1) {
+			String msg = Ex.getMessage();
+			if (msg != null && msg.indexOf(" (Permission denied)") != -1) {
 				throw new WrapperAccessDeniedException(destination);
-			} else if (Ex.getMessage().indexOf(" (No such file or directory)") != -1) {
+			} else if (msg != null
+					&& msg.indexOf(" (No such file or directory)") != -1) {
 				throw new WrapperNoSuchFileException(destination);
-			} else if (Ex.getMessage().indexOf(" (Is a directory)") != -1) {
+			} else if (msg != null && msg.indexOf(" (Is a directory)") != -1) {
 				throw new WrapperDirectoryNotEmptyException(destination);
 			} else {
 				throw new WrapperNoSuchFileException(destination, Ex);
