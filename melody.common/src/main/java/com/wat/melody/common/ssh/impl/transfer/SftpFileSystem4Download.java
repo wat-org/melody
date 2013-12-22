@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -88,36 +87,32 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 		setAttributes(dest, attrs);
 	}
 
-	public void download(Path source, Path destination) throws IOException,
+	private void download(Path source, Path destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		if (Files.isDirectory(source)) {
-			throw new WrapperDirectoryNotEmptyException(source.toString());
-		}
-		if (isDirectory(destination)) {
-			throw new WrapperDirectoryNotEmptyException(destination.toString());
-		}
 		download(SftpFileSystem.convertToUnixPath(source),
 				destination.toString());
 	}
 
-	public void download(String source, String destination) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException {
+	private void download(String source, String destination)
+			throws IOException, InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		// must validate source
 		if (source == null || source.trim().length() == 0) {
 			throw new IllegalArgumentException(source + ": Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+		// TODO : Should fail if source is a directory
+		// Fail if destination is a directory
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination);
 		}
 		try {
 			/*
 			 * if interrupted: may throw a 'java.io.IOException: Pipe closed', a
 			 * 'java.net.SocketException: Broken pipe', or a
-			 * 'java.io.InterruptedIOException', wrapped in an SftpException.
+			 * 'java.io.InterruptedIOException', wrapped in an SftpException
 			 */
 			getChannel().get(
 					source,

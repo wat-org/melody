@@ -59,6 +59,10 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
+		// Fail if source is a directory
+		if (Files.isDirectory(src)) {
+			throw new WrapperDirectoryNotEmptyException(src);
+		}
 		upload(src, dest);
 		setAttributes(dest, attrs);
 	}
@@ -70,6 +74,7 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		// expand src into a tmpfile and upload the tmpfile into dest
+		// doTemplate will fail if source is not a regular file
 		upload(getTemplatingHandler().doTemplate(src, null), dest);
 		setAttributes(dest, attrs);
 	}
@@ -77,32 +82,22 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 	private void upload(Path source, Path destination) throws IOException,
 			InterruptedIOException, NoSuchFileException,
 			DirectoryNotEmptyException, AccessDeniedException {
-		if (Files.isDirectory(source)) {
-			throw new WrapperDirectoryNotEmptyException(source.toString());
-		}
-		if (isDirectory(destination)) {
-			throw new WrapperDirectoryNotEmptyException(destination.toString());
-		}
 		upload(source.toString(), convertToUnixPath(destination));
 	}
 
 	private void upload(String source, String destination) throws IOException,
-			InterruptedIOException, NoSuchFileException, AccessDeniedException {
-		if (source == null || source.trim().length() == 0) {
-			throw new IllegalArgumentException(source + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
-		}
-		if (destination == null || destination.trim().length() == 0) {
-			throw new IllegalArgumentException(destination + ": Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+			InterruptedIOException, NoSuchFileException,
+			DirectoryNotEmptyException, AccessDeniedException {
+		// source have already been validated
+		// Fail if destination is a directory
+		if (isDirectory(destination)) {
+			throw new WrapperDirectoryNotEmptyException(destination);
 		}
 		try {
 			/*
 			 * if interrupted: may throw a 'java.io.IOException: Pipe closed', a
 			 * 'java.net.SocketException: Broken pipe', or a
-			 * 'java.io.InterruptedIOException', wrapped in an SftpException.
+			 * 'java.io.InterruptedIOException', wrapped in an SftpException
 			 */
 			getChannel().put(
 					source,
