@@ -23,13 +23,13 @@ public class ProgressMonitor implements SftpProgressMonitor {
 	private static final SimpleDateFormat sdf = new SimpleDateFormat(
 			"mm:ss,SSS");
 
-	private String _srcFS;
-	private String _destFS;
+	private String _srcFS = null;
+	private String _destFS = null;
 	private String _src;
 	private String _dest;
 	private long _totalsize;
-	private long _uploadedsize;
-	private int _uploadedpercent;
+	private long _uploadedsize = 0;
+	private int _uploadedpercent = 0;
 	private long _starttime;
 
 	/**
