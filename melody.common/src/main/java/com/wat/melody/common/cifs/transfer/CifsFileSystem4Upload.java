@@ -40,9 +40,9 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 
 	private TemplatingHandler _templatingHandler;
 
-	public CifsFileSystem4Upload(String location, String domain, String user,
-			String password, TemplatingHandler th) {
-		super(location, domain, user, password);
+	public CifsFileSystem4Upload(String location, String domain,
+			String username, String password, TemplatingHandler th) {
+		super(location, domain, username, password);
 		setTemplatingHandler(th);
 	}
 
