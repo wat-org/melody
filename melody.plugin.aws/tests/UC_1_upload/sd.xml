@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="create_bucket" basedir=".">
+
+	<property name="bucket" value="couille"/>
+	<property name="property1" value="salut les filles"/>
+
+
+	<order name="create_bucket">
+		<echo message="Creating bucket '§[bucket]§' ..."/>
+		<create-bucket bucket-name="§[bucket]§" region="eu-west-1"/>
+		<echo message="Bucket '§[bucket]§' created."/>
+	</order>
+
+
+	<order name="upload">
+
+		<echo message="Transferring files to 'bucket:§[bucket]§' ..."/>
+
+		<upload bucket-name="§[bucket]§" max-par="10">
+			<resources	src-basedir=""
+						match="**"
+						dest-basedir="/tmp/melody/scp/UC_1_upload"
+						link-option="SKIP_LINKS" >
+
+				<include	match="templates/file1.tmpl"
+							template="y" >
+					<attribute name="custom">custom value</attribute>
+					<attribute name="valid_attr">super val</attribute>
+				</include>
+				
+				<include	match="templates/file2.tmpl"
+							dest-name="templates/bn-§[bucket]§/file2.bn-§[bucket]§"
+							template="y" />
+				
+				<exclude	match="static_myApp_myMod/content2.*" />
+				<exclude	match="download" />
+				<exclude	match="download/**" />
+				
+				<!-- will generate warnings, cause aws s3fs don't handle posix-group and posix-user -->
+				<include	match="static_myApp_myMod/content1.txt" >
+					<posix-group scope="files">60000</posix-group>
+					<posix-user scope="files">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod" >
+					<posix-group scope="directories">60000</posix-group>
+					<posix-user scope="directories">60000</posix-user>
+				</include>
+				
+				<!-- will generate warnings, cause aws s3fs handles neither attribute dos-archive nor attribute containing ':' nor attribute containing '()' -->
+				<include	match="static_myApp_myMod/content2.txt" >
+					<attribute name="dos:archive">true</attribute>
+					<attribute name="s3:flute">awesome</attribute>
+					<attribute name="s3(flute)">awesome</attribute>
+				</include>
+				
+				<!-- will not generate warnings, cause aws s3fs don't handle links -->
+				<include	match="static_myApp_myMod/link.txt" >
+					<posix-group scope="links">502</posix-group>
+					<posix-user scope="links">501</posix-user>
+					<posix-permissions scope="links">740</posix-permissions>
+				</include>
+			</resources>
+		</upload>
+
+		<echo message="Files successfully transferred to 'bucket:§[bucket]§'."/>
+
+	</order>
+
+
+	<order name="download">
+
+		<echo message="Transferring files from 'bucket:§[bucket]§' ..."/>
+
+		<download bucket-name="§[bucket]§" max-par="10">
+			<resources	src-basedir="/tmp/melody/scp/UC_1_upload"
+						match="**"
+						dest-basedir="download/bn-§[bucket]§"
+						link-option="SKIP_LINKS" >
+				<posix-permissions scope="directories">770</posix-permissions>
+				<posix-permissions scope="files">660</posix-permissions>
+
+				<include	match="templates/file1.tmpl"
+							template="y" >
+					<posix-permissions scope="files">740</posix-permissions>
+				</include>
+				
+				<include	match="templates/bn-§[bucket]§/file2.bn-§[bucket]§"
+							dest-name="templates/file2.tmpl"
+							template="y" />
+				
+				<exclude	match="templates/bn-§[bucket]§" />
+				
+				<!-- will generate warnings, cause the current user can't chown/chgrp -->
+				<include	match="static_myApp_myMod/content1.txt" >
+					<posix-group scope="files">60000</posix-group>
+					<posix-user scope="files">60000</posix-user>
+				</include>
+				
+				<include	match="static_myApp_myMod" >
+					<posix-group scope="directories">60000</posix-group>
+					<posix-user scope="directories">60000</posix-user>
+				</include>
+				
+				<!-- will generate warnings, cause localfs handles neither attribute containing ':' nor attribute containing '()' -->
+				<include	match="static_myApp_myMod/content2.txt" >
+					<attribute name="dos:archive">true</attribute>
+					<attribute name="s3:flute">awesome</attribute>
+					<attribute name="s3(flute)">awesome</attribute>
+				</include>
+				
+				<!-- will not generate warnings, cause source files (on aws s3fs) are not links -->
+				<include	match="static_myApp_myMod/link.txt" >
+					<posix-group scope="links">502</posix-group>
+					<posix-user scope="links">501</posix-user>
+					<posix-permissions scope="links">740</posix-permissions>
+				</include>
+			</resources>
+		</download>
+
+		<echo message="Files successfully transferred from 'bucket:§[bucket]§'."/>
+
+	</order>
+	
+	
+
+	<order name="destroy_bucket">
+		<echo message="Destroying bucket '§[bucket]§' ..."/>
+		<destroy-bucket bucket-name="§[bucket]§" region="eu-west-1"/>
+		<echo message="Bucket '§[bucket]§' destroyed."/>
+	</order>
+
+</sequence>

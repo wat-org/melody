@@ -9,7 +9,7 @@
 		</fileset>
 	</path>
 
-	<!-- USE CASE 00 -->
+	<!-- USE CASE 00 : vms -->
 
 	<target name="UC0_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
@@ -94,7 +94,7 @@
 	<target name="UC0_all" depends="UC0_01_create_env, UC0_05_update_disk_devices, UC0_06_update_network_devices, UC0_07_update_firewall, UC0_08_destroyenv" />
 
 
-	<!-- USE CASE 01 -->
+	<!-- USE CASE 01 : vms -->
 
 	<target name="UC1_01_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
@@ -176,8 +176,10 @@
 		</java>
 	</target>
 
+	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroyenv" />
 
-	<!-- USE CASE 02 -->
+
+	<!-- USE CASE 02 : buckets -->
 
 	<target name="UC2_01_create_buckets">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
@@ -199,6 +201,47 @@
 		</java>
 	</target>
 
-	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroyenv" />
+
+	<!-- USE CASE 03 : upload/download -->
+
+	<target name="Transfer_UC1_01_create_bucket">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_1_upload/mc.properties" />
+			<arg value="-o" />
+			<arg value="create_bucket" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Transfer_UC1_02_upload">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_1_upload/mc.properties" />
+			<arg value="-o" />
+			<arg value="upload" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Transfer_UC1_03_download">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_1_upload/mc.properties" />
+			<arg value="-o" />
+			<arg value="download" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="Transfer_UC1_04_destroy_bucket">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_1_upload/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_bucket" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
 
 </project>

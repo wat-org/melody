@@ -132,6 +132,36 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
+
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- because org.jboss.security.vault.SecurityVaultFactory uses JUL, we 
+			need a bridge from JUL (e.g. java.util.logging) to SLF4J. -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.7.5</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- because Melody Plug-In for AWS and LibVirt uses jar that uses JCL 
+			(e.g. apache commons logging), we need a bridge from JCL to SLF4J. -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.7.5</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

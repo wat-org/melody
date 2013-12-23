@@ -19,13 +19,23 @@ public class Messages extends NLS {
 	public static String BucketNameEx_INVALID_LENGTH;
 	public static String BucketNameEx_INVALID;
 
-	public static String S3FSEx_STAT;
-	public static String S3FSEx_RM;
-	public static String S3FSEx_LN;
-	public static String S3FSEx_MKDIR;
-	public static String S3FSEx_RMDIR_INTERRUPTED;
-	public static String S3FSEx_RMDIR;
-	public static String S3FSEx_LS;
+	public static String S3fsEx_STAT;
+	public static String S3fsEx_LN;
+	public static String S3fsEx_MKDIR;
+	public static String S3fsEx_PUT;
+	public static String S3fsEx_GET;
+	public static String S3fsEx_RMDIR;
+	public static String S3fsEx_RMDIR_INTERRUPTED;
+	public static String S3fsEx_RM;
+	public static String S3fsEx_LS;
+	public static String S3fsEx_SETATTRS;
+
+	public static String S3fsEx_PUT_INTERRUPTED;
+	public static String S3fsEx_GET_INTERRUPTED;
+
+	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTES;
+	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTE;
+	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTE_X;
 
 	static {
 		// initialize resource bundle

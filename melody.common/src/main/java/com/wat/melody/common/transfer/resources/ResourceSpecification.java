@@ -15,6 +15,7 @@ import com.wat.melody.common.transfer.resources.attributes.AttributeDosSystem;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixGroup;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixPermissions;
 import com.wat.melody.common.transfer.resources.attributes.AttributePosixUser;
+import com.wat.melody.common.transfer.resources.attributes.NamedAttribute;
 import com.wat.melody.common.transfer.resources.attributes.Scope;
 
 /**
@@ -92,6 +93,12 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	 * transfer.
 	 */
 	public static final String DOS_SYSTEM_ATTIBUTE_NE = "dos-system";
+
+	/**
+	 * Nested element, which specifies a named attribute of the resource to
+	 * transfer.
+	 */
+	public static final String NAMED_ATTIBUTE_NE = "attribute";
 
 	// Mandatory (with a default value)
 	private LinkOption _linkOption = LinkOption.KEEP_LINKS;
@@ -359,6 +366,16 @@ public abstract class ResourceSpecification extends ResourceSelector {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ AttributeDosSystem.class.getCanonicalName() + ".");
+		}
+		putAttribute(attr);
+	}
+
+	@NestedElement(name = NAMED_ATTIBUTE_NE)
+	public void addNamedAttribute(NamedAttribute attr) {
+		if (attr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NamedAttribute.class.getCanonicalName() + ".");
 		}
 		putAttribute(attr);
 	}
