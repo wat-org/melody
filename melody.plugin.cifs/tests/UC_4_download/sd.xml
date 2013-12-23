@@ -41,7 +41,7 @@
 					<posix-user scope="directories">60000</posix-user>
 				</include>
 				
-				<!-- these attributes will be ignored cause scope='links' cannot apply when link-option="COPY_LINKS". -->
+				<!-- these attributes will be ignored cause cifs doesn't handle links. -->
 				<include	match="static_myApp_myMod/link.txt" >
 					<posix-group scope="links">501</posix-group>
 					<posix-user scope="links">500</posix-user>
