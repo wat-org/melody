@@ -135,7 +135,7 @@ public class CifsFileSystem implements FileSystem {
 	private NtlmPasswordAuthentication _smbCredential;
 	private String _smbLocation;
 
-	public CifsFileSystem(String location, String domain, String user,
+	public CifsFileSystem(String location, String domain, String username,
 			String password) {
 		if (location == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -143,7 +143,8 @@ public class CifsFileSystem implements FileSystem {
 					+ ".");
 		}
 		// if domain, user or pass is null, default values will be used
-		_smbCredential = new NtlmPasswordAuthentication(domain, user, password);
+		_smbCredential = new NtlmPasswordAuthentication(domain, username,
+				password);
 		_smbLocation = "smb://" + location + "/";
 	}
 
@@ -691,7 +692,7 @@ public class CifsFileSystem implements FileSystem {
 				 * will throw IllegalArgumentException if attr.name() denotes a
 				 * know view but an unrecognized attribute.
 				 * 
-				 * will throw NullPointerException if attr.valiue() is null.
+				 * will throw NullPointerException if attr.value() is null.
 				 * 
 				 * will throw ClassCastException if attr.name() denotes a known
 				 * view and a known but attr.value() is not of the correct type.

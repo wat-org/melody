@@ -433,7 +433,7 @@ public class LocalFileSystem implements FileSystem {
 				 * will throw IllegalArgumentException if attr.name() denotes a
 				 * know view but an unrecognized attribute.
 				 * 
-				 * will throw NullPointerException if attr.valiue() is null.
+				 * will throw NullPointerException if attr.value() is null.
 				 * 
 				 * will throw ClassCastException if attr.name() denotes a known
 				 * view and a known but attr.value() is not of the correct type.
