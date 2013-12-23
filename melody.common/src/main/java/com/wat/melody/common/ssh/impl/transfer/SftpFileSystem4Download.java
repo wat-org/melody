@@ -103,7 +103,17 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		// TODO : Should fail if source is a directory
+		/*
+		 * /!\ do not release this FS ! cause it shares with this object the
+		 * same underlying connection to the remote system.
+		 */
+		SftpFileSystem remotefs = new SftpFileSystem(getChannel());
+		// fail if source doesn't exists
+		SftpFileAttributes sourceAttrs = remotefs.readAttributes(source);
+		// fail if source is a directory
+		if (sourceAttrs.isDirectory()) {
+			throw new WrapperDirectoryNotEmptyException(source);
+		}
 		// Fail if destination is a directory
 		if (isDirectory(destination)) {
 			throw new WrapperDirectoryNotEmptyException(destination);

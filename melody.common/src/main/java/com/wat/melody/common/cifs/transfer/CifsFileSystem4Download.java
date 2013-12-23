@@ -39,20 +39,29 @@ import com.wat.melody.common.transfer.exception.TemplatingException;
 public class CifsFileSystem4Download extends LocalFileSystem implements
 		TransferableFileSystem {
 
+	private String _domain;
+	private String _username;
+	private String _password;
+	private String _location;
 	private NtlmPasswordAuthentication _smbCredential;
 	private String _smbLocation;
 	private TemplatingHandler _templatingHandler;
 
-	public CifsFileSystem4Download(String location, String domain, String user,
-			String password, TemplatingHandler th) {
+	public CifsFileSystem4Download(String location, String domain,
+			String username, String password, TemplatingHandler th) {
 		super();
 		if (location == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
+		_domain = domain;
+		_username = username;
+		_password = password;
+		_location = location;
 		// if domain, user or pass is null, default values will be used
-		_smbCredential = new NtlmPasswordAuthentication(domain, user, password);
+		_smbCredential = new NtlmPasswordAuthentication(domain, username,
+				password);
 		_smbLocation = "smb://" + location + "/";
 		setTemplatingHandler(th);
 	}
@@ -124,7 +133,18 @@ public class CifsFileSystem4Download extends LocalFileSystem implements
 					+ "Must be a valid " + String.class.getCanonicalName()
 					+ ".");
 		}
-		// TODO : Should fail if source is a directory
+		/*
+		 * /!\ do not release this FS ! cause it shares with this object the
+		 * same underlying connection to the remote system.
+		 */
+		CifsFileSystem remotefs = new CifsFileSystem(_location, _domain,
+				_username, _password);
+		// fail if source doesn't exists
+		CifsFileAttributes sourceAttrs = remotefs.readAttributes(source);
+		// fail if source is a directory
+		if (sourceAttrs.isDirectory()) {
+			throw new WrapperDirectoryNotEmptyException(source);
+		}
 		// Fail if destination is a directory
 		if (isDirectory(destination)) {
 			throw new WrapperDirectoryNotEmptyException(destination);
