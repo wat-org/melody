@@ -39,9 +39,9 @@
 	<instances>
 		<WEB>
 			<instance herit="./environment/models/model[@name='model-WEB']" name="web-a01" site="a">
-				<disk-devices>
+				<firewall>
 					<tcp access="allow" directions="in" from-ips="all" to-ports="8080,8443"/>
-				</disk-devices>
+				</firewall>
 				<disk-devices>
 					<disk delete-on-termination="true" device-name="/dev/sdd" size="1 G"/>
 				</disk-devices>
