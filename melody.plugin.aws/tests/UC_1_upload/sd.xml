@@ -126,9 +126,9 @@
 	
 	
 
-	<order name="destroy_bucket">
+	<order name="delete_bucket">
 		<echo message="Destroying bucket '§[bucket]§' ..."/>
-		<destroy-bucket bucket-name="§[bucket]§" region="eu-west-1"/>
+		<delete-bucket bucket-name="§[bucket]§"/>
 		<echo message="Bucket '§[bucket]§' destroyed."/>
 	</order>
 

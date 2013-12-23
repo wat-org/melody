@@ -179,12 +179,17 @@ public class AwsS3Wrapper {
 	 * @param bn
 	 * @param source
 	 * @param destination
+	 * @param metadatas
+	 *            Should provide the length of the file to upload.an be
+	 *            <tt>null</tt>. If <tt>null</tt>, no content length will be
+	 *            specified for stream data, and stream contents will be
+	 *            buffered in memory and could result in out of memory errors.
 	 * @param pl
 	 *            Can be <tt>null</tt>. If <tt>null</tt>, no upload progress
 	 *            notification will be send.
 	 */
 	public void upload(String bn, InputStream source, String destination,
-			ProgressListener pl) {
+			ObjectMetadata metadatas, ProgressListener pl) {
 		if (bn == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -195,7 +200,7 @@ public class AwsS3Wrapper {
 			return;
 		}
 		PutObjectRequest poreq = null;
-		poreq = new PutObjectRequest(bn, destination, source, null);
+		poreq = new PutObjectRequest(bn, destination, source, metadatas);
 		poreq.setGeneralProgressListener(pl);
 		getS3().putObject(poreq);
 	}

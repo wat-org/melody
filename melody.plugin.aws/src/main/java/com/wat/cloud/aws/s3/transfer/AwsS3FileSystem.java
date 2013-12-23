@@ -49,6 +49,26 @@ import com.wat.melody.common.messages.Msg;
  */
 public class AwsS3FileSystem implements FileSystem {
 
+	protected static boolean containsInterruptedException(Throwable Ex) {
+		/*
+		 * if interrupted: may throw an InterruptedException wrapped in a
+		 * TransportException wrapped in a AmazonClientException.
+		 * 
+		 * if interrupted: may also throw an InterruptedIOException wrapped in a
+		 * AmazonClientException.
+		 */
+		while (Ex != null) {
+			if (Ex instanceof InterruptedException) {
+				return true;
+			}
+			if (Ex instanceof InterruptedIOException) {
+				return true;
+			}
+			Ex = Ex.getCause();
+		}
+		return false;
+	}
+
 	public static String convertToS3Path(String path) {
 		if (path == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

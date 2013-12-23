@@ -157,7 +157,20 @@ public class AwsS3FileSystem4Download extends LocalFileSystem implements
 		FileOutputStream fos = null;
 		byte[] datas = null;
 		try {
-			// TODO : should deal with interrupted exception
+			/*
+			 * When interrupted, the object is still downloading by underlying
+			 * getObject method because it doesn't correctly deal with
+			 * Interruption. The underlying org.apache.http.impl will detect
+			 * interruption and retry...
+			 * 
+			 * Even this behavior is not good, this code do the job and will
+			 * throw InterruptedIOException.
+			 * 
+			 * If it fails to detect interruption, the caller should deal with
+			 * this situation.
+			 * 
+			 * Maybe I should use the TransferManager.
+			 */
 			fos = new FileOutputStream(destination);
 			fis = getS3().download(getBN(), source, pm);
 
@@ -178,6 +191,10 @@ public class AwsS3FileSystem4Download extends LocalFileSystem implements
 						destination), Ex);
 			}
 		} catch (AmazonClientException Ex) {
+			if (AwsS3FileSystem.containsInterruptedException(Ex)) {
+				throw new InterruptedIOException(
+						Messages.S3fsEx_PUT_INTERRUPTED);
+			}
 			throw new IOException(Msg.bind(Messages.S3fsEx_GET, source,
 					destination), Ex);
 		} catch (FileNotFoundException Ex) {

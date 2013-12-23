@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -14,6 +15,7 @@ import java.nio.file.attribute.FileAttribute;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.wat.cloud.aws.s3.BucketName;
 import com.wat.cloud.aws.s3.Messages;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
@@ -63,9 +65,9 @@ public class AwsS3FileSystem4Upload extends AwsS3FileSystem implements
 			DirectoryNotEmptyException, AccessDeniedException,
 			IllegalFileAttributeException {
 		// Fail if source is a directory
-		// if (Files.isDirectory(src)) {
-		// throw new WrapperDirectoryNotEmptyException(src);
-		// }
+		if (Files.isDirectory(src)) {
+			throw new WrapperDirectoryNotEmptyException(src);
+		}
 		upload(src, dest);
 		setAttributes(dest, attrs);
 	}
@@ -104,9 +106,24 @@ public class AwsS3FileSystem4Upload extends AwsS3FileSystem implements
 				destination, src.length());
 		FileInputStream fis = null;
 		try {
-			// TODO : should deal with interrupted exception
+			/*
+			 * When interrupted, the object is still uploading by underlying
+			 * putObject method because it doesn't correctly deal with
+			 * Interruption. The underlying org.apache.http.impl will detect
+			 * interruption and retry...
+			 * 
+			 * Even this behavior is not good, this code try to throw
+			 * InterruptedIOException.
+			 * 
+			 * If it fails to detect interruption, the caller should deal with
+			 * this situation.
+			 * 
+			 * Maybe I should use the TransferManager.
+			 */
 			fis = new FileInputStream(src);
-			getS3().upload(getBN(), fis, destination, pm);
+			ObjectMetadata metadatas = new ObjectMetadata();
+			metadatas.setContentLength(src.length());
+			getS3().upload(getBN(), fis, destination, metadatas, pm);
 		} catch (AmazonS3Exception Ex) {
 			if (Ex.getMessage() != null
 					&& Ex.getMessage().indexOf("Forbidden") != -1) {
@@ -116,6 +133,10 @@ public class AwsS3FileSystem4Upload extends AwsS3FileSystem implements
 						destination), Ex);
 			}
 		} catch (AmazonClientException Ex) {
+			if (containsInterruptedException(Ex)) {
+				throw new InterruptedIOException(
+						Messages.S3fsEx_PUT_INTERRUPTED);
+			}
 			throw new IOException(Msg.bind(Messages.S3fsEx_PUT, source,
 					destination), Ex);
 		} catch (FileNotFoundException Ex) {
@@ -130,6 +151,8 @@ public class AwsS3FileSystem4Upload extends AwsS3FileSystem implements
 			} else {
 				throw new WrapperNoSuchFileException(source, Ex);
 			}
+		} catch (Throwable Ex) {
+			System.out.println(Ex);
 		} finally {
 			if (fis != null)
 				fis.close();

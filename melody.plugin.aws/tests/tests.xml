@@ -234,12 +234,12 @@
 		</java>
 	</target>
 
-	<target name="Transfer_UC1_04_destroy_bucket">
+	<target name="Transfer_UC1_04_delete_bucket">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1_upload/mc.properties" />
 			<arg value="-o" />
-			<arg value="destroy_bucket" />
+			<arg value="delete_bucket" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
