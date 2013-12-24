@@ -1,6 +1,8 @@
 package com.wat.melody.common.transfer.resources.attributes;
 
 import com.wat.melody.api.annotation.Attribute;
+import com.wat.melody.api.annotation.TextContent;
+import com.wat.melody.common.ex.MelodyException;
 
 /**
  * 
@@ -31,6 +33,15 @@ public class NamedAttribute extends AttributeBase<String> {
 		String previous = getName();
 		_name = name;
 		return previous;
+	}
+
+	/**
+	 * The text content is no more mandatory (see
+	 * {@link AttributeBase#setStringValue(String)}).
+	 */
+	@TextContent
+	public String setStringValue(String value) throws MelodyException {
+		return super.setStringValue(value);
 	}
 
 	@Override
