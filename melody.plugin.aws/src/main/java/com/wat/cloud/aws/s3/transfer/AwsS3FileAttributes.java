@@ -153,6 +153,15 @@ public class AwsS3FileAttributes implements EnhancedFileAttributes {
 		return null;
 	}
 
+	/**
+	 * @param followLink
+	 *            if <tt>true</tt> and if this object's path points to a
+	 *            symbolic link, metadata of the symbolic link's target will be
+	 *            returned.
+	 * 
+	 * @return the metadatas of this object, or the metadatas of this object's
+	 *         symbolic link's target (see parameter followLink).
+	 */
 	public ObjectMetadata getMetadatas(boolean followLink) {
 		return followLink && isSymbolicLink() ? _targetMetadatas : _metadatas;
 	}

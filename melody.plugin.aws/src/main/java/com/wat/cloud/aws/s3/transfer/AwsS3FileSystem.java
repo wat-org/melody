@@ -15,13 +15,16 @@ import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -677,6 +680,16 @@ public class AwsS3FileSystem implements FileSystem {
 		setAttributes(convertToS3Path(path), attrs);
 	}
 
+	protected static List<String> SupportedMetadatas = new ArrayList<String>();
+	static {
+		SupportedMetadatas.add(Headers.CACHE_CONTROL.toLowerCase());
+		SupportedMetadatas.add(Headers.CONTENT_DISPOSITION.toLowerCase());
+		SupportedMetadatas.add(Headers.CONTENT_ENCODING.toLowerCase());
+		SupportedMetadatas.add(Headers.CONTENT_TYPE.toLowerCase());
+		SupportedMetadatas.add(Headers.STORAGE_CLASS.toLowerCase());
+		SupportedMetadatas.add(Headers.SERVER_SIDE_ENCRYPTION.toLowerCase());
+	}
+
 	/**
 	 * An attribute with an <tt>null</tt> value will be removed.
 	 */
@@ -693,7 +706,23 @@ public class AwsS3FileSystem implements FileSystem {
 		}
 
 		AwsS3FileAttributes attribute = readAttributes(path);
-		ObjectMetadata metadatas = attribute.getMetadatas(false);
+		ObjectMetadata origMD = attribute.getMetadatas(false);
+		Map<String, String> userMD = origMD.getUserMetadata();
+		/*
+		 * BUG in ObjectMetadata : most values can't be set to null. And
+		 * getRawMetadata() returns an unmodifiableMap... There's no standard
+		 * way to remove a meta-data.
+		 * 
+		 * Our solution to remove a meta-data from the raw meta data is to build
+		 * our own meta-data from scratch. That's why we copy the raw meta data
+		 * into a modifiable map. Later, we will modify (add/remove keys) this
+		 * modifiable map. Finally, we will create our own meta data using the
+		 * modifiable map and the user meta data,
+		 */
+		Map<String, Object> rawMD = new HashMap<String, Object>(
+				origMD.getRawMetadata());
+
+		boolean needUpdate = false;
 
 		ConsolidatedException full = new ConsolidatedException(Msg.bind(
 				Messages.S3fsEx_FAILED_TO_SET_ATTRIBUTES, path));
@@ -736,14 +765,31 @@ public class AwsS3FileSystem implements FileSystem {
 					// view is known but attribute name is not recognized
 					throw new IllegalArgumentException("'" + attr.name() + "'"
 							+ " not recognized.");
+				} else if (SupportedMetadatas.contains(attr.name()
+						.toLowerCase())) {
+					if (attr.value() == null) {
+						if (rawMD.get(attr.name()) != null) {
+							// the attribute will be removed
+							rawMD.remove(attr.name());
+							needUpdate = true;
+						}
+					} else if (!attr.value().equals(rawMD.get(attr.name()))) {
+						// the attribute will be added
+						rawMD.put(attr.name(), (String) attr.value());
+						needUpdate = true;
+					}
 				} else if (attr.value() == null) {
-					// the attribute will be removed
-					metadatas.getUserMetadata().remove(attr.name());
-				} else {
+					if (userMD.get(attr.name()) != null) {
+						// the attribute will be removed
+						userMD.remove(attr.name());
+						needUpdate = true;
+					}
+				} else if (!attr.value().equals(userMD.get(attr.name()))) {
 					// the attribute will be added
-					metadatas.getUserMetadata().put(attr.name(),
-							(String) attr.value());
+					userMD.put(attr.name(), (String) attr.value());
+					needUpdate = true;
 				}
+
 			} catch (UnsupportedOperationException | IllegalArgumentException
 					| ClassCastException Ex) {
 				// don't want the stack trace
@@ -756,27 +802,39 @@ public class AwsS3FileSystem implements FileSystem {
 			}
 		}
 
-		try {
+		if (needUpdate == true) {
+			// BUG : build our own meta-data from scratch
+			ObjectMetadata finalMD = new ObjectMetadata();
+			for (String header : rawMD.keySet()) {
+				finalMD.setHeader(header, rawMD.get(header));
+			}
+			finalMD.setUserMetadata(userMD);
+
 			String sPath = path;
 			if (attribute.isDirectory()
 					&& path.charAt(path.length() - 1) != '/') {
+				// if directory, add a trailing '/'
 				sPath += '/';
 			} else if (attribute.isRegularFile()
 					&& path.charAt(path.length() - 1) == '/') {
+				// if regular file, remove the trailing '/'
 				sPath = path.substring(0, path.length() - 1);
 			}
-			getS3().setObjectMetadata(getBN(), sPath, metadatas);
-		} catch (AmazonS3Exception Ex) {
-			if (Ex.getMessage() != null
-					&& Ex.getMessage().indexOf("Forbidden") != -1) {
-				throw new WrapperAccessDeniedException(path, Ex);
-			} else {
+
+			try {
+				getS3().setObjectMetadata(getBN(), sPath, finalMD);
+			} catch (AmazonS3Exception Ex) {
+				if (Ex.getMessage() != null
+						&& Ex.getMessage().indexOf("Forbidden") != -1) {
+					throw new WrapperAccessDeniedException(path, Ex);
+				} else {
+					throw new IOException(Msg.bind(Messages.S3fsEx_SETATTRS,
+							path, rawMD, userMD), Ex);
+				}
+			} catch (AmazonClientException Ex) {
 				throw new IOException(Msg.bind(Messages.S3fsEx_SETATTRS, path,
-						metadatas.getUserMetadata()), Ex);
+						rawMD, userMD), Ex);
 			}
-		} catch (AmazonClientException Ex) {
-			throw new IOException(Msg.bind(Messages.S3fsEx_SETATTRS, path,
-					metadatas.getUserMetadata()), Ex);
 		}
 
 		if (full.countCauses() != 0) {
