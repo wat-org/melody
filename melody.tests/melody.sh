@@ -32,6 +32,17 @@ declare DEBUG="DEBUG"
 declare TRACE="TRACE"
 
 #################
+# Setup the JVM
+#
+if [ "x$JAVA" = "x" ]; then
+  if [ "x$JAVA_HOME" != "x" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+  else
+    JAVA="java"
+  fi
+fi
+
+#################
 # Display a message to the standard output, with the following format : date/time severity message
 #
 myecho() {
@@ -47,14 +58,14 @@ myecho() {
 #
 main() {
   # Verify java cmd accessibility
-  which java 1>/dev/null 2>&1 || {
+  which "${JAVA}" 1>/dev/null 2>&1 || {
     local res=$?
-    myecho -e "'java' not found in path (code '$res'). Exiting" "${ERROR}"
+    myecho -e "'${JAVA}' is not a valid path to 'java' (code '$res'). Exiting" "${ERROR}"
     return $res
   }
   
   # Execute Melody
-  eval java -Dfile.encoding=UTF-8 ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
+  eval "${JAVA}" -Dfile.encoding=UTF-8 ${JAVA_OPTS} "${melodyMainClass}" "$@" || {
     local res=$?
     [ $res = 130 ] && myecho -e "Melody was interrupted (code '$res'). Exiting" "${WARNING}" || myecho -e "Melody return an error (code '$res'). Exiting" "${ERROR}"
     return $res
