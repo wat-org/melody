@@ -52,6 +52,8 @@ public class Launcher {
 
 		// The logger can only be created after log4j's initialization
 		Logger log = LoggerFactory.getLogger(Launcher.class);
+		Logger ex = LoggerFactory.getLogger("exception."
+				+ Launcher.class.getName());
 		ShutdownHook sdh = new ShutdownHook(pm, Thread.currentThread());
 		// DefaultProcessingListener dpl = new DefaultProcessingListener(pm);
 		ReturnCode iReturnCode = ReturnCode.ERRGEN;
@@ -66,14 +68,17 @@ public class Launcher {
 		} catch (InterruptedException Ex) {
 			MelodyException e = new MelodyException(Ex);
 			log.warn(e.getUserFriendlyStackTrace());
+			ex.warn(e.getFullStackTrace());
 			iReturnCode = ReturnCode.INTERRUPTED;
 		} catch (MelodyException Ex) {
 			log.error(Ex.getUserFriendlyStackTrace());
+			ex.error(Ex.getFullStackTrace());
 			iReturnCode = ReturnCode.KO;
 		} catch (Throwable Ex) {
 			MelodyException e = new MelodyException("Something bad happend. "
 					+ "Please report this bug at Wat-Org.", Ex);
 			log.error(e.getUserFriendlyStackTrace());
+			ex.error(e.getFullStackTrace());
 			iReturnCode = ReturnCode.ERRGEN;
 		} finally {
 			// if (pm != null && dpl != null) {
@@ -85,6 +90,7 @@ public class Launcher {
 				MelodyException e = new MelodyException("Fail to delete CLI "
 						+ "temporary resources.", Ex);
 				log.warn(e.getUserFriendlyStackTrace());
+				ex.warn(e.getFullStackTrace());
 			}
 			// If we call System.exit while the processing has already been
 			// stopped by user (i.e. the shutdownHook is started), it will block

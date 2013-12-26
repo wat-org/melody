@@ -1,7 +1,5 @@
 package com.wat.melody.common.ex;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -78,7 +76,7 @@ public class ConsolidatedException extends MelodyException {
 		if (getCauses().size() == 1) {
 			StringBuilder err = getUserFriendlyStackTrace(iter.next());
 			SysTool.replaceAll(err, SysTool.NEW_LINE + "    ", SysTool.NEW_LINE);
-			return msg != null ? msg + SysTool.NEW_LINE + "Caused by : " + err
+			return msg != null ? msg + SysTool.NEW_LINE + "Caused by: " + err
 					: err.toString();
 		}
 		StringBuilder err = new StringBuilder();
@@ -90,53 +88,21 @@ public class ConsolidatedException extends MelodyException {
 		return msg != null ? msg + err : err.toString();
 	}
 
-	/*
-	 * TODO : override printStackTrace.
-	 * 
-	 * Unfortunately, these methods are not called when printing a inner stack
-	 * trace... For that particular purpose, we should find a way to override
-	 * one of Throwable.printStackTrace(PrintStreamOrWriter s),
-	 * Throwable.getOurStackTrace() or Throwable.printEnclosedStackTrace(...) .
-	 * But because these methods are private, it will not be easy to override
-	 * them... damned !
-	 */
-	@Override
-	public void printStackTrace() {
-		printStackTrace(System.err);
-	}
-
-	@Override
-	public void printStackTrace(PrintStream s) {
-		super.printStackTrace(s);
-		StringBuilder err = getCausesStackTrace();
-		if (err != null) {
-			s.append(err);
-		}
-	}
-
-	@Override
-	public void printStackTrace(PrintWriter s) {
-		super.printStackTrace(s);
-		StringBuilder err = getCausesStackTrace();
-		if (err != null) {
-			s.append(err);
-		}
-	}
-
-	private StringBuilder getCausesStackTrace() {
+	protected String getCausesStackTrace() {
 		if (getCauses().size() == 0) {
-			return null;
+			return "";
 		}
 		Iterator<Throwable> iter = getCauses().iterator();
 		StringBuilder err = new StringBuilder();
 		for (int i = 0; iter.hasNext(); i++) {
-			err.append(SysTool.NEW_LINE + "Error " + (i + 1) + " : ");
-			err.append(getFullStackTrace(iter.next()));
+			StringBuilder part = new StringBuilder();
+			part.append("  Error " + (i + 1) + " : ");
+			part.append(getFullStackTrace(iter.next()));
+			SysTool.replaceAll(part, SysTool.NEW_LINE, SysTool.NEW_LINE + "  ");
+			err.append(SysTool.NEW_LINE + part);
 		}
-		SysTool.replaceAll(err, SysTool.NEW_LINE, SysTool.NEW_LINE + "  ");
-		SysTool.replaceAll(err, "  \t", "\t  ");
 		err.delete(0, SysTool.NEW_LINE.length());
-		return err;
+		return err.toString();
 	}
 
 }

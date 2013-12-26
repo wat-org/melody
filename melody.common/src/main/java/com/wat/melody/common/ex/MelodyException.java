@@ -1,5 +1,6 @@
 package com.wat.melody.common.ex;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -38,6 +39,38 @@ public class MelodyException extends Exception {
 		super(msg, cause);
 	}
 
+	/*
+	 * override printStackTrace : replace TAB by 4 space and print
+	 * ConsolidatedException stackTrace
+	 */
+	@Override
+	public void printStackTrace() {
+		printStackTrace(System.err);
+	}
+
+	@Override
+	public void printStackTrace(PrintStream s) {
+		super.printStackTrace(s);
+		s.append(getConsolidatedExceptionStackTrace());
+	}
+
+	@Override
+	public void printStackTrace(PrintWriter s) {
+		super.printStackTrace(s);
+		s.append(getConsolidatedExceptionStackTrace());
+	}
+
+	protected String getConsolidatedExceptionStackTrace() {
+		Throwable ex = this;
+		while (ex != null && ex.getCause() != null) {
+			ex = ex.getCause();
+		}
+		if (ex instanceof ConsolidatedException) {
+			return ((ConsolidatedException) ex).getCausesStackTrace();
+		}
+		return "";
+	}
+
 	/**
 	 * <p>
 	 * Return the user-oriented stack trace of this object as a <tt>String</tt>.
@@ -48,26 +81,26 @@ public class MelodyException extends Exception {
 	 * 
 	 * <pre>
 	 * [file:./melody.tests/tests/call/UC_1/sd.xml] Processing finished &lt;FAILED&gt;.
-	 *     Caused by : [line:6, column:21] Task 'order' finished &lt;FAILED&gt;.
-	 *     Caused by : [line:7, column:33] Task 'call' finished &lt;FAILED&gt;.
-	 *     Caused by : 
+	 *     Caused by: [line:6, column:21] Task 'order' finished &lt;FAILED&gt;.
+	 *     Caused by: [line:7, column:33] Task 'call' finished &lt;FAILED&gt;.
+	 *     Caused by: 
 	 *       Error 1 : [file:./melody.tests/tests/call/UC_1/sd1.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:7, column:56] Task 'echo' created &lt;FAILED&gt;.
-	 *           Caused by : [line:7, column:56, attribute:rejected_attr] The XML Attribute 'rejected_attr' is not accepted. To solve this issue, remove this XML Attribute.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:7, column:56] Task 'echo' created &lt;FAILED&gt;.
+	 *           Caused by: [line:7, column:56, attribute:rejected_attr] The XML Attribute 'rejected_attr' is not accepted. To solve this issue, remove this XML Attribute.
 	 *       Error 2 : [file:./melody.tests/tests/call/UC_1/sd2.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
-	 *           Caused by : './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
+	 *           Caused by: './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
 	 *       Error 3 : [file:./melody.tests/tests/call/UC_1/sd3.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:39] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : 'call' XML element should either contain an 'orders' XML attribute or one (at least) inner 'ref' XML Element.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:39] Task 'call' created &lt;FAILED&gt;.
+	 *           Caused by: 'call' XML element should either contain an 'orders' XML attribute or one (at least) inner 'ref' XML Element.
 	 *       Error 4 : [file:./melody.tests/tests/call/UC_1/sd4.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
-	 *           Caused by : The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
+	 *           Caused by: The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
 	 * </pre>
 	 * 
 	 * </p>
@@ -103,7 +136,7 @@ public class MelodyException extends Exception {
 	 *         {@link Throwable} object, or an empty <tt>String</tt> if the
 	 *         given {@link Throwable} object is <tt>null</tt>.
 	 */
-	public static String getFullStackTrace(Throwable ex) {
+	protected static String getFullStackTrace(Throwable ex) {
 		if (ex == null) {
 			return "";
 		}
@@ -111,10 +144,12 @@ public class MelodyException extends Exception {
 		PrintWriter pw = new PrintWriter(sw);
 		ex.printStackTrace(pw);
 		pw.close();
-		String s = sw.toString();
+		String s = sw.toString().replaceAll("\t", "    ")
+				.replaceAll(SysTool.NEW_LINE, SysTool.NEW_LINE + "    ");
 		// Remove the last CRLF or LF
-		if (s.endsWith(SysTool.NEW_LINE)) {
-			s = s.substring(0, s.length() - SysTool.NEW_LINE.length());
+		if (s.endsWith(SysTool.NEW_LINE + "    ")) {
+			s = s.substring(0,
+					s.length() - (SysTool.NEW_LINE + "    ").length());
 		}
 		return s;
 	}
@@ -130,26 +165,26 @@ public class MelodyException extends Exception {
 	 * 
 	 * <pre>
 	 * [file:./melody.tests/tests/call/UC_1/sd.xml] Processing finished &lt;FAILED&gt;.
-	 *     Caused by : [line:6, column:21] Task 'order' finished &lt;FAILED&gt;.
-	 *     Caused by : [line:7, column:33] Task 'call' finished &lt;FAILED&gt;.
-	 *     Caused by : 
+	 *     Caused by: [line:6, column:21] Task 'order' finished &lt;FAILED&gt;.
+	 *     Caused by: [line:7, column:33] Task 'call' finished &lt;FAILED&gt;.
+	 *     Caused by: 
 	 *       Error 1 : [file:./melody.tests/tests/call/UC_1/sd1.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:7, column:56] Task 'echo' created &lt;FAILED&gt;.
-	 *           Caused by : [line:7, column:56, attribute:rejected_attr] The XML Attribute 'rejected_attr' is not accepted. To solve this issue, remove this XML Attribute.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:7, column:56] Task 'echo' created &lt;FAILED&gt;.
+	 *           Caused by: [line:7, column:56, attribute:rejected_attr] The XML Attribute 'rejected_attr' is not accepted. To solve this issue, remove this XML Attribute.
 	 *       Error 2 : [file:./melody.tests/tests/call/UC_1/sd2.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
-	 *           Caused by : './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:67] Task 'call' created &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:67, attribute:sequence-descriptor] XML Attribute 'sequence-descriptor' set &lt;FAILED&gt;.
+	 *           Caused by: './melody.tests/tests/call/UC_1/file.not_exists': Not accepted. File doesn't exist.
 	 *       Error 3 : [file:./melody.tests/tests/call/UC_1/sd3.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:39] Task 'call' created &lt;FAILED&gt;.
-	 *           Caused by : 'call' XML element should either contain an 'orders' XML attribute or one (at least) inner 'ref' XML Element.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:39] Task 'call' created &lt;FAILED&gt;.
+	 *           Caused by: 'call' XML element should either contain an 'orders' XML attribute or one (at least) inner 'ref' XML Element.
 	 *       Error 4 : [file:./melody.tests/tests/call/UC_1/sd4.xml] Processing finished &lt;FAILED&gt;.
-	 *           Caused by : [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
-	 *           Caused by : [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
-	 *           Caused by : The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
+	 *           Caused by: [line:6, column:23] Task 'order' finished &lt;FAILED&gt;.
+	 *           Caused by: [line:8, column:13] Task 'foreach' created &lt;FAILED&gt;.
+	 *           Caused by: The mandatory XML Attribute 'item-name' is missing. To solve this issue, declare the missing XML Attribute.
 	 * </pre>
 	 * 
 	 * </p>
@@ -162,14 +197,19 @@ public class MelodyException extends Exception {
 	 *         <tt>String</tt> if the given {@link Throwable} object is
 	 *         <tt>null</tt>.
 	 */
-	public static StringBuilder getUserFriendlyStackTrace(Throwable ex) {
+	protected static StringBuilder getUserFriendlyStackTrace(Throwable ex) {
 		StringBuilder err = new StringBuilder("");
 		String current;
+		boolean dontPrintCausedBy;
 		while (ex != null) {
+			dontPrintCausedBy = false;
 			if (ex instanceof RuntimeException || !(ex instanceof Exception)) {
-				current = getFullStackTrace(ex);
+				current = getFullStackTrace(ex).replaceAll(
+						SysTool.NEW_LINE + "    ", SysTool.NEW_LINE);
 				ex = null; // break loop
 			} else if (ex instanceof ConsolidatedException) {
+				dontPrintCausedBy = ex.getMessage() == null
+						|| ex.getMessage().length() == 0;
 				current = ((ConsolidatedException) ex)
 						.getUserFriendlyStackTrace();
 				ex = ex.getCause();
@@ -180,8 +220,10 @@ public class MelodyException extends Exception {
 			if (current != null && current.length() != 0) {
 				if (err.length() == 0) {
 					err = new StringBuilder(current);
+				} else if (dontPrintCausedBy) {
+					err.append(current);
 				} else {
-					err.append(SysTool.NEW_LINE + "Caused by : " + current);
+					err.append(SysTool.NEW_LINE + "Caused by: " + current);
 				}
 			}
 		}
