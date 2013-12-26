@@ -2,77 +2,95 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" >
-	
-	<!--
-	This configuration provides :
-		- log of ERROR messages from all packages into the log file and the console
-		- log of ALL messages from package 'com.wat.melody' into the log file and the console
-		- log of ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
-		- log threshold of the console is driven by Command Line Options -v and -q
-	-->
+
+  <!--
+  This configuration provides :
+    - log of ERROR messages from all packages into the log file and the console
+    - log of ALL messages from package 'com.wat.melody' into the log file and the console
+    - log of ALL messages from package 'exception.com.wat.melody' into a dedicated log file
+    - log of ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
+    - log threshold of the console is driven by Command Line Options -v and -q
+  -->
 
 
-	<!--
-		/!\ 	DO NOT MODIFY THE CONSOLE APPENDER MANUALLY		/!\
-	-->
-	<appender name="console" class="org.apache.log4j.ConsoleAppender" >
-		<param name="Target" value="System.out" />
-		<layout class="org.apache.log4j.PatternLayout" > 
-			<param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
-		</layout>
-    	<filter class="org.apache.log4j.varia.LevelRangeFilter" >
-			<param name="levelMin" value="${log4j.defaultLoggingLevel}" />
-		</filter>
-	</appender>
-	
-	<appender name="file" class="org.apache.log4j.RollingFileAppender" >
-		<param name="file" value="${log4j.logFilePath}" />
-		<param name="MaxFileSize" value="5MB" />
-		<param name="MaxBackupIndex" value="3" />
-    	<layout class="org.apache.log4j.PatternLayout" > 
-			<param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" /> 
-		</layout>
-	</appender>
-	
-	<appender name="awsfile" class="org.apache.log4j.RollingFileAppender" >
-		<param name="file" value="${log4j.aws.logFilePath}" />
-		<param name="MaxFileSize" value="50MB" />
-		<param name="MaxBackupIndex" value="3" />
-    	<layout class="org.apache.log4j.PatternLayout" > 
-			<param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] [%C] - %m%n" /> 
-		</layout>
-	</appender>
+  <!--
+    /!\   DO NOT MODIFY THE CONSOLE APPENDER MANUALLY    /!\
+  -->
+  <appender name="console" class="org.apache.log4j.ConsoleAppender" >
+    <param name="Target" value="System.out" />
+    <layout class="org.apache.log4j.PatternLayout" >
+      <param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" />
+    </layout>
+      <filter class="org.apache.log4j.varia.LevelRangeFilter" >
+      <param name="levelMin" value="${log4j.defaultLoggingLevel}" />
+    </filter>
+  </appender>
 
-	<!--
-		log ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
-	-->
-	<logger name="com.wat.cloud.aws" additivity="false" >
-		<level value="ALL" />
-		<appender-ref ref="awsfile" />
-	</logger>
-	<logger name="com.amazonaws" additivity="false" >
-		<level value="ALL" />
-		<appender-ref ref="awsfile" />
-	</logger>
-	<logger name="org.apache.http" additivity="false" >
-		<level value="ALL" />
-		<appender-ref ref="awsfile" />
-	</logger>
-	
-	<!--
-		log ALL messages from package 'com.wat.melody' into the log file and into the console
-	-->
-	<logger name="com.wat.melody" >
-		<level value="ALL" />
-	</logger>
-	
-	<!--
-		log only ERROR messages from all packages into the log file and into the console
-	-->
-	<root>
-		<level value="ERROR" />
-		<appender-ref ref="console" />
-		<appender-ref ref="file" />
-	</root>
-	
+  <appender name="ex" class="org.apache.log4j.RollingFileAppender" >
+    <param name="file" value="${log4j.exceptionFilePath}" />
+    <param name="MaxFileSize" value="5MB" />
+    <param name="MaxBackupIndex" value="3" />
+      <layout class="org.apache.log4j.PatternLayout" >
+      <param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" />
+    </layout>
+  </appender>
+
+  <appender name="file" class="org.apache.log4j.RollingFileAppender" >
+    <param name="file" value="${log4j.logFilePath}" />
+    <param name="MaxFileSize" value="5MB" />
+    <param name="MaxBackupIndex" value="3" />
+      <layout class="org.apache.log4j.PatternLayout" >
+      <param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] - %m%n" />
+    </layout>
+  </appender>
+
+  <appender name="awsfile" class="org.apache.log4j.RollingFileAppender" >
+    <param name="file" value="${log4j.aws.logFilePath}" />
+    <param name="MaxFileSize" value="50MB" />
+    <param name="MaxBackupIndex" value="3" />
+      <layout class="org.apache.log4j.PatternLayout" >
+      <param name="ConversionPattern" value="[%d{yyyy-MM-dd}] [%d{HH:mm:ss,SSS}] [%-5p] [%t] [%C] - %m%n" />
+    </layout>
+  </appender>
+
+  <!--
+    log ALL messages from package 'com.wat.cloud.aws', 'com.amazonaws' and 'org.apache.http' into the a specific log file
+  -->
+  <logger name="com.wat.cloud.aws" additivity="false" >
+    <level value="ALL" />
+    <appender-ref ref="awsfile" />
+  </logger>
+  <logger name="com.amazonaws" additivity="false" >
+    <level value="ALL" />
+    <appender-ref ref="awsfile" />
+  </logger>
+  <logger name="org.apache.http" additivity="false" >
+    <level value="ALL" />
+    <appender-ref ref="awsfile" />
+  </logger>
+
+  <!--
+    log ALL messages generated by logger 'exception' into a dedicated log file
+  -->
+  <logger name="exception.com.wat.melody" additivity="false" >
+    <level value="ALL" />
+    <appender-ref ref="ex" />
+  </logger>
+
+  <!--
+    log ALL messages from package 'com.wat.melody' into the log file and into the console
+  -->
+  <logger name="com.wat.melody" >
+    <level value="ALL" />
+  </logger>
+
+  <!--
+    log only ERROR messages from all packages into the log file and into the console
+  -->
+  <root>
+    <level value="ERROR" />
+    <appender-ref ref="console" />
+    <appender-ref ref="file" />
+  </root>
+
 </log4j:configuration>

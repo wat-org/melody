@@ -19,9 +19,9 @@ element. -->
 <!-- By default, debug attribute is "null", meaning that we not touch    -->
 <!-- internal log4j logging settings.                                    -->
 
-     
+
 <!ATTLIST log4j:configuration
-  xmlns:log4j              CDATA #FIXED "http://jakarta.apache.org/log4j/" 
+  xmlns:log4j              CDATA #FIXED "http://jakarta.apache.org/log4j/"
   threshold                (all|debug|info|warn|error|fatal|off|null) "null"
   debug                    (true|false|null)  "null"
 >
@@ -59,7 +59,7 @@ element. -->
 
 <!ELEMENT errorHandler (param*, root-ref?, logger-ref*,  appender-ref?)>
 <!ATTLIST errorHandler
-   class        CDATA   #REQUIRED 
+   class        CDATA   #REQUIRED
 >
 
 <!ELEMENT root-ref EMPTY>
@@ -97,7 +97,7 @@ element. -->
 <!ATTLIST category
   class         CDATA   #IMPLIED
   name          CDATA   #REQUIRED
-  additivity    (true|false) "true"  
+  additivity    (true|false) "true"
 >
 
 <!-- If no level element is specified, then the configurator MUST not -->
@@ -105,7 +105,7 @@ element. -->
 <!ELEMENT logger (level?,appender-ref*)>
 <!ATTLIST logger
   name          ID      #REQUIRED
-  additivity    (true|false) "true"  
+  additivity    (true|false) "true"
 >
 
 
@@ -129,8 +129,8 @@ element. -->
 <!-- ==================================================================== -->
 <!ELEMENT log4j:eventSet (log4j:event*)>
 <!ATTLIST log4j:eventSet
-  xmlns:log4j             CDATA #FIXED "http://jakarta.apache.org/log4j/" 
-  version                (1.1|1.2) "1.2" 
+  xmlns:log4j             CDATA #FIXED "http://jakarta.apache.org/log4j/"
+  version                (1.1|1.2) "1.2"
   includesLocationInfo   (true|false) "true"
 >
 

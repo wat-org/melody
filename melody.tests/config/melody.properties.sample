@@ -11,7 +11,7 @@ rootFolderPath=<REPLACE ME WITH THE ABSOLUTE HOME DIR OF MELODY.SH>
 ####################################################
 ### MANDATORY CONFIGURATION DIRECTIVES
 
-### The canonical class name of the Processor Manager 
+### The canonical class name of the Processor Manager
 processorManagerCanonicalClassName=com.wat.melody.core.internal.ProcessorManager
 
 ### Folder where temporary files are stored
@@ -23,7 +23,7 @@ workingFolderPath=${rootFolderPath}/tmp/${UUID}/
 ### Must be a positive integer; 0 means 'no limit'
 maxSimultaneousStep=8
 
-### When killing Melody, all running threads are killed to.
+### When killing Melody, all running threads are killed too.
 ### 'hardKillTimeout' is the number of seconds Melody will wait for all threads to stop.
 ### After 'hardKillTimeout' seconds are elapsed, all running threads are killed.
 ### Must be a positive integer; 0 means 'infinite'
@@ -36,10 +36,13 @@ hardKillTimeout=60
 
 ### The path to the log4j configuration file (an xml file is required)
 loggingConfigurationFile=${rootFolderPath}/config/log4j.xml
-loggingVariablesToSubstitute=log4j.logFilePath,log4j.defaultLoggingLevel
+loggingVariablesToSubstitute=log4j.logFilePath,log4j.exceptionFilePath,log4j.defaultLoggingLevel
 
 ### Folder where logs are generated
 log4j.logFilePath=${rootFolderPath}/logs/melody.log
+
+### Folder where exceptions details are generated
+log4j.exceptionFilePath=${rootFolderPath}/logs/melody_exception.log
 
 ### Log threshold
 ### Can be altered by Command Line Options -v and -q
@@ -181,7 +184,7 @@ xpath.function.getHeritedContent.arity=2
 ### Accepted values : one or more XPath expression, separated by a comma.
 #resourcesFilters=
 
-### The target Filters
+### The Target Filters
 ### Can be override by Command Line Option -T <Filter>
 ### Accepted values : one or more XPath expression, separated by a comma.
 #targetFilters=
