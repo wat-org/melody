@@ -1,9 +1,12 @@
+######## license / author
+# license : GPL
+# author : Guillaume Cornet
+
 ####################################################
 ### CUSTOM CONFIGURATION DIRECTIVES
 
 ### 'rootFolderPath' is a custom configuration directive used to eliminate redundancy in folder declaration
-rootFolderPath=.
-awsEc2RootFolderPath=./../melody.plugin.aws
+rootFolderPath=<REPLACE ME WITH THE ABSOLUTE HOME DIR OF MELODY.SH>
 
 ####################################################
 ### MANDATORY CONFIGURATION DIRECTIVES
@@ -55,7 +58,7 @@ log4j.defaultLoggingLevel=WARN
 ### needed for Plug-In loading
 
 ### List Configuration Directives which will contains Task Java Classes
-tasks.directives=tasks.standard,tasks.xml,tasks.ssh,tasks.aws.plugin
+tasks.directives=tasks.standard,tasks.xml,tasks.ssh
 
 ### Standard Tasks Java Classes
 tasks.standard=\
@@ -77,30 +80,15 @@ com.wat.melody.plugin.ssh.Ssh, \
 com.wat.melody.plugin.ssh.Upload, \
 com.wat.melody.plugin.ssh.Download
 
-### Aws Ec2 Plug-In Tasks Java Classes
-tasks.aws.plugin=\
-com.wat.melody.plugin.aws.ec2.NewMachine, \
-com.wat.melody.plugin.aws.ec2.StartMachine, \
-com.wat.melody.plugin.aws.ec2.StopMachine, \
-com.wat.melody.plugin.aws.ec2.DeleteMachine, \
-com.wat.melody.plugin.aws.ec2.UpdateDiskDevices, \
-com.wat.melody.plugin.aws.ec2.UpdateNetworkDevices, \
-com.wat.melody.plugin.aws.ec2.UpdateFireWall, \
-com.wat.melody.plugin.aws.ec2.ResizeMachine, \
-com.wat.melody.plugin.aws.s3.CreateBucket, \
-com.wat.melody.plugin.aws.s3.DeleteBucket
-
-### Folder where plugins configuration are stored (used to eliminate redundancy in folder declaration)
+### Folder where Plug-In configuration are stored (used to eliminate redundancy in folder declaration)
 pluginConfigurationFolderPath=${rootFolderPath}/config/plugin
 
 ### list all Plug-In Configuration Directive
 ### comma separated list
-plugin.configuration.directives=ssh.plugin.configuration.filepath,aws.plugin.configuration.filepath
+plugin.configuration.directives=ssh.plugin.configuration.filepath
 
 # The path to the configuration file of the SSH SCP Plug-In
 ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugin.properties
-# The path to the configuration file of the AWS EC2 Plug-In
-aws.plugin.configuration.filepath=${pluginConfigurationFolderPath}/aws/aws.plugin.properties
 
 
 ####################################################
@@ -111,13 +99,12 @@ aws.plugin.configuration.filepath=${pluginConfigurationFolderPath}/aws/aws.plugi
 xpath.namespace.directives=xpath.namespace.standard
 
 ### Standard XPath NameSpaces
-xpath.namespace.standard=xpath.namespace.melody,xpath.namespace.aws
+xpath.namespace.standard=xpath.namespace.melody
 
 xpath.namespace.melody.uri=http://localhost/melody
-xpath.namespace.aws.uri=http://localhost/aws
 
 ### List Configuration Directives which will contains Custom XPath Function
-xpath.function.directives=xpath.function.standard,xpath.function.cloud,xpath.function.aws
+xpath.function.directives=xpath.function.standard
 
 ### Standard XPath Functions
 xpath.function.standard=\
@@ -125,28 +112,8 @@ xpath.function.getBaseDir, \
 xpath.function.getSequenceDescriptorPath, \
 xpath.function.getWorkingFolder, \
 xpath.function.newTmpFile, \
-xpath.function.raiseError, \
 xpath.function.getHeritedAttributeValue, \
 xpath.function.getHeritedContent
-
-xpath.function.cloud=\
-xpath.function.getNetworkActivationDeviceElement, \
-xpath.function.getNetworkActivationDeviceName, \
-xpath.function.getNetworkActivationHost, \
-xpath.function.getNetworkActivationPort, \
-xpath.function.getNetworkActivationProtocol, \
-xpath.function.getNetworkDeviceElementByName, \
-xpath.function.getNetworkDeviceElements, \
-xpath.function.getInstanceId, \
-xpath.function.getInstanceImageId, \
-xpath.function.getInstanceKeyPairName, \
-xpath.function.getInstanceRegion, \
-xpath.function.getInstanceSite, \
-xpath.function.getInstanceType
-
-xpath.function.aws=\
-xpath.function.getAwsSecretKey, \
-xpath.function.getAwsAccessKey
 
 xpath.function.getBaseDir.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.getBaseDir.class=com.wat.melody.core.nativeplugin.sequence.xpathfunctions.GetBaseDir
@@ -164,10 +131,6 @@ xpath.function.newTmpFile.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.newTmpFile.class=com.wat.melody.core.xpathfunctions.NewTmpFile
 xpath.function.newTmpFile.arity=0
 
-xpath.function.raiseError.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.raiseError.class=com.wat.melody.core.xpathfunctions.RaiseError
-xpath.function.raiseError.arity=1
-
 xpath.function.getHeritedAttributeValue.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.getHeritedAttributeValue.class=com.wat.melody.xpathextensions.GetHeritedAttribute
 xpath.function.getHeritedAttributeValue.arity=2
@@ -176,75 +139,15 @@ xpath.function.getHeritedContent.namespace.uri=${xpath.namespace.melody.uri}
 xpath.function.getHeritedContent.class=com.wat.melody.xpathextensions.GetHeritedContent
 xpath.function.getHeritedContent.arity=2
 
-xpath.function.getNetworkActivationDeviceElement.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationDeviceElement.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceElement
-xpath.function.getNetworkActivationDeviceElement.arity=1
-
-xpath.function.getNetworkActivationDeviceName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationDeviceName.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationDeviceName
-xpath.function.getNetworkActivationDeviceName.arity=1
-
-xpath.function.getNetworkActivationHost.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationHost.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationHost
-xpath.function.getNetworkActivationHost.arity=1
-
-xpath.function.getNetworkActivationPort.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationPort.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationPort
-xpath.function.getNetworkActivationPort.arity=1
-
-xpath.function.getNetworkActivationProtocol.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkActivationProtocol.class=com.wat.melody.cloud.network.activation.xpathfunctions.GetNetworkActivationProtocol
-xpath.function.getNetworkActivationProtocol.arity=1
-
-xpath.function.getNetworkDeviceElementByName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkDeviceElementByName.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElementByName
-xpath.function.getNetworkDeviceElementByName.arity=2
-
-xpath.function.getNetworkDeviceElements.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getNetworkDeviceElements.class=com.wat.melody.cloud.network.xpathfunctions.GetNetworkDeviceElements
-xpath.function.getNetworkDeviceElements.arity=1
-
-xpath.function.getInstanceId.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceId
-xpath.function.getInstanceId.arity=1
-
-xpath.function.getInstanceImageId.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceImageId.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceImageId
-xpath.function.getInstanceImageId.arity=1
-
-xpath.function.getInstanceKeyPairName.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceKeyPairName.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceKeyPairName
-xpath.function.getInstanceKeyPairName.arity=1
-
-xpath.function.getInstanceRegion.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceRegion.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceRegion
-xpath.function.getInstanceRegion.arity=1
-
-xpath.function.getInstanceSite.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceSite.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceSite
-xpath.function.getInstanceSite.arity=1
-
-xpath.function.getInstanceType.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getInstanceType.class=com.wat.melody.cloud.instance.xpathfunctions.GetInstanceType
-xpath.function.getInstanceType.arity=1
-
-xpath.function.getAwsAccessKey.namespace.uri=${xpath.namespace.aws.uri}
-xpath.function.getAwsAccessKey.class=com.wat.melody.plugin.aws.xpathfunctions.GetAwsAccessKey
-xpath.function.getAwsAccessKey.arity=0
-
-xpath.function.getAwsSecretKey.namespace.uri=${xpath.namespace.aws.uri}
-xpath.function.getAwsSecretKey.class=com.wat.melody.plugin.aws.xpathfunctions.GetAwsSecretKey
-xpath.function.getAwsSecretKey.arity=0
-
 
 ####################################################
 ### OPTIONNAL CONFIGURATION DIRECTIVES
 ### Can be override by the command line options
 
-### Path of the Resources descriptor
+### Path of the Resources Descriptor
 ### Can be override by Command Line Option -E <Resources Descriptor File Path>
-resourcesDescriptors=rd1
-rd1=${awsEc2RootFolderPath}/tests/UC_1/ed.xml
+#resourcesDescriptors=rd1
+#rd1=${rootFolderPath}/input/default-resources-descriptor.xml
 
 ### Batch mode : when enabled, will answer yes to any questions without prompting
 ### Can be override by Command Line Option -b / -B
@@ -263,7 +166,7 @@ rd1=${awsEc2RootFolderPath}/tests/UC_1/ed.xml
 
 ### Path of the TarGz archive or Sequence Descriptor file
 ### Can be override by Command Line Option -f <Sequence Descriptor File Path>
-sequenceDescriptorFilePath=${awsEc2RootFolderPath}/tests/sd.xml
+#sequenceDescriptorFilePath=${rootFolderPath}/input/sequence.xml
 
 ### Path of the specific configuration
 ### Can be override by Command Line Option -C <Specific Configuration File Path>
@@ -277,10 +180,7 @@ sequenceDescriptorFilePath=${awsEc2RootFolderPath}/tests/sd.xml
 ### The properties to pass to the process
 ### Can be override by Command Line Option -V <Property>
 ### Accepted values : a string of the form '<prop1>,<prop2>,<prop3>'. Then declare each property on a dedicated line (e.g. '<prop1>=<value1>')
-properties=binaries.repo.path,melody.extensions.path
-# is the path of a local directory where I store the binaries of a lot of products
-binaries.repo.path=/Cloud/binaries/
-melody.extensions.path=../../melody.tests/common/extensions/
+#properties=
 
 ### The Resources Filters
 ### Can be override by Command Line Option -F <Filter>
