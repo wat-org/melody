@@ -218,8 +218,9 @@ public class InstanceDatasLoader {
 	 * <li>passphrase : which should contains <tt>String</tt> ;</li>
 	 * <li>keypair-size : which should contains {@link KeyPairSize} ;</li>
 	 * <li>timeout-create : which should contains a {@link GenericTimeout} ;</li>
-	 * <li>timeout-attach : which should contains a {@link GenericTimeout} ;</li>
-	 * <li>timeout-detach : which should contains a {@link GenericTimeout} ;</li>
+	 * <li>timeout-destroy : which should contains a {@link GenericTimeout} ;</li>
+	 * <li>timeout-start : which should contains a {@link GenericTimeout} ;</li>
+	 * <li>timeout-stop : which should contains a {@link GenericTimeout} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
 	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>
