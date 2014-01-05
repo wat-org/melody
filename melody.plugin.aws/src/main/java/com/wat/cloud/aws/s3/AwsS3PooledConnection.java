@@ -67,6 +67,9 @@ public class AwsS3PooledConnection {
 		}
 		if (connect == null) {
 			if (enc != null) {
+				if (cryptoConf == null) {
+					cryptoConf = new CryptoConfiguration();
+				}
 				connect = new AmazonS3EncryptionClient(cred, enc, cc,
 						cryptoConf);
 			} else {

@@ -18,11 +18,16 @@
 
         <echo message="Transferring files to 'bucket:§[bucket]§' ..."/>
 
+        <!-- client-side encryption to S3 -->
+        <upload bucket-name="§[bucket]§" max-par="10" keypair-name="test" passphrase="supergenial">
+        <!-- no encryption -->
+        <!-- 
         <upload bucket-name="§[bucket]§" max-par="10">
+        -->
             <resources    src-basedir=""
                         match="**"
                         dest-basedir="/tmp/melody/scp/UC_1_upload"
-                        link-option="SKIP_LINKS" >
+                        link-option="COPY_LINKS" >
 
                 <include    match="static_myApp_myMod/content3.txt" >
                     <attribute name="custom">custom value</attribute>
@@ -43,7 +48,9 @@
                             dest-name="templates/bn-§[bucket]§/file2.bn-§[bucket]§"
                             template="y" />
 
-                <exclude    match="static_myApp_myMod/content2.*" />
+                <include    match="**/link.external.relative"
+                            link-option="SKIP_LINKS" /> <!-- this is a link, which points to melody.log. This file's size is increasing. So we skip it -->
+               
                 <exclude    match="download" />
                 <exclude    match="download/**" />
 
@@ -83,6 +90,11 @@
 
         <echo message="Transferring files from 'bucket:§[bucket]§' ..."/>
 
+        <!-- client-side encryption to S3 -->
+        <!-- 
+        <download bucket-name="§[bucket]§" max-par="10" keypair-name="test" passphrase="supergenial">
+        -->
+        <!-- no encryption -->
         <download bucket-name="§[bucket]§" max-par="10">
             <resources  src-basedir="/tmp/melody/scp/UC_1_upload"
                         match="**"
@@ -113,11 +125,10 @@
                     <posix-user scope="directories">60000</posix-user>
                 </include>
 
-                <!-- will generate warnings, cause localfs handles neither attribute containing ':' nor attribute containing '()' -->
                 <include    match="static_myApp_myMod/content2.txt" >
-                    <attribute name="dos:archive">true</attribute>
-                    <attribute name="s3:flute">awesome</attribute>
-                    <attribute name="s3(flute)">awesome</attribute>
+                    <attribute name="dos:archive">true</attribute> <!-- will generate warnings, cause localfs handles attribute 'dos:archive' but it should be specified with an element 'dos-archive' -->
+                    <attribute name="s3:flute">awesome</attribute> <!-- will generate warnings, cause localfs don't handles attribute containing ':' -->
+                    <attribute name="s3(flute)">awesome</attribute> <!-- will generate warnings, cause localfs don't handles attribute containing '()' -->
                 </include>
 
                 <!-- will not generate warnings, cause source files (on aws s3fs) are not links -->

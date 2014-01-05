@@ -27,7 +27,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * @author Guillaume Cornet
  * 
  */
-public abstract class Transfer extends AbstractTransferOperation implements
+public abstract class Transfer extends ClientSideEncryptedTransfer implements
 		TemplatingHandler {
 
 	/**

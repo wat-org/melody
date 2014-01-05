@@ -1,5 +1,7 @@
 package com.wat.cloud.aws.s3.transfer;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -186,7 +188,7 @@ public class AwsS3Wrapper {
 	 *            buffered in memory and could result in out of memory errors.
 	 * @param pl
 	 *            Can be <tt>null</tt>. If <tt>null</tt>, no upload progress
-	 *            notification will be send.
+	 *            notification will be received.
 	 */
 	public void upload(String bn, InputStream source, String destination,
 			ObjectMetadata metadatas, ProgressListener pl) {
@@ -199,18 +201,36 @@ public class AwsS3Wrapper {
 		if (destination == null) {
 			return;
 		}
-		PutObjectRequest poreq = null;
-		poreq = new PutObjectRequest(bn, destination, source, metadatas);
-		poreq.setGeneralProgressListener(pl);
-		getS3().putObject(poreq);
+		BufferedInputStream bis = null;
+		try {
+			/*
+			 * BufferInputStream support mark/reset, which is mandatory for the
+			 * S3 encryption client to work properly.
+			 * 
+			 * Otherwise, an exception is raised, with message :
+			 * "java.io.IOException: mark/reset not supported"
+			 */
+			bis = new BufferedInputStream(source);
+			PutObjectRequest poreq = null;
+			poreq = new PutObjectRequest(bn, destination, bis, metadatas);
+			poreq.setGeneralProgressListener(pl);
+			getS3().putObject(poreq);
+		} finally {
+			if (bis != null) {
+				try {
+					bis.close();
+				} catch (IOException ignored) {
+				}
+			}
+		}
 	}
 
 	/**
 	 * @param bn
 	 * @param source
 	 * @param pl
-	 *            Can be <tt>null</tt>. If <tt>null</tt>, no upload progress
-	 *            notification will be send.
+	 *            Can be <tt>null</tt>. If <tt>null</tt>, no download progress
+	 *            notification will be received.
 	 */
 	public S3ObjectInputStream download(String bn, String source,
 			ProgressListener pl) {

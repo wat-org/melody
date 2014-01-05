@@ -11,8 +11,13 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3EncryptionClient;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.wat.cloud.aws.s3.BucketName;
 import com.wat.cloud.aws.s3.Messages;
@@ -34,6 +39,9 @@ import com.wat.melody.common.transfer.exception.TemplatingException;
  */
 public class AwsS3FileSystem4Download extends LocalFileSystem implements
 		TransferableFileSystem {
+
+	private static Logger log = LoggerFactory
+			.getLogger(AwsS3FileSystem4Download.class);
 
 	private AwsS3Wrapper _s3Connection = null;
 	private BucketName _bucketName = null;
@@ -151,8 +159,22 @@ public class AwsS3FileSystem4Download extends LocalFileSystem implements
 		if (isDirectory(destination)) {
 			throw new WrapperDirectoryNotEmptyException(destination);
 		}
+
+		/*
+		 * warn if source was uploaded with client-side encryption + meta data
+		 * and this download doesn't decrypt.
+		 */
+		if (sourceAttrs.getMetadatas(true).getUserMetadata()
+				.get(Headers.CRYPTO_IV) != null) {
+			if (!(getS3().getS3() instanceof AmazonS3EncryptionClient)) {
+				log.warn(Msg.bind(Messages.S3fsMsg_GET_ENCRYPTED, getBN(),
+						source));
+			}
+		}
+
+		// /!\ Progress Monitor is based on the encrypted size
 		ProgressMonitor pm = new ProgressMonitor(getBN(), null, source,
-				destination, sourceAttrs.size());
+				destination, sourceAttrs.encryptedSize());
 		InputStream fis = null;
 		FileOutputStream fos = null;
 		byte[] datas = null;

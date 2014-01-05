@@ -19,6 +19,9 @@ public class Messages extends NLS {
 	public static String DisableLoggingEx_GENERIC_FAIL;
 
 	public static String TransferEx_INVALID_MAXPAR_ATTR;
+	public static String TransferEx_MISSING_PASSPHRASE_ATTR;
+	public static String TransferEx_INVALID_PASSPHRASE_ATTR;
+	public static String TransferEx_KEYPAIR_IO_ERROR;
 
 	static {
 		// initialize resource bundle

@@ -5,6 +5,8 @@ import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.wat.cloud.aws.ec2.exception.AwsKeyPairRepositoryException;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -94,6 +96,44 @@ public class AwsKeyPairRepository {
 		return getKeyPairRepository().containsKeyPair(keyPairName);
 	}
 
+	/**
+	 * <p>
+	 * Ensure the given keypair exists in the Local Keypair Repository and in
+	 * the AWS EC2 Keypair Repository. If no keypair with the provided name
+	 * exists in the Local Keypair Repository, it will be created with the given
+	 * materials. If no keypair with the provided name exists in AWS EC2 Keypair
+	 * Repository, it will be created with the given materials.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            the name of the key to create/validate.
+	 * @param size
+	 *            the desired size of the keypair.
+	 * @param passphrase
+	 *            the desired passphrase of the keypair.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair size is <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IOException
+	 *             if an IO error occurred while reading/creating the
+	 *             {@link KeyPair} in this Repository.
+	 * @throws IllegalPassphraseException
+	 *             if the key already exists in the Local Keypair Repository but
+	 *             the given pass-phrase is not correct (the key can't be
+	 *             decrypted).
+	 * @throws AwsKeyPairRepositoryException
+	 *             if the key already exists in the AWS EC2 Keypair Repository
+	 *             but has a different fingerprint than the provided materials
+	 *             (meaning that the Local and the AWS EC2 Keypair Repository
+	 *             diverge).
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
 			KeyPairSize size, String passphrase)
 			throws AwsKeyPairRepositoryException, IOException,
@@ -102,7 +142,7 @@ public class AwsKeyPairRepository {
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);
 		// Create/test KeyPair in Aws
-		createKeyPairInAws(keyPairName, kp);
+		ensureKeyPairInAws(keyPairName, kp);
 		return kp;
 	}
 
@@ -113,7 +153,31 @@ public class AwsKeyPairRepository {
 		getKeyPairRepository().destroyKeyPair(keyPairName);
 	}
 
-	private synchronized void createKeyPairInAws(KeyPairName kpn, KeyPair kp)
+	/**
+	 * <p>
+	 * Ensure the given keypair exists in the AWS EC2 Keypair Repository. If no
+	 * keypair with the provided name exists in the AWS E2 Keypair Repository,
+	 * it will be created with the given materials.
+	 * </p>
+	 * 
+	 * @param kpn
+	 *            the name of the key to create/validate.
+	 * @param kp
+	 *            the keypair materials.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>kp</tt> is <tt>null</tt>.
+	 * @throws AwsKeyPairRepositoryException
+	 *             if the key already exists in the AWS EC2 Keypair Repository
+	 *             but has a different fingerprint than the provided materials
+	 *             (meaning that the Local and the AWS EC2 Keypair Repository
+	 *             diverge).
+	 * @throws AmazonServiceException
+	 *             if the operation fails.
+	 * @throws AmazonClientException
+	 *             if the operation fails.
+	 */
+	private synchronized void ensureKeyPairInAws(KeyPairName kpn, KeyPair kp)
 			throws AwsKeyPairRepositoryException {
 		if (AwsEc2CloudKeyPair.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in AWS, verify the fingerprint

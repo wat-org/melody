@@ -129,7 +129,19 @@ public abstract class KeyPairHelper {
 		}
 	}
 
+	/**
+	 * @param key
+	 * 
+	 * @return the MD5 fingerprint of the given materials.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given key is <tt>null</tt>.
+	 */
 	public static String generateFingerprint(Key key) {
+		if (key == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Key.class.getCanonicalName() + ".");
+		}
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("MD5");

@@ -33,6 +33,8 @@ public class Messages extends NLS {
 	public static String S3fsEx_PUT_INTERRUPTED;
 	public static String S3fsEx_GET_INTERRUPTED;
 
+	public static String S3fsMsg_GET_ENCRYPTED;
+
 	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTES;
 	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTE;
 	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTE_X;

@@ -780,15 +780,16 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 * @param kpn
 	 *            specifies the passphrase of the desired key-pair.
 	 * 
-	 * @return an {@link AmazonS3} object.
+	 * @return an {@link AmazonS3} object, which perform client side encryption.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if either the repo, the name or the size is <tt>null</tt>.
 	 * @throws IOException
-	 *             if an IO error occurred while reading/creating the keypair.
+	 *             if an IO error occurred while reading/creating the
+	 *             {@link KeyPair} in this Repository.
 	 * @throws IllegalPassphraseException
-	 *             if the key pair exists and cannot be read using the given
-	 *             passphrase.
+	 *             if the key already exists but the given pass-phrase is not
+	 *             correct (the key can't be decrypted).
 	 * @throws AmazonServiceException
 	 *             if the operation fails (ex: credentials not valid).
 	 * @throws AmazonClientException

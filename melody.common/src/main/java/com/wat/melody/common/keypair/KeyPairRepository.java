@@ -74,7 +74,20 @@ public class KeyPairRepository implements IFileBased {
 		return KeyPairHelper.generateOpenSshRSAPublicKey(kp, sComment);
 	}
 
+	/**
+	 * @param kp
+	 * 
+	 * @return the MD5 fingerprint of the given materials's public part.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given keypair is <tt>null</tt>.
+	 */
 	public static String getFingerprint(KeyPair kp) {
+		if (kp == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + KeyPair.class.getCanonicalName()
+					+ ".");
+		}
 		return KeyPairHelper.generateFingerprint(kp.getPublic());
 	}
 
@@ -138,8 +151,8 @@ public class KeyPairRepository implements IFileBased {
 	 *             <li>if the given KeyPair size is <tt>null</tt> ;</li>
 	 *             </ul>
 	 * @throws IOException
-	 *             if an IO error occurred while storing the {@link KeyPair} in
-	 *             this Repository.
+	 *             if an IO error occurred while reading/creating the
+	 *             {@link KeyPair} in this Repository.
 	 * @throws IllegalPassphraseException
 	 *             if the key already exists but the given pass-phrase is not
 	 *             correct (the key can't be decrypted).
