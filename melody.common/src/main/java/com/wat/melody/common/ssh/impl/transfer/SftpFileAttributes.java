@@ -133,12 +133,20 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 
 	@Override
 	public FileTime lastAccessTime() {
-		return FileTime.fromMillis(_attrs.getATime() * 1000L);
+		return lastAccessTime(true);
+	}
+
+	public FileTime lastAccessTime(boolean followLink) {
+		return FileTime.fromMillis(getMetadatas(followLink).getATime() * 1000L);
 	}
 
 	@Override
 	public FileTime lastModifiedTime() {
-		return FileTime.fromMillis(_attrs.getMTime() * 1000L);
+		return lastModifiedTime(true);
+	}
+
+	public FileTime lastModifiedTime(boolean followLink) {
+		return FileTime.fromMillis(getMetadatas(followLink).getMTime() * 1000L);
 	}
 
 	@Override
@@ -147,14 +155,47 @@ public class SftpFileAttributes implements EnhancedFileAttributes {
 		return null;
 	}
 
+	public FileTime creationTime(boolean followLink) {
+		// Sftp doesn't handle this info ...
+		return null;
+	}
+
 	@Override
 	public long size() {
-		return _attrs.getSize();
+		return size(true);
+	}
+
+	public long size(boolean followLink) {
+		return getMetadatas(followLink).getSize();
 	}
 
 	@Override
 	public Object fileKey() {
+		// No way to deal with fileKey with SFTP
 		return null;
+	}
+
+	public Object fileKey(boolean followLink) {
+		// No way to deal with fileKey with SFTP
+		return null;
+	}
+
+	/**
+	 * @param followLink
+	 *            if <tt>true</tt> and if this object's path points to a
+	 *            symbolic link, natives attributes of the symbolic link's
+	 *            target will be returned.
+	 * 
+	 * @return the natives attributes of this object, or the natives attributes
+	 *         of this object's symbolic link's target (see parameter
+	 *         followLink).
+	 */
+	public SftpATTRS getMetadatas(boolean followLink) {
+		return followLink && isSymbolicLink() ? _targetAttrs : _attrs;
+	}
+
+	public SftpATTRS getMetadatas() {
+		return getMetadatas(true);
 	}
 
 }

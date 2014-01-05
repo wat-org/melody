@@ -66,22 +66,6 @@ public class CifsFileAttributes implements EnhancedFileAttributes {
 	}
 
 	@Override
-	public FileTime lastModifiedTime() {
-		return FileTime.fromMillis(_lastModifiedTime);
-	}
-
-	@Override
-	public FileTime lastAccessTime() {
-		// Samba doesn't handle links
-		return null;
-	}
-
-	@Override
-	public FileTime creationTime() {
-		return FileTime.fromMillis(_creationTime);
-	}
-
-	@Override
 	public boolean isRegularFile() {
 		/*
 		 * holy shit ! there's a special rule in SmbFile.isDirectory, which
@@ -119,18 +103,57 @@ public class CifsFileAttributes implements EnhancedFileAttributes {
 	}
 
 	@Override
+	public Path getLinkTarget() {
+		// Samba doesn't handle links
+		return null;
+	}
+
+	@Override
+	public FileTime lastModifiedTime() {
+		return FileTime.fromMillis(_lastModifiedTime);
+	}
+
+	public FileTime lastModifiedTime(boolean followLink) {
+		return FileTime.fromMillis(_lastModifiedTime);
+	}
+
+	@Override
+	public FileTime lastAccessTime() {
+		// Samba doesn't handle links
+		return null;
+	}
+
+	public FileTime lastAccessTime(boolean followLink) {
+		// Samba doesn't handle links
+		return null;
+	}
+
+	@Override
+	public FileTime creationTime() {
+		return FileTime.fromMillis(_creationTime);
+	}
+
+	public FileTime creationTime(boolean followLink) {
+		return FileTime.fromMillis(_creationTime);
+	}
+
+	@Override
 	public long size() {
+		return _size;
+	}
+
+	public long size(boolean followLink) {
 		return _size;
 	}
 
 	@Override
 	public Object fileKey() {
+		// No way to deal with fileKey with CIFS
 		return null;
 	}
 
-	@Override
-	public Path getLinkTarget() {
-		// Samba doesn't handle links
+	public Object fileKey(boolean followLink) {
+		// No way to deal with fileKey with CIFS
 		return null;
 	}
 

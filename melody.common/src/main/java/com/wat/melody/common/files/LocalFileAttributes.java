@@ -13,7 +13,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 
 	private BasicFileAttributes _attrs;
 	private Path _target;
-	private BasicFileAttributes _realAttrs;
+	private BasicFileAttributes _targetAttrs;
 
 	/**
 	 * @param attrs
@@ -22,7 +22,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 	 *            if the given attributes describes a link, it is the direct
 	 *            link target. Can be <tt>null</tt>, if the given attributes
 	 *            doesn't describe a link.
-	 * @param realAttrs
+	 * @param targetAttrs
 	 *            if the given attributes describes a link, it is the final file
 	 *            or directory target attributes. Can be <tt>null</tt>, if the
 	 *            given link points - at any degree - to a non existing file or
@@ -36,7 +36,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 	 *             </ul>
 	 */
 	public LocalFileAttributes(BasicFileAttributes attrs, Path target,
-			BasicFileAttributes realAttrs) {
+			BasicFileAttributes targetAttrs) {
 		if (attrs == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
@@ -48,7 +48,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 		}
 		_attrs = attrs;
 		_target = target;
-		_realAttrs = realAttrs;
+		_targetAttrs = targetAttrs;
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 	@Override
 	public boolean isRegularFile() {
 		return _attrs.isRegularFile()
-				|| (_realAttrs != null && _realAttrs.isRegularFile());
+				|| (_targetAttrs != null && _targetAttrs.isRegularFile());
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 	@Override
 	public boolean isDirectory() {
 		return _attrs.isDirectory()
-				|| (_realAttrs != null && _realAttrs.isDirectory());
+				|| (_targetAttrs != null && _targetAttrs.isDirectory());
 	}
 
 	/**
@@ -122,27 +122,65 @@ public class LocalFileAttributes implements EnhancedFileAttributes {
 
 	@Override
 	public FileTime lastAccessTime() {
-		return _attrs.lastAccessTime();
+		return lastAccessTime(true);
+	}
+
+	public FileTime lastAccessTime(boolean followLink) {
+		return getMetadatas(followLink).lastAccessTime();
 	}
 
 	@Override
 	public FileTime lastModifiedTime() {
-		return _attrs.lastModifiedTime();
+		return lastModifiedTime(true);
+	}
+
+	public FileTime lastModifiedTime(boolean followLink) {
+		return getMetadatas(followLink).lastModifiedTime();
 	}
 
 	@Override
 	public FileTime creationTime() {
-		return _attrs.creationTime();
+		return creationTime(true);
+	}
+
+	public FileTime creationTime(boolean followLink) {
+		return getMetadatas(followLink).creationTime();
 	}
 
 	@Override
 	public long size() {
-		return _attrs.size();
+		return size(true);
+	}
+
+	public long size(boolean followLink) {
+		return getMetadatas(followLink).size();
 	}
 
 	@Override
 	public Object fileKey() {
-		return _attrs.fileKey();
+		return fileKey(true);
+	}
+
+	public Object fileKey(boolean followLink) {
+		return getMetadatas(followLink).fileKey();
+	}
+
+	/**
+	 * @param followLink
+	 *            if <tt>true</tt> and if this object's path points to a
+	 *            symbolic link, natives attributes of the symbolic link's
+	 *            target will be returned.
+	 * 
+	 * @return the natives attributes of this object, or the natives attributes
+	 *         of this object's symbolic link's target (see parameter
+	 *         followLink).
+	 */
+	public BasicFileAttributes getMetadatas(boolean followLink) {
+		return followLink && isSymbolicLink() ? _targetAttrs : _attrs;
+	}
+
+	public BasicFileAttributes getMetadatas() {
+		return getMetadatas(true);
 	}
 
 }
