@@ -95,6 +95,40 @@ public class LibVirtKeyPairRepository {
 		return getKeyPairRepository().containsKeyPair(keyPairName);
 	}
 
+	/**
+	 * <p>
+	 * Ensure the given keypair exists in the Local Keypair Repository and in
+	 * the LibVirt Cloud Keypair Repository. If no keypair with the provided
+	 * name exists in the Local Keypair Repository, it will be created with the
+	 * given materials. If no keypair with the provided name exists in LibVirt
+	 * Cloud Keypair Repository, it will be created with the given materials.
+	 * </p>
+	 * 
+	 * @param keyPairName
+	 *            the name of the key to create/validate.
+	 * @param size
+	 *            the desired size of the keypair.
+	 * @param passphrase
+	 *            the desired passphrase of the keypair.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             <ul>
+	 *             <li>if the given KeyPair name is <tt>null</tt> ;</li>
+	 *             <li>if the given KeyPair size is <tt>null</tt> ;</li>
+	 *             </ul>
+	 * @throws IOException
+	 *             if an IO error occurred while reading/creating the
+	 *             {@link KeyPair} in this Repository.
+	 * @throws IllegalPassphraseException
+	 *             if the key already exists in the Local Keypair Repository but
+	 *             the given pass-phrase is not correct (the key can't be
+	 *             decrypted).
+	 * @throws AwsKeyPairRepositoryException
+	 *             if the key already exists in the LibVirt Cloud Keypair
+	 *             Repository but has a different fingerprint than the provided
+	 *             materials (meaning that the Local and the LibVirt Cloud
+	 *             Keypair Repository diverge).
+	 */
 	public synchronized KeyPair createKeyPair(KeyPairName keyPairName,
 			KeyPairSize size, String passphrase)
 			throws LibVirtKeyPairRepositoryException, IOException,
@@ -103,7 +137,7 @@ public class LibVirtKeyPairRepository {
 		KeyPair kp = getKeyPairRepository().createKeyPair(keyPairName, size,
 				passphrase);
 		// Create/test KeyPair in LibVirtCloud
-		createKeyPairInLibVirtCloud(keyPairName, kp);
+		ensureKeyPairInLibVirtCloud(keyPairName, kp);
 		return kp;
 	}
 
@@ -114,7 +148,27 @@ public class LibVirtKeyPairRepository {
 		getKeyPairRepository().destroyKeyPair(keyPairName);
 	}
 
-	private synchronized void createKeyPairInLibVirtCloud(KeyPairName kpn,
+	/**
+	 * <p>
+	 * Ensure the given keypair exists in the LibVirt Cloud Keypair Repository.
+	 * If no keypair with the provided name exists in the LibVirt Cloud Keypair
+	 * Repository, it will be created with the given materials.
+	 * </p>
+	 * 
+	 * @param kpn
+	 *            the name of the key to create/validate.
+	 * @param kp
+	 *            the keypair materials.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>kp</tt> is <tt>null</tt>.
+	 * @throws AwsKeyPairRepositoryException
+	 *             if the key already exists in the LibVirt Cloud Keypair
+	 *             Repository but has a different fingerprint than the provided
+	 *             materials (meaning that the Local and the LibVirt Cloud
+	 *             Keypair Repository diverge).
+	 */
+	private synchronized void ensureKeyPairInLibVirtCloud(KeyPairName kpn,
 			KeyPair kp) throws LibVirtKeyPairRepositoryException {
 		if (LibVirtCloudKeyPair.keyPairExists(getConnection(), kpn)) {
 			// when KeyPair is already in LibVirtCloud, verify the fingerprint
