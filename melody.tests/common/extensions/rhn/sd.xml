@@ -15,6 +15,9 @@
         <echo message="Registering servers on RHN ..." />
 
         <property name="RHN_ACTIVATIONKEY" value="§[./environment/rhn/activationkey/text()]§" />
+        <property name="RHN_SERVERIP" value="§[./environment/rhn/serverip/text()]§" />
+        <property name="RHN_LOGIN" value="§[./environment/rhn/login/text()]§" />
+        <property name="RHN_PASSWORD" value="§[./environment/rhn/password/text()]§" />
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
@@ -34,7 +37,45 @@
                 <exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
             </ssh>
 
-            <foreach    items="melody:getHeritedContent(§[srv]§, '§[channel_selector]§[ §[channel_match_criteria]§ ]')"
+            <!-- set the base channel, if any (should be only one) -->
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[channel_selector]§[ @base-channel=&quot;true&quot; ]')"
+                        item-name="channel" >
+                <property name="channel_name" value="§[§[channel]§/@name]§" />
+
+                <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
+                    <declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
+                    <exec command="python &lt;&lt; EOF" />
+                    <exec command="import xmlrpclib" />
+                    <exec command="import sys" />
+
+                    <exec command="client = xmlrpclib.Server(&quot;https://§[RHN_SERVERIP]§/rpc/api&quot;, verbose=0)" />
+                    <exec command="key = client.auth.login(&quot;§[RHN_LOGIN]§&quot;, &quot;§[RHN_PASSWORD]§&quot;)" />
+
+                    <exec command="allchans = client.system.listBaseChannels(key, int($SYSTEM_ID));" />
+                    <exec command="for chan in allchans:" />
+                    <exec command="  if chan['LABEL'] == &quot;§[channel_name]§&quot;:" />
+                    <exec command="    if chan['CURRENT_BASE'] ==  1:" />
+                    <exec command="      print &quot;'§[channel_name]§' is already the base channel.&quot;" />
+                    <exec command="      client.auth.logout(key);" />
+                    <exec command="      exit(0)" />
+                    <exec command="    print &quot;Setting '§[channel_name]§' as base channel ...&quot;" />
+                    <exec command="    client.system.setBaseChannel(key, int($SYSTEM_ID), chan['ID']);" />
+                    <exec command="    print &quot;'§[channel_name]§' successfully set as base channel.&quot;" />
+                    <exec command="    client.auth.logout(key);" />
+                    <exec command="    exit(0)" />
+                    <exec command="print &quot;'§[channel_name]§' is not available.&quot;" />
+                    <exec command="client.auth.logout(key)" />
+                    <exec command="exit(23)" />
+                    <exec command="EOF" />
+
+                    <exec command="res=$?; [ $res = 0 ] || exit $res" />
+                </ssh>
+                <echo message="+ Server '§[§[srv]§/@instance-id]§' subscribed to RHN Base Channel '§[channel_name]§'." />
+            </foreach>
+
+            <!-- set each child channel, if any (should be none or many) -->
+            <foreach    items="melody:getHeritedContent(§[srv]§, '§[channel_selector]§[ (not(exists(@base-channel)) or @base-channel!=&quot;true&quot;) and §[channel_match_criteria]§ ]')"
                         item-name="channel" >
                 <property name="channel_name" value="§[§[channel]§/@name]§" />
 
@@ -65,7 +106,19 @@
             <ssh description="[rhn_unreg:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                 <exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
                 <declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
-                <exec command="python -c &quot;import xmlrpclib;import sys;client = xmlrpclib.Server(\&quot;https://§[RHN_SERVERIP]§/rpc/api\&quot;, verbose=0);key = client.auth.login(\&quot;§[RHN_LOGIN]§\&quot;, \&quot;§[RHN_PASSWORD]§\&quot;);client.system.deleteSystems(key,int($SYSTEM_ID));client.auth.logout(key)&quot; || exit $?" />
+                <exec command="python &lt;&lt; EOF" />
+                <exec command="import xmlrpclib" />
+                <exec command="import sys" />
+
+                <exec command="client = xmlrpclib.Server(&quot;https://§[RHN_SERVERIP]§/rpc/api&quot;, verbose=0)" />
+                <exec command="key = client.auth.login(&quot;§[RHN_LOGIN]§&quot;, &quot;§[RHN_PASSWORD]§&quot;)" />
+
+                <!-- TODO : should get the system first, and, if it exists, remove it-->
+                <exec command="client.system.deleteSystems(key,int($SYSTEM_ID))" />
+                <exec command="client.auth.logout(key)" />
+                <exec command="EOF" />
+
+                <exec command="res=$?; [ $res = 0 ] || exit $res" />
                 <exec command="rm -vf /etc/sysconfig/rhn/systemid" />
             </ssh>
 

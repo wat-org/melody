@@ -1,0 +1,41 @@
+rhn-channel can't alter bas channel ...
+So we must use XMLRPC api !
+
+Regarding the version of the remote RHN server, some of these functions may be deprecated ... 
+This script should branch through differents funciton call regarding the version of the API exposed by the RHN server. 
+
+
+#!/usr/bin/python
+
+import xmlrpclib
+import sys
+
+# should parse all these arguments via command line 
+TARGET_CHANNEL="rhel-x86_64-server-6.4.z"
+
+SYSTEM_ID=1029972918
+RHN_SERVERIP="rhn.redhat.com"
+RHN_LOGIN="rh-gs-gcornet"
+RHN_PASSWORD="Rf%9cRgf7"
+
+
+client = xmlrpclib.Server("https://"+RHN_SERVERIP+"/rpc/api", verbose=0)
+key = client.auth.login(RHN_LOGIN, RHN_PASSWORD)
+
+allchans = client.system.listBaseChannels(key, int(SYSTEM_ID))
+
+for chan in allchans:
+  if chan['LABEL'] == TARGET_CHANNEL:
+    if chan['CURRENT_BASE'] ==  1:
+      print "'"+TARGET_CHANNEL+"' is already the base channel."
+      client.auth.logout(key)
+      exit(0)
+    print "Setting '"+TARGET_CHANNEL+"' as base channel ..."
+    client.system.setBaseChannel(key, int(SYSTEM_ID), chan['ID'])
+    print "'"+TARGET_CHANNEL+"' successfully set as base channel."
+    client.auth.logout(key)
+    exit(0)
+
+print "'"+TARGET_CHANNEL+"' is not available."
+client.auth.logout(key)
+exit(23)
