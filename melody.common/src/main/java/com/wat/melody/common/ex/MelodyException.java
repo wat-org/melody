@@ -200,16 +200,12 @@ public class MelodyException extends Exception {
 	protected static StringBuilder getUserFriendlyStackTrace(Throwable ex) {
 		StringBuilder err = new StringBuilder("");
 		String current;
-		boolean dontPrintCausedBy;
 		while (ex != null) {
-			dontPrintCausedBy = false;
 			if (ex instanceof RuntimeException || !(ex instanceof Exception)) {
 				current = getFullStackTrace(ex).replaceAll(
 						SysTool.NEW_LINE + "    ", SysTool.NEW_LINE);
 				ex = null; // break loop
 			} else if (ex instanceof ConsolidatedException) {
-				dontPrintCausedBy = ex.getMessage() == null
-						|| ex.getMessage().length() == 0;
 				current = ((ConsolidatedException) ex)
 						.getUserFriendlyStackTrace();
 				ex = ex.getCause();
@@ -220,8 +216,6 @@ public class MelodyException extends Exception {
 			if (current != null && current.length() != 0) {
 				if (err.length() == 0) {
 					err = new StringBuilder(current);
-				} else if (dontPrintCausedBy) {
-					err.append(current);
 				} else {
 					err.append(SysTool.NEW_LINE + "Caused by: " + current);
 				}
