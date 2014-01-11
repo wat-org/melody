@@ -30,6 +30,9 @@ public abstract class TransferMultiThread {
 	private static Logger log = LoggerFactory
 			.getLogger(TransferMultiThread.class);
 
+	private static Logger ex = LoggerFactory.getLogger("exception."
+			+ TransferMultiThread.class.getName());
+
 	protected static final short NEW = 16;
 	protected static final short RUNNING = 8;
 	protected static final short SUCCEED = 0;
@@ -266,8 +269,11 @@ public abstract class TransferMultiThread {
 					 * InterruptedIOException ... We must detect this situation.
 					 */
 					if (Thread.interrupted() || isInterrupted()) {
+						MelodyException mex = new MelodyException(Ex);
 						log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
-								new MelodyException(Ex).getFullStackTrace()));
+								mex.getUserFriendlyStackTrace()));
+						ex.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
+								mex.getFullStackTrace()));
 						throw new WrapperInterruptedException(
 								Msg.bind(Messages.TransferEx_FAILED, t),
 								new WrapperInterruptedException(
@@ -332,8 +338,11 @@ public abstract class TransferMultiThread {
 			 * InterruptedIOException ... We must detect this situation.
 			 */
 			if (Thread.interrupted() || isInterrupted()) {
+				MelodyException mex = new MelodyException(Ex);
 				log.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
-						new MelodyException(Ex).getFullStackTrace()));
+						mex.getUserFriendlyStackTrace()));
+				ex.debug(Msg.bind(Messages.TransferMsg_IGNORE_IOERROR,
+						mex.getFullStackTrace()));
 				InterruptedException e = new WrapperInterruptedException(
 						Msg.bind(Messages.TransferEx_FAILED, t),
 						new WrapperInterruptedException(

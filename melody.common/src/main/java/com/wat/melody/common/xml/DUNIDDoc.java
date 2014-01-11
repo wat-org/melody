@@ -41,6 +41,9 @@ public class DUNIDDoc extends Doc implements EventListener {
 
 	private static Logger log = LoggerFactory.getLogger(DUNIDDoc.class);
 
+	private static Logger ex = LoggerFactory.getLogger("exception."
+			+ DUNIDDoc.class.getName());
+
 	public static final String DUNID_ATTR = "__DUNID__";
 
 	private boolean _hasChanged;
@@ -316,13 +319,16 @@ public class DUNIDDoc extends Doc implements EventListener {
 				fireElementRemovedEvent(e);
 			}
 		} catch (MelodyException Ex) {
-			log.error(new NodeRelatedException((Node) e.getTarget(),
-					Messages.DUNIDDocEx_FORBIDDEN_OP, Ex)
-					.getUserFriendlyStackTrace());
+			NodeRelatedException nex = new NodeRelatedException(
+					(Node) e.getTarget(), Messages.DUNIDDocEx_FORBIDDEN_OP, Ex);
+			log.error(nex.getUserFriendlyStackTrace());
+			ex.error(nex.getFullStackTrace());
 		} catch (Throwable Ex) {
-			log.error(new NodeRelatedException((Node) e.getTarget(),
-					Messages.DUNIDDocEx_UNEXPECTED_ERR, Ex)
-					.getUserFriendlyStackTrace());
+			NodeRelatedException nex = new NodeRelatedException(
+					(Node) e.getTarget(), Messages.DUNIDDocEx_UNEXPECTED_ERR,
+					Ex);
+			log.error(nex.getUserFriendlyStackTrace());
+			ex.error(nex.getFullStackTrace());
 		}
 	}
 
@@ -357,7 +363,14 @@ public class DUNIDDoc extends Doc implements EventListener {
 		stopListening();
 		DUNIDDocHelper.addDUNID(t);
 		startListening();
-
+		/*
+		 * no need to insert 'line' and 'column' as user data. The inserted
+		 * Element has neither line nor column number
+		 */
+		/*
+		 * no need to insert 'source file' as user data. 'source file' is a user
+		 * data of the top most Element, and not of the inserted element
+		 */
 		markHasChanged();
 		log.debug(Msg.bind(Messages.DUNIDDocMsg_ELEMENT_INSERTED,
 				getSmartMsg(), t.getNodeName()));
