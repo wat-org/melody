@@ -57,7 +57,7 @@ public abstract class NetworkDevicesHelper {
 	 *         which is :
 	 *         <ul>
 	 *         <li>The last Network Management Element related to the given
-	 *         Instance, if Network Management Elements are found ;</li>
+	 *         Instance, if multiple Network Management Elements are found ;</li>
 	 *         <li><tt>null</tt>, if no Network Management Element are found ;</li>
 	 *         </ul>
 	 * 

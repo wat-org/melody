@@ -130,8 +130,8 @@ public abstract class NetworkActivationHelper {
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) multiple
-	 *             {@link Element} ;</li>
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
@@ -165,8 +165,8 @@ public abstract class NetworkActivationHelper {
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) multiple
-	 *             {@link Element} ;</li>
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
@@ -215,9 +215,11 @@ public abstract class NetworkActivationHelper {
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector multiple
-	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector doesn't
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
 	 *             <li>if the given Instance's Network Activation Device Element
 	 *             doesn't have a {@link NetworkDevicesLoader#DEVICE_NAME_ATTR}
@@ -255,9 +257,11 @@ public abstract class NetworkActivationHelper {
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector multiple
-	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector doesn't
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
 	 *             <li>if the given Instance's Network Activation Device Element
 	 *             doesn't have a {@link NetworkDevicesLoader#DEVICE_NAME_ATTR}
@@ -304,8 +308,8 @@ public abstract class NetworkActivationHelper {
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) multiple
-	 *             {@link Element} ;</li>
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
@@ -344,8 +348,8 @@ public abstract class NetworkActivationHelper {
 	 *             the given Instance's Network Management Element) selects no
 	 *             {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) multiple
-	 *             {@link Element} ;</li>
+	 *             the given Instance's Network Management Element) selects
+	 *             multiple {@link Element} ;</li>
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>

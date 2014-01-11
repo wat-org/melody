@@ -192,9 +192,9 @@ public abstract class FilteredDocHelper {
 			for (Element n : circularRefStack) {
 				Element h = resolvHeritAttr(n, null);
 				str.append(SysTool.NEW_LINE);
-				str.append("  Element [");
+				str.append("  XML Element [");
 				str.append(DocHelper.getNodeLocation(n).toFullString());
-				str.append("] has parent Element [");
+				str.append("] has parent XML Element [");
 				str.append(DocHelper.getNodeLocation(h).toFullString());
 				str.append("]");
 			}
