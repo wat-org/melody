@@ -8,7 +8,7 @@
 
     <property name="instance_selector"          value="./environment//instance"/>
     <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_eligible_criteria" value="exists(§[jdg_instance_node]§)"/>
+    <property name="instance_eligible_criteria" value="exists(§[jdg_instance_node]§) and melody:getNetworkActivationHost(.)!=''"/>
     <property name="instance_match_criteria"    value="1=1"/>
 
     <property name="jdg_engine_selector"          value="/§[jdg_engine_node]§"/>
@@ -26,8 +26,8 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
-            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
             <foreach    items="melody:getHeritedContent(§[srv]§, '§[jdg_engine_selector]§')"
                         item-name="jboss_engine">
@@ -54,8 +54,8 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
-            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
             <property name="instanceSite"   value="§[ §[srv]§/@site ]§" />
             <property name="instanceRack"   value="§[ §[srv]§/@rack ]§" />
