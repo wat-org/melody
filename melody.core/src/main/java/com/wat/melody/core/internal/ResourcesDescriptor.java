@@ -253,15 +253,24 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					+ ".");
 		}
 		String sourcefile = DocHelper.getNodeLocation(e).getSource();
-		DUNIDDoc found = findDUNIDDoc(sourcefile);
-		if (found != null) {
-			return found;
+		if (sourcefile == null) {
+			// the given Element is the root element
+			throw new IllegalArgumentException("The given "
+					+ Element.class.getCanonicalName() + " is not "
+					+ "originated from a " + DUNIDDoc.class.getCanonicalName()
+					+ ".");
 		}
-		throw new RuntimeException("Unexecpted error while searching a "
-				+ "DUNIDDoc." + "'" + sourcefile
-				+ "' doesn't match any DUNIDDoc. "
-				+ "Source code has certainly been modified and "
-				+ "a bug have been introduced.");
+		DUNIDDoc found = findDUNIDDoc(sourcefile);
+		if (found == null) {
+			// the given Element is originated from another ResourcesDescriptor
+			throw new IllegalArgumentException("The given "
+					+ Element.class.getCanonicalName() + " is not "
+					+ "originated from the current "
+					+ ResourcesDescriptor.class.getCanonicalName() + ". "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
+		}
+		return found;
 	}
 
 	/**
