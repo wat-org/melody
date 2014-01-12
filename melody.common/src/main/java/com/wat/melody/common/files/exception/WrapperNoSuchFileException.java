@@ -3,6 +3,8 @@ package com.wat.melody.common.files.exception;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
+import com.wat.melody.common.ex.HiddenException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -22,7 +24,7 @@ public class WrapperNoSuchFileException extends NoSuchFileException {
 
 	public WrapperNoSuchFileException(String file, Throwable cause) {
 		this(file);
-		initCause(cause);
+		initCause(new HiddenException(cause));
 	}
 
 	public WrapperNoSuchFileException(Path file, Throwable cause) {

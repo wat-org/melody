@@ -2,6 +2,8 @@ package com.wat.melody.common.cifs.transfer.exception;
 
 import java.nio.file.NoSuchFileException;
 
+import com.wat.melody.common.ex.HiddenException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -17,7 +19,7 @@ public class WrapperNoSuchShareException extends NoSuchFileException {
 
 	public WrapperNoSuchShareException(String file, Throwable cause) {
 		this(file);
-		initCause(cause);
+		initCause(new HiddenException(cause));
 	}
 
 }

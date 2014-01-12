@@ -140,7 +140,7 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
 				throw new WrapperAccessDeniedException(source);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(source);
+				throw new WrapperNoSuchFileException(source, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
 				throw new WrapperInterruptedIOException(
@@ -150,13 +150,16 @@ public class SftpFileSystem4Download extends LocalFileSystem implements
 				String msg = Ex.getCause().getMessage();
 				if (msg != null
 						&& msg.indexOf(" (No such file or directory)") != -1) {
-					throw new WrapperNoSuchFileException(destination);
+					throw new WrapperNoSuchFileException(destination,
+							Ex.getCause());
 				} else if (msg != null
 						&& msg.indexOf(" (Permission denied)") != -1) {
-					throw new WrapperAccessDeniedException(destination);
+					throw new WrapperAccessDeniedException(destination,
+							Ex.getCause());
 				} else if (msg != null
 						&& msg.indexOf(" (Is a directory)") != -1) {
-					throw new WrapperDirectoryNotEmptyException(destination);
+					throw new WrapperDirectoryNotEmptyException(destination,
+							Ex.getCause());
 				} else {
 					throw new WrapperNoSuchFileException(destination,
 							Ex.getCause());

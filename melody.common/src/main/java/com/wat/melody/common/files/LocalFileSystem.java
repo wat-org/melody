@@ -17,6 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
 import com.wat.melody.common.files.exception.SymbolicLinkNotSupported;
@@ -127,19 +128,19 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.createDirectory(dir);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (FileAlreadyExistsException Ex) {
 			// the dir already exists => no error
 			// a link or file exists => error
 			if (!isDirectory(dir, LinkOption.NOFOLLOW_LINKS)) {
-				throw new WrapperFileAlreadyExistsException(Ex.getFile());
+				throw new WrapperFileAlreadyExistsException(Ex.getFile(), Ex);
 			}
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		} catch (FileSystemException Ex) {
 			if (Ex.getMessage() != null
 					&& Ex.getMessage().indexOf(": Not a directory") != -1) {
-				throw new WrapperNoSuchFileException(Ex.getFile());
+				throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 			} else {
 				throw Ex;
 			}
@@ -229,11 +230,11 @@ public class LocalFileSystem implements FileSystem {
 		} catch (UnsupportedOperationException Ex) {
 			throw new SymbolicLinkNotSupported(link, target, Ex);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (FileAlreadyExistsException Ex) {
-			throw new WrapperFileAlreadyExistsException(Ex.getFile());
+			throw new WrapperFileAlreadyExistsException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 		setAttributes(link, attrs);
 	}
@@ -258,11 +259,11 @@ public class LocalFileSystem implements FileSystem {
 			// /!\ This will remove the trailing '/'
 			return Paths.get(Files.readSymbolicLink(link).toString());
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (NotLinkException Ex) {
-			throw new WrapperNotLinkException(Ex.getFile());
+			throw new WrapperNotLinkException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 
@@ -282,11 +283,11 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.delete(path);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (DirectoryNotEmptyException Ex) {
-			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
+			throw new WrapperDirectoryNotEmptyException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 
@@ -306,9 +307,9 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			return Files.deleteIfExists(path);
 		} catch (DirectoryNotEmptyException Ex) {
-			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
+			throw new WrapperDirectoryNotEmptyException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 
@@ -351,11 +352,11 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			return Files.newDirectoryStream(path);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (NotDirectoryException Ex) {
-			throw new WrapperNotDirectoryException(Ex.getFile());
+			throw new WrapperNotDirectoryException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 
@@ -400,9 +401,9 @@ public class LocalFileSystem implements FileSystem {
 			return Files.readAttributes(path, BasicFileAttributes.class,
 					options);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 
@@ -451,7 +452,7 @@ public class LocalFileSystem implements FileSystem {
 				// only need the reason
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
-						Ex.getReason())));
+						Ex.getReason()), new HiddenException(Ex)));
 			} catch (FileSystemException Ex) {
 				// don't want neither the stack trace nor the file name
 				String msg = Ex.getReason();
@@ -461,7 +462,8 @@ public class LocalFileSystem implements FileSystem {
 					msg = Ex.getClass().getName() + " - " + msg;
 				}
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg),
+						new HiddenException(Ex)));
 			} catch (IOException Ex) {
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
@@ -469,7 +471,8 @@ public class LocalFileSystem implements FileSystem {
 					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+						Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex),
+						new HiddenException(Ex)));
 			} catch (Throwable Ex) {
 				// want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
@@ -494,9 +497,9 @@ public class LocalFileSystem implements FileSystem {
 		try {
 			Files.setAttribute(path, attrName, attrValue, linkOptions);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 

@@ -24,8 +24,7 @@
 					<dos-readonly scope="files">true</dos-readonly>
 				</include>
 				
-				<include	match="static_myApp_myMod/content3.txt"
-							template="y" >
+				<include	match="static_myApp_myMod/content3.txt" >
 					<dos-readonly scope="files">true</dos-readonly>
 					<dos-hidden scope="files">true</dos-hidden>
 				</include>
@@ -34,6 +33,7 @@
 							dest-name="templates/§[IP]§/file2.§[IP]§"
 							template="y" />
 				
+                <exclude    match="**/link.external.relative" /> <!-- this is a link, which points to melody.log. This file's size is increasing. So we skip it -->
 				<exclude	match="static_myApp_myMod/content2.*" />
 				
 				<!-- will generate warnings cause posix permissions are not supported by CIFS -->

@@ -29,6 +29,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntrySelector;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.FileSystem;
@@ -191,17 +192,17 @@ public class SftpFileSystem implements FileSystem {
 			_channel.mkdir(dir);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(dir);
+				throw new WrapperAccessDeniedException(dir, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				// mean the parent dir doesn't exists or exists but is not a dir
-				throw new WrapperNoSuchFileException(dir);
+				throw new WrapperNoSuchFileException(dir, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
 				try {
 					if (readAttributes0(dir, LinkOption.NOFOLLOW_LINKS).isDir()) {
 						// the dir already exists => no error
 					} else {
 						// a link or a regular file exists => error
-						throw new WrapperFileAlreadyExistsException(dir);
+						throw new WrapperFileAlreadyExistsException(dir, Ex);
 					}
 				} catch (NoSuchFileException Exx) {
 					// concurrency pb : should recreate ?
@@ -299,12 +300,12 @@ public class SftpFileSystem implements FileSystem {
 			_channel.symlink(target, link);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(link);
+				throw new WrapperAccessDeniedException(link, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(link);
+				throw new WrapperNoSuchFileException(link, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& exists(link, LinkOption.NOFOLLOW_LINKS)) {
-				throw new WrapperFileAlreadyExistsException(link);
+				throw new WrapperFileAlreadyExistsException(link, Ex);
 			} else {
 				throw new IOException(
 						Msg.bind(Messages.SftpEx_LN, target, link), Ex);
@@ -337,11 +338,11 @@ public class SftpFileSystem implements FileSystem {
 				 */
 				throw new InterruptedIOException("readlink interrupted");
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(link);
+				throw new WrapperAccessDeniedException(link, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(link);
+				throw new WrapperNoSuchFileException(link, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_BAD_MESSAGE) {
-				throw new WrapperNotLinkException(link);
+				throw new WrapperNotLinkException(link, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
 				throw new WrapperInterruptedIOException("readlink interrupted",
@@ -372,9 +373,9 @@ public class SftpFileSystem implements FileSystem {
 			_channel.rm(path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
 				deleteEmptyDir(path);
 			} else {
@@ -395,16 +396,16 @@ public class SftpFileSystem implements FileSystem {
 			_channel.rmdir(path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
 				// will raise SSH_FX_NO_SUCH_FILE if it is not a dir
 				if (exists(path, LinkOption.NOFOLLOW_LINKS)) {
-					throw new WrapperNotDirectoryException(path);
+					throw new WrapperNotDirectoryException(path, Ex);
 				} else {
-					throw new WrapperNoSuchFileException(path);
+					throw new WrapperNoSuchFileException(path, Ex);
 				}
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE) {
-				throw new WrapperDirectoryNotEmptyException(path);
+				throw new WrapperDirectoryNotEmptyException(path, Ex);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_RMDIR, path), Ex);
 			}
@@ -495,9 +496,9 @@ public class SftpFileSystem implements FileSystem {
 			if (Thread.interrupted()) {
 				throw new InterruptedIOException("listing interrupted");
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
 				throw new WrapperInterruptedIOException("listing interrupted",
@@ -590,9 +591,9 @@ public class SftpFileSystem implements FileSystem {
 				 */
 				throw new InterruptedIOException("(l)stat interrupted");
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
 				throw new WrapperInterruptedIOException("(l)stat interrupted",
@@ -713,7 +714,7 @@ public class SftpFileSystem implements FileSystem {
 				// only need the reason
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
-						Ex.getReason())));
+						Ex.getReason()), new HiddenException(Ex)));
 			} catch (FileSystemException Ex) {
 				// don't want neither the stack trace nor the file name
 				String msg = Ex.getReason();
@@ -723,7 +724,8 @@ public class SftpFileSystem implements FileSystem {
 					msg = Ex.getClass().getName() + " - " + msg;
 				}
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg),
+						new HiddenException(Ex)));
 			} catch (IOException Ex) {
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
@@ -731,7 +733,8 @@ public class SftpFileSystem implements FileSystem {
 					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+						Messages.SftpFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex),
+						new HiddenException(Ex)));
 			} catch (Throwable Ex) {
 				// want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
@@ -759,9 +762,9 @@ public class SftpFileSystem implements FileSystem {
 			_channel.chmod(permissions, path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_CHMOD,
 						permissions, path), Ex);
@@ -785,9 +788,9 @@ public class SftpFileSystem implements FileSystem {
 			_channel.chgrp(groupid, path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_CHGRP, groupid,
 						path), Ex);
@@ -811,14 +814,13 @@ public class SftpFileSystem implements FileSystem {
 			_channel.chown(userid, path);
 		} catch (SftpException Ex) {
 			if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(path);
+				throw new WrapperAccessDeniedException(path, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(path);
+				throw new WrapperNoSuchFileException(path, Ex);
 			} else {
 				throw new IOException(Msg.bind(Messages.SftpEx_CHOWN, userid,
 						path), Ex);
 			}
 		}
 	}
-
 }

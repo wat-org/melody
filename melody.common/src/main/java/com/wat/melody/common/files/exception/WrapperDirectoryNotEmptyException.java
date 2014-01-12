@@ -3,6 +3,8 @@ package com.wat.melody.common.files.exception;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Path;
 
+import com.wat.melody.common.ex.HiddenException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -23,7 +25,7 @@ public class WrapperDirectoryNotEmptyException extends
 
 	public WrapperDirectoryNotEmptyException(String file, Throwable cause) {
 		this(file);
-		initCause(cause);
+		initCause(new HiddenException(cause));
 	}
 
 	public WrapperDirectoryNotEmptyException(Path file, Throwable cause) {

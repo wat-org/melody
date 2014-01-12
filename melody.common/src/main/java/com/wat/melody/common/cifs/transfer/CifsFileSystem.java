@@ -29,6 +29,7 @@ import jcifs.util.transport.TransportException;
 import com.wat.melody.common.cifs.transfer.exception.WrapperNoSuchShareException;
 import com.wat.melody.common.cifs.transfer.exception.WrapperSmbException;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
@@ -733,7 +734,7 @@ public class CifsFileSystem implements FileSystem {
 				// only need the reason
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
-						Ex.getReason())));
+						Ex.getReason()), new HiddenException(Ex)));
 			} catch (FileSystemException Ex) {
 				// don't want neither the stack trace nor the file name
 				String msg = Ex.getReason();
@@ -743,7 +744,8 @@ public class CifsFileSystem implements FileSystem {
 					msg = Ex.getClass().getName() + " - " + msg;
 				}
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg)));
+						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg),
+						new HiddenException(Ex)));
 			} catch (IOException Ex) {
 				full.addCause(new MelodyException(Msg.bind(
 						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex));
@@ -751,7 +753,8 @@ public class CifsFileSystem implements FileSystem {
 					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+						Messages.CifsFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex),
+						new HiddenException(Ex)));
 			} catch (Throwable Ex) {
 				// want the stack trace
 				full.addCause(new MelodyException(Msg.bind(

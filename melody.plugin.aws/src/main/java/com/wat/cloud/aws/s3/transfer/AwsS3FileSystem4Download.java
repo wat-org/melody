@@ -222,14 +222,14 @@ public class AwsS3FileSystem4Download extends LocalFileSystem implements
 		} catch (FileNotFoundException Ex) {
 			String msg = Ex.getMessage();
 			if (msg != null && msg.indexOf(" (Permission denied)") != -1) {
-				throw new WrapperAccessDeniedException(destination);
+				throw new WrapperAccessDeniedException(destination, Ex);
 			} else if (msg != null
 					&& msg.indexOf(" (No such file or directory)") != -1) {
-				throw new WrapperNoSuchFileException(destination);
+				throw new WrapperNoSuchFileException(destination, Ex);
 			} else if (msg != null && msg.indexOf(" (Is a directory)") != -1) {
-				throw new WrapperDirectoryNotEmptyException(destination);
+				throw new WrapperDirectoryNotEmptyException(destination, Ex);
 			} else {
-				throw new WrapperNoSuchFileException(source, Ex.getCause());
+				throw new WrapperNoSuchFileException(source, Ex);
 			}
 		} catch (InterruptedIOException Ex) {
 			throw new WrapperInterruptedIOException(

@@ -48,8 +48,7 @@
                             dest-name="templates/bn-§[bucket]§/file2.bn-§[bucket]§"
                             template="y" />
 
-                <include    match="**/link.external.relative"
-                            link-option="SKIP_LINKS" /> <!-- this is a link, which points to melody.log. This file's size is increasing. So we skip it -->
+                <exclude    match="**/link.external.relative" /> <!-- this is a link, which points to melody.log. This file's size is increasing. So we skip it -->
                
                 <exclude    match="download" />
                 <exclude    match="download/**" />

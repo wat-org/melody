@@ -89,11 +89,11 @@ public class LocalFileSystem4Transfer extends LocalFileSystem implements
 		try {
 			Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (DirectoryNotEmptyException Ex) {
-			throw new WrapperDirectoryNotEmptyException(Ex.getFile());
+			throw new WrapperDirectoryNotEmptyException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		} catch (InterruptedIOException Ex) {
 			throw new WrapperInterruptedIOException(
 					Messages.LocalFSEx_COPY_INTERRUPTED, Ex);

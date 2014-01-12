@@ -2,6 +2,8 @@ package com.wat.melody.common.files.exception;
 
 import java.nio.file.Path;
 
+import com.wat.melody.common.ex.HiddenException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -22,7 +24,7 @@ public class WrapperDirectoryAlreadyExistsException extends
 
 	public WrapperDirectoryAlreadyExistsException(String file, Throwable cause) {
 		this(file);
-		initCause(cause);
+		initCause(new HiddenException(cause));
 	}
 
 	public WrapperDirectoryAlreadyExistsException(Path file, Throwable cause) {

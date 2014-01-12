@@ -32,6 +32,7 @@ import com.wat.cloud.aws.s3.BucketName;
 import com.wat.cloud.aws.s3.Messages;
 import com.wat.cloud.aws.s3.exception.DeleteKeyException;
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedIOException;
 import com.wat.melody.common.files.EnhancedFileAttributes;
@@ -398,7 +399,7 @@ public class AwsS3FileSystem implements FileSystem {
 			} catch (AmazonS3Exception Ex) {
 				if (Ex.getMessage() != null
 						&& Ex.getMessage().indexOf("Forbidden") != -1) {
-					throw new WrapperAccessDeniedException(sPath, Ex);
+					throw new WrapperAccessDeniedException(path, Ex);
 				} else {
 					throw new IOException(Msg.bind(Messages.S3fsEx_LS, path),
 							Ex);
@@ -794,7 +795,8 @@ public class AwsS3FileSystem implements FileSystem {
 					| ClassCastException Ex) {
 				// don't want the stack trace
 				full.addCause(new MelodyException(Msg.bind(
-						Messages.S3fsEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex)));
+						Messages.S3fsEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex),
+						new HiddenException(Ex)));
 			} catch (Throwable Ex) {
 				// want the stack trace
 				full.addCause(new MelodyException(Msg.bind(

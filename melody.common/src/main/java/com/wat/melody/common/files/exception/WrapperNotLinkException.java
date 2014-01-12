@@ -3,6 +3,8 @@ package com.wat.melody.common.files.exception;
 import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 
+import com.wat.melody.common.ex.HiddenException;
+
 /**
  * 
  * @author Guillaume Cornet
@@ -22,7 +24,7 @@ public class WrapperNotLinkException extends NotLinkException {
 
 	public WrapperNotLinkException(String file, Throwable cause) {
 		this(file);
-		initCause(cause);
+		initCause(new HiddenException(cause));
 	}
 
 	public WrapperNotLinkException(Path file, Throwable cause) {

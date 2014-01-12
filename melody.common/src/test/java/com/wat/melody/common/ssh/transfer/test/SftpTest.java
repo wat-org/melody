@@ -34,8 +34,8 @@ public class SftpTest {
 		};
 
 		ISshUserDatas ud = new SshUserDatas();
-		ud.setLogin("login");
-		ud.setPassword("password");
+		ud.setLogin("gcornet");
+		ud.setPassword("meuchmeuh");
 		ISshConnectionDatas cd = new SshConnectionDatas();
 		cd.setHost(Host.parseString("127.0.0.1"));
 		cd.setTrust(true);
@@ -46,7 +46,7 @@ public class SftpTest {
 		ChannelSftp channel = session.openSftpChannel();
 		TransferableFileSystem sftpfs = new SftpFileSystem4Download(channel, th);
 
-		Path dir = Paths.get("/tmp/rdpuser1/Documents/superdir");
+		Path dir = Paths.get("/home/gcornet/Documents/00 - Personnal Devlopment Projects/GITHUB/melody-project/melody.plugin.ssh/tests/UC_4_download/download/127.0.0.1/static_myApp_myMod/content3.txt");
 		Path src = Paths.get("/tmp/mescoudes.xml");
 		Path dest = Paths.get("/tmp/rdpuser1/Documents/superdir");
 
@@ -57,7 +57,7 @@ public class SftpTest {
 			attr.setStringValue("true");
 
 			// will fail cause parent doesn't exists
-			sftpfs.createDirectory(dir, attr);
+			sftpfs.setAttributes(dir, attr);
 			// will fail cause dest parent doesn't exists
 			sftpfs.transferRegularFile(src, dest, attr);
 

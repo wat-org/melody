@@ -157,12 +157,12 @@ public class CifsFileSystem4Upload extends CifsFileSystem implements
 		} catch (FileNotFoundException Ex) {
 			String msg = Ex.getMessage();
 			if (msg != null && msg.indexOf(" (Permission denied)") != -1) {
-				throw new WrapperAccessDeniedException(source);
+				throw new WrapperAccessDeniedException(source, Ex);
 			} else if (msg != null
 					&& msg.indexOf(" (No such file or directory)") != -1) {
-				throw new WrapperNoSuchFileException(source);
+				throw new WrapperNoSuchFileException(source, Ex);
 			} else if (msg != null && msg.indexOf(" (Is a directory)") != -1) {
-				throw new WrapperDirectoryNotEmptyException(source);
+				throw new WrapperDirectoryNotEmptyException(source, Ex);
 			} else {
 				throw new WrapperNoSuchFileException(source, Ex);
 			}

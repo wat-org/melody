@@ -113,9 +113,9 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 				throw new InterruptedIOException(
 						Messages.SfptEx_PUT_INTERRUPTED);
 			} else if (Ex.id == ChannelSftp.SSH_FX_PERMISSION_DENIED) {
-				throw new WrapperAccessDeniedException(destination);
+				throw new WrapperAccessDeniedException(destination, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-				throw new WrapperNoSuchFileException(destination);
+				throw new WrapperNoSuchFileException(destination, Ex);
 			} else if (Ex.id == ChannelSftp.SSH_FX_FAILURE
 					&& Ex.getCause() instanceof InterruptedIOException) {
 				throw new WrapperInterruptedIOException(
@@ -125,13 +125,15 @@ public class SftpFileSystem4Upload extends SftpFileSystem implements
 				String msg = Ex.getCause().getMessage();
 				if (msg != null
 						&& msg.indexOf(" (No such file or directory)") != -1) {
-					throw new WrapperNoSuchFileException(source);
+					throw new WrapperNoSuchFileException(source, Ex.getCause());
 				} else if (msg != null
 						&& msg.indexOf(" (Permission denied)") != -1) {
-					throw new WrapperAccessDeniedException(source);
+					throw new WrapperAccessDeniedException(source,
+							Ex.getCause());
 				} else if (msg != null
 						&& msg.indexOf(" (Is a directory)") != -1) {
-					throw new WrapperDirectoryNotEmptyException(source);
+					throw new WrapperDirectoryNotEmptyException(source,
+							Ex.getCause());
 				} else {
 					throw new WrapperNoSuchFileException(source, Ex.getCause());
 				}

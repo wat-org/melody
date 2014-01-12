@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wat.melody.common.ex.ConsolidatedException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileAttributeException;
@@ -486,7 +487,7 @@ public abstract class FS {
 			// only need the reason
 			throw new MelodyException(Msg.bind(
 					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr,
-					Ex.getReason()));
+					Ex.getReason()), new HiddenException(Ex));
 		} catch (FileSystemException Ex) {
 			// don't want neither the stack trace nor the file name
 			String msg = Ex.getReason();
@@ -496,7 +497,8 @@ public abstract class FS {
 				msg = Ex.getClass().getName() + " - " + msg;
 			}
 			throw new MelodyException(Msg.bind(
-					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg));
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, msg),
+					new HiddenException(Ex));
 		} catch (IOException Ex) {
 			throw new MelodyException(Msg.bind(
 					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE_X, attr), Ex);
@@ -504,7 +506,8 @@ public abstract class FS {
 				| ClassCastException Ex) {
 			// don't want the stack trace
 			throw new MelodyException(Msg.bind(
-					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex));
+					Messages.LocalFSEx_FAILED_TO_SET_ATTRIBUTE, attr, Ex),
+					new HiddenException(Ex));
 		} catch (Throwable Ex) {
 			// want the stack trace
 			throw new MelodyException(Msg.bind(
@@ -518,9 +521,9 @@ public abstract class FS {
 		try {
 			Files.setAttribute(path, attrName, attrValue, linkOptions);
 		} catch (NoSuchFileException Ex) {
-			throw new WrapperNoSuchFileException(Ex.getFile());
+			throw new WrapperNoSuchFileException(Ex.getFile(), Ex);
 		} catch (AccessDeniedException Ex) {
-			throw new WrapperAccessDeniedException(Ex.getFile());
+			throw new WrapperAccessDeniedException(Ex.getFile(), Ex);
 		}
 	}
 

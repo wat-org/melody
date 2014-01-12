@@ -209,6 +209,9 @@ public class MelodyException extends Exception {
 				current = ((ConsolidatedException) ex)
 						.getUserFriendlyStackTrace();
 				ex = ex.getCause();
+			} else if (ex instanceof HiddenException) {
+				current = ex.getMessage(); // HiddenException.getMessage == null
+				ex = null; // break loop
 			} else {
 				current = ex.getMessage();
 				ex = ex.getCause();
