@@ -1,8 +1,8 @@
-rhn-channel can't alter bas channel ...
+rhn-channel can't alter base channel ...
 So we must use XMLRPC api !
 
 Regarding the version of the remote RHN server, some of these functions may be deprecated ... 
-This script should branch through differents funciton call regarding the version of the API exposed by the RHN server. 
+This script should branch through different function call regarding the version of the API exposed by the RHN server. 
 
 
 #!/usr/bin/python
