@@ -20,7 +20,7 @@ public class GetNetworkActivationHost implements XPathFunction {
 
 	public static final String NAME = "getNetworkActivationHost";
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		// will not fail: have been registered with arity 1
 		Object arg0 = list.get(0);
@@ -28,10 +28,15 @@ public class GetNetworkActivationHost implements XPathFunction {
 			if (XPathFunctionHelper.isElement(arg0)) {
 				return XPathFunctionHelper.toString(NetworkActivationHelper
 						.findNetworkActivationHost((Element) arg0));
+			} else if (XPathFunctionHelper.isElementList(arg0)) {
+				return XPathFunctionHelper.toString(NetworkActivationHelper
+						.findNetworkActivationHost((List<Element>) arg0));
 			}
 			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
 					+ ": Not accepted. " + NAME + "() expects an "
-					+ Element.class.getCanonicalName() + " as first "
+					+ Element.class.getCanonicalName() + " or a "
+					+ List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + "> as first "
 					+ "argument.");
 		} catch (NodeRelatedException Ex) {
 			throw new XPathFunctionException(Ex);

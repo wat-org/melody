@@ -1,5 +1,8 @@
 package com.wat.melody.cloud.network.activation.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Attr;
@@ -290,6 +293,56 @@ public abstract class NetworkActivationHelper {
 	}
 
 	/**
+	 * @param instanceElmts
+	 *            is list of {@link Element}. Each {@link Element} describes an
+	 *            Instance.
+	 * 
+	 * @return a list which contains the Activation Host defined in each
+	 *         Instance's Network Activation Device. Can be an empty list, if no
+	 *         Instance, if no Activation Host is found.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given Instance list is <tt>null</tt>.
+	 * @throws NodeRelatedException
+	 *             <ul>
+	 *             <li>if Custom Network Devices Selector (found in one of the
+	 *             given Instance's Network Management Element) is not a valid
+	 *             XPath Expression ;</li>
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             one of the given Instance's Network Management Element)
+	 *             selects no {@link Element} ;</li>
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             one of the given Instance's Network Management Element)
+	 *             selects multiple {@link Element} ;</li>
+	 *             <li>if Custom Network Activation Device Selector (found in
+	 *             one of the given Instance's Network Management Element)
+	 *             doesn't select an {@link Element} ;</li>
+	 *             <li>if the Activation Host (found in one of the given
+	 *             Instance's Network Activation Device Element) cannot be
+	 *             converted to an {@link Host} ;</li>
+	 *             </ul>
+	 */
+	public static List<Host> findNetworkActivationHost(
+			List<Element> instanceElmts) throws NodeRelatedException {
+		if (instanceElmts == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid a " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
+		}
+		List<Host> list = new ArrayList<Host>();
+		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
+			Host host = findNetworkActivationHost(instanceElmt);
+			if (host != null) {
+				list.add(host);
+			}
+		}
+		return list;
+	}
+
+	/**
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance.
 	 * 
@@ -313,9 +366,9 @@ public abstract class NetworkActivationHelper {
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
-	 *             <li>if the given Instance's Network Activation Device's
-	 *             Network Activation Host Selector's attribute cannot be
-	 *             converted to an {@link Host} ;</li>
+	 *             <li>if the Activation Host (found in the given Instance's
+	 *             Network Activation Device Element) cannot be converted to an
+	 *             {@link Host} ;</li>
 	 *             </ul>
 	 */
 	public static Host findNetworkActivationHost(Element instanceElmt)
@@ -353,9 +406,9 @@ public abstract class NetworkActivationHelper {
 	 *             <li>if Custom Network Activation Device Selector (found in
 	 *             the given Instance's Network Management Element) doesn't
 	 *             select an {@link Element} ;</li>
-	 *             <li>if the given Instance's Network Activation Device's
-	 *             Network Activation Host Selector's attribute cannot be
-	 *             converted to an {@link Host} ;</li>
+	 *             <li>if the Activation Host (found in the given Instance's
+	 *             Network Activation Device Element) cannot be converted to an
+	 *             {@link Host} ;</li>
 	 *             </ul>
 	 */
 	public static Host getNetworkActivationHost(Element instanceElmt,
