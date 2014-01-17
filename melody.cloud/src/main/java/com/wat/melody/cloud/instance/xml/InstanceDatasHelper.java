@@ -38,6 +38,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<String> list = new ArrayList<String>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceId(instanceElmt));
 		}
 		return list;
@@ -68,6 +71,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<String> list = new ArrayList<String>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceRegion(instanceElmt));
 		}
 		return list;
@@ -97,6 +103,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<String> list = new ArrayList<String>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceSite(instanceElmt));
 		}
 		return list;
@@ -126,6 +135,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<String> list = new ArrayList<String>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceImageId(instanceElmt));
 		}
 		return list;
@@ -155,6 +167,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<InstanceType> list = new ArrayList<InstanceType>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceType(instanceElmt));
 		}
 		return list;
@@ -190,6 +205,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<KeyPairRepositoryPath> list = new ArrayList<KeyPairRepositoryPath>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceKeyPairRepositoryPath(instanceElmt));
 		}
 		return list;
@@ -225,6 +243,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<KeyPairName> list = new ArrayList<KeyPairName>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceKeyPairName(instanceElmt));
 		}
 		return list;
@@ -260,6 +281,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<String> list = new ArrayList<String>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstancePassphrase(instanceElmt));
 		}
 		return list;
@@ -289,6 +313,9 @@ public abstract class InstanceDatasHelper {
 		}
 		List<KeyPairSize> list = new ArrayList<KeyPairSize>();
 		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
 			list.add(findInstanceKeyPairSize(instanceElmt));
 		}
 		return list;
