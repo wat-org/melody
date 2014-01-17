@@ -28,7 +28,7 @@ public class NetworkActivatorRelatedToAnInstanceElement implements
 	public NetworkActivatorRelatedToAnInstanceElement(
 			NetworkActivatorConfigurationCallback networkActivatorConfCallback,
 			Element instanceElmt) {
-		setNetworkManagerFactoryConfigurationCallback(networkActivatorConfCallback);
+		setNetworkActivatorConfigurationCallback(networkActivatorConfCallback);
 		setInstanceElement(instanceElmt);
 	}
 
@@ -36,7 +36,7 @@ public class NetworkActivatorRelatedToAnInstanceElement implements
 		return _networkActivatorConfCallback;
 	}
 
-	private NetworkActivatorConfigurationCallback setNetworkManagerFactoryConfigurationCallback(
+	private NetworkActivatorConfigurationCallback setNetworkActivatorConfigurationCallback(
 			NetworkActivatorConfigurationCallback confCallack) {
 		if (confCallack == null) {
 			throw new IllegalArgumentException(
