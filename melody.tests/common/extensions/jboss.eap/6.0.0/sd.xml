@@ -28,6 +28,8 @@
         </ssh>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- exit silently if the native components where not uploaded -->
+            <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-*.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
             <!-- specific to native components -->
             <exec command="unzip -n /tmp/jboss-eap-native-§[jbossEngineVersion]§-*.zip -d /tmp/§[jbossEngineVersion]§" />
             <!-- for jboss.web (e.g. tomcat) -->
