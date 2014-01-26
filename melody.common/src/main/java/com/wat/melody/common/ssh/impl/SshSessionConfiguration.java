@@ -6,11 +6,13 @@ import com.wat.melody.common.ssh.IKnownHostsRepository;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
+import com.wat.melody.common.ssh.types.ConnectionRetry;
 import com.wat.melody.common.ssh.types.ConnectionTimeout;
 import com.wat.melody.common.ssh.types.ProxyType;
 import com.wat.melody.common.ssh.types.ReadTimeout;
 import com.wat.melody.common.ssh.types.ServerAliveInterval;
 import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
+import com.wat.melody.common.ssh.types.exception.IllegalConnectionRetryException;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
 import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -28,6 +30,19 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 		} catch (IllegalTimeoutException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a ConnectionTimeout with value '" + timeout + "'. "
+					+ "Because this default value initialization is "
+					+ "hardcoded, such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+	}
+
+	private static ConnectionRetry createConnectionRetry(int connretry) {
+		try {
+			return ConnectionRetry.parseInt(connretry);
+		} catch (IllegalConnectionRetryException Ex) {
+			throw new RuntimeException("Unexpected error while initializing "
+					+ "a ConnectionRetry with value '" + connretry + "'. "
 					+ "Because this default value initialization is "
 					+ "hardcoded, such error cannot happened. "
 					+ "Source code has certainly been modified and "
@@ -76,15 +91,17 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 
 	private static CompressionLevel DEFAULT_COMPRESSION_LEVEL = CompressionLevel.NONE;
 	private static CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.NONE;
-	private static ConnectionTimeout DEFAULT_CONNECTION_TIMEOUT = createConnectionTimeout(15000);;
-	private static ReadTimeout DEFAULT_READ_TIMEOUT = createReadTimeout(60000);;
-	private static ServerAliveMaxCount DEFAULT_SERVER_ALIVE_MAX_COUNT = createServerAliveMaxCount(1);;
-	private static ServerAliveInterval DEFAULT_SERVER_ALIVE_INTERVAL = createServerAliveInterval(10000);;
+	private static ConnectionTimeout DEFAULT_CONNECTION_TIMEOUT = createConnectionTimeout(15000);
+	private static ConnectionRetry DEFAULT_CONNECTION_RETRY = createConnectionRetry(3);
+	private static ReadTimeout DEFAULT_READ_TIMEOUT = createReadTimeout(60000);
+	private static ServerAliveMaxCount DEFAULT_SERVER_ALIVE_MAX_COUNT = createServerAliveMaxCount(1);
+	private static ServerAliveInterval DEFAULT_SERVER_ALIVE_INTERVAL = createServerAliveInterval(10000);
 
 	private IKnownHostsRepository _knownHosts = null;
 	private CompressionLevel _compressionLevel = DEFAULT_COMPRESSION_LEVEL;
 	private CompressionType _compressionType = DEFAULT_COMPRESSION_TYPE;
 	private ConnectionTimeout _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+	private ConnectionRetry _connectionRetry = DEFAULT_CONNECTION_RETRY;
 	private ReadTimeout _readTimeout = DEFAULT_READ_TIMEOUT;
 	private ServerAliveMaxCount _serverAliveMaxCount = DEFAULT_SERVER_ALIVE_MAX_COUNT;
 	private ServerAliveInterval _serverAliveInterval = DEFAULT_SERVER_ALIVE_INTERVAL;
@@ -104,6 +121,8 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 		str.append(getCompressionType());
 		str.append(", connection-timeout:");
 		str.append(getConnectionTimeout());
+		str.append(", connection-retry:");
+		str.append(getConnectionRetry());
 		str.append(", read-timeout:");
 		str.append(getReadTimeout());
 		str.append(", server-alive-max-count:");
@@ -182,6 +201,21 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 		}
 		Timeout previous = getConnectionTimeout();
 		_connectionTimeout = timeout;
+		return previous;
+	}
+
+	@Override
+	public ConnectionRetry getConnectionRetry() {
+		return _connectionRetry;
+	}
+
+	@Override
+	public ConnectionRetry setConnectionRetry(ConnectionRetry connectionRetry) {
+		if (connectionRetry == null) {
+			connectionRetry = DEFAULT_CONNECTION_RETRY;
+		}
+		ConnectionRetry previous = getConnectionRetry();
+		_connectionRetry = connectionRetry;
 		return previous;
 	}
 

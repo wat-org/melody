@@ -4,6 +4,7 @@ import com.wat.melody.common.network.Host;
 import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
+import com.wat.melody.common.ssh.types.ConnectionRetry;
 import com.wat.melody.common.ssh.types.ConnectionTimeout;
 import com.wat.melody.common.ssh.types.ProxyType;
 import com.wat.melody.common.ssh.types.ReadTimeout;
@@ -33,19 +34,23 @@ public interface ISshSessionConfiguration {
 
 	public Timeout getConnectionTimeout();
 
-	public Timeout setConnectionTimeout(ConnectionTimeout ival);
+	public Timeout setConnectionTimeout(ConnectionTimeout val);
+
+	public ConnectionRetry getConnectionRetry();
+
+	public ConnectionRetry setConnectionRetry(ConnectionRetry val);
 
 	public Timeout getReadTimeout();
 
-	public Timeout setReadTimeout(ReadTimeout ival);
+	public Timeout setReadTimeout(ReadTimeout val);
 
 	public ServerAliveMaxCount getServerAliveMaxCount();
 
-	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount ival);
+	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount val);
 
 	public Timeout getServerAliveInterval();
 
-	public Timeout setServerAliveInterval(ServerAliveInterval ival);
+	public Timeout setServerAliveInterval(ServerAliveInterval val);
 
 	public ProxyType getProxyType();
 

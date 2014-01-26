@@ -42,6 +42,9 @@ public class SshSession implements ISshSession {
 
 	private static Logger log = LoggerFactory.getLogger(SshSession.class);
 
+	private static Logger ex = LoggerFactory.getLogger("exception."
+			+ SshSession.class.getName());
+
 	private static JSch JSCH = new JSch();
 
 	private Session _session = null;
@@ -63,6 +66,7 @@ public class SshSession implements ISshSession {
 	@Override
 	public ISshSessionConfiguration setSessionConfiguration(
 			ISshSessionConfiguration sc) {
+		// can be null
 		ISshSessionConfiguration previous = getSessionConfiguration();
 		_sshSessionConfiguration = sc;
 		return previous;
@@ -309,25 +313,50 @@ public class SshSession implements ISshSession {
 
 	private void _connect() throws SshSessionException,
 			InvalidCredentialException, InterruptedException {
-		int cnxTimeout = 0;
+		long cnxTimeout = 0;
+		int cnxRetry = 0;
+		int cnxDelay = 3;
 		if (getSessionConfiguration() != null) {
-			cnxTimeout = (int) getSessionConfiguration().getConnectionTimeout()
+			cnxTimeout = getSessionConfiguration().getConnectionTimeout()
 					.getTimeoutInMillis();
+			cnxRetry = getSessionConfiguration().getConnectionRetry()
+					.getValue();
 		}
-		try {
-			_session.connect(cnxTimeout);
-		} catch (JSchExceptionInterrupted Ex) {
-			throw new WrapperInterruptedException(Ex);
-		} catch (JSchException Ex) {
-			String msg;
-			msg = Msg.bind(Messages.SessionEx_FAILED_TO_CONNECT,
-					getConnectionDatas(), getUserDatas());
-			if (Ex.getMessage() != null && Ex.getMessage().indexOf("Auth") == 0) {
-				// will match message 'Auth cancel' and 'Auth fail'
-				// => dedicated exception on credentials errors
-				throw new InvalidCredentialException(msg, Ex);
+		while (true) {
+			try {
+				_session.connect((int) cnxTimeout);
+				// success => exit
+				return;
+			} catch (JSchExceptionInterrupted Ex) {
+				throw new WrapperInterruptedException(Ex);
+			} catch (JSchException Ex) {
+				// fast fail on authentication error
+				if (Ex.getMessage() != null
+						&& Ex.getMessage().indexOf("Auth") == 0) {
+					// will match message 'Auth cancel' and 'Auth fail'
+					// => throw dedicated exception if credentials error
+					throw new InvalidCredentialException(Msg.bind(
+							Messages.SessionEx_FAILED_TO_CONNECT,
+							getConnectionDatas(), getUserDatas()), Ex);
+				}
+				// fail when no retry left
+				if (cnxRetry <= 0) {
+					throw new SshSessionException(Msg.bind(
+							Messages.SessionEx_FAILED_TO_CONNECT,
+							getConnectionDatas(), getUserDatas()), Ex);
+				}
+				// retrying
+				SshSessionException pex = new SshSessionException(Ex);
+				log.info(Msg.bind(Messages.SessionMsg_RETRY_TO_CONNECT,
+						getConnectionDatas(), getUserDatas(), cnxRetry,
+						pex.getUserFriendlyStackTrace()));
+				ex.info(Msg.bind(Messages.SessionMsg_RETRY_TO_CONNECT,
+						getConnectionDatas(), getUserDatas(), cnxRetry,
+						pex.getFullStackTrace()));
+				cnxRetry -= 1;
+				cnxDelay += 3;
+				Thread.sleep(cnxDelay * 1000);
 			}
-			throw new SshSessionException(msg, Ex);
 		}
 	}
 
