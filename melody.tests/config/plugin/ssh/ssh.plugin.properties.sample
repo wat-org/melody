@@ -39,6 +39,7 @@ plugin.configuration.canonicalclassname=com.wat.melody.plugin.ssh.common.SshPlug
 #####################
 
 #ssh.conn.socket.connect.timeout=
+#ssh.conn.socket.connect.retry=3
 #ssh.conn.socket.read.timeout=
 
 ### the number of server-alive messages which will be sent without any reply from the server before disconnecting. The default value is 1. 

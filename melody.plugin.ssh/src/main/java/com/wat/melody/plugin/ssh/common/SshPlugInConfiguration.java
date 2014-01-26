@@ -28,6 +28,7 @@ import com.wat.melody.common.ssh.impl.KnownHostsRepositoryPath;
 import com.wat.melody.common.ssh.impl.SshSessionConfiguration;
 import com.wat.melody.common.ssh.types.CompressionLevel;
 import com.wat.melody.common.ssh.types.CompressionType;
+import com.wat.melody.common.ssh.types.ConnectionRetry;
 import com.wat.melody.common.ssh.types.ConnectionTimeout;
 import com.wat.melody.common.ssh.types.ProxyType;
 import com.wat.melody.common.ssh.types.ReadTimeout;
@@ -35,6 +36,7 @@ import com.wat.melody.common.ssh.types.ServerAliveInterval;
 import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionLevelException;
 import com.wat.melody.common.ssh.types.exception.IllegalCompressionTypeException;
+import com.wat.melody.common.ssh.types.exception.IllegalConnectionRetryException;
 import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
 import com.wat.melody.common.timeout.Timeout;
@@ -85,6 +87,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	public static final String COMPRESSION_TYPE = "ssh.compression.type";
 	public static final String COMPRESSION_LEVEL = "ssh.compression.level";
 
+	public static final String CONNECTION_RETRY = "ssh.conn.socket.connect.retry";
 	public static final String CONNECTION_TIMEOUT = "ssh.conn.socket.connect.timeout";
 	public static final String READ_TIMEOUT = "ssh.conn.socket.read.timeout";
 	public static final String SERVER_ALIVE_MAX_COUNT = "ssh.conn.serveralive.countmax";
@@ -155,6 +158,7 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		loadCompressionLevel(ps);
 		loadCompressionType(ps);
 		loadConnectionTimeout(ps);
+		loadConnectionRetry(ps);
 		loadReadTimeout(ps);
 		loadServerAliveCountMax(ps);
 		loadServerAliveInterval(ps);
@@ -245,6 +249,19 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 		} catch (SshPlugInConfigurationException Ex) {
 			throw new SshPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, CONNECTION_TIMEOUT), Ex);
+		}
+	}
+
+	private void loadConnectionRetry(PropertySet ps)
+			throws SshPlugInConfigurationException {
+		if (!ps.containsKey(CONNECTION_RETRY)) {
+			return;
+		}
+		try {
+			setConnectionRetry(ps.get(CONNECTION_RETRY));
+		} catch (SshPlugInConfigurationException Ex) {
+			throw new SshPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, CONNECTION_RETRY), Ex);
 		}
 	}
 
@@ -579,8 +596,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public Timeout setConnectionTimeout(ConnectionTimeout ival) {
-		return getSshSessionConfiguration().setConnectionTimeout(ival);
+	public Timeout setConnectionTimeout(ConnectionTimeout val) {
+		return getSshSessionConfiguration().setConnectionTimeout(val);
 	}
 
 	public Timeout setConnectionTimeout(String val)
@@ -593,13 +610,32 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
+	public ConnectionRetry getConnectionRetry() {
+		return getSshSessionConfiguration().getConnectionRetry();
+	}
+
+	@Override
+	public ConnectionRetry setConnectionRetry(ConnectionRetry val) {
+		return getSshSessionConfiguration().setConnectionRetry(val);
+	}
+
+	public ConnectionRetry setConnectionRetry(String val)
+			throws SshPlugInConfigurationException {
+		try {
+			return setConnectionRetry(ConnectionRetry.parseString(val));
+		} catch (IllegalConnectionRetryException Ex) {
+			throw new SshPlugInConfigurationException(Ex);
+		}
+	}
+
+	@Override
 	public Timeout getReadTimeout() {
 		return getSshSessionConfiguration().getReadTimeout();
 	}
 
 	@Override
-	public Timeout setReadTimeout(ReadTimeout ival) {
-		return getSshSessionConfiguration().setReadTimeout(ival);
+	public Timeout setReadTimeout(ReadTimeout val) {
+		return getSshSessionConfiguration().setReadTimeout(val);
 	}
 
 	public Timeout setReadTimeout(String val)
@@ -617,8 +653,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount ival) {
-		return getSshSessionConfiguration().setServerAliveMaxCount(ival);
+	public ServerAliveMaxCount setServerAliveMaxCount(ServerAliveMaxCount val) {
+		return getSshSessionConfiguration().setServerAliveMaxCount(val);
 	}
 
 	public ServerAliveMaxCount setServerAliveCountMax(String val)
@@ -636,8 +672,8 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public Timeout setServerAliveInterval(ServerAliveInterval ival) {
-		return getSshSessionConfiguration().setServerAliveInterval(ival);
+	public Timeout setServerAliveInterval(ServerAliveInterval val) {
+		return getSshSessionConfiguration().setServerAliveInterval(val);
 	}
 
 	public Timeout setServerAliveInterval(String val)
