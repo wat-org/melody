@@ -21,8 +21,7 @@ public class Messages extends NLS {
 
 	public static String TransferEx_INVALID_MAXPAR_ATTR;
 
-	public static String SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR;
-	public static String SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR;
+	public static String SshEx_VALIDATION_ERR;
 	public static String SshEx_READ_IO_ERROR;
 
 	static {

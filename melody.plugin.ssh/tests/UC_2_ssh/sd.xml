@@ -23,7 +23,15 @@
 			<export name="var11" value="( §[case1]§ §[case2]§ §[case3]§ )"/>
 			<exec command="ls -l"/>
 			<exec command="echo ---------------------------"/>
-			<exec command="echo -e &quot;\r1\r2\r3&quot;"/>
+		    <!-- WARNING : indentation is important here, because of EOF -->
+			<exec>
+                <![CDATA[
+echo -e "\r1\r2\r3"
+bash <<EOF
+echo super
+EOF
+                ]]>
+			</exec>
 			<exec command="echo ---------------------------"/>
 			<exec command="ls -l"/>
 			<exec command="sleep 2"/>

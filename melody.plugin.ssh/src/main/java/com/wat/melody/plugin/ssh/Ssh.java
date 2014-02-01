@@ -1,23 +1,14 @@
 package com.wat.melody.plugin.ssh;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
-import com.wat.melody.common.files.exception.IllegalFileException;
-import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.properties.Property;
 import com.wat.melody.common.systool.SysTool;
-import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 import com.wat.melody.plugin.ssh.common.AbstractSshManagedOperation;
-import com.wat.melody.plugin.ssh.common.Messages;
 import com.wat.melody.plugin.ssh.common.exception.SshException;
 import com.wat.melody.plugin.ssh.common.types.Exec;
 
@@ -58,15 +49,12 @@ public class Ssh extends AbstractSshManagedOperation {
 	 */
 	public static final String REQUIRETTY_ATTR = "requiretty";
 
-	private String _commandToExecute;
-	private String _description;
-	private boolean _requiretty;
+	private String _commandToExecute = "";
+	private String _description = "[exec ssh]";
+	private boolean _requiretty = false;
 
 	public Ssh() {
 		super();
-		_commandToExecute = "";
-		setDescription("[exec ssh]");
-		setRequiretty(false);
 	}
 
 	@Override
@@ -112,9 +100,13 @@ public class Ssh extends AbstractSshManagedOperation {
 	}
 
 	@Attribute(name = DESCRIPTION_ATTR)
-	public String setDescription(String d) {
+	public String setDescription(String description) {
+		// if null => convert it to ""
+		if (description == null) {
+			description = "";
+		}
 		String previous = getDescription();
-		_description = d;
+		_description = description;
 		return previous;
 	}
 
@@ -133,43 +125,9 @@ public class Ssh extends AbstractSshManagedOperation {
 	public void addInsludeScript(Exec is) throws SshException {
 		if (is == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid IncludeScript.");
+					+ "Must be a valid " + Exec.class.getCanonicalName() + ".");
 		}
-		if (is.getCommand() != null && is.getFile() != null) {
-			throw new SshException(Msg.bind(
-					Messages.SshEx_BOTH_COMMAND_OR_SCRIPT_ATTR,
-					Exec.COMMAND_ATTR, Exec.FILE_ATTR));
-		} else if (is.getCommand() != null) {
-			_commandToExecute += is.getCommand() + "\n";
-		} else if (is.getFile() != null) {
-			try {
-				String fileContent = null;
-				if (is.getTemplate()) {
-					try {
-						fileContent = Melody.getContext().expand(
-								Paths.get(is.getFile().toString()));
-					} catch (IllegalFileException Ex) {
-						throw new RuntimeException("Unexpected error while "
-								+ "templating the file " + is.getFile() + "."
-								+ "Source code has certainly been modified "
-								+ "and a bug have been introduced.", Ex);
-					} catch (ExpressionSyntaxException Ex) {
-						throw new SshException(Ex);
-					}
-				} else {
-					fileContent = new String(Files.readAllBytes(Paths.get(is
-							.getFile().toString())));
-				}
-				_commandToExecute += fileContent + "\n";
-			} catch (IOException Ex) {
-				throw new SshException(Msg.bind(Messages.SshEx_READ_IO_ERROR,
-						is.getFile()), Ex);
-			}
-		} else {
-			throw new SshException(Msg.bind(
-					Messages.SshEx_MISSING_COMMAND_OR_SCRIPT_ATTR,
-					Exec.COMMAND_ATTR, Exec.FILE_ATTR));
-		}
+		_commandToExecute += is.getShellCommand();
 	}
 
 	@NestedElement(name = DECLARE_NE, type = Type.ADD, description = "The '"
@@ -180,17 +138,23 @@ public class Ssh extends AbstractSshManagedOperation {
 	public void addDeclareVariable(Property p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid DeclareVariable.");
+					+ "Must be a valid " + Property.class.getCanonicalName()
+					+ ".");
 		}
 		_commandToExecute += "declare " + p.getName() + "=" + p.getValue()
 				+ "\n";
 	}
 
-	@NestedElement(name = EXPORT_NE, type = Type.ADD)
+	@NestedElement(name = EXPORT_NE, type = Type.ADD, description = "The '"
+			+ EXPORT_NE
+			+ "' nested element of the '"
+			+ SSH
+			+ "' Task allow to export a bash variable and to assign it a value.")
 	public void addExportVariable(Property p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accpeted. "
-					+ "Must be a valid DeclareVariable.");
+					+ "Must be a valid " + Property.class.getCanonicalName()
+					+ ".");
 		}
 		_commandToExecute += "export " + p.getName() + "=" + p.getValue()
 				+ "\n";
