@@ -45,7 +45,7 @@
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<!-- CXF 2.7.4 depends on 2.0-m10 -->
+			<!-- CXF 2.7.9 depends on 2.0-m10 -->
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
 			<version>2.0-m10</version>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-bundle-minimal</artifactId>
-			<version>2.7.4</version>
+			<version>2.7.9</version>
 			<exclusions>
 				<exclusion>
 					<!-- because the pom of the 2.6.0 is missing ... -->
@@ -69,6 +69,12 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- aws sdk requires joda-time:joda-time:2.3. Exclusion will avoid 
+						conflicts ... -->
+					<groupId>joda-time</groupId>
+					<artifactId>joda-time</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -78,7 +84,7 @@
 				: org/codehaus/jettison/mapped/TypeConverter -->
 			<groupId>org.codehaus.jettison</groupId>
 			<artifactId>jettison</artifactId>
-			<version>1.3.3</version>
+			<version>1.3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.libvirt</groupId>
