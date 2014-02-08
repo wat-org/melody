@@ -105,7 +105,7 @@ public class SshNetworkActivator implements NetworkActivator {
 		boolean enablementDone = true;
 
 		ISshUserDatas ud = new SshUserDatas();
-		ud.setLogin("crazyssh");
+		ud.setLogin("probessh");
 		ud.setPassword("");
 		ISshConnectionDatas cd = new SshConnectionDatas();
 		cd.setHost(host);
