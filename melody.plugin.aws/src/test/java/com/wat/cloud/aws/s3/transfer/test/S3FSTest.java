@@ -46,10 +46,10 @@ public class S3FSTest {
 				conf.getAwsS3Connection(), BucketName.parseString("couille"),
 				th);
 
-		Path dir1 = Paths.get("/superdir");
-		Path dir2 = Paths.get("/superdir/inside");
-		Path dir3 = Paths.get("/superdir/genial/mesgenoux");
-		Path dir4 = Paths.get("/anotherdir");
+		// Path dir1 = Paths.get("/superdir");
+		// Path dir2 = Paths.get("/superdir/inside");
+		// Path dir3 = Paths.get("/superdir/genial/mesgenoux");
+		// Path dir4 = Paths.get("/anotherdir");
 		Path src = Paths.get("/tmp/melody/scp/UC_1_upload/sd.xml");
 		Path dest = Paths.get("/tmp/mescoudes.xml");
 
