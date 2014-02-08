@@ -69,6 +69,15 @@ public class Launcher {
 			MelodyException e = new MelodyException(Ex);
 			log.warn(e.getUserFriendlyStackTrace());
 			ex.warn(e.getFullStackTrace());
+			/*
+			 * the logger may be asynchronous. And the program may end before
+			 * everything is logged. So we sleep a little, to be sure everything
+			 * is logged.
+			 */
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException ignored) {
+			}
 			iReturnCode = ReturnCode.INTERRUPTED;
 		} catch (MelodyException Ex) {
 			log.error(Ex.getUserFriendlyStackTrace());
