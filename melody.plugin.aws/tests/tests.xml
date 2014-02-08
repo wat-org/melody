@@ -86,7 +86,7 @@
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
-			<arg value="destroy_env" />
+			<arg value="destroy_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>
@@ -171,7 +171,7 @@
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
 			<arg value="-o" />
-			<arg value="destroy_env" />
+			<arg value="destroy_all_vm" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

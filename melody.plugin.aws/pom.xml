@@ -30,19 +30,10 @@
 					<groupId>commons-codec</groupId>
 					<artifactId>commons-codec</artifactId>
 				</exclusion>
-				<!-- Not necessary for runtime -->
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
+				<!-- unlike said in the aws-java-sdk's pom - where it is mark for compile 
+					time only -, com.fasterxml.jackson.core:databinds, com.fasterxml.jackson.core:annotations 
+					and com.fasterxml.jackson.core:core are required for runtime. So we don't 
+					exclude them here -->
 				<!-- JavaMail is only needed if you want to use the JavaMail provider 
 					for Amazon Simple Email Service -->
 				<exclusion>

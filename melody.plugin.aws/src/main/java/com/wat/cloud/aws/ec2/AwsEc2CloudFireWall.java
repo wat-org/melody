@@ -118,28 +118,38 @@ public abstract class AwsEc2CloudFireWall {
 				Protocol proto = Protocol.parseString(perm.getIpProtocol());
 				switch (proto) {
 				case TCP:
-					rule = new SimpleTcpFireWallRule(IpRange.parseString(perm
-							.getIpRanges().get(0)), PortRange.ALL, IpRange.ALL,
-							PortRange.parseString(perm.getFromPort() + "-"
-									+ perm.getToPort()), Direction.IN,
-							Access.ALLOW);
+					for (String ipRange : perm.getIpRanges()) {
+						rule = new SimpleTcpFireWallRule(
+								IpRange.parseString(ipRange), PortRange.ALL,
+								IpRange.ALL,
+								PortRange.parseString(perm.getFromPort() + "-"
+										+ perm.getToPort()), Direction.IN,
+								Access.ALLOW);
+						rules.add(rule);
+					}
 					break;
 				case UDP:
-					rule = new SimpleUdpFireWallRule(IpRange.parseString(perm
-							.getIpRanges().get(0)), PortRange.ALL, IpRange.ALL,
-							PortRange.parseString(perm.getFromPort() + "-"
-									+ perm.getToPort()), Direction.IN,
-							Access.ALLOW);
+					for (String ipRange : perm.getIpRanges()) {
+						rule = new SimpleUdpFireWallRule(
+								IpRange.parseString(ipRange), PortRange.ALL,
+								IpRange.ALL,
+								PortRange.parseString(perm.getFromPort() + "-"
+										+ perm.getToPort()), Direction.IN,
+								Access.ALLOW);
+						rules.add(rule);
+					}
 					break;
 				case ICMP:
-					rule = new SimpleIcmpFireWallRule(IpRange.parseString(perm
-							.getIpRanges().get(0)), IpRange.ALL,
-							IcmpType.parseInt(perm.getFromPort()),
-							IcmpCode.parseInt(perm.getToPort()), Direction.IN,
-							Access.ALLOW);
+					for (String ipRange : perm.getIpRanges()) {
+						rule = new SimpleIcmpFireWallRule(
+								IpRange.parseString(ipRange), IpRange.ALL,
+								IcmpType.parseInt(perm.getFromPort()),
+								IcmpCode.parseInt(perm.getToPort()),
+								Direction.IN, Access.ALLOW);
+						rules.add(rule);
+					}
 					break;
 				}
-				rules.add(rule);
 			}
 		} catch (IllegalProtocolException | IllegalIpRangeException
 				| IllegalPortRangeException | IllegalIcmpTypeException
@@ -156,6 +166,10 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> toRev = convertFwRules(toRevoke);
+		// the conversion may have discard all rules
+		if (toRev.size() == 0) {
+			return;
+		}
 		RevokeSecurityGroupIngressRequest revreq = null;
 		revreq = new RevokeSecurityGroupIngressRequest();
 		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
@@ -173,6 +187,10 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev);
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
+		// the conversion may have discard all rules
+		if (toAuth.size() == 0) {
+			return;
+		}
 		AuthorizeSecurityGroupIngressRequest authreq = null;
 		authreq = new AuthorizeSecurityGroupIngressRequest();
 		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);

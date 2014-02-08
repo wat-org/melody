@@ -61,7 +61,11 @@
 			</instance>	
 		</WEB>
 		<DB>
-			<instance herit="./environment/models/model[@name='model-DB']" instance-type="m1.small" name="db-01"/>
+			<instance herit="./environment/models/model[@name='model-DB']" instance-type="m1.small" name="db-01">
+				<network-devices>
+					<interface device-name="eth0"/>
+				</network-devices>
+			</instance>	
 		</DB>
 	</instances>
 	
