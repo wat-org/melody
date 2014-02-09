@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<environment>
+
+	<rhn>
+		<serverip>PLACE HERE THE FQDN OR IP OF YOUR RED HAT SATELLITE SERVER</serverip>
+		<login>PLACE HERE THE LOGIN OF THE USER YOU WANT TO USE TO CONNECT TO YOUR RED HAT SATELLITE SERVER</login>
+		<password>PLACE HERE THE PASSWORD OF THE ABOVE USER</password>
+		<activationkey>PLACE HERE THE DEFAULT ACTIVATION KEY YOU WANT TO USE TO REGISTER NEW SYSTEMS</activationkey>
+	</rhn>
+
+</environment>
