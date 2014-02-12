@@ -3,7 +3,7 @@
 	<instance IP_priv="124.124.124.126" name="machine2">
 		<region>us-west-1</region>
 		<image-id>ami-595622d</image-id>
-		<instance-type>m1.small</instance-type>
+		<instance-type>t1.micro</instance-type>
 		<keypair>sshkey-gct2</keypair>
 	</instance>
 	
