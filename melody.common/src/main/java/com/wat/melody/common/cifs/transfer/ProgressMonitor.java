@@ -54,15 +54,21 @@ public class ProgressMonitor {
 			StringBuilder str = new StringBuilder();
 			if (_srcFS != null) {
 				str.append(_srcFS);
-				str.append(":");
 			}
-			str.append(_src);
+			if (_src.charAt(0) == '/' || _src.charAt(0) == '\\') {
+				str.append(_src.substring(1));
+			} else {
+				str.append(_src);
+			}
 			str.append(" -> ");
 			if (_destFS != null) {
 				str.append(_destFS);
-				str.append(":");
 			}
-			str.append(_dest);
+			if (_dest.charAt(0) == '/' || _dest.charAt(0) == '\\') {
+				str.append(_dest.substring(1));
+			} else {
+				str.append(_dest);
+			}
 			str.append(" (");
 			str.append(_uploadedpercent);
 			str.append("% - ");

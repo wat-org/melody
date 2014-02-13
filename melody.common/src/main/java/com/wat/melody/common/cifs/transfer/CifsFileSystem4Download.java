@@ -26,7 +26,6 @@ import com.wat.melody.common.files.exception.WrapperAccessDeniedException;
 import com.wat.melody.common.files.exception.WrapperDirectoryNotEmptyException;
 import com.wat.melody.common.files.exception.WrapperNoSuchFileException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.ssh.impl.transfer.ProgressMonitor;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
 import com.wat.melody.common.transfer.exception.TemplatingException;
