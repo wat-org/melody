@@ -661,6 +661,11 @@ public class SftpFileSystem implements FileSystem {
 				 * will throw FileSystemException if the subject of the
 				 * operation is a link.
 				 */
+				/*
+				 * TODO : support ACL ? not so easy cause sftp can't get/set
+				 * ACL. We should do it using an ChannelExec and sending setfacl
+				 * commands... which is a fuc...ing workaround.
+				 */
 				if (isLink) {
 					throw new FileSystemException(
 							path,

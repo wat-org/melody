@@ -706,7 +706,8 @@ public class CifsFileSystem implements FileSystem {
 				 * no such file, permissions on symbolic link...).
 				 */
 				/*
-				 * TODO : support ACL ?
+				 * TODO : support ACL ? not so easy cause jcifs can only get
+				 * ACL, and can't set ACL...
 				 */
 				if (attr.name().equals(AttributeDosArchive.NAME)) {
 					setAttributeArchive(path,
