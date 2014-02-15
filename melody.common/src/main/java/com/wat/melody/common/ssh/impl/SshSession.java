@@ -330,16 +330,42 @@ public class SshSession implements ISshSession {
 			} catch (JSchExceptionInterrupted Ex) {
 				throw new WrapperInterruptedException(Ex);
 			} catch (JSchException Ex) {
-				// fast fail on authentication error
-				if (Ex.getMessage() != null
-						&& Ex.getMessage().indexOf("Auth") == 0) {
-					// will match message 'Auth cancel' and 'Auth fail'
+				String msg = Ex.getMessage();
+				msg = msg != null ? msg : "";
+				// authentication error => fast fail
+				if (msg.indexOf("Too many authentication failures") != -1
+						|| msg.indexOf("Auth") == 0) {
+					// will match message 'Auth cancel', 'Auth fail'
+					// and 'SSH_MSG_DISCONNECT: 2 Too many authentication
+					// failures for <user>'
 					// => throw dedicated exception if credentials error
 					throw new InvalidCredentialException(Msg.bind(
 							Messages.SessionEx_FAILED_TO_CONNECT,
 							getConnectionDatas(), getUserDatas()), Ex);
 				}
-				// fail when no retry left
+				// HostKey has been changed => fast fail
+				if (msg.indexOf("HostKey has been changed") == 0) {
+					// TODO : should throw a HostKeyChangedException
+					throw new SshSessionException(Msg.bind(
+							Messages.SessionEx_FAILED_TO_CONNECT,
+							getConnectionDatas(), getUserDatas()),
+							new SshSessionException(Msg.bind(
+									Messages.SessionEx_HOSTKEY_CHANGED,
+									getSessionConfiguration().getKnownHosts(),
+									_session.getHostKey().getType()), Ex));
+				}
+				// HostKey rejected => fast fail
+				if (msg.indexOf("reject HostKey") == 0) {
+					// TODO : should throw a HostKeyUndefinedException
+					throw new SshSessionException(Msg.bind(
+							Messages.SessionEx_FAILED_TO_CONNECT,
+							getConnectionDatas(), getUserDatas()),
+							new SshSessionException(Msg.bind(
+									Messages.SessionEx_HOSTKEY_UNDEFINED,
+									getSessionConfiguration().getKnownHosts()),
+									Ex));
+				}
+				// no retry left => fail
 				if (cnxRetry <= 0) {
 					throw new SshSessionException(Msg.bind(
 							Messages.SessionEx_FAILED_TO_CONNECT,

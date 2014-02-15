@@ -11,6 +11,8 @@ public class Messages extends NLS {
 	public static String KnownHostsRepoPathEx_INVALID_REPO_PATH;
 	public static String KnownHostsRepoPathEx_FAILED_TO_CREATE_REPO;
 
+	public static String SessionEx_HOSTKEY_CHANGED;
+	public static String SessionEx_HOSTKEY_UNDEFINED;
 	public static String SessionEx_FAILED_TO_CONNECT;
 	public static String SessionMsg_RETRY_TO_CONNECT;
 	public static String SessionMsg_CNX;

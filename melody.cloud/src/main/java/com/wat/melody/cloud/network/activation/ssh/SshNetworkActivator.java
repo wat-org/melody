@@ -128,7 +128,8 @@ public class SshNetworkActivator implements NetworkActivator {
 					throw Ex;
 				} else if (Ex.getCause().getMessage().indexOf("refused") == -1
 						&& Ex.getCause().getMessage().indexOf("timeout") == -1
-						&& Ex.getCause().getMessage().indexOf("No route") == -1) {
+						&& Ex.getCause().getMessage().indexOf("No route") == -1
+						&& Ex.getCause().getMessage().indexOf("unreachable") == -1) {
 					throw Ex;
 				}
 				// in other case => loop
@@ -158,7 +159,7 @@ public class SshNetworkActivator implements NetworkActivator {
 	@Override
 	public void disableNetworkActivation() throws NetworkActivationException {
 		SshNetworkActivationDatas datas = getNetworkActivationDatas();
-		getConfiguration().getKnownHosts().remove(datas.getHost());
+		getConfiguration().getKnownHosts().remove(datas.getHost(), null);
 		log.debug(Msg.bind(Messages.SshNetworkActivatorMsg_DISABLEMENT_DONE,
 				datas.getHost().getAddress(), datas.getHost().getName()));
 	}

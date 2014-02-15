@@ -16,6 +16,7 @@ import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.IKnownHostsRepository;
 import com.wat.melody.common.ssh.exception.KnownHostsException;
 import com.wat.melody.common.ssh.types.HostKeyCheckState;
+import com.wat.melody.common.ssh.types.HostKeyType;
 
 /**
  * <p>
@@ -76,31 +77,44 @@ public class KnownHostsRepository implements IKnownHostsRepository {
 
 	@Override
 	public synchronized List<IHostKey> getAll() {
-		HostKey[] hks = _kh.getHostKey();
-		List<IHostKey> res = new ArrayList<IHostKey>();
-		for (HostKey hk : hks) {
-			res.add(new HostKeyAdapter(hk));
-		}
-		return res;
+		return get(null, null);
 	}
 
 	@Override
-	public synchronized IHostKey get(Host host) {
-		if (host == null) {
-			return null;
+	public synchronized List<IHostKey> get(Host host, HostKeyType keyType) {
+		// convert keyType (if defined)
+		String cKeyType = null;
+		if (keyType != null) {
+			cKeyType = HostKetTypeConverter.convert(keyType);
 		}
-		HostKey[] hks = _kh.getHostKey(host.getAddress(), null);
-		if (hks != null && hks.length > 0) {
-			return new HostKeyAdapter(hks[0]);
+
+		List<IHostKey> ihks = new ArrayList<IHostKey>();
+		HostKey[] hks = null;
+		if (host != null) {
+			hks = _kh.getHostKey(host.getAddress(), cKeyType);
+			if (hks != null) {
+				for (HostKey hk : hks) {
+					ihks.add(new HostKeyAdapter(hk));
+				}
+			}
+			if (!isHostNameDefined(host)) {
+				return ihks;
+			}
+			hks = _kh.getHostKey(host.getName(), cKeyType);
+			if (hks != null) {
+				for (HostKey hk : hks) {
+					ihks.add(new HostKeyAdapter(hk));
+				}
+			}
+			return ihks;
 		}
-		if (!isHostNameDefined(host)) {
-			return null;
+		hks = _kh.getHostKey(null, cKeyType);
+		if (hks != null) {
+			for (HostKey hk : hks) {
+				ihks.add(new HostKeyAdapter(hk));
+			}
 		}
-		hks = _kh.getHostKey(host.getName(), null);
-		if (hks != null && hks.length > 0) {
-			return new HostKeyAdapter(hks[0]);
-		}
-		return null;
+		return ihks;
 	}
 
 	@Override
@@ -127,13 +141,26 @@ public class KnownHostsRepository implements IKnownHostsRepository {
 	}
 
 	@Override
-	public synchronized void remove(Host host) {
+	public synchronized void remove(Host host, HostKeyType keyType) {
 		if (host == null) {
+			/*
+			 * if the given host is null, {@link KnownHosts#remove(String,
+			 * String)} will fail with a NullPointerException. This is a bug!
+			 * The desired behavior is to do nothing.
+			 */
 			return;
 		}
-		_kh.remove(host.getAddress(), null);
+		String cKeyType = null;
+		if (keyType != null) {
+			cKeyType = HostKetTypeConverter.convert(keyType);
+		}
+		/*
+		 * {@link KnownHosts#remove(String, String)} will remove all matching
+		 * key, no matter their type, if the given type is null.
+		 */
+		_kh.remove(host.getAddress(), cKeyType);
 		if (isHostNameDefined(host)) {
-			_kh.remove(host.getName(), null);
+			_kh.remove(host.getName(), cKeyType);
 		}
 	}
 
