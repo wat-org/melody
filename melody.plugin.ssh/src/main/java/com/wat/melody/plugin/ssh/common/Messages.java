@@ -21,6 +21,10 @@ public class Messages extends NLS {
 
 	public static String TransferEx_INVALID_MAXPAR_ATTR;
 
+	public static String SshEx_AUTH_FAIL;
+	public static String SshEx_MGMT_AUTH_FAIL;
+	public static String SshEx_HK_CHANGED;
+	public static String SshEx_HK_NOT_FOUND;
 	public static String SshEx_VALIDATION_ERR;
 	public static String SshEx_READ_IO_ERROR;
 

@@ -17,6 +17,9 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshUserDatas;
+import com.wat.melody.common.ssh.exception.HostKeyChangedException;
+import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
+import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.LoggerOutputStream;
 import com.wat.melody.common.ssh.impl.SshConnectionDatas;
@@ -165,6 +168,28 @@ public abstract class AbstractSshOperation implements ITask {
 		ISshSession session = createSession();
 		try {
 			session.connect();
+		} catch (InvalidCredentialException Ex) {
+			if (getSshPlugInConf().getMgmtEnable() == false) {
+				throw new SshException(Msg.bind(Messages.SshEx_AUTH_FAIL,
+						LOGIN_ATTR, PASS_ATTR, KEYPAIR_NAME_ATTR,
+						SshPlugInConfiguration.MGMT_ENABLE, getSshPlugInConf()
+								.getFilePath()), Ex);
+			} else {
+				throw new SshException(Msg.bind(Messages.SshEx_MGMT_AUTH_FAIL,
+						AbstractSshManagedOperation.MGMT_MASTER_USER_ATTR,
+						AbstractSshManagedOperation.MGMT_MASTER_PASS_ATTR,
+						AbstractSshManagedOperation.MGMT_MASTER_KEY_ATTR,
+						SshPlugInConfiguration.MGMT_LOGIN,
+						SshPlugInConfiguration.MGMT_PASSWORD,
+						SshPlugInConfiguration.MGMT_KEYPAIRNAME,
+						getSshPlugInConf().getFilePath()), Ex);
+			}
+		} catch (HostKeyChangedException Ex) {
+			throw new SshException(Msg.bind(Messages.SshEx_HK_CHANGED,
+					TRUST_ATTR, getSshPlugInConf().getKnownHosts()), Ex);
+		} catch (HostKeyNotFoundException Ex) {
+			throw new SshException(Msg.bind(Messages.SshEx_HK_NOT_FOUND,
+					TRUST_ATTR, getSshPlugInConf().getKnownHosts()), Ex);
 		} catch (SshSessionException Ex) {
 			throw new SshException(Ex);
 		}
