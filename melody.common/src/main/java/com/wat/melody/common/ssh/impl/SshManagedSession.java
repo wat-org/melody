@@ -14,13 +14,14 @@ import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
-import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.ssh.IHostKey;
 import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
+import com.wat.melody.common.ssh.exception.HostKeyChangedException;
+import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.timeout.GenericTimeout;
@@ -70,33 +71,27 @@ public class SshManagedSession implements ISshSession {
 
 	@Override
 	public ISshUserDatas setUserDatas(ISshUserDatas ud) {
-		// Ssh management feature requires the user's keypair exists.
-		// The public part of this key will be deployed on the remote system.
+		if (ud == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISshUserDatas.class.getCanonicalName() + ".");
+		}
+		// the user must be defined
+		if (ud.getLogin() == null) {
+			throw new IllegalArgumentException("No login defined ! "
+					+ "The caller should define a login.");
+		}
+		// the keypair must be defined
 		if (ud.getKeyPairName() == null) {
 			throw new IllegalArgumentException("No keypair-name defined ! "
 					+ "The caller should define a keypair-name.");
 		}
+		// the keypair repo must be defined
 		if (ud.getKeyPairRepositoryPath() == null) {
 			throw new IllegalArgumentException("No keypair-repo defined ! "
 					+ "The caller should define a keypair-repo.");
 		}
-		KeyPairRepositoryPath kprp = ud.getKeyPairRepositoryPath();
-		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
-		if (!kpr.containsKeyPair(ud.getKeyPairName())) {
-			throw new IllegalArgumentException("keypair not found ! "
-					+ "The caller should verify that the given keypair "
-					+ "exists in the given keypair-repo.");
-		}
-		try {
-			kpr.getKeyPair(ud.getKeyPairName(), ud.getPassword());
-		} catch (IllegalPassphraseException Ex) {
-			throw new IllegalArgumentException("Invalid passphrase ! "
-					+ "The caller should verify that the given keypair "
-					+ "can be decrypted with the given passphrase.", Ex);
-		} catch (IOException Ex) {
-			throw new IllegalArgumentException("Fail to retrieve keypair ! ",
-					Ex);
-		}
+		// the keypair content validity will be verified latter
 		return _session.setUserDatas(_sshUserDatas = ud);
 	}
 
@@ -120,20 +115,65 @@ public class SshManagedSession implements ISshSession {
 					+ "Must be a valid "
 					+ ISshUserDatas.class.getCanonicalName() + ".");
 		}
+		// the user must be defined
+		if (ud.getLogin() == null) {
+			throw new IllegalArgumentException("No login defined ! "
+					+ "The caller should define a login.");
+		}
+		// either a keypair or a password must be defined
+		if (ud.getPassword() == null && ud.getKeyPairName() == null) {
+			throw new IllegalArgumentException("Neither keypair-name nor "
+					+ "password defined ! "
+					+ "The caller should define either a keypair-name or "
+					+ "a password.");
+		}
+		// if a keypair is defined, the keypair repo must be defined
+		if (ud.getKeyPairName() != null
+				&& ud.getKeyPairRepositoryPath() == null) {
+			throw new IllegalArgumentException("No keypair-repo defined ! "
+					+ "The caller should define a keypair-repo.");
+		}
+		// the keypair content validity will be verified latter
 		ISshUserDatas previous = getManagementUserDatas();
 		_sshManagementUserDatas = ud;
 		return previous;
 	}
 
+	/**
+	 * @throws InvalidCredentialException
+	 *             on authentication failure.
+	 * @throws HostKeyChangedException
+	 *             when the remote system was not trusted, and the host key
+	 *             presented by the remote system does not match the host key
+	 *             stored in the given known host file.
+	 * @throws HostKeyNotFoundException
+	 *             when the remote system was not trusted, and the host key
+	 *             presented by the remote system was not stored in the given
+	 *             known host file.
+	 * @throws SshSessionException
+	 *             if the connection fail for any other reason (no route to
+	 *             host, dns failure, network unreachable, ...).
+	 */
 	@Override
 	public synchronized void connect() throws SshSessionException,
-			InvalidCredentialException, InterruptedException {
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException {
 		try {
+			// First we try to connect as the user
 			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
 			log.trace(Msg.bind(Messages.SshMgmtCnxMsg_CNX_USER_FAIL,
 					getUserDatas().getLogin()));
+			/*
+			 * If the user cannot be authenticated, we will try to connect as
+			 * the management user and to deploy the user's keypair. This should
+			 * fail if the user's keypair deployment is not done successfully.
+			 */
 			connectAsMasterUserAndDeployKey();
+			/*
+			 * If the user's keypair deployment is perform successfully, we
+			 * connect as the user.
+			 */
 			openUserSession();
 			log.trace(Messages.SshMgmtCnxMsg_CNX_USER_OK);
 		}
@@ -184,16 +224,26 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private void openSession(ISshUserDatas sshUserDatas)
-			throws SshSessionException, InterruptedException {
+			throws SshSessionException, InvalidCredentialException,
+			HostKeyChangedException, HostKeyNotFoundException,
+			InterruptedException {
 		_session.setUserDatas(sshUserDatas);
 		_session.connect();
 	}
 
 	private void openUserSession() throws SshSessionException,
+			HostKeyChangedException, HostKeyNotFoundException,
 			InterruptedException {
 		try {
 			openSession(getUserDatas());
 		} catch (InvalidCredentialException Ex) {
+			/*
+			 * The aim of this class is to perform manipulations on the remote
+			 * system in order to allow the user to connect. If, after those
+			 * manipulations, the user still can't connect, that means that
+			 * there is a bug (I mean, the failure should happened during those
+			 * manipulations, and not here).
+			 */
 			throw new RuntimeException("Failed to connect to remote system. "
 					+ "Ssh Management Feature must have fail to do its job. "
 					+ "Please send feedback to the development team so that "
@@ -202,10 +252,24 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private void connectAsMasterUserAndDeployKey() throws SshSessionException,
-			InvalidCredentialException, InterruptedException {
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException {
+		/*
+		 * On error, we want to add a user-friendly error message, and to keep
+		 * the exception type.
+		 */
 		try {
 			openMasterSession();
 			deployKey();
+		} catch (InvalidCredentialException Ex) {
+			throw new InvalidCredentialException(
+					Messages.SshMgmtCnxEx_GENERIC_FAIL, Ex);
+		} catch (HostKeyChangedException Ex) {
+			throw new HostKeyChangedException(
+					Messages.SshMgmtCnxEx_GENERIC_FAIL, Ex);
+		} catch (HostKeyNotFoundException Ex) {
+			throw new HostKeyNotFoundException(
+					Messages.SshMgmtCnxEx_GENERIC_FAIL, Ex);
 		} catch (SshSessionException Ex) {
 			throw new SshSessionException(Messages.SshMgmtCnxEx_GENERIC_FAIL,
 					Ex);
@@ -215,7 +279,8 @@ public class SshManagedSession implements ISshSession {
 	}
 
 	private void openMasterSession() throws SshSessionException,
-			InvalidCredentialException, InterruptedException {
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException {
 		try {
 			openSession(getManagementUserDatas());
 			log.trace(Messages.SshMgmtCnxMsg_OPENED);

@@ -24,6 +24,8 @@ import com.wat.melody.common.ssh.ISshConnectionDatas;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.ISshSessionConfiguration;
 import com.wat.melody.common.ssh.ISshUserDatas;
+import com.wat.melody.common.ssh.exception.HostKeyChangedException;
+import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.transfer.SftpDownloaderMultiThread;
@@ -84,6 +86,11 @@ public class SshSession implements ISshSession {
 					+ "Must be a valid "
 					+ ISshUserDatas.class.getCanonicalName() + ".");
 		}
+		// the user must be defined
+		if (ud.getLogin() == null) {
+			throw new IllegalArgumentException("No login defined ! "
+					+ "The caller should define a login.");
+		}
 		ISshUserDatas previous = getUserDatas();
 		_sshUserDatas = ud;
 		return previous;
@@ -108,18 +115,23 @@ public class SshSession implements ISshSession {
 
 	/**
 	 * @throws InvalidCredentialException
-	 *             on credentials error.
+	 *             on authentication failure.
+	 * @throws HostKeyChangedException
+	 *             when the remote system was not trusted, and the host key
+	 *             presented by the remote system does not match the host key
+	 *             stored in the given known host file.
+	 * @throws HostKeyNotFoundException
+	 *             when the remote system was not trusted, and the host key
+	 *             presented by the remote system was not stored in the given
+	 *             known host file.
 	 * @throws SshSessionException
-	 *             if the Ssh Management Feature failed to operate properly (ex
-	 *             : no user key have been provided, or the given user key is
-	 *             not valid, or the given master user key is not valid, or the
-	 *             given master user credentials are invalid, or the remote host
-	 *             is not reachable - no route to host, dns failure, ... -, or
-	 *             ... ).
+	 *             if the connection fail for any other reason (no route to
+	 *             host, dns failure, network unreachable, ...).
 	 */
 	@Override
 	public synchronized void connect() throws SshSessionException,
-			InvalidCredentialException, InterruptedException {
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException {
 		if (isConnected()) {
 			return;
 		}
@@ -312,7 +324,8 @@ public class SshSession implements ISshSession {
 	}
 
 	private void _connect() throws SshSessionException,
-			InvalidCredentialException, InterruptedException {
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException {
 		long cnxTimeout = 0;
 		int cnxRetry = 0;
 		int cnxDelay = 3;
@@ -345,22 +358,20 @@ public class SshSession implements ISshSession {
 				}
 				// HostKey has been changed => fast fail
 				if (msg.indexOf("HostKey has been changed") == 0) {
-					// TODO : should throw a HostKeyChangedException
-					throw new SshSessionException(Msg.bind(
+					throw new HostKeyChangedException(Msg.bind(
 							Messages.SessionEx_FAILED_TO_CONNECT,
 							getConnectionDatas(), getUserDatas()),
-							new SshSessionException(Msg.bind(
+							new HostKeyChangedException(Msg.bind(
 									Messages.SessionEx_HOSTKEY_CHANGED,
 									getSessionConfiguration().getKnownHosts(),
 									_session.getHostKey().getType()), Ex));
 				}
 				// HostKey rejected => fast fail
 				if (msg.indexOf("reject HostKey") == 0) {
-					// TODO : should throw a HostKeyUndefinedException
-					throw new SshSessionException(Msg.bind(
+					throw new HostKeyNotFoundException(Msg.bind(
 							Messages.SessionEx_FAILED_TO_CONNECT,
 							getConnectionDatas(), getUserDatas()),
-							new SshSessionException(Msg.bind(
+							new HostKeyNotFoundException(Msg.bind(
 									Messages.SessionEx_HOSTKEY_UNDEFINED,
 									getSessionConfiguration().getKnownHosts()),
 									Ex));

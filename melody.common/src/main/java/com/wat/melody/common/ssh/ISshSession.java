@@ -3,6 +3,8 @@ package com.wat.melody.common.ssh;
 import java.io.OutputStream;
 import java.util.List;
 
+import com.wat.melody.common.ssh.exception.HostKeyChangedException;
+import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.timeout.GenericTimeout;
@@ -30,7 +32,8 @@ public interface ISshSession {
 	public ISshConnectionDatas setConnectionDatas(ISshConnectionDatas cd);
 
 	public void connect() throws SshSessionException,
-			InvalidCredentialException, InterruptedException;
+			InvalidCredentialException, HostKeyChangedException,
+			HostKeyNotFoundException, InterruptedException;
 
 	public void disconnect();
 
