@@ -10,7 +10,7 @@
 
 		<echo message="Transferring files from 'IP:§[IP]§' ..."/>
 
-		<download host="§[IP]§" login="jboss" keypair-name="id_rsa_aws" trust="y" max-par="10" >
+		<download host="§[IP]§" login="jboss" keypair-name="new_key" password="passphrase" trust="y" max-par="10" >
 			<resources	src-basedir="/tmp/melody/scp/UC_1_upload"
 						match="**"
 						dest-basedir="./download/§[IP]§"
