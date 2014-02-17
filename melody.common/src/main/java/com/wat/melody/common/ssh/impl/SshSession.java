@@ -392,7 +392,16 @@ public class SshSession implements ISshSession {
 						pex.getFullStackTrace()));
 				cnxRetry -= 1;
 				cnxDelay += 3;
-				Thread.sleep(cnxDelay * 1000);
+				try {
+					Thread.sleep(cnxDelay * 1000);
+				} catch (InterruptedException e) {
+					throw new WrapperInterruptedException(
+							Messages.SessionEx_CNX_INTERRUPTED, e);
+				}
+				if (Thread.interrupted()) {
+					throw new InterruptedException(
+							Messages.SessionEx_CNX_INTERRUPTED);
+				}
 			}
 		}
 	}

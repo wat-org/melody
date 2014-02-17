@@ -103,8 +103,7 @@ class RemoteExec {
 						continue;
 					}
 					start = System.currentTimeMillis();
-					iex = new WrapperInterruptedException(
-							Messages.ExecEx_INTERRUPTED);
+					iex = new InterruptedException(Messages.ExecEx_INTERRUPTED);
 					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
 				}
 			}
