@@ -18,6 +18,10 @@ public class Messages extends NLS {
 	public static String ConfEx_INVALID_PROTOCOL;
 	public static String ConfEx_INVALID_PROXY_HOST;
 	public static String ConfEx_INVALID_PROXY_PORT;
+	public static String ConfEx_PROVIDER_CNF;
+	public static String ConfEx_PROVIDER_NCDF;
+	public static String ConfEx_PROVIDER_IS;
+	public static String ConfEx_PROVIDER_IE;
 	public static String ConfEx_INVALID_AWS_CREDENTIALS;
 	public static String ConfEx_VALIDATION;
 

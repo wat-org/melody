@@ -6,6 +6,10 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.cloud.aws.s3.messages";
 
+	public static String BucketNameEx_EMPTY;
+	public static String BucketNameEx_INVALID_LENGTH;
+	public static String BucketNameEx_INVALID;
+
 	public static String DeleteKeyMsg_DELETING;
 	public static String DeleteKeyMsg_DELETING_VERSION;
 	public static String DeleteKeyMsg_DELETED;
@@ -15,9 +19,8 @@ public class Messages extends NLS {
 	public static String DeleteKeyEx_ERROR_SUMMARY;
 	public static String DeleteKeyEx_INTERRUPTED;
 
-	public static String BucketNameEx_EMPTY;
-	public static String BucketNameEx_INVALID_LENGTH;
-	public static String BucketNameEx_INVALID;
+	public static String StorageModeEx_EMPTY;
+	public static String StorageModeEx_INVALID;
 
 	public static String S3fsEx_STAT;
 	public static String S3fsEx_LN;
@@ -30,10 +33,9 @@ public class Messages extends NLS {
 	public static String S3fsEx_LS;
 	public static String S3fsEx_SETATTRS;
 
+	public static String S3fsMsg_GET_ENCRYPTED;
 	public static String S3fsEx_PUT_INTERRUPTED;
 	public static String S3fsEx_GET_INTERRUPTED;
-
-	public static String S3fsMsg_GET_ENCRYPTED;
 
 	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTES;
 	public static String S3fsEx_FAILED_TO_SET_ATTRIBUTE;

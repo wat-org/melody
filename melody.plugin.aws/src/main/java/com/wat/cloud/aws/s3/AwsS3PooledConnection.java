@@ -79,4 +79,5 @@ public class AwsS3PooledConnection {
 		}
 		return connect;
 	}
+
 }

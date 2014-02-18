@@ -42,3 +42,10 @@ aws.conn.http.useragent=Melody_GPL_AutomationTool_madeBy_GuillaumeCornet
 #aws.conn.proxy.port=
 #aws.conn.proxy.username=
 #aws.conn.proxy.password=
+
+### Client Side encryption settings
+# can be 'file' or 'metadata'; default is 'metedata'
+#aws.encryption.clientside.storagemode=
+# the canonical name of a security Provider
+# set it to 'org.bouncycastle.jce.provider.BouncyCastleProvider' to use Bouncy Castle; default provider is JCE
+#aws.encryption.clientside.provider=

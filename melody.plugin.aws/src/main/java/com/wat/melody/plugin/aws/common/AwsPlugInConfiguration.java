@@ -1,9 +1,11 @@
 package com.wat.melody.plugin.aws.common;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
+import java.security.Provider;
 import java.util.Arrays;
 
 import com.amazonaws.AmazonClientException;
@@ -14,10 +16,14 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CryptoConfiguration;
 import com.amazonaws.services.s3.model.EncryptionMaterials;
 import com.wat.cloud.aws.ec2.AwsEc2Cloud;
 import com.wat.cloud.aws.ec2.AwsEc2PooledConnection;
 import com.wat.cloud.aws.s3.AwsS3PooledConnection;
+import com.wat.cloud.aws.s3.StorageMode;
+import com.wat.cloud.aws.s3.StorageModeConverter;
+import com.wat.cloud.aws.s3.exception.IllegalStorageModeException;
 import com.wat.melody.api.IPlugInConfiguration;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.exception.PlugInConfigurationException;
@@ -65,13 +71,18 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	public static final String AWS_PROXY_USERNAME = "aws.conn.proxy.username";
 	public static final String AWS_PROXY_PASSWORD = "aws.conn.proxy.password";
 
+	public static final String AWS_CLIENT_SIDE_ENCRYPTION_STORAGE_MODE = "aws.encryption.clientside.storagemode";
+	public static final String AWS_CLIENT_SIDE_ENCRYPTION_PROVIDER = "aws.encryption.clientside.provider";
+
 	private String _configurationFilePath;
 	private String _accessKey;
 	private String _secretKey;
 	private ClientConfiguration _clientConfiguration;
+	private CryptoConfiguration _cryptoConfiguration;
 
 	public AwsPlugInConfiguration() {
-		setCC(new ClientConfiguration());
+		setClientConf(new ClientConfiguration());
+		setCryptoConf(new CryptoConfiguration());
 	}
 
 	@Override
@@ -111,6 +122,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		loadProxyPort(ps);
 		loadProxyUsername(ps);
 		loadProxyPassword(ps);
+		loadClientSideEncyptionStorageMode(ps);
+		loadClientSideEncyptionProvider(ps);
 
 		validate();
 	}
@@ -304,9 +317,39 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
+	private void loadClientSideEncyptionStorageMode(PropertySet ps)
+			throws AwsPlugInConfigurationException {
+		if (!ps.containsKey(AWS_CLIENT_SIDE_ENCRYPTION_STORAGE_MODE)) {
+			return;
+		}
+		try {
+			setClientSideEncryptionStorageMode(ps
+					.get(AWS_CLIENT_SIDE_ENCRYPTION_STORAGE_MODE));
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE,
+					AWS_CLIENT_SIDE_ENCRYPTION_STORAGE_MODE), Ex);
+		}
+	}
+
+	private void loadClientSideEncyptionProvider(PropertySet ps)
+			throws AwsPlugInConfigurationException {
+		if (!ps.containsKey(AWS_CLIENT_SIDE_ENCRYPTION_PROVIDER)) {
+			return;
+		}
+		try {
+			setClientSideEncryptionProvider(ps
+					.get(AWS_CLIENT_SIDE_ENCRYPTION_PROVIDER));
+		} catch (AwsPlugInConfigurationException Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE,
+					AWS_CLIENT_SIDE_ENCRYPTION_PROVIDER), Ex);
+		}
+	}
+
 	private void validate() throws AwsPlugInConfigurationException {
 		try {
-			AwsEc2Cloud.validate(new AmazonEC2Client(this, getCC()));
+			AwsEc2Cloud.validate(new AmazonEC2Client(this, getClientConf()));
 		} catch (AmazonServiceException Ex) {
 			if (Ex.getErrorCode().equalsIgnoreCase("AuthFailure")) {
 				throw new AwsPlugInConfigurationException(Msg.bind(
@@ -323,18 +366,33 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		}
 	}
 
-	public ClientConfiguration getCC() {
+	public ClientConfiguration getClientConf() {
 		return _clientConfiguration;
 	}
 
-	public ClientConfiguration setCC(ClientConfiguration cg) {
-		if (cg == null) {
+	public ClientConfiguration setClientConf(ClientConfiguration cc) {
+		if (cc == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ ClientConfiguration.class.getCanonicalName() + ".");
 		}
-		ClientConfiguration previous = getCC();
-		_clientConfiguration = cg;
+		ClientConfiguration previous = getClientConf();
+		_clientConfiguration = cc;
+		return previous;
+	}
+
+	public CryptoConfiguration getCryptoConf() {
+		return _cryptoConfiguration;
+	}
+
+	public CryptoConfiguration setCryptoConf(CryptoConfiguration cc) {
+		if (cc == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ CryptoConfiguration.class.getCanonicalName() + ".");
+		}
+		CryptoConfiguration previous = getCryptoConf();
+		_cryptoConfiguration = cc;
 		return previous;
 	}
 
@@ -381,7 +439,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public int getConnectionTimeout() {
-		return getCC().getConnectionTimeout();
+		return getClientConf().getConnectionTimeout();
 	}
 
 	public int setConnectionTimeout(String val)
@@ -410,13 +468,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_CONNECTION_TIMEOUT, ival));
 		}
-		int previous = getCC().getConnectionTimeout();
-		getCC().setConnectionTimeout(ival);
+		int previous = getConnectionTimeout();
+		getClientConf().setConnectionTimeout(ival);
 		return previous;
 	}
 
 	public int getSocketTimeout() {
-		return getCC().getSocketTimeout();
+		return getClientConf().getSocketTimeout();
 	}
 
 	public int setSocketTimeout(String val)
@@ -444,13 +502,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_READ_TIMEOUT, ival));
 		}
-		int previous = getCC().getSocketTimeout();
-		getCC().setSocketTimeout(ival);
+		int previous = getSocketTimeout();
+		getClientConf().setSocketTimeout(ival);
 		return previous;
 	}
 
 	public int getMaxErrorRetry() {
-		return getCC().getMaxErrorRetry();
+		return getClientConf().getMaxErrorRetry();
 	}
 
 	public int setMaxErrorRetry(String val)
@@ -478,13 +536,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_RETRY, ival));
 		}
-		int previous = getCC().getMaxErrorRetry();
-		getCC().setMaxErrorRetry(ival);
+		int previous = getMaxErrorRetry();
+		getClientConf().setMaxErrorRetry(ival);
 		return previous;
 	}
 
 	public int getMaxConnections() {
-		return getCC().getMaxConnections();
+		return getClientConf().getMaxConnections();
 	}
 
 	public int setMaxConnections(String val)
@@ -513,13 +571,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_MAX_CONN, ival));
 		}
-		int previous = getCC().getMaxConnections();
-		getCC().setMaxConnections(ival);
+		int previous = getMaxConnections();
+		getClientConf().setMaxConnections(ival);
 		return previous;
 	}
 
 	public int getSocketSendBufferSizeHints() {
-		return getCC().getSocketBufferSizeHints()[0];
+		return getClientConf().getSocketBufferSizeHints()[0];
 	}
 
 	public int setSocketSendBufferSizeHints(String val)
@@ -548,13 +606,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 					Messages.ConfEx_INVALID_SEND_BUFFSIZE, ival));
 		}
 		int previous = getSocketSendBufferSizeHints();
-		getCC().setSocketBufferSizeHints(ival,
+		getClientConf().setSocketBufferSizeHints(ival,
 				getSocketReceiveBufferSizeHints());
 		return previous;
 	}
 
 	public int getSocketReceiveBufferSizeHints() {
-		return getCC().getSocketBufferSizeHints()[1];
+		return getClientConf().getSocketBufferSizeHints()[1];
 	}
 
 	public int setSocketReceiveBufferSizeHints(String val)
@@ -583,12 +641,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 					Messages.ConfEx_INVALID_RECEIVE_BUFFSIZE, ival));
 		}
 		int previous = getSocketReceiveBufferSizeHints();
-		getCC().setSocketBufferSizeHints(getSocketSendBufferSizeHints(), ival);
+		getClientConf().setSocketBufferSizeHints(
+				getSocketSendBufferSizeHints(), ival);
 		return previous;
 	}
 
 	public Protocol getProtocol() {
-		return getCC().getProtocol();
+		return getClientConf().getProtocol();
 	}
 
 	public Protocol setProtocol(String val)
@@ -603,11 +662,11 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
-		Protocol previous = getCC().getProtocol();
+		Protocol previous = getProtocol();
 		if (val.equalsIgnoreCase(Protocol.HTTP.toString())) {
-			getCC().setProtocol(Protocol.HTTP);
+			getClientConf().setProtocol(Protocol.HTTP);
 		} else if (val.equalsIgnoreCase(Protocol.HTTPS.toString())) {
-			getCC().setProtocol(Protocol.HTTPS);
+			getClientConf().setProtocol(Protocol.HTTPS);
 		} else {
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROTOCOL, val, Protocol.values()
@@ -617,7 +676,7 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	public String getUserAgent() {
-		return getCC().getUserAgent();
+		return getClientConf().getUserAgent();
 	}
 
 	public String setUserAgent(String val)
@@ -631,13 +690,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
-		String previous = getCC().getUserAgent();
-		getCC().setUserAgent(val);
+		String previous = getUserAgent();
+		getClientConf().setUserAgent(val);
 		return previous;
 	}
 
 	public String getProxyHost() {
-		return getCC().getProxyHost();
+		return getClientConf().getProxyHost();
 	}
 
 	public String setProxyHost(String val)
@@ -658,13 +717,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROXY_HOST, val), Ex);
 		}
-		String previous = getCC().getProxyHost();
-		getCC().setProxyHost(val);
+		String previous = getProxyHost();
+		getClientConf().setProxyHost(val);
 		return previous;
 	}
 
 	public int getProxyPort() {
-		return getCC().getProxyPort();
+		return getClientConf().getProxyPort();
 	}
 
 	public int setProxyPort(String val) throws AwsPlugInConfigurationException {
@@ -691,13 +750,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(Msg.bind(
 					Messages.ConfEx_INVALID_PROXY_PORT, ival));
 		}
-		int previous = getCC().getProxyPort();
-		getCC().setProxyPort(ival);
+		int previous = getProxyPort();
+		getClientConf().setProxyPort(ival);
 		return previous;
 	}
 
 	public String getProxyUsername() {
-		return getCC().getProxyUsername();
+		return getClientConf().getProxyUsername();
 	}
 
 	public String setProxyUsername(String val)
@@ -711,13 +770,13 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
-		String previous = getCC().getProxyUsername();
-		getCC().setProxyUsername(val);
+		String previous = getProxyUsername();
+		getClientConf().setProxyUsername(val);
 		return previous;
 	}
 
 	public String getProxyPassword() {
-		return getCC().getProxyPassword();
+		return getClientConf().getProxyPassword();
 	}
 
 	public String setProxyPassword(String val)
@@ -731,8 +790,76 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 			throw new AwsPlugInConfigurationException(
 					Messages.ConfEx_EMPTY_DIRECTIVE);
 		}
-		String previous = getCC().getProxyPassword();
-		getCC().setProxyPassword(val);
+		String previous = getProxyPassword();
+		getClientConf().setProxyPassword(val);
+		return previous;
+	}
+
+	public StorageMode getClientSideEncryptionStorageMode() {
+		return StorageModeConverter.convert(getCryptoConf().getStorageMode());
+	}
+
+	public StorageMode setClientSideEncryptionStorageMode(String val)
+			throws AwsPlugInConfigurationException {
+		if (val == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the client side encryption storage mode).");
+		}
+		if (val.trim().length() == 0) {
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
+		}
+		// validate input
+		StorageMode sm = null;
+		try {
+			sm = StorageMode.parseString(val);
+		} catch (IllegalStorageModeException Ex) {
+			throw new AwsPlugInConfigurationException(Ex);
+		}
+		StorageMode previous = getClientSideEncryptionStorageMode();
+		getCryptoConf().setStorageMode(StorageModeConverter.convert(sm));
+		return previous;
+	}
+
+	public Provider getClientSideEncryptionProvider() {
+		return getCryptoConf().getCryptoProvider();
+	}
+
+	public Provider setClientSideEncryptionProvider(String val)
+			throws AwsPlugInConfigurationException {
+		if (val == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ " (the canomical class name of a Security Provider, "
+					+ "used to perform client side encryption).");
+		}
+		if (val.trim().length() == 0) {
+			throw new AwsPlugInConfigurationException(
+					Messages.ConfEx_EMPTY_DIRECTIVE);
+		}
+		// validate input
+		Provider p = null;
+		try {
+			p = (Provider) Class.forName(val).getConstructor().newInstance();
+		} catch (ClassNotFoundException Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_PROVIDER_CNF, val));
+		} catch (NoClassDefFoundError Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_PROVIDER_NCDF, val, Ex.getMessage()
+							.replaceAll("/", ".")));
+		} catch (NoSuchMethodException | IllegalAccessException
+				| InstantiationException | ClassCastException Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_PROVIDER_IS, val,
+					Provider.class.getCanonicalName()));
+		} catch (InvocationTargetException Ex) {
+			throw new AwsPlugInConfigurationException(Msg.bind(
+					Messages.ConfEx_PROVIDER_IE, val), Ex.getCause());
+		}
+		Provider previous = getClientSideEncryptionProvider();
+		getCryptoConf().setCryptoProvider(p);
 		return previous;
 	}
 
@@ -751,8 +878,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 *             if the operation fails (ex: network error).
 	 */
 	public AmazonEC2 getAwsEc2Connection(String region) {
-		return AwsEc2PooledConnection
-				.getPooledConnection(region, this, getCC());
+		return AwsEc2PooledConnection.getPooledConnection(region, this,
+				getClientConf());
 	}
 
 	/**
@@ -764,8 +891,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 	 *             if the operation fails (ex: network error).
 	 */
 	public AmazonS3 getAwsS3Connection() {
-		return AwsS3PooledConnection.getPooledConnection(this, getCC(), null,
-				null);
+		return AwsS3PooledConnection.getPooledConnection(this, getClientConf(),
+				null, null);
 	}
 
 	/**
@@ -801,9 +928,8 @@ public class AwsPlugInConfiguration implements IPlugInConfiguration,
 		KeyPairRepository kpr = KeyPairRepository.getKeyPairRepository(kprp);
 		KeyPair kp = kpr.createKeyPair(kpn, kps, passphrase);
 		EncryptionMaterials enc = new EncryptionMaterials(kp);
-		// TODO : should provide a CryptoConfiguration instead of null.
-		return AwsS3PooledConnection.getPooledConnection(this, getCC(), enc,
-				null);
+		return AwsS3PooledConnection.getPooledConnection(this, getClientConf(),
+				enc, getCryptoConf());
 	}
 
 }
