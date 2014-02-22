@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
-			<version>9.4.0.7</version>
+			<version>9.5.1-4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.jdom</groupId>
@@ -88,6 +88,10 @@
 				<exclusion>
 					<groupId>xml-resolver</groupId>
 					<artifactId>xml-resolver</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.ws.commons.axiom</groupId>
+					<artifactId>axiom-impl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
