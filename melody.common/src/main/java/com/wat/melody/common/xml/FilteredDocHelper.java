@@ -157,13 +157,13 @@ public abstract class FilteredDocHelper {
 					Messages.HeritAttrEx_INVALID_XPATH, xpath), Ex);
 		}
 		if (nl.getLength() > 1) {
-			ConsolidatedException causes = new ConsolidatedException(Msg.bind(
-					Messages.HeritAttrEx_MATCH_RESUME, xpath));
+			ConsolidatedException causes = new ConsolidatedException();
 			for (Node node : new NodeCollection(nl)) {
 				causes.addCause(new NodeRelatedException(node,
 						Messages.HeritAttrEx_MATCH));
 			}
-			throw new NodeRelatedException(herit, causes);
+			throw new NodeRelatedException(herit, Msg.bind(
+					Messages.HeritAttrEx_MATCH_RESUME, xpath), causes);
 		} else if (nl.getLength() == 0) {
 			throw new NodeRelatedException(herit, Msg.bind(
 					Messages.HeritAttrEx_NO_MATCH, xpath));
