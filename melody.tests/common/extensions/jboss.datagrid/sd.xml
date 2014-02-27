@@ -135,7 +135,7 @@
 
                 <ssh description="[start_jdg:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-jdgd.sh start" />
-                 </ssh>
+                </ssh>
 
                 <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully started on '§[§[srv]§/@instance-id]§'." />
             </foreach>
@@ -159,7 +159,7 @@
 
                 <ssh description="[stop_jdg:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-jdgd.sh stop" />
-                 </ssh>
+                </ssh>
 
                 <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
             </foreach>
