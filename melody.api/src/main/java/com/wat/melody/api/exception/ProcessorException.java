@@ -18,12 +18,6 @@ public class ProcessorException extends MelodyException {
 		setSourceFile(file);
 	}
 
-	public ProcessorException(String file, Throwable cause) {
-		super((cause != null) ? cause.getMessage() : null,
-				(cause != null) ? cause.getCause() : null);
-		setSourceFile(file);
-	}
-
 	public ProcessorException(String file, String msg, Throwable cause) {
 		super(msg, cause);
 		setSourceFile(file);
