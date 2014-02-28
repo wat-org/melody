@@ -21,6 +21,9 @@ public class NodeRelatedException extends MelodyException {
 		setErrorNode(errorNode);
 	}
 
+	/*
+	 * TODO: don't like this constructor : the cause is lost
+	 */
 	public NodeRelatedException(Node errorNode, Throwable cause) {
 		super((cause != null) ? cause.getMessage() : null,
 				(cause != null) ? cause.getCause() : null);
