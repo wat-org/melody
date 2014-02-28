@@ -48,6 +48,7 @@ public class NewMachine extends AbstractOperation {
 					getInstanceDatas().getImageId(),
 					getInstanceDatas().getKeyPairName(),
 					getInstanceDatas().getCreateTimeout().getTimeoutInMillis());
+			// TODO : should handle AWS Security Groups
 		} catch (OperationException Ex) {
 			throw new AwsPlugInEc2Exception(
 					new NodeRelatedException(getTargetElement(),

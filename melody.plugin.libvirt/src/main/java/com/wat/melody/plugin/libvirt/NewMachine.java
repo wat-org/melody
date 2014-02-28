@@ -47,6 +47,7 @@ public class NewMachine extends AbstractOperation {
 					getInstanceDatas().getImageId(),
 					getInstanceDatas().getKeyPairName(),
 					getInstanceDatas().getCreateTimeout().getTimeoutInMillis());
+			// TODO : should handle Protected Area (e.g. AWS Security Groups)
 		} catch (OperationException Ex) {
 			throw new LibVirtException(
 					new NodeRelatedException(getTargetElement(),
