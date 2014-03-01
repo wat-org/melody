@@ -1,13 +1,13 @@
-package com.wat.melody.core.nativeplugin.attributes.common.exception;
+package com.wat.melody.common.xml.exception;
 
-import com.wat.melody.api.exception.TaskException;
+import com.wat.melody.common.ex.MelodyException;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class IllegalAttributeNameException extends TaskException {
+public class IllegalAttributeNameException extends MelodyException {
 
 	private static final long serialVersionUID = -979879876565343689L;
 

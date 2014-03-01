@@ -1,8 +1,7 @@
-package com.wat.melody.core.nativeplugin.attributes.common;
+package com.wat.melody.common.xml;
 
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.xml.DUNIDDoc;
-import com.wat.melody.core.nativeplugin.attributes.common.exception.IllegalAttributeNameException;
+import com.wat.melody.common.xml.exception.IllegalAttributeNameException;
 
 /**
  * 

@@ -6,6 +6,10 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.xml.messages";
 
+	public static String AttributeNameEx_EMPTY;
+	public static String AttributeNameEx_INVALID;
+	public static String AttributeNameEx_DUNID_FORBIDDEN;
+
 	public static String NoSuchDUNIDEx_UNFOUND;
 
 	public static String DUNIDEx_EMPTY;

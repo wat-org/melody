@@ -12,9 +12,8 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.xml.AttributeName;
 import com.wat.melody.common.xml.DocHelper;
-import com.wat.melody.core.nativeplugin.attributes.common.AttributeName;
-import com.wat.melody.core.nativeplugin.attributes.common.Messages;
 import com.wat.melody.core.nativeplugin.attributes.exception.RemoveAttributeException;
 
 /**
