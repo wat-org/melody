@@ -42,7 +42,7 @@ public class Protocols extends LinkedHashSet<Protocol> {
 	 * Input <tt>String</tt> must respect the following pattern :
 	 * <tt>protocol(','protocol)*</tt>
 	 * <ul>
-	 * <li><Each <tt>protocol</tt> must be a valid {@link Protocol} (see
+	 * <li>Each <tt>protocol</tt> must be a valid {@link Protocol} (see
 	 * {@link Protocol#parseString(String)}) ;</li>
 	 * <li>The given <tt>String</tt> can be equals to 'all', which is equivalent
 	 * to {@link Protocol#TCP} and {@link Protocol#UDP} ;</li>
