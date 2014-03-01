@@ -27,11 +27,16 @@ public abstract class FilteredDocHelper {
 	/**
 	 * @param n
 	 *            is the context, used for XPath Expression evaluation.
-	 * @param sAttrName
+	 * @param expr
 	 *            is a relative XPath Expression.
 	 * 
 	 * @return {@link Node}s which match the given relative XPath Expression,
 	 *         from the given context and all herited parents.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given element is <tt>null</tt>.
+	 * @throws XPathExpressionException
+	 *             if the given expression is invalid.
 	 */
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
@@ -111,8 +116,8 @@ public abstract class FilteredDocHelper {
 	 *            It is used to detect circular references. If <tt>null</tt>,
 	 *            circular references will not be detected.
 	 * 
-	 * @return the herited parent of the given {@link Element}., or
-	 *         <tt>null</tt> if the given {@link Element} was <tt>null</tt>.
+	 * @return the herited parent of the given {@link Element}, or <tt>null</tt>
+	 *         if the given {@link Element} was <tt>null</tt>.
 	 * 
 	 * @throws NodeRelatedException
 	 *             <ul>
