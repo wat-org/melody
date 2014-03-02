@@ -32,6 +32,11 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 
+/**
+ * 
+ * @author Guillaume Cornet
+ * 
+ */
 public abstract class NetworkActivationHelper {
 
 	/**
