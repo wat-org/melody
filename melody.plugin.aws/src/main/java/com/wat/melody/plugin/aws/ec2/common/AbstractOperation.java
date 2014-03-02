@@ -24,6 +24,7 @@ import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.instance.xml.NetworkActivatorRelatedToAnInstanceElement;
 import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCallback;
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -151,8 +152,9 @@ abstract public class AbstractOperation implements ITask,
 			validateInstanceType(datas);
 			validateKeyPairRepositoryPath(datas);
 			validateKeyPairName(datas);
-			validateKeyPairSize(datas);
 			validatePassphrase(datas);
+			validateKeyPairSize(datas);
+			validateProtectedAreaNames(datas);
 			validateCreateTimeout(datas);
 			validateDeleteTimeout(datas);
 			validateStartTimeout(datas);
@@ -175,6 +177,7 @@ abstract public class AbstractOperation implements ITask,
 			throw new IllegalInstanceDatasException(Msg.bind(
 					Messages.Ec2Ex_INVALID_REGION_ATTR, datas.getRegion()));
 		}
+		// Initialize Connection to AWS EC2
 		setEc2Connection(connect);
 	}
 
@@ -240,6 +243,13 @@ abstract public class AbstractOperation implements ITask,
 			throws AwsPlugInEc2Exception {
 		if (datas.getKeyPairSize() == null) {
 			datas.setKeyPairSize(getSshPlugInConfiguration().getKeyPairSize());
+		}
+	}
+
+	protected void validateProtectedAreaNames(InstanceDatas datas) {
+		if (datas.getProtectedAreaIds() == null) {
+			// if null, assign an empty list
+			datas.setProtectedAreaIds(new ProtectedAreaIds());
 		}
 	}
 

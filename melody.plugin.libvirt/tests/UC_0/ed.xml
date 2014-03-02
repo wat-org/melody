@@ -28,9 +28,20 @@
 		</model>
 	</models>
 	
+	<protected-areas>
+		<protected-area name="salut" id="sg-13434">
+			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
+			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
+		</protected-area>
+		<protected-area id="sg-89f5aafe" name="sg2"/>
+		<protected-area id="sg-75f6a902" name="aafirst"/>
+		<protected-area id="sg-73f6a904" name="zzlast"/>
+	</protected-areas>
+
 	<instances>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
+		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01" protected-area-names="salut, sg2,zzlast,aafirst">
 			<network-devices>
 				<interface device-name="eth0"/>
 				<interface device-name="eth1"/>

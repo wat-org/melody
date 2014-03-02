@@ -10,6 +10,7 @@ import com.wat.melody.cloud.network.activation.NetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.NetworkActivator;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationException;
 import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUndefined;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -134,10 +135,11 @@ public class InstanceControllerWithNetworkActivation extends
 
 	@Override
 	public void ensureInstanceIsCreated(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException {
 		getInstanceController().ensureInstanceIsCreated(type, site, imageId,
-				keyPairName, createTimeout);
+				keyPairName, protectedAreaIds, createTimeout);
 	}
 
 	@Override
@@ -202,10 +204,10 @@ public class InstanceControllerWithNetworkActivation extends
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FireWallRules toAutorize) throws OperationException,
+			FireWallRules toAuthorize) throws OperationException,
 			InterruptedException {
 		getInstanceController().authorizeInstanceFireWallRules(netDev,
-				toAutorize);
+				toAuthorize);
 	}
 
 	@Override

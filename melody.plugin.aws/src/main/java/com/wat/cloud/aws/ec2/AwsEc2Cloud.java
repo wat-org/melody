@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
@@ -27,6 +28,8 @@ import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.messages.Msg;
 
@@ -568,6 +571,9 @@ public abstract class AwsEc2Cloud {
 	 *            selected (e.g. AWS EC2 will select the default AZ).
 	 * @param keyPairName
 	 *            is the AWS Key Pair Name to attach to the new instance.
+	 * @param protectedAreaIds
+	 *            is the AWS Security Group Id Name to attach to the new
+	 *            instance.
 	 * 
 	 * @return a String which represents the newly created Aws Instance Id if
 	 *         the operation succeed.
@@ -580,7 +586,8 @@ public abstract class AwsEc2Cloud {
 	 *             if ec2 is <code>null</code>.
 	 */
 	public static String newAwsInstance(AmazonEC2 ec2, InstanceType type,
-			String sImageId, String sAZ, KeyPairName keyPairName) {
+			String sImageId, String sAZ, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds) {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
@@ -589,12 +596,16 @@ public abstract class AwsEc2Cloud {
 
 		String sSGName = AwsEc2CloudNetwork.newSecurityGroupName();
 		String sSGDesc = AwsEc2CloudNetwork.getSecurityGroupDescription();
-		AwsEc2CloudNetwork.createSecurityGroup(ec2, sSGName, sSGDesc);
+		String sSGId = AwsEc2CloudNetwork.createSecurityGroup(ec2, sSGName,
+				sSGDesc);
 
 		RunInstancesRequest rireq = new RunInstancesRequest();
 		rireq.withInstanceType(type.toString());
 		rireq.withImageId(sImageId);
 		rireq.withSecurityGroups(sSGName);
+		for (ProtectedAreaId protectedAreaId : protectedAreaIds) {
+			rireq.withSecurityGroupIds(protectedAreaId.getValue());
+		}
 		rireq.withKeyName(keyPairName.getValue());
 		rireq.withMinCount(1);
 		rireq.withMaxCount(1);
@@ -603,12 +614,24 @@ public abstract class AwsEc2Cloud {
 		}
 
 		try {
-			return ec2.runInstances(rireq).getReservation().getInstances()
-					.get(0).getInstanceId();
+			String sInstanceId = ec2.runInstances(rireq).getReservation()
+					.getInstances().get(0).getInstanceId();
+			/*
+			 * Store the automatically created security group's id in the
+			 * instance's tags, so that it could be retrieve easily (see
+			 * AwsEc2CloudNetwork#getSelfProtectedAreaIdTag).
+			 */
+			CreateTagsRequest ctreq = new CreateTagsRequest();
+			ctreq = ctreq.withResources(sInstanceId);
+			ctreq = ctreq.withTags(AwsEc2CloudNetwork
+					.createSelfProtectedAreaIdTag(sSGId));
+			ec2.createTags(ctreq);
+
+			return sInstanceId;
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
 			AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sSGName);
 			throw new RuntimeException("Fail to retrieve new Aws Instance "
-					+ "details (Aws Instance may be created).");
+					+ "details (Aws Instance may have been created).");
 		}
 	}
 
@@ -757,9 +780,9 @@ public abstract class AwsEc2Cloud {
 					InstanceState.TERMINATED, timeout, 0);
 		} finally {
 			for (NetworkDevice netdev : netdevs) {
-				String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i,
+				String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i,
 						netdev.getNetworkDeviceName());
-				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgname);
+				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 			}
 		}
 	}

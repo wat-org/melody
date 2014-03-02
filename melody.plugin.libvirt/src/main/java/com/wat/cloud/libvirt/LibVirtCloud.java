@@ -29,6 +29,7 @@ import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.files.FS;
 import com.wat.melody.common.files.exception.IllegalFileException;
@@ -491,7 +492,9 @@ public abstract class LibVirtCloud {
 	private static String LOCK_CLONE_DISK = "";
 
 	public static String newInstance(Connect cnx, InstanceType type,
-			String sImageId, KeyPairName keyPairName) {
+			String sImageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds) {
+		// TODO : deal with Protected Area
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());

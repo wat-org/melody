@@ -3,6 +3,7 @@ package com.wat.melody.cloud.instance;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -34,7 +35,8 @@ public interface InstanceController {
 	public InstanceType getInstanceType();
 
 	public void ensureInstanceIsCreated(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException;
 
 	public void ensureInstanceIsDestroyed(long destroyTimeout)
@@ -68,7 +70,7 @@ public interface InstanceController {
 			InterruptedException;
 
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FireWallRules toAutorize) throws OperationException,
+			FireWallRules toAuthorize) throws OperationException,
 			InterruptedException;
 
 	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netDev);

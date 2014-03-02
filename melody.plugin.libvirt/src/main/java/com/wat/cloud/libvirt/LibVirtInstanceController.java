@@ -10,6 +10,7 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -64,10 +65,11 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 
 	@Override
 	public String createInstance(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException {
 		return LibVirtCloud.newInstance(getConnection(), type, imageId,
-				keyPairName);
+				keyPairName, protectedAreaIds);
 	}
 
 	@Override
@@ -164,9 +166,9 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netdev,
-			FireWallRules toAutorize) throws OperationException {
+			FireWallRules toAuthorize) throws OperationException {
 		LibVirtCloudFireWall.authorizeFireWallRules(getInstance(), netdev,
-				toAutorize);
+				toAuthorize);
 	}
 
 	private void refreshInternalDatas() {

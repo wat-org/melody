@@ -8,6 +8,8 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceTypeException;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaNames;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNamesException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
@@ -41,7 +43,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceId(instanceElmt));
+			String res = findInstanceId(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -74,7 +79,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceRegion(instanceElmt));
+			String res = findInstanceRegion(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -106,7 +114,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceSite(instanceElmt));
+			String res = findInstanceSite(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -138,7 +149,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceImageId(instanceElmt));
+			String res = findInstanceImageId(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -170,7 +184,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceType(instanceElmt));
+			InstanceType res = findInstanceType(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -208,7 +225,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceKeyPairRepositoryPath(instanceElmt));
+			KeyPairRepositoryPath res = findInstanceKeyPairRepositoryPath(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -246,7 +266,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceKeyPairName(instanceElmt));
+			KeyPairName res = findInstanceKeyPairName(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -284,7 +307,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstancePassphrase(instanceElmt));
+			String res = findInstancePassphrase(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -316,7 +342,10 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			list.add(findInstanceKeyPairSize(instanceElmt));
+			KeyPairSize res = findInstanceKeyPairSize(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
 		}
 		return list;
 	}
@@ -338,6 +367,47 @@ public abstract class InstanceDatasHelper {
 		} catch (IllegalKeyPairSizeException Ex) {
 			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
 					InstanceDatasLoader.KEYPAIR_SIZE_ATTR);
+			throw new NodeRelatedException(attr, Ex);
+		}
+	}
+
+	public static List<ProtectedAreaNames> findInstanceProtectedAreaNames(
+			List<Element> instanceElmts) throws NodeRelatedException {
+		if (instanceElmts == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid a " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
+		}
+		List<ProtectedAreaNames> list = new ArrayList<ProtectedAreaNames>();
+		for (Element instanceElmt : instanceElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
+			ProtectedAreaNames res = findInstanceProtectedAreaNames(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
+		}
+		return list;
+	}
+
+	public static ProtectedAreaNames findInstanceProtectedAreaNames(
+			Element instanceElmt) throws NodeRelatedException {
+		if (instanceElmt == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid an " + Element.class.getCanonicalName()
+					+ ".");
+		}
+		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
+				InstanceDatasLoader.PROTECTED_AREAS_ATTR);
+		if (v == null || v.length() == 0) {
+			return null;
+		}
+		try {
+			return ProtectedAreaNames.parseString(v);
+		} catch (IllegalProtectedAreaNamesException Ex) {
+			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+					InstanceDatasLoader.PROTECTED_AREAS_ATTR);
 			throw new NodeRelatedException(attr, Ex);
 		}
 	}

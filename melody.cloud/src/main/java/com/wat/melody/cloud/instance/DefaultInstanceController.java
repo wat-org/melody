@@ -8,6 +8,7 @@ import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -59,14 +60,21 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 
 	@Override
 	public void ensureInstanceIsCreated(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException {
 		if (instanceLives()) {
 			log.warn(Msg
 					.bind(Messages.CreateMsg_LIVES, getInstanceId(), "LIVE"));
 		} else {
 			String instanceId = createInstance(type, site, imageId,
-					keyPairName, createTimeout);
+					keyPairName, protectedAreaIds, createTimeout);
+			/*
+			 * TODO : bug : when the create operation times out, the instance is
+			 * created, we have its id, and an OperationEx is raised here. The
+			 * id will be lost ! We should call fireInstanceCreated when the
+			 * OperationEx raised, in order to store the id.
+			 */
 			setInstanceId(instanceId);
 		}
 		fireInstanceCreated();
@@ -77,7 +85,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract String createInstance(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException;
 
 	@Override
@@ -289,11 +298,11 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract void detachInstanceNetworkDevices(
-			NetworkDeviceList netDevivesToRemove) throws OperationException,
+			NetworkDeviceList netDevicesToRemove) throws OperationException,
 			InterruptedException;
 
 	public abstract void attachInstanceNetworkDevices(
-			NetworkDeviceList netDevivesToAdd) throws OperationException,
+			NetworkDeviceList netDevicesToAdd) throws OperationException,
 			InterruptedException;
 
 	@Override

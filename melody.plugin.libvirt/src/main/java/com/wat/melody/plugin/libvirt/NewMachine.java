@@ -11,6 +11,7 @@ import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.messages.Msg;
@@ -46,8 +47,8 @@ public class NewMachine extends AbstractOperation {
 					getInstanceDatas().getSite(),
 					getInstanceDatas().getImageId(),
 					getInstanceDatas().getKeyPairName(),
+					getInstanceDatas().getProtectedAreaIds(),
 					getInstanceDatas().getCreateTimeout().getTimeoutInMillis());
-			// TODO : should handle Protected Area (e.g. AWS Security Groups)
 		} catch (OperationException Ex) {
 			throw new LibVirtException(
 					new NodeRelatedException(getTargetElement(),
@@ -66,8 +67,10 @@ public class NewMachine extends AbstractOperation {
 		return new LibVirtInstanceController(getCloudConnection(),
 				getInstanceId()) {
 
+			@Override
 			public String createInstance(InstanceType type, String site,
-					String imageId, KeyPairName keyPairName, long createTimeout)
+					String imageId, KeyPairName keyPairName,
+					ProtectedAreaIds protectedAreaIds, long createTimeout)
 					throws OperationException, InterruptedException {
 				try {
 					LibVirtKeyPairRepository kpr = LibVirtKeyPairRepository
@@ -94,7 +97,7 @@ public class NewMachine extends AbstractOperation {
 				}
 
 				return super.createInstance(type, site, imageId, keyPairName,
-						createTimeout);
+						protectedAreaIds, createTimeout);
 			}
 
 		};

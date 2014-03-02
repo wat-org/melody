@@ -14,6 +14,8 @@ public class Messages extends NLS {
 	public static String VolumeAttachmentStateEx_EMPTY;
 	public static String VolumeAttachmentStateEx_INVALID;
 
+	public static String CommonMsg_PA_AUTHORIZE_FWRULE;
+	public static String CommonMsg_PA_REVOKE_FWRULE;
 	public static String CommonMsg_AUTHORIZE_FWRULE;
 	public static String CommonMsg_REVOKE_FWRULE;
 	public static String CommonMsg_SKIP_FWRULE;
@@ -22,6 +24,10 @@ public class Messages extends NLS {
 	public static String CommonMsg_GENKEY_END;
 	public static String CommonMsg_DELKEY_BEGIN;
 	public static String CommonMsg_DELKEY_END;
+	public static String CommonMsg_SECURITY_GROUP_CREATING;
+	public static String CommonMsg_SECURITY_GROUP_CREATED;
+	public static String CommonMsg_SECURITY_GROUP_DELETING;
+	public static String CommonMsg_SECURITY_GROUP_DELETED;
 	public static String CommonMsg_WAIT_FOR_INSTANCE_STATE;
 	public static String CommonMsg_WAIT_FOR_INSTANCE_STATE_FAILED;
 	public static String CommonMsg_WAIT_FOR_INSTANCE_STATE_SUCCEED;

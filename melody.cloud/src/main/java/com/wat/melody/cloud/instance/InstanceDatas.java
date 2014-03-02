@@ -1,6 +1,7 @@
 package com.wat.melody.cloud.instance;
 
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
@@ -21,6 +22,7 @@ public class InstanceDatas {
 	private KeyPairName _keyPairName;
 	private String _passphrase;
 	private KeyPairSize _keyPairSize;
+	private ProtectedAreaIds _protectedAreaIds;
 	private GenericTimeout _createTimeout;
 	private GenericTimeout _deleteTimeout;
 	private GenericTimeout _startTimeout;
@@ -29,9 +31,10 @@ public class InstanceDatas {
 	public InstanceDatas(InstanceDatasValidator validator, String region,
 			String site, String imageId, InstanceType type,
 			KeyPairRepositoryPath kprp, KeyPairName kpn, String passphrase,
-			KeyPairSize kps, GenericTimeout createTimeout,
-			GenericTimeout deleteTimeout, GenericTimeout startTimeout,
-			GenericTimeout stopTimeout) throws IllegalInstanceDatasException {
+			KeyPairSize kps, ProtectedAreaIds protectedAreaIds,
+			GenericTimeout createTimeout, GenericTimeout deleteTimeout,
+			GenericTimeout startTimeout, GenericTimeout stopTimeout)
+			throws IllegalInstanceDatasException {
 		setRegion(region);
 		setSite(site);
 		setImageId(imageId);
@@ -40,6 +43,7 @@ public class InstanceDatas {
 		setKeyPairName(kpn);
 		setPassphrase(passphrase);
 		setKeyPairSize(kps);
+		setProtectedAreaIds(protectedAreaIds);
 		setCreateTimeout(createTimeout);
 		setDeleteTimeout(deleteTimeout);
 		setStartTimeout(startTimeout);
@@ -66,6 +70,8 @@ public class InstanceDatas {
 		str.append(getPassphrase());
 		str.append(", keypair-size:");
 		str.append(getKeyPairSize());
+		str.append(", protected-areas:");
+		str.append(getProtectedAreaIds());
 		str.append(" }");
 		return str.toString();
 	}
@@ -132,6 +138,14 @@ public class InstanceDatas {
 
 	public void setKeyPairSize(KeyPairSize keyPairSize) {
 		_keyPairSize = keyPairSize;
+	}
+
+	public ProtectedAreaIds getProtectedAreaIds() {
+		return _protectedAreaIds;
+	}
+
+	public void setProtectedAreaIds(ProtectedAreaIds protectedAreaIds) {
+		_protectedAreaIds = protectedAreaIds;
 	}
 
 	public GenericTimeout getCreateTimeout() {

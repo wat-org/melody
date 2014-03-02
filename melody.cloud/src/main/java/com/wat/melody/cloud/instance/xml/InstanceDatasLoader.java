@@ -7,6 +7,9 @@ import com.wat.melody.cloud.instance.InstanceDatas;
 import com.wat.melody.cloud.instance.InstanceDatasValidator;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceDatasException;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaNames;
+import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaHelper;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
@@ -80,6 +83,12 @@ public class InstanceDatasLoader {
 	public static final String KEYPAIR_SIZE_ATTR = "keypair-size";
 
 	/**
+	 * XML attribute of an Instance Element Node, which define the names of the
+	 * protected areas to place the Instance in.
+	 */
+	public static final String PROTECTED_AREAS_ATTR = "protected-area-names";
+
+	/**
 	 * XML attribute of an Instance Element Node, which define the timeout of
 	 * new instance operation.
 	 */
@@ -138,6 +147,11 @@ public class InstanceDatasLoader {
 
 	private KeyPairSize loadKeyPairSize(Element e) throws NodeRelatedException {
 		return InstanceDatasHelper.findInstanceKeyPairSize(e);
+	}
+
+	private ProtectedAreaIds loadProtectedAreaIds(Element e)
+			throws NodeRelatedException {
+		return ProtectedAreaHelper.findInstanceProtectedAreaIds(e);
 	}
 
 	private GenericTimeout loadCreateTimeout(Element e)
@@ -217,6 +231,8 @@ public class InstanceDatasLoader {
 	 * <li>keypair-name : which should contains {@link KeyPairName} ;</li>
 	 * <li>passphrase : which should contains <tt>String</tt> ;</li>
 	 * <li>keypair-size : which should contains {@link KeyPairSize} ;</li>
+	 * <li>protected-area-names : which should contains
+	 * {@link ProtectedAreaNames} ;</li>
 	 * <li>timeout-create : which should contains a {@link GenericTimeout} ;</li>
 	 * <li>timeout-destroy : which should contains a {@link GenericTimeout} ;</li>
 	 * <li>timeout-start : which should contains a {@link GenericTimeout} ;</li>
@@ -262,14 +278,15 @@ public class InstanceDatasLoader {
 		KeyPairName kpn = loadKeyPairName(instanceElmt);
 		String passphrase = loadPassphrase(instanceElmt);
 		KeyPairSize kps = loadKeyPairSize(instanceElmt);
+		ProtectedAreaIds paids = loadProtectedAreaIds(instanceElmt);
 		GenericTimeout createTimeout = loadCreateTimeout(instanceElmt);
 		GenericTimeout deleteTimeout = loadDeleteTimeout(instanceElmt);
 		GenericTimeout startTimeout = loadStartTimeout(instanceElmt);
 		GenericTimeout stopTimeout = loadStopTimeout(instanceElmt);
 		try {
 			return new InstanceDatas(validator, region, site, imageId, type,
-					kprp, kpn, passphrase, kps, createTimeout, deleteTimeout,
-					startTimeout, stopTimeout);
+					kprp, kpn, passphrase, kps, paids, createTimeout,
+					deleteTimeout, startTimeout, stopTimeout);
 		} catch (IllegalInstanceDatasException Ex) {
 			throw new NodeRelatedException(instanceElmt, Ex);
 		}

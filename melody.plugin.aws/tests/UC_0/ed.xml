@@ -1,18 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?><environment longname="developpement" shortname="DEV">
+<?xml version="1.0" encoding="UTF-8"?><environment>
 	
 	<global-fwrules>
 		<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
 		<rdp access="allow" directions="in" from-ips="all" to-ports="389"/>
 	</global-fwrules>
+	
+	<protected-areas>
+	
+		<protected-area id="sg-5ff7a828" name="salut">
+			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
+			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
+		</protected-area>
+		<protected-area id="sg-89f5aafe" name="sg2"/>
+		<protected-area id="sg-75f6a902" name="aafirst"/>
+		<protected-area id="sg-73f6a904" name="zzlast"/>
+		
+	</protected-areas>
 
 	<instances>
 	
-		<instance image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws" name="web-01" region="eu-west-1">
+		<instance image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws" name="web-01" protected-area-names="salut, sg2,zzlast,aafirst" region="eu-west-1">
 			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp herit="./environment/global-fwrules/ssh"/>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="80-443"/>
 				<tcp access="allow" directions="in" from-ips="" to-ports="5555"/>
+				<tcp access="allow" directions="in" from-ips="all" to-ports="5556"/>
 				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getNetworkActivationHost(//instance),',')]§" to-ports="1234-"/>
 			</firewall>
 			<network-devices>

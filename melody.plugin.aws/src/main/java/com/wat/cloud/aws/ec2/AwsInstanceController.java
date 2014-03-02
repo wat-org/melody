@@ -11,6 +11,7 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -66,10 +67,11 @@ public class AwsInstanceController extends DefaultInstanceController implements
 
 	@Override
 	public String createInstance(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException {
 		String instanceId = AwsEc2Cloud.newAwsInstance(getConnection(), type,
-				imageId, site, keyPairName);
+				imageId, site, keyPairName, protectedAreaIds);
 		// Immediately assign the instanceId
 		setInstanceId(instanceId);
 		if (!AwsEc2Cloud.waitUntilInstanceStatusBecomes(getConnection(),
@@ -202,9 +204,9 @@ public class AwsInstanceController extends DefaultInstanceController implements
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FireWallRules toAutorize) throws OperationException {
+			FireWallRules toAuthorize) throws OperationException {
 		AwsEc2CloudFireWall.authorizeFireWallRules(getConnection(),
-				getInstance(), netDev, toAutorize);
+				getInstance(), netDev, toAuthorize);
 	}
 
 	public void refreshInternalDatas() {

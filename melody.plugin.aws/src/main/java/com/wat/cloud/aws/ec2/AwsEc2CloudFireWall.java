@@ -10,10 +10,10 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
+import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -47,70 +47,52 @@ public abstract class AwsEc2CloudFireWall {
 
 	public static FireWallRules getFireWallRules(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
-		String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev);
-		List<IpPermission> perms = describeSecurityGroupRules(ec2, sgname);
-		return convertIpPermissions(perms, netdev);
+		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
+		List<IpPermission> perms = describeSecurityGroupRules(ec2, sgid);
+		return convertIpPermissions(perms);
+	}
+
+	public static FireWallRules getFireWallRules(AmazonEC2 ec2, SecurityGroup sg) {
+		List<IpPermission> perms = describeSecurityGroupRules(ec2,
+				sg.getGroupName());
+		return convertIpPermissions(perms);
 	}
 
 	/**
 	 * <p>
 	 * Get the {@link IpPermission}s associated to the AWS Security Group which
-	 * match the given name.
+	 * match the given identifier.
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param sSGName
-	 *            is the name of the AWS Security Group to examine.
+	 * @param sSGId
+	 *            is the identifier of the AWS Security Group to examine.
 	 * 
 	 * @return the {@link IpPermission}s associated to the AWS Security Group
-	 *         which match the given name if such AWS Security Group exists and
-	 *         if {@link IpPermission}s are associated to it, or
-	 *         <code>null</code> otherwise.
+	 *         which match the given identifier if such AWS Security Group
+	 *         exists and if {@link IpPermission}s are associated to it, or
+	 *         <tt>null</tt> otherwise.
 	 * 
 	 * @throws AmazonServiceException
 	 *             if the creation failed.
 	 * @throws AmazonClientException
 	 *             if the operation fails.
 	 * @throws IllegalArgumentException
-	 *             if ec2 is <code>null</code>.
+	 *             if ec2 is <tt>null</tt>.
 	 * @throws IllegalArgumentException
-	 *             if sSGName is <code>null</code> or an empty
-	 *             <code>String</code>.
+	 *             if the given identifier is <tt>null</tt>.
 	 */
-	private static List<IpPermission> describeSecurityGroupRules(AmazonEC2 ec2,
-			String sSGName) {
-		if (ec2 == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
-					+ ".");
-		}
-		if (sSGName == null || sSGName.trim().length() == 0) {
-			throw new IllegalArgumentException(sSGName + ": Not accepted. "
-					+ "Must be a String (an AWS Security Group name).");
-		}
-
-		DescribeSecurityGroupsRequest dsgreq = null;
-		dsgreq = new DescribeSecurityGroupsRequest();
-		dsgreq.withGroupNames(sSGName);
-
-		try {
-			return ec2.describeSecurityGroups(dsgreq).getSecurityGroups()
-					.get(0).getIpPermissions();
-		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode() == null) {
-				throw Ex;
-			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
-				return null;
-			} else {
-				throw Ex;
-			}
-		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
+	protected static List<IpPermission> describeSecurityGroupRules(
+			AmazonEC2 ec2, String sSGId) {
+		SecurityGroup sg = AwsEc2CloudNetwork.getSecurityGroupById(ec2, sSGId);
+		if (sg == null) {
 			return null;
+		} else {
+			return sg.getIpPermissions();
 		}
 	}
 
-	private static FireWallRules convertIpPermissions(List<IpPermission> perms,
-			NetworkDeviceName netdev) {
+	protected static FireWallRules convertIpPermissions(List<IpPermission> perms) {
 		FireWallRules rules = new FireWallRules();
 		try {
 			for (IpPermission perm : perms) {
@@ -164,7 +146,7 @@ public abstract class AwsEc2CloudFireWall {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
-		String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev);
+		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
 		List<IpPermission> toRev = convertFwRules(toRevoke);
 		// the conversion may have discard all rules
 		if (toRev.size() == 0) {
@@ -172,11 +154,31 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		RevokeSecurityGroupIngressRequest revreq = null;
 		revreq = new RevokeSecurityGroupIngressRequest();
-		revreq = revreq.withGroupName(sgname).withIpPermissions(toRev);
+		revreq = revreq.withGroupId(sgid).withIpPermissions(toRev);
 		ec2.revokeSecurityGroupIngress(revreq);
 		for (SimpleFireWallRule rule : toRevoke) {
 			log.info(Msg.bind(Messages.CommonMsg_REVOKE_FWRULE, i.getImageId(),
 					netdev, rule));
+		}
+	}
+
+	public static void revokeFireWallRules(AmazonEC2 ec2, SecurityGroup sg,
+			FireWallRules toRevoke) {
+		if (toRevoke == null || toRevoke.size() == 0) {
+			return;
+		}
+		String sgid = sg.getGroupId();
+		List<IpPermission> toRev = convertFwRules(toRevoke);
+		// the conversion may have discard all rules
+		if (toRev.size() == 0) {
+			return;
+		}
+		RevokeSecurityGroupIngressRequest revreq = null;
+		revreq = new RevokeSecurityGroupIngressRequest();
+		revreq = revreq.withGroupId(sgid).withIpPermissions(toRev);
+		ec2.revokeSecurityGroupIngress(revreq);
+		for (SimpleFireWallRule rule : toRevoke) {
+			log.info(Msg.bind(Messages.CommonMsg_PA_REVOKE_FWRULE, sgid, rule));
 		}
 	}
 
@@ -185,7 +187,7 @@ public abstract class AwsEc2CloudFireWall {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
-		String sgname = AwsEc2CloudNetwork.getSecurityGroup(ec2, i, netdev);
+		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
 		// the conversion may have discard all rules
 		if (toAuth.size() == 0) {
@@ -193,11 +195,32 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		AuthorizeSecurityGroupIngressRequest authreq = null;
 		authreq = new AuthorizeSecurityGroupIngressRequest();
-		authreq = authreq.withGroupName(sgname).withIpPermissions(toAuth);
+		authreq = authreq.withGroupId(sgid).withIpPermissions(toAuth);
 		ec2.authorizeSecurityGroupIngress(authreq);
 		for (SimpleFireWallRule rule : toAuthorize) {
 			log.info(Msg.bind(Messages.CommonMsg_AUTHORIZE_FWRULE,
 					i.getImageId(), netdev, rule));
+		}
+	}
+
+	public static void authorizeFireWallRules(AmazonEC2 ec2, SecurityGroup sg,
+			FireWallRules toAuthorize) {
+		if (toAuthorize == null || toAuthorize.size() == 0) {
+			return;
+		}
+		String sgid = sg.getGroupId();
+		List<IpPermission> toAuth = convertFwRules(toAuthorize);
+		// the conversion may have discard all rules
+		if (toAuth.size() == 0) {
+			return;
+		}
+		AuthorizeSecurityGroupIngressRequest authreq = null;
+		authreq = new AuthorizeSecurityGroupIngressRequest();
+		authreq = authreq.withGroupId(sgid).withIpPermissions(toAuth);
+		ec2.authorizeSecurityGroupIngress(authreq);
+		for (SimpleFireWallRule rule : toAuthorize) {
+			log.info(Msg.bind(Messages.CommonMsg_PA_AUTHORIZE_FWRULE, sgid,
+					rule));
 		}
 	}
 

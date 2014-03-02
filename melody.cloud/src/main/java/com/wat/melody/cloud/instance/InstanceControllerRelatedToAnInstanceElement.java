@@ -9,6 +9,7 @@ import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceName;
@@ -62,14 +63,14 @@ public class InstanceControllerRelatedToAnInstanceElement extends
 		return _instanceElement;
 	}
 
-	private Element setInstanceElement(Element relatedNode) {
-		if (relatedNode == null) {
+	private Element setInstanceElement(Element relatedElmt) {
+		if (relatedElmt == null) {
 			throw new IllegalArgumentException("null: Not accepted."
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ ".");
 		}
 		Element previous = getInstanceElement();
-		_instanceElement = relatedNode;
+		_instanceElement = relatedElmt;
 		return previous;
 	}
 
@@ -110,10 +111,11 @@ public class InstanceControllerRelatedToAnInstanceElement extends
 
 	@Override
 	public void ensureInstanceIsCreated(InstanceType type, String site,
-			String imageId, KeyPairName keyPairName, long createTimeout)
+			String imageId, KeyPairName keyPairName,
+			ProtectedAreaIds protectedAreaIds, long createTimeout)
 			throws OperationException, InterruptedException {
 		getInstanceController().ensureInstanceIsCreated(type, site, imageId,
-				keyPairName, createTimeout);
+				keyPairName, protectedAreaIds, createTimeout);
 	}
 
 	@Override
@@ -178,10 +180,10 @@ public class InstanceControllerRelatedToAnInstanceElement extends
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netDev,
-			FireWallRules toAutorize) throws OperationException,
+			FireWallRules toAuthorize) throws OperationException,
 			InterruptedException {
 		getInstanceController().authorizeInstanceFireWallRules(netDev,
-				toAutorize);
+				toAuthorize);
 	}
 
 	@Override
@@ -244,15 +246,15 @@ public class InstanceControllerRelatedToAnInstanceElement extends
 		fireInstanceStarted();
 	}
 
-	protected void setData(Element netdev, String sAttr, String sValue) {
-		if (sValue == null || sValue.length() == 0) {
+	protected void setData(Element elmt, String attr, String value) {
+		if (value == null || value.length() == 0) {
 			return;
 		}
-		netdev.setAttribute(sAttr, sValue);
+		elmt.setAttribute(attr, value);
 	}
 
-	protected void removeData(Element netdev, String sAttr) {
-		netdev.removeAttribute(sAttr);
+	protected void removeData(Element elmt, String attr) {
+		elmt.removeAttribute(attr);
 	}
 
 	private Element getNetworkDeviceElement(NetworkDevice netdev)
