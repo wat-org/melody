@@ -2,6 +2,7 @@ package com.wat.melody.cloud.instance;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.exception.OperationTimeoutException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -37,16 +38,20 @@ public interface InstanceController {
 	public void ensureInstanceIsCreated(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds, long createTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	public void ensureInstanceIsDestroyed(long destroyTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	public void ensureInstanceIsStarted(long startTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	public void ensureInstanceIsStoped(long stopTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	public void ensureInstanceSizing(InstanceType targetType)
 			throws OperationException, InterruptedException;

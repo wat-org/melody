@@ -10,6 +10,7 @@ import com.wat.melody.api.annotation.Task;
 import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.exception.OperationTimeoutException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.keypair.KeyPairName;
@@ -74,7 +75,8 @@ public class NewMachine extends AbstractOperation {
 			public String createInstance(InstanceType type, String site,
 					String imageId, KeyPairName keyPairName,
 					ProtectedAreaIds protectedAreaIds, long createTimeout)
-					throws OperationException, InterruptedException {
+					throws OperationException, OperationTimeoutException,
+					InterruptedException {
 				try {
 					AwsKeyPairRepository kpr = AwsKeyPairRepository
 							.getAwsKeyPairRepository(getConnection(),

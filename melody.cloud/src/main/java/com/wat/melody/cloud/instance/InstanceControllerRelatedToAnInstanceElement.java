@@ -4,6 +4,7 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.exception.OperationTimeoutException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
@@ -113,26 +114,30 @@ public class InstanceControllerRelatedToAnInstanceElement extends
 	public void ensureInstanceIsCreated(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds, long createTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		getInstanceController().ensureInstanceIsCreated(type, site, imageId,
 				keyPairName, protectedAreaIds, createTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsDestroyed(long timeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		getInstanceController().ensureInstanceIsDestroyed(timeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStarted(long startTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		getInstanceController().ensureInstanceIsStarted(startTimeout);
 	}
 
 	@Override
 	public void ensureInstanceIsStoped(long stopTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		getInstanceController().ensureInstanceIsStoped(stopTimeout);
 	}
 

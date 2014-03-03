@@ -10,6 +10,7 @@ import com.wat.melody.cloud.instance.InstanceController;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.exception.OperationTimeoutException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -69,51 +70,53 @@ public class AwsInstanceController extends DefaultInstanceController implements
 	public String createInstance(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds, long createTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		String instanceId = AwsEc2Cloud.newAwsInstance(getConnection(), type,
 				imageId, site, keyPairName, protectedAreaIds);
 		// Immediately assign the instanceId
 		setInstanceId(instanceId);
 		if (!AwsEc2Cloud.waitUntilInstanceStatusBecomes(getConnection(),
 				instanceId, InstanceState.RUNNING, createTimeout, 10000)) {
-			throw new OperationException(Msg.bind(Messages.CreateEx_TIMEOUT,
-					instanceId, createTimeout));
+			throw new OperationTimeoutException(Msg.bind(
+					Messages.CreateEx_TIMEOUT, instanceId, createTimeout));
 		}
 		return instanceId;
 	}
 
 	@Override
 	public void destroyInstance(long destroyTimeout) throws OperationException,
-			InterruptedException {
+			OperationTimeoutException, InterruptedException {
 		if (!AwsEc2Cloud.deleteAwsInstance(getConnection(), getInstance(),
 				destroyTimeout)) {
-			throw new OperationException(Msg.bind(Messages.DestroyEx_TIMEOUT,
-					getInstanceId(), destroyTimeout));
+			throw new OperationTimeoutException(
+					Msg.bind(Messages.DestroyEx_TIMEOUT, getInstanceId(),
+							destroyTimeout));
 		}
 	}
 
 	@Override
 	public void startInstance(long startTimeout) throws OperationException,
-			InterruptedException {
+			OperationTimeoutException, InterruptedException {
 		if (!AwsEc2Cloud.startAwsInstance(getConnection(), getInstanceId(),
 				startTimeout)) {
-			throw new OperationException(Msg.bind(Messages.StartEx_TIMEOUT,
-					getInstanceId(), startTimeout));
+			throw new OperationTimeoutException(Msg.bind(
+					Messages.StartEx_TIMEOUT, getInstanceId(), startTimeout));
 		}
 		/*
-		 * After a successfull start, must retresh aws instance object, so that
-		 * ips are up to date
+		 * After a successful start, must refresh AWS Instance object, so that
+		 * its @IPs are up to date.
 		 */
 		refreshInternalDatas();
 	}
 
 	@Override
 	public void stopInstance(long stopTimeout) throws OperationException,
-			InterruptedException {
+			OperationTimeoutException, InterruptedException {
 		if (!AwsEc2Cloud.stopAwsInstance(getConnection(), getInstanceId(),
 				stopTimeout)) {
-			throw new OperationException(Msg.bind(Messages.StopEx_TIMEOUT,
-					getInstanceId(), stopTimeout));
+			throw new OperationTimeoutException(Msg.bind(
+					Messages.StopEx_TIMEOUT, getInstanceId(), stopTimeout));
 		}
 	}
 

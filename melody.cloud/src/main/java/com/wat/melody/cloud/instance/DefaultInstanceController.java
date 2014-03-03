@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.exception.DiskDeviceException;
 import com.wat.melody.cloud.instance.exception.OperationException;
+import com.wat.melody.cloud.instance.exception.OperationTimeoutException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
@@ -62,20 +63,26 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public void ensureInstanceIsCreated(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds, long createTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		if (instanceLives()) {
 			log.warn(Msg
 					.bind(Messages.CreateMsg_LIVES, getInstanceId(), "LIVE"));
 		} else {
-			String instanceId = createInstance(type, site, imageId,
-					keyPairName, protectedAreaIds, createTimeout);
-			/*
-			 * TODO : bug : when the create operation times out, the instance is
-			 * created, we have its id, and an OperationEx is raised here. The
-			 * id will be lost ! We should call fireInstanceCreated when the
-			 * OperationEx raised, in order to store the id.
-			 */
-			setInstanceId(instanceId);
+			try {
+				String instanceId = createInstance(type, site, imageId,
+						keyPairName, protectedAreaIds, createTimeout);
+				setInstanceId(instanceId);
+			} catch (OperationTimeoutException Ex) {
+				/*
+				 * When the create operation times out, the instance should have
+				 * been created and its identifier must be stored !
+				 */
+				if (getInstanceId() != null) {
+					fireInstanceCreated(); // will store the instance id
+					throw Ex;
+				}
+			}
 		}
 		fireInstanceCreated();
 		if (instanceRuns()) {
@@ -87,11 +94,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public abstract String createInstance(InstanceType type, String site,
 			String imageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds, long createTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	@Override
 	public void ensureInstanceIsDestroyed(long destroyTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.DestroyMsg_NO_INSTANCE);
 		} else if (!instanceLives()) {
@@ -106,11 +115,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract void destroyInstance(long destroyTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	@Override
 	public void ensureInstanceIsStarted(long startTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		InstanceState is = getInstanceState();
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StartEx_NO_INSTANCE);
@@ -157,11 +168,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract void startInstance(long startTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	@Override
 	public void ensureInstanceIsStoped(long stopTimeout)
-			throws OperationException, InterruptedException {
+			throws OperationException, OperationTimeoutException,
+			InterruptedException {
 		if (!isInstanceDefined()) {
 			throw new OperationException(Messages.StopEx_NO_INSTANCE);
 		} else if (!instanceRuns()) {
@@ -175,7 +188,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	}
 
 	public abstract void stopInstance(long stopTimeout)
-			throws OperationException, InterruptedException;
+			throws OperationException, OperationTimeoutException,
+			InterruptedException;
 
 	@Override
 	public void ensureInstanceSizing(InstanceType targetType)
