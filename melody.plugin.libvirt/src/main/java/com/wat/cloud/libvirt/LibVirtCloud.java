@@ -510,10 +510,10 @@ public abstract class LibVirtCloud {
 				throw new RuntimeException(sImageId + ": No such image.");
 			}
 
-			// Create a dedicated security group
-			String sSGName = LibVirtCloudNetwork.newSecurityGroupName();
-			String sSGDesc = LibVirtCloudNetwork.getSecurityGroupDescription();
-			LibVirtCloudNetwork.createSecurityGroup(cnx, sSGName, sSGDesc);
+			// Create a dedicated Protected Area, for the first network device
+			NetworkDeviceName eth0Name = LibVirtCloudNetwork.eth0;
+			String sgid = LibVirtCloudNetwork.createSelfProtectedArea(cnx,
+					eth0Name);
 
 			Path ddt = getImageDomainDescriptor(sImageId);
 			PropertySet ps = new PropertySet();
@@ -527,8 +527,8 @@ public abstract class LibVirtCloud {
 						.generateUniqMacAddress()));
 				ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
 				ps.put(new Property("ram", String.valueOf(getRAM(type))));
-				ps.put(new Property("sgName", sSGName));
-				ps.put(new Property("eth", LibVirtCloudNetwork.eth0.getValue()));
+				ps.put(new Property("sgName", sgid));
+				ps.put(new Property("eth", eth0Name.getValue()));
 				log.trace("Creating domain '" + sInstanceId + "' (template:"
 						+ sImageId + ", mac-address:"
 						+ ps.getProperty("vmMacAddr").getValue() + ") ...");
@@ -617,8 +617,8 @@ public abstract class LibVirtCloud {
 					.getNetworkDevices(d);
 			for (NetworkDevice netdev : netdevs) {
 				NetworkDeviceName devname = netdev.getNetworkDeviceName();
-				String sSGName = LibVirtCloudNetwork.getSecurityGroup(d,
-						devname);
+				String sgid = LibVirtCloudNetwork
+						.getProtectedAreaId(d, devname);
 				// Destroy the network filter
 				LibVirtCloudNetwork.deleteNetworkFilter(d, devname);
 				// Release the @mac
@@ -626,7 +626,7 @@ public abstract class LibVirtCloud {
 						.getDomainMacAddress(d, devname);
 				LibVirtCloudNetwork.unregisterMacAddress(mac);
 				// Destroy the security group
-				LibVirtCloudNetwork.deleteSecurityGroup(cnx, sSGName);
+				LibVirtCloudNetwork.deleteSecurityGroup(cnx, sgid);
 			}
 			// Destroy disk devices
 			DiskDeviceList diskdevs = LibVirtCloudDisk.getDiskDevices(d);
