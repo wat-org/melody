@@ -17,6 +17,7 @@ public class Messages extends NLS {
 	public static String Ec2Ex_MISSING_IMAGEID_ATTR;
 	public static String Ec2Ex_INVALID_IMAGEID_ATTR;
 	public static String Ec2Ex_MISSING_KEYPAIR_NAME_ATTR;
+	public static String Ec2Ex_MISSING_NAME_ATTR;
 
 	public static String CreateEx_MISSING_PASSPHRASE_ATTR;
 	public static String CreateEx_INVALID_PASSPHRASE_ATTR;
@@ -35,6 +36,10 @@ public class Messages extends NLS {
 	public static String UpdateNetDevEx_GENERIC_FAIL;
 
 	public static String UpdateFireWallEx_GENERIC_FAIL;
+
+	public static String PACreateEx_GENERIC_FAIL;
+	public static String PADestroyEx_GENERIC_FAIL;
+	public static String PAContentEx_GENERIC_FAIL;
 
 	static {
 		// initialize resource bundle

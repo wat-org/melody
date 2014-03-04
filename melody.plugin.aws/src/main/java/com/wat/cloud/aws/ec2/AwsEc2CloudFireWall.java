@@ -47,7 +47,7 @@ public abstract class AwsEc2CloudFireWall {
 
 	public static FireWallRules getFireWallRules(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
-		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
+		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev);
 		List<IpPermission> perms = describeSecurityGroupRules(ec2, sgid);
 		return convertIpPermissions(perms);
 	}
@@ -146,7 +146,7 @@ public abstract class AwsEc2CloudFireWall {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
-		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
+		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev);
 		List<IpPermission> toRev = convertFwRules(toRevoke);
 		// the conversion may have discard all rules
 		if (toRev.size() == 0) {
@@ -187,7 +187,7 @@ public abstract class AwsEc2CloudFireWall {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
-		String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i, netdev);
+		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev);
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
 		// the conversion may have discard all rules
 		if (toAuth.size() == 0) {

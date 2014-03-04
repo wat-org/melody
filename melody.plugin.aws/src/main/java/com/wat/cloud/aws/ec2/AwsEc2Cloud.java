@@ -594,15 +594,12 @@ public abstract class AwsEc2Cloud {
 					+ ".");
 		}
 
-		String sSGName = AwsEc2CloudNetwork.newSecurityGroupName();
-		String sSGDesc = AwsEc2CloudNetwork.getSecurityGroupDescription();
-		String sSGId = AwsEc2CloudNetwork.createSecurityGroup(ec2, sSGName,
-				sSGDesc);
+		String sgid = AwsEc2CloudNetwork.createSelfProtectedArea(ec2);
 
 		RunInstancesRequest rireq = new RunInstancesRequest();
 		rireq.withInstanceType(type.toString());
 		rireq.withImageId(sImageId);
-		rireq.withSecurityGroups(sSGName);
+		rireq.withSecurityGroupIds(sgid);
 		for (ProtectedAreaId protectedAreaId : protectedAreaIds) {
 			rireq.withSecurityGroupIds(protectedAreaId.getValue());
 		}
@@ -624,12 +621,12 @@ public abstract class AwsEc2Cloud {
 			CreateTagsRequest ctreq = new CreateTagsRequest();
 			ctreq = ctreq.withResources(sInstanceId);
 			ctreq = ctreq.withTags(AwsEc2CloudNetwork
-					.createSelfProtectedAreaIdTag(sSGId));
+					.createSelfProtectedAreaIdTag(sgid));
 			ec2.createTags(ctreq);
 
 			return sInstanceId;
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
-			AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sSGName);
+			AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 			throw new RuntimeException("Fail to retrieve new Aws Instance "
 					+ "details (Aws Instance may have been created).");
 		}
@@ -780,7 +777,7 @@ public abstract class AwsEc2Cloud {
 					InstanceState.TERMINATED, timeout, 0);
 		} finally {
 			for (NetworkDevice netdev : netdevs) {
-				String sgid = AwsEc2CloudNetwork.getSecurityGroupId(ec2, i,
+				String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i,
 						netdev.getNetworkDeviceName());
 				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 			}
