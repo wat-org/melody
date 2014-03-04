@@ -217,11 +217,22 @@ public class FireWallRulesPerDevice extends
 
 	/**
 	 * @param netdev
+	 *            is the name of the network interface to query.
 	 * 
 	 * @return the {@link FireWallRules} associated to the given
 	 *         {@link NetworkDeviceName}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given network interface name is <tt>null</tt>.
+	 * 
+	 * @see #getFireWallRules()
 	 */
 	public FireWallRules getFireWallRules(NetworkDeviceName netdev) {
+		if (netdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
 		FireWallRules rules = new FireWallRules();
 		FireWallRules tmp = get(NetworkDeviceNameRef.ALL);
 		if (tmp != null) {
@@ -232,6 +243,15 @@ public class FireWallRulesPerDevice extends
 			rules.addAll(tmp);
 		}
 		return rules;
+	}
+
+	/**
+	 * @return the {@link FireWallRules} associated to all network device name.
+	 * 
+	 * @see #getFireWallRules(NetworkDeviceName)
+	 */
+	public FireWallRules getFireWallRules() {
+		return get(NetworkDeviceNameRef.ALL);
 	}
 
 }
