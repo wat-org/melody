@@ -48,7 +48,7 @@ public class UpdateNetworkDevices extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceNetworkDevicesAreUpToDate(
+			getInstanceController().ensureInstanceNetworkDevicesAreUpToDate(
 					getNetworkDeviceList());
 		} catch (OperationException Ex) {
 			throw new AwsPlugInEc2Exception(new NodeRelatedException(

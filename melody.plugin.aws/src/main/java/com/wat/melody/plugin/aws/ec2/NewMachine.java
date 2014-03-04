@@ -29,9 +29,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 @Task(name = NewMachine.NEW_MACHINE)
 public class NewMachine extends AbstractOperation {
 
-	/*
-	 * TODO: three new Tasks : create/update/destroy protected-area
-	 */
 	/**
 	 * Task's name
 	 */
@@ -47,7 +44,7 @@ public class NewMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsCreated(
+			getInstanceController().ensureInstanceIsCreated(
 					getInstanceDatas().getInstanceType(),
 					getInstanceDatas().getSite(),
 					getInstanceDatas().getImageId(),

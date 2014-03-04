@@ -47,7 +47,7 @@ public class UpdateDiskDevices extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceDiskDevicesAreUpToDate(
+			getInstanceController().ensureInstanceDiskDevicesAreUpToDate(
 					getDiskDeviceList());
 		} catch (OperationException Ex) {
 			throw new AwsPlugInEc2Exception(new NodeRelatedException(

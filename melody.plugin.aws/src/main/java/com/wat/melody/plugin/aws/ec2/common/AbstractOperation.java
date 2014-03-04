@@ -65,7 +65,7 @@ abstract public class AbstractOperation implements ITask,
 	private Element _targetElmt = null;
 	private String _instanceId = null;
 	private AmazonEC2 _ec2Connection = null;
-	private InstanceController _instance = null;
+	private InstanceController _instanceController = null;
 	private InstanceDatas _instanceDatas = null;
 	private GenericTimeout _defaultTimeout = createTimeout(90000);
 
@@ -82,10 +82,11 @@ abstract public class AbstractOperation implements ITask,
 			throw new AwsPlugInEc2Exception(Ex);
 		}
 
-		setInstance(createInstance());
+		setInstanceController(createInstanceController());
 	}
 
-	protected InstanceController createInstance() throws AwsPlugInEc2Exception {
+	protected InstanceController createInstanceController()
+			throws AwsPlugInEc2Exception {
 		InstanceController instanceCtrl = newAwsInstanceController();
 		instanceCtrl = new InstanceControllerRelatedToAnInstanceElement(
 				instanceCtrl, getTargetElement());
@@ -322,18 +323,19 @@ abstract public class AbstractOperation implements ITask,
 		return previous;
 	}
 
-	protected InstanceController getInstance() {
-		return _instance;
+	protected InstanceController getInstanceController() {
+		return _instanceController;
 	}
 
-	protected InstanceController setInstance(InstanceController instance) {
-		if (instance == null) {
+	protected InstanceController setInstanceController(
+			InstanceController instanceCtrl) {
+		if (instanceCtrl == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		InstanceController previous = getInstance();
-		_instance = instance;
+		InstanceController previous = getInstanceController();
+		_instanceController = instanceCtrl;
 		return previous;
 	}
 
@@ -363,10 +365,10 @@ abstract public class AbstractOperation implements ITask,
 		return _instanceId;
 	}
 
-	protected String setInstanceId(String instanceID) {
+	protected String setInstanceId(String instanceId) {
 		// can be null, if no Instance have been created yet
 		String previous = getInstanceId();
-		_instanceId = instanceID;
+		_instanceId = instanceId;
 		return previous;
 	}
 
@@ -409,9 +411,8 @@ abstract public class AbstractOperation implements ITask,
 		}
 		setTargetElement((Element) n);
 		try {
-			setInstanceId(n.getAttributes()
-					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)
-					.getNodeValue());
+			setInstanceId(getTargetElement().getAttributeNode(
+					InstanceDatasLoader.INSTANCE_ID_ATTR).getNodeValue());
 		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();

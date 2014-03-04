@@ -31,7 +31,7 @@ public class DeleteMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsDestroyed(
+			getInstanceController().ensureInstanceIsDestroyed(
 					getInstanceDatas().getDeleteTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
 			throw new AwsPlugInEc2Exception(new NodeRelatedException(

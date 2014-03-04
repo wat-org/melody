@@ -32,7 +32,7 @@ public class ResizeMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceSizing(
+			getInstanceController().ensureInstanceSizing(
 					getInstanceDatas().getInstanceType());
 		} catch (OperationException Ex) {
 			throw new AwsPlugInEc2Exception(new NodeRelatedException(
