@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
 import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.messages.Msg;
 
 /**
@@ -85,7 +86,7 @@ public abstract class DefaultProtectedAreaController extends
 			InterruptedException;
 
 	@Override
-	public void ensureProtectedAreaContentIsUpToDate(FireWallRules list)
+	public void ensureProtectedAreaContentIsUpToDate(FireWallRulesPerDevice list)
 			throws ProtectedAreaException, InterruptedException {
 		if (!isProtectedAreaDefined()) {
 			log.warn(Messages.UpdateContentMsg_ID_NOT_DEFINED);
@@ -95,7 +96,8 @@ public abstract class DefaultProtectedAreaController extends
 			throw new ProtectedAreaException(Msg.bind(
 					Messages.UpdateContentEx_ID_INVALID, sProtectedAreaId));
 		} else {
-			updateProtectedAreaContent(list);
+			// will not retrieve the fwrules associated to a network device
+			updateProtectedAreaContent(list.getFireWallRules());
 		}
 	}
 

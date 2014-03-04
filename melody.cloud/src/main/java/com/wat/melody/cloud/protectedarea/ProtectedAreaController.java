@@ -2,6 +2,7 @@ package com.wat.melody.cloud.protectedarea;
 
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
 import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 
 /**
  * 
@@ -26,7 +27,7 @@ public interface ProtectedAreaController {
 	public void ensureProtectedAreaIsDestroyed() throws ProtectedAreaException,
 			InterruptedException;
 
-	public void ensureProtectedAreaContentIsUpToDate(FireWallRules list)
+	public void ensureProtectedAreaContentIsUpToDate(FireWallRulesPerDevice list)
 			throws ProtectedAreaException, InterruptedException;
 
 	public FireWallRules getProtectedAreaFireWallRules();

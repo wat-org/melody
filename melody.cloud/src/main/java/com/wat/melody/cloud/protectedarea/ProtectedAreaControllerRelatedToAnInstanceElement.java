@@ -3,8 +3,9 @@ package com.wat.melody.cloud.protectedarea;
 import org.w3c.dom.Element;
 
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
-import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaHelper;
+import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaDatasLoader;
 import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 
 /**
  * <p>
@@ -94,7 +95,7 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	}
 
 	@Override
-	public void ensureProtectedAreaContentIsUpToDate(FireWallRules list)
+	public void ensureProtectedAreaContentIsUpToDate(FireWallRulesPerDevice list)
 			throws ProtectedAreaException, InterruptedException {
 		getProtectedAreaController().ensureProtectedAreaContentIsUpToDate(list);
 	}
@@ -107,8 +108,7 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	@Override
 	public void onProtectedAreaCreated() throws ProtectedAreaException,
 			InterruptedException {
-		setData(getProtectedAreaElement(),
-				ProtectedAreaHelper.PROTECTED_AREA_ID_ATTR,
+		setData(getProtectedAreaElement(), ProtectedAreaDatasLoader.ID_ATTR,
 				getProtectedAreaId());
 		fireProtectedAreaCreated();
 	}
@@ -117,8 +117,7 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	public void onProtectedAreaDestroyed() throws ProtectedAreaException,
 			InterruptedException {
 		fireProtectedAreaDestroyed();
-		removeData(getProtectedAreaElement(),
-				ProtectedAreaHelper.PROTECTED_AREA_ID_ATTR);
+		removeData(getProtectedAreaElement(), ProtectedAreaDatasLoader.ID_ATTR);
 	}
 
 	protected void setData(Element elmt, String attr, String value) {

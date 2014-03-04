@@ -16,9 +16,7 @@ import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaNames;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.xml.AttributeName;
 import com.wat.melody.common.xml.FilteredDocHelper;
-import com.wat.melody.common.xml.exception.IllegalAttributeNameException;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 
@@ -28,12 +26,6 @@ import com.wat.melody.common.xpath.XPathExpander;
  * 
  */
 public abstract class ProtectedAreaHelper {
-
-	/**
-	 * XML attribute of the Protected Area Element, which contains its
-	 * identifier.
-	 */
-	public static final String PROTECTED_AREA_ID_ATTR = "id";
 
 	/**
 	 * XML Element, which contains Protected Area Management datas, related to
@@ -61,19 +53,6 @@ public abstract class ProtectedAreaHelper {
 	 * Elements.
 	 */
 	public static final String DEFAULT_PROTECTED_AREA_SELECTOR = ".//protected-areas//protected-area";
-
-	/**
-	 * XML attribute of the Protected Area Management Element, which contains
-	 * the name of the attribute of the Protected Area Element which contains
-	 * its name.
-	 */
-	public static final String PROTECTED_AREA_NAME_SELECTOR = "name-selector";
-
-	/**
-	 * Default name of the attribute of the Protected Area Element which
-	 * contains its name.
-	 */
-	public static final String DEFAULT_PROTECTED_AREA_NAME_SELECTOR = "name";
 
 	/**
 	 * @param instanceElmt
@@ -141,50 +120,6 @@ public abstract class ProtectedAreaHelper {
 		}
 	}
 
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Protected Area
-	 *            Management Element related to an Instance. Can be
-	 *            <tt>null</tt>, if the related Instance has no Protected Area
-	 *            Management Element.
-	 * 
-	 * @return the Protected Area Name Selector, which is :
-	 *         <ul>
-	 *         <li>The Default Protected Area Name Selector, if the given
-	 *         Protected Area Management Element is <tt>null</tt> ;</li>
-	 *         <li>The Default Protected Area Name Selector, if the given
-	 *         Protected Area Management Element is not <tt>null</tt> but has no
-	 *         Custom Protected Area Name Selector is defined in ;</li>
-	 *         <li>The Custom Protected Area Name Selector defined in the given
-	 *         Protected Area Management Element ;</li>
-	 *         </ul>
-	 * 
-	 * @throws NodeRelatedException
-	 *             if the Custom Protected Area Name Selector defined in the
-	 *             given Protected Area Management Element is not a valid
-	 *             attribute name.
-	 */
-	public static AttributeName getProtectedAreaNameSelector(Element mgmtElmt)
-			throws NodeRelatedException {
-		try {
-			try {
-				return AttributeName.parseString(mgmtElmt.getAttributeNode(
-						PROTECTED_AREA_NAME_SELECTOR).getNodeValue());
-			} catch (IllegalAttributeNameException e) {
-				throw new NodeRelatedException(
-						mgmtElmt.getAttributeNode(PROTECTED_AREA_NAME_SELECTOR),
-						e);
-			}
-		} catch (NullPointerException Ex) {
-			try {
-				return AttributeName
-						.parseString(DEFAULT_PROTECTED_AREA_NAME_SELECTOR);
-			} catch (IllegalAttributeNameException e) {
-				throw new RuntimeException("Impossible", e);
-			}
-		}
-	}
-
 	public static ProtectedAreaIds findInstanceProtectedAreaIds(
 			Element instanceElmt) throws NodeRelatedException {
 		ProtectedAreaNames names = InstanceDatasHelper
@@ -199,6 +134,9 @@ public abstract class ProtectedAreaHelper {
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance, where are
 	 *            defined the given Protected Area Names.
+	 * @param paattr
+	 *            is the XML Attribute which contains the Protected Area Names
+	 *            to convert (useful for error message).
 	 * @param names
 	 *            are the Protected Area Names to convert to their Protected
 	 *            Area Identifiers. Can be <tt>null</tt>.
@@ -229,11 +167,9 @@ public abstract class ProtectedAreaHelper {
 				.findProtectedAreaManagementElement(instanceElmt);
 		String selector = ProtectedAreaHelper
 				.getProtectedAreaSelector(mgmtElmt);
-		AttributeName attrName = ProtectedAreaHelper
-				.getProtectedAreaNameSelector(mgmtElmt);
 		for (ProtectedAreaName name : names) {
-			String exp = selector + "[@" + attrName + "='" + name.getValue()
-					+ "']";
+			String exp = selector + "[@" + ProtectedAreaDatasLoader.NAME_ATTR
+					+ "='" + name.getValue() + "']";
 			Node n = null;
 			try {
 				n = XPathExpander.evaluateAsNode(exp,
@@ -246,7 +182,8 @@ public abstract class ProtectedAreaHelper {
 				throw new NodeRelatedException(paattr, Msg.bind(
 						Messages.ProtectedAreaEx_NOT_DEFINED, name));
 			}
-			Attr a = ((Element) n).getAttributeNode(PROTECTED_AREA_ID_ATTR);
+			Attr a = ((Element) n)
+					.getAttributeNode(ProtectedAreaDatasLoader.ID_ATTR);
 			if (a == null) {
 				throw new NodeRelatedException(paattr, Msg.bind(
 						Messages.ProtectedAreaEx_ID_NOT_DEFINED, name));
