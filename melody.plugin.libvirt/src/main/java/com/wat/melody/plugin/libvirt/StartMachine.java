@@ -30,7 +30,7 @@ public class StartMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsStarted(
+			getInstanceController().ensureInstanceIsStarted(
 					getInstanceDatas().getStartTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(new NodeRelatedException(

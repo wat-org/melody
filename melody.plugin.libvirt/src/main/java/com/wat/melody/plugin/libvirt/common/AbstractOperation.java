@@ -64,7 +64,7 @@ public abstract class AbstractOperation implements ITask,
 	private Element _targetElmt = null;
 	private String _instanceId = null;
 	private Connect _cloudConnection = null;
-	private InstanceController _instance = null;
+	private InstanceController _instanceController = null;
 	private InstanceDatas _instanceDatas = null;
 	private GenericTimeout _defaultTimeout = createTimeout(90000);
 
@@ -81,10 +81,11 @@ public abstract class AbstractOperation implements ITask,
 			throw new LibVirtException(Ex);
 		}
 
-		setInstance(createInstance());
+		setInstanceController(createInstanceController());
 	}
 
-	protected InstanceController createInstance() throws LibVirtException {
+	protected InstanceController createInstanceController()
+			throws LibVirtException {
 		InstanceController instanceCtrl = newLibVirtInstanceController();
 		instanceCtrl = new InstanceControllerRelatedToAnInstanceElement(
 				instanceCtrl, getTargetElement());
@@ -313,18 +314,19 @@ public abstract class AbstractOperation implements ITask,
 		return previous;
 	}
 
-	protected InstanceController getInstance() {
-		return _instance;
+	protected InstanceController getInstanceController() {
+		return _instanceController;
 	}
 
-	protected InstanceController setInstance(InstanceController instance) {
+	protected InstanceController setInstanceController(
+			InstanceController instance) {
 		if (instance == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ InstanceController.class.getCanonicalName() + ".");
 		}
-		InstanceController previous = getInstance();
-		_instance = instance;
+		InstanceController previous = getInstanceController();
+		_instanceController = instance;
 		return previous;
 	}
 
@@ -354,10 +356,10 @@ public abstract class AbstractOperation implements ITask,
 		return _instanceId;
 	}
 
-	protected String setInstanceId(String instanceID) {
+	protected String setInstanceId(String instanceId) {
 		// can be null, if no Instance have been created yet
 		String previous = getInstanceId();
-		_instanceId = instanceID;
+		_instanceId = instanceId;
 		return previous;
 	}
 
@@ -401,9 +403,8 @@ public abstract class AbstractOperation implements ITask,
 		}
 		setTargetElement((Element) n);
 		try {
-			setInstanceId(n.getAttributes()
-					.getNamedItem(InstanceDatasLoader.INSTANCE_ID_ATTR)
-					.getNodeValue());
+			setInstanceId(getTargetElement().getAttributeNode(
+					InstanceDatasLoader.INSTANCE_ID_ATTR).getNodeValue());
 		} catch (NullPointerException ignored) {
 		}
 		String previous = getTarget();

@@ -42,7 +42,7 @@ public class NewMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsCreated(
+			getInstanceController().ensureInstanceIsCreated(
 					getInstanceDatas().getInstanceType(),
 					getInstanceDatas().getSite(),
 					getInstanceDatas().getImageId(),

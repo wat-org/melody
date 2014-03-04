@@ -30,7 +30,7 @@ public class StopMachine extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceIsStoped(
+			getInstanceController().ensureInstanceIsStoped(
 					getInstanceDatas().getStopTimeout().getTimeoutInMillis());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(new NodeRelatedException(

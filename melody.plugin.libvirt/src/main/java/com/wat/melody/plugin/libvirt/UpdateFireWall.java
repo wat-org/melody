@@ -46,7 +46,7 @@ public class UpdateFireWall extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstance().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
+			getInstanceController().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(new NodeRelatedException(
 					getTargetElement(), Messages.UpdateFireWallEx_GENERIC_FAIL,
