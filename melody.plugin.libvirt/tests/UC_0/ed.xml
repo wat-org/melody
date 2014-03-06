@@ -29,7 +29,7 @@
 	</models>
 	
 	<protected-areas>
-		<protected-area name="salut" id="sg-13434">
+		<protected-area id="sg-13434" name="salut">
 			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
 			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
 			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
