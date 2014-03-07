@@ -19,7 +19,9 @@ import com.wat.melody.cloud.protectedarea.ProtectedAreaController;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaControllerRelatedToAnInstanceElement;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatas;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatasValidator;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaDatasException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaDatasLoader;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
@@ -124,10 +126,21 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 					Messages.Ec2Ex_MISSING_NAME_ATTR,
 					ProtectedAreaDatasLoader.NAME_ATTR));
 		}
-		// Generate a unique Security Group Name from the given
+		// Generate a unique Protected Area Name from the given
 		// Protected Area Name
-		datas.setName("melody-protected-area:" + datas.getName() + ":"
-				+ UUID.randomUUID());
+		try {
+			datas.setName(ProtectedAreaName
+					.parseString("melody-protected-area:" + datas.getName()
+							+ ":" + UUID.randomUUID()));
+		} catch (IllegalProtectedAreaNameException Ex) {
+			throw new RuntimeException("Unexecpted error while transforming "
+					+ "the User Protected Area name to more readable "
+					+ "Protected Area Name. "
+					+ "Since the validity of this 0-arg constructor have been "
+					+ "previously validated, such error cannot happened. "
+					+ "Source code has certainly been modified "
+					+ "and a bug have been introduced.", Ex);
+		}
 	}
 
 	protected void validateDescription(ProtectedAreaDatas datas)

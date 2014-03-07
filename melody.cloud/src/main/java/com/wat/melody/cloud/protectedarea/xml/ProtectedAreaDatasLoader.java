@@ -1,10 +1,14 @@
 package com.wat.melody.cloud.protectedarea.xml;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatas;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatasValidator;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaDatasException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
+import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
 
@@ -47,12 +51,17 @@ public class ProtectedAreaDatasLoader {
 		return v;
 	}
 
-	private String loadName(Element e) throws NodeRelatedException {
+	private ProtectedAreaName loadName(Element e) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, NAME_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
-		return v;
+		try {
+			return ProtectedAreaName.parseString(v);
+		} catch (IllegalProtectedAreaNameException Ex) {
+			Node attr = FilteredDocHelper.getHeritedAttribute(e, NAME_ATTR);
+			throw new NodeRelatedException(attr, Ex);
+		}
 	}
 
 	private String loadDescription(Element e) throws NodeRelatedException {
@@ -109,7 +118,7 @@ public class ProtectedAreaDatasLoader {
 					+ ".");
 		}
 		String region = loadRegion(protectedAreaElmt);
-		String name = loadName(protectedAreaElmt);
+		ProtectedAreaName name = loadName(protectedAreaElmt);
 		String desc = loadDescription(protectedAreaElmt);
 		try {
 			return new ProtectedAreaDatas(validator, region, name, desc);

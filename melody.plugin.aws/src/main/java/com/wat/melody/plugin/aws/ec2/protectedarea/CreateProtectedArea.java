@@ -17,6 +17,8 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 @Task(name = CreateProtectedArea.NEW_PROTECTED_AREA)
 public class CreateProtectedArea extends AbstractProtectedAreaOperation {
 
+	// TODO: need to be validated
+
 	/**
 	 * Task's name
 	 */

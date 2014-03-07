@@ -21,8 +21,9 @@ public interface ProtectedAreaController {
 
 	public boolean protectedAreaExists();
 
-	public void ensureProtectedAreaIsCreated(String name, String description)
-			throws ProtectedAreaException, InterruptedException;
+	public void ensureProtectedAreaIsCreated(ProtectedAreaName name,
+			String description) throws ProtectedAreaException,
+			InterruptedException;
 
 	public void ensureProtectedAreaIsDestroyed() throws ProtectedAreaException,
 			InterruptedException;

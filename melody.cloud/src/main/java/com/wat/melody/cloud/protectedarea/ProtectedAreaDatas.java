@@ -10,11 +10,11 @@ import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaDatasExc
 public class ProtectedAreaDatas {
 
 	private String _region;
-	private String _name;
+	private ProtectedAreaName _name;
 	private String _description;
 
 	public ProtectedAreaDatas(ProtectedAreaDatasValidator validator,
-			String region, String name, String description)
+			String region, ProtectedAreaName name, String description)
 			throws IllegalProtectedAreaDatasException {
 		setRegion(region);
 		setName(name);
@@ -43,11 +43,11 @@ public class ProtectedAreaDatas {
 		_region = region;
 	}
 
-	public String getName() {
+	public ProtectedAreaName getName() {
 		return _name;
 	}
 
-	public void setName(String name) {
+	public void setName(ProtectedAreaName name) {
 		_name = name;
 	}
 

@@ -53,8 +53,9 @@ public abstract class DefaultProtectedAreaController extends
 	}
 
 	@Override
-	public void ensureProtectedAreaIsCreated(String name, String description)
-			throws ProtectedAreaException, InterruptedException {
+	public void ensureProtectedAreaIsCreated(ProtectedAreaName name,
+			String description) throws ProtectedAreaException,
+			InterruptedException {
 		if (protectedAreaExists()) {
 			log.warn(Msg.bind(Messages.CreateMsg_EXISTS, getProtectedAreaId()));
 		} else {
@@ -64,8 +65,9 @@ public abstract class DefaultProtectedAreaController extends
 		fireProtectedAreaCreated();
 	}
 
-	public abstract String createProtectedArea(String name, String description)
-			throws ProtectedAreaException, InterruptedException;
+	public abstract String createProtectedArea(ProtectedAreaName name,
+			String description) throws ProtectedAreaException,
+			InterruptedException;
 
 	@Override
 	public void ensureProtectedAreaIsDestroyed() throws ProtectedAreaException,

@@ -19,6 +19,8 @@ import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
@@ -191,7 +193,7 @@ public abstract class LibVirtCloudNetwork {
 
 		try {
 			NetworkDeviceName devname = netdev.getNetworkDeviceName();
-			String sgid = getProtectedAreaId(d, devname);
+			String sgid = getProtectedAreaId(d, devname).getValue();
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 
@@ -478,7 +480,7 @@ public abstract class LibVirtCloudNetwork {
 		}
 	}
 
-	protected static String getProtectedAreaId(Domain d,
+	protected static ProtectedAreaId getProtectedAreaId(Domain d,
 			NetworkDeviceName netdev) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -498,7 +500,30 @@ public abstract class LibVirtCloudNetwork {
 			NetworkFilter nf = d.getConnect().networkFilterLookupByName(filter);
 			Doc doc = new Doc();
 			doc.loadFromXML(nf.getXMLDesc());
-			return doc.evaluateAsString("//filterref[1]/@filter");
+			String v = doc.evaluateAsString("//filterref[1]/@filter");
+			if (v == null) {
+				throw new RuntimeException("The instance '" + d.getName()
+						+ "' has a first filterref which contains a null "
+						+ "value. "
+						+ "Because this tag have been automatically created "
+						+ "during this instance creation, such error couldn't "
+						+ "happened. "
+						+ "The source code have changed and a bug have been "
+						+ "introduced.");
+			}
+			try {
+				return ProtectedAreaId.parseString(v);
+			} catch (IllegalProtectedAreaIdException Ex) {
+				throw new RuntimeException("The instance '" + d.getName()
+						+ "' has a first filterref which contains an illegal "
+						+ "value '" + v + "'. "
+						+ "Because this tag have been automatically created "
+						+ "during this instance creation, such error couldn't "
+						+ "happened. "
+						+ "The source code have changed and a bug have been "
+						+ "introduced.");
+			}
+
 		} catch (MelodyException | XPathExpressionException | LibvirtException
 				| IOException Ex) {
 			throw new RuntimeException(Ex);

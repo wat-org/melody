@@ -21,6 +21,8 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.messages.Msg;
@@ -83,8 +85,10 @@ public class AwsEc2CloudNetwork {
 	/**
 	 * Given an Instance, retrieve the Instance's tag which store the Self
 	 * Protected Area Identifier.
+	 * 
+	 * @return cannot return <tt>null</tt>.
 	 */
-	protected static String getSelfProtectedAreaIdTag(Instance i) {
+	protected static ProtectedAreaId getSelfProtectedAreaIdTag(Instance i) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Instance.class.getCanonicalName()
@@ -94,7 +98,30 @@ public class AwsEc2CloudNetwork {
 			if (!tag.getKey().equals(MELODY_SELF_PROTECTED_AREA_ID)) {
 				continue;
 			}
-			return tag.getValue();
+			String v = tag.getValue();
+			if (v == null) {
+				throw new RuntimeException("The instance '" + i.getInstanceId()
+						+ "' has a tag called '"
+						+ MELODY_SELF_PROTECTED_AREA_ID
+						+ "' which contains a null value. "
+						+ "Because AWS tag's value cannot be null, such error "
+						+ "couldn't happened. "
+						+ "The source code have changed and a bug have been "
+						+ "introduced.");
+			}
+			try {
+				return ProtectedAreaId.parseString(v);
+			} catch (IllegalProtectedAreaIdException Ex) {
+				throw new RuntimeException("The instance '" + i.getInstanceId()
+						+ "' has a tag called '"
+						+ MELODY_SELF_PROTECTED_AREA_ID
+						+ "' which contains the illegal value '" + v + "'. "
+						+ "Because this tag have been automatically created "
+						+ "during this instance creation, such error couldn't "
+						+ "happened. "
+						+ "The source code have changed and a bug have been "
+						+ "introduced.");
+			}
 		}
 		throw new RuntimeException("The instance '" + i.getInstanceId()
 				+ "' has no tag called '" + MELODY_SELF_PROTECTED_AREA_ID
@@ -268,13 +295,13 @@ public class AwsEc2CloudNetwork {
 	 *            unsed. Cause the instance has only one network device (VPC
 	 *            excluded).
 	 * 
-	 * @return the Identifier of the Security Group associated to the given
-	 *         network device of the given instance.
+	 * @return the {@link ProtectedAreaId} of the Security Group associated to
+	 *         the given network device of the given instance.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Instance} is <tt>null</tt>.
 	 */
-	public static String getProtectedAreaId(AmazonEC2 ec2, Instance i,
+	public static ProtectedAreaId getProtectedAreaId(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
 		if (i == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

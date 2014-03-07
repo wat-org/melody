@@ -618,7 +618,7 @@ public abstract class LibVirtCloud {
 			for (NetworkDevice netdev : netdevs) {
 				NetworkDeviceName devname = netdev.getNetworkDeviceName();
 				String sgid = LibVirtCloudNetwork
-						.getProtectedAreaId(d, devname);
+						.getProtectedAreaId(d, devname).getValue();
 				// Destroy the network filter
 				LibVirtCloudNetwork.deleteNetworkFilter(d, devname);
 				// Release the @mac

@@ -778,7 +778,7 @@ public abstract class AwsEc2Cloud {
 		} finally {
 			for (NetworkDevice netdev : netdevs) {
 				String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i,
-						netdev.getNetworkDeviceName());
+						netdev.getNetworkDeviceName()).getValue();
 				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 			}
 		}

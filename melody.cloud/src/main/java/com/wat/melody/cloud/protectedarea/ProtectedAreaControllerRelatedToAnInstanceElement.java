@@ -82,8 +82,9 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	}
 
 	@Override
-	public void ensureProtectedAreaIsCreated(String name, String description)
-			throws ProtectedAreaException, InterruptedException {
+	public void ensureProtectedAreaIsCreated(ProtectedAreaName name,
+			String description) throws ProtectedAreaException,
+			InterruptedException {
 		getProtectedAreaController().ensureProtectedAreaIsCreated(name,
 				description);
 	}

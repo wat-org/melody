@@ -63,7 +63,8 @@ public abstract class LibVirtCloudFireWall {
 		try {
 			FireWallRules rules = new FireWallRules();
 			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev);
+			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
+					.getValue();
 			NetworkFilter nf = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
 			doc.loadFromXML(nf.getXMLDesc());
@@ -223,7 +224,8 @@ public abstract class LibVirtCloudFireWall {
 		try {
 			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev);
+			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
+					.getValue();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());
@@ -326,7 +328,8 @@ public abstract class LibVirtCloudFireWall {
 		try {
 			String sInstanceId = d.getName();
 			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev);
+			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
+					.getValue();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());

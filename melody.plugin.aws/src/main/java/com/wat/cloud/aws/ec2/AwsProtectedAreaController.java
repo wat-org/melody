@@ -3,6 +3,7 @@ package com.wat.cloud.aws.ec2;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.wat.melody.cloud.protectedarea.DefaultProtectedAreaController;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
 import com.wat.melody.common.firewall.FireWallRules;
 
@@ -29,10 +30,11 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	}
 
 	@Override
-	public String createProtectedArea(String name, String description)
+	public String createProtectedArea(ProtectedAreaName name, String description)
 			throws ProtectedAreaException, InterruptedException {
-		return AwsEc2CloudNetwork.createSecurityGroup(getConnection(), name,
-				description);
+		// In AWS, a protected area is a security group
+		return AwsEc2CloudNetwork.createSecurityGroup(getConnection(),
+				name.getValue(), description);
 	}
 
 	@Override
