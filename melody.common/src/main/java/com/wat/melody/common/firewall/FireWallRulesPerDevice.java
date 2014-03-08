@@ -251,7 +251,11 @@ public class FireWallRulesPerDevice extends
 	 * @see #getFireWallRules(NetworkDeviceName)
 	 */
 	public FireWallRules getFireWallRules() {
-		return get(NetworkDeviceNameRef.ALL);
+		FireWallRules tmp = get(NetworkDeviceNameRef.ALL);
+		if (tmp == null) {
+			tmp = new FireWallRules();
+		}
+		return tmp;
 	}
 
 }
