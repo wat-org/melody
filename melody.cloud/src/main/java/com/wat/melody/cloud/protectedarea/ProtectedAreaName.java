@@ -10,7 +10,7 @@ import com.wat.melody.common.messages.Msg;
  */
 public class ProtectedAreaName {
 
-	public static final String PATTERN = "\\w+([-._]\\w+)*";
+	public static final String PATTERN = "\\w+([-._:]\\w+)*";
 
 	/**
 	 * <p>
