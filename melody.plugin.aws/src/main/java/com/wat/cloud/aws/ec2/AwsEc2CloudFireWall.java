@@ -54,9 +54,7 @@ public abstract class AwsEc2CloudFireWall {
 	}
 
 	public static FireWallRules getFireWallRules(AmazonEC2 ec2, SecurityGroup sg) {
-		List<IpPermission> perms = describeSecurityGroupRules(ec2,
-				sg.getGroupName());
-		return convertIpPermissions(perms);
+		return convertIpPermissions(sg.getIpPermissions());
 	}
 
 	/**
@@ -95,6 +93,9 @@ public abstract class AwsEc2CloudFireWall {
 
 	protected static FireWallRules convertIpPermissions(List<IpPermission> perms) {
 		FireWallRules rules = new FireWallRules();
+		if (perms == null) {
+			return rules;
+		}
 		try {
 			for (IpPermission perm : perms) {
 				SimpleFireWallRule rule = null;
