@@ -18,8 +18,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 @Task(name = UpdateProtectedArea.UPDATE_PROTECTED_AREA)
 public class UpdateProtectedArea extends AbstractProtectedAreaOperation {
 
-	// TODO: need to be validated
-
 	/**
 	 * Task's name
 	 */
