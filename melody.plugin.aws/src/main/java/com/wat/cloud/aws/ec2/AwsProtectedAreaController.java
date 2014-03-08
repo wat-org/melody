@@ -1,11 +1,14 @@
 package com.wat.cloud.aws.ec2;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.wat.melody.cloud.protectedarea.DefaultProtectedAreaController;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.firewall.FireWallRules;
+import com.wat.melody.common.messages.Msg;
 
 /**
  * 
@@ -40,8 +43,20 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	@Override
 	public void destroyProtectedArea() throws ProtectedAreaException,
 			InterruptedException {
-		AwsEc2CloudNetwork.deleteSecurityGroup(getConnection(),
-				getProtectedAreaId());
+		try {
+			AwsEc2CloudNetwork.deleteSecurityGroup(getConnection(),
+					getProtectedAreaId());
+		} catch (AmazonServiceException Ex) {
+			if (Ex.getErrorCode() == null) {
+				throw Ex;
+			} else if (Ex.getErrorCode().indexOf("InvalidGroup.InUse") != -1) {
+				throw new ProtectedAreaException(
+						Msg.bind(Messages.PADestroyEx_STILL_IN_USE,
+								getProtectedAreaId()), new HiddenException(Ex));
+			} else {
+				throw Ex;
+			}
+		}
 	}
 
 	@Override
