@@ -44,6 +44,8 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 	 */
 	public static final String TARGET_ATTR = "target";
 
+	private static String DEFAULT_PROTECTED_AREA_DESCRIPTION = "melody-default-description";
+
 	private String _target = null;
 	private Element _targetElmt = null;
 	private String _protectedAreaId = null;
@@ -145,7 +147,13 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 
 	protected void validateDescription(ProtectedAreaDatas datas)
 			throws IllegalProtectedAreaDatasException {
-		// Can be null
+		// Cannot create an AWS Security Group with a null/empty description :
+		// Error Code: MissingParameter
+		// Error Msg: The request must contain the parameter GroupDescription
+		// so, assign a default description
+		if (datas.getDescription() == null) {
+			datas.setDescription(DEFAULT_PROTECTED_AREA_DESCRIPTION);
+		}
 	}
 
 	protected ProtectedAreaDatas getProtectedAreaDatas() {
@@ -221,10 +229,15 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 		return _protectedAreaId;
 	}
 
-	protected String setProtectedAreaId(String instanceID) {
+	protected String setProtectedAreaId(String protectedAreaId)
+			throws AwsPlugInEc2Exception {
 		// can be null, if no Protected Area have been created yet
+		// but cannot be an empty String
+		if (protectedAreaId != null && protectedAreaId.trim().length() == 0) {
+			protectedAreaId = null;
+		}
 		String previous = getProtectedAreaId();
-		_protectedAreaId = instanceID;
+		_protectedAreaId = protectedAreaId;
 		return previous;
 	}
 
