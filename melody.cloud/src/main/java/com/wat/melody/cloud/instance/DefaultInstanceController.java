@@ -49,6 +49,11 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	 * @return the previous value.
 	 */
 	protected String setInstanceId(String instanceId) {
+		// can be null, but cannot be an empty String
+		if (instanceId != null && instanceId.trim().length() == 0) {
+			throw new IllegalArgumentException(": Not accepted. "
+					+ "Must be a valid String (an Instance Identifier).");
+		}
 		String previous = getInstanceId();
 		_instanceId = instanceId;
 		return previous;
