@@ -130,4 +130,40 @@
         <echo message="-- FireWall rules updated." />
     </order>
 
+    <order name="create_all_protected_areas" >
+        <echo message="Creating Protected Areas ..." />
+
+        <foreach    items="./environment//protected-areas/protected-area"
+                    item-name="pa" >
+            <new-protected-area target="§[pa]§" />
+            <echo message="+ protected area '§[§[pa]§/@name]§' created." />
+        </foreach>
+
+        <echo message="-- Protected Areas created." />
+    </order>
+
+    <order name="destroy_all_protected_areas" >
+        <echo message="Destroying Protected Areas ..." />
+
+        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
+                    item-name="pa" >
+            <delete-protected-area target="§[pa]§" />
+            <echo message="+ protected area '§[§[pa]§/@name]§' destroyed." />
+        </foreach>
+
+        <echo message="-- Protected Areas destroyed." />
+    </order>
+
+    <order name="update_all_protected_areas" >
+        <echo message="Updating Protected Areas ..." />
+
+        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
+                    item-name="pa" >
+            <update-protected-area target="§[pa]§" />
+            <echo message="+ protected area '§[§[pa]§/@name]§' updated." />
+        </foreach>
+
+        <echo message="-- Protected Areas updated." />
+    </order>
+
 </sequence>
