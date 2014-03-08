@@ -16,8 +16,6 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 @Task(name = DeleteProtectedArea.DELETE_PROTECTED_AREA)
 public class DeleteProtectedArea extends AbstractProtectedAreaOperation {
 
-	// TODO: need to be validated
-
 	/**
 	 * Task's name
 	 */
