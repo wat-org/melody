@@ -41,7 +41,12 @@ public abstract class DefaultProtectedAreaController extends
 	 * 
 	 * @return the previous value.
 	 */
-	protected String setSecurityGroupId(String protectedAreaId) {
+	protected String setProtectedAreaId(String protectedAreaId) {
+		// can be null, but cannot be an empty String
+		if (protectedAreaId != null && protectedAreaId.trim().length() == 0) {
+			throw new IllegalArgumentException(": Not accepted. "
+					+ "Must be a valid String (a Protected Area Identifier).");
+		}
 		String previous = getProtectedAreaId();
 		_protectedAreaId = protectedAreaId;
 		return previous;
@@ -60,7 +65,7 @@ public abstract class DefaultProtectedAreaController extends
 			log.warn(Msg.bind(Messages.CreateMsg_EXISTS, getProtectedAreaId()));
 		} else {
 			String protectedAreaId = createProtectedArea(name, description);
-			setSecurityGroupId(protectedAreaId);
+			setProtectedAreaId(protectedAreaId);
 		}
 		fireProtectedAreaCreated();
 	}
@@ -80,7 +85,7 @@ public abstract class DefaultProtectedAreaController extends
 		} else {
 			destroyProtectedArea();
 			fireProtectedAreaDestroyed();
-			setSecurityGroupId(null);
+			setProtectedAreaId(null);
 		}
 	}
 
@@ -94,7 +99,7 @@ public abstract class DefaultProtectedAreaController extends
 			log.warn(Messages.UpdateContentMsg_ID_NOT_DEFINED);
 		} else if (!protectedAreaExists()) {
 			fireProtectedAreaDestroyed();
-			String sProtectedAreaId = setSecurityGroupId(null);
+			String sProtectedAreaId = setProtectedAreaId(null);
 			throw new ProtectedAreaException(Msg.bind(
 					Messages.UpdateContentEx_ID_INVALID, sProtectedAreaId));
 		} else {
