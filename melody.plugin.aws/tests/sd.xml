@@ -47,6 +47,18 @@
         <call orders="destroy_all_buckets" sequence-descriptor="§[melody.extensions.aws.s3.path]§"/>
     </order>
 
+    <order name="create_all_protected_areas" >
+        <call orders="create_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+
+    <order name="destroy_all_protected_areas" >
+        <call orders="destroy_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+
+    <order name="update_all_protected_areas" >
+        <call orders="update_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+
 
     <order name="all" >
         <call    orders="create_all_vm"/>

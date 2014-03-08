@@ -7,14 +7,23 @@
 	
 	<protected-areas>
 	
-		<protected-area id="sg-5ff7a828" name="salut">
+		<protected-area name="salut" region="eu-west-1">
 			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
 			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
 			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
 		</protected-area>
-		<protected-area id="sg-89f5aafe" name="sg2"/>
-		<protected-area id="sg-75f6a902" name="aafirst"/>
-		<protected-area id="sg-73f6a904" name="zzlast"/>
+		<protected-area name="sg2" region="eu-west-1">
+			<udp access="allow" directions="in" from-ips="all" to-ports="524"/>
+		</protected-area>
+		<protected-area name="aafirst" region="eu-west-1">
+			<udp access="allow" directions="in" from-ips="all" to-ports="534"/>
+		</protected-area>
+		<protected-area name="zzlast" region="eu-west-1">
+			<udp access="allow" directions="in" from-ips="all" to-ports="544"/>
+			<udp access="allow" directions="out" from-ips="all" to-ports="544"/>
+			<udp access="deny" directions="in" from-ips="all" to-ports="554"/>
+			<udp access="deny" directions="out" from-ips="all" to-ports="554"/>
+		</protected-area>
 		
 	</protected-areas>
 

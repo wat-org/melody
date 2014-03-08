@@ -11,7 +11,27 @@
 
 	<!-- USE CASE 00 : vms -->
 
-	<target name="UC0_01_create_env">
+	<target name="UC0_00_create_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="create_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_01_update_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="update_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_02_create_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -21,7 +41,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_02_stop_env">
+	<target name="UC0_03_stop_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -31,7 +51,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_03_resize">
+	<target name="UC0_04_resize_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -41,7 +61,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_04_start_env">
+	<target name="UC0_05_start_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -51,7 +71,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_05_update_disk_devices">
+	<target name="UC0_06_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -61,7 +81,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_06_update_network_devices">
+	<target name="UC0_07_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -71,7 +91,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_07_update_firewall">
+	<target name="UC0_08_update_firewall">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -81,7 +101,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_08_destroyenv">
+	<target name="UC0_09_destroy_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
@@ -91,12 +111,22 @@
 		</java>
 	</target>
 
-	<target name="UC0_all" depends="UC0_01_create_env, UC0_05_update_disk_devices, UC0_06_update_network_devices, UC0_07_update_firewall, UC0_08_destroyenv" />
+	<target name="UC0_10_delete_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_all" depends="UC0_02_create_vms, UC0_06_update_disk_devices, UC0_07_update_network_devices, UC0_08_update_firewall, UC0_09_destroy_vms" />
 
 
 	<!-- USE CASE 01 : vms -->
 
-	<target name="UC1_01_create_env">
+	<target name="UC1_01_create_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
@@ -106,7 +136,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_02_stop_env">
+	<target name="UC1_02_stop_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
@@ -116,7 +146,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_03_resize">
+	<target name="UC1_03_resize_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
@@ -126,7 +156,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_04_start_env">
+	<target name="UC1_04_start_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
@@ -166,7 +196,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_08_destroyenv">
+	<target name="UC1_08_destroy_vms">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_1/mc.properties" />
@@ -176,7 +206,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroyenv" />
+	<target name="UC1_all" depends="UC1_01_create_vms, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroy_vms" />
 
 
 	<!-- USE CASE 02 : buckets -->
