@@ -366,6 +366,8 @@ public class AwsEc2CloudNetwork {
 				throw Ex;
 			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return null;
+			} else if (Ex.getErrorCode().indexOf("InvalidGroupId.Malformed") != -1) {
+				return null;
 			} else {
 				throw Ex;
 			}
