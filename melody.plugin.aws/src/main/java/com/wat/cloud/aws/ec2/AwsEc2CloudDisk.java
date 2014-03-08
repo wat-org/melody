@@ -17,6 +17,7 @@ import com.amazonaws.services.ec2.model.DetachVolumeResult;
 import com.amazonaws.services.ec2.model.EbsInstanceBlockDeviceSpecification;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
 import com.amazonaws.services.ec2.model.InstanceBlockDeviceMappingSpecification;
 import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Volume;
@@ -543,9 +544,27 @@ public class AwsEc2CloudDisk {
 		for (DiskDevice disk : volumes) {
 			// Detach volume
 			DetachVolumeRequest detvreq = new DetachVolumeRequest();
-			detvreq.withInstanceId(instance.getInstanceId());
-			detvreq.withDevice(disk.getDiskDeviceName().getValue());
+			/*
+			 * Don't know why, it is no more possible to detach a volume base on
+			 * the instance id and the device name ... the volume-id must be
+			 * provided. If not, it will fail with AWS Error Code:
+			 * MissingParameter, AWS Error Message: The request must contain the
+			 * parameter volume
+			 */
+			for (InstanceBlockDeviceMapping bdm : instance
+					.getBlockDeviceMappings()) {
+				if (bdm.getDeviceName().equals(
+						disk.getDiskDeviceName().getValue())) {
+					detvreq.withVolumeId(bdm.getEbs().getVolumeId());
+				}
+			}
 			DetachVolumeResult detvres = null;
+			/*
+			 * Will throw an AmazonServiceException if the volume id is not
+			 * specified (e.g. if the given instance has no disk attach with the
+			 * given name. This is the desired behavior (the caller have to
+			 * perform the test prior).
+			 */
 			detvres = ec2.detachVolume(detvreq);
 			String volumeId = detvres.getAttachment().getVolumeId();
 			if (!waitUntilVolumeStatusBecomes(ec2, volumeId,
