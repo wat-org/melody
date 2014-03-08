@@ -358,6 +358,10 @@ public abstract class AbstractOperation implements ITask,
 
 	protected String setInstanceId(String instanceId) {
 		// can be null, if no Instance have been created yet
+		// but cannot be an empty String
+		if (instanceId != null && instanceId.trim().length() == 0) {
+			instanceId = null;
+		}
 		String previous = getInstanceId();
 		_instanceId = instanceId;
 		return previous;
