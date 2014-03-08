@@ -20,7 +20,7 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	public AwsProtectedAreaController(AmazonEC2 connection,
 			String securityGroupId) {
 		setConnection(connection);
-		setSecurityGroupId(securityGroupId);
+		setProtectedAreaId(securityGroupId);
 	}
 
 	@Override
@@ -102,8 +102,8 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	}
 
 	@Override
-	public String setSecurityGroupId(String instanceId) {
-		String previous = super.setSecurityGroupId(instanceId);
+	public String setProtectedAreaId(String instanceId) {
+		String previous = super.setProtectedAreaId(instanceId);
 		refreshInternalDatas();
 		return previous;
 	}
