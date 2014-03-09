@@ -8,7 +8,7 @@ import com.wat.melody.common.network.exception.IllegalIpRangeException;
  * @author Guillaume Cornet
  * 
  */
-public class IpRange {
+public class IpRange implements Address {
 
 	public static final String PATTERN = IpAddressV4.PATTERN
 			+ "/([12]?\\d|3[0-2])";
@@ -127,6 +127,11 @@ public class IpRange {
 		}
 		_value = ipRange;
 		return previous;
+	}
+
+	@Override
+	public String getAddressAsString() {
+		return getValue();
 	}
 
 }

@@ -2,13 +2,14 @@ package com.wat.melody.cloud.protectedarea;
 
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.network.Address;
 
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public class ProtectedAreaId {
+public class ProtectedAreaId implements Address {
 
 	public static final String PATTERN = "\\w+([-._:]\\w+)*";
 
@@ -86,6 +87,11 @@ public class ProtectedAreaId {
 		String previous = getValue();
 		_value = paid;
 		return previous;
+	}
+
+	@Override
+	public String getAddressAsString() {
+		return getValue();
 	}
 
 }
