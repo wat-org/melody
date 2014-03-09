@@ -17,7 +17,6 @@ public class Messages extends NLS {
 
 	public static String IpRangesEx_EMPTY_IP_RANGE;
 	public static String IpRangesEx_INVALID_IP_RANGE;
-	public static String IpRangesEx_EMPTY;
 
 	public static String PortEx_EMPTY;
 	public static String PortEx_NAN;

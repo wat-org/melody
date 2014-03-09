@@ -93,10 +93,6 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 						Messages.IpRangesEx_INVALID_IP_RANGE, ipRanges), Ex);
 			}
 		}
-		if (size() == 0) {
-			throw new IllegalIpRangesException(Msg.bind(
-					Messages.IpRangesEx_EMPTY, ipRanges));
-		}
 	}
 
 	private void setIpRanges(IpRange... ipRanges)
@@ -111,10 +107,6 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 			} else {
 				add(ipRange);
 			}
-		}
-		if (size() == 0) {
-			throw new IllegalIpRangesException(Msg.bind(
-					Messages.IpRangesEx_EMPTY, (Object[]) ipRanges));
 		}
 	}
 
