@@ -61,14 +61,12 @@ public class ProtectedAreaNames extends LinkedHashSet<ProtectedAreaName> {
 		setProtectedAreaNames(panames);
 	}
 
-	public ProtectedAreaNames(ProtectedAreaName... panames)
-			throws IllegalProtectedAreaNamesException {
+	public ProtectedAreaNames(ProtectedAreaName... panames) {
 		super();
 		setProtectedAreaNames(panames);
 	}
 
-	private void setProtectedAreaNames(ProtectedAreaName... panames)
-			throws IllegalProtectedAreaNamesException {
+	private void setProtectedAreaNames(ProtectedAreaName... panames) {
 		clear();
 		if (panames == null) {
 			return;
