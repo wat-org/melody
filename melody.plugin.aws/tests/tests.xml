@@ -11,22 +11,12 @@
 
 	<!-- USE CASE 00 : vms -->
 
-	<target name="UC0_00_create_protected_areas">
+	<target name="UC0_01_create_protected_areas">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
 			<arg value="-o" />
 			<arg value="create_all_protected_areas" />
-			<classpath refid="classpathElements" />
-		</java>
-	</target>
-
-	<target name="UC0_01_update_protected_areas">
-		<java classname="com.wat.melody.cli.Launcher" fork="true">
-			<arg value="-C" />
-			<arg value="./../melody.plugin.aws/tests/UC_0/mc.properties" />
-			<arg value="-o" />
-			<arg value="update_all_protected_areas" />
 			<classpath refid="classpathElements" />
 		</java>
 	</target>

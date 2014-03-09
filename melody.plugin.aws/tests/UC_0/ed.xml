@@ -8,8 +8,8 @@
 	<protected-areas>
 	
 		<protected-area name="salut" region="eu-west-1">
-			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
-			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+			<tcp access="allow" directions="in" from-ips="zzlast ,10.10.0.0/16, ,10.10.0.1/16,10.10.0.2/16" to-ports="678"/>
+			<udp access="allow" directions="in" from-ips="sg2, aafirst , all" to-ports="514"/>
 			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
 		</protected-area>
 		<protected-area name="sg2" region="eu-west-1">
@@ -24,7 +24,7 @@
 			<udp access="deny" directions="in" from-ips="all" to-ports="554"/>
 			<udp access="deny" directions="out" from-ips="all" to-ports="554"/>
 		</protected-area>
-		
+
 	</protected-areas>
 
 	<instances>
