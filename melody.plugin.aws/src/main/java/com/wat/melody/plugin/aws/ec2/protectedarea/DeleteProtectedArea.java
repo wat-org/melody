@@ -9,6 +9,10 @@ import com.wat.melody.plugin.aws.ec2.common.Messages;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 
 /**
+ * <P>
+ * Caller should call {@link ResetProtectedArea} prior, in order to avoid
+ * protected area dependencies conflicts which can occurred during deletion of a
+ * protected area.
  * 
  * @author Guillaume Cornet
  * 

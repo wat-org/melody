@@ -40,6 +40,7 @@ public class Messages extends NLS {
 	public static String PACreateEx_GENERIC_FAIL;
 	public static String PADestroyEx_GENERIC_FAIL;
 	public static String PAContentEx_GENERIC_FAIL;
+	public static String PAResetEx_GENERIC_FAIL;
 
 	static {
 		// initialize resource bundle
