@@ -11,7 +11,7 @@ import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.Directions;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -74,9 +74,9 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * A TCP/UDP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
-	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
+	 * <li>from-ips : which should contains {@link Addresses} ;</li>
 	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
-	 * <li>to-ips : which should contains {@link IpRanges} :</li>
+	 * <li>to-ips : which should contains {@link Addresses} :</li>
 	 * <li>to-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>
 	 * <li>allow : which should contains {@link Access} ;</li>
@@ -103,8 +103,8 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element fireWallRuleElmt : fireWallRuleElmts) {
 			Directions dirs = loadDirection(fireWallRuleElmt);
-			IpRanges fromIps = loadFromIps(fireWallRuleElmt);
-			IpRanges toIps = loadToIps(fireWallRuleElmt);
+			Addresses fromIps = loadFromIps(fireWallRuleElmt);
+			Addresses toIps = loadToIps(fireWallRuleElmt);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
@@ -132,8 +132,8 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	public abstract List<Element> findFwRuleNodes(Element instanceElmt)
 			throws NodeRelatedException;
 
-	public abstract ComplexFireWallRule newFwRule(IpRanges fromIpRanges,
-			PortRanges fromPortRanges, IpRanges toIpRanges,
+	public abstract ComplexFireWallRule newFwRule(Addresses fromAddresses,
+			PortRanges fromPortRanges, Addresses toAddresses,
 			PortRanges toPortRanges, Directions directions, Access access);
 
 }

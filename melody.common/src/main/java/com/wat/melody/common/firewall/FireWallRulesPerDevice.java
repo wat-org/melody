@@ -246,7 +246,8 @@ public class FireWallRulesPerDevice extends
 	}
 
 	/**
-	 * @return the {@link FireWallRules} associated to all network device name.
+	 * @return the {@link FireWallRules} associated to the network device name
+	 *         'all'.
 	 * 
 	 * @see #getFireWallRules(NetworkDeviceName)
 	 */

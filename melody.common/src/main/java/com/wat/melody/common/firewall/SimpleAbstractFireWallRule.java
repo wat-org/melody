@@ -1,5 +1,6 @@
 package com.wat.melody.common.firewall;
 
+import com.wat.melody.common.network.Address;
 import com.wat.melody.common.network.IpRange;
 
 /**
@@ -9,47 +10,47 @@ import com.wat.melody.common.network.IpRange;
  */
 public abstract class SimpleAbstractFireWallRule implements SimpleFireWallRule {
 
-	private static IpRange DEFAULT_FROM_IP_RANGE = IpRange.ALL;
-	private static IpRange DEFAULT_TO_IP_RANGE = IpRange.ALL;
+	private static IpRange DEFAULT_FROM_ADDRESS = IpRange.ALL;
+	private static IpRange DEFAULT_TO_ADDRESS = IpRange.ALL;
 	private static Direction DEFAULT_DIRECTION = Direction.IN;
 	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	private IpRange _fromIpRange = DEFAULT_FROM_IP_RANGE;
-	private IpRange _toIpRange = DEFAULT_TO_IP_RANGE;
+	private Address _fromAddress = DEFAULT_FROM_ADDRESS;
+	private Address _toAddress = DEFAULT_TO_ADDRESS;
 	private Direction _direction = DEFAULT_DIRECTION;
 	private Access _access = DEFAULT_ACCESS;
 
-	public SimpleAbstractFireWallRule(IpRange fromIpRange, IpRange toIpRange,
+	public SimpleAbstractFireWallRule(Address fromAddress, Address toAddress,
 			Direction direction, Access access) {
-		setFromIpRange(fromIpRange);
-		setToIpRange(toIpRange);
+		setFromAddress(fromAddress);
+		setToAddress(toAddress);
 		setDirection(direction);
 		setAccess(access);
 	}
 
-	public IpRange getFromIpRange() {
-		return _fromIpRange;
+	public Address getFromAddress() {
+		return _fromAddress;
 	}
 
-	public IpRange setFromIpRange(IpRange fromIpRange) {
-		if (fromIpRange == null) {
-			fromIpRange = DEFAULT_FROM_IP_RANGE;
+	public Address setFromAddress(Address fromAddress) {
+		if (fromAddress == null) {
+			fromAddress = DEFAULT_FROM_ADDRESS;
 		}
-		IpRange previous = getFromIpRange();
-		_fromIpRange = fromIpRange;
+		Address previous = getFromAddress();
+		_fromAddress = fromAddress;
 		return previous;
 	}
 
-	public IpRange getToIpRange() {
-		return _toIpRange;
+	public Address getToAddress() {
+		return _toAddress;
 	}
 
-	public IpRange setToIpRange(IpRange toIpRange) {
-		if (toIpRange == null) {
-			toIpRange = DEFAULT_TO_IP_RANGE;
+	public Address setToAddress(Address toAddress) {
+		if (toAddress == null) {
+			toAddress = DEFAULT_TO_ADDRESS;
 		}
-		IpRange previous = getToIpRange();
-		_toIpRange = toIpRange;
+		Address previous = getToAddress();
+		_toAddress = toAddress;
 		return previous;
 	}
 

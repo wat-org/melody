@@ -1,6 +1,6 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.Address;
 
 /**
  * 
@@ -15,16 +15,16 @@ public class SimpleIcmpFireWallRule extends SimpleAbstractFireWallRule {
 	private IcmpType _type = DEFAULT_TYPE;
 	private IcmpCode _code = DEFAULT_CODE;
 
-	public SimpleIcmpFireWallRule(IpRange fromIpRange, IpRange toIpRange,
+	public SimpleIcmpFireWallRule(Address fromAddress, Address toAddress,
 			IcmpType type, IcmpCode code, Direction direction, Access access) {
-		super(fromIpRange, toIpRange, direction, access);
+		super(fromAddress, toAddress, direction, access);
 		setType(type);
 		setCode(code);
 	}
 
 	@Override
 	public int hashCode() {
-		return getFromIpRange().hashCode() + getToIpRange().hashCode();
+		return getFromAddress().hashCode() + getToAddress().hashCode();
 	}
 
 	@Override
@@ -33,9 +33,9 @@ public class SimpleIcmpFireWallRule extends SimpleAbstractFireWallRule {
 		str.append("protocol: ");
 		str.append(getProtocol());
 		str.append(", from-ips: ");
-		str.append(getFromIpRange());
+		str.append(getFromAddress());
 		str.append(", to-ips: ");
-		str.append(getToIpRange());
+		str.append(getToAddress());
 		str.append(", types: ");
 		str.append(getType());
 		str.append(", codes: ");
@@ -55,8 +55,8 @@ public class SimpleIcmpFireWallRule extends SimpleAbstractFireWallRule {
 		}
 		if (anObject instanceof SimpleIcmpFireWallRule) {
 			SimpleIcmpFireWallRule rule = (SimpleIcmpFireWallRule) anObject;
-			return rule.getFromIpRange().equals(getFromIpRange())
-					&& rule.getToIpRange().equals(getToIpRange())
+			return rule.getFromAddress().equals(getFromAddress())
+					&& rule.getToAddress().equals(getToAddress())
 					&& rule.getType().equals(getType())
 					&& rule.getCode().equals(getCode())
 					&& rule.getDirection().equals(getDirection())

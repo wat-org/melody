@@ -1,7 +1,7 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Address;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRange;
 import com.wat.melody.common.network.PortRanges;
 
@@ -19,22 +19,22 @@ public abstract class ComplexAbstractTcpUdpFireWallRule extends
 	private PortRanges _fromPortRanges = DEFAULT_FROM_PORT_RANGES;
 	private PortRanges _toPortRanges = DEFAULT_TO_PORT_RANGES;
 
-	public ComplexAbstractTcpUdpFireWallRule(IpRanges fromIpRanges,
-			PortRanges fromPortRanges, IpRanges toIpRanges,
+	public ComplexAbstractTcpUdpFireWallRule(Addresses fromAddresses,
+			PortRanges fromPortRanges, Addresses toAddresses,
 			PortRanges toPortRanges, Directions directions, Access access) {
-		super(fromIpRanges, toIpRanges, directions, access);
+		super(fromAddresses, toAddresses, directions, access);
 		setFromPortRanges(fromPortRanges);
 		setToPortRanges(toPortRanges);
 	}
 
-	public abstract SimpleFireWallRule newFwRuleDecomposed(IpRange fromIpRange,
-			PortRange fromPortRange, IpRange toIpRange, PortRange toPortRange,
-			Direction direction, Access access);
+	public abstract SimpleFireWallRule newSimpleFireWallRule(
+			Address fromAddress, PortRange fromPortRange, Address toAddress,
+			PortRange toPortRange, Direction direction, Access access);
 
 	@Override
 	public int hashCode() {
-		return getFromIpRanges().hashCode() + getFromPortRanges().hashCode()
-				+ getToIpRanges().hashCode();
+		return getFromAddresses().hashCode() + getFromPortRanges().hashCode()
+				+ getToAddresses().hashCode();
 	}
 
 	@Override
@@ -43,11 +43,11 @@ public abstract class ComplexAbstractTcpUdpFireWallRule extends
 		str.append("protocol: ");
 		str.append(getProtocol());
 		str.append(", from-ips: ");
-		str.append(getFromIpRanges());
+		str.append(getFromAddresses());
 		str.append(", from-ports: ");
 		str.append(getFromPortRanges());
 		str.append(", to-ips: ");
-		str.append(getToIpRanges());
+		str.append(getToAddresses());
 		str.append(", to-ports: ");
 		str.append(getToPortRanges());
 		str.append(", directions: ");
@@ -65,11 +65,11 @@ public abstract class ComplexAbstractTcpUdpFireWallRule extends
 	 * </p>
 	 * 
 	 * <p>
-	 * More formally, this object's 'from' {@link IpRanges}, 'from'
-	 * {@link PortRanges}, 'to' {@link IpRanges}, 'to' {@link PortRanges} and
+	 * More formally, this object's 'from' {@link Addresses}, 'from'
+	 * {@link PortRanges}, 'to' {@link Addresses}, 'to' {@link PortRanges} and
 	 * {@link Directions} are decomposed into the corresponding
 	 * {@link SimpleFireWallRule} objects, which contains equivalent 'from'
-	 * {@link IpRange}, 'from' {@link PortRange}, 'to' {@link IpRange}, 'to'
+	 * {@link Address}, 'from' {@link PortRange}, 'to' {@link Address}, 'to'
 	 * {@link PortRange} and {@link Direction}.
 	 * </p>
 	 * 
@@ -80,10 +80,10 @@ public abstract class ComplexAbstractTcpUdpFireWallRule extends
 		Access a = getAccess();
 		for (Direction d : getDirections()) {
 			for (PortRange fp : getFromPortRanges()) {
-				for (IpRange fi : getFromIpRanges()) {
+				for (Address fi : getFromAddresses()) {
 					for (PortRange tp : getToPortRanges()) {
-						for (IpRange ti : getToIpRanges()) {
-							fws.add(newFwRuleDecomposed(fi, fp, ti, tp, d, a));
+						for (Address ti : getToAddresses()) {
+							fws.add(newSimpleFireWallRule(fi, fp, ti, tp, d, a));
 						}
 					}
 				}

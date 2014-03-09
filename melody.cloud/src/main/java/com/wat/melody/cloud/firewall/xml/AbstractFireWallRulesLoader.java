@@ -10,8 +10,7 @@ import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionsException;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefsException;
-import com.wat.melody.common.network.IpRanges;
-import com.wat.melody.common.network.exception.IllegalIpRangesException;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -65,30 +64,22 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected IpRanges loadFromIps(Element e) throws NodeRelatedException {
+	protected Addresses loadFromIps(Element e) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
-		try {
-			return IpRanges.parseString(v);
-		} catch (IllegalIpRangesException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e, FROM_IPS_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return FireWallRulesHelper.parseAddresses(e,
+				FilteredDocHelper.getHeritedAttribute(e, FROM_IPS_ATTR), v);
 	}
 
-	protected IpRanges loadToIps(Element e) throws NodeRelatedException {
+	protected Addresses loadToIps(Element e) throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
-		try {
-			return IpRanges.parseString(v);
-		} catch (IllegalIpRangesException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e, TO_IPS_ATTR);
-			throw new NodeRelatedException(attr, Ex);
-		}
+		return FireWallRulesHelper.parseAddresses(e,
+				FilteredDocHelper.getHeritedAttribute(e, TO_IPS_ATTR), v);
 	}
 
 	protected Directions loadDirection(Element e) throws NodeRelatedException {

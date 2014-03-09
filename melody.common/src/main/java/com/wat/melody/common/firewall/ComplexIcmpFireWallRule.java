@@ -1,7 +1,7 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Address;
+import com.wat.melody.common.network.Addresses;
 
 /**
  * 
@@ -16,17 +16,17 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 	private IcmpTypes _types = DEFAULT_TYPES;
 	private IcmpCodes _codes = DEFAULT_CODES;
 
-	public ComplexIcmpFireWallRule(IpRanges fromIpRanges, IpRanges toIpRanges,
-			IcmpTypes types, IcmpCodes codes, Directions directions,
-			Access access) {
-		super(fromIpRanges, toIpRanges, directions, access);
+	public ComplexIcmpFireWallRule(Addresses fromAddresses,
+			Addresses toAddresses, IcmpTypes types, IcmpCodes codes,
+			Directions directions, Access access) {
+		super(fromAddresses, toAddresses, directions, access);
 		setTypes(types);
 		setCodes(codes);
 	}
 
 	@Override
 	public int hashCode() {
-		return getFromIpRanges().hashCode() + getToIpRanges().hashCode();
+		return getFromAddresses().hashCode() + getToAddresses().hashCode();
 	}
 
 	@Override
@@ -35,9 +35,9 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 		str.append("protocol: ");
 		str.append(getProtocol());
 		str.append(", from-ips: ");
-		str.append(getFromIpRanges());
+		str.append(getFromAddresses());
 		str.append(", to-ips: ");
-		str.append(getToIpRanges());
+		str.append(getToAddresses());
 		str.append(", types: ");
 		str.append(getTypes());
 		str.append(", codes: ");
@@ -62,11 +62,11 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 	 * </p>
 	 * 
 	 * <p>
-	 * More formally, this object's 'from' {@link IpRanges}, 'to'
-	 * {@link IpRanges}, {@link IcmpTypes}, {@link IcmpCodes} and
+	 * More formally, this object's 'from' {@link Addresses}, 'to'
+	 * {@link Addresses}, {@link IcmpTypes}, {@link IcmpCodes} and
 	 * {@link Directions} are decomposed into the corresponding
 	 * {@link SimpleFireWallRule} objects, which contains equivalent 'from'
-	 * {@link IpRange}, 'to' {@link IpRange}, {@link IcmpType}, {@link IcmpCode}
+	 * {@link Address}, 'to' {@link Address}, {@link IcmpType}, {@link IcmpCode}
 	 * and {@link Direction}.
 	 * </p>
 	 * 
@@ -76,8 +76,8 @@ public class ComplexIcmpFireWallRule extends ComplexAbstractFireWallRule {
 		FireWallRules fws = new FireWallRules();
 		Access a = getAccess();
 		for (Direction d : getDirections()) {
-			for (IpRange fi : getFromIpRanges()) {
-				for (IpRange ti : getToIpRanges()) {
+			for (Address fi : getFromAddresses()) {
+				for (Address ti : getToAddresses()) {
 					for (IcmpType t : getTypes()) {
 						for (IcmpCode c : getCodes()) {
 							fws.add(new SimpleIcmpFireWallRule(fi, ti, t, c, d,

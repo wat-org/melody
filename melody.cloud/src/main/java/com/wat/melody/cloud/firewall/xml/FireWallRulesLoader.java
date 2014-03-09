@@ -8,7 +8,7 @@ import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 import com.wat.melody.common.firewall.IcmpCodes;
 import com.wat.melody.common.firewall.IcmpTypes;
 import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -33,9 +33,9 @@ public class FireWallRulesLoader {
 	 * A TCP and UDP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
-	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
+	 * <li>from-ips : which should contains {@link Addresses} ;</li>
 	 * <li>from-ports : which should contains {@link PortRanges} ;</li>
-	 * <li>to-ips : which should contains {@link IpRanges} :</li>
+	 * <li>to-ips : which should contains {@link Addresses} :</li>
 	 * <li>to-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>
 	 * <li>allow : which should contains {@link Access} ;</li>
@@ -47,8 +47,8 @@ public class FireWallRulesLoader {
 	 * An ICMP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
-	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
-	 * <li>to-ips : which should contains {@link IpRanges} :</li>
+	 * <li>from-ips : which should contains {@link Addresses} ;</li>
+	 * <li>to-ips : which should contains {@link Addresses} :</li>
 	 * <li>codes : which should contains {@link IcmpTypes} ;</li>
 	 * <li>types : which should contains {@link IcmpCodes} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>

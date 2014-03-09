@@ -8,7 +8,7 @@ import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.ComplexFireWallRule;
 import com.wat.melody.common.firewall.ComplexTcpFireWallRule;
 import com.wat.melody.common.firewall.Directions;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 
@@ -32,11 +32,11 @@ public class TcpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 	}
 
 	@Override
-	public ComplexFireWallRule newFwRule(IpRanges fromIpRanges,
-			PortRanges fromPortRanges, IpRanges toIpRanges,
+	public ComplexFireWallRule newFwRule(Addresses fromAddresses,
+			PortRanges fromPortRanges, Addresses toAddresses,
 			PortRanges toPortRanges, Directions directions, Access access) {
-		return new ComplexTcpFireWallRule(fromIpRanges, fromPortRanges,
-				toIpRanges, toPortRanges, directions, access);
+		return new ComplexTcpFireWallRule(fromAddresses, fromPortRanges,
+				toAddresses, toPortRanges, directions, access);
 	}
 
 }

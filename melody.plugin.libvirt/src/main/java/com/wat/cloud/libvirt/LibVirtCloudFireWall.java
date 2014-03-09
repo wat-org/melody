@@ -261,20 +261,30 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element selectTcpUdpFwRuleElement(Doc doc,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
+		// temporary workaround. waiting for full protected area support
+		if (!(rule.getFromAddress() instanceof IpRange)) {
+			throw new IllegalArgumentException(rule.getFromAddress().getClass()
+					.getCanonicalName()
+					+ ": Not accepted. Only support "
+					+ IpRange.class.getCanonicalName() + ".");
+		}
+		IpRange fromIpRange = (IpRange) rule.getFromAddress();
+		IpRange toIpRange = (IpRange) rule.getToAddress();
+
 		try {
 			return (Element) doc.evaluateAsNode("/filter/rule[" + " @action='"
 					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
 					+ "' and @direction='"
 					+ (rule.getDirection() == Direction.IN ? "in" : "out")
 					+ "' and exists(" + rule.getProtocol().getValue() + "["
-					+ "@srcipaddr='" + rule.getFromIpRange().getIp()
-					+ "' and @srcipmask='" + rule.getFromIpRange().getMask()
+					+ "@srcipaddr='" + fromIpRange.getIp()
+					+ "' and @srcipmask='" + fromIpRange.getMask()
 					+ "' and @srcportstart='"
 					+ rule.getFromPortRange().getStartPort()
 					+ "' and @srcportend='"
 					+ rule.getFromPortRange().getEndPort()
-					+ "' and @dstipaddr='" + rule.getToIpRange().getIp()
-					+ "' and @dstipmask='" + rule.getToIpRange().getMask()
+					+ "' and @dstipaddr='" + toIpRange.getIp()
+					+ "' and @dstipmask='" + toIpRange.getMask()
 					+ "' and @dstportstart='"
 					+ rule.getToPortRange().getStartPort()
 					+ "' and @dstportend='"
@@ -286,6 +296,16 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element selectIcmpFwRuleelement(Doc doc,
 			SimpleIcmpFireWallRule rule) {
+		// temporary workaround. waiting for full protected area support
+		if (!(rule.getFromAddress() instanceof IpRange)) {
+			throw new IllegalArgumentException(rule.getFromAddress().getClass()
+					.getCanonicalName()
+					+ ": Not accepted. Only support "
+					+ IpRange.class.getCanonicalName() + ".");
+		}
+		IpRange fromIpRange = (IpRange) rule.getFromAddress();
+		IpRange toIpRange = (IpRange) rule.getToAddress();
+
 		try {
 			String typeCond = " and not(exists(@type))";
 			String codeCond = " and not(exists(@code))";
@@ -300,11 +320,10 @@ public abstract class LibVirtCloudFireWall {
 					+ "' and @direction='"
 					+ (rule.getDirection() == Direction.IN ? "in" : "out")
 					+ "' and exists(" + "icmp" + "[" + "@srcipaddr='"
-					+ rule.getFromIpRange().getIp() + "' and @srcipmask='"
-					+ rule.getFromIpRange().getMask() + "' and @dstipaddr='"
-					+ rule.getToIpRange().getIp() + "' and @dstipmask='"
-					+ rule.getToIpRange().getMask() + "'" + typeCond + codeCond
-					+ "])]");
+					+ fromIpRange.getIp() + "' and @srcipmask='"
+					+ fromIpRange.getMask() + "' and @dstipaddr='"
+					+ toIpRange.getIp() + "' and @dstipmask='"
+					+ toIpRange.getMask() + "'" + typeCond + codeCond + "])]");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -372,20 +391,30 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element createTcpUdpRuleElement(Element nrule,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
+		// temporary workaround. waiting for full protected area support
+		if (!(rule.getFromAddress() instanceof IpRange)) {
+			throw new IllegalArgumentException(rule.getFromAddress().getClass()
+					.getCanonicalName()
+					+ ": Not accepted. Only support "
+					+ IpRange.class.getCanonicalName() + ".");
+		}
+		IpRange fromIpRange = (IpRange) rule.getFromAddress();
+		IpRange toIpRange = (IpRange) rule.getToAddress();
+
 		Element n = nrule.getOwnerDocument().createElement(
 				rule.getProtocol().getValue());
 		n.setAttribute("state", "NEW");
 
-		n.setAttribute("srcipaddr", rule.getFromIpRange().getIp());
-		n.setAttribute("srcipmask", rule.getFromIpRange().getMask());
+		n.setAttribute("srcipaddr", fromIpRange.getIp());
+		n.setAttribute("srcipmask", fromIpRange.getMask());
 
 		n.setAttribute("srcportstart", rule.getFromPortRange().getStartPort()
 				.toString());
 		n.setAttribute("srcportend", rule.getFromPortRange().getEndPort()
 				.toString());
 
-		n.setAttribute("dstipaddr", rule.getToIpRange().getIp());
-		n.setAttribute("dstipmask", rule.getToIpRange().getMask());
+		n.setAttribute("dstipaddr", toIpRange.getIp());
+		n.setAttribute("dstipmask", toIpRange.getMask());
 
 		n.setAttribute("dstportstart", rule.getToPortRange().getStartPort()
 				.toString());
@@ -396,14 +425,24 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element createIcmpRuleElement(Element nrule,
 			SimpleIcmpFireWallRule rule) {
+		// temporary workaround. waiting for full protected area support
+		if (!(rule.getFromAddress() instanceof IpRange)) {
+			throw new IllegalArgumentException(rule.getFromAddress().getClass()
+					.getCanonicalName()
+					+ ": Not accepted. Only support "
+					+ IpRange.class.getCanonicalName() + ".");
+		}
+		IpRange fromIpRange = (IpRange) rule.getFromAddress();
+		IpRange toIpRange = (IpRange) rule.getToAddress();
+
 		Element n = nrule.getOwnerDocument().createElement("icmp");
 		n.setAttribute("state", "NEW");
 
-		n.setAttribute("srcipaddr", rule.getFromIpRange().getIp());
-		n.setAttribute("srcipmask", rule.getFromIpRange().getMask());
+		n.setAttribute("srcipaddr", fromIpRange.getIp());
+		n.setAttribute("srcipmask", fromIpRange.getMask());
 
-		n.setAttribute("dstipaddr", rule.getToIpRange().getIp());
-		n.setAttribute("dstipmask", rule.getToIpRange().getMask());
+		n.setAttribute("dstipaddr", toIpRange.getIp());
+		n.setAttribute("dstipmask", toIpRange.getMask());
 
 		if (!rule.getType().equals(IcmpType.ALL)) {
 			n.setAttribute("type", rule.getType().toString());

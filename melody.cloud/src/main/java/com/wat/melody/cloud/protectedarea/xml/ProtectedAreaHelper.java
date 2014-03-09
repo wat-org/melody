@@ -125,18 +125,21 @@ public abstract class ProtectedAreaHelper {
 		ProtectedAreaNames names = InstanceDatasHelper
 				.findInstanceProtectedAreaNames(instanceElmt);
 		// Must convert each Protected Area Name to its Identifier
-		return convertProtectedAreaFromNamesToIds(instanceElmt,
-				FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						InstanceDatasLoader.PROTECTED_AREAS_ATTR), names);
+		try {
+			return convertProtectedAreaFromNamesToIds(instanceElmt, names);
+		} catch (Exception Ex) {
+			throw new NodeRelatedException(
+					FilteredDocHelper.getHeritedAttribute(instanceElmt,
+							InstanceDatasLoader.PROTECTED_AREAS_ATTR),
+					"Failed to get Protected Area Identifiers from Protected "
+							+ "Area Names.", Ex);
+		}
 	}
 
 	/**
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance, where are
 	 *            defined the given Protected Area Names.
-	 * @param paattr
-	 *            is the XML Attribute which contains the Protected Area Names
-	 *            to convert (useful for error message).
 	 * @param names
 	 *            are the Protected Area Names to convert to their Protected
 	 *            Area Identifiers. Can be <tt>null</tt>.
@@ -147,13 +150,12 @@ public abstract class ProtectedAreaHelper {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given Instance is <tt>null</tt>.
-	 * @throws NodeRelatedException
+	 * @throws Exception
 	 *             if the conversion fails (no id specified, invalid id
 	 *             specified).
 	 */
 	public static ProtectedAreaIds convertProtectedAreaFromNamesToIds(
-			Element instanceElmt, Attr paattr, ProtectedAreaNames names)
-			throws NodeRelatedException {
+			Element instanceElmt, ProtectedAreaNames names) throws Exception {
 		if (instanceElmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
@@ -179,25 +181,25 @@ public abstract class ProtectedAreaHelper {
 						Messages.ProtectedAreaEx_SELECTOR_NOT_XPATH, exp), Ex);
 			}
 			if (n == null) {
-				throw new NodeRelatedException(paattr, Msg.bind(
+				throw new Exception(Msg.bind(
 						Messages.ProtectedAreaEx_NOT_DEFINED, name));
 			}
 			Attr a = ((Element) n)
 					.getAttributeNode(ProtectedAreaDatasLoader.ID_ATTR);
 			if (a == null) {
-				throw new NodeRelatedException(paattr, Msg.bind(
+				throw new Exception(Msg.bind(
 						Messages.ProtectedAreaEx_ID_NOT_DEFINED, name));
 			}
 			String res = a.getNodeValue();
 			if (res == null || res.trim().length() == 0) {
-				throw new NodeRelatedException(paattr, Msg.bind(
-						Messages.ProtectedAreaEx_ID_EMPTY, name));
+				throw new Exception(Msg.bind(Messages.ProtectedAreaEx_ID_EMPTY,
+						name));
 			}
 			ProtectedAreaId id = null;
 			try {
 				id = ProtectedAreaId.parseString(res);
 			} catch (IllegalProtectedAreaIdException Ex) {
-				throw new NodeRelatedException(paattr, Msg.bind(
+				throw new Exception(Msg.bind(
 						Messages.ProtectedAreaEx_ID_INVALID, name, res), Ex);
 			}
 			ids.add(id);

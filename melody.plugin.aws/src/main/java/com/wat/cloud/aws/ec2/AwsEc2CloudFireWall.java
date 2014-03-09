@@ -14,6 +14,9 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.SecurityGroup;
+import com.amazonaws.services.ec2.model.UserIdGroupPair;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -111,12 +114,30 @@ public abstract class AwsEc2CloudFireWall {
 								Access.ALLOW);
 						rules.add(rule);
 					}
+					for (UserIdGroupPair ug : perm.getUserIdGroupPairs()) {
+						rule = new SimpleTcpFireWallRule(
+								ProtectedAreaId.parseString(ug.getGroupId()),
+								PortRange.ALL, IpRange.ALL,
+								PortRange.parseString(perm.getFromPort() + "-"
+										+ perm.getToPort()), Direction.IN,
+								Access.ALLOW);
+						rules.add(rule);
+					}
 					break;
 				case UDP:
 					for (String ipRange : perm.getIpRanges()) {
 						rule = new SimpleUdpFireWallRule(
 								IpRange.parseString(ipRange), PortRange.ALL,
 								IpRange.ALL,
+								PortRange.parseString(perm.getFromPort() + "-"
+										+ perm.getToPort()), Direction.IN,
+								Access.ALLOW);
+						rules.add(rule);
+					}
+					for (UserIdGroupPair ug : perm.getUserIdGroupPairs()) {
+						rule = new SimpleUdpFireWallRule(
+								ProtectedAreaId.parseString(ug.getGroupId()),
+								PortRange.ALL, IpRange.ALL,
 								PortRange.parseString(perm.getFromPort() + "-"
 										+ perm.getToPort()), Direction.IN,
 								Access.ALLOW);
@@ -132,12 +153,21 @@ public abstract class AwsEc2CloudFireWall {
 								Direction.IN, Access.ALLOW);
 						rules.add(rule);
 					}
+					for (UserIdGroupPair ug : perm.getUserIdGroupPairs()) {
+						rule = new SimpleIcmpFireWallRule(
+								ProtectedAreaId.parseString(ug.getGroupId()),
+								IpRange.ALL, IcmpType.parseInt(perm
+										.getFromPort()), IcmpCode.parseInt(perm
+										.getToPort()), Direction.IN,
+								Access.ALLOW);
+						rules.add(rule);
+					}
 					break;
 				}
 			}
 		} catch (IllegalProtocolException | IllegalIpRangeException
 				| IllegalPortRangeException | IllegalIcmpTypeException
-				| IllegalIcmpCodeException Ex) {
+				| IllegalIcmpCodeException | IllegalProtectedAreaIdException Ex) {
 			throw new RuntimeException(Ex);
 		}
 		return rules;
@@ -183,6 +213,8 @@ public abstract class AwsEc2CloudFireWall {
 		for (SimpleFireWallRule rule : toRevoke) {
 			log.info(Msg.bind(Messages.CommonMsg_PA_REVOKE_FWRULE, sgid, rule));
 		}
+		// update security group, without AWS call
+		sg.getIpPermissions().removeAll(toRev);
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
@@ -226,6 +258,8 @@ public abstract class AwsEc2CloudFireWall {
 			log.info(Msg.bind(Messages.CommonMsg_PA_AUTHORIZE_FWRULE, sgid,
 					rule));
 		}
+		// update security group, without AWS call
+		sg.getIpPermissions().addAll(toAuth);
 	}
 
 	private static List<IpPermission> convertFwRules(FireWallRules rules) {
@@ -265,7 +299,15 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		IpPermission perm = new IpPermission();
 		perm.withIpProtocol(rule.getProtocol().getValue());
-		perm.withIpRanges(rule.getFromIpRange().getValue());
+		if (rule.getFromAddress() instanceof IpRange) {
+			perm.withIpRanges(rule.getFromAddress().getAddressAsString());
+		} else if (rule.getFromAddress() instanceof ProtectedAreaId) {
+			UserIdGroupPair ug = new UserIdGroupPair();
+			ug.withGroupId(rule.getFromAddress().getAddressAsString());
+			perm.withUserIdGroupPairs(ug);
+		} else {
+			throw new RuntimeException("not suported");
+		}
 		perm.withFromPort(rule.getToPortRange().getStartPort().getValue());
 		perm.withToPort(rule.getToPortRange().getEndPort().getValue());
 		return perm;
@@ -284,7 +326,15 @@ public abstract class AwsEc2CloudFireWall {
 		}
 		IpPermission perm = new IpPermission();
 		perm.withIpProtocol(rule.getProtocol().getValue());
-		perm.withIpRanges(rule.getFromIpRange().getValue());
+		if (rule.getFromAddress() instanceof IpRange) {
+			perm.withIpRanges(rule.getFromAddress().getAddressAsString());
+		} else if (rule.getFromAddress() instanceof ProtectedAreaId) {
+			UserIdGroupPair ug = new UserIdGroupPair();
+			ug.withGroupId(rule.getFromAddress().getAddressAsString());
+			perm.withUserIdGroupPairs(ug);
+		} else {
+			throw new RuntimeException("not suported");
+		}
 		perm.withFromPort(rule.getType().getValue());
 		perm.withToPort(rule.getCode().getValue());
 		return perm;

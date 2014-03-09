@@ -33,6 +33,10 @@ public class UpdateProtectedArea extends AbstractProtectedAreaOperation {
 	public void validate() throws AwsPlugInEc2Exception {
 		super.validate();
 
+		/*
+		 * TODO : it should be possible to declare a protected area defined by
+		 * another AWS user.
+		 */
 		// Build a FwRule's Collection with FwRule Nodes found.
 		// The 'Per Device' aspect of this FwRules is not used.
 		try {

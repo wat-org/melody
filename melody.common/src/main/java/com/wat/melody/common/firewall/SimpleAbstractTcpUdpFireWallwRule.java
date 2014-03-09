@@ -1,6 +1,6 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.Address;
 import com.wat.melody.common.network.PortRange;
 
 /**
@@ -17,18 +17,18 @@ public abstract class SimpleAbstractTcpUdpFireWallwRule extends
 	private PortRange _fromPortRange = DEFAULT_FROM_PORT_RANGE;
 	private PortRange _toPortRange = DEFAULT_TO_PORT_RANGE;
 
-	public SimpleAbstractTcpUdpFireWallwRule(IpRange fromIpRange,
-			PortRange fromPortRange, IpRange toIpRange, PortRange toPortRange,
+	public SimpleAbstractTcpUdpFireWallwRule(Address fromAddress,
+			PortRange fromPortRange, Address toAddress, PortRange toPortRange,
 			Direction direction, Access access) {
-		super(fromIpRange, toIpRange, direction, access);
+		super(fromAddress, toAddress, direction, access);
 		setFromPortRange(fromPortRange);
 		setToPortRange(toPortRange);
 	}
 
 	@Override
 	public int hashCode() {
-		return getFromIpRange().hashCode() + getFromPortRange().hashCode()
-				+ getToIpRange().hashCode() + getToPortRange().hashCode();
+		return getFromAddress().hashCode() + getFromPortRange().hashCode()
+				+ getToAddress().hashCode() + getToPortRange().hashCode();
 	}
 
 	@Override
@@ -37,11 +37,11 @@ public abstract class SimpleAbstractTcpUdpFireWallwRule extends
 		str.append("protocol: ");
 		str.append(getProtocol());
 		str.append(", from-ips: ");
-		str.append(getFromIpRange());
+		str.append(getFromAddress());
 		str.append(", from-ports: ");
 		str.append(getFromPortRange());
 		str.append(", to-ips: ");
-		str.append(getToIpRange());
+		str.append(getToAddress());
 		str.append(", to-ports: ");
 		str.append(getToPortRange());
 		str.append(", directions: ");
@@ -59,9 +59,9 @@ public abstract class SimpleAbstractTcpUdpFireWallwRule extends
 		}
 		if (anObject instanceof SimpleAbstractTcpUdpFireWallwRule) {
 			SimpleAbstractTcpUdpFireWallwRule rule = (SimpleAbstractTcpUdpFireWallwRule) anObject;
-			return rule.getFromIpRange().equals(getFromIpRange())
+			return rule.getFromAddress().equals(getFromAddress())
 					&& rule.getFromPortRange().equals(getFromPortRange())
-					&& rule.getToIpRange().equals(getToIpRange())
+					&& rule.getToAddress().equals(getToAddress())
 					&& rule.getToPortRange().equals(getToPortRange())
 					&& rule.getProtocol().equals(getProtocol())
 					&& rule.getDirection().equals(getDirection())

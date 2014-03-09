@@ -1,7 +1,7 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Address;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRange;
 import com.wat.melody.common.network.PortRanges;
 
@@ -12,10 +12,10 @@ import com.wat.melody.common.network.PortRanges;
  */
 public class ComplexTcpFireWallRule extends ComplexAbstractTcpUdpFireWallRule {
 
-	public ComplexTcpFireWallRule(IpRanges fromIpRanges,
-			PortRanges fromPortRanges, IpRanges toIpRanges,
+	public ComplexTcpFireWallRule(Addresses fromAddresses,
+			PortRanges fromPortRanges, Addresses toAddresses,
 			PortRanges toPortRanges, Directions directions, Access access) {
-		super(fromIpRanges, fromPortRanges, toIpRanges, toPortRanges,
+		super(fromAddresses, fromPortRanges, toAddresses, toPortRanges,
 				directions, access);
 	}
 
@@ -25,10 +25,10 @@ public class ComplexTcpFireWallRule extends ComplexAbstractTcpUdpFireWallRule {
 	}
 
 	@Override
-	public SimpleFireWallRule newFwRuleDecomposed(IpRange fromIpRange,
-			PortRange fromPortRange, IpRange toIpRange, PortRange toPortRange,
+	public SimpleFireWallRule newSimpleFireWallRule(Address fromAddress,
+			PortRange fromPortRange, Address toAddress, PortRange toPortRange,
 			Direction direction, Access access) {
-		return new SimpleTcpFireWallRule(fromIpRange, fromPortRange, toIpRange,
+		return new SimpleTcpFireWallRule(fromAddress, fromPortRange, toAddress,
 				toPortRange, direction, access);
 	}
 

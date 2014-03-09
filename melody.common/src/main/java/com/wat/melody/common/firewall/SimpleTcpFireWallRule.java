@@ -1,6 +1,6 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.Address;
 import com.wat.melody.common.network.PortRange;
 
 /**
@@ -10,10 +10,10 @@ import com.wat.melody.common.network.PortRange;
  */
 public class SimpleTcpFireWallRule extends SimpleAbstractTcpUdpFireWallwRule {
 
-	public SimpleTcpFireWallRule(IpRange fromIpRange, PortRange fromPortRange,
-			IpRange toIpRange, PortRange toPortRange, Direction direction,
+	public SimpleTcpFireWallRule(Address fromAddress, PortRange fromPortRange,
+			Address toAddress, PortRange toPortRange, Direction direction,
 			Access access) {
-		super(fromIpRange, fromPortRange, toIpRange, toPortRange, direction,
+		super(fromAddress, fromPortRange, toAddress, toPortRange, direction,
 				access);
 	}
 

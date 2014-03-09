@@ -1,6 +1,7 @@
 package com.wat.melody.common.firewall;
 
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Addresses;
+import com.wat.melody.common.network.IpRange;
 
 /**
  * 
@@ -10,47 +11,47 @@ import com.wat.melody.common.network.IpRanges;
 public abstract class ComplexAbstractFireWallRule implements
 		ComplexFireWallRule {
 
-	private static IpRanges DEFAULT_FROM_IP_RANGES = IpRanges.ALL;
-	private static IpRanges DEFAULT_TO_IP_RANGES = IpRanges.ALL;
+	private static Addresses DEFAULT_FROM_ADDRESSES = new Addresses(IpRange.ALL);
+	private static Addresses DEFAULT_TO_ADDRESSES = new Addresses(IpRange.ALL);
 	private static Directions DEFAULT_DIRECTIONS = Directions.ALL;
 	private static Access DEFAULT_ACCESS = Access.DENY;
 
-	private IpRanges _fromIpRanges = DEFAULT_FROM_IP_RANGES;
-	private IpRanges _toIpRanges = DEFAULT_TO_IP_RANGES;
+	private Addresses _fromAddresses = DEFAULT_FROM_ADDRESSES;
+	private Addresses _toAddresses = DEFAULT_TO_ADDRESSES;
 	private Directions _directions = DEFAULT_DIRECTIONS;
 	private Access _access = DEFAULT_ACCESS;
 
-	public ComplexAbstractFireWallRule(IpRanges fromIpRanges,
-			IpRanges toIpRanges, Directions directions, Access access) {
-		setFromIpRanges(fromIpRanges);
-		setToIpRanges(toIpRanges);
+	public ComplexAbstractFireWallRule(Addresses fromAddresses,
+			Addresses toAddresses, Directions directions, Access access) {
+		setFromAddresses(fromAddresses);
+		setToAddresses(toAddresses);
 		setDirections(directions);
 		setAccess(access);
 	}
 
-	public IpRanges getFromIpRanges() {
-		return _fromIpRanges;
+	public Addresses getFromAddresses() {
+		return _fromAddresses;
 	}
 
-	public IpRanges setFromIpRanges(IpRanges fromIpRanges) {
-		if (fromIpRanges == null) {
-			fromIpRanges = DEFAULT_FROM_IP_RANGES;
+	public Addresses setFromAddresses(Addresses fromAddresses) {
+		if (fromAddresses == null) {
+			fromAddresses = DEFAULT_FROM_ADDRESSES;
 		}
-		IpRanges previous = getFromIpRanges();
-		_fromIpRanges = fromIpRanges;
+		Addresses previous = getFromAddresses();
+		_fromAddresses = fromAddresses;
 		return previous;
 	}
 
-	public IpRanges getToIpRanges() {
-		return _toIpRanges;
+	public Addresses getToAddresses() {
+		return _toAddresses;
 	}
 
-	public IpRanges setToIpRanges(IpRanges toIpRanges) {
-		if (toIpRanges == null) {
-			toIpRanges = DEFAULT_TO_IP_RANGES;
+	public Addresses setToAddresses(Addresses toAddresses) {
+		if (toAddresses == null) {
+			toAddresses = DEFAULT_TO_ADDRESSES;
 		}
-		IpRanges previous = getToIpRanges();
-		_toIpRanges = toIpRanges;
+		Addresses previous = getToAddresses();
+		_toAddresses = toAddresses;
 		return previous;
 	}
 

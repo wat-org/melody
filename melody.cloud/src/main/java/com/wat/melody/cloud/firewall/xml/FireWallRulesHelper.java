@@ -4,11 +4,23 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.firewall.Messages;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaNames;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
+import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaHelper;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.network.Address;
+import com.wat.melody.common.network.Addresses;
+import com.wat.melody.common.network.IpRange;
+import com.wat.melody.common.network.exception.IllegalIpRangeException;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
@@ -312,6 +324,90 @@ public abstract class FireWallRulesHelper {
 					Msg.bind(Messages.IcmpMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
+	}
+
+	public static String ADDRESSES_SEPARATOR = ",";
+
+	/**
+	 * @param e
+	 *            is the {@link Element} where the given addresses are defined.
+	 * @param addrattr
+	 *            is the {@link Attr} where the given addresses are defined (an
+	 *            herited attribute of the given {@link Element}).
+	 * @param addresses
+	 *            is a CSV <tt>String</tt>, which contains {@link Address} (the
+	 *            value of the given {@link Attr}). Can be <tt>null</tt>.
+	 * 
+	 * @return an {@link Address} set, build from the given CSV <tt>String</tt>.
+	 *         Each part of the given CSV input <tt>String</tt> can be either an
+	 *         {@link IpRange} or a {@link ProtectedAreaName}. Each
+	 *         {@link ProtectedAreaName} will be converted in their
+	 *         corresponding {@link ProtectedAreaId}.
+	 * 
+	 * @throws NodeRelatedException
+	 *             if a part of the given <tt>String</tt> is neither an
+	 *             {@link IpRange} nor a {@link ProtectedAreaName}, or if a
+	 *             {@link ProtectedAreaName} cannot be converted to a
+	 *             {@link ProtectedAreaId}.
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Element} or the given {@link Attr} is
+	 *             <tt>null</tt>.
+	 */
+	public static Addresses parseAddresses(Element e, Attr addrattr,
+			String addresses) throws NodeRelatedException {
+		if (e == null) {
+			throw new IllegalArgumentException(": Not accepted. "
+					+ "Must be a valid " + Element.class.getCanonicalName()
+					+ ".");
+		}
+		if (addrattr == null) {
+			throw new IllegalArgumentException(": Not accepted. "
+					+ "Must be a valid " + Attr.class.getCanonicalName() + ".");
+		}
+		Addresses res = new Addresses();
+		if (addresses == null) {
+			return res;
+		}
+		for (String address : addresses.split(ADDRESSES_SEPARATOR)) {
+			address = address.trim();
+			if (address.length() == 0) {
+				continue;
+			}
+			ConsolidatedException cex = new ConsolidatedException();
+			// try to convert to IpRange
+			Address addr = null;
+			try {
+				addr = IpRange.parseString(address);
+				res.add(addr);
+				// conversion ok: deal with next entry
+				continue;
+			} catch (IllegalIpRangeException Ex) {
+				cex.addCause(Ex);
+			}
+			// try to convert to ProtectedAreaName
+			ProtectedAreaName paname = null;
+			try {
+				paname = ProtectedAreaName.parseString(address);
+			} catch (IllegalProtectedAreaNameException Ex) {
+				cex.addCause(Ex);
+				throw new NodeRelatedException(addrattr,
+						"Cannot be converted to a valid address.", cex);
+			}
+			// try to convert to ProtectedAreaName
+			ProtectedAreaIds paids = null;
+			try {
+				paids = ProtectedAreaHelper.convertProtectedAreaFromNamesToIds(
+						e, new ProtectedAreaNames(paname));
+			} catch (Exception Ex) {
+				cex.addCause(new Exception(paname + ": Not accepted. "
+						+ "Such Protected Area is not valid.", Ex));
+				throw new NodeRelatedException(addrattr,
+						"Cannot be converted to a valid address.", cex);
+			}
+			// conversion ok
+			res.add(paids.iterator().next());
+		}
+		return res;
 	}
 
 }

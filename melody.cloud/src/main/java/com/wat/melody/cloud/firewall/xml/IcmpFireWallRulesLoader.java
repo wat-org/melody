@@ -15,7 +15,7 @@ import com.wat.melody.common.firewall.IcmpTypes;
 import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodesException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypesException;
-import com.wat.melody.common.network.IpRanges;
+import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.xpathextensions.XPathHelper;
@@ -79,8 +79,8 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * An ICMP FireWall Rule {@link Element} may have the attributes :
 	 * <ul>
 	 * <li>devices-name : which should contains {@link NetworkDeviceNameRefs} ;</li>
-	 * <li>from-ips : which should contains {@link IpRanges} ;</li>
-	 * <li>to-ips : which should contains {@link IpRanges} :</li>
+	 * <li>from-ips : which should contains {@link Addresses} ;</li>
+	 * <li>to-ips : which should contains {@link Addresses} :</li>
 	 * <li>codes : which should contains {@link IcmpTypes} ;</li>
 	 * <li>types : which should contains {@link IcmpCodes} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>
@@ -109,16 +109,16 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element icmpFireRuleElmt : icmpFireRuleElmts) {
 			Directions dirs = loadDirection(icmpFireRuleElmt);
-			IpRanges fromIps = loadFromIps(icmpFireRuleElmt);
-			IpRanges toIps = loadToIps(icmpFireRuleElmt);
-			if (fromIps == null && dirs.contains(Direction.IN)) {
+			Addresses fromAddresses = loadFromIps(icmpFireRuleElmt);
+			Addresses toAddresses = loadToIps(icmpFireRuleElmt);
+			if (fromAddresses == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
 				} else {
 					continue;
 				}
 			}
-			if (toIps == null && dirs.contains(Direction.OUT)) {
+			if (toAddresses == null && dirs.contains(Direction.OUT)) {
 				if (dirs.contains(Direction.IN)) {
 					dirs.remove(Direction.OUT);
 				} else {
@@ -129,8 +129,8 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 			IcmpCodes codes = loadIcmpCodes(icmpFireRuleElmt);
 			NetworkDeviceNameRefs refs = loadNetworkDeviceNameRefs(icmpFireRuleElmt);
 			Access access = loadAccess(icmpFireRuleElmt);
-			fwrs.merge(refs, new ComplexIcmpFireWallRule(fromIps, toIps, types,
-					codes, dirs, access));
+			fwrs.merge(refs, new ComplexIcmpFireWallRule(fromAddresses,
+					toAddresses, types, codes, dirs, access));
 		}
 		return fwrs;
 	}
