@@ -136,6 +136,11 @@
         <foreach    items="./environment//protected-areas/protected-area"
                     item-name="pa" >
             <new-protected-area target="§[pa]§" />
+        </foreach>
+
+        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
+                    item-name="pa" >
+            <update-protected-area target="§[pa]§" />
             <echo message="+ protected area '§[§[pa]§/@name]§' created." />
         </foreach>
 
@@ -145,6 +150,13 @@
     <order name="destroy_all_protected_areas" >
         <echo message="Destroying Protected Areas ..." />
 
+        <!-- must first remove all rules, in order to be sure the protected
+             area is not declared in another one -->
+        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
+                    item-name="pa" >
+            <reset-protected-area target="§[pa]§" />
+        </foreach>
+
         <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
                     item-name="pa" >
             <delete-protected-area target="§[pa]§" />
@@ -152,18 +164,6 @@
         </foreach>
 
         <echo message="-- Protected Areas destroyed." />
-    </order>
-
-    <order name="update_all_protected_areas" >
-        <echo message="Updating Protected Areas ..." />
-
-        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
-                    item-name="pa" >
-            <update-protected-area target="§[pa]§" />
-            <echo message="+ protected area '§[§[pa]§/@name]§' updated." />
-        </foreach>
-
-        <echo message="-- Protected Areas updated." />
     </order>
 
 </sequence>
