@@ -117,8 +117,8 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	}
 
 	@Override
-	public String setProtectedAreaId(String instanceId) {
-		String previous = super.setProtectedAreaId(instanceId);
+	public String setProtectedAreaId(String protectedAreaId) {
+		String previous = super.setProtectedAreaId(protectedAreaId);
 		refreshInternalDatas();
 		return previous;
 	}

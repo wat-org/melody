@@ -58,7 +58,7 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 
 	@Override
 	public void validate() throws AwsPlugInEc2Exception {
-		// Build an ProtectedAreaDatas with target Element's datas
+		// Build a ProtectedAreaDatas with target Element's datas
 		try {
 			setProtectedAreaDatas(new ProtectedAreaDatasLoader().load(
 					getTargetElement(), this));
@@ -69,8 +69,7 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 		setProtectedAreaController(createProtectedAreaController());
 	}
 
-	protected ProtectedAreaController createProtectedAreaController()
-			throws AwsPlugInEc2Exception {
+	protected ProtectedAreaController createProtectedAreaController() {
 		ProtectedAreaController protectedAreaCtrl = new AwsProtectedAreaController(
 				getEc2Connection(), getProtectedAreaId());
 		protectedAreaCtrl = new ProtectedAreaControllerRelatedToAnInstanceElement(
