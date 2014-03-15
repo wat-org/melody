@@ -18,11 +18,14 @@ import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Tag;
+import com.wat.cloud.aws.ec2.exception.SecurityGroupInUseException;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.messages.Msg;
@@ -73,13 +76,13 @@ public class AwsEc2CloudNetwork {
 	 * Given an Identifier, build the Instance's tag which store the Self
 	 * Protected Area Identifier.
 	 */
-	protected static Tag createSelfProtectedAreaIdTag(String id) {
+	protected static Tag createSelfProtectedAreaIdTag(ProtectedAreaId id) {
 		if (id == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
-					+ ".");
+					+ "Must be a valid "
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
 		}
-		return new Tag(MELODY_SELF_PROTECTED_AREA_ID, id);
+		return new Tag(MELODY_SELF_PROTECTED_AREA_ID, id.getValue());
 	}
 
 	/**
@@ -149,9 +152,24 @@ public class AwsEc2CloudNetwork {
 	 * method allow to generate a name, based on the given network device name,
 	 * which will be used during the Self Protected Area creation.
 	 */
-	private static String generateSelfProtectedAreaName(NetworkDeviceName netdev) {
+	private static ProtectedAreaName generateSelfProtectedAreaName(
+			NetworkDeviceName netdev) {
+		if (netdev == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
 		// This formula should produce a unique name
-		return "melody-self-protected-area:" + netdev + ":" + UUID.randomUUID();
+		String name = "melody-self-protected-area:" + netdev + ":"
+				+ UUID.randomUUID();
+		try {
+			return ProtectedAreaName.parseString(name);
+		} catch (IllegalProtectedAreaNameException Ex) {
+			throw new RuntimeException("Fail to convert '" + name + "' into '"
+					+ ProtectedAreaName.class.getCanonicalName() + "'. "
+					+ "If this error happened, you should modify the "
+					+ "conversion rule.", Ex);
+		}
 	}
 
 	/**
@@ -177,11 +195,19 @@ public class AwsEc2CloudNetwork {
 	 * @throws IllegalArgumentException
 	 *             if the given network device name is <tt>null</tt>.
 	 */
-	protected static String createSelfProtectedArea(AmazonEC2 ec2,
+	protected static ProtectedAreaId createSelfProtectedArea(AmazonEC2 ec2,
 			NetworkDeviceName netdev) {
-		String name = generateSelfProtectedAreaName(netdev);
+		ProtectedAreaName name = generateSelfProtectedAreaName(netdev);
 		String desc = generateSelfProtectedAreaDescription();
-		return createSecurityGroup(ec2, name, desc);
+		String sgid = createSecurityGroup(ec2, name.getValue(), desc);
+		try {
+			return ProtectedAreaId.parseString(sgid);
+		} catch (IllegalProtectedAreaIdException Ex) {
+			throw new RuntimeException("Fail to convert '" + sgid + "' into '"
+					+ ProtectedAreaId.class.getCanonicalName() + "'. "
+					+ "If this error happened, you should modify the "
+					+ "conversion rule.", Ex);
+		}
 	}
 
 	/**
@@ -192,17 +218,17 @@ public class AwsEc2CloudNetwork {
 	 * 
 	 * @param ec2
 	 * 
-	 * @return the newly created Aws Security Group Identifier.
+	 * @return the newly created Protected Area Identifier.
 	 * 
 	 * @throws AmazonServiceException
-	 *             if the creation failed (ex : because the sgname is invalid -
-	 *             Character sets beyond ASCII are not supported).
+	 *             if the creation failed (ex : because the securty group name
+	 *             is invalid - Character sets beyond ASCII are not supported).
 	 * @throws AmazonClientException
 	 *             if the operation fails.
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <tt>null</tt>.
 	 */
-	protected static String createSelfProtectedArea(AmazonEC2 ec2) {
+	protected static ProtectedAreaId createSelfProtectedArea(AmazonEC2 ec2) {
 		return createSelfProtectedArea(ec2, eth0);
 	}
 
@@ -453,6 +479,9 @@ public class AwsEc2CloudNetwork {
 	 * @param sgid
 	 *            is the identifier of the AWS Security Group to delete.
 	 * 
+	 * @throws SecurityGroupInUseException
+	 *             if the security group can not be deleted because it is still
+	 *             in use.
 	 * @throws AmazonServiceException
 	 *             if the creation failed.
 	 * @throws AmazonClientException
@@ -460,7 +489,8 @@ public class AwsEc2CloudNetwork {
 	 * @throws IllegalArgumentException
 	 *             if ec2 is <tt>null</tt>.
 	 */
-	protected static void deleteSecurityGroup(AmazonEC2 ec2, String sgid) {
+	protected static void deleteSecurityGroup(AmazonEC2 ec2, String sgid)
+			throws SecurityGroupInUseException {
 		if (ec2 == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + AmazonEC2.class.getCanonicalName()
@@ -483,6 +513,8 @@ public class AwsEc2CloudNetwork {
 				throw Ex;
 			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return;
+			} else if (Ex.getErrorCode().indexOf("InvalidGroup.InUse") != -1) {
+				throw new SecurityGroupInUseException(Ex);
 			} else {
 				throw Ex;
 			}

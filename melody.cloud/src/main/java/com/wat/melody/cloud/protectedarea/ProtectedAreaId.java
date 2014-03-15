@@ -18,7 +18,7 @@ public class ProtectedAreaId implements Address {
 	 * Convert the given <tt>String</tt> to a {@link ProtectedAreaId} object.
 	 * </p>
 	 * 
-	 * @param paid
+	 * @param paId
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link ProtectedAreaId} object, which is equal to the given
@@ -33,15 +33,15 @@ public class ProtectedAreaId implements Address {
 	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static ProtectedAreaId parseString(String paid)
+	public static ProtectedAreaId parseString(String paId)
 			throws IllegalProtectedAreaIdException {
-		return new ProtectedAreaId(paid);
+		return new ProtectedAreaId(paId);
 	}
 
 	private String _value;
 
-	public ProtectedAreaId(String paid) throws IllegalProtectedAreaIdException {
-		setValue(paid);
+	public ProtectedAreaId(String paId) throws IllegalProtectedAreaIdException {
+		setValue(paId);
 	}
 
 	@Override
@@ -70,22 +70,22 @@ public class ProtectedAreaId implements Address {
 		return _value;
 	}
 
-	private String setValue(String paid) throws IllegalProtectedAreaIdException {
-		if (paid == null) {
+	private String setValue(String paId) throws IllegalProtectedAreaIdException {
+		if (paId == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a " + String.class.getCanonicalName()
 					+ " (a Protected Area Identifier)");
 		}
-		if (paid.trim().length() == 0) {
+		if (paId.trim().length() == 0) {
 			throw new IllegalProtectedAreaIdException(Msg.bind(
-					Messages.ProtectedAreaIdEx_EMPTY, paid));
+					Messages.ProtectedAreaIdEx_EMPTY, paId));
 		}
-		if (!paid.matches("^" + PATTERN + "$")) {
+		if (!paId.matches("^" + PATTERN + "$")) {
 			throw new IllegalProtectedAreaIdException(Msg.bind(
-					Messages.ProtectedAreaIdEx_INVALID, paid, PATTERN));
+					Messages.ProtectedAreaIdEx_INVALID, paId, PATTERN));
 		}
 		String previous = getValue();
-		_value = paid;
+		_value = paId;
 		return previous;
 	}
 

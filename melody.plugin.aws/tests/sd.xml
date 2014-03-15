@@ -55,10 +55,6 @@
         <call orders="destroy_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
     </order>
 
-    <order name="update_all_protected_areas" >
-        <call orders="update_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
-    </order>
-
 
     <order name="all" >
         <call    orders="create_all_vm"/>

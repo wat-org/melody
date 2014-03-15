@@ -17,7 +17,7 @@ public class ProtectedAreaName {
 	 * Convert the given <tt>String</tt> to a {@link ProtectedAreaName} object.
 	 * </p>
 	 * 
-	 * @param paname
+	 * @param paName
 	 *            is the given <tt>String</tt> to convert.
 	 * 
 	 * @return a {@link ProtectedAreaName} object, which is equal to the given
@@ -32,16 +32,16 @@ public class ProtectedAreaName {
 	 *             {@link #PATTERN} ;</li>
 	 *             </ul>
 	 */
-	public static ProtectedAreaName parseString(String paname)
+	public static ProtectedAreaName parseString(String paName)
 			throws IllegalProtectedAreaNameException {
-		return new ProtectedAreaName(paname);
+		return new ProtectedAreaName(paName);
 	}
 
 	private String _value;
 
-	public ProtectedAreaName(String paname)
+	public ProtectedAreaName(String paName)
 			throws IllegalProtectedAreaNameException {
-		setValue(paname);
+		setValue(paName);
 	}
 
 	@Override
@@ -70,23 +70,23 @@ public class ProtectedAreaName {
 		return _value;
 	}
 
-	private String setValue(String paname)
+	private String setValue(String paName)
 			throws IllegalProtectedAreaNameException {
-		if (paname == null) {
+		if (paName == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a " + String.class.getCanonicalName()
 					+ " (a Protected Area name)");
 		}
-		if (paname.trim().length() == 0) {
+		if (paName.trim().length() == 0) {
 			throw new IllegalProtectedAreaNameException(Msg.bind(
-					Messages.ProtectedAreaNameEx_EMPTY, paname));
+					Messages.ProtectedAreaNameEx_EMPTY, paName));
 		}
-		if (!paname.matches("^" + PATTERN + "$")) {
+		if (!paName.matches("^" + PATTERN + "$")) {
 			throw new IllegalProtectedAreaNameException(Msg.bind(
-					Messages.ProtectedAreaNameEx_INVALID, paname, PATTERN));
+					Messages.ProtectedAreaNameEx_INVALID, paName, PATTERN));
 		}
 		String previous = getValue();
-		_value = paname;
+		_value = paName;
 		return previous;
 	}
 

@@ -10,24 +10,24 @@ import com.wat.melody.common.firewall.FireWallRulesPerDevice;
 /**
  * <p>
  * Decorate the given {@link ProtectedAreaController}. Add the ability to update
- * the related Instance {@link Element}'s datas when the related
+ * the related Protected Area {@link Element}'s datas when the related
  * {@link ProtectedAreaController} changes.
  * 
- * On create/destroy, Cloud Providers dynamically allocates id to Protected
- * Area. This class will update the related Instance {@link Element}'s datas
- * accordingly.
+ * On create/destroy, Cloud Providers dynamically allocate/release id to
+ * Protected Area. This class will update the related Protected Area
+ * {@link Element}'s datas accordingly.
  * </p>
  * 
  * @author Guillaume Cornet
  * 
  */
-public class ProtectedAreaControllerRelatedToAnInstanceElement extends
+public class ProtectedAreaControllerRelatedToAProtectedAreaElement extends
 		BaseProtectedAreaController implements ProtectedAreaControllerListener {
 
 	private ProtectedAreaController _protectedAreaController;
 	private Element _protectedAreaElement;
 
-	public ProtectedAreaControllerRelatedToAnInstanceElement(
+	public ProtectedAreaControllerRelatedToAProtectedAreaElement(
 			ProtectedAreaController protectedArea,
 			Element relatedProtectedAreaElmt) {
 		setProtectedAreaController(protectedArea);
@@ -67,7 +67,7 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	}
 
 	@Override
-	public String getProtectedAreaId() {
+	public ProtectedAreaId getProtectedAreaId() {
 		return getProtectedAreaController().getProtectedAreaId();
 	}
 
@@ -110,7 +110,7 @@ public class ProtectedAreaControllerRelatedToAnInstanceElement extends
 	public void onProtectedAreaCreated() throws ProtectedAreaException,
 			InterruptedException {
 		setData(getProtectedAreaElement(), ProtectedAreaDatasLoader.ID_ATTR,
-				getProtectedAreaId());
+				getProtectedAreaId().getValue());
 		fireProtectedAreaCreated();
 	}
 

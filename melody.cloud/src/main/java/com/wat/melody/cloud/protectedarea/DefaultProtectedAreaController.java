@@ -19,8 +19,7 @@ public abstract class DefaultProtectedAreaController extends
 	private static Logger log = LoggerFactory
 			.getLogger(DefaultProtectedAreaController.class);
 
-	// TODO : should be a ProtectedAreaId
-	private String _protectedAreaId;
+	private ProtectedAreaId _protectedAreaId;
 
 	public DefaultProtectedAreaController() {
 		super();
@@ -31,7 +30,7 @@ public abstract class DefaultProtectedAreaController extends
 	 *         area is not created.
 	 */
 	@Override
-	public String getProtectedAreaId() {
+	public ProtectedAreaId getProtectedAreaId() {
 		return _protectedAreaId;
 	}
 
@@ -42,13 +41,8 @@ public abstract class DefaultProtectedAreaController extends
 	 * 
 	 * @return the previous value.
 	 */
-	protected String setProtectedAreaId(String protectedAreaId) {
-		// can be null, but cannot be an empty String
-		if (protectedAreaId != null && protectedAreaId.trim().length() == 0) {
-			throw new IllegalArgumentException(": Not accepted. "
-					+ "Must be a valid String (a Protected Area Identifier).");
-		}
-		String previous = getProtectedAreaId();
+	protected ProtectedAreaId setProtectedAreaId(ProtectedAreaId protectedAreaId) {
+		ProtectedAreaId previous = getProtectedAreaId();
 		_protectedAreaId = protectedAreaId;
 		return previous;
 	}
@@ -65,13 +59,13 @@ public abstract class DefaultProtectedAreaController extends
 		if (protectedAreaExists()) {
 			log.warn(Msg.bind(Messages.CreateMsg_EXISTS, getProtectedAreaId()));
 		} else {
-			String protectedAreaId = createProtectedArea(name, description);
-			setProtectedAreaId(protectedAreaId);
+			ProtectedAreaId paId = createProtectedArea(name, description);
+			setProtectedAreaId(paId);
 		}
 		fireProtectedAreaCreated();
 	}
 
-	public abstract String createProtectedArea(ProtectedAreaName name,
+	public abstract ProtectedAreaId createProtectedArea(ProtectedAreaName name,
 			String description) throws ProtectedAreaException,
 			InterruptedException;
 
@@ -100,9 +94,9 @@ public abstract class DefaultProtectedAreaController extends
 			log.warn(Messages.UpdateContentMsg_ID_NOT_DEFINED);
 		} else if (!protectedAreaExists()) {
 			fireProtectedAreaDestroyed();
-			String sProtectedAreaId = setProtectedAreaId(null);
+			ProtectedAreaId paId = setProtectedAreaId(null);
 			throw new ProtectedAreaException(Msg.bind(
-					Messages.UpdateContentEx_ID_INVALID, sProtectedAreaId));
+					Messages.UpdateContentEx_ID_INVALID, paId));
 		} else {
 			// will not retrieve the fwrules associated to a network device
 			updateProtectedAreaContent(list.getFireWallRules());

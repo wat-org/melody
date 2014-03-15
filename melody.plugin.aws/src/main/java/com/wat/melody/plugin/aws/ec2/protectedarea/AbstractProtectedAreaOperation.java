@@ -16,11 +16,13 @@ import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.exception.PlugInConfigurationException;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaController;
-import com.wat.melody.cloud.protectedarea.ProtectedAreaControllerRelatedToAnInstanceElement;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaControllerRelatedToAProtectedAreaElement;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatas;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatasValidator;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaDatasException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.cloud.protectedarea.xml.ProtectedAreaDatasLoader;
 import com.wat.melody.common.messages.Msg;
@@ -48,7 +50,7 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 
 	private String _target = null;
 	private Element _targetElmt = null;
-	private String _protectedAreaId = null;
+	private ProtectedAreaId _protectedAreaId = null;
 	private AmazonEC2 _ec2Connection = null;
 	private ProtectedAreaController _protectedAreaController = null;
 	private ProtectedAreaDatas _protectedAreaDatas = null;
@@ -72,7 +74,7 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 	protected ProtectedAreaController createProtectedAreaController() {
 		ProtectedAreaController protectedAreaCtrl = new AwsProtectedAreaController(
 				getEc2Connection(), getProtectedAreaId());
-		protectedAreaCtrl = new ProtectedAreaControllerRelatedToAnInstanceElement(
+		protectedAreaCtrl = new ProtectedAreaControllerRelatedToAProtectedAreaElement(
 				protectedAreaCtrl, getTargetElement());
 		return protectedAreaCtrl;
 	}
@@ -224,18 +226,13 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 	 * @return the Protected Area Id which is registered in the targeted Element
 	 *         Node (can be <tt>null</tt>).
 	 */
-	protected String getProtectedAreaId() {
+	protected ProtectedAreaId getProtectedAreaId() {
 		return _protectedAreaId;
 	}
 
-	protected String setProtectedAreaId(String protectedAreaId)
-			throws AwsPlugInEc2Exception {
+	protected ProtectedAreaId setProtectedAreaId(ProtectedAreaId protectedAreaId) {
 		// can be null, if no Protected Area have been created yet
-		// but cannot be an empty String
-		if (protectedAreaId != null && protectedAreaId.trim().length() == 0) {
-			protectedAreaId = null;
-		}
-		String previous = getProtectedAreaId();
+		ProtectedAreaId previous = getProtectedAreaId();
 		_protectedAreaId = protectedAreaId;
 		return previous;
 	}
@@ -278,11 +275,18 @@ abstract public class AbstractProtectedAreaOperation implements ITask,
 					DocHelper.parseNodeType(n)));
 		}
 		setTargetElement((Element) n);
+		String paId = null;
 		try {
-			setProtectedAreaId(getTargetElement().getAttributeNode(
-					ProtectedAreaDatasLoader.ID_ATTR).getNodeValue());
+			paId = getTargetElement().getAttributeNode(
+					ProtectedAreaDatasLoader.ID_ATTR).getNodeValue();
+			try {
+				setProtectedAreaId(ProtectedAreaId.parseString(paId));
+			} catch (IllegalProtectedAreaIdException Ex) {
+				throw new AwsPlugInEc2Exception(Ex);
+			}
 		} catch (NullPointerException ignored) {
 		}
+
 		String previous = getTarget();
 		_target = target;
 		return previous;

@@ -22,6 +22,7 @@ import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.wat.cloud.aws.ec2.exception.SecurityGroupInUseException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
@@ -594,12 +595,12 @@ public abstract class AwsEc2Cloud {
 					+ ".");
 		}
 
-		String sgid = AwsEc2CloudNetwork.createSelfProtectedArea(ec2);
+		ProtectedAreaId paid = AwsEc2CloudNetwork.createSelfProtectedArea(ec2);
 
 		RunInstancesRequest rireq = new RunInstancesRequest();
 		rireq.withInstanceType(type.toString());
 		rireq.withImageId(sImageId);
-		rireq.withSecurityGroupIds(sgid);
+		rireq.withSecurityGroupIds(paid.getValue());
 		for (ProtectedAreaId protectedAreaId : protectedAreaIds) {
 			rireq.withSecurityGroupIds(protectedAreaId.getValue());
 		}
@@ -621,12 +622,21 @@ public abstract class AwsEc2Cloud {
 			CreateTagsRequest ctreq = new CreateTagsRequest();
 			ctreq = ctreq.withResources(sInstanceId);
 			ctreq = ctreq.withTags(AwsEc2CloudNetwork
-					.createSelfProtectedAreaIdTag(sgid));
+					.createSelfProtectedAreaIdTag(paid));
 			ec2.createTags(ctreq);
 
 			return sInstanceId;
 		} catch (NullPointerException | IndexOutOfBoundsException Ex) {
-			AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
+			try {
+				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, paid.getValue());
+			} catch (SecurityGroupInUseException e) {
+				throw new RuntimeException("Fail to delete the security "
+						+ "group '" + paid
+						+ "'. Because the instance associated to this "
+						+ "security group was not created, this security "
+						+ "group cannot be 'in-use'. "
+						+ "This error cannot happened.", e);
+			}
 			throw new RuntimeException("Fail to retrieve new Aws Instance "
 					+ "details (Aws Instance may have been created).");
 		}
@@ -779,7 +789,16 @@ public abstract class AwsEc2Cloud {
 			for (NetworkDevice netdev : netdevs) {
 				String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i,
 						netdev.getNetworkDeviceName()).getValue();
-				AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
+				try {
+					AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
+				} catch (SecurityGroupInUseException e) {
+					throw new RuntimeException("Fail to delete the security "
+							+ "group '" + sgid
+							+ "'. Because the instance associated to this "
+							+ "security group has just been terminated, this "
+							+ "security group cannot be 'in-use'. "
+							+ "This error cannot happened.", e);
+				}
 			}
 		}
 	}

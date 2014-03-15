@@ -17,7 +17,7 @@ public interface ProtectedAreaController {
 
 	public boolean isProtectedAreaDefined();
 
-	public String getProtectedAreaId();
+	public ProtectedAreaId getProtectedAreaId();
 
 	public boolean protectedAreaExists();
 

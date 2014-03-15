@@ -1,10 +1,12 @@
 package com.wat.cloud.aws.ec2;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.SecurityGroup;
+import com.wat.cloud.aws.ec2.exception.SecurityGroupInUseException;
 import com.wat.melody.cloud.protectedarea.DefaultProtectedAreaController;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
 import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.firewall.FireWallRules;
@@ -21,23 +23,36 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	private SecurityGroup _securityGroup;
 
 	public AwsProtectedAreaController(AmazonEC2 connection,
-			String securityGroupId) {
+			ProtectedAreaId protectedAreaId) {
 		setConnection(connection);
-		setProtectedAreaId(securityGroupId);
+		setProtectedAreaId(protectedAreaId);
 	}
 
 	@Override
 	public boolean protectedAreaExists() {
-		return AwsEc2CloudNetwork.getSecurityGroupById(getConnection(),
-				getProtectedAreaId()) != null;
+		if (getProtectedAreaId() == null) {
+			return false;
+		} else {
+			return AwsEc2CloudNetwork.getSecurityGroupById(getConnection(),
+					getProtectedAreaId().getValue()) != null;
+		}
 	}
 
 	@Override
-	public String createProtectedArea(ProtectedAreaName name, String description)
-			throws ProtectedAreaException, InterruptedException {
+	public ProtectedAreaId createProtectedArea(ProtectedAreaName name,
+			String description) throws ProtectedAreaException,
+			InterruptedException {
 		// In AWS, a protected area is a security group
-		return AwsEc2CloudNetwork.createSecurityGroup(getConnection(),
+		String sgId = AwsEc2CloudNetwork.createSecurityGroup(getConnection(),
 				name.getValue(), description);
+		try {
+			return ProtectedAreaId.parseString(sgId);
+		} catch (IllegalProtectedAreaIdException Ex) {
+			throw new RuntimeException("Fail to convert '" + sgId + "' into '"
+					+ ProtectedAreaId.class.getCanonicalName() + "'. "
+					+ "If this error happened, you should modify the "
+					+ "conversion rule.", Ex);
+		}
 	}
 
 	@Override
@@ -45,17 +60,11 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 			InterruptedException {
 		try {
 			AwsEc2CloudNetwork.deleteSecurityGroup(getConnection(),
-					getProtectedAreaId());
-		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode() == null) {
-				throw Ex;
-			} else if (Ex.getErrorCode().indexOf("InvalidGroup.InUse") != -1) {
-				throw new ProtectedAreaException(
-						Msg.bind(Messages.PADestroyEx_STILL_IN_USE,
-								getProtectedAreaId()), new HiddenException(Ex));
-			} else {
-				throw Ex;
-			}
+					getProtectedAreaId().getValue());
+		} catch (SecurityGroupInUseException Ex) {
+			throw new ProtectedAreaException(Msg.bind(
+					Messages.PADestroyEx_STILL_IN_USE, getProtectedAreaId()),
+					new HiddenException(Ex));
 		}
 	}
 
@@ -80,8 +89,12 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	}
 
 	public void refreshInternalDatas() {
-		setSecurityGroup(AwsEc2CloudNetwork.getSecurityGroupById(
-				getConnection(), getProtectedAreaId()));
+		if (getProtectedAreaId() == null) {
+			setSecurityGroup(null);
+		} else {
+			setSecurityGroup(AwsEc2CloudNetwork.getSecurityGroupById(
+					getConnection(), getProtectedAreaId().getValue()));
+		}
 	}
 
 	public AmazonEC2 getConnection() {
@@ -117,8 +130,8 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 	}
 
 	@Override
-	public String setProtectedAreaId(String protectedAreaId) {
-		String previous = super.setProtectedAreaId(protectedAreaId);
+	public ProtectedAreaId setProtectedAreaId(ProtectedAreaId protectedAreaId) {
+		ProtectedAreaId previous = super.setProtectedAreaId(protectedAreaId);
 		refreshInternalDatas();
 		return previous;
 	}
