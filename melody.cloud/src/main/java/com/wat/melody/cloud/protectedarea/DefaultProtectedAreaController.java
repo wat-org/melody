@@ -19,6 +19,7 @@ public abstract class DefaultProtectedAreaController extends
 	private static Logger log = LoggerFactory
 			.getLogger(DefaultProtectedAreaController.class);
 
+	// TODO : should be a ProtectedAreaId
 	private String _protectedAreaId;
 
 	public DefaultProtectedAreaController() {
