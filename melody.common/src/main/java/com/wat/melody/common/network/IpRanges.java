@@ -17,20 +17,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 
 	public static final String IP_RANGES_SEPARATOR = ",";
 
-	public static final IpRanges ALL = createIpRanges(IpRange.ALL);
-
-	private static IpRanges createIpRanges(IpRange... ipRanges) {
-		try {
-			return new IpRanges(ipRanges);
-		} catch (IllegalIpRangesException Ex) {
-			throw new RuntimeException("Unexpected error while initializing "
-					+ "an IpRanges with value '" + ipRanges + "'. "
-					+ "Because this default value initialization is "
-					+ "hardcoded, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-	}
+	public static final IpRanges ALL = new IpRanges(IpRange.ALL);
 
 	/**
 	 * <p>
@@ -68,7 +55,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 		setIpRanges(ipRanges);
 	}
 
-	public IpRanges(IpRange... ipRanges) throws IllegalIpRangesException {
+	public IpRanges(IpRange... ipRanges) {
 		super();
 		setIpRanges(ipRanges);
 	}
@@ -95,8 +82,7 @@ public class IpRanges extends LinkedHashSet<IpRange> {
 		}
 	}
 
-	private void setIpRanges(IpRange... ipRanges)
-			throws IllegalIpRangesException {
+	private void setIpRanges(IpRange... ipRanges) {
 		clear();
 		if (ipRanges == null) {
 			return;
