@@ -103,8 +103,8 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element fireWallRuleElmt : fireWallRuleElmts) {
 			Directions dirs = loadDirection(fireWallRuleElmt);
-			Addresses fromIps = loadFromIps(fireWallRuleElmt);
-			Addresses toIps = loadToIps(fireWallRuleElmt);
+			Addresses fromIps = loadFromIps(fireWallRuleElmt, instanceElmt);
+			Addresses toIps = loadToIps(fireWallRuleElmt, instanceElmt);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);

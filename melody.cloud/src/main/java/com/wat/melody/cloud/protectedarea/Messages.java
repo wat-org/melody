@@ -29,6 +29,7 @@ public class Messages extends NLS {
 
 	public static String ProtectedAreaEx_SELECTOR_NOT_XPATH;
 	public static String ProtectedAreaEx_NOT_DEFINED;
+	public static String ProtectedAreaEx_MULTIPLE_DEFINITION;
 	public static String ProtectedAreaEx_ID_NOT_DEFINED;
 	public static String ProtectedAreaEx_ID_EMPTY;
 	public static String ProtectedAreaEx_ID_INVALID;

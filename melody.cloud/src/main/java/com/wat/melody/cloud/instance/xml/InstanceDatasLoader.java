@@ -149,9 +149,9 @@ public class InstanceDatasLoader {
 		return InstanceDatasHelper.findInstanceKeyPairSize(e);
 	}
 
-	private ProtectedAreaIds loadProtectedAreaIds(Element e)
+	private ProtectedAreaIds loadProtectedAreaIds(Element e, String region)
 			throws NodeRelatedException {
-		return ProtectedAreaHelper.findInstanceProtectedAreaIds(e);
+		return ProtectedAreaHelper.findInstanceProtectedAreaIds(e, region);
 	}
 
 	private GenericTimeout loadCreateTimeout(Element e)
@@ -278,7 +278,7 @@ public class InstanceDatasLoader {
 		KeyPairName kpn = loadKeyPairName(instanceElmt);
 		String passphrase = loadPassphrase(instanceElmt);
 		KeyPairSize kps = loadKeyPairSize(instanceElmt);
-		ProtectedAreaIds paids = loadProtectedAreaIds(instanceElmt);
+		ProtectedAreaIds paids = loadProtectedAreaIds(instanceElmt, region);
 		GenericTimeout createTimeout = loadCreateTimeout(instanceElmt);
 		GenericTimeout deleteTimeout = loadDeleteTimeout(instanceElmt);
 		GenericTimeout startTimeout = loadStartTimeout(instanceElmt);

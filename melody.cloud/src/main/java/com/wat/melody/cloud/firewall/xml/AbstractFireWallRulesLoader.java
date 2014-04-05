@@ -64,21 +64,23 @@ public abstract class AbstractFireWallRulesLoader {
 		}
 	}
 
-	protected Addresses loadFromIps(Element e) throws NodeRelatedException {
+	protected Addresses loadFromIps(Element e, Element instanceElmt)
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, FROM_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
-		return FireWallRulesHelper.parseAddresses(e,
+		return FireWallRulesHelper.parseAddresses(instanceElmt,
 				FilteredDocHelper.getHeritedAttribute(e, FROM_IPS_ATTR), v);
 	}
 
-	protected Addresses loadToIps(Element e) throws NodeRelatedException {
+	protected Addresses loadToIps(Element e, Element instanceElmt)
+			throws NodeRelatedException {
 		String v = XPathHelper.getHeritedAttributeValue(e, TO_IPS_ATTR);
 		if (v == null || v.length() == 0) {
 			return null;
 		}
-		return FireWallRulesHelper.parseAddresses(e,
+		return FireWallRulesHelper.parseAddresses(instanceElmt,
 				FilteredDocHelper.getHeritedAttribute(e, TO_IPS_ATTR), v);
 	}
 

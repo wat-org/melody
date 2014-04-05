@@ -109,8 +109,9 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element icmpFireRuleElmt : icmpFireRuleElmts) {
 			Directions dirs = loadDirection(icmpFireRuleElmt);
-			Addresses fromAddresses = loadFromIps(icmpFireRuleElmt);
-			Addresses toAddresses = loadToIps(icmpFireRuleElmt);
+			Addresses fromAddresses = loadFromIps(icmpFireRuleElmt,
+					instanceElmt);
+			Addresses toAddresses = loadToIps(icmpFireRuleElmt, instanceElmt);
 			if (fromAddresses == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);

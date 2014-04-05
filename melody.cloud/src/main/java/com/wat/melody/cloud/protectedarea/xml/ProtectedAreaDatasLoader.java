@@ -3,6 +3,7 @@ package com.wat.melody.cloud.protectedarea.xml;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatas;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaDatasValidator;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
@@ -29,7 +30,12 @@ public class ProtectedAreaDatasLoader {
 	 * XML attribute of an Protected Area Element Node, which define the region
 	 * where the Protected Area is located.
 	 */
-	public static final String REGION_ATTR = "region";
+	public static final String REGION_ATTR = InstanceDatasLoader.REGION_ATTR;
+	/*
+	 * must be equal to the instance region attribute, so that firewall rule
+	 * containing a protetected area can be converted successfully in both case.
+	 * see {@link ProtectedAreaHelper#convertProtectedAreaFromNamesToIds}.
+	 */
 
 	/**
 	 * XML attribute of an Protected Area Element Node, which define the

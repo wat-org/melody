@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.firewall.Messages;
+import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
@@ -24,6 +25,7 @@ import com.wat.melody.common.network.exception.IllegalIpRangeException;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -330,10 +332,11 @@ public abstract class FireWallRulesHelper {
 
 	/**
 	 * @param e
-	 *            is the {@link Element} where the given addresses are defined.
+	 *            is the instance or protected area {@link Element} where the
+	 *            firewall rules are defined.
 	 * @param addrattr
-	 *            is the {@link Attr} where the given addresses are defined (an
-	 *            herited attribute of the given {@link Element}).
+	 *            is the {@link Attr} of a firewall rule of the given
+	 *            {@link Element} where the given addresses are defined).
 	 * @param addresses
 	 *            is a CSV <tt>String</tt>, which contains {@link Address} (the
 	 *            value of the given {@link Attr}). Can be <tt>null</tt>.
@@ -395,9 +398,13 @@ public abstract class FireWallRulesHelper {
 			}
 			// try to convert to ProtectedAreaName
 			ProtectedAreaIds paids = null;
+			// first, get the region
+			String region = XPathHelper.getHeritedAttributeValue(e,
+					InstanceDatasLoader.REGION_ATTR);
+			// then, convert
 			try {
 				paids = ProtectedAreaHelper.convertProtectedAreaFromNamesToIds(
-						e, new ProtectedAreaNames(paname));
+						e, new ProtectedAreaNames(paname), region);
 			} catch (Exception Ex) {
 				cex.addCause(new Exception(paname + ": Not accepted. "
 						+ "Such Protected Area is not valid.", Ex));
