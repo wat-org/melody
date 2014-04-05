@@ -1,16 +1,22 @@
 package com.wat.melody.common.firewall;
 
+import com.wat.melody.common.network.Address;
+
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
-public abstract interface SimpleFireWallRule {
+public interface SimpleFireWallRule {
 
-	public abstract Protocol getProtocol();
+	public Protocol getProtocol();
 
-	public abstract Direction getDirection();
+	public Direction getDirection();
 
-	public abstract Access getAccess();
+	public Access getAccess();
+
+	public Address getFromAddress();
+
+	public Address getToAddress();
 
 }
