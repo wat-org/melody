@@ -28,6 +28,7 @@ public abstract class SimpleAbstractFireWallRule implements SimpleFireWallRule {
 		setAccess(access);
 	}
 
+	@Override
 	public Address getFromAddress() {
 		return _fromAddress;
 	}
@@ -41,6 +42,7 @@ public abstract class SimpleAbstractFireWallRule implements SimpleFireWallRule {
 		return previous;
 	}
 
+	@Override
 	public Address getToAddress() {
 		return _toAddress;
 	}
