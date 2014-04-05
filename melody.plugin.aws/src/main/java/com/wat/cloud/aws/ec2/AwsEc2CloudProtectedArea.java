@@ -201,6 +201,7 @@ public abstract class AwsEc2CloudProtectedArea {
 	 */
 	protected static ProtectedAreaId createSelfProtectedArea(AmazonEC2 ec2,
 			NetworkDeviceName netdev) {
+		// TODO : add rules to accept all incoming traffic from itself
 		ProtectedAreaName name = generateSelfProtectedAreaName(netdev);
 		String desc = generateSelfProtectedAreaDescription();
 		String sgid = AwsEc2CloudNetwork.createSecurityGroup(ec2,

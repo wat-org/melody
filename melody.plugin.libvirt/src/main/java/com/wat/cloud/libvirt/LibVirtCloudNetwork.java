@@ -150,7 +150,7 @@ public abstract class LibVirtCloudNetwork {
 			String sInstanceId, NetworkDeviceName devname) {
 		log.trace("Creating Self Proptected Area for Network Device '"
 				+ devname + "' of Domain '" + sInstanceId + "' ...");
-		// add a rule so that all incoming traffic from itself is accepted ?
+		// TODO : add rules to accept all incoming traffic from itself
 		ProtectedAreaName name = generateSelfProtectedAreaName(sInstanceId,
 				devname);
 		String desc = generateSelfProtectedAreaDescription();
