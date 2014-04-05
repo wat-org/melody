@@ -84,7 +84,7 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * <li>codes : which should contains {@link IcmpTypes} ;</li>
 	 * <li>types : which should contains {@link IcmpCodes} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>
-	 * <li>allow : which should contains {@link Access} ;</li>
+	 * <li>access : which should contains {@link Access} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
 	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>

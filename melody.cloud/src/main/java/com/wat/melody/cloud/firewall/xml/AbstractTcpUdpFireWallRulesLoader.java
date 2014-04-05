@@ -79,7 +79,7 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * <li>to-ips : which should contains {@link Addresses} :</li>
 	 * <li>to-ports : which should contains {@link PortRanges} ;</li>
 	 * <li>directions : which should contains {@link Directions} ;</li>
-	 * <li>allow : which should contains {@link Access} ;</li>
+	 * <li>access : which should contains {@link Access} ;</li>
 	 * <li>herit : which should contains an XPath Expression which refer to
 	 * another {@link Element}, which attributes will be used as source ;</li>
 	 * </ul>
