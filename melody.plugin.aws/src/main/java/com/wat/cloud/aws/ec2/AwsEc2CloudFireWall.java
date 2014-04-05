@@ -50,14 +50,22 @@ public abstract class AwsEc2CloudFireWall {
 
 	public static FireWallRules getFireWallRules(AmazonEC2 ec2, Instance i,
 			NetworkDeviceName netdev) {
-		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev)
-				.getValue();
+		String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2, i,
+				netdev).getValue();
 		List<IpPermission> perms = describeSecurityGroupRules(ec2, sgid);
 		return convertIpPermissions(perms);
 	}
 
-	public static FireWallRules getFireWallRules(AmazonEC2 ec2, SecurityGroup sg) {
-		return convertIpPermissions(sg.getIpPermissions());
+	public static FireWallRules getFireWallRules(AmazonEC2 ec2,
+			ProtectedAreaId paId) {
+		if (paId == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
+		}
+		List<IpPermission> perms = describeSecurityGroupRules(ec2,
+				paId.getValue());
+		return convertIpPermissions(perms);
 	}
 
 	/**
@@ -178,8 +186,8 @@ public abstract class AwsEc2CloudFireWall {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
-		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev)
-				.getValue();
+		String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2, i,
+				netdev).getValue();
 		List<IpPermission> toRev = convertFwRules(toRevoke);
 		// the conversion may have discard all rules
 		if (toRev.size() == 0) {
@@ -195,12 +203,17 @@ public abstract class AwsEc2CloudFireWall {
 		}
 	}
 
-	public static void revokeFireWallRules(AmazonEC2 ec2, SecurityGroup sg,
+	public static void revokeFireWallRules(AmazonEC2 ec2, ProtectedAreaId paId,
 			FireWallRules toRevoke) {
 		if (toRevoke == null || toRevoke.size() == 0) {
 			return;
 		}
-		String sgid = sg.getGroupId();
+		if (paId == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
+		}
+		String sgid = paId.getValue();
 		List<IpPermission> toRev = convertFwRules(toRevoke);
 		// the conversion may have discard all rules
 		if (toRev.size() == 0) {
@@ -213,8 +226,6 @@ public abstract class AwsEc2CloudFireWall {
 		for (SimpleFireWallRule rule : toRevoke) {
 			log.info(Msg.bind(Messages.CommonMsg_PA_REVOKE_FWRULE, sgid, rule));
 		}
-		// update security group, without AWS call
-		sg.getIpPermissions().removeAll(toRev);
 	}
 
 	public static void authorizeFireWallRules(AmazonEC2 ec2, Instance i,
@@ -222,8 +233,8 @@ public abstract class AwsEc2CloudFireWall {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
-		String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i, netdev)
-				.getValue();
+		String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2, i,
+				netdev).getValue();
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
 		// the conversion may have discard all rules
 		if (toAuth.size() == 0) {
@@ -239,12 +250,17 @@ public abstract class AwsEc2CloudFireWall {
 		}
 	}
 
-	public static void authorizeFireWallRules(AmazonEC2 ec2, SecurityGroup sg,
-			FireWallRules toAuthorize) {
+	public static void authorizeFireWallRules(AmazonEC2 ec2,
+			ProtectedAreaId paId, FireWallRules toAuthorize) {
 		if (toAuthorize == null || toAuthorize.size() == 0) {
 			return;
 		}
-		String sgid = sg.getGroupId();
+		if (paId == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
+		}
+		String sgid = paId.getValue();
 		List<IpPermission> toAuth = convertFwRules(toAuthorize);
 		// the conversion may have discard all rules
 		if (toAuth.size() == 0) {
@@ -258,8 +274,6 @@ public abstract class AwsEc2CloudFireWall {
 			log.info(Msg.bind(Messages.CommonMsg_PA_AUTHORIZE_FWRULE, sgid,
 					rule));
 		}
-		// update security group, without AWS call
-		sg.getIpPermissions().addAll(toAuth);
 	}
 
 	private static List<IpPermission> convertFwRules(FireWallRules rules) {

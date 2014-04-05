@@ -1,7 +1,6 @@
 package com.wat.cloud.aws.ec2;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.wat.cloud.aws.ec2.exception.SecurityGroupInUseException;
 import com.wat.melody.cloud.protectedarea.DefaultProtectedAreaController;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
@@ -20,7 +19,7 @@ import com.wat.melody.common.messages.Msg;
 public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 
 	private AmazonEC2 _cnx;
-	private SecurityGroup _securityGroup;
+	private FireWallRules _fireWallRules;
 
 	public AwsProtectedAreaController(AmazonEC2 connection,
 			ProtectedAreaId protectedAreaId) {
@@ -70,30 +69,35 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 
 	@Override
 	public FireWallRules getProtectedAreaFireWallRules() {
-		return AwsEc2CloudFireWall.getFireWallRules(getConnection(),
-				getSecurityGroup());
+		// get cached firewall rules (without libvirt call)
+		return getFireWallRules();
 	}
 
 	@Override
 	public void authorizeProtectedAreaFireWallRules(FireWallRules toAuthorize)
 			throws ProtectedAreaException, InterruptedException {
 		AwsEc2CloudFireWall.authorizeFireWallRules(getConnection(),
-				getSecurityGroup(), toAuthorize);
+				getProtectedAreaId(), toAuthorize);
+		// update firewall rules, without libvirt call
+		getFireWallRules().addAll(toAuthorize);
 	}
 
 	@Override
 	public void revokeProtectedAreaFireWallRules(FireWallRules toRevoke)
 			throws ProtectedAreaException, InterruptedException {
 		AwsEc2CloudFireWall.revokeFireWallRules(getConnection(),
-				getSecurityGroup(), toRevoke);
+				getProtectedAreaId(), toRevoke);
+		// update firewall rules, without libvirt call
+		getFireWallRules().removeAll(toRevoke);
 	}
 
 	public void refreshInternalDatas() {
+		// put firewall rules in cache
 		if (getProtectedAreaId() == null) {
-			setSecurityGroup(null);
+			setFireWallRules(null);
 		} else {
-			setSecurityGroup(AwsEc2CloudNetwork.getSecurityGroupById(
-					getConnection(), getProtectedAreaId().getValue()));
+			setFireWallRules(AwsEc2CloudFireWall.getFireWallRules(
+					getConnection(), getProtectedAreaId()));
 		}
 	}
 
@@ -112,20 +116,20 @@ public class AwsProtectedAreaController extends DefaultProtectedAreaController {
 		return previous;
 	}
 
-	private SecurityGroup getSecurityGroup() {
-		return _securityGroup;
+	private FireWallRules getFireWallRules() {
+		return _fireWallRules;
 	}
 
 	/**
-	 * @param securityGroup
-	 *            is the {@link SecurityGroup} to associate to this object.
+	 * @param fireWallRules
+	 *            is the {@link FireWallRules} to associate to this object.
 	 * 
-	 * @return the underlying {@link SecurityGroup} this object managed. Can be
-	 *         <tt>null</tt>, when the AWS Security Group is not created.
+	 * @return the underlying {@link FireWallRules} this object managed. Can be
+	 *         <tt>null</tt>, when the Protected Area is not created.
 	 */
-	private SecurityGroup setSecurityGroup(SecurityGroup securityGroup) {
-		SecurityGroup previous = getSecurityGroup();
-		_securityGroup = securityGroup;
+	private FireWallRules setFireWallRules(FireWallRules fireWallRules) {
+		FireWallRules previous = getFireWallRules();
+		_fireWallRules = fireWallRules;
 		return previous;
 	}
 

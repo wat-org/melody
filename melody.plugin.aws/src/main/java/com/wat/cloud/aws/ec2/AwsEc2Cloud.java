@@ -595,7 +595,8 @@ public abstract class AwsEc2Cloud {
 					+ ".");
 		}
 
-		ProtectedAreaId paid = AwsEc2CloudNetwork.createSelfProtectedArea(ec2);
+		ProtectedAreaId paid = AwsEc2CloudProtectedArea
+				.createSelfProtectedArea(ec2);
 
 		RunInstancesRequest rireq = new RunInstancesRequest();
 		rireq.withInstanceType(type.toString());
@@ -621,7 +622,7 @@ public abstract class AwsEc2Cloud {
 			 */
 			CreateTagsRequest ctreq = new CreateTagsRequest();
 			ctreq = ctreq.withResources(sInstanceId);
-			ctreq = ctreq.withTags(AwsEc2CloudNetwork
+			ctreq = ctreq.withTags(AwsEc2CloudProtectedArea
 					.createSelfProtectedAreaIdTag(paid));
 			ec2.createTags(ctreq);
 
@@ -787,8 +788,8 @@ public abstract class AwsEc2Cloud {
 					InstanceState.TERMINATED, timeout, 0);
 		} finally {
 			for (NetworkDevice netdev : netdevs) {
-				String sgid = AwsEc2CloudNetwork.getProtectedAreaId(ec2, i,
-						netdev.getNetworkDeviceName()).getValue();
+				String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2,
+						i, netdev.getNetworkDeviceName()).getValue();
 				try {
 					AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 				} catch (SecurityGroupInUseException e) {
