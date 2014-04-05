@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.wat.cloud.libvirt.exception.ProtectedAreaNotFoundException;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.instance.InstanceState;
@@ -42,7 +43,7 @@ import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * <p>
- * Quick and dirty class which provide access to libvirt features.
+ * Quick and dirty class which provides access to libvirt features.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -488,13 +489,18 @@ public abstract class LibVirtCloud {
 		return true;
 	}
 
-	private static String LOCK_UNIQ_DOMAIN = "";
-	private static String LOCK_CLONE_DISK = "";
+	private static String LOCK_UNIQ_DOMAIN = "domain_lock";
+	private static String LOCK_CLONE_DISK = "disk_lock";
 
+	/*
+	 * TODO : The caller must deal with ProtectedAreaNotFoundException.
+	 * 
+	 * What's the behavior of AWS Plug-In in this situation ?
+	 */
 	public static String newInstance(Connect cnx, InstanceType type,
 			String sImageId, KeyPairName keyPairName,
-			ProtectedAreaIds protectedAreaIds) {
-		// TODO : deal with Protected Area
+			ProtectedAreaIds protectedAreaIds)
+			throws ProtectedAreaNotFoundException {
 		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Connect.class.getCanonicalName());
@@ -510,71 +516,84 @@ public abstract class LibVirtCloud {
 				throw new RuntimeException(sImageId + ": No such image.");
 			}
 
-			// Create a dedicated Protected Area, for the first network device
 			NetworkDeviceName eth0Name = LibVirtCloudNetwork.eth0;
-			String sgid = LibVirtCloudNetwork.createSelfProtectedArea(cnx,
-					eth0Name);
 
 			Path ddt = getImageDomainDescriptor(sImageId);
 			PropertySet ps = new PropertySet();
 			Domain domain = null;
 			String sInstanceId = null;
+			String sMacAddr = null;
 			// Defines domain
 			synchronized (LOCK_UNIQ_DOMAIN) {// domain's name must be consistent
 				sInstanceId = generateUniqDomainName(cnx);
+				sMacAddr = LibVirtCloudNetwork.generateUniqMacAddress();
+				// Create the master network filter
+				try {
+					LibVirtCloudNetwork.createMasterNetworkFilter(cnx,
+							sInstanceId, eth0Name, sMacAddr, protectedAreaIds);
+				} catch (ProtectedAreaNotFoundException Ex) {
+					// release @mac when ProtectedAreaNotFoundException
+					log.error("Fail to create Master Network Filter on "
+							+ "Network Device '" + eth0Name + "' of Domain '"
+							+ sInstanceId
+							+ "'. Rolling-back Mac Address allocation ...");
+					LibVirtCloudNetwork.unregisterMacAddress(sMacAddr);
+					log.debug("Mac Address " + sMacAddr
+							+ " allocation rolled-back on Network Device '"
+							+ eth0Name + "' of Domain '" + sInstanceId + "'.");
+					throw Ex;
+				}
+
+				// Create the Domain
 				ps.put(new Property("vmName", sInstanceId));
-				ps.put(new Property("vmMacAddr", LibVirtCloudNetwork
-						.generateUniqMacAddress()));
+				ps.put(new Property("vmMacAddr", sMacAddr));
 				ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
 				ps.put(new Property("ram", String.valueOf(getRAM(type))));
-				ps.put(new Property("sgName", sgid));
 				ps.put(new Property("eth", eth0Name.getValue()));
 				log.trace("Creating domain '" + sInstanceId + "' (template:"
-						+ sImageId + ", mac-address:"
-						+ ps.getProperty("vmMacAddr").getValue() + ") ...");
+						+ sImageId + ", mac-address:" + sMacAddr + ") ...");
 				domain = cnx.domainDefineXML(XPathExpander
 						.expand(ddt, null, ps));
 			}
 			log.debug("Domain '" + sInstanceId + "' created (template:"
-					+ sImageId + ", mac-address:"
-					+ ps.getProperty("vmMacAddr").getValue() + ").");
+					+ sImageId + ", mac-address:" + sMacAddr + ").");
 
 			// Associate the keypair
 			LibVirtCloudKeyPair.associateKeyPairToInstance(domain, keyPairName);
-
-			// Create a network filter for the network device
-			// can be done after the domain definition
-			LibVirtCloudNetwork.createNetworkFilter(domain, ps);
 
 			// Create disk devices
 			NodeList nl = null;
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
 			StoragePool sp = cnx.storagePoolLookupByName("default");
-			for (int i = 0; i < nl.getLength(); i++) {
-				Element n = (Element) nl.item(i);
-				String sDescriptorPath = n.getAttribute("descriptor");
-				String sSourceVolumePath = n.getAttribute("source");
-				String sDiskDeviceName = n.getAttribute("device");
-				log.trace("Creating Disk Device '" + sDiskDeviceName
-						+ "' for Domain '" + sInstanceId
-						+ "' ... LibVirt Volume Image is '" + sSourceVolumePath
-						+ "'.");
-				StorageVol sourceVolume = cnx
-						.storageVolLookupByPath(sSourceVolumePath);
-				String sDescriptor = null;
-				sDescriptor = XPathExpander.expand(Paths.get(sDescriptorPath),
-						null, ps);
-				StorageVol sv = null;
-				synchronized (LOCK_CLONE_DISK) {
-					// we can't clone a volume which is already being cloned
-					// and we can't use nio.Files.copy which is 4 times slower
-					sv = sp.storageVolCreateXMLFrom(sDescriptor, sourceVolume,
-							0);
+			synchronized (conf.getDocument()) {
+				for (int i = 0; i < nl.getLength(); i++) {
+					Element n = (Element) nl.item(i);
+					String sDescriptorPath = n.getAttribute("descriptor");
+					String sSourceVolumePath = n.getAttribute("source");
+					String sDiskDeviceName = n.getAttribute("device");
+					log.trace("Creating Disk Device '" + sDiskDeviceName
+							+ "' for Domain '" + sInstanceId
+							+ "' ... LibVirt Volume Image is '"
+							+ sSourceVolumePath + "'.");
+					StorageVol sourceVolume = cnx
+							.storageVolLookupByPath(sSourceVolumePath);
+					String sDescriptor = null;
+					sDescriptor = XPathExpander.expand(
+							Paths.get(sDescriptorPath), null, ps);
+					StorageVol sv = null;
+					synchronized (LOCK_CLONE_DISK) {
+						// we can't clone a volume which is already being cloned
+						// and we can't use nio.Files.copy which is 4 times
+						// slower
+						sv = sp.storageVolCreateXMLFrom(sDescriptor,
+								sourceVolume, 0);
+					}
+					log.debug("Disk Device '" + sDiskDeviceName
+							+ "' created for Domain '" + sInstanceId
+							+ "'. LibVirt Volume path is '" + sv.getPath()
+							+ "'.");
 				}
-				log.debug("Disk Device '" + sDiskDeviceName
-						+ "' created for Domain '" + sInstanceId
-						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
 			// Start domain
@@ -599,7 +618,6 @@ public abstract class LibVirtCloud {
 		 * SHUTTING_DOWN and a TERMINATED state.
 		 */
 		try {
-			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 			DomainState state = d.getInfo().state;
 			// Destroy domain
@@ -617,16 +635,12 @@ public abstract class LibVirtCloud {
 					.getNetworkDevices(d);
 			for (NetworkDevice netdev : netdevs) {
 				NetworkDeviceName devname = netdev.getNetworkDeviceName();
-				String sgid = LibVirtCloudNetwork
-						.getProtectedAreaId(d, devname).getValue();
-				// Destroy the network filter
-				LibVirtCloudNetwork.deleteNetworkFilter(d, devname);
+				// Destroy the master network filter
+				LibVirtCloudNetwork.deleteMasterNetworkFilter(d, devname);
 				// Release the @mac
 				String mac = LibVirtCloudNetwork
 						.getDomainMacAddress(d, devname);
 				LibVirtCloudNetwork.unregisterMacAddress(mac);
-				// Destroy the security group
-				LibVirtCloudNetwork.deleteSecurityGroup(cnx, sgid);
 			}
 			// Destroy disk devices
 			DiskDeviceList diskdevs = LibVirtCloudDisk.getDiskDevices(d);

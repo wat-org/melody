@@ -5,39 +5,29 @@ import java.io.IOException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.libvirt.Connect;
-import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.NetworkFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.Access;
 import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.IcmpCode;
 import com.wat.melody.common.firewall.IcmpType;
-import com.wat.melody.common.firewall.NetworkDeviceName;
-import com.wat.melody.common.firewall.Protocol;
 import com.wat.melody.common.firewall.SimpleAbstractTcpUdpFireWallwRule;
 import com.wat.melody.common.firewall.SimpleFireWallRule;
 import com.wat.melody.common.firewall.SimpleIcmpFireWallRule;
 import com.wat.melody.common.firewall.SimpleTcpFireWallRule;
 import com.wat.melody.common.firewall.SimpleUdpFireWallRule;
-import com.wat.melody.common.firewall.exception.IllegalIcmpCodeException;
-import com.wat.melody.common.firewall.exception.IllegalIcmpTypeException;
 import com.wat.melody.common.network.IpRange;
-import com.wat.melody.common.network.PortRange;
-import com.wat.melody.common.network.exception.IllegalIpRangeException;
-import com.wat.melody.common.network.exception.IllegalPortRangeException;
 import com.wat.melody.common.xml.Doc;
-import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * <p>
- * Quick and dirty class which provide libvirt firewall management features.
+ * Quick and dirty class which provides libvirt firewall management features.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -45,187 +35,95 @@ import com.wat.melody.common.xpath.XPathExpander;
  */
 public abstract class LibVirtCloudFireWall {
 
-	private static Logger log = LoggerFactory
-			.getLogger(LibVirtCloudFireWall.class);
-
-	public static FireWallRules getFireWallRules(Domain d,
-			NetworkDeviceName netdev) {
-		if (d == null) {
+	protected static void setFireWallRules(Connect cnx, ProtectedAreaId paId,
+			FireWallRules rules) {
+		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ "Must be a valid " + Connect.class.getCanonicalName()
 					+ ".");
 		}
-		if (netdev == null) {
+		if (paId == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDeviceName.class.getCanonicalName() + ".");
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
+		}
+		if (rules == null) {
+			rules = new FireWallRules();
 		}
 		try {
-			FireWallRules rules = new FireWallRules();
-			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
-					.getValue();
-			NetworkFilter nf = cnx.networkFilterLookupByName(sgid);
+			// load current rules
+			boolean changed = false;
+			String sgid = paId.getValue();
+			NetworkFilter sg = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
-			doc.loadFromXML(nf.getXMLDesc());
+			doc.loadFromXML(sg.getXMLDesc());
+			// remove all current rules
+			NodeList ruleNodes = doc.evaluateAsNodeList("/filter/rule");
+			if (ruleNodes != null && ruleNodes.getLength() > 0) {
+				for (int i = 0; i < ruleNodes.getLength(); i++) {
+					Element ruleNode = (Element) ruleNodes.item(i);
+					ruleNode.getParentNode().removeChild(ruleNode);
+				}
+				changed = true;
+			}
 
-			NodeList nl = doc.evaluateAsNodeList("/filter/rule");
-			Element n = null;
-			for (int i = 0; i < nl.getLength(); i++) {
-				n = (Element) nl.item(i);
-				String sProtocol = XPathExpander.evaluateAsString(
-						"./node-name(*)", n);
-				Protocol proto = Protocol.parseString(sProtocol);
-				SimpleFireWallRule rule = null;
-				switch (proto) {
+			// insert all new rules
+			for (SimpleFireWallRule rule : rules) {
+				Element nrule = doc.getDocument().createElement("rule");
+				Element nin = null;
+				switch (rule.getProtocol()) {
 				case TCP:
-					rule = createTcpRuleFromElement(n);
+					nin = createTcpUdpRuleElement(nrule,
+							(SimpleTcpFireWallRule) rule);
 					break;
 				case UDP:
-					rule = createUdpRuleFromElement(n);
+					nin = createTcpUdpRuleElement(nrule,
+							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					rule = createIcmpRuleFromElement(n);
+					nin = createIcmpRuleElement(nrule,
+							(SimpleIcmpFireWallRule) rule);
 					break;
 				}
-				if (rule == null) {
+				if (nin == null) {
 					continue;
 				}
-				rules.add(rule);
+				nrule.setAttribute("priority", "500");
+				nrule.setAttribute("action",
+						rule.getAccess() == Access.ALLOW ? "accept" : "drop");
+				nrule.setAttribute("direction",
+						rule.getDirection() == Direction.IN ? "in" : "out");
+				nrule.appendChild(nin);
+				doc.getDocument().getFirstChild().appendChild(nrule);
+				changed = true;
 			}
-			return rules;
-		} catch (LibvirtException | IOException | XPathExpressionException
-				| MelodyException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	private static SimpleFireWallRule createTcpRuleFromElement(Element n) {
-		try {
-			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
-			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
-			IpRange fromIp = IpRange.parseString(sIp + "/" + sMask);
-
-			String start = XPathExpander
-					.evaluateAsString("./*/@srcporstart", n);
-			String end = XPathExpander.evaluateAsString("./*/@srcportend", n);
-			PortRange fromPorts = PortRange.parseString(start + "-" + end);
-
-			sIp = XPathExpander.evaluateAsString("./*/@dstipaddr", n);
-			sMask = XPathExpander.evaluateAsString("./*/@dstipmask", n);
-			IpRange toIp = IpRange.parseString(sIp + "/" + sMask);
-
-			start = XPathExpander.evaluateAsString("./*/@dstportstart", n);
-			end = XPathExpander.evaluateAsString("./*/@dstportend", n);
-			PortRange toPorts = PortRange.parseString(start + "-" + end);
-
-			String sDir = XPathExpander.evaluateAsString("./@direction", n);
-			Direction dir = sDir.equalsIgnoreCase("in") ? Direction.IN
-					: Direction.OUT;
-
-			String sAccess = XPathExpander.evaluateAsString("./@action", n);
-			Access access = sAccess.equalsIgnoreCase("accept") ? Access.ALLOW
-					: Access.DENY;
-			return new SimpleTcpFireWallRule(fromIp, fromPorts, toIp, toPorts,
-					dir, access);
-		} catch (XPathExpressionException | IllegalIpRangeException
-				| IllegalPortRangeException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	private static SimpleFireWallRule createUdpRuleFromElement(Element n) {
-		try {
-			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
-			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
-			IpRange fromIp = IpRange.parseString(sIp + "/" + sMask);
-
-			String start = XPathExpander
-					.evaluateAsString("./*/@srcporstart", n);
-			String end = XPathExpander.evaluateAsString("./*/@srcportend", n);
-			PortRange fromPorts = PortRange.parseString(start + "-" + end);
-
-			sIp = XPathExpander.evaluateAsString("./*/@dstipaddr", n);
-			sMask = XPathExpander.evaluateAsString("./*/@dstipmask", n);
-			IpRange toIp = IpRange.parseString(sIp + "/" + sMask);
-
-			start = XPathExpander.evaluateAsString("./*/@dstportstart", n);
-			end = XPathExpander.evaluateAsString("./*/@dstportend", n);
-			PortRange toPorts = PortRange.parseString(start + "-" + end);
-
-			String sDir = XPathExpander.evaluateAsString("./@direction", n);
-			Direction dir = sDir.equalsIgnoreCase("in") ? Direction.IN
-					: Direction.OUT;
-
-			String sAccess = XPathExpander.evaluateAsString("./@action", n);
-			Access access = sAccess.equalsIgnoreCase("accept") ? Access.ALLOW
-					: Access.DENY;
-			return new SimpleUdpFireWallRule(fromIp, fromPorts, toIp, toPorts,
-					dir, access);
-		} catch (XPathExpressionException | IllegalIpRangeException
-				| IllegalPortRangeException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	private static SimpleFireWallRule createIcmpRuleFromElement(Element n) {
-		try {
-			String sIp = XPathExpander.evaluateAsString("./*/@srcipaddr", n);
-			String sMask = XPathExpander.evaluateAsString("./*/@srcipmask", n);
-			IpRange fromIp = IpRange.parseString(sIp + "/" + sMask);
-
-			sIp = XPathExpander.evaluateAsString("./*/@dstipaddr", n);
-			sMask = XPathExpander.evaluateAsString("./*/@dstipmask", n);
-			IpRange toIp = IpRange.parseString(sIp + "/" + sMask);
-
-			String sDir = XPathExpander.evaluateAsString("./@direction", n);
-			Direction dir = sDir.equalsIgnoreCase("in") ? Direction.IN
-					: Direction.OUT;
-
-			String sAccess = XPathExpander.evaluateAsString("./@action", n);
-			Access access = sAccess.equalsIgnoreCase("accept") ? Access.ALLOW
-					: Access.DENY;
-
-			String sType = XPathExpander.evaluateAsString("./*/@type", n);
-			IcmpType type = IcmpType.ALL;
-			if (sType != null && sType.length() != 0) {
-				type = IcmpType.parseString(sType);
+			if (changed) {
+				cnx.networkFilterDefineXML(doc.dump());
 			}
-
-			String sCode = XPathExpander.evaluateAsString("./*/@code", n);
-			IcmpCode code = IcmpCode.ALL;
-			if (sCode != null && sCode.length() != 0) {
-				code = IcmpCode.parseString(sCode);
-			}
-
-			return new SimpleIcmpFireWallRule(fromIp, toIp, type, code, dir,
-					access);
-		} catch (XPathExpressionException | IllegalIpRangeException
-				| IllegalIcmpTypeException | IllegalIcmpCodeException Ex) {
+		} catch (XPathExpressionException | LibvirtException | MelodyException
+				| IOException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	public static void revokeFireWallRules(Domain d, NetworkDeviceName netdev,
-			FireWallRules rules) {
+	protected static void revokeFireWallRules(Connect cnx,
+			ProtectedAreaId paId, FireWallRules rules) {
 		if (rules == null || rules.size() == 0) {
 			return;
 		}
-		if (d == null) {
+		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ "Must be a valid " + Connect.class.getCanonicalName()
 					+ ".");
 		}
-		if (netdev == null) {
+		if (paId == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDeviceName.class.getCanonicalName() + ".");
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
 		}
 		try {
-			String sInstanceId = d.getName();
-			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
-					.getValue();
+			boolean changed = false;
+			String sgid = paId.getValue();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());
@@ -242,7 +140,7 @@ public abstract class LibVirtCloudFireWall {
 							(SimpleUdpFireWallRule) rule);
 					break;
 				case ICMP:
-					n = selectIcmpFwRuleelement(doc,
+					n = selectIcmpFwRuleElement(doc,
 							(SimpleIcmpFireWallRule) rule);
 					break;
 				}
@@ -250,10 +148,11 @@ public abstract class LibVirtCloudFireWall {
 					continue;
 				}
 				n.getParentNode().removeChild(n);
-				log.debug("Domain '" + sInstanceId + "' revokes '" + netdev
-						+ "' the FireWall rule " + rule + ".");
+				changed = true;
 			}
-			cnx.networkFilterDefineXML(doc.dump());
+			if (changed) {
+				cnx.networkFilterDefineXML(doc.dump());
+			}
 		} catch (LibvirtException | MelodyException | IOException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -261,13 +160,7 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element selectTcpUdpFwRuleElement(Doc doc,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
-		// temporary workaround. waiting for full protected area support
-		if (!(rule.getFromAddress() instanceof IpRange)) {
-			throw new IllegalArgumentException(rule.getFromAddress().getClass()
-					.getCanonicalName()
-					+ ": Not accepted. Only support "
-					+ IpRange.class.getCanonicalName() + ".");
-		}
+		// this Address can't be a ProtectedAreaId
 		IpRange fromIpRange = (IpRange) rule.getFromAddress();
 		IpRange toIpRange = (IpRange) rule.getToAddress();
 
@@ -294,15 +187,9 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	private static Element selectIcmpFwRuleelement(Doc doc,
+	private static Element selectIcmpFwRuleElement(Doc doc,
 			SimpleIcmpFireWallRule rule) {
-		// temporary workaround. waiting for full protected area support
-		if (!(rule.getFromAddress() instanceof IpRange)) {
-			throw new IllegalArgumentException(rule.getFromAddress().getClass()
-					.getCanonicalName()
-					+ ": Not accepted. Only support "
-					+ IpRange.class.getCanonicalName() + ".");
-		}
+		// this Address can't be a ProtectedAreaId
 		IpRange fromIpRange = (IpRange) rule.getFromAddress();
 		IpRange toIpRange = (IpRange) rule.getToAddress();
 
@@ -329,26 +216,24 @@ public abstract class LibVirtCloudFireWall {
 		}
 	}
 
-	public static void authorizeFireWallRules(Domain d,
-			NetworkDeviceName netdev, FireWallRules rules) {
+	protected static void authorizeFireWallRules(Connect cnx,
+			ProtectedAreaId paId, FireWallRules rules) {
 		if (rules == null || rules.size() == 0) {
 			return;
 		}
-		if (d == null) {
+		if (cnx == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ "Must be a valid " + Connect.class.getCanonicalName()
 					+ ".");
 		}
-		if (netdev == null) {
+		if (paId == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
-					+ NetworkDeviceName.class.getCanonicalName() + ".");
+					+ ProtectedAreaId.class.getCanonicalName() + ".");
 		}
 		try {
-			String sInstanceId = d.getName();
-			Connect cnx = d.getConnect();
-			String sgid = LibVirtCloudNetwork.getProtectedAreaId(d, netdev)
-					.getValue();
+			boolean changed = false;
+			String sgid = paId.getValue();
 			NetworkFilter sg = cnx.networkFilterLookupByName(sgid);
 			Doc doc = new Doc();
 			doc.loadFromXML(sg.getXMLDesc());
@@ -380,10 +265,11 @@ public abstract class LibVirtCloudFireWall {
 						rule.getDirection() == Direction.IN ? "in" : "out");
 				nrule.appendChild(nin);
 				doc.getDocument().getFirstChild().appendChild(nrule);
-				log.debug("Domain '" + sInstanceId + "' grants '" + netdev
-						+ "' the FireWall rule " + rule + ".");
+				changed = true;
 			}
-			cnx.networkFilterDefineXML(doc.dump());
+			if (changed) {
+				cnx.networkFilterDefineXML(doc.dump());
+			}
 		} catch (LibvirtException | MelodyException | IOException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -391,13 +277,7 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element createTcpUdpRuleElement(Element nrule,
 			SimpleAbstractTcpUdpFireWallwRule rule) {
-		// temporary workaround. waiting for full protected area support
-		if (!(rule.getFromAddress() instanceof IpRange)) {
-			throw new IllegalArgumentException(rule.getFromAddress().getClass()
-					.getCanonicalName()
-					+ ": Not accepted. Only support "
-					+ IpRange.class.getCanonicalName() + ".");
-		}
+		// this Address can't be a ProtectedAreaId
 		IpRange fromIpRange = (IpRange) rule.getFromAddress();
 		IpRange toIpRange = (IpRange) rule.getToAddress();
 
@@ -425,13 +305,7 @@ public abstract class LibVirtCloudFireWall {
 
 	private static Element createIcmpRuleElement(Element nrule,
 			SimpleIcmpFireWallRule rule) {
-		// temporary workaround. waiting for full protected area support
-		if (!(rule.getFromAddress() instanceof IpRange)) {
-			throw new IllegalArgumentException(rule.getFromAddress().getClass()
-					.getCanonicalName()
-					+ ": Not accepted. Only support "
-					+ IpRange.class.getCanonicalName() + ".");
-		}
+		// this Address can't be a ProtectedAreaId
 		IpRange fromIpRange = (IpRange) rule.getFromAddress();
 		IpRange toIpRange = (IpRange) rule.getToAddress();
 

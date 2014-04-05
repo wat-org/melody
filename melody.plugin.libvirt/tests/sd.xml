@@ -37,6 +37,14 @@
 	<order name="update_firewall" >
 		<call orders="update_firewall" sequence-descriptor="§[melody.extensions.vm.path]§"/>
 	</order>
+
+    <order name="create_all_protected_areas" >
+        <call orders="create_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
+
+    <order name="destroy_all_protected_areas" >
+        <call orders="destroy_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
+    </order>
 	
 	
 	<order name="all" >

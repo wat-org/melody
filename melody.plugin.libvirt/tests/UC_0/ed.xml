@@ -15,7 +15,7 @@
 				<tcp herit="./environment/global-fwrules/ssh"/>
 				<udp access="allow" directions="in" from-ips="all" to-ports="51,123"/>
 				<udp access="allow" devices-name="eth1" directions="in" from-ips="all" to-ports="514"/>
-				<ucp herit="./environment/global-fwrules/ssh"/>
+				<udp herit="./environment/global-fwrules/ssh"/>
 				<icmp access="allow" directions="in" from-ips="all"/>
 				<icmp access="allow" codes="8" devices-name="eth0" directions="in" from-ips="all" types="4,5"/>
 				<icmp access="allow" codes="6,7" devices-name="eth1" directions="in" from-ips="all" types="3"/>
@@ -29,14 +29,25 @@
 	</models>
 	
 	<protected-areas>
-		<protected-area id="sg-13434" name="salut">
-			<tcp access="allow" directions="in" from-ips="10.10.0.0/16" to-ports="678"/>
-			<udp access="allow" directions="in" from-ips="all" to-ports="514"/>
+	
+		<protected-area name="salut" region="qemu:///system">
+			<tcp access="allow" directions="in" from-ips="zzlast ,10.10.0.0/16, ,10.20.0.0/16,10.30.0.0/16" to-ports="678"/>
+			<udp access="allow" directions="in" from-ips="sg2, aafirst , all" to-ports="514"/>
 			<icmp access="allow" codes="8" directions="in" from-ips="all" types="4,5"/>
 		</protected-area>
-		<protected-area id="sg-89f5aafe" name="sg2"/>
-		<protected-area id="sg-75f6a902" name="aafirst"/>
-		<protected-area id="sg-73f6a904" name="zzlast"/>
+		<protected-area name="sg2" region="qemu:///system">
+			<udp access="allow" directions="in" from-ips="all" to-ports="524"/>
+		</protected-area>
+		<protected-area name="aafirst" region="qemu:///system">
+			<udp access="allow" directions="in" from-ips="all" to-ports="534"/>
+		</protected-area>
+		<protected-area name="zzlast" region="qemu:///system">
+			<udp access="allow" directions="in" from-ips="all" to-ports="544"/>
+			<udp access="allow" directions="out" to-ips="all" to-ports="544"/>
+			<udp access="deny" directions="in" from-ips="all" to-ports="554"/>
+			<udp access="deny" directions="out" to-ips="all" to-ports="554"/>
+		</protected-area>
+
 	</protected-areas>
 
 	<instances>

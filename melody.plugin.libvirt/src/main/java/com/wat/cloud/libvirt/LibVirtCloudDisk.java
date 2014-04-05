@@ -9,6 +9,7 @@ import org.libvirt.StoragePool;
 import org.libvirt.StorageVol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.DiskDevice;
@@ -28,7 +29,7 @@ import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
  * <p>
- * Quick and dirty class which provide libvirt disk management features.
+ * Quick and dirty class which provides libvirt disk management features.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -50,12 +51,13 @@ public abstract class LibVirtCloudDisk {
 			NodeList nl = ddoc
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
 			for (int i = 0; i < nl.getLength(); i++) {
+				Element diskNode = (Element) nl.item(i);
 				String volPath = XPathExpander.evaluateAsString("source/@file",
-						nl.item(i));
+						diskNode);
 				StorageVol sv = d.getConnect().storageVolLookupByPath(volPath);
 				DiskDeviceName devname = DiskDeviceName.parseString("/dev/"
 						+ XPathExpander.evaluateAsString("target/@dev",
-								nl.item(i)));
+								diskNode));
 				DiskDeviceSize devsize = DiskDeviceSize.parseInt((int) (sv
 						.getInfo().capacity / (1024 * 1024 * 1024)));
 				Boolean delonterm = true;

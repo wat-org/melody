@@ -154,20 +154,21 @@ public class LibVirtInstanceController extends DefaultInstanceController {
 
 	@Override
 	public FireWallRules getInstanceFireWallRules(NetworkDeviceName netdev) {
-		return LibVirtCloudFireWall.getFireWallRules(getInstance(), netdev);
+		return LibVirtCloudProtectedArea
+				.getFireWallRules(getInstance(), netdev);
 	}
 
 	@Override
 	public void revokeInstanceFireWallRules(NetworkDeviceName netdev,
 			FireWallRules toRevoke) throws OperationException {
-		LibVirtCloudFireWall.revokeFireWallRules(getInstance(), netdev,
+		LibVirtCloudProtectedArea.revokeFireWallRules(getInstance(), netdev,
 				toRevoke);
 	}
 
 	@Override
 	public void authorizeInstanceFireWallRules(NetworkDeviceName netdev,
 			FireWallRules toAuthorize) throws OperationException {
-		LibVirtCloudFireWall.authorizeFireWallRules(getInstance(), netdev,
+		LibVirtCloudProtectedArea.authorizeFireWallRules(getInstance(), netdev,
 				toAuthorize);
 	}
 

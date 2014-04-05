@@ -21,7 +21,7 @@ import com.wat.melody.common.keypair.KeyPairName;
 
 /**
  * <p>
- * Quick and dirty class which provide libvirt keypair management features.
+ * Quick and dirty class which provides libvirt keypair management features.
  * </p>
  * 
  * @author Guillaume Cornet

@@ -2,7 +2,6 @@ package com.wat.cloud.libvirt;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -15,12 +14,17 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.wat.cloud.libvirt.exception.ProtectedAreaNotFoundException;
+import com.wat.cloud.libvirt.exception.ProtectedAreaStillInUseException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.network.NetworkDevice;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.exception.IllegalNetworkDeviceListException;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
+import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
@@ -33,7 +37,7 @@ import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
  * <p>
- * Quick and dirty class which provide libvirt network management features.
+ * Quick and dirty class which provides libvirt network management features.
  * </p>
  * 
  * @author Guillaume Cornet
@@ -103,21 +107,37 @@ public abstract class LibVirtCloudNetwork {
 	 * method allow to generate a name, based on the given network device name,
 	 * which will be used during the Self Protected Area creation.
 	 */
-	private static String generateSelfProtectedAreaName(NetworkDeviceName netdev) {
+	private static ProtectedAreaName generateSelfProtectedAreaName(
+			String sInstanceId, NetworkDeviceName devname) {
+		if (devname == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceName.class.getCanonicalName() + ".");
+		}
 		// This formula should produce a unique name
-		return "melody-self-protected-area:" + netdev + ":" + UUID.randomUUID();
+		String name = "melody-self-protected-area:" + sInstanceId + ":"
+				+ devname;
+		try {
+			return ProtectedAreaName.parseString(name);
+		} catch (IllegalProtectedAreaNameException Ex) {
+			throw new RuntimeException("Fail to convert '" + name + "' into '"
+					+ ProtectedAreaName.class.getCanonicalName() + "'. "
+					+ "If this error happened, you should modify the "
+					+ "conversion rule.", Ex);
+		}
 	}
 
 	/**
 	 * <p>
-	 * Create an empty self Protected Area, dedicated for the given network
-	 * interface of an instance.
+	 * Create an empty self Protected Area, dedicated for the given domain, and
+	 * the given network interface.
 	 * </p>
 	 * 
 	 * @param ec2
-	 * @param netdev
-	 *            is the network interface to associate to the Protected Area to
-	 *            create.
+	 * @param sInstanceId
+	 *            is the name of the related domain.
+	 * @param devname
+	 *            is the name of the related network interface.
 	 * 
 	 * @return the newly created Protected Area Identifier.
 	 * 
@@ -126,11 +146,39 @@ public abstract class LibVirtCloudNetwork {
 	 * @throws IllegalArgumentException
 	 *             if the given network device name is <tt>null</tt>.
 	 */
-	protected static String createSelfProtectedArea(Connect cnx,
-			NetworkDeviceName netdev) {
-		String name = generateSelfProtectedAreaName(netdev);
+	private static ProtectedAreaId createSelfProtectedArea(Connect cnx,
+			String sInstanceId, NetworkDeviceName devname) {
+		log.trace("Creating Self Proptected Area for Network Device '"
+				+ devname + "' of Domain '" + sInstanceId + "' ...");
+		// add a rule so that all incoming traffic from itself is accepted ?
+		ProtectedAreaName name = generateSelfProtectedAreaName(sInstanceId,
+				devname);
 		String desc = generateSelfProtectedAreaDescription();
-		return createSecurityGroup(cnx, name, desc);
+		ProtectedAreaId paId = LibVirtCloudProtectedArea.createProtectedArea(
+				cnx, name, desc);
+		log.debug("Self Proptected Area '" + paId
+				+ "' created for Network Device '" + devname + "' of Domain '"
+				+ sInstanceId + "'.");
+		return paId;
+	}
+
+	private static void deleteSelfProtectedArea(Connect cnx,
+			String sInstanceId, NetworkDeviceName devname,
+			ProtectedAreaId selfProtectedAreaId) {
+		try {
+			log.trace("Deleting Self Proptected Area '" + selfProtectedAreaId
+					+ "' for Network Device '" + devname + "' of Domain '"
+					+ sInstanceId + "' ...");
+			LibVirtCloudProtectedArea.destroyProtectedArea(cnx,
+					selfProtectedAreaId);
+			log.debug("Self Proptected Area '" + selfProtectedAreaId
+					+ "' deleted for Network Device '" + devname
+					+ "' of Domain '" + sInstanceId + "'.");
+		} catch (ProtectedAreaStillInUseException Ex) {
+			throw new RuntimeException("unexcepted error while deleting self "
+					+ "protected area '" + selfProtectedAreaId
+					+ "'. Can't be in use.", Ex);
+		}
 	}
 
 	/**
@@ -156,11 +204,11 @@ public abstract class LibVirtCloudNetwork {
 					+ "[@type='network']/filterref/@filter");
 			for (int i = 0; i < nl.getLength(); i++) {
 				String filter = nl.item(i).getNodeValue();
-				NetworkDeviceName netdev = getNetworkDeviceNameFromNetworkFilter(filter);
-				String mac = getDomainMacAddress(d, netdev);
+				NetworkDeviceName devname = getNetworkDeviceNameFromMasterNetworkFilter(filter);
+				String mac = getDomainMacAddress(d, devname);
 				String ip = getDomainIpAddress(mac);
 				String fqdn = getDomainDnsName(mac);
-				ndl.addNetworkDevice(new NetworkDevice(netdev, mac, ip, fqdn,
+				ndl.addNetworkDevice(new NetworkDevice(devname, mac, ip, fqdn,
 						null, null, null, null));
 			}
 			if (ndl.size() == 0) {
@@ -193,8 +241,6 @@ public abstract class LibVirtCloudNetwork {
 
 		try {
 			NetworkDeviceName devname = netdev.getNetworkDeviceName();
-			String sgid = getProtectedAreaId(d, devname).getValue();
-			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
 
 			// Search network device @mac
@@ -213,13 +259,10 @@ public abstract class LibVirtCloudNetwork {
 					+ sInstanceId + "'.");
 
 			// Destroy the network filter
-			deleteNetworkFilter(d, devname);
+			deleteMasterNetworkFilter(d, devname);
 
 			// Release the @mac
 			unregisterMacAddress(mac);
-
-			// Delete the security group
-			deleteSecurityGroup(cnx, sgid);
 		} catch (XPathExpressionSyntaxException | IllegalPropertyException
 				| LibvirtException Ex) {
 			throw new RuntimeException(Ex);
@@ -244,27 +287,31 @@ public abstract class LibVirtCloudNetwork {
 		}
 
 		try {
-			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
+			String sMacAddr = generateUniqMacAddress();
 			NetworkDeviceName devname = netdev.getNetworkDeviceName();
-			// Create a Protected Area, for the network device
-			String sgid = LibVirtCloudNetwork.createSelfProtectedArea(cnx,
-					devname);
 
-			// Create a network filter for the network device
+			// Create a master network filter for the network device
 			PropertySet vars = new PropertySet();
-			vars.put(new Property("vmMacAddr", generateUniqMacAddress()));
+			vars.put(new Property("vmMacAddr", sMacAddr));
 			vars.put(new Property("vmName", sInstanceId));
-			vars.put(new Property("sgName", sgid));
 			vars.put(new Property("eth", devname.getValue()));
 
-			// Create a network filter for the network device
-			createNetworkFilter(d, vars);
-
+			// associate the network device the same protected area
+			ProtectedAreaIds paids = LibVirtCloudProtectedArea
+					.getProtectedAreas(sInstanceId);
+			try {
+				createMasterNetworkFilter(d.getConnect(), sInstanceId, devname,
+						sMacAddr, paids);
+			} catch (ProtectedAreaNotFoundException Ex) {
+				unregisterMacAddress(sMacAddr);
+				throw new RuntimeException("Since this protected area id have "
+						+ "been retrieve from the domain, this protected area "
+						+ "must exists.", Ex);
+			}
 			// Attach the network device
 			log.trace("Attaching Network Device '" + devname + "' on Domain '"
-					+ sInstanceId + "' ... MacAddress is '"
-					+ vars.getProperty("vmMacAddr").getValue() + "'.");
+					+ sInstanceId + "' ... MacAddress is '" + sMacAddr + "'.");
 			int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
 					: 2;
 			d.attachDeviceFlags(XPathExpander.expand(
@@ -277,15 +324,15 @@ public abstract class LibVirtCloudNetwork {
 		}
 	}
 
-	public static String getDomainMacAddress(Domain d, NetworkDeviceName netdev) {
-		if (netdev == null) {
-			netdev = eth0;
+	public static String getDomainMacAddress(Domain d, NetworkDeviceName devname) {
+		if (devname == null) {
+			devname = eth0;
 		}
 		try {
 			Doc doc = LibVirtCloud.getDomainXMLDesc(d);
 			return doc.evaluateAsString("/domain/devices/interface"
 					+ "[@type='network' and filterref/@filter='"
-					+ getNetworkFilter(d, netdev) + "']/mac/@address");
+					+ getMasterNetworkFilter(d, devname) + "']/mac/@address");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
@@ -324,20 +371,23 @@ public abstract class LibVirtCloudNetwork {
 	}
 
 	protected static synchronized String generateUniqMacAddress() {
-		NodeList nlFreeMacAddrPool = null;
+		Element hostNode = null;
 		try {
-			nlFreeMacAddrPool = netconf.evaluateAsNodeList("/network/ip/dhcp"
-					+ "/host[ not(exists(@allocated)) or @allocated!='true' ]");
+			hostNode = (Element) netconf.evaluateAsNode("/network/ip/dhcp/host"
+					+ "[ not(exists(@allocated))"
+					+ " or @allocated!='true' ][1]");
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
-		if (nlFreeMacAddrPool == null || nlFreeMacAddrPool.getLength() == 0) {
+		if (hostNode == null) {
 			throw new RuntimeException("No more free Mac Address.");
 		}
-		String sFirstFreeMacAddr = nlFreeMacAddrPool.item(0).getAttributes()
-				.getNamedItem("mac").getNodeValue();
+		if (!hostNode.hasAttribute("mac")) {
+			throw new RuntimeException("No attribute 'mac' defined.");
+		}
+		String sFirstFreeMacAddr = hostNode.getAttribute("mac");
 		log.trace("Allocating Mac Address '" + sFirstFreeMacAddr + "' ...");
-		((Element) nlFreeMacAddrPool.item(0)).setAttribute("allocated", "true");
+		hostNode.setAttribute("allocated", "true");
 		netconf.store();
 		log.debug("Mac Address '" + sFirstFreeMacAddr + "' allocated.");
 		return sFirstFreeMacAddr;
@@ -366,13 +416,13 @@ public abstract class LibVirtCloudNetwork {
 		log.debug("Mac Address '" + sMacAddr + "' released.");
 	}
 
-	private static boolean networkFilterExists(Connect cnx, String sgid)
+	private static boolean networkFilterExists(Connect cnx, String nwfilterid)
 			throws LibvirtException {
-		if (sgid == null) {
+		if (nwfilterid == null) {
 			return false;
 		}
 		String[] names = cnx.listNetworkFilters();
-		return Arrays.asList(names).contains(sgid);
+		return Arrays.asList(names).contains(nwfilterid);
 	}
 
 	/*
@@ -383,32 +433,32 @@ public abstract class LibVirtCloudNetwork {
 	 * This Network Filter is the placeholder of 'common' firewall rules (e.g.
 	 * which apply to all network device).
 	 * 
-	 * The first element of the Network Filter must be a filterref, which points
-	 * to the Security Group of the network device.
+	 * The first element of the Master Network Filter must be a filterref, which
+	 * points to the Self Network Filter of the network device.
 	 * 
-	 * A security Group is the placeholder of firewall rules which are specific
-	 * to the network device. The Security Group name is
-	 * 'melody-self-protected-area:<UUID>'.
+	 * A Self Network Filter is the placeholder of firewall rules which are
+	 * specific to the network device.
 	 */
-	private static String getNetworkFilter(Domain d, NetworkDeviceName netdev) {
+	private static String getMasterNetworkFilter(Domain d,
+			NetworkDeviceName devname) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Domain.class.getCanonicalName()
 					+ ".");
 		}
-		if (netdev == null) {
+		if (devname == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 		try {
-			return d.getName() + "-" + netdev.getValue() + "-nwfilter";
+			return d.getName() + "-" + devname.getValue() + "-nwfilter";
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	private static NetworkDeviceName getNetworkDeviceNameFromNetworkFilter(
+	private static NetworkDeviceName getNetworkDeviceNameFromMasterNetworkFilter(
 			String filter) {
 		filter = filter.substring(0, filter.lastIndexOf('-'));
 		filter = filter.substring(filter.lastIndexOf('-') + 1);
@@ -419,81 +469,130 @@ public abstract class LibVirtCloudNetwork {
 		}
 	}
 
-	private static String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='§[vmName]§-§[eth]§-nwfilter' chain='root'>"
-			+ "<filterref filter='§[sgName]§'/>"
+	/*
+	 * synchronized because this will modify many network filters.
+	 */
+	protected static synchronized void createMasterNetworkFilter(Connect cnx,
+			String sInstanceId, NetworkDeviceName devname, String sMacAddr,
+			ProtectedAreaIds protectedAreaIds)
+			throws ProtectedAreaNotFoundException {
+		if (cnx == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Connect.class.getCanonicalName()
+					+ ".");
+		}
+		if (protectedAreaIds == null) {
+			protectedAreaIds = new ProtectedAreaIds();
+		}
+		try {
+			log.trace("Creating Master Network Filter '" + sInstanceId + "-"
+					+ devname + "-nwfilter' for Network Device '" + devname
+					+ "' of Domain '" + sInstanceId + "' ...");
+			// Create the Self Protected Area, for the first network device
+			ProtectedAreaId selfProtectedAreaId = createSelfProtectedArea(cnx,
+					sInstanceId, devname);
+			// register the domain in each protected area
+			ProtectedAreaIds paIds = new ProtectedAreaIds();
+			paIds.add(selfProtectedAreaId);
+			paIds.addAll(protectedAreaIds);
+			try {
+				LibVirtCloudProtectedArea.associateProtectedAreas(cnx,
+						sInstanceId, devname, sMacAddr, paIds);
+			} catch (ProtectedAreaNotFoundException Ex) {
+				log.error("Fail to associate Protected Areas " + paIds
+						+ " on Network Device '" + devname + "' of Domain '"
+						+ sInstanceId
+						+ "'. Rolling-back Self Protected Area creation...");
+				deleteSelfProtectedArea(cnx, sInstanceId, devname,
+						selfProtectedAreaId);
+				log.debug("Self Protected Area " + selfProtectedAreaId
+						+ " creation rolled-back on Network Device '" + devname
+						+ "' of Domain '" + sInstanceId + "'.");
+				throw Ex;
+			}
+
+			// build the master network filter
+			String DOMAIN_NETWORK_FILTER_XML_SNIPPET = "<filter name='"
+					+ sInstanceId + "-" + devname + "-nwfilter' chain='root'>";
+			// declare the self protected area
+			DOMAIN_NETWORK_FILTER_XML_SNIPPET += "<filterref filter='"
+					+ selfProtectedAreaId + "'/>";
+			// declare all other protected area
+			for (ProtectedAreaId paId : protectedAreaIds) {
+				DOMAIN_NETWORK_FILTER_XML_SNIPPET += "<filterref filter='"
+						+ paId + "'/>";
+			}
 			// clean-traffic will drop packets sent on eth1 and reply on eth0
 			// + "<filterref filter='clean-traffic'/>"
-			+ "<rule action='accept' direction='out' priority='500'>"
-			+ "<all state='NEW'/>"
-			+ "</rule>"
-			+ "<rule action='accept' direction='out' priority='500'>"
-			+ "<all state='ESTABLISHED,RELATED'/>"
-			+ "</rule>"
-			+ "<rule action='accept' direction='in' priority='500'>"
-			+ "<all state='ESTABLISHED'/>"
-			+ "</rule>"
-			+ "<rule action='drop' direction='inout' priority='500'>"
-			+ "<all/>" + "</rule>" + "</filter>";
+			// accept all outgoing traffic and reject all incoming traffic
+			DOMAIN_NETWORK_FILTER_XML_SNIPPET += "<rule action='accept' direction='out' priority='500'>"
+					+ "<all state='NEW'/>"
+					+ "</rule>"
+					+ "<rule action='accept' direction='out' priority='500'>"
+					+ "<all state='ESTABLISHED,RELATED'/>"
+					+ "</rule>"
+					+ "<rule action='accept' direction='in' priority='500'>"
+					+ "<all state='ESTABLISHED'/>"
+					+ "</rule>"
+					+ "<rule action='drop' direction='inout' priority='500'>"
+					+ "<all/>" + "</rule>" + "</filter>";
 
-	protected static void createNetworkFilter(Domain d, PropertySet ps) {
-		if (d == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
-					+ ".");
-		}
-		try {
-			Connect cnx = d.getConnect();
-			String sInstanceId = d.getName();
-			String sgid = ps.get("sgName");
-			String eth = ps.get("eth");
-			log.trace("Creating Network Filter '" + sInstanceId + "-" + eth
-					+ "-nwfilter' (linked to Security Group '" + sgid
-					+ "') for Domain '" + sInstanceId + "' ...");
-			cnx.networkFilterDefineXML(XPathExpander.expand(
-					DOMAIN_NETWORK_FILTER_XML_SNIPPET, null, ps));
-			log.debug("Network Filter '" + sInstanceId + "-" + eth
-					+ "-nwfilter' (linked to Security Group '" + sgid
-					+ "') created for Domain '" + sInstanceId + "'.");
-		} catch (LibvirtException | XPathExpressionSyntaxException Ex) {
-			throw new RuntimeException(Ex);
-		}
-	}
-
-	protected static void deleteNetworkFilter(Domain d, NetworkDeviceName netdev) {
-		if (d == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Domain.class.getCanonicalName()
-					+ ".");
-		}
-		try {
-			Connect cnx = d.getConnect();
-			String sInstanceId = d.getName();
-			String filter = getNetworkFilter(d, netdev);
-			log.trace("Deleting Network Filter '" + filter + "' for Domain '"
-					+ sInstanceId + "' ...");
-			NetworkFilter nf = cnx.networkFilterLookupByName(filter);
-			nf.undefine();
-			log.debug("Network Filter '" + filter + "' deleted for Domain '"
-					+ sInstanceId + "'.");
+			cnx.networkFilterDefineXML(DOMAIN_NETWORK_FILTER_XML_SNIPPET);
+			log.debug("Master Network Filter '" + sInstanceId + "-" + devname
+					+ "-nwfilter' created for Network Device '" + devname
+					+ "' of Domain '" + sInstanceId + "'.");
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	protected static ProtectedAreaId getProtectedAreaId(Domain d,
-			NetworkDeviceName netdev) {
+	protected static synchronized void deleteMasterNetworkFilter(Domain d,
+			NetworkDeviceName devname) {
 		if (d == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Domain.class.getCanonicalName()
 					+ ".");
 		}
-		if (netdev == null) {
+		try {
+			Connect cnx = d.getConnect();
+			String sInstanceId = d.getName();
+			ProtectedAreaId selfProtectedAreaId = getSelftProtectedAreaId(d,
+					devname);
+			// delete Master Network Filter
+			String filter = getMasterNetworkFilter(d, devname);
+			log.trace("Deleting Master Network Filter '" + filter
+					+ "' for Network Device '" + devname + "' of Domain '"
+					+ sInstanceId + "' ...");
+			NetworkFilter nf = cnx.networkFilterLookupByName(filter);
+			nf.undefine();
+			// un-register the domain in each protected area
+			LibVirtCloudProtectedArea.deassociateProtectedAreas(cnx,
+					sInstanceId, devname);
+			// delete Self Protected Area
+			deleteSelfProtectedArea(cnx, sInstanceId, devname,
+					selfProtectedAreaId);
+			log.debug("Master Network Filter '" + filter
+					+ "' deleted for Network Device '" + devname
+					+ "' of Domain '" + sInstanceId + "'.");
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	protected static ProtectedAreaId getSelftProtectedAreaId(Domain d,
+			NetworkDeviceName devname) {
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+		if (devname == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ NetworkDeviceName.class.getCanonicalName() + ".");
 		}
 		try {
-			String filter = getNetworkFilter(d, netdev);
+			String filter = getMasterNetworkFilter(d, devname);
 			if (!networkFilterExists(d.getConnect(), filter)) {
 				return null;
 			}
@@ -530,34 +629,31 @@ public abstract class LibVirtCloudNetwork {
 		}
 	}
 
-	protected static String createSecurityGroup(Connect cnx, String sgid,
-			String sSGDesc) {
-		// Create a network filter for the network device
+	/**
+	 * Create an empty network filter
+	 */
+	protected static String createNetworkFilter(Connect cnx, String nwfid) {
 		try {
-			if (networkFilterExists(cnx, sgid)) {
-				throw new RuntimeException(sgid + ": network filter "
+			if (networkFilterExists(cnx, nwfid)) {
+				throw new RuntimeException(nwfid + ": network filter "
 						+ "already exists.");
 			}
-			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + sgid
+			String NETWORK_FILTER_XML_SNIPPET = "<filter name='" + nwfid
 					+ "' chain='root'>" + "</filter>";
-			log.trace("Creating Security Group '" + sgid + "' ...");
 			cnx.networkFilterDefineXML(NETWORK_FILTER_XML_SNIPPET);
-			log.debug("Security Group '" + sgid + "' created.");
-			return sgid;
+			return nwfid;
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
 
-	protected static void deleteSecurityGroup(Connect cnx, String sgid) {
+	protected static void deleteNetworkFilter(Connect cnx, String nwfid) {
 		try {
-			if (!networkFilterExists(cnx, sgid)) {
+			if (!networkFilterExists(cnx, nwfid)) {
 				return;
 			}
-			log.trace("Deleting Security Group '" + sgid + "' ...");
-			NetworkFilter nf = cnx.networkFilterLookupByName(sgid);
+			NetworkFilter nf = cnx.networkFilterLookupByName(nwfid);
 			nf.undefine();
-			log.debug("Security Group '" + sgid + "' deleted.");
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}

@@ -11,7 +11,17 @@
 
 	<!-- USE CASE 00 -->
 
-	<target name="UC0_01_create_env">
+	<target name="UC0_01_create_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="create_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_02_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -21,7 +31,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_02_stop_env">
+	<target name="UC0_03_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -31,7 +41,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_03_resize">
+	<target name="UC0_04_resize">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -41,7 +51,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_04_start_env">
+	<target name="UC0_05_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -51,7 +61,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_05_update_disk_devices">
+	<target name="UC0_06_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -61,7 +71,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_06_update_network_devices">
+	<target name="UC0_07_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -71,7 +81,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_07_update_firewall">
+	<target name="UC0_08_update_firewall">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -81,7 +91,7 @@
 		</java>
 	</target>
 
-	<target name="UC0_08_destroy_env">
+	<target name="UC0_09_destroy_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
@@ -91,12 +101,32 @@
 		</java>
 	</target>
 
-	<target name="UC0_all" depends="UC0_01_create_env, UC0_05_update_disk_devices, UC0_06_update_network_devices, UC0_07_update_firewall, UC0_08_destroy_env" />
+	<target name="UC0_10_delete_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_0/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC0_all" depends="UC0_02_create_env, UC0_06_update_disk_devices, UC0_07_update_network_devices, UC0_08_update_firewall, UC0_09_destroy_env" />
 
 
 	<!-- USE CASE 01 -->
 
-	<target name="UC1_01_create_env">
+	<target name="UC1_01_create_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-o" />
+			<arg value="create_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC1_02_create_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -106,7 +136,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_02_stop_env">
+	<target name="UC1_03_stop_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -116,7 +146,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_03_resize">
+	<target name="UC1_04_resize">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -126,7 +156,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_04_start_env">
+	<target name="UC1_05_start_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -136,7 +166,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_05_update_disk_devices">
+	<target name="UC1_06_update_disk_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -146,7 +176,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_06_update_network_devices">
+	<target name="UC1_07_update_network_devices">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -156,7 +186,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_07_update_firewall">
+	<target name="UC1_08_update_firewall">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -166,7 +196,7 @@
 		</java>
 	</target>
 
-	<target name="UC1_08_destroy_env">
+	<target name="UC1_09_destroy_env">
 		<java classname="com.wat.melody.cli.Launcher" fork="true">
 			<arg value="-C" />
 			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
@@ -176,7 +206,17 @@
 		</java>
 	</target>
 
-	<target name="UC1_all" depends="UC1_01_create_env, UC1_05_update_disk_devices, UC1_06_update_network_devices, UC1_07_update_firewall, UC1_08_destroy_env" />
+	<target name="UC1_10_delete_protected_areas">
+		<java classname="com.wat.melody.cli.Launcher" fork="true">
+			<arg value="-C" />
+			<arg value="./../melody.plugin.libvirt/tests/UC_1/mc.properties" />
+			<arg value="-o" />
+			<arg value="destroy_all_protected_areas" />
+			<classpath refid="classpathElements" />
+		</java>
+	</target>
+
+	<target name="UC1_all" depends="UC1_02_create_env, UC1_06_update_disk_devices, UC1_07_update_network_devices, UC1_08_update_firewall, UC1_09_destroy_env" />
 
 
 </project>

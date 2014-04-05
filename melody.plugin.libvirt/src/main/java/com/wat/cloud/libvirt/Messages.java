@@ -14,6 +14,8 @@ public class Messages extends NLS {
 
 	public static String ResizeEx_FAILED;
 
+	public static String PADestroyEx_STILL_IN_USE;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
