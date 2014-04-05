@@ -141,7 +141,7 @@
         <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
                     item-name="pa" >
             <update-protected-area target="§[pa]§" />
-            <echo message="+ protected area '§[§[pa]§/@name]§' created." />
+            <echo message="+ protected area '§[§[pa]§/@name]§' created (region:'§[§[pa]§/@region]§')." />
         </foreach>
 
         <echo message="-- Protected Areas created." />
@@ -160,7 +160,7 @@
         <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
                     item-name="pa" >
             <delete-protected-area target="§[pa]§" />
-            <echo message="+ protected area '§[§[pa]§/@name]§' destroyed." />
+            <echo message="+ protected area '§[§[pa]§/@name]§' destroyed (region:'§[§[pa]§/@region]§')." />
         </foreach>
 
         <echo message="-- Protected Areas destroyed." />
