@@ -24,7 +24,9 @@ public class XPathHelper {
 	 *            {@link Element} and its herited parents.
 	 * 
 	 * @return the value of the first attribute found, where all XPath
-	 *         Expression have been expanded.
+	 *         Expression have been expanded. Can return <tt>null</tt> if the
+	 *         given attribute cannot be found neither in the given
+	 *         {@link Element} nor in its herited parents.
 	 * 
 	 * @throws NodeRelatedException
 	 *             if the given attribute's value cannot be expanded (e.g.
@@ -51,7 +53,9 @@ public class XPathHelper {
 	 * 
 	 * @return the value of the first attribute found. The returned value is
 	 *         expanded or not, regarding the value of the third boolean
-	 *         argument.
+	 *         argument. Return <tt>null</tt> if the given attribute cannot be
+	 *         found neither in the given {@link Element} nor in its herited
+	 *         parents.
 	 * 
 	 * @throws NodeRelatedException
 	 *             if the given attribute's value cannot be expanded (e.g.
