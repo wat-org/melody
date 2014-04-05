@@ -14,6 +14,7 @@
 		</protected-area>
 		<protected-area name="sg2" region="eu-west-1">
 			<udp access="allow" directions="in" from-ips="all" to-ports="524"/>
+			<tcp access="allow" directions="in" from-ips="sg2" to-ports="524"/>
 		</protected-area>
 		<protected-area name="aafirst" region="eu-west-1">
 			<udp access="allow" directions="in" from-ips="all" to-ports="534"/>
@@ -23,6 +24,14 @@
 			<udp access="allow" directions="out" from-ips="all" to-ports="544"/>
 			<udp access="deny" directions="in" from-ips="all" to-ports="554"/>
 			<udp access="deny" directions="out" from-ips="all" to-ports="554"/>
+		</protected-area>
+		<protected-area name="sg2" region="us-west-1">
+			<udp access="allow" directions="in" from-ips="all" to-ports="524"/>
+			<tcp access="allow" directions="in" from-ips="sg2" to-ports="524"/>
+		</protected-area>
+		<protected-area name="sg3" region="us-west-1">
+			<udp access="allow" directions="in" from-ips="all" to-ports="524"/>
+			<tcp access="allow" directions="in" from-ips="sg2" to-ports="524"/>
 		</protected-area>
 
 	</protected-areas>
@@ -46,6 +55,19 @@
 				<disk delete-on-termination="true" device-name="/dev/sdb" size="8 G"/>
 				<disk delete-on-termination="true" device-name="/dev/sdc" size="4 G"/>
 				<disk delete-on-termination="true" device-name="/dev/sdd" size="20 G"/>
+			</disk-devices>
+		</instance>
+		<instance image-id="ami-84f1cfc1" instance-type="t1.micro" keypair-name="id_rsa_aws" name="web-02" protected-area-names="sg2" region="us-west-1">
+			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
+			<firewall>
+				<tcp herit="./environment/global-fwrules/ssh"/>
+				<tcp access="allow" directions="in" from-ips="sg3" to-ports="5556"/>
+			</firewall>
+			<network-devices>
+				<interface device-name="eth0"/>
+			</network-devices>
+			<disk-devices>
+				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
 			</disk-devices>
 		</instance>
 
