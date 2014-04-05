@@ -55,7 +55,7 @@
                     <exec command="allchans = client.system.listBaseChannels(key, int($SYSTEM_ID));" />
                     <exec command="for chan in allchans:" />
                     <exec command="  if chan['LABEL'] == &quot;§[channel_name]§&quot;:" />
-                    <exec command="    if chan['CURRENT_BASE'] ==  1:" />
+                    <exec command="    if chan['CURRENT_BASE'] == 1:" />
                     <exec command="      print &quot;'§[channel_name]§' is already the base channel.&quot;" />
                     <exec command="      client.auth.logout(key);" />
                     <exec command="      exit(0)" />
@@ -113,8 +113,11 @@
                 <exec command="client = xmlrpclib.Server(&quot;https://§[RHN_SERVERIP]§/rpc/api&quot;, verbose=0)" />
                 <exec command="key = client.auth.login(&quot;§[RHN_LOGIN]§&quot;, &quot;§[RHN_PASSWORD]§&quot;)" />
 
-                <!-- TODO : should get the system first, and, if it exists, remove it-->
-                <exec command="client.system.deleteSystems(key,int($SYSTEM_ID))" />
+                <!-- try to delete the system, and, if it not exists, exit cleanly -->
+                <exec command="try:" />
+                <exec command="  client.system.deleteSystems(key,int($SYSTEM_ID))" />
+                <exec command="except xmlrpclib.Fault, e:" />
+                <exec command="  print &quot;Didn't delete the system because %s&quot; % e" />
                 <exec command="client.auth.logout(key)" />
                 <exec command="EOF" />
 
