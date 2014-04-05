@@ -63,6 +63,9 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+                <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
+                <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
+                <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
@@ -180,6 +183,9 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+                <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
+                <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
+                <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
@@ -249,6 +255,9 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+                <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
+                <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
+                <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />

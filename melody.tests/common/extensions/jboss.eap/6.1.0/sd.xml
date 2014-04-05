@@ -62,7 +62,7 @@
                 <include match="bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>
-                <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
+                <exclude match="configuration/standalone*.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
         </upload>
 
@@ -80,7 +80,7 @@
         <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
         <copy>
             <resources  src-basedir="./standalone/configuration"
-                        match="standalone.xml"
+                        match="§[jbossInstanceConfigurationFile]§"
                         dest-basedir="§[workingfolder.abs]§"
                         dest-name="§[tmpfile.rel]§"
                         link-option="COPY_LINKS" />
@@ -301,7 +301,7 @@
             <resources  src-basedir="§[workingfolder.abs]§"
                         match="§[tmpfile.rel]§"
                         dest-basedir="§[jbossInstancePath]§/configuration"
-                        dest-name="standalone.xml" >
+                        dest-name="§[jbossInstanceConfigurationFile]§" >
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
         </upload>

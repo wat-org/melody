@@ -62,7 +62,7 @@
                 <include match="bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>
-                <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
+                <exclude match="configuration/standalone*.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
         </upload>
 
@@ -80,7 +80,7 @@
         <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
         <copy>
             <resources  src-basedir="./standalone/configuration"
-                        match="standalone.xml"
+                        match="§[jbossInstanceConfigurationFile]§"
                         dest-basedir="§[workingfolder.abs]§"
                         dest-name="§[tmpfile.rel]§"
                         link-option="COPY_LINKS" />
@@ -303,12 +303,20 @@
             <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
         </set-xml-attributes>
 
+        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Set instance-id" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
+            </elements-selector>
+            <attribute name="instance-id" value="§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§"/>
+        </set-xml-attributes>
+
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="§[workingfolder.abs]§"
                         match="§[tmpfile.rel]§"
                         dest-basedir="§[jbossInstancePath]§/configuration"
-                        dest-name="standalone.xml" >
+                        dest-name="§[jbossInstanceConfigurationFile]§" >
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
         </upload>
