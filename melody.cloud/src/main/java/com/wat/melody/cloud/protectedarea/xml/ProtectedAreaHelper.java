@@ -1,5 +1,8 @@
 package com.wat.melody.cloud.protectedarea.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Attr;
@@ -14,6 +17,7 @@ import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaNames;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdException;
+import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.FilteredDocHelper;
@@ -248,6 +252,92 @@ public abstract class ProtectedAreaHelper {
 			ids.add(id);
 		}
 		return ids;
+	}
+
+	public static List<String> findProtectedAreaId(List<Element> paElmts)
+			throws NodeRelatedException {
+		if (paElmts == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid a " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
+		}
+		List<String> list = new ArrayList<String>();
+		for (Element instanceElmt : paElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
+			String res = findProtectedAreaId(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
+		}
+		return list;
+	}
+
+	public static String findProtectedAreaId(Element paElmt)
+			throws NodeRelatedException {
+		if (paElmt == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid an " + Element.class.getCanonicalName()
+					+ ".");
+		}
+		// 'id' attr cannot be herited and cannot contains Melody XPath Expr
+		String v = paElmt.getAttribute(ProtectedAreaDatasLoader.ID_ATTR);
+		if (v == null || v.length() == 0) {
+			return null;
+		}
+		return v;
+	}
+
+	public static List<ProtectedAreaName> findProtectedAreaName(
+			List<Element> paElmts) throws NodeRelatedException {
+		if (paElmts == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid a " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
+		}
+		List<ProtectedAreaName> list = new ArrayList<ProtectedAreaName>();
+		for (Element instanceElmt : paElmts) {
+			if (instanceElmt == null) {
+				continue;
+			}
+			ProtectedAreaName res = findProtectedAreaName(instanceElmt);
+			if (res != null) {
+				list.add(res);
+			}
+		}
+		return list;
+	}
+
+	public static ProtectedAreaName findProtectedAreaName(Element paElmt)
+			throws NodeRelatedException {
+		if (paElmt == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid an " + Element.class.getCanonicalName()
+					+ ".");
+		}
+		// 'name' attr cannot be herited and cannot contains Melody XPath Expr
+		String v = paElmt.getAttribute(ProtectedAreaDatasLoader.NAME_ATTR);
+		if (v == null || v.length() == 0) {
+			return null;
+		}
+		try {
+			return ProtectedAreaName.parseString(v);
+		} catch (IllegalProtectedAreaNameException Ex) {
+			Attr attr = paElmt
+					.getAttributeNode(ProtectedAreaDatasLoader.NAME_ATTR);
+			throw new NodeRelatedException(attr, Ex);
+		}
+	}
+
+	public static List<String> findProtectedAreaRegion(List<Element> paElmts)
+			throws NodeRelatedException {
+		return InstanceDatasHelper.findInstanceRegion(paElmts);
+	}
+
+	public static String findProtectedAreaRegion(Element paElmt)
+			throws NodeRelatedException {
+		return InstanceDatasHelper.findInstanceRegion(paElmt);
 	}
 
 }
