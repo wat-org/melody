@@ -140,8 +140,11 @@
 
         <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
                     item-name="pa" >
+            <property name="pa.name"   value="§[ melody:getProtectedAreaName(§[pa]§) ]§" />
+            <property name="pa.region" value="§[ melody:getProtectedAreaRegion(§[pa]§) ]§" />
+            <property name="pa.id"     value="§[ melody:getProtectedAreaId(§[pa]§) ]§" />
             <update-protected-area target="§[pa]§" />
-            <echo message="+ protected area '§[§[pa]§/@name]§' created (region:'§[§[pa]§/@region]§')." />
+            <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' created (id:'§[pa.id]§')." />
         </foreach>
 
         <echo message="-- Protected Areas created." />
@@ -159,8 +162,11 @@
 
         <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
                     item-name="pa" >
+            <property name="pa.name"   value="§[ melody:getProtectedAreaName(§[pa]§) ]§" />
+            <property name="pa.region" value="§[ melody:getProtectedAreaRegion(§[pa]§) ]§" />
+            <property name="pa.id"     value="§[ melody:getProtectedAreaId(§[pa]§) ]§" />
             <delete-protected-area target="§[pa]§" />
-            <echo message="+ protected area '§[§[pa]§/@name]§' destroyed (region:'§[§[pa]§/@region]§')." />
+            <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' destroyed (id:'§[pa.id]§')." />
         </foreach>
 
         <echo message="-- Protected Areas destroyed." />
