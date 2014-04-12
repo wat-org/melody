@@ -50,6 +50,7 @@
 
 
     <order name="deploy_jboss_instances" >
+        <!-- TODO : should add a log_rotate for access.log, gc.log and console.log -->
         <echo message="Deploying all JBoss EAP instances ..." />
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"

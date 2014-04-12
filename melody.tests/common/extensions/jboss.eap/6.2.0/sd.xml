@@ -254,7 +254,7 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <access-log pattern="%h %l %u %t &quot;%r&quot; %s %b %T %{User-Agent}i %I %{JSESSIONID}c" resolve-hosts="false" prefix="access_log." rotate="true">
+                <access-log pattern="%h %l %u %t &quot;%r&quot; %s %b %T %{User-Agent}i %I %{JSESSIONID}c" resolve-hosts="false" prefix="access.log" rotate="false">
                     <directory path="." relative-to="jboss.server.log.dir" />
                 </access-log>
                 ]]>
