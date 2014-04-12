@@ -526,6 +526,8 @@ public abstract class LibVirtCloud {
 			// Defines domain
 			synchronized (LOCK_UNIQ_DOMAIN) {// domain's name must be consistent
 				sInstanceId = generateUniqDomainName(cnx);
+				log.trace("Creating domain '" + sInstanceId + "' (template:"
+						+ sImageId + " ...");
 				sMacAddr = LibVirtCloudNetwork.generateUniqMacAddress();
 				// Create the master network filter
 				try {
@@ -550,14 +552,9 @@ public abstract class LibVirtCloud {
 				ps.put(new Property("vcpu", String.valueOf(getVCPU(type))));
 				ps.put(new Property("ram", String.valueOf(getRAM(type))));
 				ps.put(new Property("eth", eth0Name.getValue()));
-				log.trace("Creating domain '" + sInstanceId + "' (template:"
-						+ sImageId + ", mac-address:" + sMacAddr + ") ...");
 				domain = cnx.domainDefineXML(XPathExpander
 						.expand(ddt, null, ps));
 			}
-			log.debug("Domain '" + sInstanceId + "' created (template:"
-					+ sImageId + ", mac-address:" + sMacAddr + ").");
-
 			// Associate the keypair
 			LibVirtCloudKeyPair.associateKeyPairToInstance(domain, keyPairName);
 
@@ -600,6 +597,9 @@ public abstract class LibVirtCloud {
 			log.trace("Starting Domain '" + sInstanceId + "' ...");
 			domain.create();
 			log.debug("Domain '" + sInstanceId + "' started.");
+			log.debug("Domain '" + sInstanceId + "' created (template:"
+					+ sImageId + ", mac-address:" + sMacAddr + ", key-pair:"
+					+ keyPairName + ").");
 			return sInstanceId;
 		} catch (LibvirtException | MelodyException | IOException
 				| XPathExpressionException Ex) {
@@ -619,13 +619,14 @@ public abstract class LibVirtCloud {
 		 */
 		try {
 			String sInstanceId = d.getName();
+			log.trace("destroying Domain '" + sInstanceId + "' ...");
 			DomainState state = d.getInfo().state;
 			// Destroy domain
 			if (state == DomainState.VIR_DOMAIN_RUNNING
 					|| state == DomainState.VIR_DOMAIN_PAUSED) {
-				log.trace("Destroying Domain '" + sInstanceId + "' ...");
+				log.trace("Stopping Domain '" + sInstanceId + "' ...");
 				d.destroy();
-				log.debug("Domain '" + sInstanceId + "' destroyed.");
+				log.debug("Domain '" + sInstanceId + "' stopped.");
 			}
 			// De associate keyPair
 			LibVirtCloudKeyPair.deassociateKeyPairToInstance(d);
@@ -650,6 +651,7 @@ public abstract class LibVirtCloud {
 			}
 			// Undefine domain
 			d.undefine();
+			log.debug("Domain '" + sInstanceId + "' destroyed.");
 		} catch (LibvirtException Ex) {
 			throw new RuntimeException(Ex);
 		}
