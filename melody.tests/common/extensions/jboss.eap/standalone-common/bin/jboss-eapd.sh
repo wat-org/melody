@@ -20,6 +20,11 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
   exit 1
 }
 
+[ $# -gt 1 ] && {
+  echo "Usage: $0 {start|stop|status|restart|start-async|restart-async|start-async-tail|restart-async-tail|tdump|hdump}"
+  exit 1
+}
+
 if [ -z "${JBOSS_BASE_DIR}" ]; then
   echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss EAP Standalone instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
@@ -83,6 +88,17 @@ JBOSS_SCRIPT="LANG=\"${LANG}\" \
 ## command wrapper
 CMD_PREFIX="eval"
 [ "$(id -g)" = "0" ] && CMD_PREFIX="su - ${JBOSS_USER} -c"
+
+
+###
+### will sleep more if the machine is highly loaded
+__sleep() {
+  local seconds=$1
+  for (( ; seconds>-1 ; seconds--)); do
+    sleep 1
+    "${JAVA_HOME}/bin/java" -version 1>/dev/null 2&>1
+  done
+}
 
 
 ###
@@ -239,7 +255,7 @@ ensure_started() {
   ${CMD_PREFIX} "${JBOSS_SCRIPT}"
 
   # sleep a little
-  sleep 2
+  __sleep 2
 
   return 0
 }
@@ -371,6 +387,7 @@ case "$1" in
       ;;
   restart)
       stop || exit $?
+      __sleep 2
       start
       exit $?
       ;;
@@ -380,6 +397,7 @@ case "$1" in
       ;;
   restart-async)
       stop || exit $?
+      __sleep 2
       start_async
       exit $?
       ;;
@@ -389,6 +407,7 @@ case "$1" in
       ;;
   restart-async-tail)
       stop || exit $?
+      __sleep 2
       start_async_tail
       exit $?
       ;;
