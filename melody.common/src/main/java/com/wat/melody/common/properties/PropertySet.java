@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.wat.melody.common.files.FS;
@@ -19,7 +17,7 @@ import com.wat.melody.common.systool.SysTool;
 
 /**
  * <p>
- * {@link PropertySet} holds Properties (e.g. a list of key/value elements).
+ * {@link PropertySet} holds properties (e.g. a list of key/value elements).
  * </p>
  * <p>
  * Each key and its corresponding value is a <tt>String</tt>.
@@ -39,14 +37,14 @@ import com.wat.melody.common.systool.SysTool;
  * </p>
  * <p>
  * A property hold by a {@link PropertySet} object can be <b>get</b> using the
- * method {@link #get(String)}. The variable part of the Configuration
- * Directive's value will be expanded.
+ * method {@link #get(String)}. The variable part of the property's value will
+ * be expanded.
  * </p>
  * 
  * <p>
- * <i> This class is thread-safe, meaning that multiple threads can share the
+ * <i>This class is thread-safe, meaning that multiple threads can share the
  * same {@link PropertySet} object without the need for external
- * synchronization. </i>
+ * synchronization.</i>
  * </p>
  * 
  * @author Guillaume Cornet
@@ -56,6 +54,7 @@ public class PropertySet {
 
 	public static final String COMMENT_PATTERN = "^\\s*#.*$";
 	public static final String EMPTY_STRING_PATTERN = "^\\s*$";
+	public static final String INCLUDE_PATTERN = "^\\s*include\\s+.*$";
 
 	private Map<String, Property> _properties = new LinkedHashMap<String, Property>();
 	private String _sourceFile = null;
@@ -71,7 +70,7 @@ public class PropertySet {
 	/**
 	 * <p>
 	 * Creates a new {@link PropertySet} which holds all properties defined in
-	 * the file pointed by the given path (see {@link #load(String)} ).
+	 * the file pointed by the given path (see {@link #load(String)}).
 	 * </p>
 	 * 
 	 * @param filePath
@@ -100,7 +99,7 @@ public class PropertySet {
 	 *             <li>if a Property's name is declared twice ;</li>
 	 *             <li>if an unrecognized character is escaped ;</li>
 	 *             <li>if a variable part is not properly formatted (no '{'
-	 *             Immediately after a '$', or no '}' after a '${', ...) ;</li>
+	 *             immediately after a '$', or no '}' after a '${', ...) ;</li>
 	 *             <li>if, during the expansion process, a variable part refers
 	 *             to an unknown Property's name ;</li>
 	 *             <li>if, during the expansion process, a circular reference is
@@ -122,12 +121,14 @@ public class PropertySet {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid String (a File Path).");
 		}
-		return _sourceFile = filePath;
+		String previous = getSourceFile();
+		_sourceFile = filePath;
+		return previous;
 	}
 
 	/**
-	 * @return the path of the file which was used to load (via {@link
-	 *         load(String)}) this object.
+	 * @return the path of the file which was used to load (via
+	 *         {@link #load(String)}) this object.
 	 */
 	public String getSourceFile() {
 		return _sourceFile;
@@ -135,8 +136,7 @@ public class PropertySet {
 
 	/**
 	 * <p>
-	 * Load all Configuration Directives defined in the file pointed by the
-	 * given path.
+	 * Load all properties defined in the file pointed by the given path.
 	 * </p>
 	 * 
 	 * <p>
@@ -147,22 +147,22 @@ public class PropertySet {
 	 * <li>Every line which contains only space character is considered as an
 	 * empty line ;</li>
 	 * <li>Every line which contains a character sequence which matches the
-	 * pattern '^\\w+([.]\\w+)*=.*$' is considered as a Property String (as
-	 * specified in {@link Property#Property(String)}) ;</li>
+	 * pattern '^\\w+([.]\\w+)*=.*$' is considered as a property (as specified
+	 * in {@link Property#Property(String)}) ;</li>
 	 * <li>Every line which is neither an empty line, nor a comment, nor a
-	 * Property String will raise an error ;</li>
-	 * <li>In the whole file, a Property's name cannot be declared twice ;</li>
+	 * property will raise an error ;</li>
+	 * <li>In the whole file, a property's name cannot be declared twice ;</li>
 	 * </ul>
-	 * A Property's value can contains a <b>variable part</b> of the form
-	 * <tt>${var}</tt>, where <tt>var</tt> refers to another Property's Name :
+	 * A property's value can contains a <b>variable part</b> of the form
+	 * <tt>${var}</tt>, where <tt>var</tt> refers to another property's name :
 	 * <ul>
-	 * <li>This method will expand all variable parts found in each Property's
+	 * <li>This method will expand all variable parts found in each property's
 	 * value ;</li>
-	 * <li>If a variable part refers to a non existing Property's name, a
+	 * <li>If a variable part refers to a non existing property's name, a
 	 * {@link IllegalPropertiesSetException} will be raised ;</li>
 	 * <li>If a circular reference is detected, a
 	 * {@link IllegalPropertiesSetException} will be raised ;</li>
-	 * <li>Characters in a Property's value can be escaped. The escape character
+	 * <li>Characters in a property's value can be escaped. The escape character
 	 * is the backslash ('<tt>\</tt>') ;</li>
 	 * <li>If leading backslash is found just before a <tt>$</tt>, the trailing
 	 * variable part will not be expanded ;</li>
@@ -209,18 +209,19 @@ public class PropertySet {
 	 *             <li>if a line of the file points by the given path is neither
 	 *             an empty <tt>String</tt>, nor a comment, nor a Property
 	 *             String ;</li>
-	 *             <li>if a Property's name is declared twice ;</li>
+	 *             <li>if a property's name is declared twice ;</li>
 	 *             <li>if an unrecognized character is escaped ;</li>
 	 *             <li>if a variable part is not properly formatted (no '{'
-	 *             Immediately after a '$', or no '}' after a '${', ...) ;</li>
+	 *             immediately after a '$', or no '}' after a '${', ...) ;</li>
 	 *             <li>if, during the expansion process, a variable part refers
-	 *             to an unknown Property's name ;</li>
+	 *             to an unknown property's name ;</li>
 	 *             <li>if, during the expansion process, a circular reference is
 	 *             detected ;</li>
 	 *             </ul>
 	 */
 	public synchronized String load(String filePath) throws IOException,
 			IllegalFileException, IllegalPropertiesSetException {
+		String previous = setFilePath(filePath);
 		// remove all elements
 		getProperties().clear();
 
@@ -249,11 +250,8 @@ public class PropertySet {
 		// no escape)
 		parseFile(filePath);
 
-		// Escape chars and expand each properties
-		escapedAndExpandProperties();
-
 		// Set the file path
-		return setFilePath(filePath);
+		return previous;
 	}
 
 	private void parseFile(String filePath)
@@ -263,7 +261,7 @@ public class PropertySet {
 		try {
 			fr = new FileReader(new File(filePath));
 			br = new BufferedReader(fr);
-			parseFile(br);
+			parseFile(filePath, br);
 		} catch (FileNotFoundException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
 					+ "creating an input stream for file '" + filePath + "'. "
@@ -281,7 +279,7 @@ public class PropertySet {
 		}
 	}
 
-	private void parseFile(BufferedReader br)
+	private void parseFile(String filePath, BufferedReader br)
 			throws IllegalPropertiesSetException, IOException {
 		String line = null;
 		String read = null;
@@ -294,12 +292,28 @@ public class PropertySet {
 					&& (read = br.readLine()) != null) {
 				line = line.substring(0, line.length() - 1) + read;
 			}
+			line = escapeAndExpand(line);
 			if (line.matches(COMMENT_PATTERN)
 					|| line.matches(EMPTY_STRING_PATTERN)) {
 				if (comment == null) {
 					comment = line;
 				} else {
 					comment += SysTool.NEW_LINE + line;
+				}
+			} else if (line.matches(INCLUDE_PATTERN)) {
+				String toLoad = line.replaceFirst("\\s*include\\s+", "");
+				toLoad = new File(toLoad).getCanonicalPath();
+				try {
+					// TODO : how to handle circular include ?
+					FS.validateFileExists(toLoad);
+					parseFile(toLoad);
+				} catch (IllegalFileException Ex) {
+					throw new IllegalPropertiesSetException(Msg.bind(
+							Messages.PropertiesSetEx_ILLEGAL_INCLUDE, line), Ex);
+				} catch (IllegalPropertiesSetException Ex) {
+					throw new IllegalPropertiesSetException(Msg.bind(
+							Messages.PropertiesSetEx_INCLUDE_FAILED, toLoad),
+							Ex);
 				}
 			} else {
 				try {
@@ -320,33 +334,7 @@ public class PropertySet {
 		}
 	}
 
-	private void escapedAndExpandProperties()
-			throws IllegalPropertiesSetException {
-		// All properties will be escaped and expanded in a temporary array
-		List<Property> ps = new ArrayList<Property>();
-		List<String> circle = new ArrayList<String>();
-		for (Property p : getProperties().values()) {
-			Property n = new Property();
-			ps.add(n);
-			n.setName(p.getName());
-			circle.add(p.getName().getValue());
-			try {
-				n.setValue(escapeAndExpand(p.getValue(), circle));
-			} catch (IllegalPropertiesSetException Ex) {
-				throw new IllegalPropertiesSetException(Msg.bind(
-						Messages.PropertiesSetEx_INVALID_PROPERTY_VALUE,
-						p.getName(), p.getValue()), Ex);
-			}
-			circle.remove(p.getName().getValue());
-		}
-		// Once escaped and expanded, the temporary array become the real one,
-		// and the Quick Acces is updated
-		for (Property p : ps) {
-			put(p);
-		}
-	}
-
-	private String escapeAndExpand(String v, List<String> circle)
+	private String escapeAndExpand(String v)
 			throws IllegalPropertiesSetException {
 		int nBB = v.indexOf('\\');
 		int nBegin = v.indexOf('$');
@@ -360,16 +348,16 @@ public class PropertySet {
 				switch (v.charAt(nBB + 1)) {
 				case 'n':
 					return v.substring(0, nBB) + '\n'
-							+ escapeAndExpand(v.substring(nBB + 2), circle);
+							+ escapeAndExpand(v.substring(nBB + 2));
 				case 'r':
 					return v.substring(0, nBB) + '\r'
-							+ escapeAndExpand(v.substring(nBB + 2), circle);
+							+ escapeAndExpand(v.substring(nBB + 2));
 				case 't':
 					return v.substring(0, nBB) + '\t'
-							+ escapeAndExpand(v.substring(nBB + 2), circle);
+							+ escapeAndExpand(v.substring(nBB + 2));
 				case '\\':
 					return v.substring(0, nBB) + '\\'
-							+ escapeAndExpand(v.substring(nBB + 2), circle);
+							+ escapeAndExpand(v.substring(nBB + 2));
 				case '$':
 					escaped = true;
 					break;
@@ -425,40 +413,21 @@ public class PropertySet {
 		// If the expression was escaped => remove the escape char
 		if (escaped) {
 			return v.substring(0, nBegin - 1) + "${"
-					+ escapeAndExpand(v.substring(nBegin + 2, nEnd), circle)
-					+ "}" + escapeAndExpand(v.substring(nEnd + 1), circle);
+					+ escapeAndExpand(v.substring(nBegin + 2, nEnd)) + "}"
+					+ escapeAndExpand(v.substring(nEnd + 1));
 		}
 		// resolve the expression
-		return v.substring(0, nBegin)
-				+ expand(v.substring(nBegin + 2, nEnd), circle)
-				+ escapeAndExpand(v.substring(nEnd + 1), circle);
+		return v.substring(0, nBegin) + expand(v.substring(nBegin + 2, nEnd))
+				+ escapeAndExpand(v.substring(nEnd + 1));
 	}
 
-	private String expand(String v, List<String> circle)
-			throws IllegalPropertiesSetException {
-		String escaped = escapeAndExpand(v, circle);
+	private String expand(String v) throws IllegalPropertiesSetException {
+		String escaped = escapeAndExpand(v);
 		if (!containsKey(escaped)) {
 			throw new IllegalPropertiesSetException(Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_UNDEFINED, v));
-		} else if (circle.contains(escaped)) {
-			throw new IllegalPropertiesSetException(Msg.bind(
-					Messages.PropertiesSetEx_CIRCULAR_REFERENCE,
-					printCircularReferences(circle)));
 		}
-		circle.add(escaped);
-		String expanded = escapeAndExpand(get(escaped), circle);
-		circle.remove(escaped);
-		return expanded;
-	}
-
-	private String printCircularReferences(List<String> circularRefStack) {
-		StringBuilder str = new StringBuilder("");
-		for (String property : circularRefStack) {
-			str.append(SysTool.NEW_LINE);
-			str.append("  Configuration Directive '" + property + "'");
-			str.append(" depends of '" + get(property) + "'");
-		}
-		return str.toString();
+		return escapeAndExpand(get(escaped));
 	}
 
 	@Override
@@ -486,7 +455,7 @@ public class PropertySet {
 
 	/**
 	 * <p>
-	 * Remove all elements holds by this objects.
+	 * Remove all properties holds by this objects.
 	 * </p>
 	 */
 	public synchronized void clear() {
@@ -581,7 +550,7 @@ public class PropertySet {
 	 * @param ps
 	 *            is a {@link PropertySet} to put into this object. Can be
 	 *            <tt>null</tt>. When <tt>null</tt>, this method return
-	 *            Immediately.
+	 *            immediately.
 	 */
 	public synchronized void putAll(PropertySet ps) {
 		if (ps == null) {
@@ -594,8 +563,8 @@ public class PropertySet {
 
 	/**
 	 * @return A shallow copy of this object's (element themselves are not
-	 *         copied; If the returned {@link PropertySet} is modified, this
-	 *         object will not be modified).
+	 *         copied. If the returned {@link PropertySet} is modified, this
+	 *         object will not be modified.
 	 */
 	@Override
 	public synchronized PropertySet clone() {
