@@ -14,6 +14,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.JSchExceptionInterrupted;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
+import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
@@ -329,6 +330,9 @@ public class SshSession implements ISshSession {
 		long cnxTimeout = 0;
 		int cnxRetry = 0;
 		int cnxDelay = 3;
+		ConsolidatedException cex = new ConsolidatedException(Msg.bind(
+				Messages.SessionEx_FAILED_TO_CONNECT, getConnectionDatas(),
+				getUserDatas()));
 		if (getSessionConfiguration() != null) {
 			cnxTimeout = getSessionConfiguration().getConnectionTimeout()
 					.getTimeoutInMillis();
@@ -378,18 +382,36 @@ public class SshSession implements ISshSession {
 				}
 				// no retry left => fail
 				if (cnxRetry <= 0) {
-					throw new SshSessionException(Msg.bind(
-							Messages.SessionEx_FAILED_TO_CONNECT,
-							getConnectionDatas(), getUserDatas()), Ex);
+					cex.addCause(Ex);
+					throw new SshSessionException(cex);
+				}
+				/*
+				 * Sometimes (don't know why), we receive an exception with
+				 * message 'connection is closed by foreign host'. Then, at
+				 * first retry, we receive an exception with message
+				 * 'SSH_MSG_DISCONNECT: 2 Packet corrupt'. Then, a second retry,
+				 * we receive an exception with message 'Packet corrupt'. In
+				 * order to resolve this issue, when we receive an exception
+				 * with message 'connection is closed by foreign host', we
+				 * disconnect and we rebuild a new session. After that, we
+				 * retry.
+				 */
+				// connection closed by foreign host => create a new session
+				// packet corrupt => create a new session and retry
+				if (msg.indexOf("connection is closed by foreign host") == 0
+						|| msg.indexOf("Packet corrupt") != -1) {
+					disconnect();
+					applyDatas();
+					applySessionConfiguration();
+					// => retry
 				}
 				// retrying
-				SshSessionException pex = new SshSessionException(Ex);
-				log.info(Msg.bind(Messages.SessionMsg_RETRY_TO_CONNECT,
-						getConnectionDatas(), getUserDatas(), cnxRetry,
-						pex.getUserFriendlyStackTrace()));
-				ex.info(Msg.bind(Messages.SessionMsg_RETRY_TO_CONNECT,
-						getConnectionDatas(), getUserDatas(), cnxRetry,
-						pex.getFullStackTrace()));
+				SshSessionException pex = new SshSessionException(Msg.bind(
+						Messages.SessionMsg_RETRY_TO_CONNECT,
+						getConnectionDatas(), getUserDatas(), cnxRetry), Ex);
+				log.info(pex.getUserFriendlyStackTrace());
+				ex.info(pex.getFullStackTrace());
+				cex.addCause(pex);
 				cnxRetry -= 1;
 				cnxDelay += 3;
 				try {
