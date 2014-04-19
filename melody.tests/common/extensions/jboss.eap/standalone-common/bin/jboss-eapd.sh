@@ -95,8 +95,8 @@ CMD_PREFIX="eval"
 __sleep() {
   local seconds=$1
   for (( ; seconds>-1 ; seconds--)); do
-    sleep 1
-    "${JAVA_HOME}/bin/java" -version 1>/dev/null 2&>1
+    dd if=/dev/urandom of=/dev/null bs=10M count=1 1>/dev/null 2>&1
+    "${JAVA_HOME}/bin/java" -version 1>/dev/null 2>&1
   done
 }
 
@@ -255,7 +255,7 @@ ensure_started() {
   ${CMD_PREFIX} "${JBOSS_SCRIPT}"
 
   # sleep a little
-  __sleep 2
+  __sleep 3
 
   return 0
 }

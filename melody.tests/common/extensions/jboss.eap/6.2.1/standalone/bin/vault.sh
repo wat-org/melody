@@ -1,0 +1,1 @@
+../../../standalone-common/bin/vault.sh

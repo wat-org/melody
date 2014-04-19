@@ -17,32 +17,46 @@
                         dest-basedir="/tmp" >
                 <posix-permissions scope="files">644</posix-permissions>
             </resources>
-         </upload>
+        </upload>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
-            <exec command="umask 0022" />
+            <exec command="umask 0007" />
             <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§" />
             <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
         </ssh>
 
+        <!-- specific to native components -->
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
             <!-- exit silently if the native components where not uploaded -->
             <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-*.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
-            <!-- specific to native components -->
+            <!-- unzip native components in a temp directory-->
             <exec command="unzip -n /tmp/jboss-eap-native-§[jbossEngineVersion]§-*.zip -d /tmp/§[jbossEngineVersion]§" />
-            <!-- for jboss.web (e.g. tomcat) -->
+            <!-- add a link to libz, in order to resolve the unsatisfied dependency -->
             <exec command="cd /tmp/§[jbossEngineVersion]§/*/modules/org/jboss/as/web/main/lib/linux-x86_64/" />
             <exec command="[ -h libz.so ] || ln -vs /lib64/libz.so.1 libz.so" />
-            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml"/>
-            <!-- for hornetq -->
-            <exec command="grep '&lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;\/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml"/>
         </ssh>
 
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- unzip eap in a temp directory-->
             <exec command="unzip -n /tmp/jboss-eap-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
+            <!-- ensure permission -->
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type f -exec chmod 660 {} \;"/>
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type f -name &quot;*.sh&quot; -exec chmod 770 {} \;"/>
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type d -exec chmod 770 {} \;"/>
+            <!-- copy eap + native components in the final directory-->
             <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-eap-§[jbossEngineVersion]§" />
+        </ssh>
+
+        <!-- specific to native components -->
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- exit silently if the native components where not uploaded -->
+            <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-*.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
+            <!-- for jboss.web (e.g. tomcat) -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml"/>
+            <!-- for hornetq -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml"/>
         </ssh>
     </order>
     
@@ -59,6 +73,7 @@
                 <posix-permissions scope="files">600</posix-permissions>
                 <include match="configuration/standalone.conf" template="y" />
                 <include match="configuration/jboss-eapd.conf" template="y" />
+                <include match="configuration/update-password.properties" template="y" />
                 <include match="bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>

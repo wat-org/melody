@@ -3,7 +3,7 @@
 
 <sequence basedir="." >
 
-    <order name="deploy_jboss_engine-6.2.0" >
+    <order name="deploy_jboss_engine-6.2.1" >
         <!-- upload JBoss EAP engine archive -->
         <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
@@ -62,7 +62,7 @@
 
 
 
-    <order name="deploy_jboss_instance-6.2.0" >
+    <order name="deploy_jboss_instance-6.2.1" >
         <!-- upload JBoss EAP Instance directory tree -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="./standalone"
@@ -131,7 +131,7 @@
             <exec command="mkdir -p §[jbossVaultEncDir]§" />
             <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
             <!--
-                BUG in 6.2.0 with the vault: the keystore is corrupted as sson as the jboss server starts.
+                BUG in 6.2.1 with the vault: the keystore is corrupted as sson as the jboss server starts.
                 The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."
             -->
             <exec command="[ -f &quot;§[jbossVaultKeystore]§&quot; ] || keytool -list -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
