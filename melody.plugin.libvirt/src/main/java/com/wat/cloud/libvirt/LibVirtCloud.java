@@ -526,8 +526,7 @@ public abstract class LibVirtCloud {
 			// Defines domain
 			synchronized (LOCK_UNIQ_DOMAIN) {// domain's name must be consistent
 				sInstanceId = generateUniqDomainName(cnx);
-				log.trace("Creating domain '" + sInstanceId + "' (template:"
-						+ sImageId + " ...");
+				log.trace("Creating domain '" + sInstanceId + "' ...");
 				sMacAddr = LibVirtCloudNetwork.generateUniqMacAddress();
 				// Create the master network filter
 				try {
