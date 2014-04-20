@@ -6,10 +6,10 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.properties.messages";
 
-	public static String PropertiesSetEx_ILLEGAL_INCLUDE;
+	public static String PropertiesSetEx_CIRCULAR_REF;
 	public static String PropertiesSetEx_INCLUDE_FAILED;
 	public static String PropertiesSetEx_MALFORMED_LINE;
-	public static String PropertiesSetEx_MULTIPLE_DIRECTIVE;
+	public static String PropertiesSetEx_MULTIPLE_KEY;
 	public static String PropertiesSetEx_INVALID_ESCAPE_SEQUENCE;
 	public static String PropertiesSetEx_VARIABLE_SEQUENCE_NOT_FOUND;
 	public static String PropertiesSetEx_VARIABLE_SEQUENCE_NOT_OPENED;

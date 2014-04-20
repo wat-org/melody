@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.wat.melody.common.files.FS;
@@ -256,12 +258,22 @@ public class PropertySet {
 
 	private void parseFile(String filePath)
 			throws IllegalPropertiesSetException, IOException {
+		List<String> circle = new ArrayList<String>();
+		circle.add(new File(filePath).getCanonicalPath());
+		parseFile(filePath, circle);
+	}
+
+	private void parseFile(String filePath, List<String> circle)
+			throws IllegalPropertiesSetException, IOException {
+		File f = new File(filePath);
+
+		// laod the given file
 		FileReader fr = null;
 		BufferedReader br = null;
 		try {
-			fr = new FileReader(new File(filePath));
+			fr = new FileReader(f);
 			br = new BufferedReader(fr);
-			parseFile(filePath, br);
+			parseFile(filePath, br, circle);
 		} catch (FileNotFoundException Ex) {
 			throw new RuntimeException("Unexpected error occurred while "
 					+ "creating an input stream for file '" + filePath + "'. "
@@ -279,20 +291,24 @@ public class PropertySet {
 		}
 	}
 
-	private void parseFile(String filePath, BufferedReader br)
+	private void parseFile(String f, BufferedReader br, List<String> circle)
 			throws IllegalPropertiesSetException, IOException {
 		String line = null;
+		int pos = 0;
 		String read = null;
 		Property p;
 		String comment = null;
 		while ((read = br.readLine()) != null) {
+			pos++;
 			line = read;
 			// reassemble multi-lines
 			while (line.length() > 0 && line.charAt(line.length() - 1) == '\\'
 					&& (read = br.readLine()) != null) {
+				pos++;
 				line = line.substring(0, line.length() - 1) + read;
 			}
-			line = escapeAndExpand(line);
+			// expand variable
+			line = escapeAndExpand(f, pos, line);
 			if (line.matches(COMMENT_PATTERN)
 					|| line.matches(EMPTY_STRING_PATTERN)) {
 				if (comment == null) {
@@ -303,15 +319,18 @@ public class PropertySet {
 			} else if (line.matches(INCLUDE_PATTERN)) {
 				String toLoad = line.replaceFirst("\\s*include\\s+", "");
 				toLoad = new File(toLoad).getCanonicalPath();
+				// include directive can leads in circular ref
+				if (circle.contains(toLoad)) {
+					throw new IllegalPropertiesSetException(f, pos, Msg.bind(
+							Messages.PropertiesSetEx_CIRCULAR_REF, toLoad));
+				}
+				circle.add(toLoad);
+				// load included file
 				try {
-					// TODO : how to handle circular include ?
 					FS.validateFileExists(toLoad);
-					parseFile(toLoad);
-				} catch (IllegalFileException Ex) {
-					throw new IllegalPropertiesSetException(Msg.bind(
-							Messages.PropertiesSetEx_ILLEGAL_INCLUDE, line), Ex);
-				} catch (IllegalPropertiesSetException Ex) {
-					throw new IllegalPropertiesSetException(Msg.bind(
+					parseFile(toLoad, circle);
+				} catch (IllegalFileException | IllegalPropertiesSetException Ex) {
+					throw new IllegalPropertiesSetException(f, pos, Msg.bind(
 							Messages.PropertiesSetEx_INCLUDE_FAILED, toLoad),
 							Ex);
 				}
@@ -319,13 +338,12 @@ public class PropertySet {
 				try {
 					p = Property.parseProperty(line);
 				} catch (IllegalPropertyException Ex) {
-					throw new IllegalPropertiesSetException(Msg.bind(
+					throw new IllegalPropertiesSetException(f, pos, Msg.bind(
 							Messages.PropertiesSetEx_MALFORMED_LINE, line), Ex);
 				}
 				if (containsKey(p.getName().getValue())) {
-					throw new IllegalPropertiesSetException(Msg.bind(
-							Messages.PropertiesSetEx_MULTIPLE_DIRECTIVE,
-							p.getName()));
+					throw new IllegalPropertiesSetException(f, pos, Msg.bind(
+							Messages.PropertiesSetEx_MULTIPLE_KEY, p.getName()));
 				}
 				p.setComment(comment);
 				comment = null;
@@ -334,35 +352,34 @@ public class PropertySet {
 		}
 	}
 
-	private String escapeAndExpand(String v)
+	private String escapeAndExpand(String f, int p, String v)
 			throws IllegalPropertiesSetException {
 		int nBB = v.indexOf('\\');
 		int nBegin = v.indexOf('$');
-		boolean escaped = false;
 		if (nBB != -1 && (nBegin == -1 || (nBegin != -1 && nBB < nBegin))) {
 			if (nBB + 1 >= v.length()) {
-				throw new IllegalPropertiesSetException(Msg.bind(
+				throw new IllegalPropertiesSetException(f, p, Msg.bind(
 						Messages.PropertiesSetEx_INVALID_ESCAPE_SEQUENCE, v,
 						nBB));
 			} else {
 				switch (v.charAt(nBB + 1)) {
 				case 'n':
 					return v.substring(0, nBB) + '\n'
-							+ escapeAndExpand(v.substring(nBB + 2));
+							+ escapeAndExpand(f, p, v.substring(nBB + 2));
 				case 'r':
 					return v.substring(0, nBB) + '\r'
-							+ escapeAndExpand(v.substring(nBB + 2));
+							+ escapeAndExpand(f, p, v.substring(nBB + 2));
 				case 't':
 					return v.substring(0, nBB) + '\t'
-							+ escapeAndExpand(v.substring(nBB + 2));
+							+ escapeAndExpand(f, p, v.substring(nBB + 2));
 				case '\\':
 					return v.substring(0, nBB) + '\\'
-							+ escapeAndExpand(v.substring(nBB + 2));
+							+ escapeAndExpand(f, p, v.substring(nBB + 2));
 				case '$':
-					escaped = true;
-					break;
+					return v.substring(0, nBB) + '$'
+							+ escapeAndExpand(f, p, v.substring(nBB + 2));
 				default:
-					throw new IllegalPropertiesSetException(Msg.bind(
+					throw new IllegalPropertiesSetException(f, p, Msg.bind(
 							Messages.PropertiesSetEx_INVALID_ESCAPE_SEQUENCE,
 							v, nBB));
 				}
@@ -371,21 +388,16 @@ public class PropertySet {
 		// If no '$' can be found => nothing to do
 		if (nBegin == -1)
 			return v;
-		// If the '$' is found at the last position and was escaped
-		// => remove the escape char
-		if (escaped && nBegin + 1 >= v.length()) {
-			return v.substring(0, nBegin - 1) + "$";
-		}
 		// If the '$' is found at the last position => raise an error
 		if (nBegin + 1 >= v.length()) {
-			throw new IllegalPropertiesSetException(Msg.bind(
+			throw new IllegalPropertiesSetException(f, p, Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_FOUND, v,
 					nBegin));
 		}
 		// If the $ is found but the next character is not a '{'
 		// => raise an error
 		if (v.charAt(nBegin + 1) != '{') {
-			throw new IllegalPropertiesSetException(Msg.bind(
+			throw new IllegalPropertiesSetException(f, p, Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_OPENED, v,
 					nBegin + 1));
 		}
@@ -399,35 +411,26 @@ public class PropertySet {
 				break;
 			}
 		}
-		// If the '}' can not be found but the $ was escaped
-		// => remove the escape char
-		if (escaped && nEnd == -1) {
-			return v.substring(0, nBegin - 1) + v.substring(nBegin);
-		}
 		// If the '}' can not be found => raise an error
 		if (nEnd == -1) {
-			throw new IllegalPropertiesSetException(Msg.bind(
+			throw new IllegalPropertiesSetException(f, p, Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_NOT_CLOSED, v,
 					nBegin + 1));
 		}
-		// If the expression was escaped => remove the escape char
-		if (escaped) {
-			return v.substring(0, nBegin - 1) + "${"
-					+ escapeAndExpand(v.substring(nBegin + 2, nEnd)) + "}"
-					+ escapeAndExpand(v.substring(nEnd + 1));
-		}
 		// resolve the expression
-		return v.substring(0, nBegin) + expand(v.substring(nBegin + 2, nEnd))
-				+ escapeAndExpand(v.substring(nEnd + 1));
+		return v.substring(0, nBegin)
+				+ expand(f, p, v.substring(nBegin + 2, nEnd))
+				+ escapeAndExpand(f, p, v.substring(nEnd + 1));
 	}
 
-	private String expand(String v) throws IllegalPropertiesSetException {
-		String escaped = escapeAndExpand(v);
+	private String expand(String f, int p, String v)
+			throws IllegalPropertiesSetException {
+		String escaped = escapeAndExpand(f, p, v);
 		if (!containsKey(escaped)) {
-			throw new IllegalPropertiesSetException(Msg.bind(
+			throw new IllegalPropertiesSetException(f, p, Msg.bind(
 					Messages.PropertiesSetEx_VARIABLE_SEQUENCE_UNDEFINED, v));
 		}
-		return escapeAndExpand(get(escaped));
+		return escapeAndExpand(f, p, get(escaped));
 	}
 
 	@Override
