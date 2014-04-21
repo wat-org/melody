@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.50-p1</version>
+			<version>0.1.51-p1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jcraft</groupId>
