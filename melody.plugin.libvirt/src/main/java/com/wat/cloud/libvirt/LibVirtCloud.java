@@ -562,34 +562,31 @@ public abstract class LibVirtCloud {
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
 			StoragePool sp = cnx.storagePoolLookupByName("default");
-			synchronized (conf.getDocument()) {
-				for (int i = 0; i < nl.getLength(); i++) {
-					Element n = (Element) nl.item(i);
-					String sDescriptorPath = n.getAttribute("descriptor");
-					String sSourceVolumePath = n.getAttribute("source");
-					String sDiskDeviceName = n.getAttribute("device");
-					log.trace("Creating Disk Device '" + sDiskDeviceName
-							+ "' for Domain '" + sInstanceId
-							+ "' ... LibVirt Volume Image is '"
-							+ sSourceVolumePath + "'.");
-					StorageVol sourceVolume = cnx
-							.storageVolLookupByPath(sSourceVolumePath);
-					String sDescriptor = null;
-					sDescriptor = XPathExpander.expand(
-							Paths.get(sDescriptorPath), null, ps);
-					StorageVol sv = null;
-					synchronized (LOCK_CLONE_DISK) {
-						// we can't clone a volume which is already being cloned
-						// and we can't use nio.Files.copy which is 4 times
-						// slower
-						sv = sp.storageVolCreateXMLFrom(sDescriptor,
-								sourceVolume, 0);
-					}
-					log.debug("Disk Device '" + sDiskDeviceName
-							+ "' created for Domain '" + sInstanceId
-							+ "'. LibVirt Volume path is '" + sv.getPath()
-							+ "'.");
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element n = (Element) nl.item(i);
+				String sDescriptorPath = n.getAttribute("descriptor");
+				String sSourceVolumePath = n.getAttribute("source");
+				String sDiskDeviceName = n.getAttribute("device");
+				log.trace("Creating Disk Device '" + sDiskDeviceName
+						+ "' for Domain '" + sInstanceId
+						+ "' ... LibVirt Volume Image is '" + sSourceVolumePath
+						+ "'.");
+				StorageVol sourceVolume = cnx
+						.storageVolLookupByPath(sSourceVolumePath);
+				String sDescriptor = null;
+				sDescriptor = XPathExpander.expand(Paths.get(sDescriptorPath),
+						null, ps);
+				StorageVol sv = null;
+				synchronized (LOCK_CLONE_DISK) {
+					// we can't clone a volume which is already being cloned
+					// and we can't use nio.Files.copy which is 4 times
+					// slower
+					sv = sp.storageVolCreateXMLFrom(sDescriptor, sourceVolume,
+							0);
 				}
+				log.debug("Disk Device '" + sDiskDeviceName
+						+ "' created for Domain '" + sInstanceId
+						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
 			// Start domain

@@ -213,13 +213,11 @@ public abstract class LibVirtCloudProtectedArea {
 			if (paNodes == null || paNodes.getLength() == 0) {
 				return protectedAreaIds;
 			}
-			synchronized (LibVirtCloud.conf.getDocument()) {
-				for (int i = 0; i < paNodes.getLength(); i++) {
-					Element pa = (Element) paNodes.item(i);
-					String spaid = pa.getAttribute("id");
-					ProtectedAreaId paid = ProtectedAreaId.parseString(spaid);
-					protectedAreaIds.add(paid);
-				}
+			for (int i = 0; i < paNodes.getLength(); i++) {
+				Element pa = (Element) paNodes.item(i);
+				String spaid = pa.getAttribute("id");
+				ProtectedAreaId paid = ProtectedAreaId.parseString(spaid);
+				protectedAreaIds.add(paid);
 			}
 			return protectedAreaIds;
 		} catch (XPathExpressionException | IllegalProtectedAreaIdException Ex) {
@@ -326,18 +324,16 @@ public abstract class LibVirtCloudProtectedArea {
 				return;
 			}
 			// synchronize the loop to avoid concurrent access to the doc
-			synchronized (LibVirtCloud.conf.getDocument()) {
-				for (int i = 0; i < domainNodes.getLength(); i++) {
-					Element domainNode = (Element) domainNodes.item(i);
-					// get the protected area id
-					String sPaId = ((Element) domainNode.getParentNode()
-							.getParentNode()).getAttribute("id");
-					ProtectedAreaId paId = ProtectedAreaId.parseString(sPaId);
-					// unregister domain in the protected area
-					domainNode.getParentNode().removeChild(domainNode);
-					// update the protected area where the domain is located
-					updateAllProtectedAreasRelatedTo(cnx, paId);
-				}
+			for (int i = 0; i < domainNodes.getLength(); i++) {
+				Element domainNode = (Element) domainNodes.item(i);
+				// get the protected area id
+				String sPaId = ((Element) domainNode.getParentNode()
+						.getParentNode()).getAttribute("id");
+				ProtectedAreaId paId = ProtectedAreaId.parseString(sPaId);
+				// unregister domain in the protected area
+				domainNode.getParentNode().removeChild(domainNode);
+				// update the protected area where the domain is located
+				updateAllProtectedAreasRelatedTo(cnx, paId);
 			}
 			LibVirtCloud.conf.store();
 			log.trace("Protected Areas de-associated on Network Device '"
@@ -381,28 +377,25 @@ public abstract class LibVirtCloudProtectedArea {
 					.evaluateAsNodeList("/libvirtcloud/protected-areas/"
 							+ "protected-area[@id='" + paId + "']/rules/*");
 			Element paRuleNode = null;
-			synchronized (LibVirtCloud.conf.getDocument()) {
-				for (int i = 0; i < paRuleNodes.getLength(); i++) {
-					paRuleNode = (Element) paRuleNodes.item(i);
-					Protocol proto = Protocol.parseString(paRuleNode
-							.getNodeName());
-					SimpleFireWallRule rule = null;
-					switch (proto) {
-					case TCP:
-						rule = createTcpRuleFromElement(paRuleNode);
-						break;
-					case UDP:
-						rule = createUdpRuleFromElement(paRuleNode);
-						break;
-					case ICMP:
-						rule = createIcmpRuleFromElement(paRuleNode);
-						break;
-					}
-					if (rule == null) {
-						continue;
-					}
-					rules.add(rule);
+			for (int i = 0; i < paRuleNodes.getLength(); i++) {
+				paRuleNode = (Element) paRuleNodes.item(i);
+				Protocol proto = Protocol.parseString(paRuleNode.getNodeName());
+				SimpleFireWallRule rule = null;
+				switch (proto) {
+				case TCP:
+					rule = createTcpRuleFromElement(paRuleNode);
+					break;
+				case UDP:
+					rule = createUdpRuleFromElement(paRuleNode);
+					break;
+				case ICMP:
+					rule = createIcmpRuleFromElement(paRuleNode);
+					break;
 				}
+				if (rule == null) {
+					continue;
+				}
+				rules.add(rule);
 			}
 			return rules;
 		} catch (XPathExpressionException | IllegalProtocolException Ex) {
@@ -885,14 +878,12 @@ public abstract class LibVirtCloudProtectedArea {
 			if (domainNodes == null || domainNodes.getLength() == 0) {
 				return ips;
 			}
-			synchronized (LibVirtCloud.conf.getDocument()) {
-				for (int i = 0; i < domainNodes.getLength(); i++) {
-					Element domainNode = (Element) domainNodes.item(i);
-					String sMacAddr = domainNode.getAttribute("mac-addr");
-					String sIpAddr = LibVirtCloudNetwork
-							.getDomainIpAddress(sMacAddr);
-					ips.add(IpRange.parseString(sIpAddr));
-				}
+			for (int i = 0; i < domainNodes.getLength(); i++) {
+				Element domainNode = (Element) domainNodes.item(i);
+				String sMacAddr = domainNode.getAttribute("mac-addr");
+				String sIpAddr = LibVirtCloudNetwork
+						.getDomainIpAddress(sMacAddr);
+				ips.add(IpRange.parseString(sIpAddr));
 			}
 		} catch (XPathExpressionException | IllegalIpRangeException Ex) {
 			throw new RuntimeException(Ex);
@@ -919,13 +910,11 @@ public abstract class LibVirtCloudProtectedArea {
 			if (paNodes == null || paNodes.getLength() == 0) {
 				return;
 			}
-			synchronized (LibVirtCloud.conf.getDocument()) {
-				for (int i = 0; i < paNodes.getLength(); i++) {
-					Element paNode = (Element) paNodes.item(i);
-					String sPaId = paNode.getAttribute("id");
-					ProtectedAreaId id = ProtectedAreaId.parseString(sPaId);
-					updateProtectedArea(cnx, id);
-				}
+			for (int i = 0; i < paNodes.getLength(); i++) {
+				Element paNode = (Element) paNodes.item(i);
+				String sPaId = paNode.getAttribute("id");
+				ProtectedAreaId id = ProtectedAreaId.parseString(sPaId);
+				updateProtectedArea(cnx, id);
 			}
 		} catch (XPathExpressionException | IllegalProtectedAreaIdException Ex) {
 			throw new RuntimeException(Ex);
