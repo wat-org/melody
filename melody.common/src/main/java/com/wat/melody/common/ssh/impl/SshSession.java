@@ -14,7 +14,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.JSchExceptionInterrupted;
 import com.jcraft.jsch.LocalIdentityRepository;
 import com.jcraft.jsch.Session;
-import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.KeyPairRepository;
@@ -330,9 +329,6 @@ public class SshSession implements ISshSession {
 		long cnxTimeout = 0;
 		int cnxRetry = 0;
 		int cnxDelay = 3;
-		ConsolidatedException cex = new ConsolidatedException(Msg.bind(
-				Messages.SessionEx_FAILED_TO_CONNECT, getConnectionDatas(),
-				getUserDatas()));
 		if (getSessionConfiguration() != null) {
 			cnxTimeout = getSessionConfiguration().getConnectionTimeout()
 					.getTimeoutInMillis();
@@ -382,8 +378,9 @@ public class SshSession implements ISshSession {
 				}
 				// no retry left => fail
 				if (cnxRetry <= 0) {
-					cex.addCause(Ex);
-					throw new SshSessionException(cex);
+					throw new SshSessionException(Msg.bind(
+							Messages.SessionEx_FAILED_TO_CONNECT,
+							getConnectionDatas(), getUserDatas()), Ex);
 				}
 				/*
 				 * Sometimes (don't know why), we receive an exception with
@@ -411,7 +408,6 @@ public class SshSession implements ISshSession {
 						getConnectionDatas(), getUserDatas(), cnxRetry), Ex);
 				log.info(pex.getUserFriendlyStackTrace());
 				ex.info(pex.getFullStackTrace());
-				cex.addCause(pex);
 				cnxRetry -= 1;
 				cnxDelay += 3;
 				try {
