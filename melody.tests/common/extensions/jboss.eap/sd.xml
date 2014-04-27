@@ -107,9 +107,11 @@
                 <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
                 <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
 
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
                 <call orders="deploy_jboss_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
 
-                <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss EAP instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
@@ -130,14 +132,20 @@
             <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
-                <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
-                <ssh description="[start_jboss:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
+                <ssh description="[start_jboss:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-eapd.sh start" />
                 </ssh>
 
-                <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully started on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss EAP instance '§[jbossInstanceId]§' successfully started on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
@@ -154,14 +162,20 @@
 
             <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
-                <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
-                <ssh description="[stop_jboss:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
+                <ssh description="[stop_jboss:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-eapd.sh stop" />
                 </ssh>
 
-                <echo message="+ JBoss EAP instance for user '§[jbossInstanceOwner]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss EAP instance '§[jbossInstanceId]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
@@ -226,12 +240,14 @@
                 <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
                 <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
 
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
                 <foreach    items="§[jboss_instance]§/custom-modules/custom-module"
                             item-name="cm">
                     <property name="cm.name"          value="§[§[cm]§/@name]§" />
 
                     <call orders="§[callback]§.§[cm.name]§" sequence-descriptor="§[callback.sd]§"/>
-                    <echo message="+ Custom Module '§[cm.name]§' successfully deployed for user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§'." />
+                    <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss EAP instance '§[jbossInstanceId]§' on '§[§[srv]§/@instance-id]§'." />
                 </foreach>
             </foreach>
 
@@ -298,13 +314,15 @@
                 <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
                 <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
 
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
                 <foreach    items="§[jboss_instance]§/applications/application"
                             item-name="application"
                             max-par="1"> <!-- the deployment will need to modify the standalone.conf, which can't be modified concurrently -->
                     <property name="appli.name"          value="§[§[application]§/@name]§" />
 
                     <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
-                    <echo message="+ Application '§[appli.name]§' successfully deployed for user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§'." />
+                    <echo message="+ Application '§[appli.name]§' successfully deployed for JBoss EAP instance '§[jbossInstanceId]§' on '§[§[srv]§/@instance-id]§'." />
                 </foreach>
             </foreach>
 

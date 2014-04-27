@@ -16,27 +16,31 @@
         <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
-            <exec command="umask 0022" />
+            <exec command="umask 0007" />
             <exec command="mkdir -p /opt/jboss-datagrid-§[jbossEngineVersion]§" />
             <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§" />
         </ssh>
 
         <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- unzip datagrid in a temp directory-->
             <exec command="unzip -n /tmp/jboss-datagrid-server-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
+            <!-- ensure permission -->
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type f -exec chmod 660 {} \;"/>
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type f -name &quot;*.sh&quot; -exec chmod 770 {} \;"/>
+            <exec command="find /tmp/§[jbossEngineVersion]§ -type d -exec chmod 770 {} \;"/>
+            <!-- copy datagrid in the final directory-->
             <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-datagrid-§[jbossEngineVersion]§" />
         </ssh>
 
-        <!-- adding CLI and vault engine script -->
-        <!-- WARNING : because JDG 6.0 and 6.1 are based on eap 6.0, the given VAULT script will certainly not be valid for higher JDG distribution -->
+        <!-- add JBoss CLI and vault engine script -->
         <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
-            <!-- these permissions are strange, but they respect default JBoss packaging ... -->
             <resources  src-basedir="./engine"
                         match="**"
-                        dest-basedir="§[jbossEnginePath]§/bin/"
+                        dest-basedir="§[jbossEnginePath]§"
                         link-option="COPY_LINKS" >
-                <posix-permissions scope="files">664</posix-permissions>
-                <include match="*.sh" >
-                    <posix-permissions scope="files">755</posix-permissions>
+                <posix-permissions scope="files">660</posix-permissions>
+                <include match="**.sh" >
+                    <posix-permissions scope="files">750</posix-permissions>
                 </include>
             </resources>
         </upload>
@@ -46,7 +50,6 @@
     
     <order name="deploy_jdg_instance-6.1.0" >
         <!-- upload JBoss DataGrid Instance directory tree -->
-        <!-- WARNING : because JDG 6.0 and 6.1 are based on eap 6.0, the given TWIDDLE script will certainly not be valid for higher JDG distribution -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="./standalone"
                         match="**"
@@ -63,7 +66,7 @@
             </resources>
          </upload>
 
-        <ssh description="[datagrid.owner:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.owner:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss instance owner -->
             <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
             <!-- assign the jdg instance owner to the jdg engine group -->
@@ -74,7 +77,7 @@
         <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
         <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
         <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
         <copy>
             <resources  src-basedir="./standalone/configuration"
                         match="standalone.xml"
@@ -84,13 +87,13 @@
         </copy>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:vault
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management
             </elements-selector>
@@ -108,17 +111,16 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <ssh description="[datagrid.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec command="umask 0077" />
             <exec command="mkdir -p §[jbossVaultEncDir]§" />
             <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
             <exec command="keytool -list -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
-            <exec command="chmod 600 §[jbossVaultKeystore]§" />
          </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*/*:formatter/*:pattern-formatter
             </elements-selector>
@@ -126,8 +128,8 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:console-handler[@name='CONSOLE']/*:level
             </elements-selector>
@@ -135,8 +137,8 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
             </elements-selector>
@@ -150,13 +152,13 @@
         <property name="jbossInstanceMgmtKeyDName"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@dname]§"/>
         <property name="jbossInstanceMgmtKeyDName"      value="§[ if (string-length('§[jbossInstanceMgmtKeyDName]§')=0) then 'CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR' else '§[jbossInstanceMgmtKeyDName]§' ]§" />
 
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (create an HttpsManagementRealm, which contains SSL server identity)" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Secure management console (create an HttpsManagementRealm, which contains SSL server identity)" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='HttpsManagementRealm']
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms
             </elements-selector>
@@ -181,47 +183,47 @@
             </node-content>
         </append-xml-elements>
 
-        <ssh description="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[datagrid.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec command="cd §[jbossInstancePath]§/configuration" />
             <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
             <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
          </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (disable HTTP acces to HttpsManagementRealm)" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Secure management console (disable HTTP acces to HttpsManagementRealm)" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                 /*:server/*:management/*:management-interfaces/*:http-interface
+                /*:server/*:management/*:management-interfaces/*:http-interface
             </elements-selector>
             <attribute name="security-realm" value="HttpsManagementRealm"/>
         </set-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+                /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
             <attribute name="http"/>
         </remove-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
             </elements-selector>
             <attribute name="http"/>
         </remove-xml-attributes>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
+                /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
             <attribute name="https" value="management-https"/>
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Enable local authentication for the CLI" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Enable local authentication for the CLI" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication/*:local
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication
             </elements-selector>
@@ -233,19 +235,19 @@
         </append-xml-elements>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Enable access log" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Enable access log" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:access-log
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <access-log pattern="%h %l %u %t &quot;%r&quot; %s %b %T %{User-Agent}i %I %{JSESSIONID}c" resolve-hosts="false" prefix="access_log." rotate="true">
+                <access-log pattern="%h %l %u %t &quot;%r&quot; %s %b %T %{User-Agent}i %I %{JSESSIONID}c" resolve-hosts="false" prefix="access.log" rotate="false">
                     <directory path="." relative-to="jboss.server.log.dir" />
                 </access-log>
                 ]]>
@@ -253,22 +255,22 @@
         </append-xml-elements>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] optimize data repartition (Set the 'virtual-nodes' of all cache from '1' to '1000')" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] optimize data repartition (Set the 'virtual-nodes' of all cache from '1' to '1000')" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='default']
             </elements-selector>
             <attribute name="segments" value="1000"/>
         </set-xml-attributes>
 
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='memcachedCache']
             </elements-selector>
             <attribute name="segments" value="1000"/>
         </set-xml-attributes>
 
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='namedCache']
             </elements-selector>
@@ -278,8 +280,8 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§] Localize DataGrid" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Localize DataGrid" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
             </elements-selector>
@@ -288,7 +290,7 @@
             <attribute name="machine" value="§[instanceName]§"/>
         </set-xml-attributes>
 
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='tcp']/*:transport
             </elements-selector>
@@ -316,7 +318,7 @@
             <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
                  Don't know why. So we'ere doing a global synchronization -->
             <synchronize scope="GLOBAL" lock-id="jdg.add.user">
-                <ssh description="[datagrid.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                <ssh description="[datagrid.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
                  </ssh>
             </synchronize>

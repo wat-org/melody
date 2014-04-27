@@ -22,7 +22,8 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 ## Compute some variables
 ADD_USER_CMD="LANG=\"${LANG}\" \
               JAVA_HOME=\"${JAVA_HOME}\" \
-              JAVA_OPTS=\"$JAVA_OPTS -Djboss.server.config.user.dir=$JBOSS_BASE_DIR/configuration -Djboss.domain.config.user.dir=/noway\" \
+              JAVA_OPTS=\"${JAVA_OPTS} -Djava.io.tmpdir=${JBOSS_BASE_DIR}/tmp/ -Djboss.server.config.user.dir=${JBOSS_BASE_DIR}/configuration -Djboss.domain.config.user.dir=/noway\" \
+              JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
               \"${JBOSS_ADD_USER}\""
 
 ###

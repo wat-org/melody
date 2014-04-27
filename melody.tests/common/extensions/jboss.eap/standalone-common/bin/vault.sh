@@ -33,15 +33,16 @@ fi
 
 ## Compute some variables
 VAULT_CMD="LANG=\"${LANG}\" \
-         JAVA_HOME=\"${JAVA_HOME}\" \
-         JAVA_OPTS=\"-Djava.io.tmpdir=${JBOSS_BASE_DIR}/tmp/\" \
-         \"${JBOSS_VAULT}\" \
-         --enc-dir \"${VAULT_ENC_DIR}\" \
-         --keystore \"${VAULT_KEYSTORE}\" \
-         --keystore-password \"${VAULT_KEYSTORE_PASSWORD}\" \
-         --alias \"${VAULT_KEYSTORE_ALIAS}\" \
-         --iteration \"${VAULT_ITERATION_COUNT}\" \
-         --salt \"${VAULT_SALT}\""
+          JAVA_HOME=\"${JAVA_HOME}\" \
+          JAVA_OPTS=\"${JAVA_OPTS} -Djava.io.tmpdir=${JBOSS_BASE_DIR}/tmp/\" \
+          JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
+          \"${JBOSS_VAULT}\" \
+          --enc-dir \"${VAULT_ENC_DIR}\" \
+          --keystore \"${VAULT_KEYSTORE}\" \
+          --keystore-password \"${VAULT_KEYSTORE_PASSWORD}\" \
+          --alias \"${VAULT_KEYSTORE_ALIAS}\" \
+          --iteration \"${VAULT_ITERATION_COUNT}\" \
+          --salt \"${VAULT_SALT}\""
 
 ###
 ### validate some stuff

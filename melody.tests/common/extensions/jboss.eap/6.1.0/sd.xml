@@ -81,7 +81,7 @@
             </resources>
         </upload>
 
-        <ssh description="[eap.owner:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+        <ssh description="[eap.owner:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss instance owner -->
             <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
             <!-- assign the jboss instance owner to the jboss engine group -->
@@ -92,7 +92,7 @@
         <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
         <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
         <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+        <echo message="[eap.conf:§[jbossInstanceId]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
         <copy>
             <resources  src-basedir="./standalone/configuration"
                         match="§[jbossInstanceConfigurationFile]§"
@@ -102,13 +102,13 @@
         </copy>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the vault configuration" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:vault
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management
             </elements-selector>
@@ -126,7 +126,7 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <ssh description="[eap.vault:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[eap.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec command="umask 0077" />
             <exec command="mkdir -p §[jbossVaultEncDir]§" />
             <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
@@ -134,8 +134,8 @@
          </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*/*:formatter/*:pattern-formatter
             </elements-selector>
@@ -143,8 +143,8 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:console-handler[@name='CONSOLE']/*:level
             </elements-selector>
@@ -152,8 +152,8 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Remove all virtual-server aliases" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
             </elements-selector>
@@ -167,13 +167,13 @@
         <property name="jbossInstanceMgmtKeyDName"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@dname]§"/>
         <property name="jbossInstanceMgmtKeyDName"      value="§[ if (string-length('§[jbossInstanceMgmtKeyDName]§')=0) then 'CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR' else '§[jbossInstanceMgmtKeyDName]§' ]§" />
 
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (establish SSL server identity)" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Secure management console (establish SSL server identity)" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='HttpsManagementRealm']
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms
             </elements-selector>
@@ -198,33 +198,33 @@
             </node-content>
         </append-xml-elements>
 
-        <ssh description="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[eap.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec command="cd §[jbossInstancePath]§/configuration" />
             <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
             <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
          </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface
             </elements-selector>
             <attribute name="security-realm" value="HttpsManagementRealm"/>
         </set-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
             <attribute name="http"/>
         </remove-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
             </elements-selector>
             <attribute name="http"/>
         </remove-xml-attributes>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
@@ -232,13 +232,13 @@
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Enable local authentication for the CLI" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Enable local authentication for the CLI" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication/*:local
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication
             </elements-selector>
@@ -250,13 +250,13 @@
         </append-xml-elements>
 
         <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Enable access log" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Enable access log" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:access-log
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server
             </elements-selector>
@@ -284,13 +284,13 @@
                 DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001136: Starting service jboss.web
                 INFO  [org.apache.coyote.http11] (MSC service thread 1-1) JBWEB003000: Coyote HTTP/1.1 starting on: http-/192.168.122.4:8480
          -->
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:logger[@category='org.apache.catalina.core']
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:root-logger
             </elements-selector>
@@ -303,12 +303,13 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <echo message="[eap.conf:§[ip]§:§[jbossInstanceOwner]§] Uses native components: §[jbossInstanceUsesNative]§" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[ip]§:§[jbossInstanceOwner]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Uses native components: §[jbossInstanceUsesNative]§" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
             </elements-selector>
             <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
+            <attribute name="instance-id" value="§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§"/>
         </set-xml-attributes>
 
         <!-- upload customized configuration -->
@@ -330,7 +331,7 @@
             <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
                  Don't know why. So we'ere doing a global synchronization -->
             <synchronize scope="GLOBAL" lock-id="eap.add.user">
-                <ssh description="[eap.reg-adm:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                <ssh description="[eap.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
                 </ssh>
             </synchronize>

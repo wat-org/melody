@@ -1,0 +1,1 @@
+../../../standalone-common/bin/jboss-cli.sh

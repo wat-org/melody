@@ -1,0 +1,1 @@
+../../../engine-common/bin/jboss-cli.sh

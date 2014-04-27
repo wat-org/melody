@@ -107,9 +107,11 @@
                 <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
                 <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
 
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
                 <call orders="deploy_jdg_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
 
-                <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
@@ -130,14 +132,20 @@
             <foreach    items="§[srv]§§[jdg_instance_selector]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
-                <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
-                <ssh description="[start_jdg:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
+                <ssh description="[start_jdg:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-jdgd.sh start" />
                 </ssh>
 
-                <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully started on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully started on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
@@ -154,14 +162,20 @@
 
             <foreach    items="§[srv]§§[jdg_instance_selector]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]"
                         item-name="jboss_instance">
-                <property name="jbossInstancePath"   value="§[§[jboss_instance]§/@path]§" />
-                <property name="jbossInstanceOwner"  value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
 
-                <ssh description="[stop_jdg:§[ip]§:§[jbossInstanceOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
+                <ssh description="[stop_jdg:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-jdgd.sh stop" />
                 </ssh>
 
-                <echo message="+ JBoss DataGrid instance for user '§[jbossInstanceOwner]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
+                <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully stopped on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
