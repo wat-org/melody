@@ -313,7 +313,8 @@
                 /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
             </elements-selector>
             <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
-            <attribute name="instance-id" value="§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§"/>
+            <!-- mod_jk load balancing will not properly if JVMRoute (e.g. instance-id) contains '.'. So we replace it  -->
+            <attribute name="instance-id" value="§[replace('§[jbossInstanceListenIp]§', '[.]', '_')]§_port_§[jbossInstanceListenPortOffset]§"/>
         </set-xml-attributes>
 
         <!-- upload customized configuration -->
