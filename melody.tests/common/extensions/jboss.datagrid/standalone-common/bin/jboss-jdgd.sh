@@ -20,11 +20,7 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
   exit 1
 }
 
-[ $# -gt 1 ] && {
-  echo "Usage: $0 {start|stop|status|restart|start-async|restart-async|start-async-tail|restart-async-tail|tdump|hdump}"
-  exit 1
-}
-
+## Validate some stuff.
 if [ -z "${JBOSS_BASE_DIR}" ]; then
   echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
@@ -42,15 +38,31 @@ if [ "$(id -un)" != "${JDG_USER}" -a "$(id -g)" != "0" ]; then
   exit 1
 fi
 
+if [ $# -gt 2 ]; then
+  echo "Usage: $0 { [re]start[-async[-tail]] [--admin-only] | stop | status | tdump | hdump }"
+  exit 1
+fi
+
+if [[ $# = 2 && "$1" =~ ^(re)?start(-async(-tail)?)?$ && "$2" != "--admin-only" ]]; then
+  echo "Usage: $0 { [re]start[-async[-tail]] [--admin-only] | stop | status | tdump | hdump }"
+  exit 1
+fi
+
+if [[ $# = 2 && ! "$1" =~ ^(re)?start(-async(-tail)?)?$ ]]; then
+  echo "Usage: $0 { [re]start[-async[-tail]] [--admin-only] | stop | status | tdump | hdump }"
+  exit 1
+fi
+
 
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
-[ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-datagrid-server-6"
+[ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-datagrid-server-6.0"
 [ -z "${JBOSS_CONSOLE_LOG}" ]         && JBOSS_CONSOLE_LOG="/var/log/jboss-datagrid/console.log"
 [ -z "${STARTUP_WAIT}" ]              && STARTUP_WAIT=30
 [ -z "${SHUTDOWN_WAIT}" ]             && SHUTDOWN_WAIT=30
-[ -z "${PURGE_TMP_DIR_AT_STARTUP}" ]  && PURGE_TMP_DIR_AT_STARTUP=1
-[ -z "${PURGE_DATA_DIR_AT_STARTUP}" ] && PURGE_DATA_DIR_AT_STARTUP=0
+[ -z "${JBOSS_START_ADMIN_ONLY}" ]    && JBOSS_START_ADMIN_ONLY="false"
+[ -z "${PURGE_TMP_DIR_AT_STARTUP}" ]  && PURGE_TMP_DIR_AT_STARTUP="true"
+[ -z "${PURGE_DATA_DIR_AT_STARTUP}" ] && PURGE_DATA_DIR_AT_STARTUP="false"
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
@@ -65,6 +77,8 @@ fi
 
 ## Compute some variables
 MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
+[ "$2" = "--admin-only" ] && ADMIN_ONLY_FLAG="--admin-only"
+[ "${JBOSS_START_ADMIN_ONLY}" = "true" ] && ADMIN_ONLY_FLAG="--admin-only"
 JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JAVA_HOME=\"${JAVA_HOME}\" \
               JBOSS_HOME=\"${JBOSS_HOME}\" \
@@ -80,6 +94,7 @@ JBOSS_SCRIPT="LANG=\"${LANG}\" \
               -Djboss.socket.binding.port-offset=${PORT_OFFSET} \
               -Djboss.management.native.port=${MGMT_NATIVE_PORT} \
               -c \"${JBOSS_CONFIG}\" \
+              ${ADMIN_ONLY_FLAG} \
               </dev/null >\"${JBOSS_CONSOLE_LOG}\" 2>&1 \
               &"
               # doing this, this background call uses its own stdin, stdout and stderr,
@@ -212,11 +227,15 @@ validate_server_state() {
   }
 
   # does the log contains error ?
-  # "JBREM000200: Remote connection failed": discarded because it should be a WARN :
-  # "JBREM000201: Received invalid message on Remoting connection": discarded because it should be a WARN
+  # JBREM000200: Remote connection failed": discarded because it should be a WARN
+  # JBREM000201: Received invalid message on Remoting connection": discarded because it should be a WARN
+  # JBAS014612: discard CLI + osgi related errors: 'Operation ("add") failed ... osgi is already registered': discarded because it is a bug in startup sequence, which lead to duplicate osgi loading
+  # JBAS014784: discard osgi related errors: 'Failed executing subsystem osgi boot operations': discarded for the same reason
   cat "${JBOSS_CONSOLE_LOG}"   | \
   grep -v "ERROR.*JBREM000200" | \
   grep -v "ERROR.*JBREM000201" | \
+  grep -v "ERROR.*JBAS014612.*osgi.*already.*registered" |  \
+  grep -v "ERROR.*JBAS014784" |  \
   grep -iE "[ \[](ERROR|FATAL)" 1>/dev/null && {
     warning
     echo
@@ -248,8 +267,8 @@ ensure_started() {
     return 1
   fi
 
-  [ "${PURGE_TMP_DIR_AT_STARTUP}" = "1" -a -d "${JBOSS_BASE_DIR}/tmp/" ] && rm -rf "${JBOSS_BASE_DIR}/tmp/"* 1>/dev/null
-  [ "${PURGE_DATA_DIR_AT_STARTUP}" = "1" -a -d "${JBOSS_BASE_DIR}/data/" ] && rm -rf "${JBOSS_BASE_DIR}/data/"* 1>/dev/null
+  [ "${PURGE_TMP_DIR_AT_STARTUP}" = "true" -a -d "${JBOSS_BASE_DIR}/tmp/" ] && rm -rf "${JBOSS_BASE_DIR}/tmp/"* 1>/dev/null
+  [ "${PURGE_DATA_DIR_AT_STARTUP}" = "true" -a -d "${JBOSS_BASE_DIR}/data/" ] && rm -rf "${JBOSS_BASE_DIR}/data/"* 1>/dev/null
 
   ${CMD_PREFIX} "mkdir -p \"$(dirname "${JBOSS_CONSOLE_LOG}")\""
   ${CMD_PREFIX} "${JBOSS_SCRIPT}"
@@ -425,7 +444,7 @@ case "$1" in
       ;;
   *)
       ## If no parameters are given, print which are available.
-      echo "Usage: $0 {start|stop|status|restart|start-async|restart-async|start-async-tail|restart-async-tail|tdump|hdump}"
+      echo "Usage: $0 {start [--admin-only] | stop | status | restart [--admin-only] | start-async [--admin-only] | restart-async [--admin-only] | start-async-tail [--admin-only] | restart-async-tail [--admin-only] | tdump | hdump}"
       exit 1
       ;;
 esac

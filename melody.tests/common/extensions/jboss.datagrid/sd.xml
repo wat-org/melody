@@ -67,6 +67,8 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+                <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
+                <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
