@@ -13,9 +13,10 @@
         <foreach    items="§[instance_selector]§[ §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <new-machine target="§[srv]§" />
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' created§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' created§[adm_ip]§." />
         </foreach>
 
         <echo message="-- Virtual machines created." />
@@ -48,9 +49,10 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <start-machine target="§[srv]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' started (IP: §[adm_ip]§)." />
+            <echo message="+ virtual machine '§[id]§' started (IP: §[adm_ip]§)." />
         </foreach>
 
         <echo message="-- Virtual machines started." />
@@ -63,10 +65,11 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
             <stop-machine target="§[srv]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' stopped§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' stopped§[adm_ip]§." />
         </foreach>
 
         <echo message="-- Virtual machines stopped." />
@@ -79,10 +82,11 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <resize-machine target="§[srv]§"/>
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' resized§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' resized§[adm_ip]§." />
         </foreach>
 
         <echo message="-- Virtual machines resized." />
@@ -93,10 +97,11 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <update-disk-devices target="§[srv]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' disk devices updated§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' disk devices updated§[adm_ip]§." />
         </foreach>
 
         <echo message="-- Disk devices updated." />
@@ -107,10 +112,11 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <update-network-devices target="§[srv]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' network devices updated§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' network devices updated§[adm_ip]§." />
         </foreach>
 
         <echo message="-- Network devices updated." />
@@ -121,10 +127,11 @@
 
         <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
+            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
             <update-firewall target="§[srv]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[§[srv]§/@instance-id]§' fireWall rules updated§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' fireWall rules updated§[adm_ip]§." />
         </foreach>
 
         <echo message="-- FireWall rules updated." />

@@ -107,9 +107,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throws OperationException, OperationTimeoutException,
 			InterruptedException {
 		if (!isInstanceDefined()) {
+			fireInstanceStopped();
 			log.warn(Messages.DestroyMsg_NO_INSTANCE);
 		} else if (!instanceLives()) {
-			log.warn(Msg.bind(Messages.DestroyMsg_TERMINATED, getInstanceId(),
+			fireInstanceStopped();
+			fireInstanceDestroyed();
+			String sInstanceId = setInstanceId(null);
+			log.warn(Msg.bind(Messages.DestroyMsg_TERMINATED, sInstanceId,
 					"DEAD"));
 		} else {
 			destroyInstance(destroyTimeout);
@@ -166,6 +170,9 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceDestroyed();
 			throw new OperationException(Msg.bind(Messages.StartEx_TERMINATED,
 					getInstanceId(), InstanceState.TERMINATED));
+		} else if (is == null) { // == !instanceExists()
+			throw new OperationException(Msg.bind(
+					Messages.StartEx_INVALID_INSTANCE_ID, getInstanceId()));
 		} else {
 			startInstance(startTimeout);
 			fireInstanceStarted();
@@ -181,7 +188,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			throws OperationException, OperationTimeoutException,
 			InterruptedException {
 		if (!isInstanceDefined()) {
-			throw new OperationException(Messages.StopEx_NO_INSTANCE);
+			fireInstanceStopped();
+			log.warn(Messages.StopMsg_NO_INSTANCE);
+		} else if (!instanceExists()) {
+			fireInstanceStopped();
+			throw new OperationException(Msg.bind(
+					Messages.StopEx_INVALID_INSTANCE_ID, getInstanceId()));
 		} else if (!instanceRuns()) {
 			fireInstanceStopped();
 			log.warn(Msg.bind(Messages.StopMsg_ALREADY_STOPPED,
@@ -203,11 +215,8 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.ResizeMsg_NO_INSTANCE);
 		} else if (!instanceExists()) {
-			fireInstanceStopped();
-			fireInstanceDestroyed();
-			String sInstanceId = setInstanceId(null);
 			throw new OperationException(Msg.bind(
-					Messages.ResizeEx_INVALID_INSTANCE_ID, sInstanceId));
+					Messages.ResizeEx_INVALID_INSTANCE_ID, getInstanceId()));
 		} else if (getInstanceType() == targetType) {
 			log.info(Msg.bind(Messages.ResizeMsg_NO_NEED, getInstanceId(),
 					targetType));
@@ -237,11 +246,9 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateDiskDevMsg_NO_INSTANCE);
 		} else if (!instanceExists()) {
-			fireInstanceStopped();
-			fireInstanceDestroyed();
-			String sInstanceId = setInstanceId(null);
 			throw new OperationException(Msg.bind(
-					Messages.UpdateDiskDevEx_INVALID_INSTANCE_ID, sInstanceId));
+					Messages.UpdateDiskDevEx_INVALID_INSTANCE_ID,
+					getInstanceId()));
 		} else {
 			updateInstanceDiskDevices(list);
 		}
@@ -285,14 +292,11 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 	public void ensureInstanceNetworkDevicesAreUpToDate(NetworkDeviceList list)
 			throws OperationException, InterruptedException {
 		if (!isInstanceDefined()) {
-			fireInstanceStopped();
 			log.warn(Messages.UpdateNetDevMsg_NO_INSTANCE);
 		} else if (!instanceExists()) {
-			fireInstanceStopped();
-			fireInstanceDestroyed();
-			String sInstanceId = setInstanceId(null);
 			throw new OperationException(Msg.bind(
-					Messages.UpdateNetDevEx_INVALID_INSTANCE_ID, sInstanceId));
+					Messages.UpdateNetDevEx_INVALID_INSTANCE_ID,
+					getInstanceId()));
 		} else {
 			updateInstanceNetworkDevices(list);
 			if (instanceRuns()) {
@@ -331,11 +335,9 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		if (!isInstanceDefined()) {
 			log.warn(Messages.UpdateFireWallMsg_NO_INSTANCE);
 		} else if (!instanceExists()) {
-			fireInstanceStopped();
-			fireInstanceDestroyed();
-			String sInstanceId = setInstanceId(null);
 			throw new OperationException(Msg.bind(
-					Messages.UpdateFireWallEx_INVALID_INSTANCE_ID, sInstanceId));
+					Messages.UpdateFireWallEx_INVALID_INSTANCE_ID,
+					getInstanceId()));
 		} else {
 			updateInstanceFireWallRules(list);
 		}

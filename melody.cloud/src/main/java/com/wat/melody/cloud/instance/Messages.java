@@ -20,6 +20,7 @@ public class Messages extends NLS {
 	public static String StartMsg_PENDING;
 	public static String StartMsg_RUNNING;
 	public static String StartMsg_STOPPING;
+	public static String StartEx_INVALID_INSTANCE_ID;
 	public static String StartEx_NO_INSTANCE;
 	public static String StartEx_WAIT_TO_START_TIMEOUT;
 	public static String StartEx_WAIT_TO_RESTART_TIMEOUT;
@@ -27,7 +28,8 @@ public class Messages extends NLS {
 	public static String StartEx_TERMINATED;
 
 	public static String StopMsg_ALREADY_STOPPED;
-	public static String StopEx_NO_INSTANCE;
+	public static String StopEx_INVALID_INSTANCE_ID;
+	public static String StopMsg_NO_INSTANCE;
 
 	public static String ResizeMsg_NO_INSTANCE;
 	public static String ResizeEx_INVALID_INSTANCE_ID;
