@@ -67,6 +67,8 @@
                 <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
                 <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
                 <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
+                <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
+                <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
@@ -201,6 +203,8 @@
                 <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
                 <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
                 <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
+                <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
+                <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
@@ -275,6 +279,8 @@
                 <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
                 <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
                 <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
+                <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
+                <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
 
                 <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
                 <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-eap-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
