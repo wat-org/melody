@@ -3,7 +3,6 @@ package com.wat.cloud.libvirt;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -52,6 +51,15 @@ import com.wat.melody.common.xpath.XPathExpander;
 public abstract class LibVirtCloud {
 
 	private static Logger log = LoggerFactory.getLogger(LibVirtCloud.class);
+
+	static {
+		try {
+			Connect.setErrorCallback(new LibVirtErrorCallback());
+		} catch (LibvirtException Ex) {
+			throw new RuntimeException("Fail to initialize libvirt error "
+					+ "callback. " + "Should not happened.", Ex);
+		}
+	}
 
 	public static final String LIBVIRT_CLOUD_IMG_CONF = "/Cloud/libvirt/conf.xml";
 	protected static Doc conf = loadLibVirtCloudConfiguration();
@@ -316,14 +324,6 @@ public abstract class LibVirtCloud {
 		if (sInstanceId == null) {
 			return null;
 		}
-		/*
-		 * When domainLookupByName() cannot found the given domain, it writes
-		 * "libvir: QEMU error : Domain not found: no domain with matching name '<sInstanceId>'"
-		 * in System.err. This test prevent this error to be writen.
-		 */
-		if (!instanceExists(cnx, sInstanceId)) {
-			return null;
-		}
 		try {
 			return cnx.domainLookupByName(sInstanceId);
 		} catch (LibvirtException Ex) {
@@ -335,27 +335,7 @@ public abstract class LibVirtCloud {
 	}
 
 	public static boolean instanceExists(Connect cnx, String sInstanceId) {
-		if (cnx == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Connect.class.getCanonicalName());
-		}
-		if (sInstanceId == null) {
-			return false;
-		}
-		try {
-			// iterate through the active domains
-			for (int activeDomainId : cnx.listDomains()) {
-				Domain d = cnx.domainLookupByID(activeDomainId);
-				if (d.getName().equals(sInstanceId)) {
-					return true;
-				}
-			}
-			// search in the inactive domains
-			String[] names = cnx.listDefinedDomains();
-			return Arrays.asList(names).contains(sInstanceId);
-		} catch (LibvirtException Ex) {
-			throw new RuntimeException(Ex);
-		}
+		return getDomain(cnx, sInstanceId) != null;
 	}
 
 	public static InstanceState getDomainState(Domain d) {
