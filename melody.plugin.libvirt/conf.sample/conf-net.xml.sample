@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<network>
+	<name>default</name>
+	<!--	SYSTEM SETTINGS for NAT mode :
+		in order to work properly, 'net.ipv4.im_forward' and 'net.bridge.bridge-nf-call-iptables' must be set to '1'
+	-->
+	<forward mode="nat"/>
+	<bridge delay="0" name="virbr0" stp="on"/>
+	<mac address="52:54:00:00:00:01"/>
+	<domain name="cloud.local"/>
+	<ip address="192.168.122.1" netmask="255.255.255.0">
+		<!--	In order to make dnsmasq work properly, all the ip/fqdn listed here should be added in the local /etc/hosts file.
+		-->
+		<dhcp>
+			<range end="192.168.122.254" start="192.168.122.200"/>
+
+			<!-- GATEWAY / DNS / DHCP / LibVirtCloud Rest Server -->
+			<host allocated="true" ip="192.168.122.1" keypair-name="id_rsa" mac="52:54:00:00:00:01" name="gateway.cloud.local,privatecloud.cloud.local"/>
+			<!--	The default listening port of the LibVirtCloud Rest Server is 6060.
+				To open this port, the following line should be added to the iptables configuration :
+				      -A INPUT -m state - -state ESTABLISHED,RELATED -j ACCEPT                   (accept already established connections)
+				      -A INPUT -m state - -state NEW -m tcp -p tcp - -dport 6060 -j ACCEPT       (accept new tcp connections on port 6060)
+
+				Note that if you've customized the LibVirtCloud Rest Server listening port, you should use your custom 
+				port instead of the default one in the firewall rule.
+			-->
+
+			<!-- virtual machines -->
+			<host ip="192.168.122.2"  mac="52:54:00:00:00:02" name="ip-192-168-122-2.cloud.local"/>
+			<host ip="192.168.122.3"  mac="52:54:00:00:00:03" name="ip-192-168-122-3.cloud.local"/>
+			<host ip="192.168.122.4"  mac="52:54:00:00:00:04" name="ip-192-168-122-4.cloud.local"/>
+			<host ip="192.168.122.5"  mac="52:54:00:00:00:05" name="ip-192-168-122-5.cloud.local"/>
+			<host ip="192.168.122.6"  mac="52:54:00:00:00:06" name="ip-192-168-122-6.cloud.local"/>
+			<host ip="192.168.122.7"  mac="52:54:00:00:00:07" name="ip-192-168-122-7.cloud.local"/>
+			<host ip="192.168.122.8"  mac="52:54:00:00:00:08" name="ip-192-168-122-8.cloud.local"/>
+			<host ip="192.168.122.9"  mac="52:54:00:00:00:09" name="ip-192-168-122-9.cloud.local"/>
+			<host ip="192.168.122.10" mac="52:54:00:00:00:0A" name="ip-192-168-122-10.cloud.local"/>
+			<host ip="192.168.122.11" mac="52:54:00:00:00:0B" name="ip-192-168-122-11.cloud.local"/>
+			<host ip="192.168.122.12" mac="52:54:00:00:00:0C" name="ip-192-168-122-12.cloud.local"/>
+			<host ip="192.168.122.13" mac="52:54:00:00:00:0D" name="ip-192-168-122-13.cloud.local"/>
+			<host ip="192.168.122.14" mac="52:54:00:00:00:0E" name="ip-192-168-122-14.cloud.local"/>
+			<host ip="192.168.122.15" mac="52:54:00:00:00:0F" name="ip-192-168-122-15.cloud.local"/>
+
+			<!-- Active Directory Directory Services Domain Controller -->
+			<host allocated="true" ip="192.168.122.101" mac="52:54:00:00:01:01" name="ad.cloud.local"/>
+
+			<!-- virtual machine templates (directory backed volumes)-->
+			<host allocated="true" ip="192.168.122.151" mac="52:54:00:01:00:51" name="RHEL-6.3-minimal-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.152" mac="52:54:00:01:00:52" name="RHEL-6.3-workstation-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.153" mac="52:54:00:01:00:53" name="RHEL-6.3-eap-6.0-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.154" mac="52:54:00:01:00:54" name="RHEL-6.3-jdg-6.0.1-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.155" mac="52:54:00:01:00:55" name="RHS-2.1-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.156" mac="52:54:00:01:00:56" name="WINSRV-2008-R2-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.157" mac="52:54:00:01:00:57" name="WINXP-template.cloud.local"/>
+
+			<!-- virtual machine templates (lvm backed volumes)-->
+			<host allocated="true" ip="192.168.122.171" keypair-name="id_rsa" mac="52:54:00:01:00:71" name="RHEL-6-minimal-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.172" keypair-name="id_rsa" mac="52:54:00:01:00:72" name="RHEL-6-workstation-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.173" keypair-name="id_rsa" mac="52:54:00:01:00:73" name="RHEL-6-eap-6-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.174" keypair-name="id_rsa" mac="52:54:00:01:00:74" name="RHEL-6-jdg-6-template.cloud.local"/>
+		</dhcp>
+	</ip>
+</network>

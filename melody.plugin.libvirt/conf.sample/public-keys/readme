@@ -1,0 +1,3 @@
+Each File in this directory is a public key.
+When using Melody Plug-In for LibVirt, publics key are registered during the creation of a LibVirt Domain.
+The name of the file is the name of the key (as specified during the LibVirt Domain creation). 

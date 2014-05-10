@@ -1,0 +1,54 @@
+#!/bin/sh
+
+SUPER_USER=root
+SUPER_USER_HOME=$(eval echo ~${SUPER_USER})
+SUPER_USER_SSH_HOME=${SUPER_USER_HOME}/.ssh
+SUPER_USER_AUTH_KEYS=${SUPER_USER_SSH_HOME}/authorized_keys
+
+LVCD_URL="http://privatecloud.cloud.local:6060/LibVirtCloudServices/Rest/GetRegisteredPublicKey"
+SLEEP=60
+
+get_public_key() {
+  [ "${PUBKEY}" == "undefined" ] || return
+  PUBKEY=$(curl "${LVCD_URL}" 2>/dev/null)
+  [ "$?" != "0" ] && {
+    logger -p user.warn -t lvcd -- "Failed to retrieve public key at '${LVCD_URL}'. Will try again in ${SLEEP} seconds."
+    PUBKEY="undefined"
+  }
+}
+
+deploy_public_key() {
+  # We didn't retrieve the public key yet, so we quit
+  [ "${PUBKEY}" == "undefined" ] && return 0
+
+  # We retrieved the key, so we deploy it
+  [ -d ${SUPER_USER_SSH_HOME} ] || mkdir -p ${SUPER_USER_SSH_HOME} || return
+  chown ${SUPER_USER}:${SUPER_USER} ${SUPER_USER_SSH_HOME} || return
+  chmod 700 ${SUPER_USER_SSH_HOME} || return
+  touch ${SUPER_USER_AUTH_KEYS} || return
+  chown ${SUPER_USER}:${SUPER_USER} ${SUPER_USER_AUTH_KEYS} || return
+  chmod 600 ${SUPER_USER_AUTH_KEYS} || return
+
+  grep "${PUBKEY}" ${SUPER_USER_AUTH_KEYS} 1>/dev/null 2>/dev/null || {
+    echo "${PUBKEY}" >> ${SUPER_USER_AUTH_KEYS} && logger -p user.info -t lvcd -- "Successfully deploy LibVirt Cloud public key for '${SUPER_USER}'."
+  }
+  [ -x /sbin/restorecon ] || return
+  /sbin/restorecon ${SUPER_USER_AUTH_KEYS}
+  /sbin/restorecon ${SUPER_USER_SSH_HOME}
+}
+
+do_job() {
+  local PUBKEY="undefined"
+  # the dns server is not configured quickly when NetworkManager is enabled
+  # so we wait a little
+  pidof NetworkManager 1>/dev/null && sleep 5
+
+  while [ 1 ] ; do
+    get_public_key
+    deploy_public_key
+    sleep ${SLEEP}
+  done
+}
+
+do_job &
+echo $! > /var/run/lvcd.pid

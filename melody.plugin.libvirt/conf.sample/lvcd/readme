@@ -1,0 +1,11 @@
+Allow to authenticate on each instance of your template using the key pair you specified at instance creation.
+Install, configure and activate these two script on each RHEL template you create.
+
+Install:
+  lvcd.initd should be placed in /etc/init.d/lvcd
+  lvcd.script should be placed in /usr/sbin/lvcd
+Configure:
+  lvcd.script will call the LibVirt Cloud Service Rest Services. You must provide the correct URL.
+Activate:
+  chkconfig --add lvcd
+  chkconfig lvcd on

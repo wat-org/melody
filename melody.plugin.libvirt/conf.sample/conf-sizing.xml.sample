@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sizings>
+	<!-- ram is in Go (X.y) -->
+	<sizing name="t1.micro" vcpu="1" ram="0.5" />
+	<sizing name="m1.small" vcpu="2" ram="2.0" />
+	<sizing name="m1.medium" vcpu="4" ram="4.0" />
+	<sizing name="m1.large" vcpu="8" ram="8.0" />
+	<sizing name="m1.xlarge" vcpu="16" ram="16.0" />
+	<sizing name="m2.xlarge" vcpu="6" ram="7.0" />
+	<sizing name="m2.2xlarge" vcpu="12" ram="13.0" />
+	<sizing name="m2.4xlarge" vcpu="24" ram="25.0" />
+	<sizing name="c1.medium" vcpu="16" ram="18.0" />
+	<sizing name="c1.xlarge" vcpu="24" ram="34.0" />
+</sizings>

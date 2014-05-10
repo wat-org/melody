@@ -1,0 +1,30 @@
+Install the package 'virtio-win' on your workstation.
+Create a new VM and install Windows Server 2008 R2.
+
+
+1/ use virtio for network device
+  - Stop the VM
+  - Change the 'Virtul Network Interface' settings so that it use 'virtio'
+  - Connect the CD-ROM on '/usr/share/virtio-win/virtio-win.iso'
+  - Start the VM
+  - Note that the network should not work (because the virtio is not recognized)
+  - In the 'Device Manager', select the faulty device, and select 'upgrade driver software' using the previously connected iso
+  - Once done, you should have a 'Network Adapter' of type 'Red Hat VirtIO Ethernet Adapter'
+  - The network should now be operational
+
+
+2/ use virtio for disk
+  - Connect the CD-ROM on '/usr/share/virtio-win/virtio-win.iso'
+  - Add hardawre of type 'Storage' using 'virtio' (the VM should detect the new hardware)
+  - In the 'Device Manager', select the faulty device, and select 'upgrade driver software' using the previously connected iso
+  - Once done, you should have a 'Storage Controller' of type 'Red Hat VirtIO SCSI Storage Controller'
+  - Stop the VM
+  - Remove the virtio storage previously added
+  - Change the type of the IDE storage (e.g. the root device) to 'virtio'
+  - Start the VM
+
+
+3/ lanch 'sysprep'
+into %windir%/System32/sysprep
+  'System cleanup action' : 'Enter system Out-Of-Box Experience'
+  'Shutdown option' : 'shutdown'

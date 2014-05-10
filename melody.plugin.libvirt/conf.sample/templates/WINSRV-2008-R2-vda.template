@@ -1,0 +1,11 @@
+<volume>
+  <name>§[vmName]§-vda.img</name>
+  <source>
+  </source>
+  <capacity unit='bytes'>16106127360</capacity>
+  <allocation unit='bytes'>9596739584</allocation>
+  <target>
+    <format type='raw'/>
+  </target>
+</volume>
+

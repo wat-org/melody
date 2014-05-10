@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# lcvd:		Starts the LibVirt Cloud Daemon
+#
+# chkconfig: 2345 20 80
+# description:  This is a daemon which handles the task of connecting \
+#		to the LibVirt Cloud Services Endpoint in order to \
+#		retrieve the public key of the super user. Once retrieve, \
+#		this pubblic key is deployed under the authorized keys \
+#		of the super user. Doing that, it allows remote users \
+#		who have to corresponding private key to securly connect \
+#		to this system.		
+#
+# processname: lvcd
+# pidfile: /var/run/lvcd.pid
+# lockfile: /var/lock/subsys/lvcd
+#
+
+### BEGIN INIT INFO
+# Provides: lvcd
+# Required-Start: network_manager $local_fs $network $named $time
+# Required-Stop: $local_fs $network $named
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Starts the LibVirt Cloud Daemon
+# Description: This is a daemon which handles the task of connecting
+#		to the LibVirt Cloud Services Endpoint in order to
+#		retrieve the public key of the super user. Once retrieve,
+#		this pubblic key is deployed under the authorized keys
+#		of the super user. Doing that, it allows remote users
+#		who have to corresponding private key to securly connect
+#		to this system.
+### END INIT INFO
+
+LVCD=/usr/sbin/lvcd
+LVCD_LOCK=/var/lock/subsys/lvcd
+LVCD_DESC="LibVirt Cloud Servivce Deamon"
+
+# Sanity checks.
+[ -f ${LVCD} ] || {
+  echo -e "'${LVCD}' doesn't exists ! To solve this issue, run 'yum install -y lvc_tools'."
+  exit 6
+}
+[ -x ${LVCD} ] || {
+  echo -e "'${LVCD}' is not executable. To solve this issue, run 'chmod u+x ${LVCD}'."
+  exit 6
+}
+
+# Source function library.
+. /etc/rc.d/init.d/functions || {
+  echo -e "Fail to source '/etc/rc.d/init.d/functions'. Unrecoverable error."
+  exit 6
+}
+
+RETVAL=0
+
+start() {
+    echo -n $"Starting ${LVCD_DESC}: "
+    daemon lvcd
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch ${LVCD_LOCK}
+}
+
+stop() {
+    echo -n $"Stopping ${LVCD_DESC}: "
+    killproc lvcd
+    RETVAL=$?
+    echo
+    if [ $RETVAL -eq 0 ]; then
+        rm -f ${LVCD_LOCK}
+    fi
+}
+
+# See how we were called.
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+        status lvcd
+	RETVAL=$?
+        ;;
+    restart)
+	stop
+	start
+	;;
+    condrestart)
+	if [ -f ${LVCD_LOCK} ]; then
+	    stop
+	    start
+	fi
+	;;
+    *)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+	exit 2
+esac
+exit $RETVAL

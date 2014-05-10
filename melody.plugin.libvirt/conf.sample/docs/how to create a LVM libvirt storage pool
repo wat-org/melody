@@ -1,0 +1,52 @@
+First, you need an empty VG.
+
+If you don't have any VG, you can create a new one at the top of a LV :
+1/ ensure you have sufficent free space in your sole VG
+
+2/ create a new LV inside your sole VG
+  lvcreate -L 100G -n LibVirtLvmBase VolGroup
+
+3/ create a new PV on the new LV
+  pvcreate /dev/VolGroup/LibVirtLvmBase
+
+4/ create a new VG on the PV
+  vgcreate LibVirtLvmSP /dev/VolGroup/LibVirtLvmBase
+
+=> you have a new empty VG
+
+
+
+Then, you must define the VG as a LVM storage pool
+1/ create the LVM storage pool
+  virsh pool-define-as sp-lvm logical - - - LibVirtLvmSP /dev/LibVirtLvmSP
+
+2/ verify
+  virsh pool-list --all
+  Name                 State      Autostart 
+  -----------------------------------------
+  default              active     yes
+  sp-lvm               inactive   no
+
+3/ start the storage pool
+  virsh pool-start sp-lvm
+
+4/ verify
+  virsh pool-list --all
+  Name                 State      Autostart 
+  -----------------------------------------
+  default              active     yes
+  sp-lvm               active     no
+
+5/ enable the storage pool at startup
+  virsh pool-autostart sp-lvm
+
+6/ verify
+  virsh pool-list --all
+  Name                 State      Autostart 
+  -----------------------------------------
+  default              active     yes
+  sp-lvm               active     yes
+
+
+=> you have a new LVM storage pool
+  

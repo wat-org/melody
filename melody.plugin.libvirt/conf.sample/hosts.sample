@@ -1,0 +1,39 @@
+127.0.0.1        localhost.localdomain localhost
+::1              localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+
+#######################
+# This setting are necessary for melody.plugin.libvirt to work properly
+# Below settings are the mirror of conf-net.xml.sample
+# This allow libvirt's DNSMASQ to work properly
+
+192.168.122.1    privatecloud.cloud.local gateway.cloud.local
+192.168.122.2    ip-192-168-122-2.cloud.local
+192.168.122.3    ip-192-168-122-3.cloud.local
+192.168.122.4    ip-192-168-122-4.cloud.local
+192.168.122.5    ip-192-168-122-5.cloud.local
+192.168.122.6    ip-192-168-122-6.cloud.local
+192.168.122.7    ip-192-168-122-7.cloud.local
+192.168.122.8    ip-192-168-122-8.cloud.local
+192.168.122.9    ip-192-168-122-9.cloud.local
+192.168.122.10   ip-192-168-122-10.cloud.local
+192.168.122.11   ip-192-168-122-11.cloud.local
+192.168.122.12   ip-192-168-122-12.cloud.local
+192.168.122.13   ip-192-168-122-13.cloud.local
+192.168.122.14   ip-192-168-122-14.cloud.local
+192.168.122.15   ip-192-168-122-15.cloud.local
+
+192.168.122.101  ad.cloud.local
+
+192.168.122.151  RHEL-6.3-minimal-template.cloud.local
+192.168.122.152  RHEL-6.3-workstation-template.cloud.local
+192.168.122.153  RHEL-6.3-eap-6.0-template.cloud.local
+192.168.122.154  RHEL-6.3-jdg-6.0.1-template.cloud.local
+192.168.122.155  RHS-2.1-template.cloud.local
+192.168.122.156  WINSRV-2008-R2-template.cloud.local
+192.168.122.157  WINXP-template.cloud.local
+
+192.168.122.171  RHEL-6-minimal-template.cloud.local
+192.168.122.172  RHEL-6-workstation-template.cloud.local
+192.168.122.173  RHEL-6-eap-6-template.cloud.local
+192.168.122.174  RHEL-6-jdg-6-template.cloud.local
