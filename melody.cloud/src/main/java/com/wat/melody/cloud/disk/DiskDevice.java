@@ -65,7 +65,7 @@ public class DiskDevice {
 		str.append(getDiskDeviceName());
 		str.append(", size:");
 		str.append(getDiskDeviceSize());
-		str.append(", root-device::");
+		str.append(", root-device:");
 		str.append(isRootDevice());
 		str.append(", delete-on-termination:");
 		str.append(isDeletedOnTermination());
