@@ -25,11 +25,6 @@ public class AttributeRelatedException extends MethodRelatedException {
 		super(errorNode, errorMethod, msg, cause);
 	}
 
-	public AttributeRelatedException(Attr errorNode, Method errorMethod,
-			Throwable cause) {
-		super(errorNode, errorMethod, cause);
-	}
-
 	@Override
 	protected String getErrorMethodDescription() {
 		Attribute a = getErrorMethod().getAnnotation(Attribute.class);

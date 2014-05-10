@@ -23,12 +23,6 @@ public abstract class MethodRelatedException extends SimpleNodeRelatedException 
 	}
 
 	public MethodRelatedException(Node errorNode, Method errorMethod,
-			Throwable cause) {
-		super(errorNode, cause);
-		setErrorMethod(errorMethod);
-	}
-
-	public MethodRelatedException(Node errorNode, Method errorMethod,
 			String msg, Throwable cause) {
 		super(errorNode, msg, cause);
 		setErrorMethod(errorMethod);

@@ -25,11 +25,6 @@ public class TextContentRelatedException extends MethodRelatedException {
 		super(errorNode, errorMethod, msg, cause);
 	}
 
-	public TextContentRelatedException(Text errorNode, Method errorMethod,
-			Throwable cause) {
-		super(errorNode, errorMethod, cause);
-	}
-
 	@Override
 	protected String getErrorMethodDescription() {
 		TextContent t = getErrorMethod().getAnnotation(TextContent.class);

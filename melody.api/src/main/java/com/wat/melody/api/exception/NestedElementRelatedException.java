@@ -25,11 +25,6 @@ public class NestedElementRelatedException extends MethodRelatedException {
 		super(errorNode, errorMethod, msg, cause);
 	}
 
-	public NestedElementRelatedException(Element errorNode, Method errorMethod,
-			Throwable cause) {
-		super(errorNode, errorMethod, cause);
-	}
-
 	@Override
 	protected String getErrorMethodDescription() {
 		NestedElement n = getErrorMethod().getAnnotation(NestedElement.class);
