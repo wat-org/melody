@@ -20,12 +20,6 @@ public class IllegalPropertiesSetException extends MelodyException {
 		_line = line;
 	}
 
-	public IllegalPropertiesSetException(String file, int line, Throwable cause) {
-		super(cause);
-		_file = file;
-		_line = line;
-	}
-
 	public IllegalPropertiesSetException(String file, int line, String msg,
 			Throwable cause) {
 		super(msg, cause);
