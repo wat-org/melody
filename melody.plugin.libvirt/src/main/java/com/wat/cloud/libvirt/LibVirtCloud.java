@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.cxf.helpers.IOUtils;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo.DomainState;
@@ -23,6 +24,8 @@ import org.w3c.dom.NodeList;
 import com.wat.cloud.libvirt.exception.ProtectedAreaNotFoundException;
 import com.wat.melody.cloud.disk.DiskDevice;
 import com.wat.melody.cloud.disk.DiskDeviceList;
+import com.wat.melody.cloud.disk.DiskDeviceName;
+import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.instance.InstanceState;
 import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.IllegalInstanceStateException;
@@ -111,11 +114,18 @@ public abstract class LibVirtCloud {
 						+ "'name' XML attribute cannot be found.");
 			}
 			String sImageId = name.getNodeValue();
-			Node descriptor = n.getAttributeNode("descriptor");
-			if (descriptor == null) {
+			if (!n.hasAttribute("descriptor")) {
 				throw new RuntimeException("Image '" + sImageId
 						+ "' is not valid. "
 						+ "'descriptor' XML attribute cannot be found.");
+			}
+			try {
+				FS.validateFileExists(n.getAttribute("descriptor"));
+			} catch (IllegalFileException Ex) {
+				throw new RuntimeException("Image '" + sImageId
+						+ "' is not valid. "
+						+ "'descriptor' XML attribute doens't "
+						+ "contains a valid file path.", Ex);
 			}
 
 			if (n.getChildNodes().getLength() == 0) {
@@ -124,24 +134,24 @@ public abstract class LibVirtCloud {
 						+ "No 'disk' XML Nested Element can be found.");
 			}
 			for (int i = 0; i < n.getChildNodes().getLength(); i++) {
-				Node disk = n.getChildNodes().item(i);
-				if (disk.getNodeType() != Node.ELEMENT_NODE) {
+				Node ndisk = n.getChildNodes().item(i);
+				if (ndisk.getNodeType() != Node.ELEMENT_NODE) {
 					continue;
 				}
+				Element disk = (Element) ndisk;
 				if (!disk.getNodeName().equals("disk")) {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. " + "XML Nested element n°" + i
 							+ " is not a 'disk'.");
 				}
-				descriptor = disk.getAttributes().getNamedItem("descriptor");
-				if (descriptor == null) {
+				if (!n.hasAttribute("descriptor")) {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. "
 							+ "'descriptor' XML attribute cannot be found for "
 							+ "Disk Nested element n°" + i + ".");
 				}
 				try {
-					FS.validateFileExists(descriptor.getNodeValue());
+					FS.validateFileExists(disk.getAttribute("descriptor"));
 				} catch (IllegalFileException Ex) {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. "
@@ -149,19 +159,27 @@ public abstract class LibVirtCloud {
 							+ "element n°" + i + " doens't contains a valid "
 							+ "file path.", Ex);
 				}
-				Node source = disk.getAttributes().getNamedItem("source");
-				if (source == null) {
-					throw new RuntimeException("Image '" + sImageId
-							+ "' is not valid. "
-							+ "'source' XML attribute cannot be found for "
-							+ "Disk Nested element n°" + i + ".");
-				}
-				Node device = disk.getAttributes().getNamedItem("device");
-				if (device == null) {
+				if (!disk.hasAttribute("device")) {
 					throw new RuntimeException("Image '" + sImageId
 							+ "' is not valid. "
 							+ "'device' XML attribute cannot be found for "
 							+ "Disk Nested element n°" + i + ".");
+				}
+				try {
+					DiskDeviceName.parseString(disk.getAttribute("device"));
+				} catch (IllegalDiskDeviceNameException Ex) {
+					throw new RuntimeException("Image '" + sImageId
+							+ "' is not valid. "
+							+ "'device' XML attribute for Disk Nested "
+							+ "element n°" + i + " doens't contains a valid "
+							+ "disk device name.", Ex);
+				}
+				if (!disk.hasAttribute("src-file")
+						&& !disk.hasAttribute("src-disk")) {
+					throw new RuntimeException("Image '" + sImageId
+							+ "' is not valid. "
+							+ "'src-(file|disk)' XML attribute cannot be "
+							+ "found for Disk Nested element n°" + i + ".");
 				}
 			}
 		}
@@ -541,32 +559,114 @@ public abstract class LibVirtCloud {
 			NodeList nl = null;
 			nl = conf.evaluateAsNodeList("//images/image[@name='" + sImageId
 					+ "']/disk");
-			StoragePool sp = cnx.storagePoolLookupByName("default");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Element n = (Element) nl.item(i);
 				String sDescriptorPath = n.getAttribute("descriptor");
-				String sSourceVolumePath = n.getAttribute("source");
-				String sDiskDeviceName = n.getAttribute("device");
-				log.trace("Creating Disk Device '" + sDiskDeviceName
-						+ "' for Domain '" + sInstanceId
-						+ "' ... LibVirt Volume Image is '" + sSourceVolumePath
-						+ "'.");
-				StorageVol sourceVolume = cnx
-						.storageVolLookupByPath(sSourceVolumePath);
-				String sDescriptor = null;
-				sDescriptor = XPathExpander.expand(Paths.get(sDescriptorPath),
-						null, ps);
-				StorageVol sv = null;
-				synchronized (LOCK_CLONE_DISK) {
-					// we can't clone a volume which is already being cloned
-					// and we can't use nio.Files.copy which is 4 times
-					// slower
-					sv = sp.storageVolCreateXMLFrom(sDescriptor, sourceVolume,
-							0);
+				DiskDeviceName diskDevName = DiskDeviceName.parseString(n
+						.getAttribute("device"));
+				if (n.hasAttribute("src-file")) {
+					// directory backed storage pool
+					StoragePool sp = cnx.storagePoolLookupByName("default");
+					String sSourceVolumePath = n.getAttribute("src-file");
+					log.trace("Creating Disk Device '" + diskDevName
+							+ "' for Domain '" + sInstanceId
+							+ "' ... LibVirt Source Volume File is '"
+							+ sSourceVolumePath + "'.");
+					StorageVol sourceVolume = cnx
+							.storageVolLookupByPath(sSourceVolumePath);
+					String sDescriptor = null;
+					sDescriptor = XPathExpander.expand(
+							Paths.get(sDescriptorPath), null, ps);
+					StorageVol sv = null;
+					synchronized (LOCK_CLONE_DISK) {
+						// we can't clone a volume which is already being cloned
+						// and we can't use nio.Files.copy which is 4 times
+						// slower
+						sv = sp.storageVolCreateXMLFrom(sDescriptor,
+								sourceVolume, 0);
+					}
+					log.debug("Disk Device '" + diskDevName
+							+ "' created for Domain '" + sInstanceId
+							+ "'. LibVirt Volume File is '" + sv.getPath()
+							+ "'.");
+				} else if (n.hasAttribute("src-disk")) {
+					// LVM backed storage pool
+					StoragePool sp = cnx.storagePoolLookupByName("sp-lvm");
+					String sSourceVolumePath = n.getAttribute("src-disk");
+					log.trace("Creating Disk Device '" + diskDevName
+							+ "' for Domain '" + sInstanceId
+							+ "' ... LibVirt Source Volume Disk is '"
+							+ sSourceVolumePath + "'.");
+					String sDescriptor = null;
+					sDescriptor = XPathExpander.expand(
+							Paths.get(sDescriptorPath), null, ps);
+					StorageVol sv = null;
+					synchronized (LOCK_CLONE_DISK) {
+						// we can't perform concurrent operation
+						sv = sp.storageVolCreateXML(sDescriptor, 0);
+						// retrieve the allocated size
+						long size = sv.getInfo().allocation;
+						// delete the logical volume which was automatically
+						// created by the previous command
+						String[] cmdLine = { "sudo", "lvremove", "-f",
+								sv.getPath() };
+						Process oP = Runtime.getRuntime().exec(cmdLine);
+						boolean ended = false;
+						int res = 0;
+						while (!ended) {
+							try {
+								res = oP.waitFor();
+								ended = true;
+							} catch (InterruptedException Ex) {
+								// we don't want to be interrupted
+							}
+						}
+						if (res != 0) {
+							throw new RuntimeException(
+									"Fail to remove the lv '"
+											+ sv.getPath()
+											+ "'. Error :"
+											+ IOUtils.toString(oP
+													.getErrorStream()));
+						}
+						// create our own logical volume, which is a snapshot
+						String[] cmdLine2 = {
+								"sudo",
+								"lvcreate",
+								"--size",
+								size + "B",
+								"--snapshot",
+								"--name",
+								sInstanceId
+										+ "-"
+										+ DiskDeviceNameConverter
+												.convert(diskDevName),
+								sSourceVolumePath };
+						oP = Runtime.getRuntime().exec(cmdLine2);
+						ended = false;
+						res = 0;
+						while (!ended) {
+							try {
+								res = oP.waitFor();
+								ended = true;
+							} catch (InterruptedException Ex) {
+								// we don't want to be interrupted
+							}
+						}
+						if (res != 0) {
+							throw new RuntimeException(
+									"Fail to create a snapshot of the lv '"
+											+ sSourceVolumePath
+											+ "'. Error :"
+											+ IOUtils.toString(oP
+													.getErrorStream()));
+						}
+					}
+					log.debug("Disk Device '" + diskDevName
+							+ "' created for Domain '" + sInstanceId
+							+ "'. LibVirt Volume Disk is '" + sv.getPath()
+							+ "'.");
 				}
-				log.debug("Disk Device '" + sDiskDeviceName
-						+ "' created for Domain '" + sInstanceId
-						+ "'. LibVirt Volume path is '" + sv.getPath() + "'.");
 			}
 
 			// Start domain
@@ -594,6 +694,7 @@ public abstract class LibVirtCloud {
 		 * SHUTTING_DOWN and a TERMINATED state.
 		 */
 		try {
+			Doc ddoc = getDomainXMLDesc(d);
 			String sInstanceId = d.getName();
 			log.trace("destroying Domain '" + sInstanceId + "' ...");
 			DomainState state = d.getInfo().state;
@@ -623,7 +724,7 @@ public abstract class LibVirtCloud {
 			DiskDeviceList diskdevs = LibVirtCloudDisk.getDiskDevices(d);
 			for (DiskDevice disk : diskdevs) {
 				// Destroy disk device
-				LibVirtCloudDisk.deleteDiskDevice(d, disk);
+				LibVirtCloudDisk.deleteDiskDevice(d, ddoc, disk);
 			}
 			// Undefine domain
 			d.undefine();

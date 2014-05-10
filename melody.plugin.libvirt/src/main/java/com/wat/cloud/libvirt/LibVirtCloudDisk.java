@@ -52,8 +52,10 @@ public abstract class LibVirtCloudDisk {
 					.evaluateAsNodeList("/domain/devices/disk[@device='disk']");
 			for (int i = 0; i < nl.getLength(); i++) {
 				Element diskNode = (Element) nl.item(i);
-				String volPath = XPathExpander.evaluateAsString("source/@file",
-						diskNode);
+				// source/@file : Directory backed volumes
+				// source/@dev : LVM backed volumes
+				String volPath = XPathExpander.evaluateAsString(
+						"source/@file|source/@dev", diskNode);
 				StorageVol sv = d.getConnect().storageVolLookupByPath(volPath);
 				DiskDeviceName devname = DiskDeviceName.parseString("/dev/"
 						+ XPathExpander.evaluateAsString("target/@dev",
@@ -83,8 +85,12 @@ public abstract class LibVirtCloudDisk {
 		}
 	}
 
-	public static final String DETACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
+	public static final String DETACH_DISK_BACKED_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<source file='§[volPath]§'/>"
+			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
+
+	public static final String DETACH_LVM_BACKED_DEVICE_XML_SNIPPET = "<disk type='block' device='disk'>"
+			+ "<source dev='§[volPath]§'/>"
 			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
 
 	public static void detachAndDeleteDiskDevices(Domain d,
@@ -107,13 +113,21 @@ public abstract class LibVirtCloudDisk {
 				String deviceToRemove = DiskDeviceNameConverter.convert(disk
 						.getDiskDeviceName());
 				// search the path of the disk which match device to remove
-				String volPath = ddoc
-						.evaluateAsString("/domain/devices/disk[@device='disk' and target/@dev='"
-								+ deviceToRemove + "']/source/@file");
-				if (volPath == null) {
+				Element source = (Element) ddoc
+						.evaluateAsNode("/domain/devices/disk"
+								+ "[@device='disk' and target/@dev='"
+								+ deviceToRemove + "']/source");
+				if (source == null) {
 					throw new RuntimeException("Domain '" + d.getName()
 							+ "' has no disk device '" + deviceToRemove + "' !");
 				}
+				// deal with LVM and directory backed volume
+				String volPath = source.getAttribute("file");
+				boolean isLvmBacked = source.hasAttribute("dev");
+				if (isLvmBacked) {
+					volPath = source.getAttribute("dev");
+				}
+
 				// variabilisation du detachement de la device
 				vars.put(new Property("device", deviceToRemove));
 				vars.put(new Property("volPath", volPath));
@@ -123,13 +137,20 @@ public abstract class LibVirtCloudDisk {
 						+ d.getName() + "' ...");
 				int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
 						: 2;
-				d.detachDeviceFlags(XPathExpander.expand(
-						DETACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+				String detachSnipet = null;
+				if (isLvmBacked) {
+					detachSnipet = XPathExpander.expand(
+							DETACH_LVM_BACKED_DEVICE_XML_SNIPPET, null, vars);
+				} else {
+					detachSnipet = XPathExpander.expand(
+							DETACH_DISK_BACKED_DEVICE_XML_SNIPPET, null, vars);
+				}
+				d.detachDeviceFlags(detachSnipet, flag);
 				log.trace("Disk Device '" + disk.getDiskDeviceName() + "' ("
 						+ disk.getSize() + " Go) detached on Domain '"
 						+ d.getName() + "'.");
 				// suppression du volume
-				deleteDiskDevice(d, disk);
+				deleteDiskDevice(d, ddoc, disk);
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionException | XPathExpressionSyntaxException Ex) {
@@ -137,7 +158,7 @@ public abstract class LibVirtCloudDisk {
 		}
 	}
 
-	protected static void deleteDiskDevice(Domain d, DiskDevice disk) {
+	protected static void deleteDiskDevice(Domain d, Doc ddoc, DiskDevice disk) {
 		if (disk == null) {
 			return;
 		}
@@ -149,18 +170,30 @@ public abstract class LibVirtCloudDisk {
 		try {
 			Connect cnx = d.getConnect();
 			String sInstanceId = d.getName();
-			// recuperation du storage pool
-			StoragePool sp = cnx.storagePoolLookupByName("default");
-			// search the path of the disk which match device to remove
-			StorageVol sv = sp.storageVolLookupByName(getVolumeName(d, disk));
-			String volPath = sv.getPath();
+			String deviceToRemove = DiskDeviceNameConverter.convert(disk
+					.getDiskDeviceName());
+			Element source = (Element) ddoc
+					.evaluateAsNode("/domain/devices/disk"
+							+ "[@device='disk' and target/@dev='"
+							+ deviceToRemove + "']/source");
+			if (source == null) {
+				throw new RuntimeException("Domain '" + d.getName()
+						+ "' has no disk device '" + deviceToRemove + "' !");
+			}
+			// deal with LVM and directory backed volume
+			String volPath = source.getAttribute("file");
+			boolean isLvmBacked = source.hasAttribute("dev");
+			if (isLvmBacked) {
+				volPath = source.getAttribute("dev");
+			}
+			StorageVol sv = cnx.storageVolLookupByPath(volPath);
 			log.trace("Deleting Disk Device '" + disk.getDiskDeviceName()
 					+ "' on domain '" + sInstanceId
-					+ "' ... LibVirt Volume path is '" + volPath + "'.");
+					+ "' ... LibVirt Volume is '" + volPath + "'.");
 			sv.delete(0);
 			log.debug("Disk Device '" + disk.getDiskDeviceName()
 					+ "' deleted on Domain '" + sInstanceId + "'.");
-		} catch (LibvirtException Ex) {
+		} catch (LibvirtException | XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
@@ -180,18 +213,18 @@ public abstract class LibVirtCloudDisk {
 		}
 	}
 
-	public static final String NEW_DISK_DEVICE_XML_SNIPPET = "<volume>"
+	public static final String NEW_DISK_BACKED_DEVICE_XML_SNIPPET = "<volume>"
 			+ "<name>§[vmName]§-§[device]§.img</name>" + "<source>"
 			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
 			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
 			+ "<target>" + "<format type='raw'/>" + "</target>" + "</volume>";
 
-	public static final String ATTACH_DISK_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
+	public static final String ATTACH_DISK_BACKED_DEVICE_XML_SNIPPET = "<disk type='file' device='disk'>"
 			+ "<driver name='qemu' type='raw' cache='none'/>"
 			+ "<source file='§[volPath]§'/>"
 			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
 
-	public static void createAndAttachDiskDevices(Domain d,
+	public static void createAndAttachDiskBackedDiskDevices(Domain d,
 			DiskDeviceList disksToAdd) {
 		if (disksToAdd == null || disksToAdd.size() == 0) {
 			return;
@@ -208,7 +241,7 @@ public abstract class LibVirtCloudDisk {
 			// preparation de la variabilisation des template XML
 			PropertySet vars = new PropertySet();
 			vars.put(new Property("vmName", d.getName()));
-			vars.put(new Property("allocation", "0"));
+			vars.put(new Property("allocation", "104857600")); // = 100M
 			// pour chaque disque
 			for (DiskDevice disk : disksToAdd) {
 				// variabilisation de la creation du volume
@@ -222,7 +255,7 @@ public abstract class LibVirtCloudDisk {
 						+ "' (" + disk.getSize() + " Go) for Domain '"
 						+ d.getName() + "' ...");
 				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
-						NEW_DISK_DEVICE_XML_SNIPPET, null, vars), 0);
+						NEW_DISK_BACKED_DEVICE_XML_SNIPPET, null, vars), 0);
 				log.debug("Disk Device '" + disk.getDiskDeviceName() + "' ("
 						+ disk.getSize() + " Go) created for Domain '"
 						+ d.getName() + "'. LibVirt Volume path is '"
@@ -236,12 +269,109 @@ public abstract class LibVirtCloudDisk {
 				int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
 						: 2;
 				d.attachDeviceFlags(XPathExpander.expand(
-						ATTACH_DISK_DEVICE_XML_SNIPPET, null, vars), flag);
+						ATTACH_DISK_BACKED_DEVICE_XML_SNIPPET, null, vars),
+						flag);
 				log.debug("Disk Device '" + disk.getDiskDeviceName()
 						+ "' attached on Domain '" + d.getName() + "'.");
 			}
 		} catch (LibvirtException | IllegalPropertyException
 				| XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	public static final String NEW_LVM_BACKED_DEVICE_XML_SNIPPET = "<volume>"
+			+ "<name>§[vmName]§-§[device]§</name>" + "<source>"
+			+ "<device path='/dev/HelpDeskRHEL6/LibVirtLvmBase'/>"
+			+ "</source>" + "<capacity unit='bytes'>§[capacity]§</capacity>"
+			+ "<allocation unit='bytes'>§[allocation]§</allocation>"
+			+ "<target>"
+			+ "<path>/dev/LibVirtLvmSP/§[vmName]§-§[device]§</path>"
+			+ "</target>" + "</volume>";
+
+	public static final String ATTACH_LVM_BACKED_DEVICE_XML_SNIPPET = "<disk type='block' device='disk'>"
+			+ "<driver name='qemu' type='raw' cache='none' io='native'/>"
+			+ "<source dev='§[volPath]§'/>"
+			+ "<target dev='§[device]§' bus='virtio'/>" + "</disk>";
+
+	public static void createAndAttachLvmBackedDiskDevices(Domain d,
+			DiskDeviceList disksToAdd) {
+		if (disksToAdd == null || disksToAdd.size() == 0) {
+			return;
+		}
+		if (d == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + Domain.class.getCanonicalName()
+					+ ".");
+		}
+
+		try {
+			// recuperation du storage pool
+			StoragePool sp = d.getConnect().storagePoolLookupByName("sp-lvm");
+			// preparation de la variabilisation des template XML
+			PropertySet vars = new PropertySet();
+			vars.put(new Property("vmName", d.getName()));
+			// pour chaque disque
+			for (DiskDevice disk : disksToAdd) {
+				// variabilisation de la creation du volume
+				String deviceToAdd = DiskDeviceNameConverter.convert(disk
+						.getDiskDeviceName());
+				String sSize = String
+						.valueOf((long) disk.getSize() * 1024 * 1024 * 1024);
+				vars.put(new Property("device", deviceToAdd));
+				// when allocation = capacity, a basic LV will be created
+				// when allocation < capacity, an snapshot LV will be created
+				vars.put(new Property("capacity", sSize));
+				vars.put(new Property("allocation", sSize));
+				// creation du volume
+				log.trace("Creating Disk Device '" + disk.getDiskDeviceName()
+						+ "' (" + disk.getSize() + " Go) for Domain '"
+						+ d.getName() + "' ...");
+				StorageVol sv = sp.storageVolCreateXML(XPathExpander.expand(
+						NEW_LVM_BACKED_DEVICE_XML_SNIPPET, null, vars), 0);
+				log.debug("Disk Device '" + disk.getDiskDeviceName() + "' ("
+						+ disk.getSize() + " Go) created for Domain '"
+						+ d.getName() + "'. LibVirt Volume path is '"
+						+ sv.getPath() + "'.");
+
+				// variabilisation de l'attachement du volume
+				vars.put(new Property("volPath", sv.getPath()));
+				// attachement de la device
+				log.trace("Attaching Disk Device '" + disk.getDiskDeviceName()
+						+ "' on Domain '" + d.getName() + "' ...");
+				int flag = LibVirtCloud.getDomainState(d) == InstanceState.RUNNING ? 3
+						: 2;
+				d.attachDeviceFlags(XPathExpander.expand(
+						ATTACH_LVM_BACKED_DEVICE_XML_SNIPPET, null, vars), flag);
+				log.debug("Disk Device '" + disk.getDiskDeviceName()
+						+ "' attached on Domain '" + d.getName() + "'.");
+			}
+		} catch (LibvirtException | IllegalPropertyException
+				| XPathExpressionSyntaxException Ex) {
+			throw new RuntimeException(Ex);
+		}
+	}
+
+	/**
+	 * <P>
+	 * Regarding the type of the first disk of the given {@link Domain}, will
+	 * create either 'disk' or 'lvm' backed volumes.
+	 * 
+	 * @param d
+	 * @param disksToAdd
+	 */
+	public static void createAndAttachDiskDevices(Domain d,
+			DiskDeviceList disksToAdd) {
+		try {
+			Doc ddoc = LibVirtCloud.getDomainXMLDesc(d);
+			Element disk = (Element) ddoc.evaluateAsNode("/domain/devices/disk"
+					+ "[@device='disk']");
+			if (disk == null || disk.getAttribute("type").equals("block")) {
+				createAndAttachLvmBackedDiskDevices(d, disksToAdd);
+			} else {
+				createAndAttachDiskBackedDiskDevices(d, disksToAdd);
+			}
+		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException(Ex);
 		}
 	}
