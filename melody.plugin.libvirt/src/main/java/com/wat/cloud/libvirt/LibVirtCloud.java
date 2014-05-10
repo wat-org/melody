@@ -490,11 +490,6 @@ public abstract class LibVirtCloud {
 	private static String LOCK_UNIQ_DOMAIN = "domain_lock";
 	private static String LOCK_CLONE_DISK = "disk_lock";
 
-	/*
-	 * TODO : The caller must deal with ProtectedAreaNotFoundException.
-	 * 
-	 * What's the behavior of AWS Plug-In in this situation ?
-	 */
 	public static String newInstance(Connect cnx, InstanceType type,
 			String sImageId, KeyPairName keyPairName,
 			ProtectedAreaIds protectedAreaIds)
@@ -505,9 +500,8 @@ public abstract class LibVirtCloud {
 		}
 
 		/*
-		 * TODO : should be asynchronous.
-		 * 
-		 * Should handle a PENDING state.
+		 * Should be asynchronous. When creating, the instance state should be
+		 * PENDING. See {@link InstanceStateConverter}.
 		 */
 		try {
 			if (!imageIdExists(sImageId)) {
@@ -688,10 +682,9 @@ public abstract class LibVirtCloud {
 			return;
 		}
 		/*
-		 * TODO : should be asynchronous.
-		 * 
-		 * Should shutdown (instead of destroy) the domain. Should handle a
-		 * SHUTTING_DOWN and a TERMINATED state.
+		 * Should be asynchronous. When deleting, the instance state should be
+		 * SHUTTING_DOWN. Once deleted, the instance state should be TERMANATED
+		 * during some minutes. See {@link InstanceStateConverter}.
 		 */
 		try {
 			Doc ddoc = getDomainXMLDesc(d);

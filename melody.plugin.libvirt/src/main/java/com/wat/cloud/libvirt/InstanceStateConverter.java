@@ -51,12 +51,10 @@ public abstract class InstanceStateConverter {
 		default:
 		}
 		/*
-		 * TODO : créer un state PENDING, qui correspond au moment ou
-		 * libVitCloud provisionne le Domain
-		 */
-		/*
-		 * TODO : créer un state SHUTTING_DOWN, qui correspond au moment ou
-		 * libVitCloud dé-provisionne le Domain
+		 * TODO : create a PENDING state, which means 'the domain is in
+		 * creation'. Create a SHUTTING_DOWN state, which means 'the domain is
+		 * deleting'. Create a TERMINATED state, which means 'the domain has
+		 * been deleted'.
 		 */
 		throw new IllegalInstanceStateException(Msg.bind(
 				Messages.InstanceStateEx_INVALID, iState,
