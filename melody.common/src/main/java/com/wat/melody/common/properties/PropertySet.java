@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -440,7 +441,19 @@ public class PropertySet {
 
 	@Override
 	public String toString() {
-		return getProperties().toString();
+		Iterator<Property> i = getProperties().values().iterator();
+		if (!i.hasNext())
+			return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("{ ");
+		for (;;) {
+			Property value = i.next();
+			sb.append(value);
+			if (!i.hasNext())
+				return sb.append(" }").toString();
+			sb.append(',').append(' ');
+		}
 	}
 
 	@Override
