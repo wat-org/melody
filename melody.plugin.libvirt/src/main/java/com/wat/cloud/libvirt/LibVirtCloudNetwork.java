@@ -603,9 +603,9 @@ public abstract class LibVirtCloudNetwork {
 				throw new RuntimeException("The instance '" + d.getName()
 						+ "' has a first filterref which contains a null "
 						+ "value. "
-						+ "Because this tag have been automatically created "
-						+ "during this instance creation, such error couldn't "
-						+ "happened. "
+						+ "Because this filterref have been automatically "
+						+ "created during this instance creation, such error "
+						+ "couldn't happened. "
 						+ "The source code have changed and a bug have been "
 						+ "introduced.");
 			}
@@ -615,9 +615,9 @@ public abstract class LibVirtCloudNetwork {
 				throw new RuntimeException("The instance '" + d.getName()
 						+ "' has a first filterref which contains an illegal "
 						+ "value '" + v + "'. "
-						+ "Because this tag have been automatically created "
-						+ "during this instance creation, such error couldn't "
-						+ "happened. "
+						+ "Because this filterref have been automatically "
+						+ "created during this instance creation, such error "
+						+ "couldn't happened. "
 						+ "The source code have changed and a bug have been "
 						+ "introduced.");
 			}
