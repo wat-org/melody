@@ -203,10 +203,13 @@ public class SequenceDescriptor extends Doc implements ISequenceDescriptor {
 					+ "Must be a valid " + OrderName.class.getCanonicalName()
 					+ ".");
 		}
-		if (getOrders().contains(order)) {
-			throw new IllegalOrderException(Msg.bind(
-					Messages.OrderEx_DUPLICATE, order));
-		}
+		// accept to register the same order multiple times
+		// ex: -o stop -o start -o stop -o start -o stop
+		/*
+		 * if (getOrders().contains(order)) { throw new
+		 * IllegalOrderException(Msg.bind( Messages.OrderEx_DUPLICATE, order));
+		 * }
+		 */
 		validateOrder(order);
 		_orders.add(order);
 	}
