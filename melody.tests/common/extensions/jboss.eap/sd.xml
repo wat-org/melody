@@ -8,13 +8,11 @@
 
     <property name="instance_selector"          value="./environment//instance"/>
     <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_eligible_criteria" value="exists(§[eap_instance_node]§) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/§[eap_instance_node]§'))) and melody:getNetworkActivationHost(.)!=''"/>
     <property name="instance_match_criteria"    value="1=1"/>
 
-    <property name="eap_engine_selector"          value="/§[eap_engine_node]§"/>
     <property name="jboss.eap.binaries.repo.path" value="MY BE DEFINED BY THE CALLER"/>
     
-    <property name="eap_instance_selector"        value="/§[eap_instance_node]§"/>
     <property name="eap_instance_exists_criteria" value="1=1"/>
     <property name="eap_instance_match_criteria"  value="1=1"/>
 
@@ -24,12 +22,12 @@
     <order name="deploy_jboss_engines" >
         <echo message="Deploying all JBoss EAP engines ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="melody:getHeritedContent(§[srv]§, '§[eap_engine_selector]§')"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_engine_node]§ [ @version=melody:getHeritedContent(§[srv]§, &quot;/§[eap_instance_node]§ [ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]&quot;)/@version ]')"
                         item-name="jboss_engine">
                 <property name="jbossEnginePath"                value="§[ §[jboss_engine]§/@path ]§" />
                 <property name="jbossEngineVersion"             value="§[ §[jboss_engine]§/@version ]§" />
@@ -53,12 +51,12 @@
         <!-- TODO : should add a log_rotate for access.log, gc.log and console.log -->
         <echo message="Deploying all JBoss EAP instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
@@ -126,12 +124,12 @@
     <order name="start_jboss_instances" >
         <echo message="Starting all JBoss EAP instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
@@ -157,12 +155,12 @@
     <order name="stop_jboss_instances" >
         <echo message="Stopping all JBoss EAP instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
@@ -189,12 +187,12 @@
     <order name="deploy_jboss_custom_modules" >
         <echo message="Deploying all Custom Modules on all JBoss instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
@@ -265,12 +263,12 @@
     <order name="deploy_jboss_applications" >
         <echo message="Deploying all Java applications on all JBoss instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[eap_instance_selector]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
