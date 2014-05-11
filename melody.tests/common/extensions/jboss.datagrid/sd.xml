@@ -8,13 +8,11 @@
 
     <property name="instance_selector"          value="./environment//instance"/>
     <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_eligible_criteria" value="exists(§[jdg_instance_node]§) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/§[jdg_instance_node]§'))) and melody:getNetworkActivationHost(.)!=''"/>
     <property name="instance_match_criteria"    value="1=1"/>
 
-    <property name="jdg_engine_selector"          value="/§[jdg_engine_node]§"/>
     <property name="jboss.jdg.binaries.repo.path" value="MY BE DEFINED BY THE CALLER"/>
 
-    <property name="jdg_instance_selector"        value="/§[jdg_instance_node]§"/>
     <property name="jdg_instance_exists_criteria" value="1=1"/>
     <property name="jdg_instance_match_criteria"  value="1=1"/>
 
@@ -24,12 +22,12 @@
     <order name="deploy_jdg_engines" >
         <echo message="Deploying all JBoss DataGrid engines ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="melody:getHeritedContent(§[srv]§, '§[jdg_engine_selector]§')"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_engine_node]§ [ @version=melody:getHeritedContent(§[srv]§, &quot;/§[jdg_instance_node]§ [ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]&quot;)/@version ]')"
                         item-name="jboss_engine">
                 <property name="jbossEnginePath"                value="§[ §[jboss_engine]§/@path ]§" />
                 <property name="jbossEngineVersion"             value="§[ §[jboss_engine]§/@version ]§" />
@@ -61,7 +59,7 @@
             <property name="instanceRack"   value="§[ §[srv]§/@rack ]§" />
             <property name="instanceName"   value="§[ip]§" />
 
-            <foreach    items="§[srv]§§[jdg_instance_selector]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_instance_node]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
@@ -131,7 +129,7 @@
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[jdg_instance_selector]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_instance_node]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]')"
                         item-name="jboss_instance"
                         max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
@@ -162,7 +160,7 @@
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="§[srv]§§[jdg_instance_selector]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]"
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_instance_node]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]')"
                         item-name="jboss_instance">
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
