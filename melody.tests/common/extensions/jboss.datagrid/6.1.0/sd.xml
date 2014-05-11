@@ -299,6 +299,27 @@
             <attribute name="machine" value="§[instanceName]§"/>
         </set-xml-attributes>
 
+        <!-- JBoss Configuration update -->
+        <echo message="[datagrid.conf:§[jbossInstanceId]§] Customize send and receive buffer size of DatagramSocket and MulticastSocket." severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport/*:property
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <property name="ucast_send_buf_size">124928</property>
+                <property name="ucast_recv_buf_size">124928</property>
+                <property name="mcast_send_buf_size">124928</property>
+                <property name="mcast_recv_buf_size">124928</property>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="§[workingfolder.abs]§"
