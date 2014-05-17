@@ -19,6 +19,11 @@
 
 	<target name="30_packageProject">
 
+		<echo>Compiling project ${project.name}_${project.version}</echo>
+		<artifact:mvn pom="../pom.xml">
+			<arg value="install" />
+		</artifact:mvn>
+
 		<echo>Writing '.version_info' file for project ${project.name}_${project.version}</echo>
 		<echo file=".version_info" append="false" message="Built-By: ${user.name}${line.separator}" />
 		<echo file=".version_info" append="true" message="Built-Date: ${datetime.now}${line.separator}" />
@@ -66,7 +71,9 @@
 				<exclude name="build.xml" />
 				<exclude name="pom.xml" />
 				<exclude name="build*.bat" />
-				<exclude name="config/**/*.properties" />
+				<exclude name="config/melody.properties" />
+				<exclude name="config/plugin/**/*.properties" />
+				<exclude name="config/extensions/rhn/rhn.xml" />
 				<exclude name="config/plugin/ssh/.ssh/**" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
@@ -110,9 +117,11 @@
 				<exclude name="melody.tests/common/lib/**" />
 				<exclude name="melody.tests/logs/**" />
 				<exclude name="melody.tests/tmp/**" />
-				<exclude name="melody.tests/config/**/*.properties" />
+				<exclude name="melody.tests/config/melody.properties" />
+				<exclude name="melody.tests/config/plugin/**/*.properties" />
+				<exclude name="melody.tests/config/extensions/rhn/rhn.xml" />
 				<exclude name="melody.tests/config/plugin/ssh/.ssh/**" />
-				<exclude name="melody.tests.*/**" />
+				<exclude name="melody.demos/**" />
 			</tarfileset>
 			<tarfileset dir="./.." username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name="melody.tests/.version_info" />
