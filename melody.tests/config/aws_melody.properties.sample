@@ -58,7 +58,7 @@ log4j.defaultLoggingLevel=WARN
 ### needed for Plug-In loading
 
 ### List Configuration Directives which will contains Task Java Classes
-tasks.directives=tasks.standard,tasks.xml,tasks.ssh
+tasks.directives=tasks.standard,tasks.xml,tasks.ssh,tasks.aws.plugin
 
 ### Standard Tasks Java Classes
 tasks.standard=\
@@ -80,64 +80,43 @@ com.wat.melody.plugin.ssh.Ssh, \
 com.wat.melody.plugin.ssh.Upload, \
 com.wat.melody.plugin.ssh.Download
 
+### Aws Plug-In Tasks Java Classes
+tasks.aws.plugin=\
+com.wat.melody.plugin.aws.ec2.NewMachine, \
+com.wat.melody.plugin.aws.ec2.StartMachine, \
+com.wat.melody.plugin.aws.ec2.StopMachine, \
+com.wat.melody.plugin.aws.ec2.DeleteMachine, \
+com.wat.melody.plugin.aws.ec2.UpdateDiskDevices, \
+com.wat.melody.plugin.aws.ec2.UpdateNetworkDevices, \
+com.wat.melody.plugin.aws.ec2.UpdateFireWall, \
+com.wat.melody.plugin.aws.ec2.ResizeMachine, \
+com.wat.melody.plugin.aws.ec2.protectedarea.CreateProtectedArea, \
+com.wat.melody.plugin.aws.ec2.protectedarea.DeleteProtectedArea, \
+com.wat.melody.plugin.aws.ec2.protectedarea.UpdateProtectedArea, \
+com.wat.melody.plugin.aws.ec2.protectedarea.ResetProtectedArea, \
+com.wat.melody.plugin.aws.s3.CreateBucket, \
+com.wat.melody.plugin.aws.s3.DeleteBucket, \
+com.wat.melody.plugin.aws.s3.EnableBucketLogging, \
+com.wat.melody.plugin.aws.s3.DisableBucketLogging
+
 ### Folder where Plug-In configuration are stored (used to eliminate redundancy in folder declaration)
 pluginConfigurationFolderPath=${rootFolderPath}/config/plugin
 
 ### list all Plug-In Configuration Directive
 ### comma separated list
-plugin.configuration.directives=ssh.plugin.configuration.filepath
+plugin.configuration.directives=ssh.plugin.configuration.filepath,aws.plugin.configuration.filepath
 
 # The path to the configuration file of the SSH SCP Plug-In
 ssh.plugin.configuration.filepath=${pluginConfigurationFolderPath}/ssh/ssh.plugin.properties
+# The path to the configuration file of the AWS Plug-In
+aws.plugin.configuration.filepath=${pluginConfigurationFolderPath}/aws/aws.plugin.properties
 
 
 ####################################################
 ### CUSTOM XPATH FUNCTIONS CONFIGURATION DIRECTIVES
 ### needed for custom xpath functions resolution
 
-### List Configuration Directives which will contains Custom XPath NameSpace
-xpath.namespace.directives=xpath.namespace.standard
-
-### Standard XPath NameSpaces
-xpath.namespace.standard=xpath.namespace.melody
-
-xpath.namespace.melody.uri=http://localhost/melody
-
-### List Configuration Directives which will contains Custom XPath Function
-xpath.function.directives=xpath.function.standard
-
-### Standard XPath Functions
-xpath.function.standard=\
-xpath.function.getBaseDir, \
-xpath.function.getSequenceDescriptorPath, \
-xpath.function.getWorkingFolder, \
-xpath.function.newTmpFile, \
-xpath.function.getHeritedAttributeValue, \
-xpath.function.getHeritedContent
-
-xpath.function.getBaseDir.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getBaseDir.class=com.wat.melody.core.nativeplugin.sequence.xpathfunctions.GetBaseDir
-xpath.function.getBaseDir.arity=0
-
-xpath.function.getSequenceDescriptorPath.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getSequenceDescriptorPath.class=com.wat.melody.core.nativeplugin.sequence.xpathfunctions.GetSequenceDescriptorPath
-xpath.function.getSequenceDescriptorPath.arity=0
-
-xpath.function.getWorkingFolder.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getWorkingFolder.class=com.wat.melody.core.xpathfunctions.GetWorkingFolder
-xpath.function.getWorkingFolder.arity=0
-
-xpath.function.newTmpFile.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.newTmpFile.class=com.wat.melody.core.xpathfunctions.NewTmpFile
-xpath.function.newTmpFile.arity=0
-
-xpath.function.getHeritedAttributeValue.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getHeritedAttributeValue.class=com.wat.melody.xpathextensions.GetHeritedAttribute
-xpath.function.getHeritedAttributeValue.arity=2
-
-xpath.function.getHeritedContent.namespace.uri=${xpath.namespace.melody.uri}
-xpath.function.getHeritedContent.class=com.wat.melody.xpathextensions.GetHeritedContent
-xpath.function.getHeritedContent.arity=2
+include ${rootFolderPath}/config/custom-xpath-functions/xpath-functions.properties
 
 
 ####################################################
