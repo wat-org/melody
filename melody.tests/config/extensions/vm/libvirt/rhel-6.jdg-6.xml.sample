@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-6']" image-id="RHEL-6-jdg-6" instance-type="m1.small" name="rhel-6.jdg-6">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" version="6.0.0">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.1" version="6.0.1">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.1.0" version="6.1.0">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.0" version="6.2.0">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.1" version="6.2.1">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
+			<packages>
+				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
+			</packages>
+			<credentials>
+				<credential group="jdg" id="5001" login="jdg" password="adminjdg@1"/>
+				<credential group="jdg" id="5201" login="jdgusrA" password="jd@SrA56f"/>
+				<credential group="jdg" id="5202" login="jdgusrB" password="jd@SrB56f"/>
+				<credential group="jdg" id="5203" login="jdgusrC" password="jd@SrC56f"/>
+				<credential group="jdg" id="5203" login="jdgusrD" password="jd@SrD56f"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

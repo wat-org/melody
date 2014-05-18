@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-6']" image-id="RHEL-6-eap-6" instance-type="m1.small" name="rhel-6.eap-6">
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" version="6.0.1">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" version="6.1.0">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" version="6.1.1">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" version="6.2.0">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" version="6.2.1">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" version="6.2.2">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<packages>
+				<package arch="x86_64" name="zip"/>
+				<package arch="x86_64" name="unzip"/>
+				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
+				<package arch="x86_64" name="zlib"/> <!-- native components -->
+				<package arch="x86_64" name="apr"/> <!-- native components -->
+			</packages>
+			<credentials>
+				<credential group="jboss" id="5000" login="jboss" password="adminpwd@1"/>
+				<credential group="jboss" id="5101" login="jeeusrA" password="ju@SrA56f"/>
+				<credential group="jboss" id="5102" login="jeeusrB" password="ju@SrB56f"/>
+				<credential group="jboss" id="5103" login="jeeusrC" password="ju@SrC56f"/>
+				<credential group="jboss" id="5103" login="jeeusrD" password="ju@SrD56f"/>
+				<credential group="jboss" id="5104" login="jeeusrE" password="ju@SrE56f"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

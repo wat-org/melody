@@ -73,7 +73,7 @@
 				<exclude name="build*.bat" />
 				<exclude name="config/melody.properties" />
 				<exclude name="config/plugin/**/*.properties" />
-				<exclude name="config/extensions/rhn/rhn.xml" />
+				<exclude name="config/extensions/**/*.xml" />
 				<exclude name="config/plugin/ssh/.ssh/**" />
 			</tarfileset>
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
@@ -119,7 +119,7 @@
 				<exclude name="melody.tests/tmp/**" />
 				<exclude name="melody.tests/config/melody.properties" />
 				<exclude name="melody.tests/config/plugin/**/*.properties" />
-				<exclude name="melody.tests/config/extensions/rhn/rhn.xml" />
+				<exclude name="melody.tests/config/extensions/**/*.xml" />
 				<exclude name="melody.tests/config/plugin/ssh/.ssh/**" />
 				<exclude name="melody.demos/**" />
 			</tarfileset>
