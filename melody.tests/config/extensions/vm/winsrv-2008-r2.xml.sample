@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model instance-type="m1.small" keypair-name="id_rsa" name="winsrv-2008-r2">
+			<network-management activation-enabled="false" activation-protocol="winrm"/>
+			<tags>
+				<tag name="OS" value="windows"/>
+			</tags>
+			<firewall>
+				<tcp access="allow" directions="in" from-ips="all" name="rdp" to-ports="389"/>
+			</firewall>
+			<disk-devices>
+				<disk delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
+			</disk-devices>
+			<credentials>
+				<credential login="Administrator" password="XXXXXXXXXX"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

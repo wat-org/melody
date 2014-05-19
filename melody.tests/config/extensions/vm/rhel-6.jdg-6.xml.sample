@@ -3,7 +3,7 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" image-id="RHEL-6-jdg-6" instance-type="m1.small" name="rhel-6.jdg-6">
+		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.jdg-6">
 			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" version="6.0.0">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>

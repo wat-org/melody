@@ -3,7 +3,7 @@
 <environment>
 
 	<models>
-		<model image-id="RHEL-6-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="rhel-6" region="qemu:///system">
+		<model instance-type="t1.micro" keypair-name="id_rsa" name="rhel-6">
 			<network-management activation-protocol="ssh"/>
 			<tags>
 				<tag name="OS" value="linux"/>

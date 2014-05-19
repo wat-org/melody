@@ -3,7 +3,7 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" image-id="RHEL-6-eap-6" instance-type="m1.small" name="rhel-6.eap-6">
+		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.eap-6">
 			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
