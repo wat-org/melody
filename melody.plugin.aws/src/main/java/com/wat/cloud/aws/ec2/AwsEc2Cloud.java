@@ -43,6 +43,9 @@ public abstract class AwsEc2Cloud {
 
 	private static Logger log = LoggerFactory.getLogger(AwsEc2Cloud.class);
 
+	private static Logger ex = LoggerFactory.getLogger("exception."
+			+ AwsEc2Cloud.class.getName());
+
 	/**
 	 * <p>
 	 * Validate AWSCredentials and ClientConfiguration of the given
@@ -783,25 +786,46 @@ public abstract class AwsEc2Cloud {
 
 		ec2.terminateInstances(tireq);
 
-		try {
-			return waitUntilInstanceStatusBecomes(ec2, i.getInstanceId(),
-					InstanceState.TERMINATED, timeout, 0);
-		} finally {
+		boolean terminated = waitUntilInstanceStatusBecomes(ec2,
+				i.getInstanceId(), InstanceState.TERMINATED, timeout, 0);
+		if (terminated) {
 			for (NetworkDevice netdev : netdevs) {
 				String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2,
 						i, netdev.getNetworkDeviceName()).getValue();
-				try {
-					AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
-				} catch (SecurityGroupInUseException e) {
-					throw new RuntimeException("Fail to delete the security "
-							+ "group '" + sgid
-							+ "'. Because the instance associated to this "
-							+ "security group has just been terminated, this "
-							+ "security group cannot be 'in-use'. "
-							+ "This error cannot happened.", e);
+				/*
+				 * Don't know why, but sometimes, the sg deletion raise a
+				 * 'DependencyViolation' (which means the sg is still in use,
+				 * even if the instance have just been terminated).
+				 */
+				int retry = 3;
+				while (true) {
+					try {
+						AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
+						break;
+					} catch (SecurityGroupInUseException Ex) {
+						if (retry-- > 0) {
+							log.warn("Fail to delete the self protected area "
+									+ "of instance '" + i.getInstanceId()
+									+ "'. " + retry + " try left.");
+							ex.warn("Fail to delete the self protected area "
+									+ "of instance '" + i.getInstanceId()
+									+ "'. " + retry + " try left.\n"
+									+ Ex.getFullStackTrace());
+							Thread.sleep(10000);
+						} else {
+							throw new RuntimeException("Fail to delete the "
+									+ "security group '" + sgid
+									+ "'. Because the instance associated "
+									+ "to this security group has just been "
+									+ "terminated, this security group cannot "
+									+ "be 'in-use'. "
+									+ "There must be a bug in AWS.", Ex);
+						}
+					}
 				}
 			}
 		}
+		return terminated;
 	}
 
 	/**
