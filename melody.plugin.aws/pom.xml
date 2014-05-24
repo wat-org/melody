@@ -121,7 +121,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 		</dependency>
 
 
@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- because org.jboss.security.vault.SecurityVaultFactory uses JUL, we 
@@ -142,7 +142,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- because Melody Plug-In for AWS and LibVirt uses jar that uses JCL 
@@ -150,7 +150,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.7</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
