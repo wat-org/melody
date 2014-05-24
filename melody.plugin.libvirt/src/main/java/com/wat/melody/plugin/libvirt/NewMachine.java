@@ -12,6 +12,7 @@ import com.wat.melody.cloud.instance.InstanceType;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.instance.xml.InstanceDatasLoader;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
+import com.wat.melody.common.ex.HiddenException;
 import com.wat.melody.common.keypair.KeyPairName;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
 import com.wat.melody.common.messages.Msg;
@@ -84,13 +85,15 @@ public class NewMachine extends AbstractOperation {
 					if (getInstanceDatas().getPassphrase() == null) {
 						throw new OperationException(Msg.bind(
 								Messages.CreateEx_MISSING_PASSPHRASE_ATTR,
-								InstanceDatasLoader.PASSPHRASE_ATTR,
-								keyPairName));
+								keyPairName,
+								InstanceDatasLoader.PASSPHRASE_ATTR),
+								new HiddenException(Ex));
 					} else {
 						throw new OperationException(Msg.bind(
 								Messages.CreateEx_INVALID_PASSPHRASE_ATTR,
-								InstanceDatasLoader.PASSPHRASE_ATTR,
-								keyPairName));
+								keyPairName,
+								InstanceDatasLoader.PASSPHRASE_ATTR),
+								new HiddenException(Ex));
 					}
 				} catch (IOException | LibVirtKeyPairRepositoryException Ex) {
 					throw new OperationException(Ex);
