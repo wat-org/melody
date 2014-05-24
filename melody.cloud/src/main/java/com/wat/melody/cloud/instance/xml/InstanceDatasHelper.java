@@ -295,7 +295,7 @@ public abstract class InstanceDatasHelper {
 		}
 	}
 
-	public static List<String> findInstancePassphrase(
+	public static List<String> findInstanceKeyPairPassphrase(
 			List<Element> instanceElmts) throws NodeRelatedException {
 		if (instanceElmts == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -307,7 +307,7 @@ public abstract class InstanceDatasHelper {
 			if (instanceElmt == null) {
 				continue;
 			}
-			String res = findInstancePassphrase(instanceElmt);
+			String res = findInstanceKeyPairPassphrase(instanceElmt);
 			if (res != null) {
 				list.add(res);
 			}
@@ -315,7 +315,7 @@ public abstract class InstanceDatasHelper {
 		return list;
 	}
 
-	public static String findInstancePassphrase(Element instanceElmt)
+	public static String findInstanceKeyPairPassphrase(Element instanceElmt)
 			throws NodeRelatedException {
 		if (instanceElmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "

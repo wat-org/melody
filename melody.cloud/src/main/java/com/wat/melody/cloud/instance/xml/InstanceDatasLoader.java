@@ -142,7 +142,7 @@ public class InstanceDatasLoader {
 	}
 
 	private String loadPassphrase(Element e) throws NodeRelatedException {
-		return InstanceDatasHelper.findInstancePassphrase(e);
+		return InstanceDatasHelper.findInstanceKeyPairPassphrase(e);
 	}
 
 	private KeyPairSize loadKeyPairSize(Element e) throws NodeRelatedException {
