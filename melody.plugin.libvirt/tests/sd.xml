@@ -45,10 +45,24 @@
     <order name="destroy_all_protected_areas" >
         <call orders="destroy_all_protected_areas" sequence-descriptor="§[melody.extensions.vm.path]§"/>
     </order>
+
+    <order name="test_ssh" >
+        <foreach    items="./environment//instance"
+                    item-name="srv" >
+            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="pass" value="§[ melody:getInstanceKeyPairPassphrase(§[srv]§) ]§" />
+            <ssh description="[test:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" password="§[pass]§" >
+                <exec command="echo yo" />
+            </ssh>
+        </foreach>
+    </order>
 	
 	
 	<order name="all" >
 		<call	orders="create_all_vm"/>
+		<sleep	millis="2000" />
+		<call	orders="test_ssh"/>
 		<sleep	millis="2000" />
 		<call	orders="stop_all_vm"/>
 		<sleep	millis="2000" />

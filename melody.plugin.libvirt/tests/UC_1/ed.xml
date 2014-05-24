@@ -5,7 +5,7 @@
 	</global-fwrules>
 	
 	<models>
-		<model image-id="RHEL-6.3-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+		<model image-id="RHEL-6-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6-minimal" region="qemu:///system">
 			<network-management activation-protocol="ssh"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="8080"/>
@@ -21,7 +21,7 @@
 	
 	<instances>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01">
+		<instance herit="./environment/models/model[@name='RHEL-6-minimal']" name="srv01">
 			<network-management activation-protocol="ssh" network-devices-selector="//devices/if"/>
 			<disk-management disk-devices-selector="//devices/disque"/>
 			<firewall-management icmp-firewall-rules-selector="//parefeu/icmp" tcp-firewall-rules-selector="//parefeu/tcp" udp-firewall-rules-selector="//parefeu/udp"/>
@@ -39,14 +39,14 @@
 			</parefeu>
 		</instance>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv02">
+		<instance herit="./environment/models/model[@name='RHEL-6-minimal']" name="srv02">
 			<network-devices>
 				<interface device-name="eth0"/>
 				<interface device-name="eth1"/>
 			</network-devices>
 		</instance>		
 <!--
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv03" >
+		<instance herit="./environment/models/model[@name='RHEL-6-minimal']" name="srv03" >
 			<network>
 				<interface device-name="eth0" ip="" fqdn="" />
 				<interface device-name="eth1" ip="" fqdn="" />

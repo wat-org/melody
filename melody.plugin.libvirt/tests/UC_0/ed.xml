@@ -6,7 +6,7 @@
 	</global-fwrules>
 	
 	<models>
-		<model image-id="RHEL-6.3-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6.3-minimal" region="qemu:///system">
+		<model image-id="RHEL-6-minimal" instance-type="t1.micro" keypair-name="id_rsa" name="RHEL-6-minimal" region="qemu:///system">
 			<network-management activation-protocol="ssh"/>
 			<disk-management disk-devices-selector="//disk"/>
 			<firewall>
@@ -52,7 +52,7 @@
 
 	<instances>
 		
-		<instance herit="./environment/models/model[@name='RHEL-6.3-minimal']" name="srv01" protected-area-names="salut, sg2,zzlast,aafirst">
+		<instance herit="./environment/models/model[@name='RHEL-6-minimal']" keypair-name="new_key2" name="srv01" passphrase="passphrase" protected-area-names="salut, sg2,zzlast,aafirst">
 			<network-devices>
 				<interface device-name="eth0"/>
 				<interface device-name="eth1"/>
