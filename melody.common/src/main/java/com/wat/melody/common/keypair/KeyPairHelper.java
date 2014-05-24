@@ -15,8 +15,8 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -26,9 +26,15 @@ import java.security.spec.RSAPublicKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.EncryptionException;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMEncryptor;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
-import org.bouncycastle.openssl.PasswordFinder;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 
 import com.jcraft.jsch.Buffer;
 import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
@@ -40,8 +46,19 @@ import com.wat.melody.common.keypair.exception.IllegalPassphraseException;
  */
 public abstract class KeyPairHelper {
 
+	private static final Provider BCProvider;
+	private static final JcaPEMKeyConverter PemKeyConverter;
+	private static final JcePEMDecryptorProviderBuilder PemDecryptorProviderBuilder;
+	private static final JcePEMEncryptorBuilder PemEncryptorBuilder;
+
 	static {
-		Security.addProvider(new BouncyCastleProvider());
+		BCProvider = new BouncyCastleProvider();
+		Security.addProvider(BCProvider);
+		PemKeyConverter = new JcaPEMKeyConverter().setProvider(BCProvider);
+		PemDecryptorProviderBuilder = new JcePEMDecryptorProviderBuilder();
+		PemEncryptorBuilder = new JcePEMEncryptorBuilder("DES-EDE3-CBC");
+		// when using AES-256-CFB, JSch doesn't managed to deal with it
+		// (=> authentication failure)
 	}
 
 	public static KeyPair readOpenSslPEMPrivateKey(Path privateKey,
@@ -49,21 +66,25 @@ public abstract class KeyPairHelper {
 			IllegalPassphraseException {
 		File fin = privateKey.toFile();
 		FileReader fr = null;
-		PEMReader pemr = null;
+		PEMParser pemr = null;
 		try {
 			fr = new FileReader(fin);
-			if (passphrase == null || passphrase.length() == 0) {
-				pemr = new PEMReader(fr);
+			pemr = new PEMParser(fr);
+			Object o = pemr.readObject();
+			PEMKeyPair pemkp = null;
+			if (o instanceof PEMEncryptedKeyPair) {
+				if (passphrase == null) {
+					throw new IllegalPassphraseException("Key is encrypted. "
+							+ "A passphrase is necessary to decode it.");
+				}
+				PEMDecryptorProvider pdec = null;
+				pdec = PemDecryptorProviderBuilder.build(passphrase
+						.toCharArray());
+				pemkp = ((PEMEncryptedKeyPair) o).decryptKeyPair(pdec);
 			} else {
-				pemr = new PEMReader(fr, new PasswordFinder() {
-
-					@Override
-					public char[] getPassword() {
-						return passphrase.toCharArray();
-					}
-				});
+				pemkp = (PEMKeyPair) o;
 			}
-			return (KeyPair) pemr.readObject();
+			return PemKeyConverter.getKeyPair(pemkp);
 		} catch (EncryptionException Ex) {
 			throw new IllegalPassphraseException("Incorrect passphrase.", Ex);
 		} finally {
@@ -91,28 +112,19 @@ public abstract class KeyPairHelper {
 	}
 
 	public static void writeOpenSslPEMPrivateKey(Path filePath, KeyPair kp,
-			String sPassphrase) throws IOException {
-		writeOpenSslPEMDatas(filePath.toString(), kp.getPrivate(), sPassphrase);
-	}
-
-	public static void writeOpenSslPEMPublicKey(Path filePath, KeyPair kp)
-			throws IOException {
-		writeOpenSslPEMDatas(filePath.toString(), kp.getPublic(), null);
-	}
-
-	private static void writeOpenSslPEMDatas(String fileName, Key datas,
 			String passphrase) throws IOException {
-		File fprivout = new File(fileName);
+		File fprivout = new File(filePath.toString());
 		OutputStream privos = null;
 		PEMWriter privpemw = null;
 		try {
 			privos = new FileOutputStream(fprivout);
 			privpemw = new PEMWriter(new OutputStreamWriter(privos));
 			if (passphrase == null || passphrase.length() == 0) {
-				privpemw.writeObject(datas);
+				privpemw.writeObject(kp.getPrivate());
 			} else {
-				privpemw.writeObject(datas, "DESEDE", passphrase.toCharArray(),
-						new SecureRandom());
+				PEMEncryptor penc = null;
+				penc = PemEncryptorBuilder.build(passphrase.toCharArray());
+				privpemw.writeObject(kp.getPrivate(), penc);
 			}
 			privpemw.flush();
 			privos.flush();
