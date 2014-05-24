@@ -292,7 +292,11 @@ public class AwsEc2CloudNetwork {
 				throw Ex;
 			} else if (Ex.getErrorCode().indexOf("InvalidGroup.NotFound") != -1) {
 				return;
+			} else if (Ex.getErrorCode().indexOf("DependencyViolation") != -1) {
+				// This error is raised by us-west-1
+				throw new SecurityGroupInUseException(Ex);
 			} else if (Ex.getErrorCode().indexOf("InvalidGroup.InUse") != -1) {
+				// This error is raised by eu-west-1
 				throw new SecurityGroupInUseException(Ex);
 			} else {
 				throw Ex;
