@@ -744,9 +744,13 @@ public abstract class AwsEc2Cloud {
 
 	/**
 	 * <p>
-	 * Delete the specified Aws Instance, and wait for the instance to reached
-	 * the TERMINATED state during the specified amount of time.
+	 * Delete the given Aws Instance, and wait for the instance to reached the
+	 * TERMINATED state during the specified amount of time.
 	 * </p>
+	 * 
+	 * <p>
+	 * If the given Aws instance is SHUTTING_DONW or TERMINATED, will not raise
+	 * any error.
 	 * 
 	 * @param ec2
 	 * @param i
@@ -784,33 +788,37 @@ public abstract class AwsEc2Cloud {
 		tireq = new TerminateInstancesRequest();
 		tireq.withInstanceIds(i.getInstanceId());
 
+		// terminateInstances do not fail if the instance is SHUTTING_DONW
+		// terminateInstances do not fail if the instance is TERMINATED
 		ec2.terminateInstances(tireq);
 
 		boolean terminated = waitUntilInstanceStatusBecomes(ec2,
 				i.getInstanceId(), InstanceState.TERMINATED, timeout, 0);
 		if (terminated) {
+			/*
+			 * Don't know why, but sometimes, the sg deletion raise a
+			 * 'DependencyViolation' (which means the sg is still in use, even
+			 * if the instance have just been terminated). Bug in AWS ? For this
+			 * reason, we introduce a little delay before the sg deletion, and
+			 * we introduce a retry mechanism for the sg deletion.
+			 */
+			Thread.sleep(5000);
 			for (NetworkDevice netdev : netdevs) {
 				String sgid = AwsEc2CloudProtectedArea.getProtectedAreaId(ec2,
 						i, netdev.getNetworkDeviceName()).getValue();
-				/*
-				 * Don't know why, but sometimes, the sg deletion raise a
-				 * 'DependencyViolation' (which means the sg is still in use,
-				 * even if the instance have just been terminated).
-				 */
-				int retry = 3;
+				int retry = 10;
 				while (true) {
 					try {
 						AwsEc2CloudNetwork.deleteSecurityGroup(ec2, sgid);
 						break;
 					} catch (SecurityGroupInUseException Ex) {
 						if (retry-- > 0) {
-							log.warn("Fail to delete the self protected area "
-									+ "of instance '" + i.getInstanceId()
-									+ "'. " + retry + " try left.");
-							ex.warn("Fail to delete the self protected area "
-									+ "of instance '" + i.getInstanceId()
-									+ "'. " + retry + " try left.\n"
-									+ Ex.getFullStackTrace());
+							SecurityGroupInUseException e = null;
+							e = new SecurityGroupInUseException(Msg.bind(
+									Messages.DestroyMsg_PA_STILL_IN_USE, sgid,
+									i.getInstanceId(), retry), Ex);
+							log.warn(e.getMessage());
+							ex.warn(e.getFullStackTrace());
 							Thread.sleep(10000);
 						} else {
 							throw new RuntimeException("Fail to delete the "

@@ -42,6 +42,7 @@ public class Messages extends NLS {
 
 	public static String CreateEx_TIMEOUT;
 
+	public static String DestroyMsg_PA_STILL_IN_USE;
 	public static String DestroyEx_TIMEOUT;
 
 	public static String StartEx_TIMEOUT;

@@ -110,6 +110,13 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 			fireInstanceStopped();
 			log.warn(Messages.DestroyMsg_NO_INSTANCE);
 		} else if (!instanceLives()) {
+			/*
+			 * When an instance fail to destroy in the given time, its self
+			 * protected area is not deleted. When re-running
+			 * ensureInstanceIsDestroyed, if the instance is in the dead state,
+			 * its self protected area must be deleted.
+			 */
+			destroyInstance(destroyTimeout);
 			fireInstanceStopped();
 			fireInstanceDestroyed();
 			String sInstanceId = setInstanceId(null);
@@ -123,6 +130,12 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 		}
 	}
 
+	/**
+	 * <P>
+	 * Should destroy the instance. If the instance is destroying or already
+	 * destroyed, will NOT raise any error.
+	 * 
+	 */
 	public abstract void destroyInstance(long destroyTimeout)
 			throws OperationException, OperationTimeoutException,
 			InterruptedException;
