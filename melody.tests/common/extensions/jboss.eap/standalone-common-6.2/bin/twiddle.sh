@@ -1,1 +1,0 @@
-../../standalone-common-6.1/bin/twiddle.sh

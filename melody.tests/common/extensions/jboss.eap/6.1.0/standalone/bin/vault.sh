@@ -1,1 +1,1 @@
-../../../standalone-common/bin/vault.sh
+../../../6.0.0/standalone/bin/vault.sh

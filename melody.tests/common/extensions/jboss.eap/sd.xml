@@ -130,8 +130,7 @@
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
             <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_instance_node]§[ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]')"
-                        item-name="jboss_instance"
-                        max-par="1" > <!-- must be sequential for a given machine, otherwise, jboss failed to start for some unknown reasons -->
+                        item-name="jboss_instance" >
                 <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />

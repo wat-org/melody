@@ -1,1 +1,1 @@
-../../../standalone-common/bin/jboss-eapd.sh
+../../../6.0.0/standalone/bin/jboss-eapd.sh

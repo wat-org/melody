@@ -22,9 +22,11 @@
         <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
+            <!-- create jboss engine module home -->
             <exec command="umask 0007" />
-            <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§" />
-            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
+            <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§/modules" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§/modules" />
+            <exec command="rm -rf /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/" />
         </ssh>
 
         <!-- specific to native components -->
@@ -45,8 +47,8 @@
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -exec chmod 660 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -name &quot;*.sh&quot; -exec chmod 770 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type d -exec chmod 770 {} \;"/>
-            <!-- copy eap + native components in the final directory-->
-            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-eap-§[jbossEngineVersion]§" />
+            <!-- copy all eap modules (including native components) in the final directory-->
+            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/* /opt/jboss-eap-§[jbossEngineVersion]§/modules/" />
         </ssh>
 
         <!-- specific to native components -->
@@ -54,9 +56,9 @@
             <!-- exit silently if the native components where not uploaded -->
             <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-*.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
             <!-- for jboss.web (e.g. tomcat) -->
-            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/jboss/as/web/main/module.xml"/>
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml"/>
             <!-- for hornetq -->
-            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/layers/base/org/hornetq/main/module.xml"/>
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml"/>
         </ssh>
     </order>
 
@@ -86,6 +88,12 @@
             <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
             <!-- assign the jboss instance owner to the jboss engine group -->
             <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
+        </ssh>
+
+        <ssh description="[eap.patches:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <!-- copy the entire engine, except 'modules' into the JBoss EAP instance directory tree -->
+            <exec command="umask 0077" />
+            <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
         </ssh>
 
         <!-- JBoss Configuration update -->
@@ -127,15 +135,24 @@
         </insert-xml-elements-before>
 
         <ssh description="[eap.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <exec command="umask 0077" />
-            <exec command="mkdir -p §[jbossVaultEncDir]§" />
-            <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
-            <!--
-                BUG in 6.2.2 with the vault: the keystore is corrupted as sson as the jboss server starts.
-                The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."
-            -->
-            <exec command="[ -f &quot;§[jbossVaultKeystore]§&quot; ] || keytool -list -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore &quot;§[jbossVaultKeystore]§&quot; -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
-         </ssh>
+            <exec>
+                <![CDATA[
+umask 0077
+mkdir -p §[jbossVaultEncDir]§
+mkdir -p $(dirname §[jbossVaultKeystore]§)
+keytool -list -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -storetype JCEKS && {
+  echo "Secret Key '§[jbossVaultKeystoreAlias]§' found in Vault keystore's."
+  exit 0
+}
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+keytool -genseckey -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -keyalg AES -keysize 256 -storetype JCEKS || {
+  echo "Fail to generate Private Key '§[jbossVaultKeystoreAlias]§' in Vault keystore's !" >&2
+  exit 1
+}
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault keystore's."
+                ]]>
+            </exec>
+        </ssh>
 
         <!-- JBoss Configuration update -->
         <echo message="[eap.conf:§[jbossInstanceId]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
@@ -194,11 +211,11 @@
                         </ssl>
                     </server-identities>
                     <authentication>
-                       <local default-user="$local"/>
-                       <properties path="https-mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                        <local default-user="$local"/>
+                        <properties path="https-mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                     </authentication>
                     <authorization map-groups-to-roles="false">
-                       <properties path="https-mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                        <properties path="https-mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
                     </authorization>
                 </security-realm>
                 ]]>
@@ -206,10 +223,23 @@
         </append-xml-elements>
 
         <ssh description="[eap.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <exec command="cd §[jbossInstancePath]§/configuration" />
-            <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
-            <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
-         </ssh>
+            <exec>
+                <![CDATA[
+umask 0077
+cd §[jbossInstancePath]§/configuration
+keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ && {
+  echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' found in Server keystore's."
+  exit 0
+}
+echo "Private Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname "§[jbossInstanceMgmtKeyDName]§" || {
+  echo "Fail to generate Private Key '§[jbossInstanceMgmtKeyAlias]§' in Server keystore's !" >&2
+  exit 1
+}
+echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Server keystore's."
+                ]]>
+            </exec>
+        </ssh>
 
         <!-- JBoss Configuration update -->
         <echo message="[eap.conf:§[jbossInstanceId]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
@@ -275,7 +305,7 @@
                 ]]>
             </node-content>
         </append-xml-elements>
-        
+
         <!-- specific to native components -->
         <property name="jbossInstanceUsesNative"        value="§[§[jboss_instance]§/jboss-web/@uses-native-components]§"/>
         <property name="jbossInstanceUsesNative"        value="§[ if (string-length('§[jbossInstanceUsesNative]§')=0) then 'false' else '§[jbossInstanceUsesNative]§' ]§" />
@@ -289,7 +319,7 @@
                 DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: tcnative-1
                 DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001068: Loaded native library 1.1.27 with APR capabilities: IPv6 [true], sendfile [true], random [true]
                 DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001136: Starting service jboss.web
-                INFO  [org.apache.coyote.http11] (MSC service thread 1-1) JBWEB003000: Coyote HTTP/1.1 starting on: http-/192.168.122.4:8480
+                INFO  [org.apache.coyote.http11] (MSC service thread 1-1) JBWEB003000: Coyote HTTP/1.1 starting on: http-/192.168.122.4:8080
          -->
         <echo message="[eap.conf:§[jbossInstanceId]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
@@ -336,9 +366,9 @@
             <property name="admin.login" value="§[§[admin]§/@login]§"/>
             <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
 
-            <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
-                 Don't know why. So we'ere doing a global synchronization -->
-            <synchronize scope="GLOBAL" lock-id="eap.add.user">
+            <!-- simultaneous call to jboss-add-user.sh may encounter concurrency problems. Certainly a problem in jboss module.
+                 Don't know why. So we're doing a global synchronization on the jboss instance -->
+            <synchronize scope="GLOBAL" lock-id="eap.add.user.§[jbossInstanceOwner]§.§[jbossInstanceListenIp]§.§[jbossInstanceListenPortOffset]§">
                 <ssh description="[eap.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                     <!-- TODO : should use RBAC, and manage group/roles mapping -->
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§" />
