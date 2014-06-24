@@ -33,6 +33,7 @@
             <property name="rhnsd" value="§[ melody:getHeritedContent(§[srv]§, '/rhn/@start-rhnsd') ]§" />
             <property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 
+            <!-- TODO : should try 3 times if 'Error communicating with server. The message was:No address associated with hostname' -->
             <ssh description="[rhn_reg:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                 <exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
             </ssh>

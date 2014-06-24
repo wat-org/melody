@@ -1,1 +1,1 @@
-../../../standalone-common-6.2/bin/ispn-cli.sh
+../../../6.2.0/standalone/bin/ispn-cli.sh

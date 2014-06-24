@@ -16,9 +16,11 @@
         <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
+            <!-- create jboss engine module home -->
             <exec command="umask 0007" />
-            <exec command="mkdir -p /opt/jboss-datagrid-§[jbossEngineVersion]§" />
-            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§" />
+            <exec command="mkdir -p /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
+            <exec command="rm -rf /opt/jboss-datagrid-§[jbossEngineVersion]§/modules/system/" />
         </ssh>
 
         <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
@@ -28,22 +30,9 @@
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -exec chmod 660 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -name &quot;*.sh&quot; -exec chmod 770 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type d -exec chmod 770 {} \;"/>
-            <!-- copy datagrid in the final directory-->
-            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/* /opt/jboss-datagrid-§[jbossEngineVersion]§" />
+            <!-- copy all datagrid modules in the final directory-->
+            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/* /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
         </ssh>
-
-        <!-- add JBoss CLI and vault engine script; replace ispn-cli-logging.properties; replace org.infinispan.cli.client:module.xml -->
-        <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
-            <resources  src-basedir="./engine"
-                        match="**"
-                        dest-basedir="§[jbossEnginePath]§"
-                        link-option="COPY_LINKS" >
-                <posix-permissions scope="files">660</posix-permissions>
-                <include match="**.sh" >
-                    <posix-permissions scope="files">750</posix-permissions>
-                </include>
-            </resources>
-        </upload>
     </order>
     
     
@@ -62,6 +51,9 @@
                 <include match="bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>
+                <include match="patches/bin/*.sh">
+                    <posix-permissions scope="files">700</posix-permissions>
+                </include>
                 <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
          </upload>
@@ -71,6 +63,12 @@
             <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
             <!-- assign the jdg instance owner to the jdg engine group -->
             <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
+        </ssh>
+
+        <ssh description="[datagrid.patches:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <!-- copy the entire engine, except 'modules' into the JBoss DataGrid instance directory tree -->
+            <exec command="umask 0077" />
+            <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
         </ssh>
 
         <!-- JBoss Configuration update -->
@@ -112,14 +110,23 @@
         </insert-xml-elements-before>
 
         <ssh description="[datagrid.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <exec command="umask 0077" />
-            <exec command="mkdir -p §[jbossVaultEncDir]§" />
-            <exec command="mkdir -p $(dirname §[jbossVaultKeystore]§)" />
-            <!--
-                BUG in DataGrid 6.2.0 (based on EAP 6.1.x) with the vault: the keystore is corrupted as sson as the jboss server starts.
-                The JBoss server is still able to read it (don't know how), but keytool always fail with "Invalid keystore format."
-            -->
-            <exec command="[ -f &quot;§[jbossVaultKeystore]§&quot; ] || keytool -list -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ || keytool -genkey -keystore §[jbossVaultKeystore]§ -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -keyalg RSA -alias §[jbossVaultKeystoreAlias]§ -validity 365 -dname &quot;§[jbossVaultKeystoreDN]§&quot;" />
+            <exec>
+                <![CDATA[
+umask 0077
+mkdir -p §[jbossVaultEncDir]§
+mkdir -p $(dirname §[jbossVaultKeystore]§)
+keytool -list -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -storetype JCEKS && {
+  echo "Secret Key '§[jbossVaultKeystoreAlias]§' found in Vault keystore's."
+  exit 0
+}
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+keytool -genseckey -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -keyalg AES -keysize 256 -storetype JCEKS || {
+  echo "Fail to generate Private Key '§[jbossVaultKeystoreAlias]§' in Vault keystore's !" >&2
+  exit 1
+}
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault keystore's."
+                ]]>
+            </exec>
          </ssh>
 
         <!-- JBoss Configuration update -->
@@ -188,9 +195,22 @@
         </append-xml-elements>
 
         <ssh description="[datagrid.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <exec command="cd §[jbossInstancePath]§/configuration" />
-            <exec command="keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ || keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname &quot;§[jbossInstanceMgmtKeyDName]§&quot;" />
-            <exec command="chmod 600 §[jbossInstanceMgmtStorePath]§" />
+            <exec>
+                <![CDATA[
+umask 0077
+cd §[jbossInstancePath]§/configuration
+keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ && {
+  echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' found in Server keystore's."
+  exit 0
+}
+echo "Private Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname "§[jbossInstanceMgmtKeyDName]§" || {
+  echo "Fail to generate Private Key '§[jbossInstanceMgmtKeyAlias]§' in Server keystore's !" >&2
+  exit 1
+}
+echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Server keystore's."
+                ]]>
+            </exec>
          </ssh>
 
         <!-- JBoss Configuration update -->
@@ -340,9 +360,9 @@
             <property name="admin.login" value="§[§[admin]§/@login]§"/>
             <property name="admin.pass"  value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
 
-            <!-- multiple jboss-add-user.sh calls, even on different instances, may encounter concurrency problems.
-                 Don't know why. So we'ere doing a global synchronization -->
-            <synchronize scope="GLOBAL" lock-id="jdg.add.user">
+            <!-- simultaneous call to jboss-add-user.sh may encounter concurrency problems. Certainly a problem in jboss module.
+                 Don't know why. So we're doing a global synchronization on the jboss instance -->
+            <synchronize scope="GLOBAL" lock-id="jdg.add.user.§[jbossInstanceOwner]§.§[jbossInstanceListenIp]§.§[jbossInstanceListenPortOffset]§">
                 <ssh description="[datagrid.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
                     <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
                  </ssh>

@@ -1,1 +1,1 @@
-../../../standalone-common/bin/twiddle.sh
+../../../6.0.0/standalone/bin/twiddle.sh

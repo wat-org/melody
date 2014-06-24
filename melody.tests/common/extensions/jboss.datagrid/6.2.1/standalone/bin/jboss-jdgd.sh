@@ -1,1 +1,1 @@
-../../../standalone-common/bin/jboss-jdgd.sh
+../../../6.0.0/standalone/bin/jboss-jdgd.sh
