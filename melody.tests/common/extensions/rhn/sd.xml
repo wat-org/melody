@@ -34,8 +34,36 @@
             <property name="rhnsd" value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§" />
 
             <!-- TODO : should try 3 times if 'Error communicating with server. The message was:No address associated with hostname' -->
+            <!-- TODO : should try 3 times if 'Error communicating with server. The message was:Temporary failure in name resolution' -->
             <ssh description="[rhn_reg:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
-                <exec command="[ -f /etc/sysconfig/rhn/systemid ] || rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§" />
+                <exec>
+                    <![CDATA[
+[ -f /etc/sysconfig/rhn/systemid ] && {
+  echo "System already registered in RHN. Nothing to do."
+  exit 0
+}
+
+declare registered=0
+declare retry=3
+declare res
+while [ ${registered} = 0 -a ${retry} -ge 0 ]; do
+  res=$(rhnreg_ks --activationkey=§[RHN_ACTIVATIONKEY]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§ 2>&1)
+  [ $? = 0 ] && registered=1
+  [ $registered = 1 ] && { echo $res; break; }
+  echo $res 1>&2
+  echo $res | \
+    grep -v "No address associated with hostname" | \
+    grep -v "Temporary failure in name resolution" | \
+    grep -i "error" 1>/dev/null && break
+  echo "Fail to register system '§[ip]§' in RHN. ${retry} try left." 1>&2
+  [ $retry -le 0 ] && break
+  retry=$((retry-1))
+  sleep $(((3-retry)*4))
+done
+[ $registered = 0 ] && { echo "Fail to register system '§[ip]§' in RHN. Exiting with error code 1." 1>&2; exit 1; }
+echo "System '§[ip]§' successfully registered in RHN."
+                    ]]>
+                </exec>
             </ssh>
 
             <!-- set the base channel, if any (should be only one) -->
@@ -81,7 +109,29 @@
                 <property name="channel_name" value="§[§[channel]§/@name]§" />
 
                 <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
-                    <exec command="rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p &quot;§[RHN_PASSWORD]§&quot;" />
+                    <exec>
+                        <![CDATA[
+declare registered=0
+declare retry=3
+declare res
+while [ ${registered} = 0 -a ${retry} -ge 0 ]; do
+  res=$(rhn-channel -a -c §[channel_name]§ -u §[RHN_LOGIN]§ -p "§[RHN_PASSWORD]§" 2>&1)
+  [ $? = 0 ] && registered=1
+  [ $registered = 1 ] && { echo $res; break; }
+  echo $res 1>&2
+  echo $res | \
+    grep -v "No address associated with hostname" | \
+    grep -v "Temporary failure in name resolution" | \
+    grep -i "error" 1>/dev/null && break
+  echo "Fail to register child channel '§[channel_name]§' for system '§[ip]§'. ${retry} try left." 1>&2
+  [ $retry -le 0 ] && break
+  retry=$((retry-1))
+  sleep $(((3-retry)*4))
+done
+[ $registered = 0 ] && { echo "Fail to register child channel '§[channel_name]§' for system '§[ip]§'. Exiting with error code 1." 1>&2; exit 1; }
+echo "Child channel '§[channel_name]§' successfully registered for system '§[ip]§'."
+                        ]]>
+                    </exec>
                 </ssh>
                 <echo message="+ Server '§[§[srv]§/@instance-id]§' additionnally subscribed to RHN Channel '§[channel_name]§'." />
             </foreach>
