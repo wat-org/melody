@@ -19,7 +19,7 @@
             <!-- create jboss engine module home -->
             <exec command="umask 0007" />
             <exec command="mkdir -p /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
-            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§" />
             <exec command="rm -rf /opt/jboss-datagrid-§[jbossEngineVersion]§/modules/system/" />
         </ssh>
 
