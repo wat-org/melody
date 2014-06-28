@@ -54,6 +54,7 @@ while [ ${registered} = 0 -a ${retry} -ge 0 ]; do
   echo $res | \
     grep -v "No address associated with hostname" | \
     grep -v "Temporary failure in name resolution" | \
+    grep -v "Unable to connect to the host and port specified" | \
     grep -i "error" 1>/dev/null && break
   echo "Fail to register system '§[ip]§' in RHN. ${retry} try left." 1>&2
   [ $retry -le 0 ] && break
@@ -71,7 +72,7 @@ echo "System '§[ip]§' successfully registered in RHN."
                         item-name="channel" >
                 <property name="channel_name" value="§[§[channel]§/@name]§" />
 
-                <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <ssh description="[rhn-channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="[ ! -r /etc/sysconfig/rhn/systemid ] &amp;&amp; { echo system is not registered; exit 0; } " />
                     <declare name="SYSTEM_ID" value="$(cat /etc/sysconfig/rhn/systemid | grep -E &quot;&lt;value&gt;&lt;string&gt;ID-.*&lt;/string&gt;&lt;/value&gt;&quot; | cut -d '&gt;' -f3 | cut -d '&lt;' -f1 | cut -d '-' -f2)"/>
                     <exec command="python &lt;&lt; EOF" />
@@ -108,9 +109,14 @@ echo "System '§[ip]§' successfully registered in RHN."
                         item-name="channel" >
                 <property name="channel_name" value="§[§[channel]§/@name]§" />
 
-                <ssh description="[rhn_channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <ssh description="[rhn-channel:§[channel_name]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec>
                         <![CDATA[
+rhn-channel -l | grep §[channel_name]§ 1>/dev/null && {
+  echo "Child channel '§[channel_name]§' is already registered for system '§[ip]§'. Nothing to do."
+  exit 0
+}
+
 declare registered=0
 declare retry=3
 declare res
@@ -122,6 +128,7 @@ while [ ${registered} = 0 -a ${retry} -ge 0 ]; do
   echo $res | \
     grep -v "No address associated with hostname" | \
     grep -v "Temporary failure in name resolution" | \
+    grep -v "Unable to connect to the host and port specified" | \
     grep -i "error" 1>/dev/null && break
   echo "Fail to register child channel '§[channel_name]§' for system '§[ip]§'. ${retry} try left." 1>&2
   [ $retry -le 0 ] && break
