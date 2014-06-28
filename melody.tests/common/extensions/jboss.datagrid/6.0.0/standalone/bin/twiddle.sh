@@ -1,9 +1,8 @@
 #!/bin/sh
-#
-# Twiddle for JBoss DataGrid
-#
-# If ran as root or the owner, no need to pass credential
-# In any other case, need to pass credentials in the command line (-u user / -p pass)
+
+######## license / author
+# license : GPL
+# author : Guillaume Cornet
 
 ## Load JBoss DataGrid Service configuration.
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"

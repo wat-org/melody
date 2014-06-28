@@ -1,9 +1,8 @@
 #!/bin/sh
-#
-# Twiddle for JBoss EAP Standalone
-#
-# If ran as root or the owner, no need to pass credential
-# In any other case, need to pass credentials in the command line (-u user / -p pass)
+
+######## license / author
+# license : GPL
+# author : Guillaume Cornet
 
 ## Load JBoss EAP Standalone Service configuration.
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
@@ -48,7 +47,7 @@ MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 
 ## command wrapper
 CMD_PREFIX="eval"
-[ "$(id -g)" = "0" ] && CMD_PREFIX="su - ${JDG_USER} -c"
+[ "$(id -g)" = "0" ] && CMD_PREFIX="su - ${JBOSS_USER} -c"
 
 # Java Options
 JAVA_OPTS="${JAVA_OPTS} -Dprogram.name=\"twiddle[${SERVER_NAME}]\""
