@@ -25,7 +25,7 @@
             <!-- create jboss engine module home -->
             <exec command="umask 0007" />
             <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§/modules" />
-            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§/modules" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
             <exec command="rm -rf /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/" />
         </ssh>
 
