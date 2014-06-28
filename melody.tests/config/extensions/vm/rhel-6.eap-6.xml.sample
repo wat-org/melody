@@ -25,9 +25,13 @@
 			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" version="6.2.2">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" version="6.2.3">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
 			<packages>
 				<package arch="x86_64" name="zip"/>
 				<package arch="x86_64" name="unzip"/>
+				<package arch="x86_64" name="java-1.6.0-openjdk-devel"/> <!-- java 1.6 -->
 				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
 				<package arch="x86_64" name="zlib"/> <!-- native components -->
 				<package arch="x86_64" name="apr"/> <!-- native components -->

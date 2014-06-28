@@ -1,0 +1,27 @@
+1/ build a complete jboss eap archive
+  insert the cumulative patch into the previous version complete archive
+  put it into /Cloud/binaries/jboss.eap/jboss-eap-<VERSION>.zip
+
+  correct the native components lib path in module.xml of 'org.hornetq:main' and 'org.jboss.as.web:main'
+  
+2/ create native components archive
+  put it into /Cloud/binaries/jboss.eap/jboss-eap-native-<VERSION>-RHEL6-x86_64.zip
+
+3/ inside the extension 'jboss.eap', create the directory <VERSION> and copy the content of the previous version inside
+  mkdir common/extensions/jboss.eap/<VERSION>
+  cp -prf --preserve=links common/extensions/jboss.eap/<VERSION-1>/* common/extensions/jboss.eap/<VERSION>/
+  
+4/ change the version number in the new version sequence descriptor
+  sed s/<VERSION-1>/<VERSION>/g common/extensions/jboss.eap/<VERSION>/sd.xml
+  
+5/ declare the new version in the jboss.eap model
+  open config/extensions/vm/rhel-6.eap-6.xml.sample and add this inside, next to the other jboss version declaration
+  
+			<jboss-eap-engine path="/opt/jboss-eap-<VERSION>" version="<VERSION>">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+
+6/ test the installation of the new version
+eventually update the configuration instructions defined in the new version sequence descriptor common/extensions/jboss.eap/<VERSION>/sd.xml
+
+7/ once validated, deploy the new version in the jboss.eap VM templates
