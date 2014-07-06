@@ -295,9 +295,14 @@ class MySAXHandler extends DefaultHandler2 {
 	@Override
 	public void comment(char ch[], int start, int length) {
 		addTextIfNeeded();
-		Element el = _elementStack.peek();
+		Node n = null;
+		if (_elementStack.isEmpty()) {
+			n = _doc;
+		} else {
+			n = _elementStack.peek();
+		}
 		Node textNode = _doc.createComment(new String(ch, start, length));
-		el.appendChild(textNode);
+		n.appendChild(textNode);
 	}
 
 }
