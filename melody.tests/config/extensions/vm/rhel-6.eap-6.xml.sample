@@ -28,6 +28,9 @@
 			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" version="6.2.3">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" version="6.2.4">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
 			<packages>
 				<package arch="x86_64" name="zip"/>
 				<package arch="x86_64" name="unzip"/>
