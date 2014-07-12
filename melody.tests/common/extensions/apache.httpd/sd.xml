@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <property name="apache_httpd_node"          value="apache-httpd"/>
+    <property name="backend_instance_node"      value="jboss-eap-instance"/>
+
+    <property name="instance_selector"          value="./environment//instance"/>
+    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/§[apache_httpd_node]§'))) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_match_criteria"    value="1=1"/>
+
+    <order name="configure_apache_httpd">
+        <echo message="Configuring all Apache HTTP Server ..." />
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv">
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <!-- configure apache http server -->
+            <upload host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <resources  src-basedir="etc/httpd/"
+                            match="**"
+                            dest-basedir="/etc/httpd/" >
+                    <posix-permissions scope="files">640</posix-permissions>
+                    <include match="conf/workers.properties" template="y"/>
+                </resources>
+            </upload>
+            <!--
+                TODO: customize :
+                    - listen address
+                    - listen port
+                    - admin address (jkstatus, status)
+            -->
+
+            <!-- restart apache http server-->
+            <ssh description="[configure-apache-httpd:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <exec command="rm -f /etc/httpd/conf.d/proxy_ajp.conf" />
+                <exec command="rm -f /etc/httpd/conf.d/welcome.conf" />
+                <exec command="setenforce 0" />
+                <exec command="service httpd restart" />
+            </ssh>
+
+            <!-- perform extra stuf, for each application-->
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/applications/application')"
+                        item-name="application"
+                        max-par="1">
+                <property name="appli.name"          value="§[§[application]§/@name]§" />
+                <property name="appli.worker"        value="§[§[application]§/@worker]§" />
+
+                <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
+                <echo message="+ Application '§[appli.name]§' successfully configured on Apache Http Server on '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+
+            <echo message="+ Apache HTTP Server successfully configured on '§[§[srv]§/@instance-id]§'." />
+        </foreach>
+        <echo message="-- All Apache HTTP Server successfully configured." />
+    </order>
+
+</sequence>
