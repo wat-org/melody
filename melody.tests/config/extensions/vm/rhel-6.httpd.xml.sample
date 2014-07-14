@@ -18,6 +18,11 @@
 				<!-- start apache httpd server -->
 				<service name="httpd" state="on"/>
 			</services>
+			<credentials>
+				<!-- apache httpd user and group -->
+				<user id="48" login="apache" password="apachepwd@1" ref-group-name="apache"/>
+				<group id="48" name="apache"/>
+			</credentials>
 		</model>
 	</models>
 
