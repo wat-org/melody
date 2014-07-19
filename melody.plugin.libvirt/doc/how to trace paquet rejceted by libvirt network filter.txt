@@ -1,0 +1,70 @@
+libvirt network filter do not allow to declare iptables LOG rules.
+It is possible to declare ACCEPT, DROP, REJECT, RETURN rules, but LOG is not valid.
+
+For example, this is a valid configuration for a libvirt network filter, which illustrates 'accept' and 'reject' rules :
+
+	[root@gcornet ~]# virsh nwfilter-dumpxml i-17867f85-eth0-nwfilter
+	<filter name='i-17867f85-eth0-nwfilter' chain='root'>
+	  <uuid>663b676a-5473-e7de-ef6c-ab2067359b1b</uuid>
+	  <filterref filter='pa-4e098180'/>
+	  <filterref filter='pa-548ce8ac'/>
+	  <rule action='accept' direction='out' priority='500'>
+	    <all state='NEW'/>
+	  </rule>
+	  <rule action='accept' direction='out' priority='500'>
+	    <all state='ESTABLISHED,RELATED'/>
+	  </rule>
+	  <rule action='accept' direction='in' priority='500'>
+	    <all state='ESTABLISHED'/>
+	  </rule>
+	  <rule action='reject' direction='inout' priority='500'>
+	    <all/>
+	  </rule>
+	</filter>
+	
+But this is not a valid configuration :
+
+	[root@gcornet ~]# virsh nwfilter-dumpxml i-17867f85-eth0-nwfilter
+	<filter name='i-17867f85-eth0-nwfilter' chain='root'>
+	  <uuid>663b676a-5473-e7de-ef6c-ab2067359b1b</uuid>
+	  <filterref filter='pa-4e098180'/>
+	  <filterref filter='pa-548ce8ac'/>
+	  <rule action='accept' direction='out' priority='500'>
+	    <all state='NEW'/>
+	  </rule>
+	  <rule action='accept' direction='out' priority='500'>
+	    <all state='ESTABLISHED,RELATED'/>
+	  </rule>
+	  <rule action='accept' direction='in' priority='500'>
+	    <all state='ESTABLISHED'/>
+	  </rule>
+->	  <rule action='log' direction='inout' priority='500'>
+->	    <all/>
+->	  </rule>
+	  <rule action='reject' direction='inout' priority='500'>
+	    <all/>
+	  </rule>
+	</filter>
+
+
+So... because libvirt network filter will not recognize LOG rules, we have to put such rules manually inside the iptables configuration
+Here are some samples :
+
+	iptables -I FO-vnet0  8 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FO-vnet0: " --log-level 4
+	iptables -I FO-vnet1 18 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FO-vnet1: " --log-level 4
+	iptables -I FO-vnet2 18 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FO-vnet2: " --log-level 4
+	iptables -I FO-vnet3  9 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FO-vnet3: " --log-level 4
+	
+	iptables -I HI-vnet0  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-HI-vnet0: " --log-level 4
+	iptables -I HI-vnet1  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-HI-vnet1: " --log-level 4
+	iptables -I HI-vnet2  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-HI-vnet2: " --log-level 4
+	iptables -I HI-vnet3  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-HI-vnet3: " --log-level 4
+	
+	iptables -I FI-vnet0  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FI-vnet0: " --log-level 4
+	iptables -I FI-vnet1  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FI-vnet1: " --log-level 4
+	iptables -I FI-vnet2  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FI-vnet2: " --log-level 4
+	iptables -I FI-vnet3  4 -j LOG -m limit --limit 2/min --log-prefix "IPTables-Dropped-FI-vnet3: " --log-level 4
+
+Once enabled, you will see logs in /var/log/messages :
+
+	kernel: IPTables-Dropped: IN=virbr0 OUT=virbr0 PHYSIN=vnet3 PHYSOUT=vnet2 SRC=192.168.122.7 DST=192.168.122.6 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=33825 DF PROTO=TCP SPT=43032 DPT=8080 WINDOW=14600 RES=0x00 SYN URGP=0

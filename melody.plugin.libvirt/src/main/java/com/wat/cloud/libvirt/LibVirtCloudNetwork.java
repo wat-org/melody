@@ -525,16 +525,20 @@ public abstract class LibVirtCloudNetwork {
 			// + "<filterref filter='clean-traffic'/>"
 			// accept all outgoing traffic and reject all incoming traffic
 			DOMAIN_NETWORK_FILTER_XML_SNIPPET += "<rule action='accept' direction='out' priority='500'>"
-					+ "<all state='NEW'/>"
+					+ " <all state='NEW'/>"
 					+ "</rule>"
 					+ "<rule action='accept' direction='out' priority='500'>"
-					+ "<all state='ESTABLISHED,RELATED'/>"
+					+ "  <all state='ESTABLISHED,RELATED'/>"
 					+ "</rule>"
 					+ "<rule action='accept' direction='in' priority='500'>"
-					+ "<all state='ESTABLISHED'/>"
+					+ "  <all state='ESTABLISHED'/>"
 					+ "</rule>"
-					+ "<rule action='drop' direction='inout' priority='500'>"
-					+ "<all/>" + "</rule>" + "</filter>";
+					+ "<rule action='accept' direction='in' priority='500'>"
+					+ "  <igmp/>"
+					+ "</rule>"
+					+ "<rule action='reject' direction='inout' priority='500'>"
+					+ "  <all/>" + "</rule>";
+			DOMAIN_NETWORK_FILTER_XML_SNIPPET += "</filter>";
 
 			cnx.networkFilterDefineXML(DOMAIN_NETWORK_FILTER_XML_SNIPPET);
 			log.debug("Master Network Filter '" + sInstanceId + "-" + devname

@@ -12,8 +12,6 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.protectedarea.ProtectedAreaId;
 import com.wat.melody.common.ex.MelodyException;
-import com.wat.melody.common.firewall.Access;
-import com.wat.melody.common.firewall.Direction;
 import com.wat.melody.common.firewall.FireWallRules;
 import com.wat.melody.common.firewall.IcmpCode;
 import com.wat.melody.common.firewall.IcmpType;
@@ -90,9 +88,9 @@ public abstract class LibVirtCloudFireWall {
 				}
 				nrule.setAttribute("priority", "500");
 				nrule.setAttribute("action",
-						rule.getAccess() == Access.ALLOW ? "accept" : "drop");
+						AccessConverter.convert(rule.getAccess()));
 				nrule.setAttribute("direction",
-						rule.getDirection() == Direction.IN ? "in" : "out");
+						DirectionConverter.convert(rule.getDirection()));
 				nrule.appendChild(nin);
 				doc.getDocument().getFirstChild().appendChild(nrule);
 				changed = true;
@@ -166,9 +164,9 @@ public abstract class LibVirtCloudFireWall {
 
 		try {
 			return (Element) doc.evaluateAsNode("/filter/rule[" + " @action='"
-					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
+					+ AccessConverter.convert(rule.getAccess())
 					+ "' and @direction='"
-					+ (rule.getDirection() == Direction.IN ? "in" : "out")
+					+ DirectionConverter.convert(rule.getDirection())
 					+ "' and exists(" + rule.getProtocol().getValue() + "["
 					+ "@srcipaddr='" + fromIpRange.getIp()
 					+ "' and @srcipmask='" + fromIpRange.getMask()
@@ -203,9 +201,9 @@ public abstract class LibVirtCloudFireWall {
 				codeCond = " and @code='" + rule.getCode() + "'";
 			}
 			return (Element) doc.evaluateAsNode("/filter/rule[" + " @action='"
-					+ (rule.getAccess() == Access.ALLOW ? "accept" : "drop")
+					+ AccessConverter.convert(rule.getAccess())
 					+ "' and @direction='"
-					+ (rule.getDirection() == Direction.IN ? "in" : "out")
+					+ DirectionConverter.convert(rule.getDirection())
 					+ "' and exists(" + "icmp" + "[" + "@srcipaddr='"
 					+ fromIpRange.getIp() + "' and @srcipmask='"
 					+ fromIpRange.getMask() + "' and @dstipaddr='"
@@ -260,9 +258,9 @@ public abstract class LibVirtCloudFireWall {
 				}
 				nrule.setAttribute("priority", "500");
 				nrule.setAttribute("action",
-						rule.getAccess() == Access.ALLOW ? "accept" : "drop");
+						AccessConverter.convert(rule.getAccess()));
 				nrule.setAttribute("direction",
-						rule.getDirection() == Direction.IN ? "in" : "out");
+						DirectionConverter.convert(rule.getDirection()));
 				nrule.appendChild(nin);
 				doc.getDocument().getFirstChild().appendChild(nrule);
 				changed = true;
