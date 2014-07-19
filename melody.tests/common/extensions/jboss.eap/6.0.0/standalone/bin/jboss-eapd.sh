@@ -56,6 +56,7 @@ fi
 
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
+[ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${JBOSS_CONSOLE_LOG}" ]         && JBOSS_CONSOLE_LOG="/var/log/jboss-eap/console.log"
 [ -z "${STARTUP_WAIT}" ]              && STARTUP_WAIT=30
@@ -111,7 +112,7 @@ __sleep() {
   local seconds=$1
   for (( ; seconds>-1 ; seconds--)); do
     dd if=/dev/urandom of=/dev/null bs=10M count=1 1>/dev/null 2>&1
-    "${JAVA_HOME}/bin/java" -version 1>/dev/null 2>&1
+    "${JAVA}" -version 1>/dev/null 2>&1
   done
 }
 

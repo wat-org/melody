@@ -15,14 +15,14 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 }
 
 if [ -z "${JBOSS_BASE_DIR}" ]; then
-  echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
+  echo "Variable \$JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
   exit 1
 fi
 
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
-[ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
+[ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-datagrid-server-6"
 [ -z "${JBOSS_VAULT}" ]               && JBOSS_VAULT="${JBOSS_HOME}/bin/vault.sh"
 [ -z "${VAULT_ENC_DIR}" ]             && VAULT_ENC_DIR="${JBOSS_BASE_DIR}/configuration/vault/secret/"
 [ -z "${VAULT_KEYSTORE}" ]            && VAULT_KEYSTORE="${JBOSS_BASE_DIR}/configuration/vault/vault.keystore"

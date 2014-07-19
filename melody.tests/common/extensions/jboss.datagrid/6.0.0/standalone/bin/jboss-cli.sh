@@ -15,7 +15,7 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 }
 
 if [ -z "${JBOSS_BASE_DIR}" ]; then
-  echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
+  echo "Variable \$JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
   exit 1
 fi
@@ -41,13 +41,13 @@ CLI_CMD="LANG=\"${LANG}\" \
 ### validate some stuff
 [ -e "${JBOSS_CLI}" ] || {
   echo "File '${JBOSS_CLI}' doesn't exists."
-  echo "The variable JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
+  echo "The variable \$JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
   exit 1
 }
 
 [ -x "${JBOSS_CLI}" ] || {
   echo "File '${JBOSS_CLI}' is not executable."
-  echo "The variable JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
+  echo "The variable \$JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
   exit 1
 }
 

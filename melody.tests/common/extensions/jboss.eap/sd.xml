@@ -244,7 +244,8 @@
                 <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
 
                 <foreach    items="§[jboss_instance]§/custom-modules/custom-module"
-                            item-name="cm">
+                            item-name="cm"
+                            max-par="1"> <!-- the deployment can modify the standalone.conf, which can't be modified concurrently -->
                     <property name="cm.name"          value="§[§[cm]§/@name]§" />
 
                     <call orders="§[callback]§.§[cm.name]§" sequence-descriptor="§[callback.sd]§"/>

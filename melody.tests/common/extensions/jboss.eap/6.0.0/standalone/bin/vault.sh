@@ -15,7 +15,7 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-eapd.conf"
 }
 
 if [ -z "${JBOSS_BASE_DIR}" ]; then
-  echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss EAP Standalone instance's base dir." >&2
+  echo "Variable \$JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss EAP Standalone instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
   exit 1
 fi
