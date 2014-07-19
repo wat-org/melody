@@ -12,7 +12,7 @@ import com.wat.melody.common.messages.Msg;
  */
 public enum Access {
 
-	ALLOW("allow"), DENY("deny");
+	ALLOW("allow"), DENY("deny"), REJECT("reject"), RETURN("return");
 
 	/**
 	 * <p>

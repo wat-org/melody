@@ -306,9 +306,9 @@ public abstract class AwsEc2CloudFireWall {
 					Direction.OUT));
 			return null;
 		}
-		if (rule.getAccess().equals(Access.DENY)) {
-			log.info(Msg
-					.bind(Messages.CommonMsg_SKIP_FWRULE, rule, Access.DENY));
+		if (!rule.getAccess().equals(Access.ALLOW)) {
+			log.info(Msg.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+					rule.getAccess()));
 			return null;
 		}
 		IpPermission perm = new IpPermission();
@@ -333,9 +333,9 @@ public abstract class AwsEc2CloudFireWall {
 					Direction.OUT));
 			return null;
 		}
-		if (rule.getAccess().equals(Access.DENY)) {
-			log.info(Msg
-					.bind(Messages.CommonMsg_SKIP_FWRULE, rule, Access.DENY));
+		if (!rule.getAccess().equals(Access.ALLOW)) {
+			log.info(Msg.bind(Messages.CommonMsg_SKIP_FWRULE, rule,
+					rule.getAccess()));
 			return null;
 		}
 		IpPermission perm = new IpPermission();
