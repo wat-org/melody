@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# JBoss DataGrid ISPN CLI wrapper
+# JBoss DataGrid CLI wrapper
 
 ## Load JBoss DataGrid Service configuration.
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
@@ -23,31 +23,31 @@ fi
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-datagrid-server-6"
-[ -z "${ISPN_CLI}" ]                  && ISPN_CLI="${JBOSS_HOME}/bin/ispn-cli.sh"
+[ -z "${JBOSS_CLI}" ]                 && JBOSS_CLI="${JBOSS_HOME}/bin/jboss-cli.sh"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
 [ -z "${PORT_OFFSET}" ]               && PORT_OFFSET="0"
 
 ## Compute some variables
-MGMT_PORT="$((MGMT_NATIVE_PORT+PORT_OFFSET))"
+MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 CLI_CMD="LANG=\"${LANG}\" \
          JAVA_HOME=\"${JAVA_HOME}\" \
          JAVA_OPTS=\"${JAVA_OPTS} -Djava.io.tmpdir=${JBOSS_BASE_DIR}/tmp/\" \
          JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
-         \"${ISPN_CLI}\" \
-         -c \"${MGMT_IP}\" \"${MGMT_PORT}\""
+         \"${JBOSS_CLI}\" \
+         -c \"${MGMT_ADDR}\""
 
 ###
 ### validate some stuff
-[ -e "${ISPN_CLI}" ] || {
-  echo "File '${ISPN_CLI}' doesn't exists."
-  echo "The variable \$ISPN_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid ISPN CLI script." >&2
+[ -e "${JBOSS_CLI}" ] || {
+  echo "File '${JBOSS_CLI}' doesn't exists."
+  echo "The variable \$JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
   exit 1
 }
 
-[ -x "${ISPN_CLI}" ] || {
-  echo "File '${ISPN_CLI}' is not executable."
-  echo "The variable \$ISPN_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine ISPN CLI script." >&2
+[ -x "${JBOSS_CLI}" ] || {
+  echo "File '${JBOSS_CLI}' is not executable."
+  echo "The variable \$JBOSS_CLI must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss DataGrid Engine CLI script." >&2
   exit 1
 }
 

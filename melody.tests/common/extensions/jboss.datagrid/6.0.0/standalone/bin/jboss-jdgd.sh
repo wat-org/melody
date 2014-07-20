@@ -22,13 +22,13 @@ JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 
 ## Validate some stuff.
 if [ -z "${JBOSS_BASE_DIR}" ]; then
-  echo "Variable JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
+  echo "Variable \$JBOSS_BASE_DIR is not defined or empty. It should contain the JBoss DataGrid instance's base dir." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
   exit 1
 fi
 
 if [ -z "${JDG_USER}" ]; then
-  echo "Variable JDG_USER is not defined or empty. It should contain the JBoss DataGrid instance's user owner." >&2
+  echo "Variable \$JDG_USER is not defined or empty. It should contain the JBoss DataGrid instance's user owner." >&2
   echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
   exit 1
 fi
@@ -445,7 +445,7 @@ case "$1" in
       ;;
   *)
       ## If no parameters are given, print which are available.
-      echo "Usage: $0 {start [--admin-only] | stop | status | restart [--admin-only] | start-async [--admin-only] | restart-async [--admin-only] | start-async-tail [--admin-only] | restart-async-tail [--admin-only] | tdump | hdump}"
+      echo "Usage: $0 { [re]start[-async[-tail]] [--admin-only] | stop | status | tdump | hdump }"
       exit 1
       ;;
 esac

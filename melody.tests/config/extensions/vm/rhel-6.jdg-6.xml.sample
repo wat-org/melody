@@ -19,6 +19,9 @@
 			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.1" version="6.2.1">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" version="6.3.0">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
 			<packages>
 				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
 			</packages>

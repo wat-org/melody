@@ -48,13 +48,13 @@ VAULT_CMD="LANG=\"${LANG}\" \
 ### validate some stuff
 [ -e "${JBOSS_VAULT}" ] || {
   echo "File '${JBOSS_VAULT}' doesn't exists."
-  echo "The variable JBOSS_VAULT must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Vault script." >&2
+  echo "The variable \$JBOSS_VAULT must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss EAP Engine Vault script." >&2
   exit 1
 }
 
 [ -x "${JBOSS_VAULT}" ] || {
   echo "File '${JBOSS_VAULT}' is not executable."
-  echo "The variable JBOSS_VAULT must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss Engine Vault script." >&2
+  echo "The variable \$JBOSS_VAULT must be defined defined in the file '${JBOSS_CONF}' and must point to the JBoss EAP Engine Vault script." >&2
   exit 1
 }
 
