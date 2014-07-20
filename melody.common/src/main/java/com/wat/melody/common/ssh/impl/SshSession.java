@@ -439,6 +439,12 @@ public class SshSession implements ISshSession {
 		return channel;
 	}
 
+	/*
+	 * TODO : logrotate pour console.log, access.log et gc.log
+	 * 
+	 * TODO : rotation manuelle au démarrage de console.log, access.log et
+	 * gc.log : il ne faut pas perdre le precedent fichier
+	 */
 	public ChannelSftp openSftpChannel() throws InterruptedException {
 		if (!isConnected()) {
 			throw new IllegalStateException("session: Not accepted. "
@@ -456,6 +462,8 @@ public class SshSession implements ISshSession {
 				throw new WrapperInterruptedException(
 						"open sftp channel interrupted", Ex.getCause());
 			}
+			// TODO : should handle reconnect ?
+			// on com.jcraft.jsch.JSchException: failed to send channel request
 			throw new RuntimeException(
 					"Failed to connect a JSch 'sftp' Channel.", Ex);
 		}
