@@ -4,7 +4,7 @@ So we must use XMLRPC api !
 Regarding the version of the remote RHN server, some of these functions may be deprecated ... 
 This script should branch through different function call regarding the version of the API exposed by the RHN server. 
 
-
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #!/usr/bin/python
 
 import xmlrpclib
@@ -13,10 +13,22 @@ import sys
 # should parse all these arguments via command line 
 TARGET_CHANNEL="rhel-x86_64-server-6.4.z"
 
-SYSTEM_ID=1029972918
+## Define the Red Hat Satellite Account to use
+#RHN_SERVERIP="<my-satellite-fqdn-or-ip-address>"
+#RHN_LOGIN="<my-rhn-login>"
+#RHN_PASSWORD="<my-rhn-pwd>"
+
+## sample
 RHN_SERVERIP="rhn.redhat.com"
-RHN_LOGIN="rh-gs-gcornet"
-RHN_PASSWORD="Rf%9cRgf7"
+RHN_LOGIN="raoul"
+RHN_PASSWORD="crazyPassImTheOneWhoKnow"
+
+
+## Define the SystemID to alter
+#SYSTEM_ID=<my-systemid>
+
+## sample
+SYSTEM_ID=1029972918
 
 
 client = xmlrpclib.Server("https://"+RHN_SERVERIP+"/rpc/api", verbose=0)
