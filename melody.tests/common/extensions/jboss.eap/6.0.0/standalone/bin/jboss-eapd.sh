@@ -57,6 +57,7 @@ fi
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
 [ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
+[ -x "/usr/sbin/ss" ]                 && TSCMD="/usr/sbin/ss -punta"              || TSCMD="/bin/netstat -punta"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${JBOSS_CONSOLE_LOG}" ]         && JBOSS_CONSOLE_LOG="/var/log/jboss-eap/console.log"
 [ -z "${STARTUP_WAIT}" ]              && STARTUP_WAIT=30
@@ -120,7 +121,7 @@ __sleep() {
 ###
 ### get the pid of the jboss server
 get_pid() {
-  echo $(pgrep -u ${JBOSS_USER} -f "(jboss.server.base.dir=${JBOSS_BASE_DIR//[+*.^$\[\]\{\}]/.}\s).*(jboss.server.name=${SERVER_NAME//[+*.^$\[\]\{\}]/.}\s)|\$2.*\$1")
+  echo $(\pgrep -u ${JBOSS_USER} -f "(jboss.server.base.dir=${JBOSS_BASE_DIR//[+*.^$\[\]\{\}]/.}\s).*(jboss.server.name=${SERVER_NAME//[+*.^$\[\]\{\}]/.}\s)|\$2.*\$1")
 }
 
 
@@ -138,12 +139,12 @@ validate_process() {
   # is the process running ?
   [ "x$(get_pid)" != "x" ] || {
     failure
-    echo
-    echo "------------------------------------"
-    echo "Process ${SERVICE_NAME} is not running ..."
-    echo "------------------------------------"
-    echo
-    display_error_log
+    echo >&2
+    echo "------------------------------------" >&2
+    echo "Process ${SERVICE_NAME} is not running ..." >&2
+    echo "------------------------------------" >&2
+    echo >&2
+    display_error_log >&2
     return 1
   }
 
@@ -157,7 +158,7 @@ validate_server_state() {
   local starttime=$(date "+%s")
   local listening=0
   while [ ${listening} = 0 -a $((STARTUP_WAIT-$(($(date "+%s")-starttime)))) -gt 0 ]; do
-    netstat -lan | grep -E " ${MGMT_ADDR//[+*.^$\[\]\{\}]/.} " 1>/dev/null && { listening=1; break; }
+    ${TSCMD} | \grep -E " ${MGMT_ADDR//[+*.^$\[\]\{\}]/.} " 1>/dev/null && { listening=1; break; }
     sleep 1
     # maybe the process is no more active, which means there was an error
     validate_process || return $?
@@ -188,25 +189,30 @@ validate_server_state() {
   done
   [ ${operational} = 1 ] || {
     failure
-    echo
-    echo "------------------------------------"
-    echo "${SERVICE_NAME} CLI is still not operational after ${STARTUP_WAIT}s ..."
-    echo
-    echo "WHAT TO DO :"
-    echo "  The startup timeout may be too short or the CLI configuration contains error(s)."
-    echo "  You should take a look at the server log."
-    echo "  If the server log show some problems, you should correct them and restart the server."
-    echo "  If the server log don't show any problem, you should increase the startup timeout."
-    echo "------------------------------------"
-    echo
-    display_error_log
+    echo >&2
+    echo "------------------------------------" >&2
+    echo "${SERVICE_NAME} CLI is still not operational after ${STARTUP_WAIT}s ..." >&2
+    echo >&2
+    echo "WHAT TO DO :" >&2
+    echo "  The startup timeout may be too short or the CLI configuration contains error(s)." >&2
+    echo "  You should take a look at the server log." >&2
+    echo "  If the server log show some problems, you should correct them and restart the server." >&2
+    echo "  If the server log don't show any problem, you should increase the startup timeout." >&2
+    echo "------------------------------------" >&2
+    echo >&2
+    display_error_log >&2
     return 1
   }
 
   # loop while the server-state equal is equal to starting
   local started=0
   while [ ${started} = 0 -a $((STARTUP_WAIT-$(($(date "+%s")-starttime)))) -gt 0 ]; do
-    "${JBOSS_CLI_WRAPPER}" --command="read-attribute server-state" | grep starting 1>/dev/null || { started=1; break; }
+    res=$("${JBOSS_CLI_WRAPPER}" --command="read-attribute server-state" 2>&1)
+    # if the cli command succeed 
+    [ $? = 0 ] && {
+      # if status is different than 'starting' => break the loop
+      echo $res | \grep starting 1>/dev/null || { started=1; break; }
+    }
     sleep 1
     # maybe the process is no more active, which means there was an error
     validate_process || return $?
@@ -232,12 +238,12 @@ validate_server_state() {
   # JBREM000201: Received invalid message on Remoting connection": discarded because it should be a WARN
   # JBAS014612: discard CLI + osgi related errors: 'Operation ("add") failed ... osgi is already registered': discarded because it is a bug in startup sequence, which lead to duplicate osgi loading
   # JBAS014784: discard osgi related errors: 'Failed executing subsystem osgi boot operations': discarded for the same reason
-  cat "${JBOSS_CONSOLE_LOG}"   | \
-  grep -v "ERROR.*JBREM000200" | \
-  grep -v "ERROR.*JBREM000201" | \
-  grep -v "ERROR.*JBAS014612.*osgi.*already.*registered" |  \
-  grep -v "ERROR.*JBAS014784" |  \
-  grep -iE "[ \[](ERROR|FATAL)" 1>/dev/null && {
+  \cat "${JBOSS_CONSOLE_LOG}"   | \
+  \grep -v "ERROR.*JBREM000200" | \
+  \grep -v "ERROR.*JBREM000201" | \
+  \grep -v "ERROR.*JBAS014612.*osgi.*already.*registered" |  \
+  \grep -v "ERROR.*JBAS014784" |  \
+  \grep -iE "[ \[](ERROR|FATAL)" 1>/dev/null && {
     warning
     echo
     echo "------------------------------------"
