@@ -39,9 +39,6 @@ deploy_public_key() {
 
 do_job() {
   local PUBKEY="undefined"
-  # the dns server is not configured quickly when NetworkManager is enabled
-  # so we wait a little
-  pidof NetworkManager 1>/dev/null && sleep 5
 
   while [ 1 ] ; do
     get_public_key
@@ -50,5 +47,5 @@ do_job() {
   done
 }
 
-do_job &
+do_job </dev/null 1>/dev/null 2>&1 &
 echo $! > /var/run/lvcd.pid

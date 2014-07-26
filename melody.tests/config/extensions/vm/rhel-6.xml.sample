@@ -26,12 +26,12 @@
 				<package arch="noarch" name="libX11-common"/>
 			</packages>
 			<services>
+				<!-- for Melody key pair deployment -->
+				<service name="lvcd" state="on"/>
 				<!-- for time synchro -->
 				<service name="ntpd" state="on"/>
 				<!-- firewall is ensured by virtualization layer -->
 				<service name="iptables" state="off"/>
-				<!-- for Melody key pair deployment -->
-				<service name="lvcd" state="on"/>
 			</services>
 		</model>
 	</models>
