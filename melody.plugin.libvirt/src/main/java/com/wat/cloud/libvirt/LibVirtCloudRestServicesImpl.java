@@ -36,16 +36,8 @@ public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 	public Response getInstanceRegisteredPublicKey() {
 		log.trace("Receive 'GetRegisteredPublicKey' request from remote "
 				+ "system '" + request.getRemoteAddr() + "'.");
-		String key = null;
-		switch (getClientOsFamilly()) {
-		case LINUX:
-			key = LibVirtCloudKeyPair.getInstancePublicKey(request
-					.getRemoteAddr());
-			break;
-		case WINDOWS:
-			key = "Not supported yet";
-			break;
-		}
+		String key = LibVirtCloudKeyPair.getInstancePublicKey(request
+				.getRemoteAddr());
 		if (key == null) {
 			log.debug("Failed to respond to 'GetRegisteredPublicKey' "
 					+ "request initiated by remote system '"
@@ -59,20 +51,5 @@ public class LibVirtCloudRestServicesImpl implements LibVirtCloudRestServices {
 		}
 		return Response.ok(key).build();
 	}
-
-	private OS_FAMILLY getClientOsFamilly() {
-		String userAgent = request.getHeader("User-Agent");
-		if (userAgent.contains("linux")) {
-			return OS_FAMILLY.LINUX;
-		} else if (userAgent.contains("redhat")) {
-			return OS_FAMILLY.LINUX;
-		} else {
-			return OS_FAMILLY.WINDOWS;
-		}
-	}
-
-	private enum OS_FAMILLY {
-		LINUX, WINDOWS
-	};
 
 }
