@@ -309,12 +309,11 @@ public class SshManagedSession implements ISshSession {
 		int res = -1;
 
 		/*
-		 * key deployment is protected against concurrent execution, on the same
-		 * remote machine, with the same user.
+		 * key deployment is protected against concurrent execution on the same
+		 * remote machine.
 		 */
 
-		String protectionID = getConnectionDatas().getHost().getAddress() + "-"
-				+ getUserDatas().getLogin();
+		String protectionID = getConnectionDatas().getHost().getAddress();
 		Object protection = null;
 		synchronized (_protectionTable) {
 			protection = _protectionTable.get(protectionID);
