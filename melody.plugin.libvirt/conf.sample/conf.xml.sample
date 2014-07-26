@@ -4,11 +4,11 @@
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6.3-minimal.template" name="RHEL-6.3-minimal">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6.3-minimal-vda.template" device="/dev/vda" src-file="/VirtualMachines/RHEL-6.3-minimal-template-vda.img"/>
 		</image>
-		<image descriptor="/Cloud/libvirt/templates/RHEL-6.3-eap-6.0.template" name="RHEL-6.3-eap-6.0">
-			<disk descriptor="/Cloud/libvirt/templates/RHEL-6.3-eap-6.0-vda.template" device="/dev/vda" src-file="/VirtualMachines/RHEL-6.3-eap-6.0-template-vda.img"/>
-		</image>
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6.3-workstation.template" name="RHEL-6.3-workstation">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6.3-workstation-vda.template" device="/dev/vda" src-file="/VirtualMachines/RHEL-6.3-workstation-template-vda.img"/>
+		</image>
+		<image descriptor="/Cloud/libvirt/templates/RHEL-6.3-eap-6.0.template" name="RHEL-6.3-eap-6.0">
+			<disk descriptor="/Cloud/libvirt/templates/RHEL-6.3-eap-6.0-vda.template" device="/dev/vda" src-file="/VirtualMachines/RHEL-6.3-eap-6.0-template-vda.img"/>
 		</image>
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6.3-jdg-6.0.1.template" name="RHEL-6.3-jdg-6.0.1">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6.3-jdg-6.0.1-vda.template" device="/dev/vda" src-file="/VirtualMachines/RHEL-6.3-jdg-6.0.1-template-vda.img"/>
@@ -25,11 +25,23 @@
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6-minimal.template" name="RHEL-6-minimal">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6-minimal-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-6-minimal-template-vda"/>
 		</image>
+		<image descriptor="/Cloud/libvirt/templates/RHEL-6-workstation.template" name="RHEL-6-workstation">
+			<disk descriptor="/Cloud/libvirt/templates/RHEL-6-workstation-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-6-workstation-template-vda"/>
+		</image>
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6-eap-6.template" name="RHEL-6-eap-6">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6-eap-6-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-6-eap-6-template-vda"/>
 		</image>
 		<image descriptor="/Cloud/libvirt/templates/RHEL-6-jdg-6.template" name="RHEL-6-jdg-6">
 			<disk descriptor="/Cloud/libvirt/templates/RHEL-6-jdg-6-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-6-jdg-6-template-vda"/>
+		</image>
+		<image descriptor="/Cloud/libvirt/templates/RHS-2.template" name="RHS-2">
+			<disk descriptor="/Cloud/libvirt/templates/RHS-2-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHS-2-template-vda"/>
+		</image>
+		<image descriptor="/Cloud/libvirt/templates/RHEL-7-minimal.template" name="RHEL-7-minimal">
+			<disk descriptor="/Cloud/libvirt/templates/RHEL-7-minimal-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-7-minimal-template-vda"/>
+		</image>
+		<image descriptor="/Cloud/libvirt/templates/RHEL-7-eap-6.template" name="RHEL-7-eap-6">
+			<disk descriptor="/Cloud/libvirt/templates/RHEL-7-eap-6-vda.template" device="/dev/vda" src-disk="/dev/LibVirtLvmSP/RHEL-7-eap-6-template-vda"/>
 		</image>
 	</images>
 

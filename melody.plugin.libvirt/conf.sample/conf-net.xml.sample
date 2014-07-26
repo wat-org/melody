@@ -45,11 +45,11 @@
 			<host allocated="true" ip="192.168.122.101" mac="52:54:00:00:01:01" name="ad.cloud.local"/>
 
 			<!-- virtual machine templates (directory backed volumes)-->
-			<host allocated="true" ip="192.168.122.151" mac="52:54:00:01:00:51" name="RHEL-6.3-minimal-template.cloud.local"/>
-			<host allocated="true" ip="192.168.122.152" mac="52:54:00:01:00:52" name="RHEL-6.3-workstation-template.cloud.local"/>
-			<host allocated="true" ip="192.168.122.153" mac="52:54:00:01:00:53" name="RHEL-6.3-eap-6.0-template.cloud.local"/>
-			<host allocated="true" ip="192.168.122.154" mac="52:54:00:01:00:54" name="RHEL-6.3-jdg-6.0.1-template.cloud.local"/>
-			<host allocated="true" ip="192.168.122.155" mac="52:54:00:01:00:55" name="RHS-2.1-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.151" keypair-name="id_rsa" mac="52:54:00:01:00:51" name="RHEL-6.3-minimal-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.152" keypair-name="id_rsa" mac="52:54:00:01:00:52" name="RHEL-6.3-workstation-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.153" keypair-name="id_rsa" mac="52:54:00:01:00:53" name="RHEL-6.3-eap-6.0-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.154" keypair-name="id_rsa" mac="52:54:00:01:00:54" name="RHEL-6.3-jdg-6.0.1-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.155" keypair-name="id_rsa" mac="52:54:00:01:00:55" name="RHS-2.1-template.cloud.local"/>
 			<host allocated="true" ip="192.168.122.156" mac="52:54:00:01:00:56" name="WINSRV-2008-R2-template.cloud.local"/>
 			<host allocated="true" ip="192.168.122.157" mac="52:54:00:01:00:57" name="WINXP-template.cloud.local"/>
 
@@ -58,6 +58,12 @@
 			<host allocated="true" ip="192.168.122.172" keypair-name="id_rsa" mac="52:54:00:01:00:72" name="RHEL-6-workstation-template.cloud.local"/>
 			<host allocated="true" ip="192.168.122.173" keypair-name="id_rsa" mac="52:54:00:01:00:73" name="RHEL-6-eap-6-template.cloud.local"/>
 			<host allocated="true" ip="192.168.122.174" keypair-name="id_rsa" mac="52:54:00:01:00:74" name="RHEL-6-jdg-6-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.175" keypair-name="id_rsa" mac="52:54:00:01:00:75" name="RHS-2-template.cloud.local"/>
+			
+			<host allocated="true" ip="192.168.122.181" keypair-name="id_rsa" mac="52:54:00:01:00:81" name="RHEL-7-minimal-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.182" keypair-name="id_rsa" mac="52:54:00:01:00:82" name="RHEL-7-workstation-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.183" keypair-name="id_rsa" mac="52:54:00:01:00:83" name="RHEL-7-eap-6-template.cloud.local"/>
+			<host allocated="true" ip="192.168.122.184" keypair-name="id_rsa" mac="52:54:00:01:00:84" name="RHEL-7-jdg-6-template.cloud.local"/>
 		</dhcp>
 	</ip>
 </network>

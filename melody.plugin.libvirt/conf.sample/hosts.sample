@@ -37,3 +37,9 @@
 192.168.122.172  RHEL-6-workstation-template.cloud.local
 192.168.122.173  RHEL-6-eap-6-template.cloud.local
 192.168.122.174  RHEL-6-jdg-6-template.cloud.local
+192.168.122.175  RHS-2-template.cloud.local
+
+192.168.122.181  RHEL-7-minimal-template.cloud.local
+192.168.122.182  RHEL-7-workstation-template.cloud.local
+192.168.122.183  RHEL-7-eap-6-template.cloud.local
+192.168.122.184  RHEL-7-jdg-6-template.cloud.local
