@@ -3,13 +3,13 @@
 
 <sequence basedir="." >
 
-    <property name="apache_httpd_node"          value="apache-httpd"/>
-    <property name="backend_instance_node"      value="jboss-eap-instance"/>
+    <property name="apache_httpd_node"             value="apache-httpd"/>
+    <property name="backend_instance_node"         value="jboss-eap-instance"/>
 
-    <property name="instance_selector"          value="./environment//instance"/>
-    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/§[apache_httpd_node]§'))) and not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) and melody:getNetworkActivationHost(.)!=''"/>
-    <property name="instance_match_criteria"    value="1=1"/>
+    <property name="instance_selector"             value="./environment//instance"/>
+    <property name="instance_exists_criteria"      value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria"    value="not(empty(melody:getHeritedContent(., '/§[apache_httpd_node]§'))) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_match_criteria"       value="1=1"/>
 
     <order name="configure_apache_httpd">
         <echo message="Configuring all Apache HTTP Server ..." />
@@ -23,15 +23,15 @@
             <property name="httpdOwnerGroup"       value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[httpdOwnerLogin]§&quot;]/@ref-group-name') ]§" />
             <property name="httpdOwnerGroupId"     value="§[ melody:getHeritedContent(§[srv]§, '/credentials/group[@name=&quot;§[httpdOwnerGroup]§&quot;]/@id') ]§" />
 
-            <property name="httpdListenDevice"      value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@device') ]§" />
-            <property name="httpdListenDevice"      value="§[ if (string-length('§[httpdListenDevice]§')=0) then 'eth0' else '§[httpdListenDevice]§' ]§" />
-            <property name="httpdListenPort"        value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@port') ]§" />
-            <property name="httpdListenPort"        value="§[ if (string-length('§[httpdListenPort]§')=0) then '80' else '§[httpdListenPort]§' ]§" />
-            <property name="httpdListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@ip ]§" />
-            <property name="httpdListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@fqdn ]§" />
+            <property name="httpdListenDevice"     value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@device') ]§" />
+            <property name="httpdListenDevice"     value="§[ if (string-length('§[httpdListenDevice]§')=0) then 'eth0' else '§[httpdListenDevice]§' ]§" />
+            <property name="httpdListenPort"       value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@port') ]§" />
+            <property name="httpdListenPort"       value="§[ if (string-length('§[httpdListenPort]§')=0) then '80' else '§[httpdListenPort]§' ]§" />
+            <property name="httpdListenIp"         value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@ip ]§" />
+            <property name="httpdListenFqdn"       value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@fqdn ]§" />
 
-            <property name="httpdLogLevel"          value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/log/@level') ]§" />
-            <property name="httpdLogLevel"          value="§[ if (string-length('§[httpdLogLevel]§')=0) then 'warn' else '§[httpdLogLevel]§' ]§" />
+            <property name="httpdLogLevel"         value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/log/@level') ]§" />
+            <property name="httpdLogLevel"         value="§[ if (string-length('§[httpdLogLevel]§')=0) then 'warn' else '§[httpdLogLevel]§' ]§" />
 
             <!-- configure apache http server -->
             <upload host="§[ip]§" login="root" keypair-name="§[kp]§" >
@@ -64,8 +64,8 @@
             <foreach    items="melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/applications/application')"
                         item-name="application"
                         max-par="1">
-                <property name="appli.name"          value="§[§[application]§/@name]§" />
-                <property name="appli.worker"        value="§[§[application]§/@worker]§" />
+                <property name="appli.name"        value="§[§[application]§/@name]§" />
+                <property name="appli.worker"      value="§[§[application]§/@worker]§" />
 
                 <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
                 <echo message="+ Application '§[appli.name]§' successfully configured on Apache Http Server on '§[§[srv]§/@instance-id]§'." />

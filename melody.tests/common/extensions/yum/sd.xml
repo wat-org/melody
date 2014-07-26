@@ -5,7 +5,7 @@
 
     <property name="instance_selector"          value="./environment//instance"/>
     <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/tags/tag[@name=&quot;OS&quot; and @value=&quot;linux&quot;]'))) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_eligible_criteria" value="not(empty(melody:getHeritedContent(., '/os[@name=&quot;rhel&quot;]'))) and melody:getNetworkActivationHost(.)!=''"/>
     <property name="instance_match_criteria"    value="1=1"/>
 
     <property name="package_selector"           value="/packages/package"/>

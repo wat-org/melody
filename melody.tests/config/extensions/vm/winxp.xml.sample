@@ -5,9 +5,7 @@
 	<models>
 		<model instance-type="m1.small" keypair-name="id_rsa" name="winxp">
 			<network-management activation-enabled="false" activation-protocol="winrm"/>
-			<tags>
-				<tag name="OS" value="windows"/>
-			</tags>
+			<os name="windows" version="xp"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" name="rdp" to-ports="389"/>
 			</firewall>

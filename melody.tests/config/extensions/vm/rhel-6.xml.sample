@@ -5,9 +5,7 @@
 	<models>
 		<model instance-type="t1.micro" keypair-name="id_rsa" name="rhel-6">
 			<network-management activation-protocol="ssh"/>
-			<tags>
-				<tag name="OS" value="linux"/>
-			</tags>
+			<os name="rhel" version="6"/>
 			<firewall>
 				<ssh access="allow" directions="in" from-ips="all" to-ports="22"/>
 			</firewall>
@@ -32,6 +30,8 @@
 				<service name="ntpd" state="on"/>
 				<!-- firewall is ensured by virtualization layer -->
 				<service name="iptables" state="off"/>
+				<!-- for Melody key pair deployment -->
+				<service name="lvcd" state="on"/>
 			</services>
 		</model>
 	</models>
