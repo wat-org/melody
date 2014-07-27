@@ -18,10 +18,10 @@ sed -i -E 's/^enabled\s?=.*$/enabled = 0/g' /etc/yum/pluginconf.d/rhnplugin.conf
 sed -i -E 's/^enabled\s?=.*$/enabled = 1/g' /etc/yum/pluginconf.d/subscription-manager.conf
 
 # need to install iptables.service
-yum install iptables-services
+yum install -y iptables-services
 
 # remove rhn because we are using rhsm (will also remove rhn-check, rhn-setup, yum-rhn-plugin)
-yum remove rhnsd
+yum remove -y rhnsd
 
 # update everything
 yum update -y

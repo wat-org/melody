@@ -1,0 +1,12 @@
+<volume>
+  <name>§[vmName]§-vda</name>
+  <source>
+    <device path='/dev/HelpDeskRHEL6/LibVirtLvmBase'/>
+  </source>
+  <capacity unit='bytes'>8589934592</capacity>
+  <allocation unit='bytes'>8589934592</allocation>
+  <target>
+    <path>/dev/LibVirtLvmSP/§[vmName]§-vda</path>
+  </target>
+</volume>
+
