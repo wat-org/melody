@@ -97,6 +97,7 @@
             <!-- copy the entire engine, except 'modules' into the JBoss EAP instance directory tree -->
             <exec command="umask 0077" />
             <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
+            <exec command="chown -R §[jbossInstanceOwner]§: §[jbossInstancePath]§" />
         </ssh>
 
         <!-- JBoss Configuration update -->
@@ -144,15 +145,15 @@ umask 0077
 mkdir -p §[jbossVaultEncDir]§
 mkdir -p $(dirname §[jbossVaultKeystore]§)
 keytool -list -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -storetype JCEKS && {
-  echo "Secret Key '§[jbossVaultKeystoreAlias]§' found in Vault keystore's."
+  echo "Secret Key '§[jbossVaultKeystoreAlias]§' found in Vault keystore."
   exit 0
 }
-echo "Secret Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore. Generating it ..."
 keytool -genseckey -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVaultKeystorePass]§ -keypass §[jbossVaultKeystorePass]§ -alias §[jbossVaultKeystoreAlias]§ -keyalg AES -keysize 256 -storetype JCEKS || {
-  echo "Fail to generate Private Key '§[jbossVaultKeystoreAlias]§' in Vault keystore's !" >&2
+  echo "Fail to generate Private Key '§[jbossVaultKeystoreAlias]§' in Vault keystore !" >&2
   exit 1
 }
-echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault keystore's."
+echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault keystore."
                 ]]>
             </exec>
         </ssh>
@@ -175,13 +176,27 @@ echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault
             <attribute name="name" value="ERROR"/>
         </set-xml-attributes>
 
-        <!-- JBoss Configuration update -->
-        <echo message="[eap.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
+        <echo message="[eap.conf:§[jbossInstanceId]§] Don't want to trace cli errors in the CONSOLE handler" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
+                /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:logger[@name='org.jboss.as.controller.management-operation']
             </elements-selector>
         </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+	            <logger category="org.jboss.as.controller.management-operation" use-parent-handlers="false">
+	                <level name="ERROR"/>
+	                <handlers>
+	                    <handler name="FILE"/>
+	                </handlers>
+	            </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
 
         <!-- JBoss Configuration update -->
         <property name="jbossInstanceMgmtStorePath"     value="§[§[jboss_instance]§/keystore[exists(key[matches(@usage,'management')])]/@path]§" />
@@ -194,7 +209,7 @@ echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault
         <echo message="[eap.conf:§[jbossInstanceId]§] Secure http management console (establish SSL server identity)" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:management/*:security-realms/*:security-realm[@*:name='HttpsManagementRealm']
+                /*:server/*:management/*:security-realms/*:security-realm[@name='HttpsManagementRealm']
             </elements-selector>
         </remove-xml-elements>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
@@ -228,15 +243,15 @@ echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault
 umask 0077
 cd §[jbossInstancePath]§/configuration
 keytool -list -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -alias §[jbossInstanceMgmtKeyAlias]§ && {
-  echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' found in Server keystore's."
+  echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' found in Server keystore."
   exit 0
 }
-echo "Private Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore's. Generating it ..."
+echo "Private Key '§[jbossVaultKeystoreAlias]§' not found in Vault keystore. Generating it ..."
 keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossInstanceMgmtStorePwd]§ -keypass §[jbossInstanceMgmtKeyPwd]§ -keyalg RSA -alias §[jbossInstanceMgmtKeyAlias]§ -validity 365 -dname "§[jbossInstanceMgmtKeyDName]§" || {
-  echo "Fail to generate Private Key '§[jbossInstanceMgmtKeyAlias]§' in Server keystore's !" >&2
+  echo "Fail to generate Private Key '§[jbossInstanceMgmtKeyAlias]§' in Server keystore !" >&2
   exit 1
 }
-echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Server keystore's."
+echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Server keystore."
                 ]]>
             </exec>
         </ssh>
@@ -272,12 +287,12 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
         <echo message="[eap.conf:§[jbossInstanceId]§] Enable local authentication for the CLI" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication/*:local
+                /*:server/*:management/*:security-realms/*:security-realm[@name='ManagementRealm']/*:authentication/*:local
             </elements-selector>
         </remove-xml-elements>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:management/*:security-realms/*:security-realm[@*:name='ManagementRealm']/*:authentication
+                /*:server/*:management/*:security-realms/*:security-realm[@name='ManagementRealm']/*:authentication
             </elements-selector>
             <node-content>
                 <![CDATA[
@@ -287,6 +302,13 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
         </append-xml-elements>
 
         <!-- JBoss Configuration update -->
+        <echo message="[eap.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
+            </elements-selector>
+        </remove-xml-elements>
+
         <echo message="[eap.conf:§[jbossInstanceId]§] Enable access log" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>

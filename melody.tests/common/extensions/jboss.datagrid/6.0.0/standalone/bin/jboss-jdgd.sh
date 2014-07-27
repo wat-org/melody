@@ -68,6 +68,7 @@ fi
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
+[ -z "${JBOSS_GSSS}" ]                && JBOSS_GSSS="${JBOSS_BASE_DIR}/configuration/get-server-state.cli"
 [ -z "${JBOSS_HEAP_DUMP_PATH}" ]      && JBOSS_HEAP_DUMP_PATH="${JBOSS_BASE_DIR}/log"
 [ -z "${LISTEN_IP}" ]                 && LISTEN_IP="127.0.0.1"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
@@ -182,7 +183,7 @@ validate_server_state() {
   # is the connection to the cli possible ?
   local operational=0
   while [ ${operational} = 0 -a $((STARTUP_WAIT-$(($(date "+%s")-starttime)))) -gt 0 ]; do
-    [ -w "${JBOSS_BASE_DIR}/tmp/auth/" ] && "${JBOSS_CLI_WRAPPER}" --command="read-attribute server-state" 1>/dev/null 2>&1 && { operational=1; break; }
+    [ -w "${JBOSS_BASE_DIR}/tmp/auth/" ] && "${JBOSS_CLI_WRAPPER}" --file="${JBOSS_GSSS}" 1>/dev/null 2>&1 && { operational=1; break; }
     sleep 1
     # maybe the process is no more active, which means there was an error
     validate_process || return $?
@@ -207,7 +208,7 @@ validate_server_state() {
   # loop while the server-state equal is equal to starting
   local started=0
   while [ ${started} = 0 -a $((STARTUP_WAIT-$(($(date "+%s")-starttime)))) -gt 0 ]; do
-    "${JBOSS_CLI_WRAPPER}" --command="read-attribute server-state" | \grep starting 1>/dev/null || { started=1; break; }
+    "${JBOSS_CLI_WRAPPER}" --file="${JBOSS_GSSS}" | \grep starting 1>/dev/null || { started=1; break; }
     sleep 1
     # maybe the process is no more active, which means there was an error
     validate_process || return $?
