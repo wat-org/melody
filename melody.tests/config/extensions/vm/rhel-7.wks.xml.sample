@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.wks">
+			<credentials>
+				<credential login="administrator" password="XXXXXXXXXXX"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

@@ -27,8 +27,9 @@ yum remove -y rhnsd
 yum update -y
 
 # copy lvcd inside
-chkconfig add lvcd
+chkconfig --add lvcd
 chkconfig lvcd on
+systemctl enable lvcd
 
 # sshd must start after lvcd
 # vi /lib/systemd/system/sshd.service

@@ -1,0 +1,84 @@
+to increase the disk size of the libvirt domain :
+
+1/stop the libvirt domain
+
+2/ resize th volume
+	OPTION 1 : disk backed volume
+		be root
+		  sudo su -
+		
+		go into the libvirt storage pool
+		  cd /VirtualMachines/
+		  
+		identify the disk image
+		  ll *.img
+		  
+		resize the disk image file
+		  truncate --size=+2G storage-vda.img
+		
+		refresh libvirt
+		  virsh pool-refresh default
+	  
+	OPTION 2 : LVM backed volume
+		be root
+		  sudo su -
+		
+		resize the LV
+		  lvresize -L +1G /dev/LibVirtLvmSP/storage-vda
+		
+		refresh libvirt
+		  virsh pool-refresh sp-lvm
+  
+
+3/ start the libvirt domain
+
+4/ resize the disk on the domain
+	OPTION 1 : create a new primary partition and extends the VG
+		create a new primary partition with fdisk
+		 fdisk /dev/vda
+		  p => display
+		  n => new
+		   p => primary
+		   3 => partition number
+		   XXX => boundaries
+		   YYY => boundaries
+		  w => write
+		
+		reboot the system OR run 'partprobe'
+		
+		create a physical partition
+		  pvcreate /dev/vda3
+		
+		extend the volume group
+		  vgextends my_vg /dev/vda3
+		  
+		extend the logical volume
+		  lvresize -l+100%FREE /dev/my_vg/my_lv 
+		
+		resize the partition
+		  resize2fs /dev/my_vg/my_lv
+
+	OPTION 2 : extend the primary partition
+		delete and recreate (bigger) the partition with fdisk
+		 fdisk /dev/vda
+		  p => display
+		  d => delete
+		  2 => partition number 2
+		  n => new 
+		   p => primary
+		   2 => partition number
+		   XXX => boundaries
+		   YYY => boundaries
+		  w => write
+		
+		reboot the system OR run 'partprobe'
+		
+		resize a physical partition
+		  pvresize /dev/vda2
+		  
+		extend the logical volume
+		  lvresize -l+100%FREE /dev/my_vg/my_lv 
+		
+		resize the partition
+		  resize2fs /dev/my_vg/my_lv
+		  

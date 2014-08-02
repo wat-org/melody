@@ -3,7 +3,7 @@
   <source>
   </source>
   <capacity unit='bytes'>8589934592</capacity>
-  <allocation unit='bytes'>6018191360</allocation>
+  <allocation unit='bytes'>6021627904</allocation>
   <target>
     <format type='raw'/>
   </target>
