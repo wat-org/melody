@@ -69,6 +69,28 @@
         </foreach>
     </order>
 
+    <!-- start services on WINDOWS SERVER 2008 R2 -->
+    <order name="start_services_windows_server-2008" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;on&quot; and §[service_match_criteria]§ ]')"
+                    item-name="service"
+                    max-par="1">
+            <property name="servicename" value="§[§[service]§/@name]§" />
+
+            <echo message="+ Fail to start service '§[servicename]§' on server '§[§[srv]§/@instance-id]§' : not supported yet on WINDOWS SERVER 2008." />
+        </foreach>
+    </order>
+
+    <!-- start services on WINDOWS XP -->
+    <order name="start_services_windows_xp" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;on&quot; and §[service_match_criteria]§ ]')"
+                    item-name="service"
+                    max-par="1">
+            <property name="servicename" value="§[§[service]§/@name]§" />
+
+            <echo message="+ Fail to start service '§[servicename]§' on server '§[§[srv]§/@instance-id]§' : not supported yet on WINDOWS XP." />
+        </foreach>
+    </order>
+
 
 
 
@@ -117,6 +139,28 @@
             </ssh>
 
             <echo message="+ Service '§[servicename]§' successfully stopped on server '§[§[srv]§/@instance-id]§'." />
+        </foreach>
+    </order>
+
+    <!-- stop services on WINDOWS SERVER 2008 R2 -->
+    <order name="stop_services_windows_server-2008" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;on&quot; and §[service_match_criteria]§ ]')"
+                    item-name="service"
+                    max-par="1">
+            <property name="servicename" value="§[§[service]§/@name]§" />
+
+            <echo message="+ Fail to stop service '§[servicename]§' on server '§[§[srv]§/@instance-id]§' : not supported yet on WINDOWS SERVER 2008." />
+        </foreach>
+    </order>
+
+    <!-- stop services on WINDOWS XP -->
+    <order name="stop_services_windows_xp" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '§[service_selector]§[ @state=&quot;on&quot; and §[service_match_criteria]§ ]')"
+                    item-name="service"
+                    max-par="1">
+            <property name="servicename" value="§[§[service]§/@name]§" />
+
+            <echo message="+ Fail to stop service '§[servicename]§' on server '§[§[srv]§/@instance-id]§' : not supported yet on WINDOWS XP." />
         </foreach>
     </order>
 
