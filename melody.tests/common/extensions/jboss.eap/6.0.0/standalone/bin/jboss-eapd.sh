@@ -98,7 +98,7 @@ JBOSS_SCRIPT="LANG=\"${LANG}\" \
               -Djboss.management.native.port=${MGMT_NATIVE_PORT} \
               -c \"${JBOSS_CONFIG}\" \
               ${ADMIN_ONLY_FLAG} \
-              </dev/null >\"${JBOSS_CONSOLE_LOG}\" 2>&1 \
+              </dev/null >>\"${JBOSS_CONSOLE_LOG}\" 2>&1 \
               &"
               # doing this, this background call uses its own stdin, stdout and stderr,
               # which are not the same the caller uses.
@@ -131,6 +131,21 @@ get_pid() {
 display_error_log() {
   echo "An unexpected problem may have cause this situation. Please read log bellow to find more detail about the problem."
   cat "${JBOSS_CONSOLE_LOG}"
+}
+
+
+###
+### rotate of CONSOLE log file
+rotate_console_log() {
+  # if the CONSOLE log file doesn't exits, return with no error
+  [ -f "${JBOSS_CONSOLE_LOG}" ] || return 0
+  # rotate each CONSOLE log file.X into CONSOLE log file.X+1
+  ls -rt "${JBOSS_CONSOLE_LOG}."* 2>/dev/null | awk '{system("mv \""$1"\" \"'${JBOSS_CONSOLE_LOG}'."substr($1,length("'${JBOSS_CONSOLE_LOG}'. "))+1"\"")}'
+  # rotate CONSOLE log file into CONSOLE log file.1
+  mv "${JBOSS_CONSOLE_LOG}" "${JBOSS_CONSOLE_LOG}.1"
+  # only kepp 15 CONSOLE log
+  rm -f "${JBOSS_CONSOLE_LOG}.16"
+  return 0
 }
 
 
@@ -278,7 +293,9 @@ ensure_started() {
   [ "${PURGE_TMP_DIR_AT_STARTUP}" = "true" -a -d "${JBOSS_BASE_DIR}/tmp/" ] && rm -rf "${JBOSS_BASE_DIR}/tmp/"* 1>/dev/null
   [ "${PURGE_DATA_DIR_AT_STARTUP}" = "true" -a -d "${JBOSS_BASE_DIR}/data/" ] && rm -rf "${JBOSS_BASE_DIR}/data/"* 1>/dev/null
 
+  rotate_console_log
   ${CMD_PREFIX} "mkdir -p \"$(dirname "${JBOSS_CONSOLE_LOG}")\""
+  ${CMD_PREFIX} "echo \"$(date "+[%F] [%T,%3N]") Starting ...\" > \"${JBOSS_CONSOLE_LOG}\""
   ${CMD_PREFIX} "${JBOSS_SCRIPT}"
 
   # sleep a little
