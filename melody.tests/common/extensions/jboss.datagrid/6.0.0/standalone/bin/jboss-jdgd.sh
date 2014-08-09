@@ -8,7 +8,7 @@
 ## Source function library.
 . /etc/init.d/functions
 
-## Load JBoss EAP Service configuration.
+## Load JBoss DataGrid Service configuration.
 JBOSS_CONF="$(dirname "$(readlink -f "$0")")/../configuration/jboss-jdgd.conf"
 [ -r "${JBOSS_CONF}" ] || {
   echo "Cannot read configuration file '${JBOSS_CONF}'." >&2
@@ -66,6 +66,7 @@ fi
 [ -z "${JBOSS_START_ADMIN_ONLY}" ]    && JBOSS_START_ADMIN_ONLY="false"
 [ -z "${PURGE_TMP_DIR_AT_STARTUP}" ]  && PURGE_TMP_DIR_AT_STARTUP="true"
 [ -z "${PURGE_DATA_DIR_AT_STARTUP}" ] && PURGE_DATA_DIR_AT_STARTUP="false"
+[ -z "${RUN_SCRIPT}" ]                && RUN_SCRIPT="${JBOSS_HOME}/bin/standalone.sh"
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
@@ -85,13 +86,14 @@ MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 [ "${JBOSS_START_ADMIN_ONLY}" = "true" ] && ADMIN_ONLY_FLAG="--admin-only"
 JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JAVA_HOME=\"${JAVA_HOME}\" \
+              JAVA_OPTS=\"${JDG_JAVA_OPTS}\" \
               JBOSS_HOME=\"${JBOSS_HOME}\" \
               JBOSS_BASE_DIR=\"${JBOSS_BASE_DIR}\" \
               JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
               LISTEN_IP=\"${LISTEN_IP}\" \
               REMOTE_DEBUG_PORT=\"$((REMOTE_DEBUG_PORT+PORT_OFFSET))\" \
               RUN_CONF=\"${RUN_CONF}\" \
-              \"${JBOSS_HOME}/bin/standalone.sh\" \
+              \"${RUN_SCRIPT}\" \
               -b ${LISTEN_IP} \
               -bmanagement ${MGMT_IP} \
               -Djboss.server.name=${SERVER_NAME} \
@@ -224,7 +226,12 @@ validate_server_state() {
   # loop while the server-state equal is equal to starting
   local started=0
   while [ ${started} = 0 -a $((STARTUP_WAIT-$(($(date "+%s")-starttime)))) -gt 0 ]; do
-    "${JBOSS_CLI_WRAPPER}" --file="${JBOSS_GSSS}" | \grep starting 1>/dev/null || { started=1; break; }
+    res=$("${JBOSS_CLI_WRAPPER}" --file="${JBOSS_GSSS}" 2>&1)
+    # if the cli command succeed 
+    [ $? = 0 ] && {
+      # if status is different than 'starting' => break the loop
+      echo $res | \grep starting 1>/dev/null || { started=1; break; }
+    }
     sleep 1
     # maybe the process is no more active, which means there was an error
     validate_process || return $?

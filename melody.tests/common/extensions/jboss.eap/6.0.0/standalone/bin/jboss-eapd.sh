@@ -66,6 +66,7 @@ fi
 [ -z "${JBOSS_START_ADMIN_ONLY}" ]    && JBOSS_START_ADMIN_ONLY="false"
 [ -z "${PURGE_TMP_DIR_AT_STARTUP}" ]  && PURGE_TMP_DIR_AT_STARTUP="true"
 [ -z "${PURGE_DATA_DIR_AT_STARTUP}" ] && PURGE_DATA_DIR_AT_STARTUP="false"
+[ -z "${RUN_SCRIPT}" ]                && RUN_SCRIPT="${JBOSS_HOME}/bin/standalone.sh"
 [ -z "${RUN_CONF}" ]                  && RUN_CONF="${JBOSS_BASE_DIR}/configuration/standalone.conf"
 [ -z "${JBOSS_CONFIG}" ]              && JBOSS_CONFIG="standalone.xml"
 [ -z "${JBOSS_CLI_WRAPPER}" ]         && JBOSS_CLI_WRAPPER="${JBOSS_BASE_DIR}/bin/jboss-cli.sh"
@@ -85,13 +86,14 @@ MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
 [ "${JBOSS_START_ADMIN_ONLY}" = "true" ] && ADMIN_ONLY_FLAG="--admin-only"
 JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JAVA_HOME=\"${JAVA_HOME}\" \
+              JAVA_OPTS=\"${EAP_JAVA_OPTS}\" \
               JBOSS_HOME=\"${JBOSS_HOME}\" \
               JBOSS_BASE_DIR=\"${JBOSS_BASE_DIR}\" \
               JBOSS_MODULEPATH=\"${JBOSS_MODULEPATH}\" \
               LISTEN_IP=\"${LISTEN_IP}\" \
               REMOTE_DEBUG_PORT=\"$((REMOTE_DEBUG_PORT+PORT_OFFSET))\" \
               RUN_CONF=\"${RUN_CONF}\" \
-              \"${JBOSS_HOME}/bin/standalone.sh\" \
+              \"${RUN_SCRIPT}\" \
               -b ${LISTEN_IP} \
               -bmanagement ${MGMT_IP} \
               -Djboss.server.name=${SERVER_NAME} \
