@@ -20,8 +20,15 @@ if [ -z "${JBOSS_BASE_DIR}" ]; then
   exit 1
 fi
 
+if [ -z "${JBOSS_USER}" ]; then
+  echo "Variable \$JBOSS_USER is not defined or empty. It should contain the JBoss EAP Standalone instance's user owner." >&2
+  echo "This variable must be defined defined in the file ${JBOSS_CONF}." >&2
+  exit 1
+fi
+
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
+[ -z "${UMASK}" ]                     && UMASK="0077"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${JBOSS_VAULT}" ]               && JBOSS_VAULT="${JBOSS_HOME}/bin/vault.sh"
 [ -z "${VAULT_ENC_DIR}" ]             && VAULT_ENC_DIR="${JBOSS_BASE_DIR}/configuration/vault/secret/"
@@ -44,6 +51,10 @@ VAULT_CMD="LANG=\"${LANG}\" \
           --iteration \"${VAULT_ITERATION_COUNT}\" \
           --salt \"${VAULT_SALT}\""
 
+## command wrapper
+CMD_PREFIX="eval"
+[ "$(id -g)" = "0" ] && CMD_PREFIX="su - ${JBOSS_USER} -c"
+
 ###
 ### validate some stuff
 [ -e "${JBOSS_VAULT}" ] || {
@@ -60,5 +71,6 @@ VAULT_CMD="LANG=\"${LANG}\" \
 
 ###
 ### main
-eval "${VAULT_CMD}" '"$@"'
+PARAM=$@
+${CMD_PREFIX} " umask ${UMASK}; ${VAULT_CMD} $PARAM "
 exit $?

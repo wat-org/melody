@@ -70,6 +70,7 @@
             <exec command="umask 0077" />
             <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
             <exec command="chown -R §[jbossInstanceOwner]§: §[jbossInstancePath]§" />
+            <exec command="exit 0" />
         </ssh>
 
         <!-- JBoss Configuration update -->

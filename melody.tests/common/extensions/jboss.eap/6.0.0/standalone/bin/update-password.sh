@@ -36,6 +36,7 @@ fi
 
 ## Set defaults.
 [ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
+[ -z "${UMASK}" ]                     && UMASK="0077"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 
 ## command wrapper
@@ -83,7 +84,7 @@ main() {
 
   # Execute
   PARAM=$@
-  ${CMD_PREFIX} " \"${JAVA}\" ${JAVA_OPTS} \
+  ${CMD_PREFIX} " umask ${UMASK}; \"${JAVA}\" ${JAVA_OPTS} \
     \"-Dlogging.configuration=file:${JBOSS_BASE_DIR}/configuration/update-password-logging.properties\" \"-Djboss.update-password.log.file=${JBOSS_BASE_DIR}/log/update-password.log\" \
     -jar \"${JBOSS_HOME}/jboss-modules.jar\" -mp \"${JBOSS_MODULEPATH}\" com.wat.jboss.tools.update-password \
     ${PARAM} "

@@ -36,6 +36,7 @@ fi
 
 ## Set defaults.
 [ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
+[ -z "${UMASK}" ]                     && UMASK="0077"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
 [ -z "${MGMT_NATIVE_PORT}" ]          && MGMT_NATIVE_PORT="9999"
@@ -54,7 +55,7 @@ JAVA_OPTS="${JAVA_OPTS} -Dprogram.name=\"twiddle[${SERVER_NAME}]\""
 
 # Execute the JVM
 PARAM=$@
-${CMD_PREFIX} " \"${JAVA}\" ${JAVA_OPTS} \
+${CMD_PREFIX} " umask ${UMASK}; \"${JAVA}\" ${JAVA_OPTS} \
   \"-Dlogging.configuration=file:${JBOSS_BASE_DIR}/configuration/twiddle-logging.properties\" \"-Djboss.twiddle.log.file=${JBOSS_BASE_DIR}/log/twiddle.log\" \
   -jar \"${JBOSS_HOME}/jboss-modules.jar\" -mp \"${JBOSS_MODULEPATH}\" com.wat.jboss.tools.twiddle \
   -s service:jmx:remoting-jmx://${MGMT_ADDR} ${PARAM} "

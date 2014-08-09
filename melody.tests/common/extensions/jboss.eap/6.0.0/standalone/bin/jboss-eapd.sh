@@ -58,6 +58,7 @@ fi
 # no need for default value for ${JBOSS_MODULEPATH}
 [ "${JAVA_HOME}x" != "x" ]            && JAVA="${JAVA_HOME}/bin/java"             || JAVA="java"
 [ -x "/usr/sbin/ss" ]                 && TSCMD="/usr/sbin/ss -punta"              || TSCMD="/bin/netstat -punta"
+[ -z "${UMASK}" ]                     && UMASK="0077"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-eap-6.0"
 [ -z "${JBOSS_CONSOLE_LOG}" ]         && JBOSS_CONSOLE_LOG="/var/log/jboss-eap/console.log"
 [ -z "${STARTUP_WAIT}" ]              && STARTUP_WAIT=30
@@ -294,9 +295,9 @@ ensure_started() {
   [ "${PURGE_DATA_DIR_AT_STARTUP}" = "true" -a -d "${JBOSS_BASE_DIR}/data/" ] && rm -rf "${JBOSS_BASE_DIR}/data/"* 1>/dev/null
 
   rotate_console_log
-  ${CMD_PREFIX} "mkdir -p \"$(dirname "${JBOSS_CONSOLE_LOG}")\""
-  ${CMD_PREFIX} "echo \"$(date "+[%F] [%T,%3N]") Starting ...\" > \"${JBOSS_CONSOLE_LOG}\""
-  ${CMD_PREFIX} "${JBOSS_SCRIPT}"
+  ${CMD_PREFIX} "umask ${UMASK}; mkdir -p \"$(dirname "${JBOSS_CONSOLE_LOG}")\""
+  ${CMD_PREFIX} "umask ${UMASK}; echo \"$(date "+[%F] [%T,%3N]") Starting ...\" > \"${JBOSS_CONSOLE_LOG}\""
+  ${CMD_PREFIX} "umask ${UMASK}; ${JBOSS_SCRIPT}"
 
   # sleep a little
   __sleep 3

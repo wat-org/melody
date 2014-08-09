@@ -22,6 +22,7 @@ fi
 
 ## Set defaults.
 # no need for default value for ${JBOSS_MODULEPATH}
+[ -z "${UMASK}" ]                     && UMASK="0077"
 [ -z "${JBOSS_HOME}" ]                && JBOSS_HOME="/opt/jboss-datagrid-server-6"
 [ -z "${ISPN_CLI}" ]                  && ISPN_CLI="${JBOSS_HOME}/bin/ispn-cli.sh"
 [ -z "${MGMT_IP}" ]                   && MGMT_IP="127.0.0.1"
@@ -53,5 +54,5 @@ CLI_CMD="LANG=\"${LANG}\" \
 
 ###
 ### main
-eval "${CLI_CMD}" '"$@"'
+eval "umask ${UMASK}; ${CLI_CMD}" '"$@"'
 exit $?
