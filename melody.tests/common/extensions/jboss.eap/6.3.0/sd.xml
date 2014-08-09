@@ -3,42 +3,69 @@
 
 <sequence basedir="." >
 
-    <order name="deploy_jdg_engine-6.2.0" >
-        <!-- upload JBoss DataGrid engine archive -->
+    <order name="deploy_jboss_engine-6.3.0" >
+        <!-- upload JBoss EAP engine archive -->
         <upload host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
-            <resources  src-basedir="§[jboss.jdg.binaries.repo.path]§"
-                        match="jboss-datagrid-server-§[jbossEngineVersion]§.zip"
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-§[jbossEngineVersion]§.zip"
                         dest-basedir="/tmp" >
                 <posix-permissions scope="files">644</posix-permissions>
             </resources>
-         </upload>
+            <!-- specific to native components -->
+            <resources  src-basedir="§[jboss.eap.binaries.repo.path]§"
+                        match="jboss-eap-native-§[jbossEngineVersion]§-§[os.name]§§[os.version]§-§[os.arch]§.zip"
+                        dest-basedir="/tmp" >
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+        </upload>
 
-        <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[jbossEngineOwner]§:§[jbossEngineOwnerPwd]§&quot; | chpasswd" />
             <!-- create jboss engine module home -->
             <exec command="umask 0007" />
-            <exec command="mkdir -p /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
-            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-datagrid-§[jbossEngineVersion]§" />
-            <exec command="rm -rf /opt/jboss-datagrid-§[jbossEngineVersion]§/modules/system/" />
+            <exec command="mkdir -p /opt/jboss-eap-§[jbossEngineVersion]§/modules" />
+            <exec command="chown -R §[jbossEngineOwner]§: /opt/jboss-eap-§[jbossEngineVersion]§" />
+            <exec command="rm -rf /opt/jboss-eap-§[jbossEngineVersion]§/modules/system/" />
         </ssh>
 
-        <ssh description="[datagrid.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
-            <!-- unzip datagrid in a temp directory-->
-            <exec command="unzip -n /tmp/jboss-datagrid-server-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
+        <!-- specific to native components -->
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- exit silently if the native components where not uploaded -->
+            <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-§[os.name]§§[os.version]§-§[os.arch]§.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
+            <!-- unzip native components in a temp directory-->
+            <exec command="unzip -n /tmp/jboss-eap-native-§[jbossEngineVersion]§-§[os.name]§§[os.version]§-§[os.arch]§.zip -d /tmp/§[jbossEngineVersion]§" />
+            <!-- add a link to libz, in order to resolve the unsatisfied dependency -->
+            <exec command="cd /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/org/jboss/as/web/main/lib/linux-x86_64/" />
+            <exec command="[ -h libz.so ] || ln -vs /lib64/libz.so.1 libz.so" />
+        </ssh>
+
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- unzip eap in a temp directory-->
+            <exec command="unzip -n /tmp/jboss-eap-§[jbossEngineVersion]§.zip -d /tmp/§[jbossEngineVersion]§" />
             <!-- ensure permission -->
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -exec chmod 660 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type f -name &quot;*.sh&quot; -exec chmod 770 {} \;"/>
             <exec command="find /tmp/§[jbossEngineVersion]§ -type d -exec chmod 770 {} \;"/>
-            <!-- copy all datagrid modules in the final directory-->
-            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/* /opt/jboss-datagrid-§[jbossEngineVersion]§/modules" />
+            <!-- copy all eap modules (including native components) in the final directory-->
+            <exec command="cp -npvrf /tmp/§[jbossEngineVersion]§/*/modules/system/layers/base/* /opt/jboss-eap-§[jbossEngineVersion]§/modules/" />
+        </ssh>
+
+        <!-- specific to native components -->
+        <ssh description="[eap.engine.§[jbossEngineVersion]§:§[ip]§:§[jbossEngineOwner]§]" host="§[ip]§" login="§[jbossEngineOwner]§" keypair-name="§[kp]§" >
+            <!-- exit silently if the native components where not uploaded -->
+            <exec command="[ $(find /tmp -name &quot;jboss-eap-native-§[jbossEngineVersion]§-§[os.name]§§[os.version]§-§[os.arch]§.zip&quot; 2&gt;/dev/null | wc -l) != 0 ] || exit 0 " />
+            <!-- for jboss.web (e.g. tomcat) -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/jboss/as/web/main/module.xml"/>
+            <!-- for hornetq -->
+            <exec command="grep '&lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml 1&gt;/dev/null || sed -i '/&lt;\/resources&gt;/i \ \ \ \ \ \ \ \ &lt;resource-root path=&quot;lib&quot;/&gt;' /opt/jboss-eap-§[jbossEngineVersion]§/modules/org/hornetq/main/module.xml"/>
         </ssh>
     </order>
-    
-    
-    
-    <order name="deploy_jdg_instance-6.2.0" >
-        <!-- upload JBoss DataGrid Instance directory tree -->
+
+
+
+    <order name="deploy_jboss_instance-6.3.0" >
+        <!-- upload JBoss EAP Instance directory tree -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="./standalone"
                         match="**"
@@ -47,26 +74,24 @@
                 <posix-permissions scope="directories">700</posix-permissions>
                 <posix-permissions scope="files">600</posix-permissions>
                 <include match="configuration/standalone.conf" template="y" />
-                <include match="configuration/jboss-jdgd.conf" template="y" />
+                <include match="configuration/jboss-eapd.conf" template="y" />
+                <include match="configuration/update-password.properties" template="y" />
                 <include match="bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>
-                <include match="patches/bin/*.sh">
-                    <posix-permissions scope="files">700</posix-permissions>
-                </include>
-                <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
+                <exclude match="configuration/standalone*.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
-         </upload>
+        </upload>
 
-        <ssh description="[datagrid.owner:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+        <ssh description="[eap.owner:§[jbossInstanceId]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
             <!-- set the password of the jboss instance owner -->
             <exec command="echo &quot;§[jbossInstanceOwner]§:§[jbossInstanceOwnerPwd]§&quot; | chpasswd" />
-            <!-- assign the jdg instance owner to the jdg engine group -->
+            <!-- assign the jboss instance owner to the jboss engine group -->
             <exec command="usermod -G §[jbossEngineGroup]§ §[jbossInstanceOwner]§" />
         </ssh>
 
-        <ssh description="[datagrid.patches:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <!-- copy the entire engine, except 'modules' into the JBoss DataGrid instance directory tree -->
+        <ssh description="[eap.patches:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+            <!-- copy the entire engine, except 'modules' into the JBoss EAP instance directory tree -->
             <exec command="umask 0077" />
             <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
             <exec command="chown -R §[jbossInstanceOwner]§: §[jbossInstancePath]§" />
@@ -77,23 +102,23 @@
         <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
         <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
         <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+        <echo message="[eap.conf:§[jbossInstanceId]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
         <copy>
             <resources  src-basedir="./standalone/configuration"
-                        match="standalone.xml"
+                        match="§[jbossInstanceConfigurationFile]§"
                         dest-basedir="§[workingfolder.abs]§"
                         dest-name="§[tmpfile.rel]§"
                         link-option="COPY_LINKS" />
         </copy>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:vault
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management
             </elements-selector>
@@ -111,7 +136,7 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <ssh description="[datagrid.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[eap.vault:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec>
                 <![CDATA[
 umask 0077
@@ -129,33 +154,33 @@ keytool -genseckey -keystore "§[jbossVaultKeystore]§" -storepass §[jbossVault
 echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault keystore."
                 ]]>
             </exec>
-         </ssh>
+        </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Add the current date in the 'pattern-formatter' of CONSOLE and FILE handlers" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*/*:formatter/*:pattern-formatter
+                /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:formatter/*:pattern-formatter
             </elements-selector>
             <attribute name="pattern" value="%d{yyyy-MM-dd} %d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Reduce CONSOLE handler threshold to 'ERROR'" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:console-handler[@name='CONSOLE']/*:level
             </elements-selector>
             <attribute name="name" value="ERROR"/>
         </set-xml-attributes>
 
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Don't want to trace cli errors in the CONSOLE handler" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Don't want to trace cli errors in the CONSOLE handler" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:root-logger)]/*:logger[@name='org.jboss.as.controller.management-operation']
             </elements-selector>
         </remove-xml-elements>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:root-logger
             </elements-selector>
@@ -179,13 +204,13 @@ echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault
         <property name="jbossInstanceMgmtKeyDName"      value="§[§[jboss_instance]§/keystore/key[matches(@usage,'management')]/@dname]§"/>
         <property name="jbossInstanceMgmtKeyDName"      value="§[ if (string-length('§[jbossInstanceMgmtKeyDName]§')=0) then 'CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR' else '§[jbossInstanceMgmtKeyDName]§' ]§" />
 
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Secure management console (create an HttpsManagementRealm, which contains SSL server identity)" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Secure http management console (establish SSL server identity)" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@name='HttpsManagementRealm']
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms
             </elements-selector>
@@ -203,14 +228,17 @@ echo "Secret Key '§[jbossVaultKeystoreAlias]§' successfully generated in Vault
                     </server-identities>
                     <authentication>
                         <local default-user="$local"/>
-                        <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                        <properties path="https-mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                     </authentication>
+                    <authorization map-groups-to-roles="false">
+                        <properties path="https-mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                    </authorization>
                 </security-realm>
                 ]]>
             </node-content>
         </append-xml-elements>
 
-        <ssh description="[datagrid.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+        <ssh description="[eap.conf:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <exec>
                 <![CDATA[
 umask 0077
@@ -227,17 +255,17 @@ keytool -genkey -keystore §[jbossInstanceMgmtStorePath]§ -storepass §[jbossIn
 echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Server keystore."
                 ]]>
             </exec>
-         </ssh>
+        </ssh>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Secure management console (disable HTTP acces to HttpsManagementRealm)" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Secure management console (disable HTTP - enable HTTPS)" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface
             </elements-selector>
             <attribute name="security-realm" value="HttpsManagementRealm"/>
         </set-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
@@ -248,7 +276,7 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
                 /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
             </elements-selector>
         </remove-xml-elements>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding
             </elements-selector>
@@ -256,13 +284,13 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Enable local authentication for the CLI" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Enable local authentication for the CLI" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@name='ManagementRealm']/*:authentication/*:local
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:security-realms/*:security-realm[@name='ManagementRealm']/*:authentication
             </elements-selector>
@@ -274,20 +302,20 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
         </append-xml-elements>
 
         <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Remove all virtual-server aliases" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:alias
             </elements-selector>
         </remove-xml-elements>
 
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Enable access log" severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <echo message="[eap.conf:§[jbossInstanceId]§] Enable access log" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server/*:access-log
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:virtual-server
             </elements-selector>
@@ -300,78 +328,56 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
             </node-content>
         </append-xml-elements>
 
-        <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] optimize data repartition (Set the 'virtual-nodes' of all cache from '1' to '1000')" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='default']
-            </elements-selector>
-            <attribute name="segments" value="1000"/>
-        </set-xml-attributes>
+        <!-- specific to native components -->
+        <property name="jbossInstanceUsesNative"        value="§[§[jboss_instance]§/jboss-web/@uses-native-components]§"/>
+        <property name="jbossInstanceUsesNative"        value="§[ if (string-length('§[jbossInstanceUsesNative]§')=0) then 'false' else '§[jbossInstanceUsesNative]§' ]§" />
 
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <!--
+            when the web subsystem's native components are enabled, 'org.apache.catalina.core' will display the following message during startup sequence :
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: apr-1
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: z
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: crypto
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: ssl
+                DEBUG [org.apache.catalina.core.AprLifecycleListener] (MSC service thread 1-2) Loaded: tcnative-1
+                DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001068: Loaded native library 1.1.27 with APR capabilities: IPv6 [true], sendfile [true], random [true]
+                DEBUG [org.apache.catalina.core] (MSC service thread 1-2) JBWEB001136: Starting service jboss.web
+                INFO  [org.apache.coyote.http11] (MSC service thread 1-1) JBWEB003000: Coyote HTTP/1.1 starting on: http-/192.168.122.4:8080
+         -->
+        <echo message="[eap.conf:§[jbossInstanceId]§] Increase log level for 'org.apache.catalina.core'" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='memcachedCache']
-            </elements-selector>
-            <attribute name="segments" value="1000"/>
-        </set-xml-attributes>
-
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:cache-container[@name='clustered']/*:distributed-cache[@name='namedCache']
-            </elements-selector>
-            <attribute name="segments" value="1000"/>
-            <attribute name="owners" value="2"/>
-            <attribute name="remote-timeout" value="30000"/>
-        </set-xml-attributes>
-
-        <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Localize DataGrid" severity="info"/>
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
-            </elements-selector>
-            <attribute name="site" value="§[instanceSite]§"/>
-            <attribute name="rack" value="§[instanceRack]§"/>
-            <attribute name="machine" value="§[instanceName]§"/>
-        </set-xml-attributes>
-
-        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='tcp']/*:transport
-            </elements-selector>
-            <attribute name="site" value="§[instanceSite]§"/>
-            <attribute name="rack" value="§[instanceRack]§"/>
-            <attribute name="machine" value="§[instanceName]§"/>
-        </set-xml-attributes>
-
-        <!-- JBoss Configuration update -->
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Customize send and receive buffer size of DatagramSocket and MulticastSocket." severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport/*:property
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.apache.catalina.core']
             </elements-selector>
         </remove-xml-elements>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
-                /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
+                /*:server/*:profile/*:subsystem/*:root-logger
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <property name="ucast_send_buf_size">124928</property>
-                <property name="ucast_recv_buf_size">124928</property>
-                <property name="mcast_send_buf_size">124928</property>
-                <property name="mcast_recv_buf_size">124928</property>
+                <logger category="org.apache.catalina.core">
+                    <level name="DEBUG"/>
+                </logger>
                 ]]>
             </node-content>
-        </append-xml-elements>
+        </insert-xml-elements-before>
+
+        <echo message="[eap.conf:§[jbossInstanceId]§] Uses native components: §[jbossInstanceUsesNative]§" severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:connector) and exists(*:virtual-server)]
+            </elements-selector>
+            <attribute name="native" value="§[jbossInstanceUsesNative]§"/>
+            <!-- mod_jk load balancing will not properly if JVMRoute (e.g. instance-id) contains '.'. So we replace it  -->
+            <attribute name="instance-id" value="§[replace('§[jbossInstanceListenIp]§', '[.]', '_')]§_port_§[jbossInstanceListenPortOffset]§"/>
+        </set-xml-attributes>
 
         <!-- upload customized configuration -->
         <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
             <resources  src-basedir="§[workingfolder.abs]§"
                         match="§[tmpfile.rel]§"
                         dest-basedir="§[jbossInstancePath]§/configuration"
-                        dest-name="standalone.xml" >
+                        dest-name="§[jbossInstanceConfigurationFile]§" >
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
         </upload>
@@ -384,11 +390,14 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
 
             <!-- simultaneous call to jboss-add-user.sh may encounter concurrency problems. Certainly a problem in jboss module.
                  Don't know why. So we're doing a global synchronization on the jboss instance -->
-            <synchronize scope="GLOBAL" lock-id="jdg.add.user.§[jbossInstanceOwner]§.§[jbossInstanceListenIp]§.§[jbossInstanceListenPortOffset]§">
-                <ssh description="[datagrid.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
-                    <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§" />
-                 </ssh>
+            <synchronize scope="GLOBAL" lock-id="eap.add.user.§[jbossInstanceOwner]§.§[jbossInstanceListenIp]§.§[jbossInstanceListenPortOffset]§">
+                <ssh description="[eap.reg-adm:§[jbossInstanceId]§]" host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" requiretty="y" >
+                    <!-- TODO : should use RBAC, and manage group/roles mapping -->
+                    <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§" />
+                    <exec command="§[jbossInstancePath]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§ --user-properties https-mgmt-users.properties --realm HttpsManagementRealm" />
+                </ssh>
             </synchronize>
+
         </foreach>
     </order>
 

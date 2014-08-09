@@ -243,12 +243,11 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
             </elements-selector>
             <attribute name="http"/>
         </remove-xml-attributes>
-        <remove-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:socket-binding-group[@name='standard-sockets']/*:socket-binding[@name='management-http']
             </elements-selector>
-            <attribute name="http"/>
-        </remove-xml-attributes>
+        </remove-xml-elements>
         <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:management/*:management-interfaces/*:http-interface/*:socket-binding

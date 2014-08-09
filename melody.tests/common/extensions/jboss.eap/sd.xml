@@ -24,8 +24,11 @@
 
         <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
-            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="ip"            value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"            value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="os.name"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@name') ]§" />
+            <property name="os.version"    value="§[ melody:getHeritedContent(§[srv]§, '/os/@version') ]§" />
+            <property name="os.arch"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@arch') ]§" />
 
             <foreach    items="melody:getHeritedContent(§[srv]§, '/§[eap_engine_node]§ [ @version=melody:getHeritedContent(§[srv]§, &quot;/§[eap_instance_node]§ [ §[eap_instance_exists_criteria]§ and §[eap_instance_match_criteria]§ ]&quot;)/@version ]')"
                         item-name="jboss_engine">
