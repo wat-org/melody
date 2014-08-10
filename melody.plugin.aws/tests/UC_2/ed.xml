@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 	
 	<buckets>
-		<bucket name="s3fs-sample-bucket" region="eu-west-1"/>
+		<bucket name="s3fs-sample-bucket1" region="us-east-1">
+			<logging enabled='true' destination-bucket-name="s3fs-sample-bucket1" log-file-prefix="logs/s3fs-sample-bucket1/" />
+        <!-- 
+        -->
+		</bucket>
+		<bucket name="s3fs-sample-bucket2" region="us-east-1">
+			<logging enabled='true' destination-bucket-name="s3fs-sample-bucket2" log-file-prefix="logs/s3fs-sample-bucket2/" />
+        <!-- 
+        -->
+		</bucket>
 		<bucket name="new-one-super-bucket2" region="us-east-1">
         <!-- 
 			<logging enabled='true' destination-bucket-name="new-one-super-bucket2" log-file-prefix="logs/new-one-super-bucket2/" />

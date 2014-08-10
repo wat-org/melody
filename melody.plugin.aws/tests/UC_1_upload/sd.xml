@@ -9,7 +9,7 @@
 
     <order name="create_bucket">
         <echo message="Creating bucket '§[bucket]§' ..."/>
-        <create-bucket bucket-name="§[bucket]§" region="eu-west-1"/>
+        <create-bucket bucket-name="§[bucket]§" region="us-east-1"/>
         <echo message="Bucket '§[bucket]§' created."/>
     </order>
 
@@ -50,8 +50,8 @@
 
                 <exclude    match="**/link.external.relative" /> <!-- this is a link, which points to melody.log. This file's size is increasing. So we skip it -->
                
-                <exclude    match="download" />
-                <exclude    match="download/**" />
+                <exclude    match="download" /> <!-- this is the destination folder of the 'download' order, So we skip it -->
+                <exclude    match="download/**" /> <!-- this is the downloaded content of the 'download' order, So we skip it -->
 
                 <!-- will generate warnings, cause aws s3fs don't handle posix-group and posix-user -->
                 <include    match="static_myApp_myMod/content1.txt" >
@@ -90,11 +90,11 @@
         <echo message="Transferring files from 'bucket:§[bucket]§' ..."/>
 
         <!-- client-side encryption to S3 -->
-        <!-- 
         <download bucket-name="§[bucket]§" max-par="10" keypair-name="test" passphrase="supergenial">
-        -->
         <!-- no encryption -->
+        <!-- 
         <download bucket-name="§[bucket]§" max-par="10">
+        -->
             <resources  src-basedir="/tmp/melody/scp/UC_1_upload"
                         match="**"
                         dest-basedir="download/bn-§[bucket]§"
