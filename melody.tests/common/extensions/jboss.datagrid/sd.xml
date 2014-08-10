@@ -46,11 +46,13 @@
 
 
 
+    <property name="callback"             value="customzie_jdg_instance.default-callback"/>
+    <property name="callback.sd"          value="§[ melody:getSequenceDescriptorPath() ]§"/>
 
     <order name="deploy_jdg_instances" >
         <echo message="Deploying all JBoss DataGrid instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
@@ -65,6 +67,9 @@
                 <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
                 <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
                 <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+                <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
+                <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
+                <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
                 <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
                 <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
 
@@ -109,7 +114,33 @@
 
                 <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
 
+                <!-- prepare instance configuration modification -->
+                <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+                <copy>
+                    <resources  src-basedir="./§[jbossInstanceVersion]§/standalone/configuration/"
+                                match="§[jbossInstanceConfigurationFile]§"
+                                dest-basedir="§[workingfolder.abs]§/"
+                                dest-name="§[tmpfile.rel]§"
+                                link-option="COPY_LINKS" />
+                </copy>
+
+                <!-- deploy instance and apply standard configuration -->
                 <call orders="deploy_jdg_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
+                <!-- customize instance -->
+                <call orders="§[callback]§" sequence-descriptor="§[callback.sd]§"/>
+
+                <!-- upload modified configuration -->
+                <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                    <resources  src-basedir="§[workingfolder.abs]§/"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration/"
+                                dest-name="§[jbossInstanceConfigurationFile]§" >
+                        <posix-permissions scope="files">600</posix-permissions>
+                    </resources>
+                </upload>
 
                 <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
@@ -118,13 +149,16 @@
         <echo message="-- All JBoss DataGrid instances successfully deployed." />
     </order>
 
+    <order name="customzie_jdg_instance.default-callback" >
+        <!-- nothing to do -->
+    </order>
 
 
 
     <order name="start_jdg_instances" >
         <echo message="Starting all JBoss DataGrid instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
@@ -154,7 +188,7 @@
     <order name="stop_jdg_instances" >
         <echo message="Stopping all JBoss DataGrid instances ..." />
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />

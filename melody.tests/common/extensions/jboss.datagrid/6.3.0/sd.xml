@@ -54,7 +54,7 @@
                 <include match="patches/bin/*.sh">
                     <posix-permissions scope="files">700</posix-permissions>
                 </include>
-                <exclude match="configuration/standalone.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
+                <exclude match="configuration/standalone*.xml"/> <!-- no need to transfer now. will be customized/transfer later -->
             </resources>
          </upload>
 
@@ -72,19 +72,6 @@
             <exec command="chown -R §[jbossInstanceOwner]§: §[jbossInstancePath]§" />
             <exec command="exit 0" />
         </ssh>
-
-        <!-- JBoss Configuration update -->
-        <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
-        <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-        <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
-        <copy>
-            <resources  src-basedir="./standalone/configuration"
-                        match="standalone.xml"
-                        dest-basedir="§[workingfolder.abs]§"
-                        dest-name="§[tmpfile.rel]§"
-                        link-option="COPY_LINKS" />
-        </copy>
 
         <!-- JBoss Configuration update -->
         <echo message="[datagrid.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
@@ -365,16 +352,6 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
                 ]]>
             </node-content>
         </append-xml-elements>
-
-        <!-- upload customized configuration -->
-        <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <resources  src-basedir="§[workingfolder.abs]§"
-                        match="§[tmpfile.rel]§"
-                        dest-basedir="§[jbossInstancePath]§/configuration"
-                        dest-name="standalone.xml" >
-                <posix-permissions scope="files">600</posix-permissions>
-            </resources>
-        </upload>
 
         <!-- register administrators -->
         <foreach    items="§[jboss_instance]§/administrators/user"

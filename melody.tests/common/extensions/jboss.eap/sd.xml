@@ -12,7 +12,7 @@
     <property name="instance_match_criteria"    value="1=1"/>
 
     <property name="jboss.eap.binaries.repo.path" value="MY BE DEFINED BY THE CALLER"/>
-    
+
     <property name="eap_instance_exists_criteria" value="1=1"/>
     <property name="eap_instance_match_criteria"  value="1=1"/>
 
@@ -50,8 +50,10 @@
 
 
 
+    <property name="callback"             value="customzie_eap_instance.default-callback"/>
+    <property name="callback.sd"          value="§[ melody:getSequenceDescriptorPath() ]§"/>
+
     <order name="deploy_jboss_instances" >
-        <!-- TODO : should add a log_rotate for access.log, gc.log and console.log -->
         <echo message="Deploying all JBoss EAP instances ..." />
 
         <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
@@ -112,13 +114,42 @@
 
                 <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
 
+                <!-- prepare instance configuration modification -->
+                <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <copy>
+                    <resources  src-basedir="./§[jbossInstanceVersion]§/standalone/configuration/"
+                                match="§[jbossInstanceConfigurationFile]§"
+                                dest-basedir="§[workingfolder.abs]§/"
+                                dest-name="§[tmpfile.rel]§"
+                                link-option="COPY_LINKS" />
+                </copy>
+
+                <!-- deploy instance and apply standard configuration -->
                 <call orders="deploy_jboss_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
+                <!-- customize instance -->
+                <call orders="§[callback]§" sequence-descriptor="§[callback.sd]§"/>
+
+                <!-- upload modified configuration -->
+                <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                    <resources  src-basedir="§[workingfolder.abs]§/"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration/"
+                                dest-name="§[jbossInstanceConfigurationFile]§" >
+                        <posix-permissions scope="files">600</posix-permissions>
+                    </resources>
+                </upload>
 
                 <echo message="+ JBoss EAP instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
             </foreach>
         </foreach>
 
         <echo message="-- All JBoss EAP instances successfully deployed." />
+    </order>
+
+    <order name="customzie_eap_instance.default-callback" >
+        <!-- nothing to do -->
     </order>
 
 
@@ -246,14 +277,36 @@
 
                 <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
 
+                <!-- prepare instance configuration modification -->
+                <property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <download host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§">
+                    <resources  src-basedir="§[jbossInstancePath]§/configuration/"
+                                match="§[jbossInstanceConfigurationFile]§"
+                                dest-basedir="§[workingfolder.abs]§/"
+                                dest-name="§[tmpfile.rel]§" />
+                </download>
+
+                <!-- deploy custom modules -->
                 <foreach    items="§[jboss_instance]§/custom-modules/custom-module"
                             item-name="cm"
-                            max-par="1"> <!-- the deployment can modify the standalone.conf, which can't be modified concurrently -->
+                            max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
                     <property name="cm.name"          value="§[§[cm]§/@name]§" />
 
                     <call orders="§[callback]§.§[cm.name]§" sequence-descriptor="§[callback.sd]§"/>
                     <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss EAP instance '§[jbossInstanceId]§' on '§[§[srv]§/@instance-id]§'." />
                 </foreach>
+
+                <!-- upload modified configuration -->
+                <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                    <resources  src-basedir="§[workingfolder.abs]§/"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration/"
+                                dest-name="§[jbossInstanceConfigurationFile]§" >
+                        <posix-permissions scope="files">600</posix-permissions>
+                    </resources>
+                </upload>
             </foreach>
 
         </foreach>
@@ -323,14 +376,36 @@
 
                 <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
 
+                <!-- prepare instance configuration modification -->
+                <property name="tmpfile.rel" value="§[ melody:newTmpFile() ]§"/>
+                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+                <property name="tmpfile.abs" value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+                <download host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§">
+                    <resources  src-basedir="§[jbossInstancePath]§/configuration/"
+                                match="§[jbossInstanceConfigurationFile]§"
+                                dest-basedir="§[workingfolder.abs]§/"
+                                dest-name="§[tmpfile.rel]§" />
+                </download>
+
+                <!-- deploy applications -->
                 <foreach    items="§[jboss_instance]§/applications/application"
                             item-name="application"
-                            max-par="1"> <!-- the deployment will need to modify the standalone.conf, which can't be modified concurrently -->
+                            max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
                     <property name="appli.name"          value="§[§[application]§/@name]§" />
 
                     <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
                     <echo message="+ Application '§[appli.name]§' successfully deployed for JBoss EAP instance '§[jbossInstanceId]§' on '§[§[srv]§/@instance-id]§'." />
                 </foreach>
+
+                <!-- upload modified configuration -->
+                <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                    <resources  src-basedir="§[workingfolder.abs]§/"
+                                match="§[tmpfile.rel]§"
+                                dest-basedir="§[jbossInstancePath]§/configuration/"
+                                dest-name="§[jbossInstanceConfigurationFile]§" >
+                        <posix-permissions scope="files">600</posix-permissions>
+                    </resources>
+                </upload>
             </foreach>
 
         </foreach>

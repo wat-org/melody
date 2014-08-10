@@ -102,19 +102,6 @@
         </ssh>
 
         <!-- JBoss Configuration update -->
-        <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
-        <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-        <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <echo message="[eap.conf:§[jbossInstanceId]§] Preparing JBoss EAP instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
-        <copy>
-            <resources  src-basedir="./standalone/configuration"
-                        match="§[jbossInstanceConfigurationFile]§"
-                        dest-basedir="§[workingfolder.abs]§"
-                        dest-name="§[tmpfile.rel]§"
-                        link-option="COPY_LINKS" />
-        </copy>
-
-        <!-- JBoss Configuration update -->
         <echo message="[eap.conf:§[jbossInstanceId]§] Add the vault configuration" severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jbossInstanceId]§]">
             <elements-selector>
@@ -371,16 +358,6 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
             <!-- mod_jk load balancing will not properly if JVMRoute (e.g. instance-id) contains '.'. So we replace it  -->
             <attribute name="instance-id" value="§[replace('§[jbossInstanceListenIp]§', '[.]', '_')]§_port_§[jbossInstanceListenPortOffset]§"/>
         </set-xml-attributes>
-
-        <!-- upload customized configuration -->
-        <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-            <resources  src-basedir="§[workingfolder.abs]§"
-                        match="§[tmpfile.rel]§"
-                        dest-basedir="§[jbossInstancePath]§/configuration"
-                        dest-name="§[jbossInstanceConfigurationFile]§" >
-                <posix-permissions scope="files">600</posix-permissions>
-            </resources>
-        </upload>
 
         <!-- register administrators -->
         <foreach    items="§[jboss_instance]§/administrators/user"
