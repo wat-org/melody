@@ -32,7 +32,20 @@
                 <property name="pkgrepo" value="§[if (string-length('§[pkgrepo]§')!=0) then '--enablerepo=§[pkgrepo]§' else '']§" />
 
                 <ssh description="[install_pkg:§[pkgname]§.§[pkgarch]§:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
-                    <exec command="rpm -q §[pkgname]§.§[pkgarch]§ || yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§" />
+                    <exec>
+                        <![CDATA[
+rpm -q §[pkgname]§.§[pkgarch]§ && {
+  echo "Package '§[pkgname]§.§[pkgarch]§' is already installed on '§[ip]§'. Nothing to do."
+  exit 0
+}
+yum install §[pkgopt]§ §[pkgrepo]§ -y §[pkgname]§.§[pkgarch]§ || {
+  res=$?
+  echo "Fail to install package '§[pkgname]§.§[pkgarch]§' on '§[ip]§'. Check log for details. Exiting with error code $res."  >&2
+  exit $res
+}
+echo "Package '§[pkgname]§.§[pkgarch]§' successfully installed on '§[ip]§'."
+                        ]]>
+                    </exec>
                 </ssh>
 
                 <echo message="+ Package '§[pkgname]§.§[pkgarch]§' successfully installed on server '§[§[srv]§/@instance-id]§'." />
