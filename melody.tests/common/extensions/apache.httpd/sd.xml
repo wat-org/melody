@@ -67,7 +67,7 @@
                 <property name="appli.name"        value="§[§[application]§/@name]§" />
                 <property name="appli.worker"      value="§[§[application]§/@worker]§" />
 
-                <call orders="§[callback]§.§[appli.name]§" sequence-descriptor="§[callback.sd]§"/>
+                <call orders="§[substring-after('§[callback]§','::')]§.§[appli.name]§" sequence-descriptor="§[substring-before('§[callback]§','::')]§"/>
                 <echo message="+ Application '§[appli.name]§' successfully configured on Apache Http Server on '§[§[srv]§/@instance-id]§'." />
             </foreach>
 

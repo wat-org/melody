@@ -46,8 +46,7 @@
 
 
 
-    <property name="callback"             value="customzie_jdg_instance.default-callback"/>
-    <property name="callback.sd"          value="§[ melody:getSequenceDescriptorPath() ]§"/>
+    <property name="callback.instance"    value="§[ melody:getSequenceDescriptorPath() ]§::customzie_jdg_instance.default-callback"/>
 
     <order name="deploy_jdg_instances" >
         <echo message="Deploying all JBoss DataGrid instances ..." />
@@ -129,8 +128,9 @@
 
                 <!-- deploy instance and apply standard configuration -->
                 <call orders="deploy_jdg_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
+
                 <!-- customize instance -->
-                <call orders="§[callback]§" sequence-descriptor="§[callback.sd]§"/>
+                <call orders="§[substring-after('§[callback.instance]§','::')]§" sequence-descriptor="§[substring-before('§[callback.instance]§','::')]§"/>
 
                 <!-- upload modified configuration -->
                 <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
