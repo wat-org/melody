@@ -52,6 +52,10 @@ public class ResourcesSpecification extends ResourceSpecification {
 		super();
 		setSrcBaseDir(srcBaseDir);
 		setDestBaseDir(destBaseDir);
+		// exclude '.gitignore', '.hgignore', and '.DS_Store'
+		createExclude().setMatch("**.gitignore");
+		createExclude().setMatch("**.hgignore");
+		createExclude().setMatch("**.DS_Store");
 	}
 
 	@Override
@@ -129,15 +133,15 @@ public class ResourcesSpecification extends ResourceSpecification {
 	}
 
 	@NestedElement(name = INCLUDE_NE, type = Type.CREATE)
-	public ResourcesUpdater createInclude() {
-		ResourcesUpdater include = new ResourcesUpdaterIncludes(this);
+	public ResourcesUpdaterIncludes createInclude() {
+		ResourcesUpdaterIncludes include = new ResourcesUpdaterIncludes(this);
 		getResourcesUpdaters().add(include);
 		return include;
 	}
 
 	@NestedElement(name = EXCLUDE_NE, type = Type.CREATE)
-	public ResourcesUpdater createExclude() {
-		ResourcesUpdater exclude = new ResourcesUpdaterExcludes(this);
+	public ResourcesUpdaterExcludes createExclude() {
+		ResourcesUpdaterExcludes exclude = new ResourcesUpdaterExcludes(this);
 		getResourcesUpdaters().add(exclude);
 		return exclude;
 	}

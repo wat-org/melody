@@ -268,10 +268,10 @@ public abstract class ResourceSpecification extends ResourceSelector {
 	}
 
 	@Attribute(name = DEST_NAME_ATTR)
-	public String setDestName(String DestPath) {
+	public String setDestName(String destName) {
 		// can be null
 		String previous = getDestName();
-		_destName = DestPath;
+		_destName = destName;
 		return previous;
 	}
 

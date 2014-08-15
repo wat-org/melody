@@ -197,7 +197,7 @@ public class TransferableFile implements Transferable {
 		return m != null ? m.values() : new ArrayList<AttributeBase<?>>();
 	}
 
-	private String getDestPath() {
+	private String getDestName() {
 		return getResourceSpecification().getDestName();
 	}
 
@@ -223,22 +223,29 @@ public class TransferableFile implements Transferable {
 	 * Sample
 	 * 
 	 * src-basedir  = /src/basedir
-	 * path         = /src/basedir/dir3/dir4/file.txt
+	 * src-path     = /src/basedir/dir3/dir4/file.txt
 	 * dest-basedir = /dest/basedir
-	 * dest-path    = null
+	 * dest-name    = null
 	 * 
 	 * will return    /dest/basedir/dir3/dir4/file.txt
 	 * </pre>
 	 * 
 	 * <pre>
-	 * Sample
-	 * 
 	 * src-basedir  = /src/basedir
-	 * path         = /src/basedir/dir3/dir4/file.txt
+	 * src-path     = /src/basedir/dir3/dir4/file.txt
 	 * dest-basedir = /dest/basedir
-	 * dest-path    = /super/directory/renamed.txt
+	 * dest-name    = super/directory/renamed.txt
 	 * 
 	 * will return    /dest/basedir/super/directory/renamed.txt
+	 * </pre>
+	 * 
+	 * <pre>
+	 * src-basedir  = /src/basedir
+	 * src-path     = /src/basedir/dir3/dir4/file.txt
+	 * dest-basedir = /dest/basedir
+	 * dest-name    = /super/directory/renamed.txt
+	 * 
+	 * will return    /super/directory/renamed.txt
 	 * </pre>
 	 * 
 	 * @return the destination {@link Path} of this object (a relative or
@@ -247,8 +254,8 @@ public class TransferableFile implements Transferable {
 	 */
 	@Override
 	public Path getDestinationPath() {
-		if (getDestPath() != null) {
-			return Paths.get(getDestBaseDir()).resolve(getDestPath());
+		if (getDestName() != null) {
+			return Paths.get(getDestBaseDir()).resolve(getDestName());
 		}
 		return Paths.get(getDestBaseDir()).resolve(getRelativePath());
 	}
