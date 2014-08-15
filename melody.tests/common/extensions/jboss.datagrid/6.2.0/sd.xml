@@ -70,6 +70,7 @@
             <exec command="umask 0077" />
             <exec command="find /tmp/§[jbossInstanceVersion]§/*/ -maxdepth 1 -mindepth 1 -not -name  &quot;modules&quot; -exec cp -npvrf {} §[jbossInstancePath]§/patches/ \;" />
             <exec command="chown -R §[jbossInstanceOwner]§: §[jbossInstancePath]§" />
+            <exec command="chmod -R go-rwx §[jbossInstancePath]§" />
             <exec command="exit 0" />
         </ssh>
 
@@ -318,18 +319,18 @@ echo "Private Key '§[jbossInstanceMgmtKeyAlias]§' successfully generated in Se
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='udp']/*:transport
             </elements-selector>
-            <attribute name="site" value="§[instanceSite]§"/>
-            <attribute name="rack" value="§[instanceRack]§"/>
-            <attribute name="machine" value="§[instanceName]§"/>
+            <attribute name="site" value="§[location.site]§"/>
+            <attribute name="rack" value="§[location.rack]§"/>
+            <attribute name="machine" value="§[location.machine]§"/>
         </set-xml-attributes>
 
         <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[jbossInstanceId]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:stack[@name='tcp']/*:transport
             </elements-selector>
-            <attribute name="site" value="§[instanceSite]§"/>
-            <attribute name="rack" value="§[instanceRack]§"/>
-            <attribute name="machine" value="§[instanceName]§"/>
+            <attribute name="site" value="§[location.site]§"/>
+            <attribute name="rack" value="§[location.rack]§"/>
+            <attribute name="machine" value="§[location.machine]§"/>
         </set-xml-attributes>
 
         <!-- JBoss Configuration update -->

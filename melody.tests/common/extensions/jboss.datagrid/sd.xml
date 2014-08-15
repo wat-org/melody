@@ -18,135 +18,153 @@
 
 
 
-
+    <!-- deploy jboss datagrid engines (do not deploy datagrid instances) -->
     <order name="deploy_jdg_engines" >
         <echo message="Deploying all JBoss DataGrid engines ..." />
 
         <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
-            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="ip"               value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"               value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="os.name"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@name') ]§" />
+            <property name="os.version"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@version') ]§" />
+            <property name="os.arch"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@arch') ]§" />
+            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'site') ]§" />
+            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rack') ]§" />
+            <property name="location.machine" value="§[ip]§" />
 
-            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_engine_node]§ [ @version=melody:getHeritedContent(§[srv]§, &quot;/§[jdg_instance_node]§ [ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]&quot;)/@version ]')"
-                        item-name="jboss_engine">
-                <property name="jbossEnginePath"                value="§[ §[jboss_engine]§/@path ]§" />
-                <property name="jbossEngineVersion"             value="§[ §[jboss_engine]§/@version ]§" />
-                <property name="jbossEngineOwner"               value="§[ §[jboss_engine]§/owner/@login ]§" />
-                <property name="jbossEngineOwnerPwd"            value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@password') ]§" />
-                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
-
-                <call orders="deploy_jdg_engine-§[jbossEngineVersion]§" sequence-descriptor="./§[jbossEngineVersion]§/sd.xml"/>
-
-                <echo message="+ JBoss DataGrid engine '§[jbossEngineVersion]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
-            </foreach>
+            <call orders="deploy_jdg_engines_single_machine"/>
         </foreach>
 
         <echo message="-- All JBoss DataGrid engines successfully deployed." />
     </order>
 
-
-
-    <property name="callback.instance"    value="§[ melody:getSequenceDescriptorPath() ]§::customzie_jdg_instance.default-callback"/>
-
+    <!-- deploy jboss datagrid engines and datagrid instances -->
     <order name="deploy_jdg_instances" >
         <echo message="Deploying all JBoss DataGrid instances ..." />
 
         <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
                     item-name="srv" >
-            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="ip"               value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"               value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+            <property name="os.name"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@name') ]§" />
+            <property name="os.version"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@version') ]§" />
+            <property name="os.arch"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@arch') ]§" />
+            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'site') ]§" />
+            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rack') ]§" />
+            <property name="location.machine" value="§[ip]§" />
 
-            <property name="instanceSite"   value="§[ §[srv]§/@site ]§" />
-            <property name="instanceRack"   value="§[ §[srv]§/@rack ]§" />
-            <property name="instanceName"   value="§[ip]§" />
-
-            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_instance_node]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]')"
-                        item-name="jboss_instance">
-                <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
-                <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
-                <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
-                <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
-                <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
-                <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
-                <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
-                <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
-                <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
-
-                <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
-                <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
-                <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
-
-                <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
-                <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
-                <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
-                <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '64m' else '§[jbossInstanceMemoryXms]§' ]§" />
-                <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '256m' else '§[jbossInstanceMemoryXmx]§' ]§" />
-                <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
-                <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
-
-                <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
-                <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
-                <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
-                <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
-                <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
-                <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
-                <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
-                <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
-                <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
-                <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
-
-                <property name="jbossVaultEncDir"               value="§[§[jboss_instance]§/vault/enc-dir/@path]§" />
-                <property name="jbossVaultKeystore"             value="§[§[jboss_instance]§/vault/keystore/@path]§" />
-                <property name="jbossVaultKeystorePass"         value="§[§[jboss_instance]§/vault/keystore/@password]§" />
-                <property name="jbossVaultKeystoreAlias"        value="§[§[jboss_instance]§/vault/keystore/@alias]§" />
-                <property name="jbossVaultIterationCount"       value="§[§[jboss_instance]§/vault/secret/@iteration-count]§" />
-                <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
-                <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
-                <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
-                <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit' else '§[jbossVaultKeystorePass]§' ]§" />
-                <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
-                <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
-                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
-                <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jbossVaultSalt]§' ]§" />
-                <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
-                <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
-
-                <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
-
-                <!-- prepare instance configuration modification -->
-                <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
-                <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-                <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-                <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
-                <copy>
-                    <resources  src-basedir="./§[jbossInstanceVersion]§/standalone/configuration/"
-                                match="§[jbossInstanceConfigurationFile]§"
-                                dest-basedir="§[workingfolder.abs]§/"
-                                dest-name="§[tmpfile.rel]§"
-                                link-option="COPY_LINKS" />
-                </copy>
-
-                <!-- deploy instance and apply standard configuration -->
-                <call orders="deploy_jdg_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
-
-                <!-- customize instance -->
-                <call orders="§[substring-after('§[callback.instance]§','::')]§" sequence-descriptor="§[substring-before('§[callback.instance]§','::')]§"/>
-
-                <!-- upload modified configuration -->
-                <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
-                    <resources  src-basedir="§[workingfolder.abs]§/"
-                                match="§[tmpfile.rel]§"
-                                dest-basedir="§[jbossInstancePath]§/configuration/"
-                                dest-name="§[jbossInstanceConfigurationFile]§" >
-                        <posix-permissions scope="files">600</posix-permissions>
-                    </resources>
-                </upload>
-
-                <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
-            </foreach>
+            <call orders="deploy_jdg_engines_single_machine"/>
+            <call orders="deploy_jdg_instances_single_machine"/>
         </foreach>
 
         <echo message="-- All JBoss DataGrid instances successfully deployed." />
+    </order>
+
+
+
+    <order name="deploy_jdg_engines_single_machine" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_engine_node]§ [ @version=melody:getHeritedContent(§[srv]§, &quot;/§[jdg_instance_node]§ [ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]&quot;)/@version ]')"
+                    item-name="jboss_engine">
+            <property name="jbossEnginePath"                value="§[ §[jboss_engine]§/@path ]§" />
+            <property name="jbossEngineVersion"             value="§[ §[jboss_engine]§/@version ]§" />
+            <property name="jbossEngineOwner"               value="§[ §[jboss_engine]§/owner/@login ]§" />
+            <property name="jbossEngineOwnerPwd"            value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@password') ]§" />
+            <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
+
+            <call orders="deploy_jdg_engine-§[jbossEngineVersion]§" sequence-descriptor="./§[jbossEngineVersion]§/sd.xml"/>
+
+            <echo message="+ JBoss DataGrid engine '§[jbossEngineVersion]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
+        </foreach>
+    </order>
+
+    <property name="callback.instance"    value="§[ melody:getSequenceDescriptorPath() ]§::customzie_jdg_instance.default-callback"/>
+
+    <order name="deploy_jdg_instances_single_machine" >
+        <foreach    items="melody:getHeritedContent(§[srv]§, '/§[jdg_instance_node]§[ §[jdg_instance_exists_criteria]§ and §[jdg_instance_match_criteria]§ ]')"
+                    item-name="jboss_instance">
+            <property name="jbossInstancePath"              value="§[§[jboss_instance]§/@path]§" />
+            <property name="jbossInstanceVersion"           value="§[§[jboss_instance]§/@version]§" />
+            <property name="jbossInstanceOwner"             value="§[§[jboss_instance]§/owner/@login]§" />
+            <property name="jbossInstanceOwnerPwd"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossInstanceOwner]§&quot;]/@password') ]§" />
+            <property name="jbossInstanceProfile"           value="§[§[jboss_instance]§/@profile]§" />
+            <property name="jbossInstanceProfile"           value="§[ if (string-length('§[jbossInstanceProfile]§')=0) then '' else '-§[jbossInstanceProfile]§' ]§" />
+            <property name="jbossInstanceConfigurationFile" value="standalone§[jbossInstanceProfile]§.xml" />
+            <property name="jbossInstanceAdminOnly"         value="§[§[jboss_instance]§/features/@administration-only]§"/>
+            <property name="jbossInstanceAdminOnly"         value="§[ if (string-length('§[jbossInstanceAdminOnly]§')=0) then 'false' else '§[jbossInstanceAdminOnly]§' ]§" />
+
+            <property name="jbossEnginePath"                value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/@path') ]§" />
+            <property name="jbossEngineOwner"               value="§[ melody:getHeritedContent(§[srv]§, '/jboss-datagrid-engine[@version=&quot;§[jbossInstanceVersion]§&quot;]/owner/@login') ]§" />
+            <property name="jbossEngineGroup"               value="§[ melody:getHeritedContent(§[srv]§, '/credentials/credential[@login=&quot;§[jbossEngineOwner]§&quot;]/@group') ]§" />
+
+            <property name="jbossInstanceMemoryXms"         value="§[§[jboss_instance]§/memory/@xms]§" />
+            <property name="jbossInstanceMemoryXmx"         value="§[§[jboss_instance]§/memory/@xmx]§" />
+            <property name="jbossInstanceMemoryPermSize"    value="§[§[jboss_instance]§/memory/@max-perm-size]§" />
+            <property name="jbossInstanceMemoryXms"         value="§[ if (string-length('§[jbossInstanceMemoryXms]§')=0) then '64m' else '§[jbossInstanceMemoryXms]§' ]§" />
+            <property name="jbossInstanceMemoryXmx"         value="§[ if (string-length('§[jbossInstanceMemoryXmx]§')=0) then '256m' else '§[jbossInstanceMemoryXmx]§' ]§" />
+            <property name="jbossInstanceMemoryPermSize"    value="§[ if (string-length('§[jbossInstanceMemoryPermSize]§')=0) then '64m' else '§[jbossInstanceMemoryPermSize]§' ]§" />
+            <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
+
+            <property name="jbossInstanceListenDevice"      value="§[§[jboss_instance]§/listen-on/@device]§" />
+            <property name="jbossInstanceListenMgntDevice"  value="§[§[jboss_instance]§/listen-on/@management-device]§" />
+            <property name="jbossInstanceListenDevice"      value="§[ if (string-length('§[jbossInstanceListenDevice]§')=0) then 'eth0' else '§[jbossInstanceListenDevice]§' ]§" />
+            <property name="jbossInstanceListenMgntDevice"  value="§[ if (string-length('§[jbossInstanceListenMgntDevice]§')=0) then '§[jbossInstanceListenDevice]§' else '§[jbossInstanceListenMgntDevice]§' ]§" />
+            <property name="jbossInstanceListenIp"          value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@ip ]§" />
+            <property name="jbossInstanceListenFqdn"        value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenDevice]§')/@fqdn ]§" />
+            <property name="jbossInstanceListenMgntIp"      value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@ip ]§" />
+            <property name="jbossInstanceListenMgntFqdn"    value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[jbossInstanceListenMgntDevice]§')/@fqdn ]§" />
+            <property name="jbossInstanceListenPortOffset"  value="§[ §[jboss_instance]§/listen-on/@port-offset ]§" />
+            <property name="jbossInstanceListenPortOffset"  value="§[ if (string-length('§[jbossInstanceListenPortOffset]§')=0) then '0' else '§[jbossInstanceListenPortOffset]§' ]§" />
+
+            <property name="jbossVaultEncDir"               value="§[§[jboss_instance]§/vault/enc-dir/@path]§" />
+            <property name="jbossVaultKeystore"             value="§[§[jboss_instance]§/vault/keystore/@path]§" />
+            <property name="jbossVaultKeystorePass"         value="§[§[jboss_instance]§/vault/keystore/@password]§" />
+            <property name="jbossVaultKeystoreAlias"        value="§[§[jboss_instance]§/vault/keystore/@alias]§" />
+            <property name="jbossVaultIterationCount"       value="§[§[jboss_instance]§/vault/secret/@iteration-count]§" />
+            <property name="jbossVaultSalt"                 value="§[§[jboss_instance]§/vault/secret/@salt]§" />
+            <property name="jbossVaultEncDir"               value="§[ if (string-length('§[jbossVaultEncDir]§')=0) then '§[jbossInstancePath]§/configuration/vault/secret/' else '§[jbossVaultEncDir]§' ]§" />
+            <property name="jbossVaultKeystore"             value="§[ if (string-length('§[jbossVaultKeystore]§')=0) then '§[jbossInstancePath]§/configuration/vault/vault.keystore' else '§[jbossVaultKeystore]§' ]§" />
+            <property name="jbossVaultKeystorePass"         value="§[ if (string-length('§[jbossVaultKeystorePass]§')=0) then 'changeit' else '§[jbossVaultKeystorePass]§' ]§" />
+            <property name="jbossVaultKeystoreAlias"        value="§[ if (string-length('§[jbossVaultKeystoreAlias]§')=0) then 'vault' else '§[jbossVaultKeystoreAlias]§' ]§" />
+            <property name="jbossVaultIterationCount"       value="§[ if (string-length('§[jbossVaultIterationCount]§')=0) then '69' else '§[jbossVaultIterationCount]§' ]§" />
+            <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')=0) then 'supasalt' else '§[jbossVaultSalt]§' ]§" />
+            <property name="jbossVaultSalt"                 value="§[ if (string-length('§[jbossVaultSalt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jbossVaultSalt]§' ]§" />
+            <property name="jbossVaultKeystoreMaskedPass"   value="§[ jboss:maskPassword('§[jbossVaultSalt]§', '§[jbossVaultIterationCount]§', '§[jbossVaultKeystorePass]§') ]§" />
+            <property name="jbossVaultKeystoreDN"           value="CN=§[melody:getNetworkDeviceElementByName(§[srv]§, §[jboss_instance]§/listen-on/@management-device)/@fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR" />
+
+            <property name="jbossInstanceId"                value="§[jbossInstanceOwner]§@§[jbossInstanceListenIp]§:+§[jbossInstanceListenPortOffset]§" />
+
+            <!-- prepare instance configuration modification -->
+            <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
+            <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+            <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+            <echo message="[datagrid.conf:§[jbossInstanceId]§] Preparing JBoss DataGrid instance configuration (user '§[jbossInstanceOwner]§' on '§[§[srv]§/@instance-id]§')" severity="info"/>
+            <copy>
+                <resources  src-basedir="./§[jbossInstanceVersion]§/standalone/configuration/"
+                            match="§[jbossInstanceConfigurationFile]§"
+                            dest-basedir="§[workingfolder.abs]§/"
+                            dest-name="§[tmpfile.rel]§"
+                            link-option="COPY_LINKS" />
+            </copy>
+
+            <!-- deploy instance and apply standard configuration -->
+            <call orders="deploy_jdg_instance-§[jbossInstanceVersion]§" sequence-descriptor="./§[jbossInstanceVersion]§/sd.xml"/>
+
+            <!-- customize instance -->
+            <call orders="§[substring-after('§[callback.instance]§','::')]§" sequence-descriptor="§[substring-before('§[callback.instance]§','::')]§"/>
+
+            <!-- upload modified configuration -->
+            <upload host="§[ip]§" login="§[jbossInstanceOwner]§" keypair-name="§[kp]§" >
+                <resources  src-basedir="§[workingfolder.abs]§/"
+                            match="§[tmpfile.rel]§"
+                            dest-basedir="§[jbossInstancePath]§/configuration/"
+                            dest-name="§[jbossInstanceConfigurationFile]§" >
+                    <posix-permissions scope="files">600</posix-permissions>
+                </resources>
+            </upload>
+
+            <echo message="+ JBoss DataGrid instance '§[jbossInstanceId]§' successfully deployed on '§[§[srv]§/@instance-id]§'." />
+        </foreach>
     </order>
 
     <order name="customzie_jdg_instance.default-callback" >
