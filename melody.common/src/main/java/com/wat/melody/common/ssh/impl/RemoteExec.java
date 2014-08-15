@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.log.LogThreshold;
 import com.wat.melody.common.messages.Msg;
@@ -21,6 +22,9 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 class RemoteExec {
 
 	private static Logger log = LoggerFactory.getLogger(RemoteExec.class);
+
+	private static Logger ex = LoggerFactory.getLogger("exception."
+			+ RemoteExec.class.getName());
 
 	private static GenericTimeout createGenericTimeout(int timeout) {
 		try {
@@ -65,58 +69,87 @@ class RemoteExec {
 		InterruptedException iex = null;
 		long start = 0;
 		long timeout = getKillTimeout().getTimeoutInMillis();
-		try {
-			channel = getSession().openExecChannel();
-			channel.setCommand(getCommand());
-			channel.setPty(getRequiretty());
-			channel.setInputStream(null);
-			channel.setOutputStream(getOutputStream());
-			channel.setErrStream(getErrorStream());
 
-			channel.connect();
-			while (true) {
+		int retry = 3;
+		while (true) {
+			try {
+				channel = getSession().openExecChannel();
+				channel.setCommand(getCommand());
+				channel.setPty(getRequiretty());
+				channel.setInputStream(null);
+				channel.setOutputStream(getOutputStream());
+				channel.setErrStream(getErrorStream());
+
+				channel.connect();
+				while (true) {
+					/*
+					 * Can't find a way to 'join' the session or the channel ...
+					 * So we're pooling the isClosed ....
+					 */
+					if (channel.isClosed()) {
+						break;
+					}
+					// were we interrupted ?
+					if (iex != null
+							&& System.currentTimeMillis() - start > timeout) {
+						log.warn(Msg.bind(Messages.ExecMsg_FORCE_STOP, timeout));
+						throw iex;
+					}
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException Ex) {
+						if (iex != null) {
+							continue;
+						}
+						start = System.currentTimeMillis();
+						iex = new WrapperInterruptedException(
+								Messages.ExecEx_INTERRUPTED, Ex);
+						log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP,
+								timeout));
+					}
+					if (Thread.interrupted()) {
+						if (iex != null) {
+							continue;
+						}
+						start = System.currentTimeMillis();
+						iex = new InterruptedException(
+								Messages.ExecEx_INTERRUPTED);
+						log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP,
+								timeout));
+					}
+				}
+				break;
+			} catch (JSchException Ex) {
+				String msg = Ex.getMessage();
+				msg = msg != null ? msg : "";
 				/*
-				 * Can't find a way to 'join' the session or the channel ... So
-				 * we're pooling the isClosed ....
+				 * Sometimes, don't know why, connect operation fail with
+				 * message 'channel is not opened'... When such error happened,
+				 * we observe that if we close the channel (see finally
+				 * statement), open the channel again, and connect, the command
+				 * is successfully executed. That's why we introduce a retry
+				 * mechanism.
 				 */
-				if (channel.isClosed()) {
-					break;
-				}
-				// were we interrupted ?
-				if (iex != null && System.currentTimeMillis() - start > timeout) {
-					log.warn(Msg.bind(Messages.ExecMsg_FORCE_STOP, timeout));
-					throw iex;
-				}
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException Ex) {
-					if (iex != null) {
+				if (msg.indexOf("channel is not opened") != -1) {
+					if (--retry > 0) {
+						MelodyException mex = new MelodyException(Ex);
+						log.warn(Msg.bind(Messages.ExecMsg_CHANNEL_CLOSED,
+								retry, mex.getUserFriendlyStackTrace()));
+						ex.warn(Msg.bind(Messages.ExecMsg_CHANNEL_CLOSED,
+								retry, mex.getFullStackTrace()));
 						continue;
 					}
-					start = System.currentTimeMillis();
-					iex = new WrapperInterruptedException(
-							Messages.ExecEx_INTERRUPTED, Ex);
-					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
 				}
-				if (Thread.interrupted()) {
-					if (iex != null) {
-						continue;
-					}
-					start = System.currentTimeMillis();
-					iex = new InterruptedException(Messages.ExecEx_INTERRUPTED);
-					log.info(Msg.bind(Messages.ExecMsg_GRACEFULL_STOP, timeout));
+				throw new RuntimeException("Failed to exec an ssh command "
+						+ "through a JSch 'exec' Channel.", Ex);
+			} catch (InterruptedException Ex) {
+				throw new WrapperInterruptedException(Msg.bind(
+						Messages.ExecMsg_FORCE_STOP_DONE, getSession()
+								.getConnectionDatas()), Ex);
+			} finally {
+				if (channel != null) {
+					channel.disconnect(); // This closes stream
 				}
-			}
-		} catch (JSchException Ex) {
-			throw new RuntimeException("Failed to exec an ssh command "
-					+ "through a JSch 'exec' Channel.", Ex);
-		} catch (InterruptedException Ex) {
-			throw new WrapperInterruptedException(Msg.bind(
-					Messages.ExecMsg_FORCE_STOP_DONE, getSession()
-							.getConnectionDatas()), Ex);
-		} finally {
-			if (channel != null) {
-				channel.disconnect(); // This closes stream
 			}
 		}
 		if (iex != null) {

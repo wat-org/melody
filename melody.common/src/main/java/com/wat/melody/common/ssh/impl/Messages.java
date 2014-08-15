@@ -42,6 +42,7 @@ public class Messages extends NLS {
 	public static String SftpFSEx_FAILED_TO_SET_ATTRIBUTE_X;
 
 	public static String ExecEx_INTERRUPTED;
+	public static String ExecMsg_CHANNEL_CLOSED;
 	public static String ExecMsg_GRACEFULL_STOP;
 	public static String ExecMsg_FORCE_STOP;
 	public static String ExecMsg_FORCE_STOP_DONE;
