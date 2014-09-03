@@ -26,6 +26,8 @@ import com.wat.melody.cloud.network.activation.NetworkActivatorConfigurationCall
 import com.wat.melody.cloud.network.activation.xml.NetworkActivationHelper;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaIds;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.ssh.ISshSessionConfiguration;
+import com.wat.melody.common.telnet.ITelnetSessionConfiguration;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.common.xml.DocHelper;
@@ -33,6 +35,7 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.aws.common.AwsPlugInConfiguration;
 import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
+import com.wat.melody.plugin.telnet.common.TelnetPlugInConfiguration;
 
 /**
  * 
@@ -131,13 +134,34 @@ abstract public class AbstractOperation implements ITask,
 		}
 	}
 
+	protected TelnetPlugInConfiguration getTelnetPlugInConfiguration()
+			throws AwsPlugInEc2Exception {
+		try {
+			return TelnetPlugInConfiguration.get();
+		} catch (PlugInConfigurationException Ex) {
+			throw new AwsPlugInEc2Exception(Ex);
+		}
+	}
+
 	@Override
-	public SshPlugInConfiguration getSshConfiguration() {
+	public ISshSessionConfiguration getSshConfiguration() {
 		try {
 			return getSshPlugInConfiguration();
 		} catch (AwsPlugInEc2Exception Ex) {
-			throw new RuntimeException("Unexpected error when retrieving Ssh "
-					+ " Plug-In configuration. "
+			throw new RuntimeException("Unexpected error when retrieving "
+					+ "Ssh Plug-In configuration. "
+					+ "Because such configuration registration have been "
+					+ "previously prouved, such error cannot happened.");
+		}
+	}
+
+	@Override
+	public ITelnetSessionConfiguration getTelnetConfiguration() {
+		try {
+			return getTelnetPlugInConfiguration();
+		} catch (AwsPlugInEc2Exception Ex) {
+			throw new RuntimeException("Unexpected error when retrieving "
+					+ "Telnet Plug-In configuration. "
 					+ "Because such configuration registration have been "
 					+ "previously prouved, such error cannot happened.");
 		}

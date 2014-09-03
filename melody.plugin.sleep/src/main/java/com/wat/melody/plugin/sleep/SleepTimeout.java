@@ -5,7 +5,7 @@ import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
-public class SleepTimeout implements Timeout {
+public class SleepTimeout implements Timeout<Long> {
 
 	public static SleepTimeout DEFAULT_VALUE = createSleepTimeout(1000);
 
@@ -109,14 +109,14 @@ public class SleepTimeout implements Timeout {
 	/**
 	 * @return the timeout in seconds.
 	 */
-	public long getTimeout() {
+	public Long getTimeout() {
 		return _timeout.getTimeout();
 	}
 
 	/**
 	 * @return the timeout in milliseconds.
 	 */
-	public long getTimeoutInMillis() {
+	public Long getTimeoutInMillis() {
 		return _timeout.getTimeoutInMillis();
 	}
 

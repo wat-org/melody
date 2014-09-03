@@ -3,6 +3,7 @@ package com.wat.melody.plugin.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.NestedElement;
 import com.wat.melody.api.annotation.NestedElement.Type;
@@ -64,6 +65,8 @@ public class Ssh extends AbstractSshManagedOperation {
 
 	@Override
 	public void doProcessing() throws SshException, InterruptedException {
+		Melody.getContext().handleProcessorStateUpdates();
+
 		int exitStatus = execSshCommand(getCommandToExecute(), getRequiretty(),
 				getDescription());
 		String recapMsg = getDescription() + " " + "[STATUS] ";

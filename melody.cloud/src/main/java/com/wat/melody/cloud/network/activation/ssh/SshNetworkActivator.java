@@ -52,13 +52,13 @@ public class SshNetworkActivator implements NetworkActivator {
 		return _activationDatas;
 	}
 
-	public void setDatas(SshNetworkActivationDatas nmd) {
-		if (nmd == null) {
+	public void setDatas(SshNetworkActivationDatas nad) {
+		if (nad == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ SshNetworkActivationDatas.class.getCanonicalName() + ".");
 		}
-		_activationDatas = nmd;
+		_activationDatas = nad;
 	}
 
 	public ISshSessionConfiguration getConfiguration() {

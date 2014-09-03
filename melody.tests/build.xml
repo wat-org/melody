@@ -55,7 +55,7 @@
 		</copy>
 
 		<echo>Building package for project ${project.name}_${project.version}</echo>
-		<tar destfile="${project.archive.name}" compression="gzip">
+		<tar destfile="${project.archive.name}" compression="gzip" longfile="gnu">
 			<tarfileset dir="." username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name="**" />
 				<exclude name=".*" />
@@ -102,7 +102,7 @@
 		</tar>
 
 		<echo>Building source package for project ${project.name}_${project.version}</echo>
-		<tar destfile="${project.archive.src.name}" compression="gzip">
+		<tar destfile="${project.archive.src.name}" compression="gzip" longfile="gnu">
 			<tarfileset dir="./.." username="${deploy.user.login}" group="${deploy.user.login}">
 				<include name="**" />
 				<exclude name="**/.*" />

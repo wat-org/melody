@@ -59,6 +59,8 @@ public abstract class Transfer extends AbstractSshManagedOperation implements
 
 	@Override
 	public void doProcessing() throws SshException, InterruptedException {
+		Melody.getContext().handleProcessorStateUpdates();
+
 		ISshSession session = null;
 		try {
 			session = openSession();

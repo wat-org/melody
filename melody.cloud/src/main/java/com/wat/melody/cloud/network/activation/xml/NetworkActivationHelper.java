@@ -16,6 +16,7 @@ import com.wat.melody.cloud.network.activation.NetworkActivationProtocol;
 import com.wat.melody.cloud.network.activation.NetworkActivationTimeout;
 import com.wat.melody.cloud.network.activation.exception.IllegalNetworkActivationProtocolException;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
+import com.wat.melody.cloud.network.activation.telnet.TelnetNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivationDatas;
 import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
@@ -545,6 +546,8 @@ public abstract class NetworkActivationHelper {
 			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_PORT;
+			case TELNET:
+				return TelnetNetworkActivationDatas.DEFAULT_PORT;
 			case WINRM:
 				return WinRmNetworkActivationDatas.DEFAULT_PORT;
 			default:
@@ -742,6 +745,8 @@ public abstract class NetworkActivationHelper {
 			switch (ap) {
 			case SSH:
 				return SshNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+			case TELNET:
+				return TelnetNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 			case WINRM:
 				return WinRmNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 			default:

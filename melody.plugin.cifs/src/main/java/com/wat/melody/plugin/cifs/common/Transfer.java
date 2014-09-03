@@ -58,6 +58,8 @@ public abstract class Transfer extends AbstractCifsOperation implements
 
 	@Override
 	public void doProcessing() throws CifsException, InterruptedException {
+		Melody.getContext().handleProcessorStateUpdates();
+
 		try {
 			doTransfer(getLocation(), getDomain(), getUserName(), getPassword());
 		} catch (TransferException Ex) {

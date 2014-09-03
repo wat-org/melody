@@ -39,7 +39,6 @@ import com.wat.melody.common.ssh.types.exception.IllegalCompressionTypeException
 import com.wat.melody.common.ssh.types.exception.IllegalConnectionRetryException;
 import com.wat.melody.common.ssh.types.exception.IllegalProxyTypeException;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
-import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 import com.wat.melody.plugin.ssh.common.exception.SshPlugInConfigurationException;
 
@@ -591,16 +590,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public Timeout getConnectionTimeout() {
+	public ConnectionTimeout getConnectionTimeout() {
 		return getSshSessionConfiguration().getConnectionTimeout();
 	}
 
 	@Override
-	public Timeout setConnectionTimeout(ConnectionTimeout val) {
+	public ConnectionTimeout setConnectionTimeout(ConnectionTimeout val) {
 		return getSshSessionConfiguration().setConnectionTimeout(val);
 	}
 
-	public Timeout setConnectionTimeout(String val)
+	public ConnectionTimeout setConnectionTimeout(String val)
 			throws SshPlugInConfigurationException {
 		try {
 			return setConnectionTimeout(ConnectionTimeout.parseString(val));
@@ -629,16 +628,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public Timeout getReadTimeout() {
+	public ReadTimeout getReadTimeout() {
 		return getSshSessionConfiguration().getReadTimeout();
 	}
 
 	@Override
-	public Timeout setReadTimeout(ReadTimeout val) {
+	public ReadTimeout setReadTimeout(ReadTimeout val) {
 		return getSshSessionConfiguration().setReadTimeout(val);
 	}
 
-	public Timeout setReadTimeout(String val)
+	public ReadTimeout setReadTimeout(String val)
 			throws SshPlugInConfigurationException {
 		try {
 			return setReadTimeout(ReadTimeout.parseString(val));
@@ -667,16 +666,16 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
-	public Timeout getServerAliveInterval() {
+	public ServerAliveInterval getServerAliveInterval() {
 		return getSshSessionConfiguration().getServerAliveInterval();
 	}
 
 	@Override
-	public Timeout setServerAliveInterval(ServerAliveInterval val) {
+	public ServerAliveInterval setServerAliveInterval(ServerAliveInterval val) {
 		return getSshSessionConfiguration().setServerAliveInterval(val);
 	}
 
-	public Timeout setServerAliveInterval(String val)
+	public ServerAliveInterval setServerAliveInterval(String val)
 			throws SshPlugInConfigurationException {
 		try {
 			return setServerAliveInterval(ServerAliveInterval.parseString(val));

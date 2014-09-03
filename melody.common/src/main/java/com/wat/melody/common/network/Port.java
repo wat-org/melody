@@ -16,6 +16,7 @@ public class Port {
 	public static final Port MIN = createPort(_MIN);
 	public static final Port MAX = createPort(_MAX);
 	public static final Port SSH = createPort(22);
+	public static final Port TELNET = createPort(23);
 	public static final Port HTTP = createPort(80);
 	public static final Port HTTPS = createPort(443);
 	// TODO : find the port of winrn

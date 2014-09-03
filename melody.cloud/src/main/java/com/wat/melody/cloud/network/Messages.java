@@ -27,6 +27,9 @@ public class Messages extends NLS {
 	public static String SshNetworkActivatorMsg_DISABLEMENT_DONE;
 	public static String SshNetworkActivatorEx_ENABLEMENT_TIMEOUT;
 
+	public static String TelnetNetworkActivatorMsg_WAIT_FOR_ENABLEMENT;
+	public static String TelnetNetworkActivatorEx_ENABLEMENT_TIMEOUT;
+
 	public static String NetworkDeviceListEx_DEVICE_ALREADY_DEFINE;
 
 	public static String NetworkDevLoaderEx_MISSING_ATTR;

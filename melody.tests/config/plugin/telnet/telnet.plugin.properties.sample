@@ -1,0 +1,24 @@
+######## license / author
+# license : GPL
+# author : Guillaume Cornet
+
+#####################
+### Mandatory Melody plugin configuration directives
+#####################
+
+### the class which will load this configuration
+plugin.configuration.canonicalclassname=com.wat.melody.plugin.telnet.common.TelnetPlugInConfiguration
+
+
+#####################
+### SOCKET CONFIGURATION
+#####################
+
+#telnet.conn.socket.connect.timeout=60000
+#telnet.conn.socket.connect.retry=3
+#telnet.conn.socket.read.timeout=60000
+
+#telnet.conn.socket.solinger=-1
+#telnet.conn.socket.tcpnodelay=false
+#telnet.conn.socket.buffer.size.send=0
+#telnet.conn.socket.buffer.size.receive=0

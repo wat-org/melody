@@ -26,7 +26,7 @@
 		    <!-- WARNING : indentation is important here, because of EOF -->
 			<exec>
                 <![CDATA[
-echo -e "\r1\r2\r3"
+echo -e "\n1\n2\n3"
 bash <<EOF
 echo super
 EOF

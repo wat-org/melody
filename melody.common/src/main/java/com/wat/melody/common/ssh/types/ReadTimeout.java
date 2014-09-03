@@ -10,18 +10,18 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  * @author Guillaume Cornet
  * 
  */
-public class ReadTimeout implements Timeout {
+public class ReadTimeout implements Timeout<Integer> {
 
 	/**
 	 * @param timeout
 	 *            represents a timeout value in millis.
 	 * 
-	 * @return a {@link ReadTimeout}, which is equal to the given <tt>long</tt>.
+	 * @return a {@link ReadTimeout}, which is equal to the given <tt>int</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public static ReadTimeout parseLong(long timeout)
+	public static ReadTimeout parseInt(int timeout)
 			throws IllegalTimeoutException {
 		return new ReadTimeout(timeout);
 	}
@@ -38,7 +38,7 @@ public class ReadTimeout implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -54,9 +54,9 @@ public class ReadTimeout implements Timeout {
 	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public ReadTimeout(long timeout) throws IllegalTimeoutException {
+	public ReadTimeout(int timeout) throws IllegalTimeoutException {
 		try {
 			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
@@ -74,7 +74,7 @@ public class ReadTimeout implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -105,15 +105,17 @@ public class ReadTimeout implements Timeout {
 	/**
 	 * @return the timeout, in seconds.
 	 */
-	public long getTimeout() {
-		return _timeout.getTimeout();
+	@Override
+	public Integer getTimeout() {
+		return _timeout.getTimeout().intValue();
 	}
 
 	/**
 	 * @return the timeout, in milliseconds.
 	 */
-	public long getTimeoutInMillis() {
-		return _timeout.getTimeoutInMillis();
+	@Override
+	public Integer getTimeoutInMillis() {
+		return _timeout.getTimeoutInMillis().intValue();
 	}
 
 }

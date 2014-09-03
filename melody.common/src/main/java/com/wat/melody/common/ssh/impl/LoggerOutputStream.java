@@ -119,8 +119,8 @@ public class LoggerOutputStream extends OutputStream {
 	 * </p>
 	 * 
 	 * <p>
-	 * Note that when writing '\r' and just after '\n', this object will ignore
-	 * the '\n'.
+	 * Note that when writing '\n' and just after '\r', this object will ignore
+	 * the '\r'.
 	 * </p>
 	 * 
 	 * @param b

@@ -113,6 +113,15 @@ public class SshSession implements ISshSession {
 		return previous;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("protocol:");
+		str.append("ssh");
+		str.append(" }");
+		return str.toString();
+	}
+
 	/**
 	 * @throws InvalidCredentialException
 	 *             on authentication failure.
@@ -135,14 +144,14 @@ public class SshSession implements ISshSession {
 		if (isConnected()) {
 			return;
 		}
-		log.trace(Msg.bind(Messages.SessionMsg_CNX, getConnectionDatas(),
-				getUserDatas()));
+		log.trace(Msg.bind(Messages.SessionMsg_CNX, this, getConnectionDatas(),
+				getUserDatas(), getSessionConfiguration()));
 		applyDatas();
 		applySessionConfiguration();
 		_connect();
 		// Change the name of the thread so that the log is more clear
 		_session.getConnectThread().setName(Thread.currentThread().getName());
-		log.trace(Messages.SessionMsg_CNX_OK);
+		log.trace(Msg.bind(Messages.SessionMsg_CNX_OK, this));
 	}
 
 	@Override
@@ -241,8 +250,11 @@ public class SshSession implements ISshSession {
 		try {
 			_session = JSCH.getSession(getLogin(), getHost(), getPort());
 		} catch (JSchException Ex) {
-			throw new RuntimeException("Improbable, tous les param ont été "
-					+ "validés.", Ex);
+			throw new RuntimeException("Failed to open a new JSCH session "
+					+ "with '" + getLogin() + "@" + getHost() + ":" + getPort()
+					+ "'. "
+					+ "Because this values have been previously validated, "
+					+ "such error cannot happened.", Ex);
 		}
 		_session.setUserInfo(new JSchUserInfoAdapter(getUserDatas(),
 				getConnectionDatas()));
@@ -285,7 +297,7 @@ public class SshSession implements ISshSession {
 				.getValue());
 
 		try {
-			_session.setServerAliveInterval((int) conf.getServerAliveInterval()
+			_session.setServerAliveInterval(conf.getServerAliveInterval()
 					.getTimeoutInMillis());
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Failed to set the serverAliveInterval "
@@ -295,8 +307,7 @@ public class SshSession implements ISshSession {
 		}
 
 		try {
-			_session.setTimeout((int) conf.getReadTimeout()
-					.getTimeoutInMillis());
+			_session.setTimeout(conf.getReadTimeout().getTimeoutInMillis());
 		} catch (JSchException Ex) {
 			throw new RuntimeException("Failed to set the timeout " + "to '"
 					+ conf.getReadTimeout() + "'. "
@@ -326,7 +337,7 @@ public class SshSession implements ISshSession {
 	private void _connect() throws SshSessionException,
 			InvalidCredentialException, HostKeyChangedException,
 			HostKeyNotFoundException, InterruptedException {
-		long cnxTimeout = 0;
+		int cnxTimeout = 0;
 		int cnxRetry = 0;
 		int cnxDelay = 3;
 		if (getSessionConfiguration() != null) {
@@ -337,7 +348,7 @@ public class SshSession implements ISshSession {
 		}
 		while (true) {
 			try {
-				_session.connect((int) cnxTimeout);
+				_session.connect(cnxTimeout);
 				// success => exit
 				return;
 			} catch (JSchExceptionInterrupted Ex) {
@@ -353,13 +364,13 @@ public class SshSession implements ISshSession {
 					// failures for <user>'
 					// => throw dedicated exception if credentials error
 					throw new InvalidCredentialException(Msg.bind(
-							Messages.SessionEx_FAILED_TO_CONNECT,
+							Messages.SessionEx_FAILED_TO_CONNECT, this,
 							getConnectionDatas(), getUserDatas()), Ex);
 				}
 				// HostKey has been changed => fast fail
 				if (msg.indexOf("HostKey has been changed") == 0) {
 					throw new HostKeyChangedException(Msg.bind(
-							Messages.SessionEx_FAILED_TO_CONNECT,
+							Messages.SessionEx_FAILED_TO_CONNECT, this,
 							getConnectionDatas(), getUserDatas()),
 							new HostKeyChangedException(Msg.bind(
 									Messages.SessionEx_HOSTKEY_CHANGED,
@@ -369,7 +380,7 @@ public class SshSession implements ISshSession {
 				// HostKey rejected => fast fail
 				if (msg.indexOf("reject HostKey") == 0) {
 					throw new HostKeyNotFoundException(Msg.bind(
-							Messages.SessionEx_FAILED_TO_CONNECT,
+							Messages.SessionEx_FAILED_TO_CONNECT, this,
 							getConnectionDatas(), getUserDatas()),
 							new HostKeyNotFoundException(Msg.bind(
 									Messages.SessionEx_HOSTKEY_UNDEFINED,
@@ -379,7 +390,7 @@ public class SshSession implements ISshSession {
 				// no retry left => fail
 				if (cnxRetry <= 0) {
 					throw new SshSessionException(Msg.bind(
-							Messages.SessionEx_FAILED_TO_CONNECT,
+							Messages.SessionEx_FAILED_TO_CONNECT, this,
 							getConnectionDatas(), getUserDatas()), Ex);
 				}
 				/*
@@ -390,7 +401,7 @@ public class SshSession implements ISshSession {
 				 * we receive an exception with message 'Packet corrupt'. In
 				 * order to resolve this issue, when we receive an exception
 				 * with message 'connection is closed by foreign host', we
-				 * disconnect and we rebuild a new session. After that, we
+				 * disconnect and we rebuild a new Ssh session. After that, we
 				 * retry.
 				 */
 				// connection closed by foreign host => create a new session
@@ -404,7 +415,7 @@ public class SshSession implements ISshSession {
 				}
 				// retrying
 				SshSessionException pex = new SshSessionException(Msg.bind(
-						Messages.SessionMsg_RETRY_TO_CONNECT,
+						Messages.SessionMsg_RETRY_TO_CONNECT, this,
 						getConnectionDatas(), getUserDatas(), cnxRetry), Ex);
 				log.info(pex.getUserFriendlyStackTrace());
 				ex.info(pex.getFullStackTrace());
@@ -440,10 +451,24 @@ public class SshSession implements ISshSession {
 	}
 
 	/*
+	 * TODO BUG AWS : can't enable/disable bucket logging in region eu-west-1,
+	 * us-west-1, us-west-2. Only work in region us-east-1
+	 * 
+	 * TODO BUG AWS : encrypted uploader doesn't work in region eu-west-1 (and
+	 * certainly some others). Only work in region us-east-1
+	 * 
+	 * TODO : introduce protected-area in demo 'krb5_mixed'
+	 * 
+	 * TODO : activer le verbose gc + rotation de gc.log au demarrage (voir
+	 * rotation de console.log). Note: avec cette merde de standalone.sh d'EAP
+	 * 6.3.0, on ne peut pas desactiver la verbose gc!
+	 * 
 	 * TODO : logrotate pour console.log, access.log et gc.log
 	 * 
-	 * TODO : rotation manuelle au démarrage de console.log, access.log et
-	 * gc.log : il ne faut pas perdre le precedent fichier
+	 * TODO : extension jboss.eap et datagrid : enregistrer les instances en
+	 * service et mettre en oeuvre l'autocompletion.
+	 * 
+	 * TODO : faire un plugin HAWTIO pour melody
 	 */
 	public ChannelSftp openSftpChannel() throws InterruptedException {
 		if (!isConnected()) {

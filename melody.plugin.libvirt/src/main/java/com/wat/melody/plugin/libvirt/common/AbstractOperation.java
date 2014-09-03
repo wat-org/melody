@@ -32,6 +32,7 @@ import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
 import com.wat.melody.plugin.ssh.common.SshPlugInConfiguration;
+import com.wat.melody.plugin.telnet.common.TelnetPlugInConfiguration;
 
 /**
  * 
@@ -131,13 +132,34 @@ public abstract class AbstractOperation implements ITask,
 		}
 	}
 
+	protected TelnetPlugInConfiguration getTelnetPlugInConfiguration()
+			throws LibVirtException {
+		try {
+			return TelnetPlugInConfiguration.get();
+		} catch (PlugInConfigurationException Ex) {
+			throw new LibVirtException(Ex);
+		}
+	}
+
 	@Override
 	public SshPlugInConfiguration getSshConfiguration() {
 		try {
 			return getSshPlugInConfiguration();
 		} catch (LibVirtException Ex) {
-			throw new RuntimeException("Unexpected error when retrieving Ssh "
-					+ " Plug-In configuration. "
+			throw new RuntimeException("Unexpected error when retrieving "
+					+ "Ssh Plug-In configuration. "
+					+ "Because such configuration registration have been "
+					+ "previously prouved, such error cannot happened.");
+		}
+	}
+
+	@Override
+	public TelnetPlugInConfiguration getTelnetConfiguration() {
+		try {
+			return getTelnetPlugInConfiguration();
+		} catch (LibVirtException Ex) {
+			throw new RuntimeException("Unexpected error when retrieving "
+					+ "Telnet Plug-In configuration. "
 					+ "Because such configuration registration have been "
 					+ "previously prouved, such error cannot happened.");
 		}

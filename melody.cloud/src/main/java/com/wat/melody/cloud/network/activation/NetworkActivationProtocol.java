@@ -13,7 +13,7 @@ import com.wat.melody.common.messages.Msg;
  */
 public enum NetworkActivationProtocol {
 
-	SSH("ssh"), WINRM("winrm");
+	SSH("ssh"), WINRM("winrm"), TELNET("telnet");
 
 	/**
 	 * <p>

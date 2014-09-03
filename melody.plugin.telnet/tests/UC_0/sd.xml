@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="main" basedir=".">
+
+	<order name="main">
+
+		<property name="IP" value="192.168.122.3" />
+		<property name="property1" value="salut les filles" />
+
+		<telnet host="§[IP]§" login="Administrator" password="Rf%9cRgf7">
+			<exec command="echo salut les filles"></exec>
+			<exec command="echo salut les gars"></exec>
+		</telnet>
+
+	</order>
+
+</sequence>

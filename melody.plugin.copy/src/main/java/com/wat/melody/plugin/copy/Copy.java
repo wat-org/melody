@@ -63,6 +63,8 @@ public class Copy implements ITask, TemplatingHandler {
 
 	@Override
 	public void doProcessing() throws CopyPluginException, InterruptedException {
+		Melody.getContext().handleProcessorStateUpdates();
+
 		try {
 			new LocalTransferMultiThread(getResourcesSpecifications(),
 					getMaxPar(), this).doTransfer();

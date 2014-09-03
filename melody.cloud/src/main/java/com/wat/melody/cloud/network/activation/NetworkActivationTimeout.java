@@ -11,7 +11,7 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  * @author Guillaume Cornet
  * 
  */
-public class NetworkActivationTimeout implements Timeout {
+public class NetworkActivationTimeout implements Timeout<Long> {
 
 	/**
 	 * @param timeout
@@ -109,14 +109,14 @@ public class NetworkActivationTimeout implements Timeout {
 	/**
 	 * @return the timeout, in seconds.
 	 */
-	public long getTimeout() {
+	public Long getTimeout() {
 		return _timeout.getTimeout();
 	}
 
 	/**
 	 * @return the timeout, in milliseconds.
 	 */
-	public long getTimeoutInMillis() {
+	public Long getTimeoutInMillis() {
 		return _timeout.getTimeoutInMillis();
 	}
 

@@ -5,16 +5,16 @@ package com.wat.melody.common.timeout;
  * @author Guillaume Cornet
  * 
  */
-public interface Timeout {
+public interface Timeout<T extends Number> {
 
 	/**
 	 * @return the timeout in seconds.
 	 */
-	public long getTimeout();
+	public T getTimeout();
 
 	/**
 	 * @return the timeout in milliseconds.
 	 */
-	public long getTimeoutInMillis();
+	public T getTimeoutInMillis();
 
 }

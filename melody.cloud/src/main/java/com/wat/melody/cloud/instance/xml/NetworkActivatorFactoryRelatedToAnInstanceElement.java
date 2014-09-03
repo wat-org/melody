@@ -15,6 +15,9 @@ import com.wat.melody.cloud.network.activation.exception.NetworkActivationHostUn
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.ssh.SshNetworkActivator;
 import com.wat.melody.cloud.network.activation.ssh.xml.SshNetworkActivationDatasLoader;
+import com.wat.melody.cloud.network.activation.telnet.TelnetNetworkActivationDatas;
+import com.wat.melody.cloud.network.activation.telnet.TelnetNetworkActivator;
+import com.wat.melody.cloud.network.activation.telnet.xml.TelnetNetworkActivationDatasLoader;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivationDatas;
 import com.wat.melody.cloud.network.activation.winrm.WinRmNetworkActivator;
 import com.wat.melody.cloud.network.activation.winrm.xml.WinRmNetworkActivationDatasLoader;
@@ -103,6 +106,13 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 				activator = new SshNetworkActivator(sshDatas,
 						configurationCallBack.getSshConfiguration());
 				activationDatas = sshDatas;
+				break;
+			case TELNET:
+				TelnetNetworkActivationDatas telnetDatas = new TelnetNetworkActivationDatasLoader()
+						.load(instanceElmt);
+				activator = new TelnetNetworkActivator(telnetDatas,
+						configurationCallBack.getTelnetConfiguration());
+				activationDatas = telnetDatas;
 				break;
 			case WINRM:
 				WinRmNetworkActivationDatas winrmDatas = new WinRmNetworkActivationDatasLoader()

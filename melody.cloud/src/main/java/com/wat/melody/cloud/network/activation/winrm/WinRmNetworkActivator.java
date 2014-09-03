@@ -28,14 +28,14 @@ public class WinRmNetworkActivator implements NetworkActivator {
 		return _activationDatas;
 	}
 
-	private void setDatas(WinRmNetworkActivationDatas ad) {
-		if (ad == null) {
+	private void setDatas(WinRmNetworkActivationDatas nad) {
+		if (nad == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid "
 					+ WinRmNetworkActivationDatas.class.getCanonicalName()
 					+ ".");
 		}
-		_activationDatas = ad;
+		_activationDatas = nad;
 	}
 
 	@Override

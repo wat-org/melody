@@ -10,19 +10,19 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  * @author Guillaume Cornet
  * 
  */
-public class ConnectionTimeout implements Timeout {
+public class ConnectionTimeout implements Timeout<Integer> {
 
 	/**
 	 * @param timeout
 	 *            represents a timeout value in millis.
 	 * 
 	 * @return a {@link ConnectionTimeout}, which is equal to the given
-	 *         <tt>long</tt>.
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public static ConnectionTimeout parseLong(long timeout)
+	public static ConnectionTimeout parseInt(int timeout)
 			throws IllegalTimeoutException {
 		return new ConnectionTimeout(timeout);
 	}
@@ -39,7 +39,7 @@ public class ConnectionTimeout implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -55,9 +55,9 @@ public class ConnectionTimeout implements Timeout {
 	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public ConnectionTimeout(long timeout) throws IllegalTimeoutException {
+	public ConnectionTimeout(int timeout) throws IllegalTimeoutException {
 		try {
 			_timeout = new GenericTimeout(timeout);
 		} catch (IllegalTimeoutException Ex) {
@@ -75,7 +75,7 @@ public class ConnectionTimeout implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -106,15 +106,17 @@ public class ConnectionTimeout implements Timeout {
 	/**
 	 * @return the timeout, in seconds.
 	 */
-	public long getTimeout() {
-		return _timeout.getTimeout();
+	@Override
+	public Integer getTimeout() {
+		return _timeout.getTimeout().intValue();
 	}
 
 	/**
 	 * @return the timeout, in milliseconds.
 	 */
-	public long getTimeoutInMillis() {
-		return _timeout.getTimeoutInMillis();
+	@Override
+	public Integer getTimeoutInMillis() {
+		return _timeout.getTimeoutInMillis().intValue();
 	}
 
 }

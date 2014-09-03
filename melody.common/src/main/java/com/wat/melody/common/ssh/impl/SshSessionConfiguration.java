@@ -14,7 +14,6 @@ import com.wat.melody.common.ssh.types.ServerAliveInterval;
 import com.wat.melody.common.ssh.types.ServerAliveMaxCount;
 import com.wat.melody.common.ssh.types.exception.IllegalConnectionRetryException;
 import com.wat.melody.common.ssh.types.exception.IllegalServerAliveMaxCountException;
-import com.wat.melody.common.timeout.Timeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
 
 /**
@@ -24,9 +23,9 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  */
 public class SshSessionConfiguration implements ISshSessionConfiguration {
 
-	private static ConnectionTimeout createConnectionTimeout(long timeout) {
+	private static ConnectionTimeout createConnectionTimeout(int timeout) {
 		try {
-			return ConnectionTimeout.parseLong(timeout);
+			return ConnectionTimeout.parseInt(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a ConnectionTimeout with value '" + timeout + "'. "
@@ -50,9 +49,9 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 		}
 	}
 
-	private static ReadTimeout createReadTimeout(long timeout) {
+	private static ReadTimeout createReadTimeout(int timeout) {
 		try {
-			return ReadTimeout.parseLong(timeout);
+			return ReadTimeout.parseInt(timeout);
 		} catch (IllegalTimeoutException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a ReadTimeout with value '" + timeout + "'. "
@@ -76,9 +75,9 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 		}
 	}
 
-	private static ServerAliveInterval createServerAliveInterval(long interval) {
+	private static ServerAliveInterval createServerAliveInterval(int interval) {
 		try {
-			return ServerAliveInterval.parseLong(interval);
+			return ServerAliveInterval.parseInt(interval);
 		} catch (IllegalTimeoutException Ex) {
 			throw new RuntimeException("Unexpected error while initializing "
 					+ "a ServerAliveInterval with value '" + interval + "'. "
@@ -190,16 +189,16 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout getConnectionTimeout() {
+	public ConnectionTimeout getConnectionTimeout() {
 		return _connectionTimeout;
 	}
 
 	@Override
-	public Timeout setConnectionTimeout(ConnectionTimeout timeout) {
+	public ConnectionTimeout setConnectionTimeout(ConnectionTimeout timeout) {
 		if (timeout == null) {
 			timeout = DEFAULT_CONNECTION_TIMEOUT;
 		}
-		Timeout previous = getConnectionTimeout();
+		ConnectionTimeout previous = getConnectionTimeout();
 		_connectionTimeout = timeout;
 		return previous;
 	}
@@ -220,16 +219,16 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout getReadTimeout() {
+	public ReadTimeout getReadTimeout() {
 		return _readTimeout;
 	}
 
 	@Override
-	public Timeout setReadTimeout(ReadTimeout timeout) {
+	public ReadTimeout setReadTimeout(ReadTimeout timeout) {
 		if (timeout == null) {
 			timeout = DEFAULT_READ_TIMEOUT;
 		}
-		Timeout previous = getReadTimeout();
+		ReadTimeout previous = getReadTimeout();
 		_readTimeout = timeout;
 		return previous;
 	}
@@ -251,16 +250,17 @@ public class SshSessionConfiguration implements ISshSessionConfiguration {
 	}
 
 	@Override
-	public Timeout getServerAliveInterval() {
+	public ServerAliveInterval getServerAliveInterval() {
 		return _serverAliveInterval;
 	}
 
 	@Override
-	public Timeout setServerAliveInterval(ServerAliveInterval interval) {
+	public ServerAliveInterval setServerAliveInterval(
+			ServerAliveInterval interval) {
 		if (interval == null) {
 			interval = DEFAULT_SERVER_ALIVE_INTERVAL;
 		}
-		Timeout previous = getServerAliveInterval();
+		ServerAliveInterval previous = getServerAliveInterval();
 		_serverAliveInterval = interval;
 		return previous;
 	}

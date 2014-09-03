@@ -10,19 +10,19 @@ import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
  * @author Guillaume Cornet
  * 
  */
-public class ServerAliveInterval implements Timeout {
+public class ServerAliveInterval implements Timeout<Integer> {
 
 	/**
 	 * @param aliveInterval
 	 *            represents a timeout value in millis.
 	 * 
 	 * @return a {@link ServerAliveInterval}, which is equal to the given
-	 *         <tt>long</tt>.
+	 *         <tt>int</tt>.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public static ServerAliveInterval parseLong(long aliveInterval)
+	public static ServerAliveInterval parseInt(int aliveInterval)
 			throws IllegalTimeoutException {
 		return new ServerAliveInterval(aliveInterval);
 	}
@@ -39,7 +39,7 @@ public class ServerAliveInterval implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -55,9 +55,9 @@ public class ServerAliveInterval implements Timeout {
 	 *            represents a timeout value in millis.
 	 * 
 	 * @throws IllegalTimeoutException
-	 *             if the given <tt>long</tt> is < 0.
+	 *             if the given <tt>int</tt> is < 0.
 	 */
-	public ServerAliveInterval(long aliveInterval)
+	public ServerAliveInterval(int aliveInterval)
 			throws IllegalTimeoutException {
 		try {
 			_timeout = new GenericTimeout(aliveInterval);
@@ -76,7 +76,7 @@ public class ServerAliveInterval implements Timeout {
 	 * @throws IllegalTimeoutException
 	 *             <ul>
 	 *             <li>if the given <tt>String</tt> is not a parse-able
-	 *             <tt>Long</tt> ;</li>
+	 *             <tt>int</tt> ;</li>
 	 *             <li>if the given <tt>String</tt> is < 0 ;</li>
 	 *             </ul>
 	 */
@@ -108,15 +108,15 @@ public class ServerAliveInterval implements Timeout {
 	/**
 	 * @return the timeout, in seconds.
 	 */
-	public long getTimeout() {
-		return _timeout.getTimeout();
+	public Integer getTimeout() {
+		return _timeout.getTimeout().intValue();
 	}
 
 	/**
 	 * @return the timeout, in milliseconds.
 	 */
-	public long getTimeoutInMillis() {
-		return _timeout.getTimeoutInMillis();
+	public Integer getTimeoutInMillis() {
+		return _timeout.getTimeoutInMillis().intValue();
 	}
 
 }

@@ -6,9 +6,7 @@ public class Messages extends NLS {
 
 	private static final String BUNDLE_NAME = "com.wat.melody.common.ssh.types.messages";
 
-	public static String ConnectionRetryEx_EMPTY;
-	public static String ConnectionRetryEx_NOT_A_NUMBER;
-	public static String ConnectionRetryEx_NEGATIVE;
+	public static String CnxTimeoutEx_INVALID;
 
 	public static String CompressionLevelEx_EMPTY;
 	public static String CompressionLevelEx_INVALID;
@@ -16,7 +14,9 @@ public class Messages extends NLS {
 	public static String CompressionTypeEx_EMPTY;
 	public static String CompressionTypeEx_INVALID;
 
-	public static String CnxTimeoutEx_INVALID;
+	public static String ConnectionRetryEx_EMPTY;
+	public static String ConnectionRetryEx_NOT_A_NUMBER;
+	public static String ConnectionRetryEx_NEGATIVE;
 
 	public static String ProxyTypeEx_EMPTY;
 	public static String ProxyTypeEx_INVALID;
