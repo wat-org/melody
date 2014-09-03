@@ -23,6 +23,7 @@
 		<module>melody.plugin.xml</module>
 		<module>melody.plugin.cifs</module>
 		<module>melody.plugin.ssh</module>
+		<module>melody.plugin.telnet</module>
 		<module>melody.plugin.aws</module>
 		<module>melody.plugin.libvirt</module>
 		<module>melody.plugin.jboss-eap</module>
