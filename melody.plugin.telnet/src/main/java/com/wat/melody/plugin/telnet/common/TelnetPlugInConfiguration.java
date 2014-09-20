@@ -56,6 +56,11 @@ public class TelnetPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
+	public String toString() {
+		return getTelnetSessionConfiguration().toString();
+	}
+
+	@Override
 	public String getFilePath() {
 		return _configurationFilePath;
 	}

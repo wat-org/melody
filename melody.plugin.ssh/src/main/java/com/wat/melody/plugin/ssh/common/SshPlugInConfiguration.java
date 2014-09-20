@@ -115,6 +115,45 @@ public class SshPlugInConfiguration implements IPlugInConfiguration,
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("{ ");
+		str.append("compression-level:");
+		str.append(getCompressionLevel());
+		str.append(", compression-type:");
+		str.append(getCompressionType());
+		str.append(", connection-timeout:");
+		str.append(getConnectionTimeout());
+		str.append(", connection-retry:");
+		str.append(getConnectionRetry());
+		str.append(", read-timeout:");
+		str.append(getReadTimeout());
+		str.append(", server-alive-max-count:");
+		str.append(getServerAliveMaxCount());
+		str.append(", server-alive-interval:");
+		str.append(getServerAliveInterval());
+		if (getKnownHosts() != null) {
+			str.append(", knowhosts:");
+			str.append(getKnownHosts());
+		}
+		if (getProxyType() != null) {
+			str.append(", proxy-type:");
+			str.append(getProxyType());
+			str.append(", proxy-host:");
+			str.append(getProxyHost());
+			str.append(", proxy-port:");
+			str.append(getProxyPort());
+		}
+		str.append(", keypair-repository:");
+		str.append(getKeyPairRepositoryPath());
+		str.append(", keypair-size:");
+		str.append(getKeyPairSize());
+		str.append(", management-enabled:");
+		str.append(getMgmtEnable());
+		str.append(" }");
+		return str.toString();
+	}
+
+	@Override
 	public String getFilePath() {
 		return _configurationFilePath;
 	}
