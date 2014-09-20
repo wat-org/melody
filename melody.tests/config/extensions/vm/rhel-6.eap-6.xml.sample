@@ -43,12 +43,12 @@
 				<package arch="x86_64" name="apr"/> <!-- native components -->
 			</packages>
 			<credentials>
-				<credential group="jboss" id="5000" login="jboss" password="adminpwd@1"/>
-				<credential group="jboss" id="5101" login="jeeusrA" password="ju@SrA56f"/>
-				<credential group="jboss" id="5102" login="jeeusrB" password="ju@SrB56f"/>
-				<credential group="jboss" id="5103" login="jeeusrC" password="ju@SrC56f"/>
-				<credential group="jboss" id="5103" login="jeeusrD" password="ju@SrD56f"/>
-				<credential group="jboss" id="5104" login="jeeusrE" password="ju@SrE56f"/>
+				<credential group="jboss" homedir="/home/jboss/" id="5000" login="jboss" password="adminpwd@1"/>
+				<credential group="jboss" homedir="/home/jeeusra/" id="5101" login="jeeusra" password="ju@SrA56f"/>
+				<credential group="jboss" homedir="/home/jeeusrb/" id="5102" login="jeeusrb" password="ju@SrB56f"/>
+				<credential group="jboss" homedir="/home/jeeusrc/" id="5103" login="jeeusrc" password="ju@SrC56f"/>
+				<credential group="jboss" homedir="/home/jeeusrd/" id="5103" login="jeeusrd" password="ju@SrD56f"/>
+				<credential group="jboss" homedir="/home/jeeusre/" id="5104" login="jeeusre" password="ju@SrE56f"/>
 			</credentials>
 		</model>
 	</models>

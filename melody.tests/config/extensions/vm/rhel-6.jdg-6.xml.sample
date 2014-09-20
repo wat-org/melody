@@ -30,10 +30,10 @@
 			</packages>
 			<credentials>
 				<credential group="jdg" id="5001" login="jdg" password="adminjdg@1"/>
-				<credential group="jdg" id="5201" login="jdgusrA" password="jd@SrA56f"/>
-				<credential group="jdg" id="5202" login="jdgusrB" password="jd@SrB56f"/>
-				<credential group="jdg" id="5203" login="jdgusrC" password="jd@SrC56f"/>
-				<credential group="jdg" id="5203" login="jdgusrD" password="jd@SrD56f"/>
+				<credential group="jdg" id="5201" login="jdgusra" password="jd@SrA56f"/>
+				<credential group="jdg" id="5202" login="jdgusrb" password="jd@SrB56f"/>
+				<credential group="jdg" id="5203" login="jdgusrc" password="jd@SrC56f"/>
+				<credential group="jdg" id="5203" login="jdgusrd" password="jd@SrD56f"/>
 			</credentials>
 		</model>
 	</models>
