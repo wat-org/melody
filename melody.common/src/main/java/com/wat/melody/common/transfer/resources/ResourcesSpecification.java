@@ -52,10 +52,11 @@ public class ResourcesSpecification extends ResourceSpecification {
 		super();
 		setSrcBaseDir(srcBaseDir);
 		setDestBaseDir(destBaseDir);
-		// exclude '.gitignore', '.hgignore', and '.DS_Store'
+		// exclude '.gitignore', '.hgignore', '.DS_Store' and '.*~'
 		createExclude().setMatch("**.gitignore");
 		createExclude().setMatch("**.hgignore");
 		createExclude().setMatch("**.DS_Store");
+		createExclude().setMatch("**.*~");
 	}
 
 	@Override
