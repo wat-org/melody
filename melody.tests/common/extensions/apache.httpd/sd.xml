@@ -11,6 +11,14 @@
     <property name="instance_eligible_criteria"    value="not(empty(melody:getHeritedContent(., '/§[apache_httpd_node]§'))) and melody:getNetworkActivationHost(.)!=''"/>
     <property name="instance_match_criteria"       value="1=1"/>
 
+    <property name="callback.instance"       value="§[ melody:getSequenceDescriptorPath() ]§::customzie_httpd_instance.default-callback"/>
+    <property name="callback.application"    value="§[ melody:getSequenceDescriptorPath() ]§::customzie_httpd_app.default-callback"/>
+
+    <order name="configure_webservers">
+        <!-- 'configure_webservers' is an alias for 'configure_apache_httpd' -->
+        <call orders="configure_apache_httpd"/>
+    </order>
+
     <order name="configure_apache_httpd">
         <echo message="Configuring all Apache HTTP Server ..." />
         <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
@@ -18,22 +26,22 @@
             <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <property name="httpdOwnerLogin"       value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/owner/@login') ]§" />
-            <property name="httpdOwnerId"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[httpdOwnerLogin]§&quot;]/@id') ]§" />
-            <property name="httpdOwnerGroup"       value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[httpdOwnerLogin]§&quot;]/@ref-group-name') ]§" />
-            <property name="httpdOwnerGroupId"     value="§[ melody:getHeritedContent(§[srv]§, '/credentials/group[@name=&quot;§[httpdOwnerGroup]§&quot;]/@id') ]§" />
+            <property name="wsOwnerLogin"       value="§[ melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/owner/@login') ]§" />
+            <property name="wsOwnerId"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[wsOwnerLogin]§&quot;]/@id') ]§" />
+            <property name="wsOwnerGroup"       value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[wsOwnerLogin]§&quot;]/@ref-group-name') ]§" />
+            <property name="wsOwnerGroupId"     value="§[ melody:getHeritedContent(§[srv]§, '/credentials/group[@name=&quot;§[wsOwnerGroup]§&quot;]/@id') ]§" />
 
-            <property name="httpdListenDevice"     value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@device') ]§" />
-            <property name="httpdListenDevice"     value="§[ if (string-length('§[httpdListenDevice]§')=0) then 'eth0' else '§[httpdListenDevice]§' ]§" />
-            <property name="httpdListenPort"       value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/listen-on/@port') ]§" />
-            <property name="httpdListenPort"       value="§[ if (string-length('§[httpdListenPort]§')=0) then '80' else '§[httpdListenPort]§' ]§" />
-            <property name="httpdListenIp"         value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@ip ]§" />
-            <property name="httpdListenFqdn"       value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[httpdListenDevice]§')/@fqdn ]§" />
+            <property name="wsListenDevice"     value="§[ melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/listen-on/@device') ]§" />
+            <property name="wsListenDevice"     value="§[ if (string-length('§[wsListenDevice]§')=0) then 'eth0' else '§[wsListenDevice]§' ]§" />
+            <property name="wsListenPort"       value="§[ melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/listen-on/@port') ]§" />
+            <property name="wsListenPort"       value="§[ if (string-length('§[wsListenPort]§')=0) then '80' else '§[wsListenPort]§' ]§" />
+            <property name="wsListenIp"         value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[wsListenDevice]§')/@ip ]§" />
+            <property name="wsListenFqdn"       value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[wsListenDevice]§')/@fqdn ]§" />
 
-            <property name="httpdLogLevel"         value="§[ melody:getHeritedContent(§[srv]§, '/apache-httpd/log/@level') ]§" />
-            <property name="httpdLogLevel"         value="§[ if (string-length('§[httpdLogLevel]§')=0) then 'warn' else '§[httpdLogLevel]§' ]§" />
+            <property name="wsLogLevel"         value="§[ melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/log/@level') ]§" />
+            <property name="wsLogLevel"         value="§[ if (string-length('§[wsLogLevel]§')=0) then 'warn' else '§[wsLogLevel]§' ]§" />
 
-            <!-- configure apache http server -->
+            <!-- deploy instance and apply standard configuration -->
             <upload host="§[ip]§" login="root" keypair-name="§[kp]§" >
                 <resources  src-basedir="etc/httpd/"
                             match="**"
@@ -42,15 +50,52 @@
                     <include match="conf/workers.properties" template="y"/>
                     <include match="conf/httpd.conf" template="y"/>
                     <include match="conf.d/0-log.conf" template="y"/>
+                    <exclude match="conf.d/2-generic-application.conf" />
                 </resources>
                 <resources  src-basedir="var/www/"
                             match="**"
                             dest-basedir="/var/www/" >
-                    <posix-group scope="all">§[httpdOwnerId]§</posix-group>
-                    <posix-user scope="all">§[httpdOwnerGroupId]§</posix-user>
+                    <posix-group scope="all">§[wsOwnerId]§</posix-group>
+                    <posix-user scope="all">§[wsOwnerGroupId]§</posix-user>
                     <posix-permissions scope="directories">750</posix-permissions>
                 </resources>
             </upload>
+
+            <!-- customize instance -->
+            <call orders="§[substring-after('§[callback.instance]§','::')]§" sequence-descriptor="§[substring-before('§[callback.instance]§','::')]§"/>
+
+            <!-- deploy applications -->
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/applications/application')"
+                        item-name="application"
+                        max-par="1">
+                <property name="appli.name"        value="§[§[application]§/@name]§" />
+                <property name="appli.worker"      value="§[replace('§[appli.name]§', '[.-]', '_') ]§" />
+
+                <!-- deploy standard application configuration -->
+                <upload host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <resources  src-basedir="etc/httpd/"
+                                match="conf.d/2-generic-application.conf"
+                                dest-basedir="/etc/httpd/"
+                                dest-name="conf.d/2-§[appli.name]§.conf"
+                                template="y" >
+                        <posix-permissions scope="files">640</posix-permissions>
+                    </resources>
+                </upload>
+
+                <!-- customize application -->
+                <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§" />
+                <property name="cb.sd"           value="§[substring-before('§[callback.application]§','::')]§" />
+                <property name="cb.order"        value="§[
+                 if ('§[cb.order]§' = 'customzie_httpd_app.default-callback') then
+                   '§[cb.order]§'
+                 else
+                   '§[cb.order]§.§[appli.name]§'
+                ]§" />
+
+                <call orders="§[cb.order]§" sequence-descriptor="§[cb.sd]§"/>
+
+                <echo message="+ Application '§[appli.name]§' successfully configured on Apache Http Server on '§[§[srv]§/@instance-id]§'." />
+            </foreach>
 
             <!-- restart apache http server-->
             <ssh description="[configure-apache-httpd:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
@@ -60,20 +105,17 @@
                 <exec command="service httpd restart" />
             </ssh>
 
-            <!-- perform extra stuff, for each application-->
-            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[apache_httpd_node]§/applications/application')"
-                        item-name="application"
-                        max-par="1">
-                <property name="appli.name"        value="§[§[application]§/@name]§" />
-                <property name="appli.worker"      value="§[§[application]§/@worker]§" />
-
-                <call orders="§[substring-after('§[callback]§','::')]§.§[appli.name]§" sequence-descriptor="§[substring-before('§[callback]§','::')]§"/>
-                <echo message="+ Application '§[appli.name]§' successfully configured on Apache Http Server on '§[§[srv]§/@instance-id]§'." />
-            </foreach>
-
             <echo message="+ Apache HTTP Server successfully configured on '§[§[srv]§/@instance-id]§'." />
         </foreach>
         <echo message="-- All Apache HTTP Server successfully configured." />
+    </order>
+
+    <order name="customzie_httpd_instance.default-callback" >
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customzie_httpd_app.default-callback" >
+        <!-- nothing to do -->
     </order>
 
 </sequence>
