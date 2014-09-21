@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <property name="haproxy_node"                  value="haproxy"/>
+    <property name="backend_instance_node"         value="jboss-eap-instance"/>
+
+    <property name="instance_selector"             value="./environment//instance"/>
+    <property name="instance_exists_criteria"      value="exists(@instance-id)"/>
+    <property name="instance_eligible_criteria"    value="not(empty(melody:getHeritedContent(., '/§[haproxy_node]§'))) and melody:getNetworkActivationHost(.)!=''"/>
+    <property name="instance_match_criteria"       value="1=1"/>
+
+    <property name="callback.instance"       value="§[ melody:getSequenceDescriptorPath() ]§::customzie_haproxy_instance.default-callback"/>
+    <property name="callback.application"    value="§[ melody:getSequenceDescriptorPath() ]§::customzie_haproxy_app.default-callback"/>
+
+    <order name="configure_webservers">
+        <!-- 'configure_webservers' is an alias for 'configure_haproxy' -->
+        <call orders="configure_haproxy"/>
+    </order>
+
+    <order name="configure_haproxy">
+        <echo message="Configuring all HAProxy Server ..." />
+        <foreach    items="§[instance_selector]§ [ §[instance_exists_criteria]§ and §[instance_eligible_criteria]§ and §[instance_match_criteria]§ ]"
+                    item-name="srv">
+            <property name="ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp" value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <property name="wsOwnerLogin"       value="§[ melody:getHeritedContent(§[srv]§, '/§[haproxy_node]§/owner/@login') ]§" />
+            <property name="wsOwnerId"          value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[wsOwnerLogin]§&quot;]/@id') ]§" />
+            <property name="wsOwnerGroup"       value="§[ melody:getHeritedContent(§[srv]§, '/credentials/user[@login=&quot;§[wsOwnerLogin]§&quot;]/@ref-group-name') ]§" />
+            <property name="wsOwnerGroupId"     value="§[ melody:getHeritedContent(§[srv]§, '/credentials/group[@name=&quot;§[wsOwnerGroup]§&quot;]/@id') ]§" />
+
+            <property name="wsListenDevice"     value="§[ melody:getHeritedContent(§[srv]§, '/§[haproxy_node]§/listen-on/@device') ]§" />
+            <property name="wsListenDevice"     value="§[ if (string-length('§[wsListenDevice]§')=0) then 'eth0' else '§[wsListenDevice]§' ]§" />
+            <property name="wsListenPort"       value="§[ melody:getHeritedContent(§[srv]§, '/§[haproxy_node]§/listen-on/@port') ]§" />
+            <property name="wsListenPort"       value="§[ if (string-length('§[wsListenPort]§')=0) then '80' else '§[wsListenPort]§' ]§" />
+            <property name="wsListenIp"         value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[wsListenDevice]§')/@ip ]§" />
+            <property name="wsListenFqdn"       value="§[ melody:getNetworkDeviceElementByName(§[srv]§, '§[wsListenDevice]§')/@fqdn ]§" />
+
+            <property name="wsLogLevel"         value="§[ melody:getHeritedContent(§[srv]§, '/§[haproxy_node]§/log/@level') ]§" />
+            <property name="wsLogLevel"         value="§[ if (string-length('§[wsLogLevel]§')=0) then 'warn' else '§[wsLogLevel]§' ]§" />
+
+            <!-- deploy instance and apply standard configuration -->
+            <upload host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <resources  src-basedir="etc/haproxy/"
+                            match="haproxy.cfg"
+                            dest-basedir="/etc/haproxy/"
+                            template="y" >
+                    <posix-permissions scope="files">644</posix-permissions>
+                </resources>
+            </upload>
+
+            <!-- customize instance -->
+            <call orders="§[substring-after('§[callback.instance]§','::')]§" sequence-descriptor="§[substring-before('§[callback.instance]§','::')]§"/>
+
+            <!-- deploy applications -->
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/§[haproxy_node]§/applications/application')"
+                        item-name="application"
+                        max-par="1">
+                <property name="appli.name"        value="§[§[application]§/@name]§" />
+                <property name="appli.worker"      value="§[replace('§[appli.name]§', '[.-]', '_') ]§" />
+
+                <!-- customize application -->
+                <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§" />
+                <property name="cb.sd"           value="§[substring-before('§[callback.application]§','::')]§" />
+                <property name="cb.order"        value="§[
+                 if ('§[cb.order]§' = 'customzie_haproxy_app.default-callback') then
+                   '§[cb.order]§'
+                 else
+                   '§[cb.order]§.§[appli.name]§'
+                ]§" />
+
+                <call orders="§[cb.order]§" sequence-descriptor="§[cb.sd]§"/>
+
+                <echo message="+ Application '§[appli.name]§' successfully configured on HAProxy Server on '§[§[srv]§/@instance-id]§'." />
+            </foreach>
+
+            <!-- restart haproxy server-->
+            <ssh description="[configure-haproxy:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                <exec command="service haproxy restart" />
+            </ssh>
+
+            <echo message="+ HAProxy Server successfully configured on '§[§[srv]§/@instance-id]§'." />
+        </foreach>
+        <echo message="-- All HAProxy Server successfully configured." />
+    </order>
+
+    <order name="customzie_haproxy_instance.default-callback" >
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customzie_haproxy_app.default-callback" >
+        <!-- nothing to do -->
+    </order>
+
+</sequence>
