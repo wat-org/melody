@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="package.arch"   value=""/>
+    <property name="package.repo"   value=""/>
+
+    <order name="install-package-on-single-machine">
+        <property name="package.arch"   value="§[if ('§[package.arch]§'!='') then '§[package.arch]§' else '§[machine.os.arch]§']§"/>
+        <property name="package.repo"   value="§[if ('§[package.repo]§'!='') then '--enablerepo=§[package.repo]§' else '']§" />
+
+        <!-- yum doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.yum">
+            <ssh description="[install-package:§[package.name]§.§[package.arch]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+declare almsg="Package '§[package.name]§.§[package.arch]§' is already installed"
+declare okmsg="Package '§[package.name]§.§[package.arch]§' successfully installed"
+declare errmsg="Fail to install package '§[package.name]§.§[package.arch]§'"
+
+declare testcmd="rpm -q §[package.name]§.§[package.arch]§"
+declare docmd="yum install §[package.repo]§ -y §[package.name]§.§[package.arch]§"
+
+declare retryallowedmsg="(\
+error communicating with server\
+|no address associated with hostname\
+|temporary failure in name resolution\
+|unable to connect to the host and port specified\
+|connection timed out\
+|network is unreachable\
+|name or service not known\
+|could not resolve host\
+|error downloading packages\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+<!--
+Retry mechanism will retry if known error raised
+sample 1:
+ There was an error communicating with RHN.
+ Package profile information could not be sent.
+ Error communicating with server. The message was:
+ Unable to connect to the host and port specified
+ Error Downloading Packages:
+   krb5-workstation-1.10.3-33.el6.x86_64: Error communicating with server. The message was:
+ Unable to connect to the host and port specified
+sample 2:
+ There was an error communicating with RHN.
+ RHN channel support will be disabled.
+ Error communicating with server. The message was:
+ Connection timed out on write
+ Error: Nothing to do
+sample 3:
+ There was an error communicating with RHN.
+ RHN channel support will be disabled.
+ Error communicating with server. The message was:
+ Temporary failure in name resolution
+ Error: Nothing to do
+-->
+        </synchronize>
+
+        <echo message="+ Package '§[package.name]§.§[package.arch]§' successfully installed on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="remove-package-on-single-machine">
+        <property name="package.arch"   value="§[if (string-length('§[package.arch]§')!=0) then '§[package.arch]§' else '§[machine.os.arch]§']§"/>
+
+        <!-- yum doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.yum">
+            <ssh description="[remove-package:§[package.name]§.§[package.arch]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+rpm -q §[package.name]§.§[package.arch]§ || {
+  echo "Package '§[package.name]§.§[package.arch]§' is already removed. Nothing to do."
+  exit 0
+}
+yum remove -y §[package.name]§.§[package.arch]§ || {
+  res=$?
+  echo "Fail to remove package '§[package.name]§.§[package.arch]§'. Check log for details. Exiting with error code $res." >&2
+  exit $res
+}
+echo "Package '§[package.name]§.§[package.arch]§' successfully removed."
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ Package '§[package.name]§.§[package.arch]§' successfully removed on machine '§[machine.id]§'."/>
+    </order>
+
+</sequence>

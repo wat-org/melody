@@ -29,8 +29,8 @@
             <property name="os.name"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@name') ]§" />
             <property name="os.version"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@version') ]§" />
             <property name="os.arch"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@arch') ]§" />
-            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'site') ]§" />
-            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rack') ]§" />
+            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, '/@site') ]§" />
+            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, '/@rack') ]§" />
             <property name="location.machine" value="§[ip]§" />
 
             <call orders="deploy_jboss_engines_single_machine"/>
@@ -50,8 +50,8 @@
             <property name="os.name"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@name') ]§" />
             <property name="os.version"       value="§[ melody:getHeritedContent(§[srv]§, '/os/@version') ]§" />
             <property name="os.arch"          value="§[ melody:getHeritedContent(§[srv]§, '/os/@arch') ]§" />
-            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'site') ]§" />
-            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, 'rack') ]§" />
+            <property name="location.site"    value="§[ melody:getHeritedAttributeValue(§[srv]§, '/@site') ]§" />
+            <property name="location.rack"    value="§[ melody:getHeritedAttributeValue(§[srv]§, '/@rack') ]§" />
             <property name="location.machine" value="§[ip]§" />
 
             <call orders="deploy_jboss_engines_single_machine"/>

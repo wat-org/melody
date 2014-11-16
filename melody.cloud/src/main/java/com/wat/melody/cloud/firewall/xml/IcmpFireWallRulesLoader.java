@@ -2,6 +2,8 @@ package com.wat.melody.cloud.firewall.xml;
 
 import java.util.List;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -44,28 +46,44 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	public static final String CODES_ATTR = "codes";
 
 	protected IcmpTypes loadIcmpTypes(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TYPES_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return IcmpTypes.parseString(v);
-		} catch (IllegalIcmpTypesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(e, TYPES_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TYPES_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return IcmpTypes.parseString(v);
+			} catch (IllegalIcmpTypesException Ex) {
+				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TYPES_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	protected IcmpCodes loadIcmpCodes(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, CODES_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return IcmpCodes.parseString(v);
-		} catch (IllegalIcmpCodesException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(e, CODES_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ CODES_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return IcmpCodes.parseString(v);
+			} catch (IllegalIcmpCodesException Ex) {
+				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ CODES_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 

@@ -98,7 +98,7 @@ The new Template's VM will have mac address '52:54:00:01:00:81', ip address '168
     chkconfig lvcd on
   do your best so that lvcd starts after network abd before ssh 
   - stop the template's VM
-    # virsh undefine RHEL-7-minimal-template
+    # virsh destroy RHEL-7-minimal-template
 
 
 5/ Configure the new template in Melody :

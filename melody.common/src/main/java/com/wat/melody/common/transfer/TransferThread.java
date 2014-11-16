@@ -23,8 +23,7 @@ public class TransferThread implements Runnable {
 		setTransferMultiThread(p);
 		setTransferableFileSystem(transferableFileSystem);
 
-		setThread(new Thread(p.getThreadGroup(), this, p.getThreadGroup()
-				.getName() + "-" + index));
+		setThread(p.newThread(this, index));
 		setFinalError(null);
 	}
 

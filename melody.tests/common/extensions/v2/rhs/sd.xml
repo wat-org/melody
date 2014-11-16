@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="machine_selector"            value="./environment//instance"/>
+    <property name="machine_exists_criteria"     value="exists(@instance-id)"/>
+    <property name="machine_running_criteria"    value="melody:getNetworkActivationHost(.)!=''"/>
+    <property name="machine_eligible_criteria"   value="1=1"/>
+    <property name="machine_match_criteria"      value="1=1"/>
+
+    <property name="rhs_grid_match_criteria"   value="1=1"/>
+
+    <!-- RHS PEERS
+         caller must define 'callback.rhs.peer'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-rhs-nodes">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhs-node'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhs-node"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-rhs-node">
+        <property name="grid.name"      value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhs-node/@mother-grid') ]§"/>
+
+        <property name="pilot"          value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]') and node()!=§[machine]§ ][1]"/>
+        <property name="pilot.cnx.ip"   value="§[ melody:getNetworkActivationHost(§[pilot]§) ]§"/>
+        <property name="pilot.cnx.kp"   value="§[ melody:getInstanceKeyPairName  (§[pilot]§) ]§"/>
+        <property name="rhs.version"    value="§[ melody:getHeritedAttributeValue(§[pilot]§, '/rhs-node/@version') ]§"/>
+
+        <call orders="§[substring-after('§[callback.rhs.peer]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.peer]§','::')]§"/>
+    </order>
+
+    <!-- RHS GRIDS
+         caller must define 'callback.rhs.grid'.
+         caller can define 'rhs_grid_match_criteria' to target a subset of grids. -->
+    <order name="do-operation-on-rhs-grids">
+        <foreach    items="./environment//rhs-grids/rhs-grid[ §[rhs_grid_match_criteria]§ ]"
+                    item-name="grid">
+            <property name="grid.name" value="§[ melody:getHeritedAttributeValue(§[grid]§, '/@name') ]§"/>
+
+            <call orders="§[substring-after('§[callback.rhs.grid]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.grid]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <!-- RHS VOLUMES
+         caller must define 'callback.rhs.volume'.
+         caller can define 'rhs_grid_match_criteria' to target a subset of grids. -->
+    <order name="do-operation-on-rhs-volumes">
+        <call orders="do-operation-on-rhs-grids">
+            <param name="callback.rhs.grid" value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhs-volumes-on-single-rhs-grid"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-rhs-volumes-on-single-rhs-grid">
+        <foreach    items="melody:getHeritedContent(§[grid]§, '/volumes/volume')"
+                    item-name="volume">
+            <property name="vol.name" value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@name') ]§"/>
+
+            <!-- build the bricks list of the volume -->
+            <property name="bricks.list" value="§[
+              string-join(
+                for $rhs_node in §[machine_selector]§ [ melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]') ]
+                return for $rhs_brick in melody:getHeritedContent($rhs_node, '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]')/brick
+                       return concat( melody:getNetworkActivationHost($rhs_node),':',melody:getHeritedAttributeValue($rhs_node, concat('/partitions/partition[@name=&quot;',$rhs_brick/@partition-name,'&quot;]/@mount-point')))
+              ,' ')
+            ]§"/>
+
+            <property name="vol.striped"   value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@striped', '0') ]§"/>
+            <property name="vol.striped"   value="§[ if (§[vol.striped]§ &lt; 2) then '0' else '§[vol.striped]§' ]§"/>
+
+            <property name="vol.replicated"   value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@replicated', '0') ]§"/>
+            <property name="vol.replicated"   value="§[ if (§[vol.replicated]§ &lt; 2) then '0' else '§[vol.replicated]§' ]§"/>
+
+            <property name="pilot"         value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]') ][1]"/>
+            <property name="pilot.cnx.ip"  value="§[ melody:getNetworkActivationHost(§[pilot]§) ]§"/>
+            <property name="pilot.cnx.kp"  value="§[ melody:getInstanceKeyPairName  (§[pilot]§) ]§"/>
+            <property name="rhs.version"   value="§[ melody:getHeritedAttributeValue(§[pilot]§, '/rhs-node/@version') ]§"/>
+
+            <call orders="§[substring-after('§[callback.rhs.volume]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.volume]§','::')]§"/>
+        </foreach>
+    </order>
+
+
+    <!-- RHS PEERS attach/detach
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="rhs-peers-attach">
+        <echo message="Attaching Red Hat Storage peers ..."/>
+        <call orders="do-operation-on-rhs-nodes">
+            <param name="callback.rhs.peer" value="§[melody:getSequenceDescriptorPath()]§::rhs-peer-attach"/>
+        </call>
+        <echo message="-- Red Hat Storage peers successfully attached."/>
+    </order>
+
+    <order name="rhs-peers-detach">
+        <echo message="Detaching Red Hat Storage peers ..."/>
+        <call orders="do-operation-on-rhs-nodes">
+            <param name="callback.rhs.peer" value="§[melody:getSequenceDescriptorPath()]§::rhs-peer-detach"/>
+        </call>
+        <echo message="-- Red Hat Storage peers successfully detached."/>
+    </order>
+
+    <order name="rhs-peer-attach">
+        <call orders="rhs-peer-attach" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+    <order name="rhs-peer-detach">
+        <call orders="rhs-peer-detach" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+
+    <!-- RHS VOLUMES create/destroy -->
+    <order name="rhs-create-volumes">
+        <echo message="Creating Red Hat Storage Volumes ..."/>
+        <call orders="do-operation-on-rhs-volumes">
+            <param name="callback.rhs.volume"           value="§[melody:getSequenceDescriptorPath()]§::rhs-create-volume"/>
+        </call>
+        <echo message="-- Red Hat Storage Volumes successfully created."/>
+    </order>
+
+    <order name="rhs-destroy-volumes">
+        <echo message="Destroying Red Hat Storage Volumes ..."/>
+        <call orders="do-operation-on-rhs-volumes">
+            <param name="callback.rhs.volume"           value="§[melody:getSequenceDescriptorPath()]§::rhs-destroy-volume"/>
+        </call>
+        <echo message="-- Red Hat Storage Volumes successfully destroyed."/>
+    </order>
+
+    <order name="rhs-create-volume">
+        <call orders="rhs-create-volume" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+    <order name="rhs-destroy-volume">
+        <call orders="rhs-destroy-volume" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+
+
+    <!-- RHS VOLUMES start/stop -->
+    <order name="rhs-start-volumes">
+        <echo message="Starting Red Hat Storage Volumes ..."/>
+        <call orders="do-operation-on-rhs-volumes">
+            <param name="callback.rhs.volume"           value="§[melody:getSequenceDescriptorPath()]§::rhs-start-volume"/>
+        </call>
+        <echo message="-- Red Hat Storage Volumes successfully started."/>
+    </order>
+
+    <order name="rhs-stop-volumes">
+        <echo message="Stopping Red Hat Storage Volumes ..."/>
+        <call orders="do-operation-on-rhs-volumes">
+            <param name="callback.rhs.volume"           value="§[melody:getSequenceDescriptorPath()]§::rhs-stop-volume"/>
+        </call>
+        <echo message="-- Red Hat Storage Volumes successfully stopped."/>
+    </order>
+
+    <order name="rhs-start-volume">
+        <call orders="rhs-start-volume" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+    <order name="rhs-stop-volume">
+        <call orders="rhs-stop-volume" sequence-descriptor="os.rhs.§[rhs.version]§.xml"/>
+    </order>
+
+</sequence>

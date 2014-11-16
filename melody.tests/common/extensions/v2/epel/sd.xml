@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-epel-repo">
+        <echo message="Deploying EPEL repository..."/>
+        <call orders="do-operation-on-epels">
+            <param name="callback.epel"   value="§[melody:getSequenceDescriptorPath()]§::deploy-epel-repo-on-single-machine"/>
+        </call>
+        <echo message="-- EPEL repository successfully deployed."/>
+    </order>
+
+    <order name="do-operation-on-epels">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/packages/package[ @repo=&quot;epel&quot; ]'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-packages-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-epel-on-single-machine">
+        <call orders="§[substring-after('§[callback.package]§','::')]§" sequence-descriptor="§[substring-before('§[callback.package]§','::')]§"/>
+    </order>
+
+    <order name="deploy-epel-repo-on-single-machine">
+        <call orders="deploy-epel-repo-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+</sequence>

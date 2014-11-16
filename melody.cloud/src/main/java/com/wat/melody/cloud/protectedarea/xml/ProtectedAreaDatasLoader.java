@@ -1,5 +1,7 @@
 package com.wat.melody.cloud.protectedarea.xml;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -50,32 +52,54 @@ public class ProtectedAreaDatasLoader {
 	public static final String DESCRIPTION_ATTR = "description";
 
 	private String loadRegion(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, REGION_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ REGION_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	private ProtectedAreaName loadName(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, NAME_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return ProtectedAreaName.parseString(v);
-		} catch (IllegalProtectedAreaNameException Ex) {
-			Node attr = FilteredDocHelper.getHeritedAttribute(e, NAME_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e,
+					"/@" + NAME_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return ProtectedAreaName.parseString(v);
+			} catch (IllegalProtectedAreaNameException Ex) {
+				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ NAME_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private String loadDescription(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, DESCRIPTION_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ DESCRIPTION_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	/**

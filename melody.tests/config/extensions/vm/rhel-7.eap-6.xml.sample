@@ -4,6 +4,24 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.eap-6">
+			<jee-server-model name="eap-6" path="/home/jeeusra/eap.inst1">
+				<owner login="jeeusra"/>
+				<listen-on device="eth0" management-device="eth0" port-offset="0">
+					<socket name="http" port="8080"/>
+					<socket name="ajp" port="8009"/>
+					<socket name="https" port="8443"/>
+				</listen-on>
+				<memory perm-size="64m" xms="64m" xmx="128m"/>
+				<administrators>
+					<user login="jboss"/>
+					<user login="jeeusra"/>
+				</administrators>
+				<keystore password="XXXXXXXXXXXX" path="server.ks">
+					<key alias="server" password="YYYYYYYYYYY" usage="management"/>
+				</keystore>
+				<jboss-web uses-native-components="true"/>
+			</jee-server-model>
+
 			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
@@ -34,21 +52,14 @@
 			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" version="6.3.0">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<packages>
-				<package arch="x86_64" name="zip"/>
-				<package arch="x86_64" name="unzip"/>
-				<package arch="x86_64" name="java-1.6.0-openjdk-devel"/> <!-- java 1.6 -->
-				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
-				<package arch="x86_64" name="zlib"/> <!-- native components -->
-				<package arch="x86_64" name="apr"/> <!-- native components -->
-			</packages>
+
 			<credentials>
-				<credential group="jboss" homedir="/home/jboss/" id="5000" login="jboss" password="adminpwd@1"/>
-				<credential group="jboss" homedir="/home/jeeusra/" id="5101" login="jeeusra" password="ju@SrA56f"/>
-				<credential group="jboss" homedir="/home/jeeusrb/" id="5102" login="jeeusrb" password="ju@SrB56f"/>
-				<credential group="jboss" homedir="/home/jeeusrc/" id="5103" login="jeeusrc" password="ju@SrC56f"/>
-				<credential group="jboss" homedir="/home/jeeusrd/" id="5103" login="jeeusrd" password="ju@SrD56f"/>
-				<credential group="jboss" homedir="/home/jeeusre/" id="5104" login="jeeusre" password="ju@SrE56f"/>
+				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jeeusra" id="5101" login="jeeusra" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jeeusrb" id="5102" login="jeeusrb" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jeeusrc" id="5103" login="jeeusrc" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jeeusrd" id="5103" login="jeeusrd" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jeeusre" id="5104" login="jeeusre" password="XXXXXXXXXX"/>
 			</credentials>
 		</model>
 	</models>

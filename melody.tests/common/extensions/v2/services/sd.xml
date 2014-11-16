@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="service_state_criteria"   value="1=1"/>
+    <property name="service_match_criteria"   value="1=1"/>
+
+    <order name="ensure-services">
+        <call orders="start-services,stop-services"/>
+    </order>
+
+    <order name="do-operation-on-services">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/services/service'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-services-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-services-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/services/service[ §[service_state_criteria]§ and §[service_match_criteria]§ ]')"
+                    item-name="service">
+            <property name="service.name" value="§[ melody:getHeritedAttributeValue(§[service]§, '/@name') ]§"/>
+
+            <call orders="§[substring-after('§[callback.service]§','::')]§" sequence-descriptor="§[substring-before('§[callback.service]§','::')]§"/>
+        </foreach>
+    </order>
+
+
+    <order name="start-services">
+        <echo message="Starting services ..."/>
+        <call orders="do-operation-on-services">
+            <param name="service_state_criteria"   value="( @state=&quot;on&quot; or not(exists(@state)) )"/>
+            <param name="callback.service"         value="§[melody:getSequenceDescriptorPath()]§::start-service-on-single-machine"/>
+        </call>
+        <echo message="-- Services successfully started."/>
+    </order>
+
+    <order name="start-service-on-single-machine">
+        <call orders="start-service-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+
+    <order name="stop-services">
+        <echo message="Stopping services ..."/>
+        <call orders="do-operation-on-services">
+            <param name="service_state_criteria"   value="@state=&quot;off&quot;"/>
+            <param name="callback.service"         value="§[melody:getSequenceDescriptorPath()]§::stop-service-on-single-machine"/>
+        </call>
+        <echo message="-- Services successfully stopped."/>
+    </order>
+
+    <order name="stop-service-on-single-machine">
+        <call orders="stop-service-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+</sequence>

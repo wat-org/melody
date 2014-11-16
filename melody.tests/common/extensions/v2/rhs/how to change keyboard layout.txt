@@ -1,0 +1,7 @@
+1) open /etc/sysconfig/keyboard
+2) set its content to
+KEYTABLE="fr-latin9"
+MODEL="pc105"
+LAYOUT="fr"
+KEYBOARDTYPE="pc"
+VARIANT="latin9"

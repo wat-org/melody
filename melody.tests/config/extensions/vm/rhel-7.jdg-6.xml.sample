@@ -4,6 +4,23 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.jdg-6">
+			<kvc-server-model name="jdg-6" path="/home/jdgusra/jdg.inst1">
+				<owner login="jdgusra"/>
+				<listen-on device="eth0" management-device="eth0" port-offset="0">
+					<socket name="http" port="8080"/>
+					<socket name="https" port="8443"/>
+					<socket name="hotrod" port="11222"/>
+				</listen-on>
+				<memory perm-size="64m" xms="64m" xmx="128m"/>
+				<administrators>
+					<user login="jdg"/>
+					<user login="jdgusra"/>
+				</administrators>
+				<keystore password="XXXXXXXXXXXX" path="server.ks">
+					<key alias="server" password="YYYYYYYYYYY" usage="management"/>
+				</keystore>
+			</kvc-server-model>
+
 			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" version="6.0.0">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
@@ -22,18 +39,14 @@
 			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" version="6.3.0">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<packages>
-				<package arch="x86_64" name="zip"/>
-				<package arch="x86_64" name="unzip"/>
-				<package arch="x86_64" name="java-1.6.0-openjdk-devel"/> <!-- java 1.6 -->
-				<package arch="x86_64" name="java-1.7.0-openjdk-devel"/> <!-- java 1.7 -->
-			</packages>
+
 			<credentials>
-				<credential group="jdg" id="5001" login="jdg" password="adminjdg@1"/>
-				<credential group="jdg" id="5201" login="jdgusra" password="jd@SrA56f"/>
-				<credential group="jdg" id="5202" login="jdgusrb" password="jd@SrB56f"/>
-				<credential group="jdg" id="5203" login="jdgusrc" password="jd@SrC56f"/>
-				<credential group="jdg" id="5203" login="jdgusrd" password="jd@SrD56f"/>
+				<credential group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdgusra" id="5201" login="jdgusra" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdgusrb" id="5202" login="jdgusrb" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdgusrc" id="5203" login="jdgusrc" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdgusrd" id="5203" login="jdgusrd" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdgusre" id="5204" login="jdgusre" password="XXXXXXXXXX"/>
 			</credentials>
 		</model>
 	</models>

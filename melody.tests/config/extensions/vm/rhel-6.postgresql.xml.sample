@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-6']" name="rhel-6.postgresql">
+			<rdb-server path="/var/lib/pgsql/data">
+				<owner login="postgres"/>
+				<listen-on device="eth0" port-offset="0">
+					<socket name="tcp" port="5432"/>
+				</listen-on>
+			</rdb-server>
+
+			<credentials>
+				<!-- postgresql user and group -->
+				<user homedir="/var/lib/pgsql/" id="26" name="postrges" password="XXXXXXXXX" ref-group-name="postrges"/>
+				<group id="26" name="postrges"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

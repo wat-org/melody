@@ -5,7 +5,7 @@
 	<models>
 		<model instance-type="m1.small" keypair-name="id_rsa" name="winsrv-2008-r2">
 			<network-management activation-enabled="false" activation-protocol="winrm"/>
-			<os name="windows" version="server-2008"/>
+			<os name="windows" version="server-2008" arch="x86_64"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" name="rdp" to-ports="389"/>
 			</firewall>

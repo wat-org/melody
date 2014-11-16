@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-kerberos-domain-controllers">
+        <echo message="!! KERBEROS DOMAIN CONTROLLER DEPLOYMENT IN ACTIVE DIRECTORY IS NOT SUPPORTED YET !!" severity="WARNING"/>
+    </order>
+
+    <order name="deploy-kerberos-hosts">
+        <echo message="Registering machines in Kerberos realm ..."/>
+        <call orders="do-operation-on-kerberos-hosts">
+            <param name="callback.khost" value="§[melody:getSequenceDescriptorPath()]§::deploy-kerberos-host-on-single-machine"/>
+        </call>
+        <echo message="-- Machines successfully registered in Kerberos realm."/>
+    </order>
+
+    <order name="do-operation-on-kerberos-hosts">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(kerberos-host)]')"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-kerberos-host-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-kerberos-host-on-single-machine">
+        <property name="kdc.realm"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/kerberos-host/@realm') ]§"/>
+        <property name="kdc"                  value="./environment//instance[melody:getHeritedContent(., '[exists(kerberos-domain-controller[@realm=&quot;§[kdc.realm]§&quot;])]')]"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.domain"           value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/@domain') ]§"/>
+        <property name="kdc.admin.login"      value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/@admin-login') ]§"/>
+        <property name="kdc.admin.pwd"        value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/@admin-pwd') ]§"/>
+        <property name="kdc.listen.device"    value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/listen-on/@device', 'eth0') ]§"/>
+        <property name="kdc.listen.ip"        value="§[ melody:getNetworkDeviceElementByName(§[kdc]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <call orders="§[substring-after('§[callback.khost]§','::')]§" sequence-descriptor="§[substring-before('§[callback.khost]§','::')]§"/>
+    </order>
+
+    <order name="deploy-kerberos-host-on-single-machine">
+        <!-- install -->
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="krb5-workstation"/>
+        </call>
+
+        <!-- 'nfs-utils' is necessary for 'create-kerberos-principal' and 'deploy-kerberos-principal-keytab' (see below) -->
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="nfs-utils"/>
+        </call>
+
+        <!-- 'msktutil' is necessary for 'create-kerberos-principal' (see below) -->
+        <call orders="deploy-epel-repo-on-single-machine"     sequence-descriptor="../epel/sd.xml"/>
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="msktutil"/>
+            <param name="package.repo" value="epel"/>
+        </call>
+
+        <!-- configure -->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="etc/"
+                        match="krb5.conf"
+                        dest-basedir="/etc/"
+                        template="y">
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- kerberos doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[kdc.machine.cnx.ip]§.kerberos">
+            <ssh description="[configure:kerberos-host:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+# Create the principal of the machine and add it into the keytab file
+KTFILE=/etc/krb5.keytab
+
+echo "§[kdc.admin.pwd]§" | kinit §[kdc.admin.login]§
+
+rm -f "${KTFILE}"
+msktutil -c -k "${KTFILE}" --dont-expire-password --server §[kdc.listen.ip]§ || {
+  res=$?
+  echo "Fail to generate keytab for 'host/machine.cnx.fqdn'. Exiting with error code $res." >&2
+  exit $res
+}
+chmod 600 "${KTFILE}"
+echo "Keytab for 'host/machine.cnx.fqdn' successfully generated."
+
+kdestroy
+
+
+# Declare the domain as trusted so that firefox can do SSO/Kerberos
+
+[ ! -w ".mozilla/firefox/profiles.ini" ] && exit 0
+
+PROFILE_PATH=".mozilla/firefox/$(grep Path  ".mozilla/firefox/profiles.ini" | cut -d '=' -f 2)/prefs.js"
+
+grep "network.negotiate-auth.delegation-uris" "$PROFILE_PATH" || echo 'user_pref("network.negotiate-auth.delegation-uris", ".§[kdc.domain]§");' >> $PROFILE_PATH
+grep "network.negotiate-auth.trusted-uris" "$PROFILE_PATH" || echo 'user_pref("network.negotiate-auth.trusted-uris", ".§[kdc.domain]§");' >> $PROFILE_PATH
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="++ Machine '§[machine.id]§' successfully registered in the Kerberos realm."/>
+    </order>
+
+
+    <property name="computer.name"    value=""/>
+    <property name="keytab.basedir"   value="export/keytabs/"/>
+    <order name="create-kerberos-principal">
+        <!--  Register the given principal's SPN into the given computer account and generate a keytab for it.
+              The computer account must already exists (msktutil is able to create the account, but when it does, the keytab is not valid... don't know why. Bug in msktutil?).
+              The generated keytab will be located in the NFS shared folder exposed by the AD (allow write; no authentication; allow unmapped unix access).
+                - principal : postgres/ip-192-168-122-2.cloud.local, HTTP/ip-192-168-122-2.cloud.local, ...
+                - realm: CLOUD.LOCAL, ...
+                - policy: only accepts 'services'
+                - computer.name: a WIN32 computer name: default to '<service name extract from the given principal><ip extract from the given principal, where '.' are removed>': the computer account which will hold the given SPN.
+                - keytab.basedir: a path: default to 'export/keytabs/': the NFS shared folder exposed by the AD, where the keytabs are stored.
+        -->
+        <property name="kdc"                  value="./environment//instance[melody:getHeritedContent(., '[exists(kerberos-domain-controller[@realm=&quot;§[realm]§&quot;])]')]"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.admin.login"      value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/@admin-login') ]§"/>
+        <property name="kdc.admin.pwd"        value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/@admin-pwd') ]§"/>
+        <property name="kdc.listen.device"    value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/listen-on/@device', 'eth0') ]§"/>
+        <property name="kdc.listen.ip"        value="§[ melody:getNetworkDeviceElementByName(§[kdc]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <!-- kerberos doesn't support concurrent execution -->
+        <!-- synchronize will ensure the mount point is stable -->
+        <synchronize scope="GLOBAL" lock-id="§[kdc.machine.cnx.ip]§.kerberos">
+            <ssh description="[kerberos-create-principal:§[principal]§@§[realm]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+POLICY=$( tr '[:upper:]' '[:lower:]' <<< "§[policy]§" )
+[ "${POLICY}" != "services" ] && {
+  echo "Policy '§[policy]§' not accepted. Only accept 'services'. Exiting with error code 1." >&2
+  exit 1
+}
+BASE="CN=Managed Service Accounts"
+PRINCIPAL="§[principal]§"
+SERVICE=$( cut -d / -f1 <<< "§[principal]§" )
+HOST=$( cut -d / -f2 <<< "§[principal]§" )
+IP=$(ping -c1 ${HOST} | head -n 1 | sed -r -e 's/[^(]+\(([^)]+).*/\1/g' | tr -d '.')
+COMPUTER_NAME="${SERVICE}${IP}"
+[ ! -z "§[computer.name]§" ] && COMPUTER_NAME="§[computer.name]§"
+
+mkdir -vp /tmp/nfs                                                      || exit 1
+mountpoint -q /tmp/nfs && umount /tmp/nfs
+mount -o nolock -t nfs §[kdc.listen.ip]§:/§[keytab.basedir]§ /tmp/nfs   || exit 1
+
+KTFILE="/tmp/nfs/${PRINCIPAL//\//-}.keytab"
+
+[ -f "${KTFILE}" ] && {
+  umount /tmp/nfs
+  echo -e "Principal '§[principal]§' already created. Nothing to do. Exit."
+  exit 0
+}
+
+echo "§[kdc.admin.pwd]§" | kinit §[kdc.admin.login]§
+
+rm -f "${KTFILE}"
+msktutil -u -s "${SERVICE}" --hostname "${HOST}" -k "${KTFILE}" --base "${BASE}" --computer-name "${COMPUTER_NAME}" --dont-expire-password --server §[kdc.listen.ip]§ || {
+  res=$?
+  echo "Fail to create principal '§[principal]§'. Exiting with error code $res." >&2
+  umount /tmp/nfs
+  exit $res
+}
+chmod 600 "${KTFILE}"
+echo "Principal 'host/machine.cnx.fqdn' successfully created."
+
+kdestroy
+umount /tmp/nfs                                                         || exit 1
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+<!--
+we could use smb instead of nsf, but smb packages download takes much more time (30m) then nfs packages (1M)
+smbclient -U §[kdc.admin.login]§ //§[kdc.listen.ip]§/§[substring-before('§[keytab.basedir]§', '$')]§$ "§[kdc.admin.pwd]§" -c 'put §[keytab.local.temp.file]§ "§[substring-after('§[keytab.basedir]§', '$')]§\${PRINCIPAL//\//-}.keytab"'
+-->
+        </synchronize>
+
+        <echo message="+ Principal '§[principal]§@§[realm]§' successfully created."/>
+    </order>
+
+    <order name="deploy-kerberos-principal-keytab">
+        <!--  Upload the given principal's keytab to the given remote system.
+              The keytab must be located in the NFS shared folder exposed by the AD (allow read; no authentication; allow unmapped unix access) (see order 'create-kerberos-principal' above).
+                - principal : postgres/ip-192-168-122-2.cloud.local, HTTP/ip-192-168-122-2.cloud.local, ...
+                - realm: CLOUD.LOCAL, ...
+                - machine.cnx.ip: the remote system ip, where the keytab will be uploaded
+                - machine.cnx.kp: the keypair to connect on the remote system
+                - cnx.user: the user to connect on the remote system
+                - dest.path: the full filepath where the keytab will be uploaded
+                - keytab.basedir: a path: default to 'export/keytabs/': the NFS shared folder exposed by the AD, where the keytabs are stored.
+        -->
+        <property name="kdc"                  value="./environment//instance[melody:getHeritedContent(., '[exists(kerberos-domain-controller[@realm=&quot;§[realm]§&quot;])]')]"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.listen.device"    value="§[ melody:getHeritedAttributeValue(§[kdc]§, '/kerberos-domain-controller/listen-on/@device', 'eth0') ]§"/>
+        <property name="kdc.listen.ip"        value="§[ melody:getNetworkDeviceElementByName(§[kdc]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <!-- synchronize will ensure the mount point is stable -->
+        <synchronize scope="GLOBAL" lock-id="§[kdc.machine.cnx.ip]§.kerberos">
+            <ssh description="[kerberos-create-principal:§[principal]§@§[realm]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+mkdir -vp /tmp/nfs                                                      || exit 1
+mountpoint -q /tmp/nfs && umount /tmp/nfs
+mount -o nolock -t nfs §[kdc.listen.ip]§:/§[keytab.basedir]§ /tmp/nfs   || exit 1
+
+PRINCIPAL="§[principal]§"
+KTFILE="/tmp/nfs/${PRINCIPAL//\//-}.keytab"
+
+[ ! -f "${KTFILE}" ] && {
+  echo -e "No keytab for '§[principal]§' can be found. Must create a keytab first. Exit with error code 1."
+  umount /tmp/nfs
+  exit 1
+}
+
+cp -pvrf "${KTFILE}" "§[dest.path]§"                                    || exit 1
+chown §[cnx.user]§: "§[dest.path]§"                                     || exit 1
+chmod 600 "§[dest.path]§"                                               || exit 1
+
+umount /tmp/nfs                                                         || exit 1
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ Keytab for principal '§[principal]§@§[realm]§' successfully deployed on '§[machine.cnx.ip]§:§[dest.path]§'."/>
+    </order>
+
+</sequence>

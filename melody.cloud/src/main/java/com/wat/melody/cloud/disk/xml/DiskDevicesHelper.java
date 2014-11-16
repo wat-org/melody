@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -12,6 +13,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
+import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -37,7 +39,7 @@ public abstract class DiskDevicesHelper {
 	 * XML attribute of the Disk Management Element, which contains the XPath
 	 * Expression to select Disk Devices Elements.
 	 */
-	public static final String DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE = "disk-devices-selector";
+	public static final String DISK_DEVICE_ELEMENTS_SELECTOR = "disk-devices-selector";
 
 	/**
 	 * Default XPath Expression to select Disk Device Elements, related to an
@@ -50,60 +52,43 @@ public abstract class DiskDevicesHelper {
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance.
 	 * 
-	 * @return the Disk Management Element related to the given Instance, which
-	 *         is :
-	 *         <ul>
-	 *         <li>The last Disk Management Element related to the given
-	 *         Instance, if Disk Management Elements are found ;</li>
-	 *         <li><tt>null</tt>, if no Disk Management Element are found ;</li>
-	 *         </ul>
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 */
-	public static Element findDiskManagementElement(Element instanceElmt) {
-		NodeList nl = null;
-		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt,
-					DISK_MGMT_ELEMENT_SELECTOR);
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the herited content of '" + DISK_MGMT_ELEMENT_SELECTOR
-					+ "'. " + "Because this XPath Expression is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		}
-		if (nl.getLength() == 0) {
-			return null;
-		}
-		// Conversion can't fail: the expression can only return Element
-		return (Element) nl.item(nl.getLength() - 1);
-	}
-
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Disk Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Disk Management Element.
-	 * 
 	 * @return the Disk Devices Selector, which is :
 	 *         <ul>
 	 *         <li>{@link #DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR}, if the given
-	 *         Disk Management Element is <tt>null</tt> ;</li>
+	 *         element has no Disk Management Element ;</li>
 	 *         <li>{@link #DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR}, if the given
-	 *         Disk Management Element is not <tt>null</tt> but has no Custom
-	 *         Disk Devices Selector is defined in ;</li>
-	 *         <li>The Custom Disk Devices Selector defined in the given Disk
-	 *         Management Element ;</li>
+	 *         element has a Disk Management Element which has no Custom Disk
+	 *         Devices Selector is defined in ;</li>
+	 *         <li>The Custom Disk Devices Selector defined in the given
+	 *         element's Disk Management Element ;</li>
 	 *         </ul>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static String getDiskDeviceElementsSelector(Element mgmtElmt) {
+	public static String getDiskDeviceElementsSelector(Element instanceElmt) {
 		try {
-			return mgmtElmt.getAttributeNode(
-					DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE).getNodeValue();
-		} catch (NullPointerException Ex) {
-			return DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR;
+			return XPathHelper.getHeritedAttributeValue(instanceElmt, "/"
+					+ DISK_MGMT_ELEMENT + "/@" + DISK_DEVICE_ELEMENTS_SELECTOR,
+					DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
+		} catch (NodeRelatedException e) {
+			throw new RuntimeException("cannot contains an xpath expression.");
+		}
+	}
+
+	private static Attr getDiskDeviceElementsSelectorAttr(Element instanceElmt) {
+		try {
+			return FilteredDocHelper.getHeritedAttribute(instanceElmt, "/"
+					+ DISK_MGMT_ELEMENT + "/@" + DISK_DEVICE_ELEMENTS_SELECTOR,
+					null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -128,23 +113,22 @@ public abstract class DiskDevicesHelper {
 	 */
 	public static List<Element> findDiskDevices(Element instanceElmt)
 			throws NodeRelatedException {
-		Element mgmtElmt = findDiskManagementElement(instanceElmt);
-		String selector = getDiskDeviceElementsSelector(mgmtElmt);
+		String selector = getDiskDeviceElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
 			nl = FilteredDocHelper.getHeritedContent(instanceElmt, selector);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Msg.bind(Messages.DiskMgmtEx_SELECTOR_INVALID_XPATH,
+					getDiskDeviceElementsSelectorAttr(instanceElmt), Msg.bind(
+							Messages.DiskMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
 		try {
 			return XPathFunctionHelper.toElementList(nl);
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(DISK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
-					Msg.bind(Messages.DiskMgmtEx_SELECTOR_NOT_MATCH_ELMT,
+					getDiskDeviceElementsSelectorAttr(instanceElmt), Msg.bind(
+							Messages.DiskMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}
 	}

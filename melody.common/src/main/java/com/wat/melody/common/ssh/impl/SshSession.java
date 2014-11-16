@@ -30,6 +30,7 @@ import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.ssh.impl.transfer.SftpDownloaderMultiThread;
 import com.wat.melody.common.ssh.impl.transfer.SftpUploaderMultiThread;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.exception.TransferException;
@@ -188,10 +189,10 @@ public class SshSession implements ISshSession {
 
 	@Override
 	public void upload(List<ResourcesSpecification> rss, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException {
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException {
 		try {
-			new SftpUploaderMultiThread(this, rss, maxPar, th).doTransfer();
+			new SftpUploaderMultiThread(this, rss, maxPar, th, tf).doTransfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}
@@ -199,10 +200,11 @@ public class SshSession implements ISshSession {
 
 	@Override
 	public void download(List<ResourcesSpecification> rrss, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException {
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException {
 		try {
-			new SftpDownloaderMultiThread(this, rrss, maxPar, th).doTransfer();
+			new SftpDownloaderMultiThread(this, rrss, maxPar, th, tf)
+					.doTransfer();
 		} catch (TransferException Ex) {
 			throw new SshSessionException(Ex);
 		}
@@ -451,6 +453,11 @@ public class SshSession implements ISshSession {
 	}
 
 	/*
+	 * TODO : virer
+	 * cloud.network.xml.NetworkDevicesHelper.findNetworkManagementElement : il
+	 * ne faut pas recuperer le dernier element, mais utiliser
+	 * XPathHelper getHeritedAttributeValue.
+	 * 
 	 * TODO BUG AWS : can't enable/disable bucket logging in region eu-west-1,
 	 * us-west-1, us-west-2. Only work in region us-east-1
 	 * 
@@ -458,6 +465,8 @@ public class SshSession implements ISshSession {
 	 * certainly some others). Only work in region us-east-1
 	 * 
 	 * TODO : introduce protected-area in demo 'krb5_mixed'
+	 * 
+	 * TODO : add Telnet Service into all WIN SERVER 2008 R2 template
 	 * 
 	 * TODO : activer le verbose gc + rotation de gc.log au demarrage (voir
 	 * rotation de console.log). Note: avec cette merde de standalone.sh d'EAP

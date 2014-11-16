@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="rh-satellite-register">
+        <echo message="Registering machines in Red Hat Satellite ..."/>
+        <call>
+            <ref orders="do-operation-on-rhn">
+                <param name="callback.rh-sat" value="§[melody:getSequenceDescriptorPath()]§::rh-satellite-register-on-single-machine"/>
+            </ref>
+            <ref orders="do-operation-on-rhsm">
+                <param name="callback.rh-sat" value="§[melody:getSequenceDescriptorPath()]§::rh-satellite-register-on-single-machine"/>
+            </ref>
+        </call>
+        <echo message="-- Machines successfully registered in Red Hat Satellite."/>
+    </order>
+
+    <order name="rh-satellite-unregister">
+        <echo message="Unregistering machines in Red Hat Satellite ..."/>
+        <call>
+            <ref orders="do-operation-on-rhn">
+                <param name="callback.rh-sat" value="§[melody:getSequenceDescriptorPath()]§::rh-satellite-unregister-on-single-machine"/>
+            </ref>
+            <ref orders="do-operation-on-rhsm">
+                <param name="callback.rh-sat" value="§[melody:getSequenceDescriptorPath()]§::rh-satellite-unregister-on-single-machine"/>
+            </ref>
+        </call>
+        <echo message="-- Machines successfully unregistered in Red Hat Satellite."/>
+    </order>
+
+
+    <order name="do-operation-on-rhn">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhn'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhn-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-rhn-on-single-machine">
+        <property name="profile.name"         value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@profile-name') ]§"/>
+
+        <property name="rhn.server.ip"        value="§[./environment/rhn/profile[@name='§[profile.name]§']/serverip/text()]§"/>
+        <property name="rhn.user.login"       value="§[./environment/rhn/profile[@name='§[profile.name]§']/login/text()]§"/>
+        <property name="rhn.user.pwd"         value="§[./environment/rhn/profile[@name='§[profile.name]§']/password/text()]§"/>
+        <property name="rhn.activation-key"   value="§[./environment/rhn/profile[@name='§[profile.name]§']/activationkey/text()]§"/>
+
+        <call orders="§[substring-after('§[callback.rh-sat]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rh-sat]§','::')]§"/>
+    </order>
+
+
+    <order name="do-operation-on-rhsm">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhsm'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhsm-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-rhsm-on-single-machine">
+        <property name="profile.name"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhsm/@profile-name') ]§"/>
+
+        <property name="rhsm.server.ip"          value="§[./environment/rhsm/profile[@name='§[profile.name]§']/serverip/text()]§"/>
+        <property name="rhsm.user.login"         value="§[./environment/rhsm/profile[@name='§[profile.name]§']/login/text()]§"/>
+        <property name="rhsm.user.pwd"           value="§[./environment/rhsm/profile[@name='§[profile.name]§']/password/text()]§"/>
+        <property name="rhsm.activation-key"     value="§[./environment/rhsm/profile[@name='§[profile.name]§']/activationkey/text()]§"/>
+        <property name="rhsm.organization-key"   value="§[./environment/rhsm/profile[@name='§[profile.name]§']/organizationkey/text()]§"/>
+
+        <call orders="§[substring-after('§[callback.rh-sat]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rh-sat]§','::')]§"/>
+    </order>
+
+
+    <order name="rh-satellite-register-on-single-machine">
+        <call orders="rh-satellite-register-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+    <order name="rh-satellite-unregister-on-single-machine">
+        <call orders="rh-satellite-unregister-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+</sequence>

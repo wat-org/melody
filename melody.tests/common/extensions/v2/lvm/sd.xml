@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="pv_match_criteria"   value="1=1"/>
+    <property name="vg_match_criteria"   value="1=1"/>
+    <property name="lv_match_criteria"   value="1=1"/>
+    <property name="fs_match_criteria"   value="1=1"/>
+
+    <!-- LVM PV -->
+    <order name="create-lvm-physical-volumes">
+        <echo message="Creating LVM physical volumes ..."/>
+        <call orders="do-operation-on-lvm-pv">
+            <param name="callback.lvm.pv"           value="§[melody:getSequenceDescriptorPath()]§::create-lvm-pv-on-single-machine"/>
+        </call>
+        <echo message="-- LVM physical volumes successfully created."/>
+    </order>
+
+    <order name="destroy-lvm-physical-volumes">
+        <echo message="Removing LVM physical volumes ..."/>
+        <call orders="do-operation-on-lvm-pv">
+            <param name="callback.lvm.pv"           value="§[melody:getSequenceDescriptorPath()]§::destroy-lvm-pv-on-single-machine"/>
+        </call>
+        <echo message="-- LVM physical volumes successfully removed."/>
+    </order>
+
+    <order name="do-operation-on-lvm-pv">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/lvm/physical-volume'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-lvm-pv-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-lvm-pv-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/lvm/physical-volume[ §[pv_match_criteria]§ ]')"
+                    item-name="lvm.pv">
+            <property name="lvm.pv.name" value="§[ melody:getHeritedAttributeValue(§[lvm.pv]§, '/@name') ]§"/>
+
+            <call orders="§[substring-after('§[callback.lvm.pv]§','::')]§" sequence-descriptor="§[substring-before('§[callback.lvm.pv]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <order name="create-lvm-pv-on-single-machine">
+        <call orders="create-lvm-pv-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+    <order name="destroy-lvm-pv-on-single-machine">
+        <call orders="destroy-lvm-pv-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+
+    <!-- LVM VG -->
+    <order name="create-lvm-volume-groups">
+        <echo message="Creating LVM volume groups ..."/>
+        <call orders="do-operation-on-lvm-vg">
+            <param name="callback.lvm.vg"           value="§[melody:getSequenceDescriptorPath()]§::create-lvm-vg-on-single-machine"/>
+        </call>
+        <echo message="-- LVM volume groups successfully created."/>
+    </order>
+
+    <order name="destroy-lvm-volume-groups">
+        <echo message="Removing LVM volume groups ..."/>
+        <call orders="do-operation-on-lvm-vg">
+            <param name="callback.lvm.vg"           value="§[melody:getSequenceDescriptorPath()]§::destroy-lvm-vg-on-single-machine"/>
+        </call>
+        <echo message="-- LVM volume groups successfully removed."/>
+    </order>
+
+    <order name="do-operation-on-lvm-vg">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/lvm/volume-group'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-lvm-vg-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-lvm-vg-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/lvm/volume-group[ §[vg_match_criteria]§ ]')"
+                    item-name="lvm.vg">
+            <property name="lvm.vg.name"       value="§[ melody:getHeritedAttributeValue(§[lvm.vg]§, '/@name') ]§"/>
+            <property name="lvm.vg.pv-names"   value="§[ melody:getHeritedAttributeValue(§[lvm.vg]§, '/@physical-volume-names') ]§"/>
+
+            <call orders="§[substring-after('§[callback.lvm.vg]§','::')]§" sequence-descriptor="§[substring-before('§[callback.lvm.vg]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <order name="create-lvm-vg-on-single-machine">
+        <call orders="create-lvm-vg-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+    <order name="destroy-lvm-vg-on-single-machine">
+        <call orders="destroy-lvm-vg-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+
+
+    <!-- LVM LV -->
+    <order name="create-lvm-logical-volumes">
+        <echo message="Creating LVM logical volumes ..."/>
+        <call orders="do-operation-on-lvm-lv">
+            <param name="callback.lvm.lv"           value="§[melody:getSequenceDescriptorPath()]§::create-lvm-lv-on-single-machine"/>
+        </call>
+        <echo message="-- LVM logical volumes successfully created."/>
+    </order>
+
+    <order name="destroy-lvm-logical-volumes">
+        <echo message="Removing LVM logical volumes ..."/>
+        <call orders="do-operation-on-lvm-lv">
+            <param name="callback.lvm.lv"          value="§[melody:getSequenceDescriptorPath()]§::destroy-lvm-lv-on-single-machine"/>
+        </call>
+        <echo message="-- LVM logical volumes successfully removed."/>
+    </order>
+
+    <order name="do-operation-on-lvm-lv">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/lvm/logical-volume'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-lvm-lv-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-lvm-lv-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/lvm/logical-volume[ §[lv_match_criteria]§ ]')"
+                    item-name="lvm.lv">
+            <property name="lvm.lv.name"      value="§[ melody:getHeritedAttributeValue(§[lvm.lv]§, '/@name') ]§"/>
+            <property name="lvm.lv.size"      value="§[ melody:getHeritedAttributeValue(§[lvm.lv]§, '/@size') ]§"/>
+            <property name="lvm.lv.vg-name"   value="§[ melody:getHeritedAttributeValue(§[lvm.lv]§, '/@volume-group-name') ]§"/>
+
+            <call orders="§[substring-after('§[callback.lvm.lv]§','::')]§" sequence-descriptor="§[substring-before('§[callback.lvm.lv]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <order name="create-lvm-lv-on-single-machine">
+        <call orders="create-lvm-lv-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+    <order name="destroy-lvm-lv-on-single-machine">
+        <call orders="destroy-lvm-lv-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+
+
+    <!-- File Systems create & mount -->
+    <order name="create-file-systems">
+        <echo message="Creating File Systems ..."/>
+        <call orders="do-operation-on-fs">
+            <param name="callback.fs"           value="§[melody:getSequenceDescriptorPath()]§::create-fs-on-single-machine"/>
+        </call>
+        <echo message="-- File Systems successfully created."/>
+    </order>
+
+    <order name="destroy-file-systems">
+        <echo message="Destroying File Systems ..."/>
+        <call orders="do-operation-on-fs">
+            <param name="callback.fs"           value="§[melody:getSequenceDescriptorPath()]§::destroy-fs-on-single-machine"/>
+        </call>
+        <echo message="-- File Systems successfully destroyed."/>
+    </order>
+
+    <order name="do-operation-on-fs">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/partitions/partition'))"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-fs-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-fs-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/partitions/partition[ §[fs_match_criteria]§ ]')"
+                    item-name="fs">
+            <property name="fs.name"          value="§[ melody:getHeritedAttributeValue(§[fs]§, '/@name') ]§"/>
+            <property name="fs.path"          value="§[ melody:getHeritedAttributeValue(§[fs]§, '/@path') ]§"/>
+            <property name="fs.type"          value="§[ melody:getHeritedAttributeValue(§[fs]§, '/@type') ]§"/>
+            <property name="fs.options"       value="§[ melody:getHeritedAttributeValue(§[fs]§, '/@options') ]§"/>
+            <property name="fs.mount-point"   value="§[ melody:getHeritedAttributeValue(§[fs]§, '/@mount-point') ]§"/>
+
+            <call orders="§[substring-after('§[callback.fs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.fs]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <order name="create-fs-on-single-machine">
+        <call orders="create-fs-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+    <order name="destroy-fs-on-single-machine">
+        <call orders="destroy-fs-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+    </order>
+
+</sequence>

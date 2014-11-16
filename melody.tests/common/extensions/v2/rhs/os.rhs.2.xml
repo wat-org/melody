@@ -1,0 +1,425 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- RHS PEER -->
+    <order name="rhs-peer-attach">
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <!-- on the pilot, attaching the peer -->
+            <ssh description="[rhs-peer-attach:§[machine.cnx.ip]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+declare okmsg="Red Hat Storage Peer '§[machine.cnx.ip]§' successfully attached"
+declare errmsg="Fail to attach Red Hat Storage Peer '§[machine.cnx.ip]§'"
+
+declare docmd="gluster peer probe §[machine.cnx.ip]§"
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+            <!-- on the peer, verifying the attachment to the pilot -->
+            <ssh description="[rhs-peer-attach-verify:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+declare okmsg="Red Hat Storage Peer attachment of '§[machine.cnx.ip]§' successfully verified"
+declare errmsg="Fail to verify the Red Hat Storage Peer attachment of '§[machine.cnx.ip]§'"
+
+declare docmd="gluster peer probe §[pilot.cnx.ip]§"
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+<!--
+retry mechanism will retry if an 'gluster peer probe' fail (with 'peer probe: failed:')
+-->
+        </synchronize>
+
+        <echo message="+ Red Hat Storage peer '§[machine.cnx.ip]§' successfully attached to grid '§[grid.name]§'." />
+    </order>
+
+    <order name="rhs-peer-detach">
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <!-- on the pilot, detaching the node -->
+            <ssh description="[rhs-peer-detach:§[machine.cnx.ip]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+declare almsg="Red Hat Storage Peer '§[machine.cnx.ip]§' already detached"
+declare okmsg="Red Hat Storage Peer '§[machine.cnx.ip]§' successfully detached"
+declare errmsg="Fail to detach Red Hat Storage Peer '§[machine.cnx.ip]§'"
+
+declare testcmd="gluster pool list | grep §[machine.cnx.ip]§ 1>/dev/null"
+declare docmd="gluster peer detach §[machine.cnx.ip]§"
+
+eval ${testcmd} || {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+            <!-- on the node, verifying the detachment to the pilot -->
+            <ssh description="[rhs-peer-detach-verify:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec command="gluster pool list | grep §[pilot.cnx.ip]§ 1&gt;/dev/null || exit 0"/>
+                <exec command="gluster peer detach §[pilot.cnx.ip]§" />
+                <exec>
+                    <![CDATA[
+declare almsg="Red Hat Storage Peer '§[machine.cnx.ip]§' already detached"
+declare okmsg="Red Hat Storage Peer detachment of '§[machine.cnx.ip]§' successfully verified"
+declare errmsg="Fail to verify the Red Hat Storage Peer detachment of '§[machine.cnx.ip]§'"
+
+declare testcmd="gluster pool list | grep §[pilot.cnx.ip]§ 1>/dev/null"
+declare docmd="gluster peer detach §[pilot.cnx.ip]§"
+
+eval ${testcmd} || {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+        <echo message="+ Red Hat Storage peer '§[machine.cnx.ip]§' successfully detached to grid '§[grid.name]§'." />
+    </order>
+
+
+
+    <!-- GLUSTER volumes create/destroy -->
+    <order name="rhs-create-volume">
+        <property name="stripe"    value="§[ if (§[vol.striped]§ = 0) then '' else 'stripe §[vol.striped]§' ]§"/>
+        <property name="replica"   value="§[ if (§[vol.replicated]§ = 0) then '' else 'replica §[vol.replicated]§' ]§"/>
+
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <ssh description="[rhs-create-volume:§[grid.name]§:§[vol.name]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+declare almsg="Red Hat Storage Volume '§[vol.name]§' already exists"
+declare okmsg="Red Hat Storage Volume '§[vol.name]§' successfully created"
+declare errmsg="Fail to create Red Hat Storage Volume '§[vol.name]§'"
+
+declare testcmd="gluster volume info §[vol.name]§ 1>/dev/null 2>&1"
+declare docmd="gluster volume create §[vol.name]§ §[replica]§ §[stripe]§ §[bricks.list]§ force <<< 'y'"
+
+declare retryallowedmsg="(\
+another transaction could be in progress\
+|another transaction is in progress\
+|please try again after sometime\
+|failed: host .* is not in 'peer in cluster' state\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+<!--
+BUG in RHS 2.1 :
+- even with the option 'force', if replica is specified and if some bricks are exposed on the same node, the command will ask to continue y/n
+- must redo the operation if 'Another transaction (could be|is) in progress.'
+-->
+        </synchronize>
+
+        <echo message="+ Red Hat Storage Volume '§[vol.name]§' successfully created on grid '§[grid.name]§' with { replica=§[vol.replicated]§, stripe=§[vol.striped]§, bricks=§[replace(&quot;§[bricks.list]§&quot;,' ',', ')]§ }." />
+    </order>
+
+    <order name="rhs-destroy-volume">
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <ssh description="[rhs-delete-volume:§[grid.name]§:§[vol.name]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+declare almsg="Red Hat Storage Volume '§[vol.name]§' not exists"
+declare okmsg="Red Hat Storage Volume '§[vol.name]§' successfully deleted"
+declare errmsg="Fail to delete Red Hat Storage Volume '§[vol.name]§'"
+
+declare testcmd="gluster volume info §[vol.name]§ 1>/dev/null 2>&1"
+declare docmd="gluster volume delete §[vol.name]§ <<< 'y'"
+
+declare retryallowedmsg="(\
+another transaction could be in progress\
+|another transaction is in progress\
+|please try again after sometime\
+)"
+
+eval ${testcmd} || {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <!-- BUG in RHS 2.1 : some actions must be done manually for the delete volume operation to succeed -->
+        <foreach    items="§[machine_selector]§ [ melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]') ]"
+                    item-name="srv" >
+            <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
+            <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
+
+            <foreach    items="melody:getHeritedContent(§[srv]§, '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]')/brick"
+                        item-name="brick" >
+                <property name="brick.part"        value="§[ §[brick]§/@partition-name ]§" />
+                <property name="part.mount-point"  value="§[ melody:getHeritedContent(§[srv]§, '/partitions/partition[@name=&quot;§[brick.part]§&quot;]')/@mount-point ]§"/>
+
+                <ssh description="[gluster-metadata-delete:§[grid.name]§:§[vol.name]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
+                    <exec command="setfattr -x trusted.glusterfs.volume-id §[part.mount-point]§ 2&gt;/dev/null"/>
+                    <exec command="setfattr -x trusted.gfid §[part.mount-point]§ 2&gt;/dev/null"/>
+                    <exec command="rm -rf §[part.mount-point]§/.glusterfs"/>
+                    <exec command="echo Red Hat Storage Volume '§[vol.name]§' metadatas removed for brick '§[ip]§:§[brick.part]§' on grid '§[grid.name]§'"/>
+                </ssh>
+            </foreach>
+        </foreach>
+        <echo message="+ Red Hat Storage Volume '§[vol.name]§' successfully destroyed on grid '§[grid.name]§'." />
+    </order>
+
+
+
+    <!-- GLUSTER volumes start/stop -->
+    <order name="rhs-start-volume">
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <ssh description="[rhs-start-volume:§[grid.name]§:§[vol.name]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+gluster volume info §[vol.name]§ 1>/dev/null 2>&1 || {
+  echo "Red Hat Storage Volume '§[vol.name]§' not exists. Exting with error code 1." >&2
+  exit 1
+}
+
+declare almsg="Red Hat Storage Volume '§[vol.name]§' already started"
+declare okmsg="Red Hat Storage Volume '§[vol.name]§' successfully started"
+declare errmsg="Fail to start Red Hat Storage Volume '§[vol.name]§'"
+
+declare testcmd="gluster volume info §[vol.name]§ 2>/dev/null | grep Status | grep Started 1>/dev/null"
+declare docmd="gluster volume start §[vol.name]§"
+
+declare retryallowedmsg="(\
+another transaction could be in progress\
+|another transaction is in progress\
+|please try again after sometime\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ Red Hat Storage Volume '§[vol.name]§' successfully started on grid '§[grid.name]§'." />
+    </order>
+
+    <order name="rhs-stop-volume">
+        <!-- grid operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[grid.name]§">
+            <ssh description="[rhs-stop-volume:§[grid.name]§:§[vol.name]§]" host="§[pilot.cnx.ip]§" login="root" keypair-name="§[pilot.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+gluster volume info §[vol.name]§ 1>/dev/null 2>&1 || {
+  echo "Red Hat Storage Volume '§[vol.name]§' not exists. Nothing to do."
+  exit 0
+}
+
+declare almsg="Red Hat Storage Volume '§[vol.name]§' already stopped"
+declare okmsg="Red Hat Storage Volume '§[vol.name]§' successfully stopped"
+declare errmsg="Fail to stop Red Hat Storage Volume '§[vol.name]§'"
+
+declare testcmd="gluster volume info §[vol.name]§ 2>/dev/null | grep Status | grep -Ei 'created|stopped' 1>/dev/null"
+declare docmd="gluster volume stop §[vol.name]§ <<< 'y'"
+
+declare retryallowedmsg="(\
+another transaction could be in progress\
+|another transaction is in progress\
+|please try again after sometime\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ Red Hat Storage Volume '§[vol.name]§' successfully stopped on grid '§[grid.name]§'." />
+    </order>
+
+</sequence>

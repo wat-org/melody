@@ -24,6 +24,7 @@ import com.wat.melody.common.ssh.exception.HostKeyChangedException;
 import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -206,16 +207,16 @@ public class SshManagedSession implements ISshSession {
 
 	@Override
 	public void upload(List<ResourcesSpecification> rss, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException {
-		_session.upload(rss, maxPar, th);
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException {
+		_session.upload(rss, maxPar, th, tf);
 	}
 
 	@Override
 	public void download(List<ResourcesSpecification> rrss, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException {
-		_session.download(rrss, maxPar, th);
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException {
+		_session.download(rrss, maxPar, th, tf);
 	}
 
 	@Override

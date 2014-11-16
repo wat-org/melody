@@ -3,6 +3,8 @@ package com.wat.melody.cloud.instance.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -94,12 +96,18 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.REGION_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.REGION_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	public static List<String> findInstanceSite(List<Element> instanceElmts)
@@ -129,12 +137,18 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.SITE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.SITE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	public static List<String> findInstanceImageId(List<Element> instanceElmts)
@@ -164,12 +178,18 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.IMAGEID_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.IMAGEID_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	public static List<InstanceType> findInstanceType(
@@ -199,17 +219,23 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.INSTANCETYPE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return InstanceType.parseString(v);
-		} catch (IllegalInstanceTypeException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					InstanceDatasLoader.INSTANCETYPE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.INSTANCETYPE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return InstanceType.parseString(v);
+			} catch (IllegalInstanceTypeException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.INSTANCETYPE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -235,22 +261,28 @@ public abstract class InstanceDatasHelper {
 
 	public static KeyPairRepositoryPath findInstanceKeyPairRepositoryPath(
 			Element instanceElmt) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.KEYPAIR_REPO_ATTR);
-		if (instanceElmt == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid an " + Element.class.getCanonicalName()
-					+ ".");
-		}
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return new KeyPairRepositoryPath(v);
-		} catch (KeyPairRepositoryPathException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					InstanceDatasLoader.KEYPAIR_REPO_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.KEYPAIR_REPO_ATTR, null);
+			if (instanceElmt == null) {
+				throw new IllegalArgumentException("null: Not accepted. "
+						+ "Must be valid an "
+						+ Element.class.getCanonicalName() + ".");
+			}
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return new KeyPairRepositoryPath(v);
+			} catch (KeyPairRepositoryPathException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.KEYPAIR_REPO_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -281,17 +313,23 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.KEYPAIR_NAME_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return KeyPairName.parseString(v);
-		} catch (IllegalKeyPairNameException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					InstanceDatasLoader.KEYPAIR_NAME_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.KEYPAIR_NAME_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return KeyPairName.parseString(v);
+			} catch (IllegalKeyPairNameException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.KEYPAIR_NAME_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -322,12 +360,18 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.PASSPHRASE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.PASSPHRASE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			return v;
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return v;
 	}
 
 	public static List<KeyPairSize> findInstanceKeyPairSize(
@@ -357,17 +401,23 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.KEYPAIR_SIZE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return KeyPairSize.parseString(v);
-		} catch (IllegalKeyPairSizeException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					InstanceDatasLoader.KEYPAIR_SIZE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.KEYPAIR_SIZE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return KeyPairSize.parseString(v);
+			} catch (IllegalKeyPairSizeException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.KEYPAIR_SIZE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -398,17 +448,23 @@ public abstract class InstanceDatasHelper {
 					+ "Must be valid an " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		String v = XPathHelper.getHeritedAttributeValue(instanceElmt,
-				InstanceDatasLoader.PROTECTED_AREAS_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return ProtectedAreaNames.parseString(v);
-		} catch (IllegalProtectedAreaNamesException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					InstanceDatasLoader.PROTECTED_AREAS_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+					+ InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return ProtectedAreaNames.parseString(v);
+			} catch (IllegalProtectedAreaNamesException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 

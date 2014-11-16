@@ -4,13 +4,13 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-6']" instance-type="t1.micro" name="rhs-2">
-			<rhn-channels>
-				<!-- mandatory base channel for RHS 2.1-->
-				<channel base-channel="true" name="rhel-x86_64-server-6.4.z"/>
+			<rhn>
+				<!-- base channel for RHS 2.1-->
+				<base-channel name="rhel-x86_64-server-6.4.z"/>
 				<!-- mandatory child channels for RHS 2.1 -->
 				<channel name="rhel-x86_64-server-6-rhs-2.1"/>
 				<channel name="rhel-x86_64-server-sfs-6.4.z"/>
-			</rhn-channels>
+			</rhn>
 			<services>
 				<!-- start glusterd -->
 				<service name="glusterd" state="on"/>

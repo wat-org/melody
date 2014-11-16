@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="start-service-on-single-machine">
+        <ssh description="[start-service:§[service.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+systemctl restart §[service.name]§
+usleep 100000
+systemctl status §[service.name]§ || {
+  res=$?
+  echo "Fail to start service '§[service.name]§'. Exiting with error code $res." >&2
+  exit $res
+}
+systemctl enable §[service.name]§
+                ]]>
+            </exec>
+        </ssh>
+
+        <echo message="+ Service '§[service.name]§' successfully started on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="stop-service-on-single-machine">
+        <ssh description="[stop-service:§[service.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+systemctl disable §[service.name]§
+systemctl stop §[service.name]§ || {
+  res=$?
+  echo "Fail to start service '§[service.name]§'. Exiting with error code $res." >&2
+  exit $res
+}
+                ]]>
+            </exec>
+        </ssh>
+
+        <echo message="+ Service '§[service.name]§' successfully stopped on machine '§[machine.id]§'."/>
+    </order>
+
+</sequence>

@@ -29,11 +29,6 @@
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.wat.melody</groupId>
-			<artifactId>melody.cloud</artifactId>
-			<version>0.0.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.eclipse.tycho</groupId>
 			<artifactId>org.eclipse.osgi</artifactId>
 			<version>3.9.1.v20130814-1242</version>

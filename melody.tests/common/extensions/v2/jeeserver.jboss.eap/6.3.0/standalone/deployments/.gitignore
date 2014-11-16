@@ -1,0 +1,4 @@
+# special trick to track mepty directory
+
+# Do not ignore .gitignore file
+!.gitignore

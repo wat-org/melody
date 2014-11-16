@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.files.LocalFileSystem;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -17,8 +18,8 @@ public class CifsUploaderMultiThread extends CifsBaseTransferMultiThread {
 
 	public CifsUploaderMultiThread(String location, String domain,
 			String username, String password, List<ResourcesSpecification> rss,
-			int maxPar, TemplatingHandler th) {
-		super(location, domain, username, password, rss, maxPar, th);
+			int maxPar, TemplatingHandler th, MelodyThreadFactory tf) {
+		super(location, domain, username, password, rss, maxPar, th, tf);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.wat.cloud.aws.s3.BucketName;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferMultiThread;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -20,8 +21,8 @@ public abstract class AwsS3BaseTransferMultiThread extends TransferMultiThread {
 
 	public AwsS3BaseTransferMultiThread(AmazonS3 s3Connection,
 			BucketName bucketName, List<ResourcesSpecification> rss,
-			int maxPar, TemplatingHandler th) {
-		super(rss, maxPar, th);
+			int maxPar, TemplatingHandler th, MelodyThreadFactory tf) {
+		super(rss, maxPar, th, tf);
 		setS3(s3Connection);
 		setBucketName(bucketName);
 	}

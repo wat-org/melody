@@ -2,6 +2,7 @@ package com.wat.melody.plugin.ssh;
 
 import java.io.File;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.common.ssh.ISshSession;
 import com.wat.melody.common.ssh.exception.SshSessionException;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -26,7 +27,8 @@ public class Download extends Transfer {
 
 	public void doTransfer(ISshSession session) throws SshSessionException,
 			InterruptedException {
-		session.download(getResourcesSpecifications(), getMaxPar(), this);
+		session.download(getResourcesSpecifications(), getMaxPar(), this,
+				Melody.getThreadFactory());
 	}
 
 	public ResourcesSpecification newResourcesSpecification(File basedir) {

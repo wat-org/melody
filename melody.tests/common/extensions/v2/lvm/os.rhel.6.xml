@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- LVM PV -->
+    <order name="create-lvm-pv-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-pv-create:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+pvs §[lvm.pv.name]§ 1>/dev/null 2>&1 && {
+  echo "LVM physical volume §[lvm.pv.name]§ already exists. Nothing to do. Exit."
+  exit 0
+}
+
+pvcreate §[lvm.pv.name]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM physical volume '§[lvm.pv.name]§' successfully created on machine '§[machine.id]§'." />
+    </order>
+
+    <order name="destroy-lvm-pv-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-pv-remove:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+pvs §[lvm.pv.name]§ 1>/dev/null 2>&1 || {
+  echo "LVM physical volume §[lvm.pv.name]§ not exists. Nothing to do. Exit."
+  exit 0
+}
+
+pvremove §[lvm.pv.name]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM physical volume '§[lvm.pv.name]§' successfully removed on machine '§[machine.id]§'." />
+    </order>
+
+
+
+    <!-- LVM VG -->
+    <order name="create-lvm-vg-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-vg-create:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+vgs §[lvm.vg.name]§ 1>/dev/null 2>&1 && {
+  echo "LVM volume group §[lvm.vg.name]§ already exists. Nothing to do. Exit."
+  exit 0
+}
+
+vgcreate §[lvm.vg.name]§ §[lvm.vg.pv-names]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM volume group '§[lvm.vg.name]§' successfully created on machine '§[machine.id]§'." />
+    </order>
+
+    <order name="destroy-lvm-vg-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-vg-remove:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+vgs §[lvm.vg.name]§ 1>/dev/null 2>&1 || {
+  echo "LVM volume group §[lvm.vg.name]§ not exists. Nothing to do. Exit."
+  exit 0
+}
+
+vgremove §[lvm.vg.name]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM volume group '§[lvm.vg.name]§' successfully removed on machine '§[machine.id]§'." />
+    </order>
+
+
+
+    <!-- LVM LV -->
+    <order name="create-lvm-lv-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-lv-create:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+lvs /dev/§[lvm.lv.vg-name]§/§[lvm.lv.name]§ 1>/dev/null 2>&1 && {
+  echo "LVM logical volume §[lvm.lv.name]§ already exists. Nothing to do. Exit."
+  exit 0
+}
+
+lvcreate -n §[lvm.lv.name]§ -L §[lvm.lv.size]§ §[lvm.lv.vg-name]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM logical volume '§[lvm.lv.name]§' successfully created on machine '§[machine.id]§'." />
+    </order>
+
+    <order name="destroy-lvm-lv-on-single-machine">
+        <!-- lvm operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.lvm">
+            <ssh description="[lvm-lv-remove:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+lvs /dev/§[lvm.lv.vg-name]§/§[lvm.lv.name]§ 1>/dev/null 2>&1 || {
+  echo "LVM logical volume §[lvm.lv.name]§ not exists. Nothing to do. Exit."
+  exit 0
+}
+
+lvchange -a n /dev/§[lvm.lv.vg-name]§/§[lvm.lv.name]§
+lvremove /dev/§[lvm.lv.vg-name]§/§[lvm.lv.name]§
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ LVM logical volume '§[lvm.lv.name]§' successfully removed on machine '§[machine.id]§'." />
+    </order>
+
+
+
+    <!-- PARTITIONS create & mount -->
+    <order name="create-fs-on-single-machine">
+        <!-- fs operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.fs">
+            <ssh description="[fs-create:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+blkid §[fs.path]§ 1>/dev/null 2>&1 && {
+  echo "File System §[fs.path]§ already exists. Nothing to do. Exit."
+  exit 0
+}
+
+mkfs -t §[fs.type]§ -i §[fs.options]§ §[fs.path]§
+mkdir -p §[fs.mount-point]§
+mountpoint -q §[fs.mount-point]§ && {
+  echo "File System §[fs.path]§ already mounted. Nothing to do. Exit."
+  exit 0
+}
+
+mount -t §[fs.type]§ §[fs.path]§ §[fs.mount-point]§
+echo "§[fs.path]§ §[fs.mount-point]§ §[fs.type]§ defaults 1 2" >> /etc/fstab
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ File System '§[fs.path]§' successfully created on machine '§[machine.id]§'." />
+    </order>
+
+    <order name="destroy-fs-on-single-machine">
+        <!-- fs operation doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.fs">
+            <ssh description="[fs-destroy:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+mountpoint -q §[fs.mount-point]§ || {
+  echo "File System §[fs.path]§ not mounted. Nothing to do. Exit."
+  exit 0
+}
+
+umount §[fs.mount-point]§
+# use @ as delimiter
+sed -i -r -e '\@§[fs.path]§@d' /etc/fstab
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ File System '§[fs.path]§' successfully destroyed on machine '§[machine.id]§'." />
+    </order>
+
+</sequence>

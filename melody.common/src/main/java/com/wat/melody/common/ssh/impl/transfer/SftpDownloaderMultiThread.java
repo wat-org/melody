@@ -5,6 +5,7 @@ import java.util.List;
 import com.jcraft.jsch.ChannelSftp;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferableFileSystem;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -17,8 +18,9 @@ import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 public class SftpDownloaderMultiThread extends SftpBaseTransferMultiThread {
 
 	public SftpDownloaderMultiThread(SshSession session,
-			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th) {
-		super(session, rss, maxPar, th);
+			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th,
+			MelodyThreadFactory tf) {
+		super(session, rss, maxPar, th, tf);
 	}
 
 	@Override

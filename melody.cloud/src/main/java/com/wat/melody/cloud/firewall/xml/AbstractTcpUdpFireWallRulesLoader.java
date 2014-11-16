@@ -2,6 +2,8 @@ package com.wat.melody.cloud.firewall.xml;
 
 import java.util.List;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -38,29 +40,44 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	public static final String TO_PORTS_ATTR = "to-ports";
 
 	protected PortRanges loadFromPorts(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, FROM_PORTS_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return PortRanges.parseString(v);
-		} catch (IllegalPortRangesException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					FROM_PORTS_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ FROM_PORTS_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return PortRanges.parseString(v);
+			} catch (IllegalPortRangesException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ FROM_PORTS_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	protected PortRanges loadToPorts(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TO_PORTS_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return PortRanges.parseString(v);
-		} catch (IllegalPortRangesException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e, TO_PORTS_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TO_PORTS_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return PortRanges.parseString(v);
+			} catch (IllegalPortRangesException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TO_PORTS_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 

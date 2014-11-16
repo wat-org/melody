@@ -21,7 +21,7 @@
             <ssh description="[deploy_epel_repo:§[ip]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                 <exec command="rpm -q epel-release &amp;&amp; exit 0"/>
                 <!-- option 'nosignature' will suppress the message 'warning: /var/tmp/rpm-tmp.9SKcuI: Header V3 DSA/SHA1 Signature, key ID 217521f6: NOKEY' displayed by this command -->
-                <exec command="rpm -Uvh --nosignature http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm || exit 1" />
+                <exec command="rpm -Uvh --nosignature http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || exit 1" />
              </ssh>
 
             <echo message="+ EPEL repository successfully deployed on server '§[§[srv]§/@instance-id]§'." />

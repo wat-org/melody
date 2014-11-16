@@ -1,5 +1,7 @@
 package com.wat.melody.cloud.instance.xml;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -156,61 +158,89 @@ public class InstanceDatasLoader {
 
 	private GenericTimeout loadCreateTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_CREATE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_CREATE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_CREATE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_CREATE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private GenericTimeout loadDeleteTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_DELETE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_DELETE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_DELETE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_DELETE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private GenericTimeout loadStopTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_STOP_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_STOP_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_STOP_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_STOP_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private GenericTimeout loadStartTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_START_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_START_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_START_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_START_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 

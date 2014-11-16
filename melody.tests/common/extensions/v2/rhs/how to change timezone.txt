@@ -1,0 +1,11 @@
+1) open /etc/sysconfig/clock
+
+2) set its content to
+ZONE="Europe/Paris"
+
+3) create a link
+  # ln -sf /usr/share/zoneinfo/France/Paris /etc/localtime
+
+4) Verify
+  # date
+  Sun May 18 11:50:42 CEST 2014

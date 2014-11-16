@@ -1,0 +1,77 @@
+******
+After disabling IPV6 on the system getting below IPV6 warning messages while restarting the nfs service:
+
+ # service nfs restart
+ Shutting down NFS daemon:                                  [  OK  ]
+ Shutting down NFS mountd:                                  [  OK  ]
+ Shutting down NFS quotas:                                  [  OK  ]
+ Starting NFS services:                                     [  OK  ]
+ Starting NFS quotas:                                       [  OK  ]
+ Starting NFS mountd: rpc.mountd: svc_tli_create: could not open connection for udp6
+ rpc.mountd: svc_tli_create: could not open connection for tcp6
+ rpc.mountd: svc_tli_create: could not open connection for udp6
+ rpc.mountd: svc_tli_create: could not open connection for tcp6
+ rpc.mountd: svc_tli_create: could not open connection for udp6
+ rpc.mountd: svc_tli_create: could not open connection for tcp6
+                                                           [  OK  ]
+
+1) Open the file /etc/netconfig
+
+2) Comment the udp6 and tcp6 lines and save, as shown below:
+
+Before:
+
+udp6       tpi_clts      v     inet6    udp     -       -
+tcp6       tpi_cots_ord  v     inet6    tcp     -       -
+
+After:
+
+#udp6       tpi_clts      v     inet6    udp     -       -
+#tcp6       tpi_cots_ord  v     inet6    tcp     -       -
+
+3) Now try to restart the nfs service and verify whether still getting the IPV6 warning message.
+
+]# service nfs restart
+Shutting down NFS daemon:                                  [  OK  ]
+Shutting down NFS mountd:                                  [  OK  ]
+Shutting down NFS quotas:                                  [  OK  ]
+Starting NFS services:                                     [  OK  ]
+Starting NFS quotas:                                       [  OK  ]
+Starting NFS mountd:                                       [  OK  ]
+Stopping RPC idmapd:                                       [  OK  ]
+Starting RPC idmapd:                                       [  OK  ]
+Starting NFS daemon:                                       [  OK  ]
+
+
+******
+explicitly specify a port for rpc.rquotad :
+1) Open the file /etc/sysconfig/nfs
+2) un-comment the directive 'RQUOTAD_PORT'
+3) reboot the system (don't know how to restart rpc.statd)
+4) rpc.rquotad should now listen on 875 tcp and udp
+
+
+******
+explicitly specify a port for rpc.mountd :
+1) Open the file /etc/sysconfig/nfs
+2) un-comment the directive 'MOUNTD_PORT'
+3) Now restart the nfs service
+4) rpc.mountd should now listen on 892 tcp and udp
+
+
+******
+explicitly specify a port for rpc.statd :
+1) Open the file /etc/sysconfig/nfs
+2) un-comment the directive 'STATD_PORT'
+3) Now restart the nfslock service
+4) rpc.statd should now listen on 662 tcp and udp
+
+
+******
+explicitly specify a port for lockd :
+1) Open the file /etc/sysconfig/nfs
+2) un-comment the directive 'LOCKD_TCPPORT' and 'LOCKD_UDPPORT'
+3) Now restart the nfs service
+4) rpc.mountd should now listen on 32803 tcp and 32769 udp
+
+

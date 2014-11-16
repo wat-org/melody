@@ -7,6 +7,7 @@ import com.wat.melody.common.ssh.exception.HostKeyChangedException;
 import com.wat.melody.common.ssh.exception.HostKeyNotFoundException;
 import com.wat.melody.common.ssh.exception.InvalidCredentialException;
 import com.wat.melody.common.ssh.exception.SshSessionException;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -48,12 +49,12 @@ public interface ISshSession {
 			InterruptedException;
 
 	public void upload(List<ResourcesSpecification> rrs, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException;
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException;
 
 	public void download(List<ResourcesSpecification> rrss, int maxPar,
-			TemplatingHandler th) throws SshSessionException,
-			InterruptedException;
+			TemplatingHandler th, MelodyThreadFactory tf)
+			throws SshSessionException, InterruptedException;
 
 	public IHostKey getHostKey();
 

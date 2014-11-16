@@ -1,0 +1,6 @@
+keytool -genkeypair -keystore share.ks -storepass 12345678 -alias https -keysize 4096 -keyalg RSA -keypass 12345678 -validity 1000 -dname "CN=§[FQDN]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR"
+keytool -certreq -keystore share.ks -storepass 12345678 -alias https -keypass 12345678 -file share.csr
+# /default openssl conf (located in 'etc/pki/tls/openssl.cnf') must contains 'string_mask=pkix' in '[ req ]' section
+openssl ca -in share.csr -keyfile cakey.pem -key §[CA_pkpass]§ -cert cacert.pem -out share.cert.pem -batch
+keytool -import -keystore share.ks -storepass 12345678 -alias root -file cacert.pem -noprompt
+keytool -import -keystore share.ks -storepass 12345678 -alias https -file share.cert.pem -noprompt

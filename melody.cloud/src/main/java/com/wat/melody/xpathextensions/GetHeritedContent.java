@@ -10,6 +10,7 @@ import org.w3c.dom.Element;
 
 import com.wat.melody.common.xml.FilteredDoc;
 import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xpath.XPathFunctionHelper;
 
 /**
  * <p>
@@ -25,25 +26,31 @@ public final class GetHeritedContent implements XPathFunction {
 
 	public static final String NAME = "getHeritedContent";
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object evaluate(List list) throws XPathFunctionException {
 		Object arg0 = list.get(0);
 		Object arg1 = list.get(1);
 		if (arg0 == null || (arg0 instanceof List && ((List) arg0).size() == 0)) {
 			return null;
 		}
-		if (!(arg0 instanceof Element)) {
-			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
-					+ ": Not accepted. " + NAME
-					+ "() expects an Element Node as first argument.");
-		}
 		if (arg1 == null || !(arg1 instanceof String)) {
 			throw new XPathFunctionException("null: Not accepted. " + NAME
 					+ "() expects a non-null String as second argument.");
 		}
 		try {
-			return FilteredDocHelper.getHeritedContent((Element) arg0,
-					(String) arg1);
+			if (XPathFunctionHelper.isElement(arg0)) {
+				return FilteredDocHelper.getHeritedContent((Element) arg0,
+						(String) arg1);
+			} else if (XPathFunctionHelper.isElementList(arg0)) {
+				return FilteredDocHelper.getHeritedContent(
+						(List<Element>) arg0, (String) arg1);
+			}
+			throw new XPathFunctionException(arg0.getClass().getCanonicalName()
+					+ ": Not accepted. " + NAME + "() expects an "
+					+ Element.class.getCanonicalName() + " or a "
+					+ List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + "> as first "
+					+ "argument.");
 		} catch (XPathExpressionException Ex) {
 			throw new XPathFunctionException(Ex);
 		}

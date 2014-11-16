@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="start-service-on-single-machine">
+        <echo message="+ Service '§[service.name]§' not started on machine '§[machine.id]§' (feature not supported yet on §[machine.os.name]§ §[machine.os.version]§)."/>
+    </order>
+
+    <order name="stop-service-on-single-machine">
+        <echo message="+ Service '§[service.name]§' not stopped on machine '§[machine.id]§' (feature not supported yet on §[machine.os.name]§ §[machine.os.version]§)."/>
+    </order>
+
+</sequence>

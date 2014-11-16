@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-rdb-servers">
+        <call orders="deploy-postgresql-servers"/>
+    </order>
+
+    <order name="start-rdb-servers">
+        <call orders="start-postgresql-servers"/>
+    </order>
+
+    <order name="stop-rdb-servers">
+        <call orders="stop-postgresql-servers"/>
+    </order>
+
+    <order name="do-operation-on-rdb-servers">
+        <call orders="do-operation-on-postgresql-servers"/>
+    </order>
+
+    <!-- deploy each rdb-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each rdb-servers.
+         caller can define callback 'callback.application' in order to perform application related actions on each rdb-servers, if applications are declared on a rdb-server.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="deploy-postgresql-servers">
+        <echo message="Creating Postgresql Servers ..."/>
+        <call orders="do-operation-on-postgresql-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::deploy-postgresql-server-on-single-machine"/>
+        </call>
+        <echo message="-- Postgresql Servers successfully created."/>
+    </order>
+
+    <!-- start each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="start-postgresql-servers">
+        <echo message="Starting Postgresql Servers ..."/>
+        <call orders="do-operation-on-postgresql-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::start-postgresql-server-on-single-machine"/>
+        </call>
+        <echo message="-- Postgresql Servers successfully started."/>
+    </order>
+
+    <!-- stop each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="stop-postgresql-servers">
+        <echo message="Stopping Postgresql Servers ..."/>
+        <call orders="do-operation-on-postgresql-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::stop-postgresql-server-on-single-machine"/>
+        </call>
+        <echo message="-- Postgresql Servers successfully stopped."/>
+    </order>
+
+    <!-- loop on each machines where a rdb-server is declared.
+         caller must define callback 'callback.rdbs'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-postgresql-servers">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(rdb-server)]')"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-postgresql-server-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-postgresql-server-on-single-machine">
+        <property name="rdbs.path"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@path') ]§"/>
+        <property name="rdbs.owner"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/owner/@login') ]§"/>
+        <property name="rdbs.owner.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@id') ]§"/>
+        <property name="rdbs.group"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@ref-group-name') ]§"/>
+        <property name="rdbs.group.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/group[@name=&quot;§[rdbs.group]§&quot;]/@id') ]§"/>
+        <property name="rdbs.listen.device"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@device', 'eth0') ]§"/>
+        <property name="rdbs.listen.port-offset"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@port-offset', '0') ]§"/>
+        <property name="rdbs.listen.port.tcp"      value="§[ number(melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/socket[@name=''tcp'']/@port', '5432')) + §[rdbs.listen.port-offset]§ ]§"/>
+        <property name="rdbs.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@ip ]§"/>
+        <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@fqdn ]§"/>
+        <property name="realm"                     value="§[ melody:getHeritedAttributeValue(§[machine]§, '/kerberos-host/@realm') ]§"/>
+
+        <call orders="§[substring-after('§[callback.rdbs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rdbs]§','::')]§"/>
+    </order>
+
+    <property name="callback.server"        value="§[ melody:getSequenceDescriptorPath() ]§::customize-postgresql-server.default-callback"/>
+    <property name="callback.application"   value="§[ melody:getSequenceDescriptorPath() ]§::customize-postgresql-application.default-callback"/>
+
+    <order name="deploy-postgresql-server-on-single-machine">
+        <!-- install -->
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="postgresql-server"/>
+        </call>
+
+        <!-- configure -->
+        <ssh description="[configure:postgresql-server:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+[ -d "§[rdbs.path]§/base/" ] && {
+  echo "Postgresql Server already initialized. Nothing to do."
+  exit 0
+}
+service postgresql initdb || {
+  res=$?
+  echo "Fail to initialize Postgresql Server. Exiting with error code $res." >&2
+  exit $res
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <upload host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="var/lib/pgsql/data"
+                        match="**"
+                        dest-basedir="§[rdbs.path]§">
+                <posix-permissions scope="files">600</posix-permissions>
+                <include match="postgresql.conf" template="y"/>
+                <include match="pg_hba.conf"     template="y"/>
+                <include match="pg_ident.conf"   template="y"/>
+                <include match=".krb5">
+                    <posix-permissions scope="directories">700</posix-permissions>
+                </include>
+            </resources>
+        </upload>
+
+        <!-- generate keytab -->
+        <call orders="create-kerberos-principal"             sequence-descriptor="../krb5.mit/sd.xml">
+            <param name="principal"  value="postgres/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"      value="§[realm]§"/>
+            <param name="policy"     value="services"/>
+        </call>
+        <call orders="deploy-kerberos-principal-keytab"      sequence-descriptor="../krb5.mit/sd.xml">
+            <param name="principal"   value="postgres/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="cnx.user"    value="§[rdbs.owner]§"/>
+            <param name="dest.path"   value="§[rdbs.path]§/.krb5/krb5.keytab"/>
+        </call>
+
+        <!-- start -->
+        <call orders="start-service-on-single-machine"       sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="postgresql"/>
+        </call>
+
+        <!-- customize / machine scope -->
+        <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/rdb-server/applications/application')"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"      value="§[§[application]§/@name]§"/>
+            <property name="appli.base"      value="§[§[application]§/@base]§"/>
+
+            <!-- customize application -->
+            <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§"/>
+            <property name="cb.sd"           value="§[substring-before('§[callback.application]§','::')]§"/>
+            <property name="cb.order"        value="§[
+             if ('§[cb.order]§' = 'customize-postgresql-application.default-callback') then
+               '§[cb.order]§'
+             else
+               '§[cb.order]§.§[appli.name]§'
+            ]§"/>
+
+            <call orders="§[cb.order]§" sequence-descriptor="§[cb.sd]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully deployed on Postgresql Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server -->
+        <call orders="start-postgresql-server-on-single-machine"/>
+
+        <echo message="++ Postgresql Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-postgresql-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-postgresql-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-postgresql-server-on-single-machine">
+        <call orders="start-service-on-single-machine" sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="postgresql"/>
+        </call>
+
+        <echo message="+ Postgresql Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-postgresql-server-on-single-machine">
+        <call orders="stop-service-on-single-machine" sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="postgresql"/>
+        </call>
+
+        <echo message="+ Postgresql Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

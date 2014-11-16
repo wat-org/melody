@@ -2,12 +2,27 @@ package com.wat.melody.api;
 
 import java.util.EmptyStackException;
 
+import com.wat.melody.common.threads.MelodyThreadFactory;
+
 /**
  * 
  * @author Guillaume Cornet
  * 
  */
 public abstract class Melody {
+
+	public static MelodyThreadFactory getThreadFactory() {
+		return new MelodyThreadFactory() {
+
+			@Override
+			public Thread newThread(ThreadGroup tg, Runnable r, String name) {
+				MelodyThread mt = createNewMelodyThread(tg, r, name);
+				mt.pushContext(getContext());
+				return (Thread) mt;
+			}
+
+		};
+	}
 
 	/**
 	 * <p>

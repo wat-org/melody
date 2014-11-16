@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <property name="kvc_server_match_criteria"   value="1=1"/>
+    <property name="kvc_engine_match_criteria"   value="1=1"/>
+
+    <!-- deploy each kvc-engines.
+         caller must define 'kvce.binaries.path'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_engine_match_criteria' to target a subset of kvc-engines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="deploy-jboss-datagrid-engines">
+        <echo message="Deploying JBoss DataGrid Engines ..."/>
+        <call orders="do-operation-on-jboss-datagrid-engines">
+            <param name="callback.kvce"   value="§[melody:getSequenceDescriptorPath()]§::deploy-jboss-datagrid-engine-on-single-machine"/>
+        </call>
+        <echo message="-- JBoss DataGrid Engines successfully deployed."/>
+    </order>
+
+    <!-- deploy each kvc-servers.
+         caller must define 'kvce.binaries.path'.
+         caller can define callback 'callback.server' in order to perform extra actions on each kvc-servers.
+         caller must define callback 'callback.module' in order to perform module related actions on each kvc-servers, if modules are declared on a kcv-server.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="deploy-jboss-datagrid-servers">
+        <call orders="deploy-jboss-datagrid-engines"/>
+        <echo message="Creating JBoss DataGrid Servers ..."/>
+        <call orders="do-operation-on-jboss-datagrid-servers">
+            <param name="callback.kvcs"   value="§[melody:getSequenceDescriptorPath()]§::deploy-jboss-datagrid-server-on-single-machine"/>
+        </call>
+        <echo message="-- JBoss DataGrid Servers successfully created."/>
+    </order>
+
+    <!-- start each kvc-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="start-jboss-datagrid-servers">
+        <echo message="Starting JBoss DataGrid Servers ..."/>
+        <call orders="do-operation-on-jboss-datagrid-servers">
+            <param name="callback.kvcs" value="§[melody:getSequenceDescriptorPath()]§::start-jboss-datagrid-server-on-single-machine"/>
+        </call>
+        <echo message="-- JBoss DataGrid Servers successfully started."/>
+    </order>
+
+    <!-- stop each kvc-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="stop-jboss-datagrid-servers">
+        <echo message="Stopping JBoss DataGrid Servers ..."/>
+        <call orders="do-operation-on-jboss-datagrid-servers">
+            <param name="callback.kvcs" value="§[melody:getSequenceDescriptorPath()]§::stop-jboss-datagrid-server-on-single-machine"/>
+        </call>
+        <echo message="-- JBoss DataGrid Servers successfully stopped."/>
+    </order>
+
+
+    <!-- loop on each machines where a kvc-server is declared.
+         caller must define callback 'callback.machine'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-jboss-datagrid-machines">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(kvc-server)]')"/>
+        </call>
+    </order>
+
+
+    <!-- loop on each kvc-engines.
+         caller must define 'callback.kvce'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_engine_match_criteria' to target a subset of kvc-engines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="do-operation-on-jboss-datagrid-engines">
+        <call orders="do-operation-on-jboss-datagrid-machines">
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-jboss-datagrid-engines-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-jboss-datagrid-engines-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/jboss-datagrid-engine [ @version=melody:getHeritedAttributeValue(melody:getHeritedContent(§[machine]§, &quot;/kvc-server [ §[kvc_server_match_criteria]§ ]&quot;), &quot;/@version&quot;) and §[kvc_engine_match_criteria]§ ]')"
+                    item-name="kvce">
+            <property name="kvce.path"             value="§[ melody:getHeritedAttributeValue(§[kvce]§, '/@path') ]§"/>
+            <property name="kvce.version"          value="§[ melody:getHeritedAttributeValue(§[kvce]§, '/@version') ]§"/>
+            <property name="kvce.owner"            value="§[ melody:getHeritedAttributeValue(§[kvce]§, '/owner/@login') ]§"/>
+            <property name="kvce.owner.pwd"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvce.owner]§&quot;]/@password') ]§"/>
+            <property name="kvce.owner.home-dir"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvce.owner]§&quot;]/@homedir') ]§"/>
+            <property name="kvce.group"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvce.owner]§&quot;]/@group') ]§"/>
+
+            <call orders="§[substring-after('§[callback.kvce]§','::')]§" sequence-descriptor="§[substring-before('§[callback.kvce]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <property name="callback.engine"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-datagrid-engine.default-callback"/>
+
+    <order name="deploy-jboss-datagrid-engine-on-single-machine">
+        <!-- deploy standard engine -->
+        <call orders="deploy-jboss-datagrid-engine-on-single-machine" sequence-descriptor="./§[kvce.version]§/sd.xml"/>
+
+        <!-- customize engine -->
+        <call orders="§[substring-after('§[callback.engine]§','::')]§" sequence-descriptor="§[substring-before('§[callback.engine]§','::')]§"/>
+
+        <echo message="++ JBoss DataGrid Enggine '§[kvce.version]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-jboss-datagrid-engine.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <!-- loop on each kvc-servers.
+         caller must define callback 'callback.kvcs'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="do-operation-on-jboss-datagrid-servers">
+        <call orders="do-operation-on-jboss-datagrid-machines">
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-jboss-datagrid-servers-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-jboss-datagrid-servers-on-single-machine">
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/kvc-server[ §[kvc_server_match_criteria]§ ]')"
+                    item-name="kvcs">
+            <property name="kvcs.path"                    value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/@path') ]§"/>
+            <property name="kvcs.version"                 value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/@version') ]§"/>
+            <property name="kvcs.owner"                   value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/owner/@login') ]§"/>
+            <property name="kvcs.owner.pwd"               value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvcs.owner]§&quot;]/@password') ]§"/>
+            <property name="kvcs.owner.home-dir"          value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvcs.owner]§&quot;]/@homedir') ]§"/>
+            <property name="kvcs.profile"                 value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/@profile', '') ]§"/>
+            <property name="kvcs.profile.file"            value="standalone§[if (string-length('§[kvcs.profile]§')=0) then '' else '-§[kvcs.profile]§']§.xml"/>
+
+            <property name="kvce.path"                    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/jboss-datagrid-engine[@version=&quot;§[kvcs.version]§&quot;]/@path') ]§"/>
+            <property name="kvce.owner"                   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/jboss-datagrid-engine[@version=&quot;§[kvcs.version]§&quot;]/owner/@login') ]§"/>
+            <property name="kvce.group"                   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[kvce.owner]§&quot;]/@group') ]§"/>
+
+            <property name="kvcs.memory.xms"              value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/memory/@xms', '128m') ]§"/>
+            <property name="kvcs.memory.xmx"              value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/memory/@xmx', '512m') ]§"/>
+            <property name="kvcs.memory.perm-size"        value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/memory/@perm-size', '64m')]§"/>
+            <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
+
+            <property name="kvcs.listen.device"           value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/@device', 'eth0') ]§"/>
+            <property name="kvcs.listen.ip"               value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kvcs.listen.device]§')/@ip ]§"/>
+            <property name="kvcs.listen.fqdn"             value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kvcs.listen.device]§')/@fqdn ]§"/>
+            <property name="kvcs.listen.port-offset"      value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/@port-offset', '0') ]§"/>
+            <property name="kvcs.listen.port.http"        value="§[ number(melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/socket[@name=''http'']/@port', '8080')) + §[kvcs.listen.port-offset]§ ]§"/>
+            <property name="kvcs.listen.port.https"       value="§[ number(melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/socket[@name=''https'']/@port', '8443')) + §[kvcs.listen.port-offset]§ ]§"/>
+            <property name="kvcs.listen.port.hotrod"      value="§[ number(melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/socket[@name=''hotrod'']/@port', '11222')) + §[kvcs.listen.port-offset]§ ]§"/>
+            <property name="kvcs.listen.mgnt.device"      value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/listen-on/@management-device', '§[kvcs.listen.device]§') ]§"/>
+            <property name="kvcs.listen.mgnt.ip"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kvcs.listen.mgnt.device]§')/@ip ]§"/>
+            <property name="kvcs.listen.mgnt.fqdn"        value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kvcs.listen.mgnt.device]§')/@fqdn ]§"/>
+            <property name="kvcs.mgnt.keystore.url"       value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/keystore[exists(key[@usage=&quot;management&quot;])]/@path') ]§"/>
+            <property name="kvcs.mgnt.keystore.pwd"       value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/keystore[exists(key[@usage=&quot;management&quot;])]/@password') ]§"/>
+            <property name="kvcs.mgnt.key.alias"          value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/keystore/key[@usage=&quot;management&quot;]/@alias') ]§"/>
+            <property name="kvcs.mgnt.key.pwd"            value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/keystore/key[@usage=&quot;management&quot;]/@password') ]§"/>
+            <property name="kvcs.mgnt.key.dn"             value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/keystore/key[@usage=&quot;management&quot;]/@dname', 'CN=§[kvcs.listen.mgnt.fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR') ]§"/>
+
+            <property name="kvcs.vault.enc-dir"           value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/enc-dir/@path', '§[kvcs.path]§/configuration/vault/secret/') ]§"/>
+            <property name="kvcs.vault.url"               value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/keystore/@path', '§[kvcs.path]§/configuration/vault/vault.keystore') ]§"/>
+            <property name="kvcs.vault.pwd"               value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/keystore/@password', 'changeit') ]§"/>
+            <property name="kvcs.vault.iteration-count"   value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/secret/@iteration-count', '69') ]§"/>
+            <property name="kvcs.vault.salt"              value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/secret/@salt', 'supasalt') ]§"/>
+            <property name="kvcs.vault.salt"              value="§[ if (string-length('§[kvcs.vault.salt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[kvcs.vault.salt]§' ]§"/>
+            <property name="kvcs.vault.masked-pwd"        value="§[ jboss:maskPassword('§[kvcs.vault.salt]§', '§[kvcs.vault.iteration-count]§', '§[kvcs.vault.pwd]§') ]§"/>
+            <property name="kvcs.vault.key.alias"         value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/vault/keystore/@alias', 'vault') ]§"/>
+            <property name="kvcs.vault.key.dn"            value="CN=§[kvcs.listen.mgnt.fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR"/>
+
+            <property name="kvcs.id"                      value="§[kvcs.owner]§@§[kvcs.listen.ip]§:+§[kvcs.listen.port-offset]§"/>
+
+            <property name="kvcs.disabled"                value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/features/@administration-only', 'false') ]§"/>
+            <property name="kvcs.native"                  value="§[ melody:getHeritedAttributeValue(§[kvcs]§, '/jboss-web/@uses-native-components', 'false') ]§"/>
+
+            <call orders="§[substring-after('§[callback.kvcs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.kvcs]§','::')]§"/>
+        </foreach>
+    </order>
+
+    <property name="callback.server"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-datagrid-server.default-callback"/>
+
+    <order name="deploy-jboss-datagrid-server-on-single-machine">
+        <!-- prepare server configuration modification -->
+        <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
+        <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+        <copy>
+            <resources  src-basedir="./§[kvcs.version]§/standalone/configuration/"
+                        match="§[kvcs.profile.file]§"
+                        dest-basedir="§[workingfolder.abs]§/"
+                        dest-name="§[tmpfile.rel]§"
+                        link-option="COPY_LINKS"/>
+        </copy>
+
+        <!-- deploy server and apply standard configuration -->
+        <call orders="deploy-jboss-datagrid-server-on-single-machine" sequence-descriptor="./§[kvcs.version]§/sd.xml"/>
+
+        <!-- customize server -->
+        <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
+
+        <!-- deploy custom modules -->
+        <foreach    items="melody:getHeritedContent(§[kvcs]§, '/custom-modules/custom-module')"
+                    item-name="cm"
+                    max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="cm.name"          value="§[§[cm]§/@name]§"/>
+
+            <call orders="§[substring-after('§[callback.module]§','::')]§.§[cm.name]§" sequence-descriptor="§[substring-before('§[callback.module]§','::')]§"/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss '§[kvcs.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- upload modified configuration -->
+        <upload host="§[machine.cnx.ip]§" login="§[kvcs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/"
+                        match="§[tmpfile.rel]§"
+                        dest-basedir="§[kvcs.path]§/configuration/"
+                        dest-name="§[kvcs.profile.file]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- start server -->
+        <call orders="start-jboss-datagrid-server-on-single-machine"/>
+
+        <echo message="++ JBoss DataGrid Server '§[kvcs.id]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-jboss-datagrid-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-jboss-datagrid-server-on-single-machine">
+        <ssh description="[start:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh restart"/>
+        </ssh>
+
+        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-jboss-datagrid-server-on-single-machine">
+        <ssh description="[stop:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh stop"/>
+        </ssh>
+
+        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

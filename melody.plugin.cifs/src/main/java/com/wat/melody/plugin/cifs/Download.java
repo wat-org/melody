@@ -2,6 +2,7 @@ package com.wat.melody.plugin.cifs;
 
 import java.io.File;
 
+import com.wat.melody.api.Melody;
 import com.wat.melody.common.cifs.transfer.CifsDownloaderMultiThread;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -27,7 +28,8 @@ public class Download extends Transfer {
 	public void doTransfer(String location, String domain, String username,
 			String password) throws TransferException, InterruptedException {
 		new CifsDownloaderMultiThread(location, domain, username, password,
-				getResourcesSpecifications(), getMaxPar(), this).doTransfer();
+				getResourcesSpecifications(), getMaxPar(), this,
+				Melody.getThreadFactory()).doTransfer();
 	}
 
 	public ResourcesSpecification newResourcesSpecification(File basedir) {

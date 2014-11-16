@@ -44,7 +44,7 @@ log4j.logFilePath=${rootFolderPath}/logs/melody.log
 ### File where exceptions details are generated
 log4j.exceptionFilePath=${rootFolderPath}/logs/melody_exception.log
 
-### File where libvirt logs are generated
+### File where LibVirt logs details are generated
 log4j.libvirt.logFilePath=${rootFolderPath}/logs/libvirt.log
 
 ### Log threshold

@@ -5,6 +5,7 @@ import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.ex.WrapperInterruptedException;
 import com.wat.melody.common.files.FileSystem;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.finder.TransferableFilesIterator;
 import com.wat.melody.common.transfer.finder.TransferablesFinder;
@@ -40,6 +42,7 @@ public abstract class TransferMultiThread {
 	protected static final short INTERRUPTED = 2;
 	protected static final short CRITICAL = 4;
 
+	private MelodyThreadFactory _threadFactory;
 	private List<ResourcesSpecification> _resourcesSpecifications;
 	private int _maxPar;
 	private TransferablesTree _transferables;
@@ -52,10 +55,11 @@ public abstract class TransferMultiThread {
 	private ConsolidatedException _exceptions;
 
 	public TransferMultiThread(List<ResourcesSpecification> rss, int maxPar,
-			TemplatingHandler th) {
+			TemplatingHandler th, MelodyThreadFactory threadFactory) {
 		setResourcesSpecifications(rss);
 		setMaxPar(maxPar);
 		setTemplatingHandler(th);
+		setThreadFactory(threadFactory);
 
 		markState(SUCCEED);
 		setThreadGroup(null);
@@ -358,6 +362,16 @@ public abstract class TransferMultiThread {
 		}
 	}
 
+	protected Thread newThread(TransferThread tt, int index) {
+		MelodyThreadFactory tf = getThreadFactory();
+		if (tf == null) {
+			return new Thread(getThreadGroup(), tt, getThreadGroup().getName()
+					+ "-" + index);
+		}
+		return tf.newThread(getThreadGroup(), tt, getThreadGroup().getName()
+				+ "-" + index);
+	}
+
 	public abstract String getThreadName();
 
 	public abstract FileSystem newSourceFileSystem()
@@ -434,6 +448,21 @@ public abstract class TransferMultiThread {
 	private TemplatingHandler setTemplatingHandler(TemplatingHandler th) {
 		TemplatingHandler previous = getTemplatingHandler();
 		_templatingHandler = th;
+		return previous;
+	}
+
+	/**
+	 * @return the {@link ThreadFactory} which is used to create {@link Thread}
+	 *         s.
+	 */
+	protected MelodyThreadFactory getThreadFactory() {
+		return _threadFactory;
+	}
+
+	private MelodyThreadFactory setThreadFactory(MelodyThreadFactory tf) {
+		// Can be null
+		MelodyThreadFactory previous = getThreadFactory();
+		_threadFactory = tf;
 		return previous;
 	}
 

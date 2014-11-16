@@ -67,7 +67,7 @@ public class Copy implements ITask, TemplatingHandler {
 
 		try {
 			new LocalTransferMultiThread(getResourcesSpecifications(),
-					getMaxPar(), this).doTransfer();
+					getMaxPar(), this, Melody.getThreadFactory()).doTransfer();
 		} catch (TransferException Ex) {
 			throw new CopyPluginException(Ex);
 		}

@@ -3,6 +3,7 @@ package com.wat.melody.common.ssh.impl.transfer;
 import java.util.List;
 
 import com.wat.melody.common.ssh.impl.SshSession;
+import com.wat.melody.common.threads.MelodyThreadFactory;
 import com.wat.melody.common.transfer.TemplatingHandler;
 import com.wat.melody.common.transfer.TransferMultiThread;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
@@ -17,8 +18,9 @@ public abstract class SftpBaseTransferMultiThread extends TransferMultiThread {
 	private SshSession _session;
 
 	public SftpBaseTransferMultiThread(SshSession session,
-			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th) {
-		super(rss, maxPar, th);
+			List<ResourcesSpecification> rss, int maxPar, TemplatingHandler th,
+			MelodyThreadFactory tf) {
+		super(rss, maxPar, th, tf);
 		setSession(session);
 	}
 

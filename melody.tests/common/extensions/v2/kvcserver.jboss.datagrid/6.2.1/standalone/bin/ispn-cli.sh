@@ -1,0 +1,1 @@
+../../../6.2.0/standalone/bin/ispn-cli.sh

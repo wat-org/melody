@@ -16,6 +16,7 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
+import com.wat.melody.common.xpath.XPathFunctionHelper;
 
 /**
  * 
@@ -25,21 +26,65 @@ import com.wat.melody.common.xpath.XPathExpander;
 public abstract class FilteredDocHelper {
 
 	/**
+	 * @param l
+	 *            is a {@link List} of {@link Element}.
+	 * @param expr
+	 *            is a relative XPath Expression.
+	 * 
+	 * @return a {@link List} of {@link NodeList} which match the given relative
+	 *         XPath Expression, from each given context and all herited
+	 *         parents. Can be an empty list, if the given expression doesn't
+	 *         match anything.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given list is <tt>null</tt>, or if the given XPath
+	 *             Expression is <tt>null</tt>.
+	 * @throws XPathExpressionException
+	 *             if the given XPath Expression is invalid.
+	 */
+	public static List<Element> getHeritedContent(List<Element> l, String expr)
+			throws XPathExpressionException {
+		if (l == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid a " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">.");
+		}
+		List<Element> list = new ArrayList<Element>();
+		for (Element n : l) {
+			if (n == null) {
+				continue;
+			}
+			NodeList res = getHeritedContent(n, expr);
+			if (res == null) {
+				continue;
+			}
+			list.addAll(XPathFunctionHelper.toElementList(res));
+		}
+		return list;
+	}
+
+	/**
 	 * @param n
 	 *            is the context, used for XPath Expression evaluation.
 	 * @param expr
 	 *            is a relative XPath Expression.
 	 * 
-	 * @return {@link Node}s which match the given relative XPath Expression,
-	 *         from the given context and all herited parents.
+	 * @return a {@link NodeList} which match the given relative XPath
+	 *         Expression, from the given context and all herited parents. Can
+	 *         be an empty list, if the given expression doesn't match anything.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given element is <tt>null</tt>.
+	 *             if the given element is <tt>null</tt>, or if the given XPath
+	 *             Expression is <tt>null</tt>.
 	 * @throws XPathExpressionException
-	 *             if the given expression is invalid.
+	 *             if the given XPath Expression is invalid.
 	 */
 	public static NodeList getHeritedContent(Element n, String expr)
 			throws XPathExpressionException {
+		if (expr == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid " + String.class.getCanonicalName() + ".");
+		}
 		String refNodesXpr = DocHelper.getXPathPosition(n);
 		Element ctx = (Element) n.getOwnerDocument().getFirstChild();
 		List<Element> circle = new ArrayList<Element>();
@@ -67,45 +112,38 @@ public abstract class FilteredDocHelper {
 
 	/**
 	 * @param n
-	 *            is an {@link Element}.
-	 * @param sAttrName
-	 *            is the attribute name to search.
+	 *            is the context, used for XPath Expression evaluation.
+	 * @param expr
+	 *            is a relative XPath Expression, which should query an XML
+	 *            Attribute Node.
+	 * @param defaultValue
+	 *            is a default value. Can be <tt>null</tt>.
 	 * 
-	 * @return the value of the given attribute, or <tt>null</tt> if the given
-	 *         attribute was not found in given {@link Element} and all its
-	 *         herited parents.
+	 * @return The first {@link Attr} which match the given relative XPath
+	 *         Expression, from the given context and all herited parents, or
+	 *         the given default value (which may be <tt>null</tt>), if the
+	 *         given XPath Expression doesn't match anything.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given element is <tt>null</tt>, or if the given XPath
+	 *             Expression is <tt>null</tt>, or if the given expression
+	 *             doesn't match an XML Attribute Node.
+	 * @throws XPathExpressionException
+	 *             if the given XPath Expression is invalid.
 	 */
-	public static Attr getHeritedAttribute(Element n, String sAttrName) {
-		List<Element> circle = new ArrayList<Element>();
-		circle.add(n);
-		return getHeritedAttribute(n, sAttrName, circle);
-	}
-
-	private static Attr getHeritedAttribute(Element n, String sAttrName,
-			List<Element> circle) {
-		if (n == null) {
-			return null;
+	public static Attr getHeritedAttribute(Element n, String expr,
+			String defaultValue) throws XPathExpressionException {
+		NodeList nl = getHeritedContent(n, expr);
+		if (nl == null || nl.getLength() == 0) {
+			Attr attr = n.getOwnerDocument().createAttribute("default");
+			attr.setValue(defaultValue);
+			return attr;
 		}
-		Attr a = n.getAttributeNode(sAttrName);
-		if (a != null) {
-			return a;
+		if (nl.item(0).getNodeType() != Node.ATTRIBUTE_NODE) {
+			throw new IllegalArgumentException(expr + ": Not accepted. "
+					+ "Doesn't match an XML Attribute Node.");
 		}
-		Element parent = null;
-		try {
-			parent = resolvHeritAttr(n, circle);
-		} catch (NodeRelatedException Ex) {
-			throw new RuntimeException("Unexecpted error while resolving "
-					+ "herited parents of the Element ["
-					+ DocHelper.getNodeLocation(n).toFullString() + "]. "
-					+ "Because all herited attributes have already been "
-					+ "validated, such error cannot happened. "
-					+ "Source code has certainly been modified and "
-					+ "a bug have been introduced.", Ex);
-		}
-		if (parent == null) {
-			return null;
-		}
-		return getHeritedAttribute(parent, sAttrName, circle);
+		return (Attr) nl.item(nl.getLength() - 1);
 	}
 
 	/**
@@ -117,7 +155,8 @@ public abstract class FilteredDocHelper {
 	 *            circular references will not be detected.
 	 * 
 	 * @return the herited parent of the given {@link Element}, or <tt>null</tt>
-	 *         if the given {@link Element} was <tt>null</tt>.
+	 *         if the given {@link Element} was <tt>null</tt>, or if the given
+	 *         {@link Element} has no herited parent.
 	 * 
 	 * @throws NodeRelatedException
 	 *             <ul>
@@ -368,9 +407,8 @@ public abstract class FilteredDocHelper {
 					(Element) toImport.getParentNode(), false);
 		}
 
-		imported = importNodeSubTree(dest, toImport, importChilds);
-		importedParent.appendChild(imported);
-		return (Element) imported;
+		return (Element) importNodeSubTree(dest, importedParent, toImport,
+				importChilds);
 	}
 
 	/**
@@ -387,6 +425,9 @@ public abstract class FilteredDocHelper {
 	 * 
 	 * @param dest
 	 *            is the destination {@link Document}.
+	 * @param whereToImport
+	 *            is the {@link Node} of the destination document which will
+	 *            receive the imported {@link Node}.
 	 * @param toImport
 	 *            is the {@link Node} to import (it mustn't be owned by the
 	 *            given destination {@link Document}).
@@ -402,17 +443,18 @@ public abstract class FilteredDocHelper {
 	 *             </li>
 	 *             </ul>
 	 */
-	private static Node importNodeSubTree(Document dest, Node toImport,
-			boolean importChilds) {
+	private static Node importNodeSubTree(Document dest, Node whereToImport,
+			Node toImport, boolean importChilds) {
 		if (toImport.getNodeType() == Node.ELEMENT_NODE) {
 			insertHeritedParents(dest, (Element) toImport);
 		}
 
 		Node imported = dest.importNode(toImport, false);
+		whereToImport.appendChild(imported);
 		if (importChilds) {
 			for (int i = 0; i < toImport.getChildNodes().getLength(); i++) {
 				Node child = toImport.getChildNodes().item(i);
-				imported.appendChild(importNodeSubTree(dest, child, true));
+				importNodeSubTree(dest, imported, child, true);
 			}
 		}
 		return imported;

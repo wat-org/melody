@@ -1,0 +1,337 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-certificate-authorities">
+        <echo message="Creating Certificate Authorities ..."/>
+        <call orders="do-operation-on-certificate-authorities">
+            <param name="callback.ca" value="§[melody:getSequenceDescriptorPath()]§::deploy-certificate-authority-on-single-machine"/>
+        </call>
+        <echo message="-- Certificate Authorities successfully created."/>
+    </order>
+
+    <order name="do-operation-on-certificate-authorities">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(certificate-authority)]')"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-certificate-authority-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-certificate-authority-on-single-machine">
+        <property name="ca.path"    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@path') ]§"/>
+        <property name="ca.cn"      value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@CN') ]§"/>
+        <property name="ca.o"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@O') ]§"/>
+        <property name="ca.pk.pwd"  value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@pk-password') ]§"/>
+
+        <call orders="§[substring-after('§[callback.ca]§','::')]§" sequence-descriptor="§[substring-before('§[callback.ca]§','::')]§"/>
+    </order>
+
+    <order name="deploy-certificate-authority-on-single-machine">
+        <!-- install -->
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="openssl"/>
+        </call>
+        <call orders="install-package-on-single-machine"      sequence-descriptor="../packages/sd.xml">
+            <param name="package.name" value="java-1.7.0-openjdk-devel"/>
+        </call>
+
+        <!-- configure-->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="etc/pki/tls/"
+                        match="openssl.cnf"
+                        dest-basedir="§[ca.path]§/tls/"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- create the CA certificate -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.ca">
+            <ssh description="[configure:certificate-authority:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+[ -f "§[ca.cn]§.key" ] && {
+  echo "CA already created. Exiting."
+  exit 0
+}
+
+echo -e "Cleaning CA database ..."
+rm -vrf §[ca.path]§/CA/index.*
+rm -vrf §[ca.path]§/CA/serial*
+rm -vrf §[ca.path]§/CA/newcerts/*
+touch §[ca.path]§/CA/index.txt
+echo "01"> §[ca.path]§/CA/serial
+echo "01"> §[ca.path]§/CA/crlnumber
+echo -e "CA database cleaned."
+
+echo -e "Cleaning CA priv-key and certificate ..."
+rm -vrf §[ca.cn]§.key
+rm -vrf §[ca.cn]§.cert
+echo -e "CA priv-key and certificate cleaned."
+
+
+echo -e "Cleaning all previously generated certificates ..."
+rm -vrf *.key
+rm -vrf *.req
+rm -vrf *.cert
+rm -vrf *.p12
+rm -vrf *.jks
+echo -e "Previously generated certificates cleaned."
+
+declare out="$(mktemp)"
+
+echo -e "Generating CA priv-key and certificate ..."
+openssl req -x509 \
+        -newkey rsa:4096 \
+        -passout pass:§[ca.pk.pwd]§ \
+        -keyout §[ca.cn]§.key \
+        -out §[ca.cn]§.cert \
+        -days 3650 \
+        -subj /CN=§[ca.cn]§/O=§[ca.o]§/ST=France/C=FR \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to generate CA priv-key and certificate. Exiting with error code $res." >&2
+  exit $res
+}
+rm -f "${out}"
+echo -e "CA priv-key and certificate successfully generated."
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="++ Certificate Authority successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+
+    <property name="password" value=""/>
+    <order name="create-certificate">
+        <!--  Will create a priv-key+certificate for the given §[cn]§.
+              Will store the generated priv-key in a pem (§[cn]§.key). The priv-key will be crypted with the given §[password]§.
+              Will store the signed certificate chain in a pem (§[cn]§.cert).
+              Will store the priv-key and the signed certificate chain in a PKCS12 keystore (§[cn]§.p12).
+              Will store the priv-key and the signed certificate chain in a java JKS keystore (§[cn]§.jks).
+                - cn : ip-192-168-122-2.cloud.local, toto, ...
+                - ou: jee, admin, web, user, ...
+                - password: a password.
+                - alias: the alias which will hold the priv-key.
+        -->
+        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
+        <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
+        <property name="ca.cn"               value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@CN') ]§"/>
+        <property name="ca.o"                value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@O') ]§"/>
+        <property name="ca.pk.pwd"           value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@pk-password') ]§"/>
+
+        <!-- kerberos doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[ca.machine.cnx.ip]§.ca">
+            <ssh description="[create-certificate:§[cn]§]" host="§[ca.machine.cnx.ip]§" login="root" keypair-name="§[ca.machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+[ -f "§[cn]§.key" ] && {
+  echo "Certificate for '§[cn]§' already created. Exiting."
+  exit 0
+}
+
+rm -vrf §[cn]§.*
+
+declare out="$(mktemp)"
+
+echo -e "Generating private key and certificate request for '§[cn]§' ..."
+openssl req \
+        -newkey rsa:4096 \
+        -passout pass:§[password]§ \
+        -keyout §[cn]§.key \
+        -keyform PEM \
+        -out §[cn]§.req \
+        -outform PEM \
+        -days 3650 \
+        -subj "/CN=§[cn]§/OU=§[ou]§/O=§[ca.o]§/ST=France/C=FR" \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to generate private key and certificate request for '§[cn]§'. Exiting with error code $res." >&2
+  exit $res
+}
+echo -e "Private key and certificate request for '§[cn]§' successfully generated."
+
+echo -e "Generating certificate for '§[cn]§' ..."
+openssl ca \
+        -in §[cn]§.req \
+        -keyfile §[ca.cn]§.key \
+        -key §[ca.pk.pwd]§ \
+        -cert §[ca.cn]§.cert \
+        -out §[cn]§.cert \
+        -batch \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to generate certificate for '§[cn]§'. Exiting with error code $res." >&2
+  exit $res
+}
+echo -e "Certificate for '§[cn]§' successfully generated."
+
+# remove the certificate request
+rm -f §[cn]§.req
+
+# build the certificate chain
+cat §[ca.cn]§.cert >> §[cn]§.cert
+
+echo -e "Exporting private key and certificate for '§[cn]§' into PKCS12 keystore ..."
+openssl pkcs12 \
+        -export \
+        -inkey §[cn]§.key \
+        -in §[cn]§.cert \
+        -passin pass:§[password]§ \
+        -out §[cn]§.p12 \
+        -passout pass:§[password]§ \
+        -name §[alias]§ \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to export private key and certificate for '§[cn]§' into PKCS12 keystore. Exiting with error code $res." >&2
+  exit $res
+}
+echo -e "Private key and certificate for '§[cn]§' successfully exported into PKCS12 keystore."
+
+echo -e "Exporting private key and certificate for '§[cn]§' into JKS keystore ..."
+keytool -importkeystore \
+        -srckeystore §[cn]§.p12 \
+        -destkeystore §[cn]§.jks \
+        -srcstoretype PKCS12 \
+        -deststoretype JKS \
+        -srcstorepass §[password]§ \
+        -deststorepass §[password]§ \
+        -srcalias §[alias]§ \
+        -destalias §[alias]§ \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to export private key and certificate for '§[cn]§' into JKS keystore. Exiting with error code $res." >&2
+  exit $res
+}
+rm -f "${out}"
+echo -e "Private key and certificate for '§[cn]§' successfully exported into JKS keystore."
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="+ Certificate for '§[cn]§' successfully created."/>
+    </order>
+
+    <order name="deploy-certificate">
+        <!--  Will upload the given priv-key+certificate into a PKCS12 keystore (§[cn]§.p12) and a java JKS keystore (§[cn]§.jks).
+              Will also upload the given priv-key in a pem (§[cn]§.key) and the certificate into a pem (§[cn]§.cert).
+                - cn : ip-192-168-122-2.cloud.local, toto: the CN of the priv-key and certificates to upload...
+                - machine.cnx.ip: an ip: the remote system ip where the priv-key and certificates will be uploaded
+                - machine.cnx.kp: a keypair name: the keypair to connect on the remote system
+                - cnx.user: a user name: the user to connect on the remote system
+                - dest.basedir: a directory full path: where the specified priv-key and certificates will be uploaded
+        -->
+        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
+        <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
+
+        <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs"   value="§[ melody:getWorkingFolder() ]§"/>
+        <!-- download priv-key and certificates from CA in a local tmp file -->
+        <download host="§[ca.machine.cnx.ip]§" login="root" keypair-name="§[ca.machine.cnx.kp]§">
+            <resources  src-basedir="/root/"
+                        match="§[cn]§.*"
+                        dest-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"/>
+        </download>
+        <!-- upload local tmp files to target machine -->
+        <upload host="§[machine.cnx.ip]§" login="§[cnx.user]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"
+                        match="§[cn]§.*"
+                        dest-basedir="§[dest.basedir]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <echo message="+ Certificate for '§[cn]§' successfully deployed on '§[machine.cnx.ip]§:§[dest.basedir]§'."/>
+    </order>
+
+    <property name="jks.password" value="12345678"/>
+    <order name="deploy-ca-certificate">
+        <!--  Will upload CA certificate into a pem (§[ca.cn]§.cert) and CA certificate into a java JKS
+              truststore (§[ca.cn]§.truststore) on the given remote system. 
+                - machine.cnx.ip: an ip: the remote system ip where the CA certificates will be uploaded
+                - machine.cnx.kp: a keypair name: the keypair to connect on the remote system
+                - cnx.user: a user name: the user to connect on the remote system
+                - dest.basedir: a directory full path: where the CA certificates will be uploaded
+                - jks.password: a string: the password of the CA java JKS truststore
+        -->
+        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
+        <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
+        <property name="ca.cn"               value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@CN') ]§"/>
+
+        <property name="tmpfile.dir"         value="/tmp/jks/"/>
+        <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs"   value="§[ melody:getWorkingFolder() ]§"/>
+        <ssh description="[create-ca-truststore:§[ca.cn]§]" host="§[ca.machine.cnx.ip]§" login="root" keypair-name="§[ca.machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+mkdir -p "§[tmpfile.dir]§"
+TEMPFILE="§[tmpfile.dir]§/§[tmpfile.rel]§.truststore"
+rm -f "${TEMPFILE}"
+
+declare out="$(mktemp)"
+
+echo -e "Importing CA Certificate into a java truststore ..."
+keytool -import \
+        -file §[ca.cn]§.cert \
+        -keystore "${TEMPFILE}" \
+        -storepass "§[jks.password]§" \
+        -alias §[ca.cn]§-cert \
+        -noprompt \
+        2>"${out}" 1>&2 || {
+  res=$?
+  cat "${out}" >&2
+  rm -f "${out}"
+  echo "Fail to import CA certificate into a java truststore. Exiting with error code $res." >&2
+  exit $res
+}
+rm -f "${out}"
+echo -e "CA Certificate successfully imported into a java truststore."
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+        <!-- download CA certificate from CA in a local tmp file -->
+        <download host="§[ca.machine.cnx.ip]§" login="root" keypair-name="§[ca.machine.cnx.kp]§">
+            <resources  src-basedir="/root/"
+                        match="§[ca.cn]§.cert"
+                        dest-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"/>
+            <resources  src-basedir="§[tmpfile.dir]§"
+                        match="§[tmpfile.rel]§.truststore"
+                        dest-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"
+                        dest-name="§[ca.cn]§.truststore"/>
+        </download>
+        <!-- upload local tmp file to target machine -->
+        <upload host="§[machine.cnx.ip]§" login="§[cnx.user]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"
+                        match="§[ca.cn]§.{truststore,cert}"
+                        dest-basedir="§[dest.basedir]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <echo message="+ Certificate Authority certificate successfully deployed on '§[machine.cnx.ip]§:§[dest.basedir]§'."/>
+    </order>
+
+</sequence>

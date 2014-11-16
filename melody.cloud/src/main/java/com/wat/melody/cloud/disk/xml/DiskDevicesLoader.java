@@ -2,6 +2,8 @@ package com.wat.melody.cloud.disk.xml;
 
 import java.util.List;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -13,6 +15,8 @@ import com.wat.melody.cloud.disk.Messages;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceListException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceNameException;
 import com.wat.melody.cloud.disk.exception.IllegalDiskDeviceSizeException;
+import com.wat.melody.common.bool.Bool;
+import com.wat.melody.common.bool.exception.IllegalBooleanException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
@@ -78,93 +82,154 @@ public class DiskDevicesLoader {
 
 	private DiskDeviceName loadDeviceName(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, DEVICE_NAME_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return DiskDeviceName.parseString(v);
-		} catch (IllegalDiskDeviceNameException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					DEVICE_NAME_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ DEVICE_NAME_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return DiskDeviceName.parseString(v);
+			} catch (IllegalDiskDeviceNameException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ DEVICE_NAME_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private DiskDeviceSize loadDeviceSize(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, SIZE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return DiskDeviceSize.parseString(v);
-		} catch (IllegalDiskDeviceSizeException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e, SIZE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e,
+					"/@" + SIZE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return DiskDeviceSize.parseString(v);
+			} catch (IllegalDiskDeviceSizeException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ SIZE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private Boolean loadDeleteOnTermination(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e,
-				DELETEONTERMINATION_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ DELETEONTERMINATION_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return Bool.parseString(v);
+			} catch (IllegalBooleanException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ DELETEONTERMINATION_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return Boolean.parseBoolean(v);
 	}
 
 	private Boolean loadRootDevice(Element e) throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, ROOTDEVICE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
+		try {
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ ROOTDEVICE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return Bool.parseString(v);
+			} catch (IllegalBooleanException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ ROOTDEVICE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
-		return Boolean.parseBoolean(v);
 	}
 
 	private GenericTimeout loadCreateTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_CREATE_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_CREATE_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_CREATE_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_CREATE_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private GenericTimeout loadAttachTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_ATTACH_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_ATTACH_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_ATTACH_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_ATTACH_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	private GenericTimeout loadDetachTimeout(Element e)
 			throws NodeRelatedException {
-		String v = XPathHelper.getHeritedAttributeValue(e, TIMEOUT_DETACH_ATTR);
-		if (v == null || v.length() == 0) {
-			return null;
-		}
 		try {
-			return GenericTimeout.parseString(v);
-		} catch (IllegalTimeoutException Ex) {
-			Attr attr = FilteredDocHelper.getHeritedAttribute(e,
-					TIMEOUT_DETACH_ATTR);
-			throw new NodeRelatedException(attr, Ex);
+			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+					+ TIMEOUT_DETACH_ATTR, null);
+			if (v == null || v.length() == 0) {
+				return null;
+			}
+			try {
+				return GenericTimeout.parseString(v);
+			} catch (IllegalTimeoutException Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+						+ TIMEOUT_DETACH_ATTR, null);
+				throw new NodeRelatedException(attr, Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 

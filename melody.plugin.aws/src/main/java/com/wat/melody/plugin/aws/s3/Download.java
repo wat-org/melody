@@ -5,6 +5,7 @@ import java.io.File;
 import com.amazonaws.services.s3.AmazonS3;
 import com.wat.cloud.aws.s3.BucketName;
 import com.wat.cloud.aws.s3.transfer.AwsS3DownloaderMultiThread;
+import com.wat.melody.api.Melody;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.plugin.aws.s3.common.Transfer;
@@ -30,7 +31,8 @@ public class Download extends Transfer {
 	public void doTransfer(AmazonS3 s3Connection, BucketName bucketName)
 			throws TransferException, InterruptedException {
 		new AwsS3DownloaderMultiThread(s3Connection, bucketName,
-				getResourcesSpecifications(), getMaxPar(), this).doTransfer();
+				getResourcesSpecifications(), getMaxPar(), this,
+				Melody.getThreadFactory()).doTransfer();
 	}
 
 	@Override

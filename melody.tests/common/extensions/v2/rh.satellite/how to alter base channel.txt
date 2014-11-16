@@ -1,0 +1,53 @@
+rhn-channel can't alter base channel ...
+So we must use XMLRPC api !
+
+Regarding the version of the remote RHN server, some of these functions may be deprecated ... 
+This script should branch through different function call regarding the version of the API exposed by the RHN server. 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#!/usr/bin/python
+
+import xmlrpclib
+import sys
+
+# should parse all these arguments via command line 
+TARGET_CHANNEL="rhel-x86_64-server-6.4.z"
+
+## Define the Red Hat Satellite Account to use
+#RHN_SERVERIP="<my-satellite-fqdn-or-ip-address>"
+#RHN_LOGIN="<my-rhn-login>"
+#RHN_PASSWORD="<my-rhn-pwd>"
+
+## sample
+RHN_SERVERIP="rhn.redhat.com"
+RHN_LOGIN="raoul"
+RHN_PASSWORD="crazyPassImTheOneWhoKnow"
+
+
+## Define the SystemID to alter
+#SYSTEM_ID=<my-systemid>
+
+## sample
+SYSTEM_ID=1029972918
+
+
+client = xmlrpclib.Server("https://"+RHN_SERVERIP+"/rpc/api", verbose=0)
+key = client.auth.login(RHN_LOGIN, RHN_PASSWORD)
+
+allchans = client.system.listBaseChannels(key, int(SYSTEM_ID))
+
+for chan in allchans:
+  if chan['LABEL'] == TARGET_CHANNEL:
+    if chan['CURRENT_BASE'] ==  1:
+      print "'"+TARGET_CHANNEL+"' is already the base channel."
+      client.auth.logout(key)
+      exit(0)
+    print "Setting '"+TARGET_CHANNEL+"' as base channel ..."
+    client.system.setBaseChannel(key, int(SYSTEM_ID), chan['ID'])
+    print "'"+TARGET_CHANNEL+"' successfully set as base channel."
+    client.auth.logout(key)
+    exit(0)
+
+print "'"+TARGET_CHANNEL+"' is not available."
+client.auth.logout(key)
+exit(23)

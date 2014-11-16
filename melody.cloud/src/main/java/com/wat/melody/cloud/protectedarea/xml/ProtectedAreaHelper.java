@@ -60,68 +60,47 @@ public abstract class ProtectedAreaHelper {
 	public static final String DEFAULT_PROTECTED_AREA_SELECTOR = ".//protected-areas//protected-area";
 
 	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * 
-	 * @return the Protected Area Management Element related to the given
-	 *         Instance, which is :
-	 *         <ul>
-	 *         <li>The last Protected Area Management Element related to the
-	 *         given Instance, if multiple Protected Area Management Elements
-	 *         are found ;</li>
-	 *         <li><tt>null</tt>, if no Protected Area Management Element are
-	 *         found ;</li>
-	 *         </ul>
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 */
-	public static Element findProtectedAreaManagementElement(
-			Element instanceElmt) {
-		NodeList nl = null;
-		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt,
-					PROTECTED_AREA_MGMT_ELEMENT_SELECTOR);
-		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the herited content of '"
-					+ PROTECTED_AREA_MGMT_ELEMENT_SELECTOR + "'. "
-					+ "Because this XPath Expression is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
-		}
-		if (nl.getLength() == 0) {
-			return null;
-		}
-		// Conversion can't fail: the expression can only return Element
-		return (Element) nl.item(nl.getLength() - 1);
-	}
-
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Protected Area
-	 *            Management Element related to an Instance. Can be
-	 *            <tt>null</tt>, if the related Instance has no Protected Area
-	 *            Management Element.
+	 * @param elmt
+	 *            is an {@link Element} which describes an Instance, or a
+	 *            ProtectedArea.
 	 * 
 	 * @return the Protected Area Selector, which is :
 	 *         <ul>
-	 *         <li>The Default Protected Area Selector, if the given Protected
-	 *         Area Management Element is <tt>null</tt> ;</li>
-	 *         <li>The Default Protected Area Selector, if the given Protected
-	 *         Area Management Element is not <tt>null</tt> but has no Custom
-	 *         Protected Area Selector is defined in ;</li>
+	 *         <li>The Default Protected Area Selector, if the given element has
+	 *         no Protected Area Management Element ;</li>
+	 *         <li>The Default Protected Area Selector, if the given element has
+	 *         a Protected Area Management Element which has no Custom Protected
+	 *         Area Selector is defined in ;</li>
 	 *         <li>The Custom Protected Area Selector defined in the given
-	 *         Protected Area Management Element ;</li>
+	 *         element's Protected Area Management Element ;</li>
 	 *         </ul>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static String getProtectedAreaSelector(Element mgmtElmt) {
+	public static String getProtectedAreaSelector(Element elmt) {
 		try {
-			return mgmtElmt.getAttributeNode(PROTECTED_AREA_SELECTOR)
-					.getNodeValue();
-		} catch (NullPointerException Ex) {
-			return DEFAULT_PROTECTED_AREA_SELECTOR;
+			return XPathHelper.getHeritedAttributeValue(elmt, "/"
+					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
+					+ PROTECTED_AREA_SELECTOR, DEFAULT_PROTECTED_AREA_SELECTOR);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
+		} catch (NodeRelatedException e) {
+			throw new RuntimeException("cannot contains an xpath expression.");
+		}
+	}
+
+	private static Attr getProtectedAreaSelectorAttr(Element elmt) {
+		try {
+			return FilteredDocHelper.getHeritedAttribute(elmt, "/"
+					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
+					+ PROTECTED_AREA_SELECTOR, null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -131,14 +110,20 @@ public abstract class ProtectedAreaHelper {
 				.findInstanceProtectedAreaNames(instanceElmt);
 		// Must convert each Protected Area Name to its Identifier
 		try {
-			return convertProtectedAreaFromNamesToIds(instanceElmt, names,
-					region);
-		} catch (Exception Ex) {
-			throw new NodeRelatedException(
-					FilteredDocHelper.getHeritedAttribute(instanceElmt,
-							InstanceDatasLoader.PROTECTED_AREAS_ATTR),
-					"Failed to get Protected Area Identifiers from Protected "
-							+ "Area Names.", Ex);
+			try {
+				return convertProtectedAreaFromNamesToIds(instanceElmt, names,
+						region);
+			} catch (Exception Ex) {
+				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
+						"/@" + InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
+				throw new NodeRelatedException(attr,
+						"Failed to get Protected Area Identifiers from Protected "
+								+ "Area Names.", Ex);
+			}
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -156,7 +141,8 @@ public abstract class ProtectedAreaHelper {
 	 *         names is <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>, or if the
+	 *             given region is <tt>null</tt>.
 	 * @throws Exception
 	 *             if the conversion fails (no id specified, invalid id
 	 *             specified).
@@ -178,10 +164,7 @@ public abstract class ProtectedAreaHelper {
 		if (names == null || names.size() == 0) {
 			return ids;
 		}
-		Element mgmtElmt = ProtectedAreaHelper
-				.findProtectedAreaManagementElement(elmt);
-		String selector = ProtectedAreaHelper
-				.getProtectedAreaSelector(mgmtElmt);
+		String selector = getProtectedAreaSelector(elmt);
 		for (ProtectedAreaName name : names) {
 			String exp = selector + "[@" + ProtectedAreaDatasLoader.NAME_ATTR
 					+ "='" + name.getValue() + "']";
@@ -194,8 +177,10 @@ public abstract class ProtectedAreaHelper {
 				nl = XPathExpander.evaluateAsNodeList(exp,
 						elmt.getOwnerDocument());
 			} catch (XPathExpressionException Ex) {
-				throw new NodeRelatedException(mgmtElmt, Msg.bind(
-						Messages.ProtectedAreaEx_SELECTOR_NOT_XPATH, exp), Ex);
+				throw new NodeRelatedException(
+						getProtectedAreaSelectorAttr(elmt), Msg.bind(
+								Messages.ProtectedAreaEx_SELECTOR_NOT_XPATH,
+								exp), Ex);
 			}
 			if (nl == null || nl.getLength() == 0) {
 				throw new Exception(Msg.bind(
@@ -205,8 +190,15 @@ public abstract class ProtectedAreaHelper {
 			Element paNode = null;
 			for (int i = 0; i < nl.getLength(); i++) {
 				Element e = (Element) nl.item(i);
-				String nRegion = XPathHelper.getHeritedAttributeValue(e,
-						ProtectedAreaDatasLoader.REGION_ATTR);
+				String nRegion = null;
+				try {
+					nRegion = XPathHelper.getHeritedAttributeValue(e, "/@"
+							+ ProtectedAreaDatasLoader.REGION_ATTR, null);
+				} catch (XPathExpressionException bug) {
+					throw new RuntimeException("Because the XPath Expression "
+							+ "is hard-coded, such error cannot happened. "
+							+ "There must be a bug somewhere.", bug);
+				}
 				if (region.equals(nRegion)) {
 					// the correct protected area have been found
 					// (e.g. name and region match)
