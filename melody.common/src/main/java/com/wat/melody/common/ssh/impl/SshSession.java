@@ -453,9 +453,9 @@ public class SshSession implements ISshSession {
 	}
 
 	/*
-	 * TODO : virer
-	 * cloud.network.xml.NetworkDevicesHelper.findNetworkManagementElement : il
-	 * ne faut pas recuperer le dernier element, mais utiliser
+	 * TODO : remove
+	 * cloud.network.xml.NetworkDevicesHelper.findNetworkManagementElement :
+	 * instead of retrieving the last network-management element, we should use
 	 * XPathHelper getHeritedAttributeValue.
 	 * 
 	 * TODO BUG AWS : can't enable/disable bucket logging in region eu-west-1,
