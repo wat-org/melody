@@ -1,0 +1,374 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-rdb-servers">
+        <call orders="deploy-oracle-servers"/>
+    </order>
+
+    <order name="start-rdb-servers">
+        <call orders="start-oracle-servers"/>
+    </order>
+
+    <order name="stop-rdb-servers">
+        <call orders="stop-oracle-servers"/>
+    </order>
+
+    <order name="do-operation-on-rdb-servers">
+        <call orders="do-operation-on-oracle-servers"/>
+    </order>
+
+    <order name="create-database">
+        <call orders="create-database-on-oracle-server"/>
+    </order>
+
+    <order name="create-kerberos-user">
+        <call orders="create-kerberos-user-on-oracle-server"/>
+    </order>
+
+    <!-- deploy each rdb-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each rdb-servers.
+         caller can define callback 'callback.application' in order to perform application related actions on each rdb-servers, if applications are declared on a rdb-server.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="deploy-oracle-servers">
+        <echo message="Creating Oracle Servers ..."/>
+        <call orders="do-operation-on-oracle-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::deploy-oracle-server-on-single-machine"/>
+        </call>
+        <echo message="-- Oracle Servers successfully created."/>
+    </order>
+
+    <!-- start each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="start-oracle-servers">
+        <echo message="Starting Oracle Servers ..."/>
+        <call orders="do-operation-on-oracle-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::start-oracle-server-on-single-machine"/>
+        </call>
+        <echo message="-- Oracle Servers successfully started."/>
+    </order>
+
+    <!-- stop each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="stop-oracle-servers">
+        <echo message="Stopping Oracle Servers ..."/>
+        <call orders="do-operation-on-oracle-servers">
+            <param name="callback.rdbs" value="§[melody:getSequenceDescriptorPath()]§::stop-oracle-server-on-single-machine"/>
+        </call>
+        <echo message="-- Oracle Servers successfully stopped."/>
+    </order>
+
+    <!-- loop on each machines where a rdb-server is declared.
+         caller must define callback 'callback.rdbs'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-oracle-servers">
+        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(rdb-server)]')"/>
+            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-oracle-server-on-single-machine"/>
+        </call>
+    </order>
+
+    <order name="do-operation-on-oracle-server-on-single-machine">
+        <property name="rdbs.path"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@path') ]§"/>
+        <property name="rdbs.name"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@name', 'oracle') ]§"/>
+        <property name="rdbs.version"              value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@version') ]§"/>
+        <property name="rdbs.owner"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/owner/@login') ]§"/>
+        <property name="rdbs.owner.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@id') ]§"/>
+        <property name="rdbs.owner.pwd"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@password') ]§"/>
+        <property name="rdbs.owner.home-dir"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@homedir') ]§"/>
+        <property name="rdbs.group"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@ref-group-name') ]§"/>
+        <property name="rdbs.group.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/group[@name=&quot;§[rdbs.group]§&quot;]/@id') ]§"/>
+        <property name="rdbs.listen.device"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@device', 'eth0') ]§"/>
+        <property name="rdbs.listen.port-offset"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@port-offset', '0') ]§"/>
+        <property name="rdbs.listen.port.tcp"      value="§[ number(melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/socket[@name=''tcp'']/@port', '1521')) + §[rdbs.listen.port-offset]§ ]§"/>
+        <property name="rdbs.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@ip ]§"/>
+        <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@fqdn ]§"/>
+        <property name="realm"                     value="§[ melody:getHeritedAttributeValue(§[machine]§, '/kerberos-host/@realm') ]§"/>
+
+        <call orders="§[substring-after('§[callback.rdbs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rdbs]§','::')]§"/>
+    </order>
+
+    <property name="callback.server"        value="§[ melody:getSequenceDescriptorPath() ]§::customize-oracle-server.default-callback"/>
+    <property name="callback.application"   value="§[ melody:getSequenceDescriptorPath() ]§::customize-oracle-application.default-callback"/>
+
+    <order name="deploy-oracle-server-on-single-machine">
+        <upload host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <!-- create .krb5 directory -->
+            <resources  src-basedir="files"
+                        match=".krb5"
+                        dest-basedir="§[rdbs.owner.home-dir]§">
+                <posix-permissions scope="directories">700</posix-permissions>
+            </resources>
+            <!-- sqlnet.ora is especially configured to perform kerberos -->
+            <resources  src-basedir="files/network/admin"
+                        match="sqlnet.ora"
+                        dest-basedir="§[rdbs.path]§/network/admin"
+                        template="y">
+                <posix-permissions scope="files">640</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- generate keytab -->
+        <call orders="create-kerberos-principal"             sequence-descriptor="../krb5.mit/sd.xml">
+            <param name="principal"  value="oracle/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"      value="§[realm]§"/>
+            <param name="policy"     value="services"/>
+        </call>
+        <call orders="deploy-kerberos-principal-keytab"      sequence-descriptor="../krb5.mit/sd.xml">
+            <param name="principal"   value="oracle/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="cnx.user"    value="§[rdbs.owner]§"/>
+            <param name="dest.path"   value="§[rdbs.owner.home-dir]§/.krb5/krb5.keytab"/>
+        </call>
+
+        <!-- start -->
+        <call orders="start-service-on-single-machine"       sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="dbora"/>
+        </call>
+
+        <!-- customize / machine scope -->
+        <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="melody:getHeritedContent(§[machine]§, '/rdb-server/applications/application')"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"      value="§[§[application]§/@name]§"/>
+            <property name="appli.base"      value="§[§[application]§/@base]§"/>
+
+            <!-- customize application -->
+            <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§"/>
+            <property name="cb.sd"           value="§[substring-before('§[callback.application]§','::')]§"/>
+            <property name="cb.order"        value="§[
+             if ('§[cb.order]§' = 'customize-oracle-application.default-callback') then
+               '§[cb.order]§'
+             else
+               '§[cb.order]§.§[appli.name]§'
+            ]§"/>
+
+            <call orders="§[cb.order]§" sequence-descriptor="§[cb.sd]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully deployed on Oracle Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server to apply configuration changes -->
+        <call orders="start-oracle-server-on-single-machine"/>
+
+        <echo message="++ Oracle Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-oracle-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-oracle-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-oracle-server-on-single-machine">
+        <call orders="start-service-on-single-machine" sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="dbora"/>
+        </call>
+
+        <echo message="+ Oracle Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-oracle-server-on-single-machine">
+        <call orders="stop-service-on-single-machine" sequence-descriptor="../services/sd.xml">
+            <param name="service.name" value="dbora"/>
+        </call>
+
+        <echo message="+ Oracle Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+    <!-- create a database on the given rdb-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
+         caller must define 'rdbs.owner', which represents the database owner.
+         caller must define 'rdbs.owner.pwd', which represents the database owner's password.
+         caller must define 'appli.base', which represents the database name.
+         caller must define 'base.owner', which represents the database owner.
+         caller must define 'base.owner.pwd', which represents the database owner's password. -->
+    <order name="create-database-on-oracle-server">
+        <property name="base.owner.uc" value="§[upper-case('§[base.owner]§')]§"/>
+
+        <!-- create database -->
+        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+grep '§[appli.base]§' /etc/oratab 1>/dev/null && {
+  echo "database '§[appli.base]§' already exists. Nothing to do."
+} || {
+  dbca -silent \
+    -createDatabase \
+    -templateName General_Purpose.dbc \
+    -gdbName '§[appli.base]§' \
+    -sid '§[appli.base]§' \
+    -sysPassword '§[rdbs.owner.pwd]§' \
+    -systemPassword '§[rdbs.owner.pwd]§' \
+    -characterSet AL32UTF8 \
+    -databaseType MULTIPURPOSE
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create database '§[appli.base]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "database '§[appli.base]§' successfully created."
+}
+
+. /usr/local/bin/oraenv <<< '§[appli.base]§'
+
+userExists=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from all_users where username like '§[base.owner.uc]§';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe user '§[base.owner]§'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${userExists} = 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+create user §[base.owner]§ identified by §[base.owner.pwd]§;
+grant all privileges to §[base.owner]§;
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create user '§[base.owner]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "user '§[base.owner]§' successfully created."
+} || {
+  echo "user '§[base.owner]§' already exists. Nothing to do."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+        <!-- database will start/stop when dbora start/stop -->
+        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+sed -rie 's/§[appli.base]§(.*).$/§[appli.base]§\1Y/' /etc/oratab
+                ]]>
+            </exec>
+        </ssh>
+        <!-- enable kerberos on the database:
+               - os_authent_prefix must be set to an empty string
+               - remote_os_authent must be set to FALSE
+               Note that database must be restarted to apply configuration changes
+        -->
+        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+. /usr/local/bin/oraenv <<< '§[appli.base]§'
+
+paramSet=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from v\$parameter where name = 'os_authent_prefix' and value not like '';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe parameter 'os_authent_prefix'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${paramSet} != 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+alter system set os_authent_prefix='' scope=spfile;
+alter system set remote_os_authent=FALSE scope=spfile;
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to set paramter 'os_authent_prefix'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "paramter 'os_authent_prefix' successfully setted."
+} || {
+  echo "paramter 'os_authent_prefix' already set. Nothing to do."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+        <!-- From now, you can connect with sqlplus via kerberos.
+             * what you have to do is :
+             create a user principal in the kdc
+             as root
+               kadmin.local -q 'addprinc -policy user -pw totopwd toto'
+             create the user in the oracle database
+             as oracle
+               . /usr/local/bin/oraenv <<< '§[appli.base]§'
+               sqlplus / as sysdba
+               create user "TOTO@CLOUD.LOCAL" identified externally;
+               grant all privileges to "TOTO@CLOUD.LOCAL";
+             * test :
+             acquire toto credentials and connect to sqlplus with kerberos credentials
+             as oracle
+               kinit toto
+               . /usr/local/bin/oraenv <<< '§[appli.base]§'
+               sqlplus /@§[rdbs.listen.fqdn]§:§[rdbs.listen.port.tcp]§/§[appli.base]§
+             you are connected !
+        -->
+    </order>
+
+    <!-- create a user on the given rdb-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
+         caller must define 'rdbs.owner', which represents the database owner.
+         caller must define 'appli.base', which represents the database name.
+         caller must define 'user', which represents the user to create.
+         caller must define 'realm', which represents the realm of the user to create. -->
+    <order name="create-kerberos-user-on-oracle-server">
+        <property name="user.uc" value="§[upper-case('§[user]§')]§"/>
+
+        <synchronize scope="GLOBAL" lock-id="oracle-create-user-§[user]§">
+            <ssh description="[oracle-create-user:§[user]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+. /usr/local/bin/oraenv <<< '§[appli.base]§'
+
+userExists=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from all_users where username like '§[user.uc]§@§[realm]§';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe user '§[user.uc]§@§[realm]§'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${userExists} = 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+create user "§[user.uc]§@§[realm]§" identified externally;
+grant all privileges to "§[user.uc]§@§[realm]§";
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create user '§[user.uc]§@§[realm]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "user '§[user.uc]§@§[realm]§' successfully created."
+} || {
+  echo "user '§[user.uc]§@§[realm]§' already exists. Nothing to do."
+}
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+    </order>
+
+</sequence>

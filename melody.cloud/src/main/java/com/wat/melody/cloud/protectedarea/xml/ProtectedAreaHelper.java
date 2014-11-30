@@ -79,24 +79,14 @@ public abstract class ProtectedAreaHelper {
 	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	public static String getProtectedAreaSelector(Element elmt) {
-		try {
-			return XPathHelper.getHeritedAttributeValue(elmt, "/"
-					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
-					+ PROTECTED_AREA_SELECTOR, DEFAULT_PROTECTED_AREA_SELECTOR);
-		} catch (XPathExpressionException bug) {
-			throw new RuntimeException("Because the XPath Expression "
-					+ "is hard-coded, such error cannot happened. "
-					+ "There must be a bug somewhere.", bug);
-		} catch (NodeRelatedException e) {
-			throw new RuntimeException("cannot contains an xpath expression.");
-		}
+		return getProtectedAreaSelectorAttr(elmt).getValue();
 	}
 
 	private static Attr getProtectedAreaSelectorAttr(Element elmt) {
 		try {
 			return FilteredDocHelper.getHeritedAttribute(elmt, "/"
 					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
-					+ PROTECTED_AREA_SELECTOR, null);
+					+ PROTECTED_AREA_SELECTOR, DEFAULT_PROTECTED_AREA_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "

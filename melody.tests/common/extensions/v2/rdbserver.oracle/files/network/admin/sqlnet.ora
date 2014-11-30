@@ -1,0 +1,17 @@
+# TNSNAMES allow to connect with kerberos using this kind of connection string :
+# sqlplus /@<a TNSNAME configured in tnsnames.ora>
+# EZCONNECT allow to connect with kerberos using this kind of connection string :
+# sqlplus /@<oracle fqdn>[:<oracle port>]/<sid>
+names.directory_path = (TNSNAMES, EZCONNECT)
+
+sqlnet.authentication_services=(beq, kerberos5)
+sqlnet.kerberos5_realms=/etc/krb.realms
+sqlnet.kerberos5_conf=/etc/krb5.conf
+sqlnet.kerberos5_conf_mit=TRUE
+sqlnet.authentication_kerberos5_service=oracle
+sqlnet.kerberos5_keytab=§[rdbs.owner.home-dir]§/.krb5/krb5.keytab
+sqlnet.kerberos5_cc_name=/tmp/krb5cc_§[rdbs.owner.id]§
+
+# logging
+trace_level_server=16 
+trace_directory_server=/var/log/oracle-krb5/

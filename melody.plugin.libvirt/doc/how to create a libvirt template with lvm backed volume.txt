@@ -130,6 +130,8 @@ The new Template's VM will have mac address '52:54:00:01:00:81', ip address '168
     remove the element /volume/target/timestamps
     set '§[vmName]§-vda' in element /volume/name/text()
     set '/dev/LibVirtLvmSP/§[vmName]§-vda' in element /volume/target/path()
+    set '2147483648' in element /volume/capacity/text()
+    set '2147483648' in element /volume/allocation/text()
   set permission :
     chmod 660 /Cloud/libvirt/templates/RHEL-7-minimal-vda.template
 

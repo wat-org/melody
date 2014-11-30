@@ -40,7 +40,7 @@ public abstract class NetworkDevicesHelper {
 	 * XML attribute of the Network Management Element, which contains the XPath
 	 * Expression to select Network Devices Elements.
 	 */
-	public static final String NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE = "network-devices-selector";
+	public static final String NETWORK_DEVICE_ELEMENTS_SELECTOR = "network-devices-selector";
 
 	/**
 	 * Default XPath Expression to select Network Devices Elements, related to
@@ -105,7 +105,7 @@ public abstract class NetworkDevicesHelper {
 	public static String getNetworkDeviceElementsSelector(Element mgmtElmt) {
 		try {
 			return mgmtElmt.getAttributeNode(
-					NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE).getNodeValue();
+					NETWORK_DEVICE_ELEMENTS_SELECTOR).getNodeValue();
 		} catch (NullPointerException Ex) {
 			return DEFAULT_NETOWRK_DEVICE_ELEMENTS_SELECTOR;
 		}
@@ -190,7 +190,7 @@ public abstract class NetworkDevicesHelper {
 					instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
+					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
@@ -252,7 +252,7 @@ public abstract class NetworkDevicesHelper {
 			nl = XPathExpander.evaluateAsNodeList(selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
+					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
@@ -260,7 +260,7 @@ public abstract class NetworkDevicesHelper {
 			return XPathFunctionHelper.toElementList(nl);
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR_ATTRIBUTE),
+					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}

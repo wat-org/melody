@@ -13,7 +13,6 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -67,24 +66,14 @@ public abstract class DiskDevicesHelper {
 	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	public static String getDiskDeviceElementsSelector(Element instanceElmt) {
-		try {
-			return XPathHelper.getHeritedAttributeValue(instanceElmt, "/"
-					+ DISK_MGMT_ELEMENT + "/@" + DISK_DEVICE_ELEMENTS_SELECTOR,
-					DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR);
-		} catch (XPathExpressionException bug) {
-			throw new RuntimeException("Because the XPath Expression "
-					+ "is hard-coded, such error cannot happened. "
-					+ "There must be a bug somewhere.", bug);
-		} catch (NodeRelatedException e) {
-			throw new RuntimeException("cannot contains an xpath expression.");
-		}
+		return getDiskDeviceElementsSelectorAttr(instanceElmt).getValue();
 	}
 
 	private static Attr getDiskDeviceElementsSelectorAttr(Element instanceElmt) {
 		try {
 			return FilteredDocHelper.getHeritedAttribute(instanceElmt, "/"
 					+ DISK_MGMT_ELEMENT + "/@" + DISK_DEVICE_ELEMENTS_SELECTOR,
-					null);
+					DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -100,7 +89,7 @@ public abstract class DiskDevicesHelper {
 	 *         empty list.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
 	 *             <li>if the Custom Disk Devices Selector (found in the given

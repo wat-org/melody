@@ -52,6 +52,12 @@
 			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" version="6.3.0">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" version="6.3.1">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" version="6.3.2">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
 
 			<credentials>
 				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX"/>

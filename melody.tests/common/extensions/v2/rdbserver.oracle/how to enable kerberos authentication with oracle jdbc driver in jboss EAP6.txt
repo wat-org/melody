@@ -1,0 +1,66 @@
+# on the oracle server
+#
+# create a sqlnet.ora file using the sample
+cp §[rdbs.path]§/network/admin/samples/sqlnet.ora §[rdbs.path]§/network/admin/sqlnet.ora
+# and edit it
+>>>>>>>>>>>>>>>
+... 
+names.directory_path = (TNSNAMES, EZCONNECT)
+#Kerberos
+sqlnet.authentication_services = (beq,kerberos5)
+sqlnet.kerberos5_realms=/etc/krb5.realms
+sqlnet.kerberos5_conf=/etc/krb5.conf
+sqlnet.kerberos5_conf_mit=true
+sqlnet.authentication_kerberos5_service=ORACLE
+sqlnet.kerberos5_keytab=/home/oracle/.krb5/krb5.keytab
+sqlnet.kerberos5_cc_name=/tmp/krb5cc_<oracle ID>
+# logging (optional):
+trace_level_server=16 
+trace_directory_server=/scratch/sqlnet/
+...
+<<<<<<<<<<<<<<<
+
+
+
+# execute the following command with SQLPLUS
+sqlplus SYSTEM/<PWD> as sysdba
+alter system set os_authent_prefix='' scope=spfile;
+alter system set remote_os_authent=FALSE scope=spfile;
+startup force;
+exit
+
+# pour voir la valeur du parametre :
+# show parameter os_authent_prefix;
+# show parameter remote_os_authent;
+
+
+
+# on the kdc
+#
+# create the principal and the keytab of the oracle server
+addprinc -randkey -policy services ORACLE/<oracle server FQDN>
+ktadd -k /root/ORACLE/<oracle server FQDN>.keytab ORACLE/<oracle server FQDN>
+
+# then copy /root/ORACLE/<oracle server FQDN>.keytab on the oracle server, into /home/oracle/.krb5/krb5.keytab
+
+
+-------------------------
+SQLPLUS Kerberos
+-------------------------
+
+# on the kdc
+#
+# create a principal for the user scott
+addprinc scott
+
+# on the oracle server
+#
+sqlplus SYSTEM/<PWD> as sysdba
+create user "SCOTT@CLOUD.LOCAL" identified externally;
+grant create session to "SCOTT@CLOUD.LOCAL";
+
+
+# scott can connect with kerberos!
+. /usr/local/bin/oraenv <<< '§[appli.base]§'
+# must use the oracle FQDN
+sqlplus /@§[rdbs.listen.fqdn]§:§[rdbs.listen.port.tcp]§/§[appli.base]§

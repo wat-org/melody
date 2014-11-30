@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.oracle-12">
+			<rdb-server path="/opt/oracle-12.1.0" version="12.1.0.2.0" name="oracle">
+				<owner login="oracle"/>
+				<listen-on device="eth0" port-offset="0">
+					<socket name="tcp" port="1521"/>
+				</listen-on>
+			</rdb-server>
+
+			<packages>
+				<!-- for oracle 12-->
+				<package name="cloog-ppl"/>
+				<package name="compat-libcap1"/>
+				<package name="compat-libstdc++-33"/>
+				<package name="cpp"/>
+				<package name="gcc"/>
+				<package name="gcc-c++"/>
+				<package name="ksh"/>
+				<package name="libXxf86dga"/>
+				<package name="libXxf86misc"/>
+				<package name="libaio-devel"/>
+				<package name="libdmx"/>
+				<package name="libstdc++-devel"/>
+				<package name="mpfr"/>
+				<package name="ppl"/>
+				<package name="xorg-x11-utils"/>
+			</packages>
+
+			<credentials>
+				<!-- oracle user and group -->
+				<!-- character '@' is forbidden in oracle user's password -->
+				<user homedir="/home/oprofile" id="16" name="oprofile" password="XXXXXXXXXX" ref-group-name="oprofile"/>
+				<user homedir="/home/oracle" id="54321" name="oracle" password="XXXXXXXXXX" ref-group-name="oinstall">
+					<group ref-group-name="dba"/>
+				</user>
+				<group id="16" name="oprofile"/>
+				<group id="54321" name="oinstall"/>
+				<group id="54322" name="dba">
+					<user ref-user-name="oracle"/>
+				</group>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

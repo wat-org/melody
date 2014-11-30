@@ -106,18 +106,7 @@ public abstract class FireWallRulesHelper {
 	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	public static String getTcpFireWallRuleElementsSelector(Element instanceElmt) {
-		try {
-			return XPathHelper.getHeritedAttributeValue(instanceElmt,
-					"/" + FIREWALL_MGMT_ELEMENT + "/@"
-							+ TCP_RULE_ELEMENTS_SELECTOR,
-					DEFAULT_TCP_RULE_ELEMENTS_SELECTOR);
-		} catch (XPathExpressionException bug) {
-			throw new RuntimeException("Because the XPath Expression "
-					+ "is hard-coded, such error cannot happened. "
-					+ "There must be a bug somewhere.", bug);
-		} catch (NodeRelatedException e) {
-			throw new RuntimeException("cannot contains an xpath expression.");
-		}
+		return getTcpFireWallRuleElementsSelectorAttr(instanceElmt).getValue();
 	}
 
 	private static Attr getTcpFireWallRuleElementsSelectorAttr(
@@ -125,7 +114,8 @@ public abstract class FireWallRulesHelper {
 		try {
 			return FilteredDocHelper.getHeritedAttribute(instanceElmt,
 					"/" + FIREWALL_MGMT_ELEMENT + "/@"
-							+ TCP_RULE_ELEMENTS_SELECTOR, null);
+							+ TCP_RULE_ELEMENTS_SELECTOR,
+					DEFAULT_TCP_RULE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -141,7 +131,7 @@ public abstract class FireWallRulesHelper {
 	 *         be an empty list.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
 	 *             <li>if the Custom TCP FireWall Rules Selector (found in the
@@ -193,18 +183,7 @@ public abstract class FireWallRulesHelper {
 	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
 	public static String getUdpFireWallRuleElementsSelector(Element instanceElmt) {
-		try {
-			return XPathHelper.getHeritedAttributeValue(instanceElmt,
-					"/" + FIREWALL_MGMT_ELEMENT + "/@"
-							+ UDP_RULE_ELEMENTS_SELECTOR,
-					DEFAULT_UDP_RULE_ELEMENTS_SELECTOR);
-		} catch (XPathExpressionException bug) {
-			throw new RuntimeException("Because the XPath Expression "
-					+ "is hard-coded, such error cannot happened. "
-					+ "There must be a bug somewhere.", bug);
-		} catch (NodeRelatedException e) {
-			throw new RuntimeException("cannot contains an xpath expression.");
-		}
+		return getUdpFireWallRuleElementsSelectorAttr(instanceElmt).getValue();
 	}
 
 	private static Attr getUdpFireWallRuleElementsSelectorAttr(
@@ -212,7 +191,8 @@ public abstract class FireWallRulesHelper {
 		try {
 			return FilteredDocHelper.getHeritedAttribute(instanceElmt,
 					"/" + FIREWALL_MGMT_ELEMENT + "/@"
-							+ UDP_RULE_ELEMENTS_SELECTOR, null);
+							+ UDP_RULE_ELEMENTS_SELECTOR,
+					DEFAULT_UDP_RULE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -228,7 +208,7 @@ public abstract class FireWallRulesHelper {
 	 *         be an empty list.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
 	 *             <li>if the Custom UDP FireWall Rules Selector (found in the
@@ -281,18 +261,7 @@ public abstract class FireWallRulesHelper {
 	 */
 	public static String getIcmpFireWallRuleElementsSelector(
 			Element instanceElmt) {
-		try {
-			return XPathHelper.getHeritedAttributeValue(instanceElmt, "/"
-					+ FIREWALL_MGMT_ELEMENT + "/@"
-					+ ICMP_RULE_ELEMENTS_SELECTOR,
-					DEFAULT_ICMP_RULE_ELEMENTS_SELECTOR);
-		} catch (XPathExpressionException bug) {
-			throw new RuntimeException("Because the XPath Expression "
-					+ "is hard-coded, such error cannot happened. "
-					+ "There must be a bug somewhere.", bug);
-		} catch (NodeRelatedException e) {
-			throw new RuntimeException("cannot contains an xpath expression.");
-		}
+		return getIcmpFireWallRuleElementsSelectorAttr(instanceElmt).getValue();
 	}
 
 	private static Attr getIcmpFireWallRuleElementsSelectorAttr(
@@ -300,7 +269,8 @@ public abstract class FireWallRulesHelper {
 		try {
 			return FilteredDocHelper.getHeritedAttribute(instanceElmt, "/"
 					+ FIREWALL_MGMT_ELEMENT + "/@"
-					+ ICMP_RULE_ELEMENTS_SELECTOR, null);
+					+ ICMP_RULE_ELEMENTS_SELECTOR,
+					DEFAULT_ICMP_RULE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -316,7 +286,7 @@ public abstract class FireWallRulesHelper {
 	 *         Can be an empty list.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
 	 *             <li>if the Custom ICMP FireWall Rules Selector (found in the

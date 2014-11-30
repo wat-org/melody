@@ -189,6 +189,9 @@
                         link-option="COPY_LINKS"/>
         </copy>
 
+        <!-- stop server -->
+        <call orders="stop-jboss-datagrid-server-on-single-machine"/>
+
         <!-- deploy server and apply standard configuration -->
         <call orders="deploy-jboss-datagrid-server-on-single-machine" sequence-descriptor="./§[kvcs.version]§/sd.xml"/>
 

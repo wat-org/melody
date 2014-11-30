@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- deploy the oracle jdbc-driver on the given jboss eap server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
+         caller must define 'driver.name', which represents the name of the jdbc dirver.
+         caller must define 'driver.version', which represents the version of the jdbc dirver.
+         caller must define 'appli.name', which represents the application which need the jdbc driver.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'jees.owner', which represents the jee-server owner.
+         caller must define 'jees.path', which represents the jee-server path.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="deploy-jdbc-driver-on-single-jee-server">
+        <!-- upload custom module directory and jar files  -->
+        <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="files/"
+                        match="**/§[driver.version]§/**"
+                        dest-basedir="§[jees.path]§/modules/">
+                <posix-permissions scope="files">600</posix-permissions>
+                <posix-permissions scope="directories">700</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy Postgresql Server JDBC Driver." severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:datasources)]/*:datasources/*:drivers/*:driver[@name='§[driver.name]§']
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[exists(*:datasources)]/*:datasources/*:drivers
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <driver name="§[driver.name]§" module="org.postgresql:§[driver.version]§">
+                    <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
+                </driver>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+    </order>
+
+    <!-- declare a datasource on the given jboss eap server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
+         caller must define 'driver.name', which represents the name of the jdbc dirver.
+         caller must define 'datasource.name', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.fqdn', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.port', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.base', which represents the name of the jdbc dirver.
+         caller must define 'user.name', which represents the name of the jdbc dirver.
+         caller must define 'user.pwd', which represents the name of the jdbc dirver.
+         caller must define 'security-domain.name', which represents the name of the security domain.
+         caller must define 'appli.name', which represents the application which need the jdbc driver.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="declare-datasource-on-single-jee-server">
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Create hibernate.jdbc.dialect system properties" severity="info"/>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties
+            </only-if-not-exists>
+            <!--  system properties must be place between extension and vault -->
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <system-properties/>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties[@name='hibernate.jdbc.dialect']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:datasources/*:datasource[@pool-name="§[datasource.name]§"]
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:datasources/*:datasource[last()]
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <!-- the FQDN of the postgres server must be used in the connection-url, otherwise the KRB/SPN lookup will fail -->
+                <datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true" jta="true">
+                    <connection-url>jdbc:postgresql://§[rdbs.fqdn]§:§[rdbs.port]§/§[rdbs.base]§</connection-url>
+                    <connection-property name="jaasApplicationName">
+                        §[security-domain.name]§
+                    </connection-property>
+                    <!--
+                    <security>
+                        <security-domain>§[security-domain.name]§</security-domain>
+                    </security>
+                    -->
+                    <driver>§[driver.name]§</driver>
+                    <validation>
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <!--
+                        <validate-on-match>true</validate-on-match>
+                        <background-validation>true</background-validation>
+                        <background-validation-millis>60000</background-validation-millis>
+                        -->
+                    </validation>
+                </datasource>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+    </order>
+
+    <!-- declare an xa datasource on the given jboss eap server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
+         caller must define 'driver.name', which represents the name of the jdbc dirver.
+         caller must define 'datasource.name', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.fqdn', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.port', which represents the name of the jdbc dirver.
+         caller must define 'rdbs.base', which represents the name of the jdbc dirver.
+         caller must define 'user.name', which represents the name of the jdbc dirver.
+         caller must define 'user.pwd', which represents the name of the jdbc dirver.
+         caller must define 'security-domain.name', which represents the name of the security domain.
+         caller must define 'appli.name', which represents the application which need the jdbc driver.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="declare-xa-datasource-on-single-jee-server">
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Create hibernate.jdbc.dialect system properties" severity="info"/>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties
+            </only-if-not-exists>
+            <!--  system properties must be place between extension and vault -->
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <system-properties/>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties[@name='hibernate.jdbc.dialect']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:datasources/*:xa-datasource[@pool-name="§[datasource.name]§"]
+                /*:server/*:profile/*:subsystem/*:datasources/*:datasource[@pool-name="§[datasource.name]§"]
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:datasources/*:drivers
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <xa-datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true">
+                    <xa-datasource-property name="ServerName">§[rdbs.fqdn]§</xa-datasource-property>
+                    <xa-datasource-property name="PortNumber">§[rdbs.port]§</xa-datasource-property>
+                    <xa-datasource-property name="DatabaseName">§[rdbs.base]§</xa-datasource-property>
+                    <security>
+                        <user-name>§[user.name]§</user-name>
+                        <password>§[user.pwd]§</password>
+                    </security>
+                    <driver>§[driver.name]§</driver>
+                    <validation>
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                    </validation>
+                </xa-datasource>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+    </order>
+
+</sequence>

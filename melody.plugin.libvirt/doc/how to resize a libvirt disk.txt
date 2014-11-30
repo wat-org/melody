@@ -1,8 +1,8 @@
 to increase the disk size of the libvirt domain :
 
-1/stop the libvirt domain
+1/ stop the libvirt domain
 
-2/ resize th volume
+2/ resize the volume
 	OPTION 1 : disk backed volume
 		be root
 		  sudo su -

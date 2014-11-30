@@ -139,7 +139,7 @@ public abstract class FilteredDocHelper {
 			attr.setValue(defaultValue);
 			return attr;
 		}
-		if (nl.item(0).getNodeType() != Node.ATTRIBUTE_NODE) {
+		if (nl.item(nl.getLength() - 1).getNodeType() != Node.ATTRIBUTE_NODE) {
 			throw new IllegalArgumentException(expr + ": Not accepted. "
 					+ "Doesn't match an XML Attribute Node.");
 		}

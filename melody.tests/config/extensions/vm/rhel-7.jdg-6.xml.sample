@@ -39,6 +39,9 @@
 			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" version="6.3.0">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.1" version="6.3.1">
+				<owner login="jdg"/>
+			</jboss-datagrid-engine>
 
 			<credentials>
 				<credential group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX"/>

@@ -168,7 +168,7 @@ exit 0
         <!-- configure -->
         <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
             <resources  src-basedir="etc/"
-                        match="krb5.conf"
+                        match="{krb5.conf,krb.realms}"
                         dest-basedir="/etc/"
                         template="y">
                 <posix-permissions scope="files">644</posix-permissions>

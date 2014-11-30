@@ -1,0 +1,12 @@
+prevoir du disque et de la RAM !
+
+
+yum install -y libaio
+yum install -y bc
+
+rpm -ivh /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm 
+
+
+
+
+TODO : publier un repo yum via httpd sur mon poste de travail, y mettre les rpm 3rd party dedans et faire en sorte que ce repo soit automatiquement cree (deja present dans les templates?)

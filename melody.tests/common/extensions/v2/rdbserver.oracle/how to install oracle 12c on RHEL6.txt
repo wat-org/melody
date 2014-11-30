@@ -1,0 +1,162 @@
+-----------------------------------------------------------
+Install oracle database software
+-----------------------------------------------------------
+installer une nouvelle machine RHEL-6
+en tant que template
+qui possede 20G de disque
+
+yum install kernel-headers
+yum install wget
+
+cd /etc/yum.repos.d
+wget http://public-yum.oracle.com/public-yum-ol6.repo
+
+wget http://public-yum.oracle.com/repo/OracleLinux/OL6/UEK/latest/x86_64/getPackage/kernel-uek-2.6.39-400.215.13.el6uek.x86_64.rpm
+rpm -ivh kernel-uek-2.6.39-400.215.13.el6uek.x86_64.rpm --justdb --nodeps
+rm kernel-uek-2.6.39-400.215.13.el6uek.x86_64.rpm
+
+wget http://public-yum.oracle.com/RPM-GPG-KEY-oracle-ol6
+mv RPM-GPG-KEY-oracle-ol6 /etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+
+yum install oracle-rdbms-server-12cR1-preinstall.x86_64
+
+mkdir -p ~oracle/base
+chown -R oracle: ~oracle/base
+chmod -R 775 ~oracle/base
+
+mkdir -p /opt/oracle-12.1.0
+chown -R oracle: /opt/oracle-12.1.0
+chmod -R 775 /opt/oracle-12.1.0
+
+# because /opt/oracle is located on vda
+echo deadline > /sys/block/vda/queue/scheduler
+
+# set the password of the oracle user
+passwd oracle
+
+# change the limits of user oracle in /etc/security/limits.conf 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+oracle        soft    nofile           1024
+oracle        hard    nofile           65536
+oracle        soft    nproc            2047
+oracle        hard    nproc            16384
+oracle        soft    stack            10240
+oracle        hard    stack            32768
+oracle        soft    memlock          770048
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# copy /Cloud/binaries/linuxamd64_12102_database_1of2.zip and /Cloud/binaries/linuxamd64_12102_database_2of2.zip in VM:/tmp
+unzip /tmp/linuxamd64_12102_database_1of2.zip -d /tmp
+unzip /tmp/linuxamd64_12102_database_2of2.zip -d /tmp
+chown -R oracle: /tmp/database/
+
+# connect with X11 on WN
+cd /tmp/database/
+./runInstaller -silent -responseFile ora-12.1.0.rsp
+
+# as root, run script
+~oracle/oraInventory/orainstRoot.sh
+/opt/oracle-12.1.0/root.sh
+
+
+# enable oracle database startup at boot time
+# place this content in /etc/init.d/dbora
+>>>>>>>>>>>>>>
+#! /bin/sh 
+#
+# dbora:		Starts Oracle Database
+#
+# chkconfig: 2345 60 40
+# description:  This is a daemon which start/stop Oracle Database
+#
+
+ORACLE_HOME=/opt/oracle-12.1.0
+ORACLE=oracle
+
+PATH=${PATH}:$ORACLE_HOME/bin
+HOST=`hostname`
+PLATFORM=`uname`
+export ORACLE_HOME PATH
+#
+if [ ! "$2" = "ORA_DB" ] ; then
+      runuser -l $ORACLE  $0 $1 ORA_DB
+      if [ "$PLATFORM" = "Linux" ] ; then
+         touch /var/lock/subsys/dbora
+      fi
+      exit
+   fi
+#
+case $1 in
+'restart')
+        $ORACLE_HOME/bin/dbstart $ORACLE_HOME &
+        ;;
+'start')
+        $ORACLE_HOME/bin/dbstart $ORACLE_HOME &
+        ;;
+'stop')
+        $ORACLE_HOME/bin/dbshut $ORACLE_HOME &
+        ;;
+*)
+        echo "usage: $0 {[re]start|stop}"
+        exit
+        ;;
+esac
+#
+exit
+<<<<<<<<<<<<
+
+# alter group and permission
+chgrp dba /etc/init.d/dbora
+chmod 750 /etc/init.d/dbora
+
+# enable at startup
+chkconfig dbora on
+
+# define ORACLE_HOME in oracle env
+# place this line at the end of ~oracle/.bashrc
+>>>>>>>>>>>>
+...
+export ORACLE_HOME=/opt/oracle-12.1.0
+export PATH=$PATH:$ORACLE_HOME/bin
+<<<<<<<<<<<<
+
+# Set SQLPLUS prompt
+# place this line at the end of /opt/oracle-12.1.0/sqlplus/admin/glogin.sql
+>>>>>>>>>>>>
+...
+set sqlprompt "_user '@' _connect_identifier > "
+<<<<<<<<<<<<
+
+
+
+-----------------------------------------------------------
+Create a database
+-----------------------------------------------------------
+as oracle:
+# don't use '@' is the password
+dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbName eap7 -sid eap7 -sysPassword 'Rf%9cRgf7' -systemPassword 'Rf%9cRgf7' -characterSet AL32UTF8 -databaseType MULTIPURPOSE
+
+as root:
+# enable database creation with dbora
+sed -rie 's/eap7(.*).$/eap7\1Y/' /etc/oratab
+
+
+
+-----------------------------------------------------------
+SQLPLUS
+-----------------------------------------------------------
+as oracle:
+# load oracle env vars
+. /usr/local/bin/oraenv <<< 'eap7'
+
+# start sqlplus
+sqlplus / as SYSDBA
+# or
+sqlplus SYSTEM/'Rf%9cRgf7'
+# or
+sqlplus SYS/'Rf%9cRgf7' as SYSDBA
+
+# in sqlplus,execute some commands
+STARTUP
+# or
+SHUTDOWN NORMAL

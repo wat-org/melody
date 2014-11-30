@@ -1,0 +1,61 @@
+upload Oracle InstantClient BASIC + InstantClient JDBC zip files on the remote system
+
+create a module for the oracle jdbc oci driver
+mdkir §[jees.path]§/module/org/oracle/12.1.0/lib/linux-x86_64
+
+extract InstantClient BASIC + InstantClient JDBC zip files in §[jees.path]§/module/org/oracle/12.1.0/lib/linux-x86_64 (the instantclient_12_1 directory must be removed)
+then move all jars from §[jees.path]§/module/org/oracle/12.1.0/lib/linux-x86_64 to §[jees.path]§/module/org/oracle/12.1.0/
+
+create a file called §[jees.path]§/module/org/oracle/12.1.0/module.xml and put this inside
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.1" name="org.oracle" slot="12.1.0">
+	<resources>
+		<resource-root path="lib" />
+		<resource-root path="ojdbc7.jar" />    <!-- because we are using JRE 1.7 -->
+		<resource-root path="orai18n.jar" />
+		<resource-root path="orai18n-mapping.jar" />
+		<resource-root path="xstreams.jar" />
+	</resources>
+
+	<dependencies>
+		<module name="javax.api" />
+		<module name="javax.transaction.api" />
+	</dependencies>
+</module>
+
+=> you have created a module which will hold the oracle jdbc oci driver
+
+
+export LD_LIBRARY_PATH=§[jees.path]§/module/org/oracle/12.1.0/lib/linux-x86_6
+
+=> libocijdbc12.so requires libclntsh.so.12.1. Setting LD_LIBRARY_PATH is a way to satisfy the linkage
+
+
+in the jboss configuration, declare an jdbc driver
+    <driver name="oracle-12.1.0" module="org.oracle:12.1.0">
+        <xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
+    </driver>
+
+=> the oracle jdbc oci driver is declared and ready to be used
+
+
+in the jboss configuration, declare a datasource, which is using oci (see the connection-url):
+    <datasource jta="true" jndi-name="java:jboss/datasource/oracle" pool-name="ds-oracle" enabled="true" use-java-context="true">
+        <connection-url>jdbc:oracle:oci:@ip-192-168-122-5.cloud.local:1521:eap6</connection-url>
+        <driver>oracle-12.1.0</driver>
+        <security>
+            <user-name>jboss</user-name>
+            <password>password</password>
+        </security>
+    </datasource>
+
+=> this datasource will use the oracle jdbc oci driver
+
+start the jboss
+
+
+
+
+Note that this setup also allow to use the oracle jdbc thin driver.
+        <connection-url>jdbc:oracle:thin:@ip-192-168-122-5.cloud.local:1521:eap6</connection-url>

@@ -15,6 +15,34 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
 
 public class XPathHelper {
 
+	/**
+	 * @param l
+	 *            is the {@link List} of {@link Element} to search in. Can not
+	 *            be <tt>null</tt>, but can contains <tt>null</tt> element (will
+	 *            be ignored).
+	 * @param expr
+	 *            is a relative XPath Expression, which should query an XML
+	 *            Attribute Node.
+	 * @param defaultValue
+	 *            is a default value, which will be returned if the given XPath
+	 *            Expression doesn't match anything. Can be <tt>null</tt>.
+	 * 
+	 * @return A {@link List} containing the first {@link Attr} which match the
+	 *         given relative XPath Expression, from each given {@link Element}s
+	 *         and all herited parents, or the given default value (which may be
+	 *         <tt>null</tt>), if the given XPath Expression doesn't match
+	 *         anything. The returned value is expanded.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given list is <tt>null</tt>, or if the given XPath
+	 *             Expression is <tt>null</tt>, or if the given expression
+	 *             doesn't match an XML Attribute Node.
+	 * @throws XPathExpressionException
+	 *             if the given XPath Expression is invalid.
+	 * @throws NodeRelatedException
+	 *             if the given attribute's value cannot be expanded (e.g.
+	 *             contains an invalid XPath Expression).
+	 */
 	public static List<String> getHeritedAttributeValue(List<Element> l,
 			String expr, String defaultValue) throws NodeRelatedException,
 			XPathExpressionException {

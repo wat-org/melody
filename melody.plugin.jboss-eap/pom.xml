@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.picketbox</groupId>
 			<artifactId>picketbox</artifactId>
-			<version>4.0.17.Final-redhat-1</version>
+			<version>4.0.19.SP8-redhat-1</version>
 		</dependency>
 	</dependencies>
 
