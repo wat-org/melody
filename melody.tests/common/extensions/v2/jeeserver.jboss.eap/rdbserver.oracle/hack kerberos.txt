@@ -1,0 +1,12 @@
+When trying to authenticate to oracle with kerberos from JBoss EAP 6.3 (using the org.jboss.security.negotiation.KerberosLoginModule), the 
+oracle driver fail because the subject's private credentials contains a GSSCredential (which cannot be cast as a KerberosTicket).
+
+So, we create an aspectJ pointcut which will change the subject's private credential, by removing everything which is not a KerberosTicket.
+This Aspect is merge into the oracle jdbc driver, so we obtain a specifically crafted oracle jdbc driver which will not fail.
+
+Take a look at the oracle jdbc driver's module:
+  it contains the hacked oracle jdbc driver and the aspectj runtime.
+
+Take a look at the oracle jdbc driver's module dependencies:
+  it declares 'sun.jdk', because the oracle jdbc driver make an intensive usage of kerberos classes provided by sun.
+  it also export a path, so that Sun Kerberos Internal can be visible.

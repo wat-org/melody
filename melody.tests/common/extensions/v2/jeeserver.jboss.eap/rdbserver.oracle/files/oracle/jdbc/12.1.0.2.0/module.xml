@@ -2,11 +2,18 @@
 
 <module xmlns="urn:jboss:module:1.1" name="oracle.jdbc" slot="12.1.0.2.0">
 	<resources>
-		<resource-root path="ojdbc7-12.1.0.2.0.jar" />
+		<resource-root path="ojdbc7-12.1.0.2.0-hacked.jar" />
+		<resource-root path="aspectjrt-1.8.4.jar" />
 	</resources>
 
 	<dependencies>
 		<module name="javax.api" />
 		<module name="javax.transaction.api" />
+		<module name="sun.jdk" />
+		<system export="true">
+			<paths>
+				<path name="sun/security/krb5/internal" />
+			</paths>
+		</system>
 	</dependencies>
 </module>

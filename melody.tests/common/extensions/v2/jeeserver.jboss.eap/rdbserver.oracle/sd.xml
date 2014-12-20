@@ -103,18 +103,18 @@
                 <![CDATA[
                 <datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true" jta="true">
                     <connection-url>jdbc:oracle:thin:@§[rdbs.fqdn]§:§[rdbs.port]§:§[rdbs.base]§</connection-url>
+                    <!--
                     <security>
                         <user-name>§[user.name]§</user-name>
                         <password>§[user.pwd]§</password>
                     </security>
-                    <!--
+                    -->
                     <security>
                         <security-domain>§[security-domain.name]§</security-domain>
                     </security>
                     <connection-property name="oracle.net.authentication_services">
                         KERBEROS5
                     </connection-property>
-                    -->
                     <driver>§[driver.name]§</driver>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
@@ -196,9 +196,19 @@
             <node-content>
                 <![CDATA[
                 <xa-datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true">
-                    <xa-datasource-property name="URL">jdbc:oracle:thin:@§[rdbs.fqdn]§:§[rdbs.tcp]§:§[rdbs.base]§</xa-datasource-property>
+                    <xa-datasource-property name="URL">
+                        jdbc:oracle:thin:@§[rdbs.fqdn]§:§[rdbs.port]§:§[rdbs.base]§
+                    </xa-datasource-property>
                     <xa-datasource-property name="User">§[user.name]§</xa-datasource-property>
                     <xa-datasource-property name="Password">§[user.pwd]§</xa-datasource-property>
+                    <!--
+                    <xa-datasource-property name="oracle.net.authentication_services">
+                        KERBEROS5
+                    </xa-datasource-property>
+                    <security>
+                        <security-domain>§[security-domain.name]§</security-domain>
+                    </security>
+                    -->
                     <driver>§[driver.name]§</driver>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
