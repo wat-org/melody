@@ -53,11 +53,6 @@
     
     
     <order name="deploy-jboss-datagrid-server-on-single-machine">
-        <!-- remove previous installation -->
-        <ssh description="[eap.remove:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <exec command="rm -rf §[kvcs.path]§"/>
-        </ssh>
-
         <!-- upload JBoss DataGrid Instance directory tree -->
         <upload host="§[machine.cnx.ip]§" login="§[kvcs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <resources  src-basedir="./standalone"

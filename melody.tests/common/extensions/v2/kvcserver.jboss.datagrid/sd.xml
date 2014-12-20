@@ -177,6 +177,14 @@
     <property name="callback.server"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-datagrid-server.default-callback"/>
 
     <order name="deploy-jboss-datagrid-server-on-single-machine">
+        <!-- remove previous installation -->
+        <ssh description="[datagrid.remove:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <!-- will not fail if the jboss datagrid server is not installed -->
+            <exec command="[ -x §[kvcs.path]§/bin/jboss-jdgd.sh ] &amp;&amp; §[kvcs.path]§/bin/jboss-jdgd.sh stop"/>
+            <!-- remove content -->
+            <exec command="rm -rf §[kvcs.path]§"/>
+        </ssh>
+
         <!-- prepare server configuration modification -->
         <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
         <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
