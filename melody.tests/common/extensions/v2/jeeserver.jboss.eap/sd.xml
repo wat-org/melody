@@ -178,6 +178,14 @@
     <property name="callback.server"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-eap-server.default-callback"/>
 
     <order name="deploy-jboss-eap-server-on-single-machine">
+        <!-- remove previous installation -->
+        <ssh description="[stop:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <!-- will not fail if the jboss eap server is not installed -->
+            <exec command="[ -x §[jees.path]§/bin/jboss-eapd.sh ] &amp;&amp; §[jees.path]§/bin/jboss-eapd.sh stop"/>
+            <!-- remove content -->
+            <exec command="rm -rf §[jees.path]§"/>
+        </ssh>
+
         <!-- prepare server configuration modification -->
         <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
         <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
@@ -189,9 +197,6 @@
                         dest-name="§[tmpfile.rel]§"
                         link-option="COPY_LINKS"/>
         </copy>
-
-        <!-- stop server -->
-        <call orders="stop-jboss-eap-server-on-single-machine"/>
 
         <!-- deploy server and apply standard configuration -->
         <call orders="deploy-jboss-eap-server-on-single-machine" sequence-descriptor="./§[jees.version]§/sd.xml"/>
