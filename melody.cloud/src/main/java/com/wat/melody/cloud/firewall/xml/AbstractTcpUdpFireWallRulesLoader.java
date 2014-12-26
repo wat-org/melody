@@ -16,9 +16,8 @@ import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.PortRanges;
 import com.wat.melody.common.network.exception.IllegalPortRangesException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -41,16 +40,16 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 
 	protected PortRanges loadFromPorts(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ FROM_PORTS_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + FROM_PORTS_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return PortRanges.parseString(v);
 			} catch (IllegalPortRangesException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ FROM_PORTS_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e, "./@" + FROM_PORTS_ATTR,
+						null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -62,16 +61,16 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 
 	protected PortRanges loadToPorts(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ TO_PORTS_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + TO_PORTS_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return PortRanges.parseString(v);
 			} catch (IllegalPortRangesException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ TO_PORTS_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e, "./@" + TO_PORTS_ATTR,
+						null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {

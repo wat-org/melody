@@ -267,6 +267,24 @@ public class FilteredDoc extends DUNIDDoc {
 		}
 	}
 
+	/**
+	 * @throws IllegalDocException
+	 *             if one or more {@link Element}s have an invalid
+	 *             {@link #HERIT_ATTR} XML Attribute (match no nodes, match
+	 *             multiple node, doesn't contains a valid XPath Expression,
+	 *             circular ref). {@link #HERIT_ATTR} XML Attribute is a
+	 *             reserved attribute, which allow to define heritage between
+	 *             {@link Element}s.
+	 */
+	public synchronized void mergeHeritedContent() throws IllegalDocException {
+		validateHeritAttrs();
+		try {
+			FilteredDocHelper.mergeHeritedContent(this);
+		} catch (NodeRelatedException Ex) {
+			throw new IllegalDocException(Ex);
+		}
+	}
+
 	public synchronized void store(String sPath) throws IllegalFileException,
 			IllegalDirectoryException {
 		Document memory = getDocument();

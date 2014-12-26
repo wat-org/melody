@@ -116,6 +116,7 @@
                         KERBEROS5
                     </connection-property>
                     <driver>§[driver.name]§</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter"/>
@@ -210,6 +211,13 @@
                     </security>
                     -->
                     <driver>§[driver.name]§</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <recovery>
+                        <recover-credential>
+                            <user-name>recovery</user-name>
+                            <password>password</password>
+                        </recover-credential>
+                    </recovery>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter"/>
@@ -219,6 +227,8 @@
                 ]]>
             </node-content>
         </insert-xml-elements-before>
+        <!-- The rdbserver.oracle extension automatically configures a user for the xa recovery.
+        This user must be used in the xa-datasource's recovery configuration. -->
     </order>
 
 </sequence>

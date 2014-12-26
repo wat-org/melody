@@ -23,12 +23,12 @@
             <!-- the local fqdn of the machine -->
             <property name="machine.fqdn"          value="§[ melody:getNetworkActivationDeviceElement(§[machine]§)/@fqdn ]§"/>
 
-            <property name="machine.os.name"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/os/@name') ]§"/>
-            <property name="machine.os.version"    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/os/@version') ]§"/>
-            <property name="machine.os.arch"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/os/@arch') ]§"/>
+            <property name="machine.os.name"       value="§[ §[machine]§/os/@name ]§"/>
+            <property name="machine.os.version"    value="§[ §[machine]§/os/@version ]§"/>
+            <property name="machine.os.arch"       value="§[ §[machine]§/os/@arch ]§"/>
 
-            <property name="machine.location.site" value="§[ melody:getHeritedAttributeValue(§[machine]§, '/@site') ]§"/>
-            <property name="machine.location.rack" value="§[ melody:getHeritedAttributeValue(§[machine]§, '/@rack') ]§"/>
+            <property name="machine.location.site" value="§[ §[machine]§/@site ]§"/>
+            <property name="machine.location.rack" value="§[ §[machine]§/@rack ]§"/>
 
             <property name="machine.id"            value="§[ melody:getInstanceId(§[machine]§) ]§"/>
 

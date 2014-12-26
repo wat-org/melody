@@ -16,9 +16,8 @@ import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameExceptio
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -81,16 +80,16 @@ public class NetworkDevicesLoader {
 	private NetworkDeviceName loadDeviceName(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ DEVICE_NAME_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + DEVICE_NAME_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return NetworkDeviceName.parseString(v);
 			} catch (IllegalNetworkDeviceNameException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ DEVICE_NAME_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e, "./@" + DEVICE_NAME_ATTR,
+						null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -102,8 +101,7 @@ public class NetworkDevicesLoader {
 
 	private String loadMac(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@" + MAC_ATTR,
-					null);
+			String v = DocHelper.getAttributeValue(e, "./@" + MAC_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -117,8 +115,7 @@ public class NetworkDevicesLoader {
 
 	private String loadIp(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@" + IP_ATTR,
-					null);
+			String v = DocHelper.getAttributeValue(e, "./@" + IP_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -132,8 +129,7 @@ public class NetworkDevicesLoader {
 
 	private String loadFqdn(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e,
-					"/@" + FQDN_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + FQDN_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -147,8 +143,8 @@ public class NetworkDevicesLoader {
 
 	private String loadNatIp(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ NAT_IP_ATTR, null);
+			String v = DocHelper
+					.getAttributeValue(e, "./@" + NAT_IP_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -162,8 +158,8 @@ public class NetworkDevicesLoader {
 
 	private String loadNatFqdn(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ NAT_FQDN_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + NAT_FQDN_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -178,7 +174,7 @@ public class NetworkDevicesLoader {
 	private GenericTimeout loadAttachTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+			String v = DocHelper.getAttributeValue(e, "./@"
 					+ TIMEOUT_ATTACH_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -186,7 +182,7 @@ public class NetworkDevicesLoader {
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+				Attr attr = DocHelper.getAttribute(e, "./@"
 						+ TIMEOUT_ATTACH_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
@@ -200,7 +196,7 @@ public class NetworkDevicesLoader {
 	private GenericTimeout loadDetachTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+			String v = DocHelper.getAttributeValue(e, "./@"
 					+ TIMEOUT_DETACH_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -208,7 +204,7 @@ public class NetworkDevicesLoader {
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+				Attr attr = DocHelper.getAttribute(e, "./@"
 						+ TIMEOUT_DETACH_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}

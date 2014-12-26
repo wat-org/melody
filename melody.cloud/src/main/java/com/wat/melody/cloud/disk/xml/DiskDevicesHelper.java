@@ -10,8 +10,9 @@ import org.w3c.dom.NodeList;
 
 import com.wat.melody.cloud.disk.Messages;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
+import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
 
 /**
@@ -71,7 +72,7 @@ public abstract class DiskDevicesHelper {
 
 	private static Attr getDiskDeviceElementsSelectorAttr(Element instanceElmt) {
 		try {
-			return FilteredDocHelper.getHeritedAttribute(instanceElmt, "/"
+			return DocHelper.getAttribute(instanceElmt, "./"
 					+ DISK_MGMT_ELEMENT + "/@" + DISK_DEVICE_ELEMENTS_SELECTOR,
 					DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
@@ -105,7 +106,7 @@ public abstract class DiskDevicesHelper {
 		String selector = getDiskDeviceElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt, selector);
+			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					getDiskDeviceElementsSelectorAttr(instanceElmt), Msg.bind(

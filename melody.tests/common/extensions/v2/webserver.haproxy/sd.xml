@@ -58,23 +58,23 @@
          caller can define 'machine_match_criteria' to target a subset of machines. -->
     <order name="do-operation-on-haproxy-servers">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(web-server)]')"/>
+            <param name="machine_eligible_criteria"   value="exists(web-server)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-haproxy-server-on-single-machine"/>
         </call>
     </order>
 
     <order name="do-operation-on-haproxy-server-on-single-machine">
-        <property name="ws.path"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/web-server/@path') ]§"/>
-        <property name="ws.owner"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/web-server/owner/@login') ]§"/>
-        <property name="ws.owner.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[ws.owner]§&quot;]/@id') ]§"/>
-        <property name="ws.group"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[ws.owner]§&quot;]/@ref-group-name') ]§"/>
-        <property name="ws.group.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/group[@name=&quot;§[ws.group]§&quot;]/@id') ]§"/>
-        <property name="ws.listen.device"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/web-server/listen-on/@device', 'eth0') ]§"/>
-        <property name="ws.listen.port-offset"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/web-server/listen-on/@port-offset', '0') ]§"/>
-        <property name="ws.listen.port.http"     value="§[ number(melody:getHeritedAttributeValue(§[machine]§, '/web-server/listen-on/socket[@name=''http'']/@port', '80')) + §[ws.listen.port-offset]§ ]§"/>
+        <property name="ws.path"                 value="§[ §[machine]§/web-server/@path ]§"/>
+        <property name="ws.owner"                value="§[ §[machine]§/web-server/owner/@login ]§"/>
+        <property name="ws.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[ws.owner]§']/@id ]§"/>
+        <property name="ws.group"                value="§[ §[machine]§/credentials/user[@name='§[ws.owner]§']/@ref-group-name ]§"/>
+        <property name="ws.group.id"             value="§[ §[machine]§/credentials/group[@name='§[ws.group]§']/@id ]§"/>
+        <property name="ws.listen.device"        value="§[ melody:getAttributeValue(§[machine]§/web-server/listen-on/@device, 'eth0') ]§"/>
+        <property name="ws.listen.port-offset"   value="§[ melody:getAttributeValue(§[machine]§/web-server/listen-on/@port-offset, '0') ]§"/>
+        <property name="ws.listen.port.http"     value="§[ number(melody:getAttributeValue(§[machine]§/web-server/listen-on/socket[@name='http']/@port, '80')) + §[ws.listen.port-offset]§ ]§"/>
         <property name="ws.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[ws.listen.device]§')/@ip ]§"/>
         <property name="ws.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[ws.listen.device]§')/@fqdn ]§"/>
-        <property name="ws.log.level"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/web-server/log/@level', 'warn') ]§"/>
+        <property name="ws.log.level"            value="§[ melody:getAttributeValue(§[machine]§/web-server/log/@level, 'warn') ]§"/>
 
         <call orders="§[substring-after('§[callback.ws]§','::')]§" sequence-descriptor="§[substring-before('§[callback.ws]§','::')]§"/>
     </order>
@@ -102,7 +102,7 @@
         <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
 
         <!-- customize / application scope -->
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/web-server/applications/application')"
+        <foreach    items="§[machine]§/web-server/applications/application"
                     item-name="application"
                     max-par="1">
             <property name="appli.name"        value="§[§[application]§/@name]§"/>

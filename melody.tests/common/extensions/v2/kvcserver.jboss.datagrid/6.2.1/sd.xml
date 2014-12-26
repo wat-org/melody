@@ -361,11 +361,19 @@ echo "Private Key '§[kvcs.mgnt.key.alias]§' successfully generated in Server k
             </node-content>
         </append-xml-elements>
 
+        <echo message="[datagrid.conf:§[kvcs.id]§] Set JTA node identifier." severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[datagrid.conf:§[kvcs.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:core-environment
+            </elements-selector>
+            <attribute name="node-identifier" value="§[kvcs.owner]§@§[ substring(replace('§[kvcs.listen.ip]§', '[.]', ''), 4) ]§:§[kvcs.listen.port-offset]§"/>
+        </set-xml-attributes>
+
         <!-- register administrators -->
-        <foreach    items="melody:getHeritedContent(§[kvcs]§, '/administrators/user')"
+        <foreach    items="§[kvcs]§/administrators/user"
                     item-name="admin">
-            <property name="admin.login" value="§[ melody:getHeritedAttributeValue(§[admin]§, '/@login')]§"/>
-            <property name="admin.pass"  value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[admin.login]§&quot;]/@password') ]§"/>
+            <property name="admin.login" value="§[ §[admin]§/@login ]§"/>
+            <property name="admin.pass"  value="§[ §[machine]§/credentials/credential[@login='§[admin.login]§']/@password ]§"/>
 
             <!-- simultaneous call to jboss-add-user.sh may encounter concurrency problems. Certainly a problem in jboss module.
                  Don't know why. So we're doing a global synchronization on the jboss instance -->

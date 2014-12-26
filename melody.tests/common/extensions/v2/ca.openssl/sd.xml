@@ -13,16 +13,16 @@
 
     <order name="do-operation-on-certificate-authorities">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(certificate-authority)]')"/>
+            <param name="machine_eligible_criteria"   value="exists(certificate-authority)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-certificate-authority-on-single-machine"/>
         </call>
     </order>
 
     <order name="do-operation-on-certificate-authority-on-single-machine">
-        <property name="ca.path"    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@path') ]§"/>
-        <property name="ca.cn"      value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@CN') ]§"/>
-        <property name="ca.o"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@O') ]§"/>
-        <property name="ca.pk.pwd"  value="§[ melody:getHeritedAttributeValue(§[machine]§, '/certificate-authority/@pk-password') ]§"/>
+        <property name="ca.path"    value="§[ §[machine]§/certificate-authority/@path ]§"/>
+        <property name="ca.cn"      value="§[ §[machine]§/certificate-authority/@CN ]§"/>
+        <property name="ca.o"       value="§[ §[machine]§/certificate-authority/@O ]§"/>
+        <property name="ca.pk.pwd"  value="§[ §[machine]§/certificate-authority/@pk-password ]§"/>
 
         <call orders="§[substring-after('§[callback.ca]§','::')]§" sequence-descriptor="§[substring-before('§[callback.ca]§','::')]§"/>
     </order>
@@ -121,12 +121,12 @@ exit 0
                 - password: a password.
                 - alias: the alias which will hold the priv-key.
         -->
-        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca"                  value="./environment//instance[exists(certificate-authority)]"/>
         <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
         <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
-        <property name="ca.cn"               value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@CN') ]§"/>
-        <property name="ca.o"                value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@O') ]§"/>
-        <property name="ca.pk.pwd"           value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@pk-password') ]§"/>
+        <property name="ca.cn"               value="§[ §[ca]§/certificate-authority/@CN ]§"/>
+        <property name="ca.o"                value="§[ §[ca]§/certificate-authority/@O ]§"/>
+        <property name="ca.pk.pwd"           value="§[ §[ca]§/certificate-authority/@pk-password ]§"/>
 
         <!-- kerberos doesn't support concurrent execution -->
         <synchronize scope="GLOBAL" lock-id="§[ca.machine.cnx.ip]§.ca">
@@ -240,7 +240,7 @@ exit 0
                 - cnx.user: a user name: the user to connect on the remote system
                 - dest.basedir: a directory full path: where the specified priv-key and certificates will be uploaded
         -->
-        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca"                  value="./environment//instance[exists(certificate-authority)]"/>
         <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
         <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
 
@@ -274,10 +274,10 @@ exit 0
                 - dest.basedir: a directory full path: where the CA certificates will be uploaded
                 - jks.password: a string: the password of the CA java JKS truststore
         -->
-        <property name="ca"                  value="./environment//instance[melody:getHeritedContent(., '[exists(certificate-authority)]')]"/>
+        <property name="ca"                  value="./environment//instance[exists(certificate-authority)]"/>
         <property name="ca.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[ca]§ ) ]§"/>
         <property name="ca.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[ca]§ ) ]§"/>
-        <property name="ca.cn"               value="§[ melody:getHeritedAttributeValue(§[ca]§, '/certificate-authority/@CN') ]§"/>
+        <property name="ca.cn"               value="§[ §[ca]§/certificate-authority/@CN ]§"/>
 
         <property name="tmpfile.dir"         value="/tmp/jks/"/>
         <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>

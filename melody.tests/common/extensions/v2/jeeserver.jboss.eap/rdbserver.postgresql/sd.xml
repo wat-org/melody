@@ -112,6 +112,7 @@
                     </security>
                     -->
                     <driver>§[driver.name]§</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
@@ -187,11 +188,18 @@
                     <xa-datasource-property name="ServerName">§[rdbs.fqdn]§</xa-datasource-property>
                     <xa-datasource-property name="PortNumber">§[rdbs.port]§</xa-datasource-property>
                     <xa-datasource-property name="DatabaseName">§[rdbs.base]§</xa-datasource-property>
+                    <driver>§[driver.name]§</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <security>
                         <user-name>§[user.name]§</user-name>
                         <password>§[user.pwd]§</password>
                     </security>
-                    <driver>§[driver.name]§</driver>
+                    <recovery>
+                        <recover-credential>
+                            <user-name>§[user.name]§</user-name>
+                            <password>§[user.pwd]§</password>
+                        </recover-credential>
+                    </recovery>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
@@ -200,6 +208,8 @@
                 ]]>
             </node-content>
         </insert-xml-elements-before>
+        <!-- Postgresql don't requiere any particular setup for xa recovery.
+        We can specify the same user in the xa-datasource's recovery configuration. -->
     </order>
 
 </sequence>

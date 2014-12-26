@@ -63,7 +63,7 @@
          caller can define 'machine_match_criteria' to target a subset of machines. -->
     <order name="do-operation-on-jboss-eap-machines">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(jee-server)]')"/>
+            <param name="machine_eligible_criteria"   value="exists(jee-server)"/>
         </call>
     </order>
 
@@ -80,14 +80,14 @@
     </order>
 
     <order name="do-operation-on-jboss-eap-engines-on-single-machine">
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/jboss-eap-engine [ @version=melody:getHeritedAttributeValue(melody:getHeritedContent(§[machine]§, &quot;/jee-server [ §[jee_server_match_criteria]§ ]&quot;), &quot;/@version&quot;) and §[jee_engine_match_criteria]§ ]')"
+        <foreach    items="§[machine]§/jboss-eap-engine [ @version=§[machine]§/jee-server [ §[jee_server_match_criteria]§ ]/@version and §[jee_engine_match_criteria]§ ] "
                     item-name="jeee">
-            <property name="jeee.path"             value="§[ melody:getHeritedAttributeValue(§[jeee]§, '/@path') ]§"/>
-            <property name="jeee.version"          value="§[ melody:getHeritedAttributeValue(§[jeee]§, '/@version') ]§"/>
-            <property name="jeee.owner"            value="§[ melody:getHeritedAttributeValue(§[jeee]§, '/owner/@login') ]§"/>
-            <property name="jeee.owner.pwd"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jeee.owner]§&quot;]/@password') ]§"/>
-            <property name="jeee.owner.home-dir"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jeee.owner]§&quot;]/@homedir') ]§"/>
-            <property name="jeee.group"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jeee.owner]§&quot;]/@group') ]§"/>
+            <property name="jeee.path"             value="§[ §[jeee]§/@path ]§"/>
+            <property name="jeee.version"          value="§[ §[jeee]§/@version ]§"/>
+            <property name="jeee.owner"            value="§[ §[jeee]§/owner/@login ]§"/>
+            <property name="jeee.owner.pwd"        value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@password ]§"/>
+            <property name="jeee.owner.home-dir"   value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@homedir ]§"/>
+            <property name="jeee.group"            value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@group ]§"/>
 
             <call orders="§[substring-after('§[callback.jeee]§','::')]§" sequence-descriptor="§[substring-before('§[callback.jeee]§','::')]§"/>
         </foreach>
@@ -121,55 +121,55 @@
     </order>
 
     <order name="do-operation-on-jboss-eap-servers-on-single-machine">
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/jee-server[ §[jee_server_match_criteria]§ ]')"
+        <foreach    items="§[machine]§/jee-server[ §[jee_server_match_criteria]§ ]"
                     item-name="jees">
-            <property name="jees.path"                    value="§[ melody:getHeritedAttributeValue(§[jees]§, '/@path') ]§"/>
-            <property name="jees.version"                 value="§[ melody:getHeritedAttributeValue(§[jees]§, '/@version') ]§"/>
-            <property name="jees.owner"                   value="§[ melody:getHeritedAttributeValue(§[jees]§, '/owner/@login') ]§"/>
-            <property name="jees.owner.pwd"               value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jees.owner]§&quot;]/@password') ]§"/>
-            <property name="jees.owner.home-dir"          value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jees.owner]§&quot;]/@homedir') ]§"/>
-            <property name="jees.profile"                 value="§[ melody:getHeritedAttributeValue(§[jees]§, '/@profile', '') ]§"/>
+            <property name="jees.path"                    value="§[ §[jees]§/@path ]§"/>
+            <property name="jees.version"                 value="§[ §[jees]§/@version ]§"/>
+            <property name="jees.owner"                   value="§[ §[jees]§/owner/@login ]§"/>
+            <property name="jees.owner.pwd"               value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@password ]§"/>
+            <property name="jees.owner.home-dir"          value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@homedir ]§"/>
+            <property name="jees.profile"                 value="§[ melody:getAttributeValue(§[jees]§/@profile, '') ]§"/>
             <property name="jees.profile.file"            value="standalone§[if (string-length('§[jees.profile]§')=0) then '' else '-§[jees.profile]§']§.xml"/>
 
-            <property name="jeee.path"                    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/jboss-eap-engine[@version=&quot;§[jees.version]§&quot;]/@path') ]§"/>
-            <property name="jeee.owner"                   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/jboss-eap-engine[@version=&quot;§[jees.version]§&quot;]/owner/@login') ]§"/>
-            <property name="jeee.group"                   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/credential[@login=&quot;§[jeee.owner]§&quot;]/@group') ]§"/>
+            <property name="jeee.path"                    value="§[ §[machine]§/jboss-eap-engine[@version='§[jees.version]§']/@path ]§"/>
+            <property name="jeee.owner"                   value="§[ §[machine]§/jboss-eap-engine[@version='§[jees.version]§']/owner/@login ]§"/>
+            <property name="jeee.group"                   value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@group ]§"/>
 
-            <property name="jees.memory.xms"              value="§[ melody:getHeritedAttributeValue(§[jees]§, '/memory/@xms', '128m') ]§"/>
-            <property name="jees.memory.xmx"              value="§[ melody:getHeritedAttributeValue(§[jees]§, '/memory/@xmx', '512m') ]§"/>
-            <property name="jees.memory.perm-size"        value="§[ melody:getHeritedAttributeValue(§[jees]§, '/memory/@perm-size', '64m')]§"/>
+            <property name="jees.memory.xms"              value="§[ melody:getAttributeValue(§[jees]§/memory/@xms, '128m') ]§"/>
+            <property name="jees.memory.xmx"              value="§[ melody:getAttributeValue(§[jees]§/memory/@xmx, '512m') ]§"/>
+            <property name="jees.memory.perm-size"        value="§[ melody:getAttributeValue(§[jees]§/memory/@perm-size, '64m')]§"/>
             <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
 
-            <property name="jees.listen.device"           value="§[ melody:getHeritedAttributeValue(§[jees]§, '/listen-on/@device', 'eth0') ]§"/>
+            <property name="jees.listen.device"           value="§[ melody:getAttributeValue(§[jees]§/listen-on/@device, 'eth0') ]§"/>
             <property name="jees.listen.ip"               value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.device]§')/@ip ]§"/>
             <property name="jees.listen.fqdn"             value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.device]§')/@fqdn ]§"/>
-            <property name="jees.listen.port-offset"      value="§[ melody:getHeritedAttributeValue(§[jees]§, '/listen-on/@port-offset', '0') ]§"/>
-            <property name="jees.listen.port.http"        value="§[ number(melody:getHeritedAttributeValue(§[jees]§, '/listen-on/socket[@name=''http'']/@port', '8080')) + §[jees.listen.port-offset]§ ]§"/>
-            <property name="jees.listen.port.ajp"         value="§[ number(melody:getHeritedAttributeValue(§[jees]§, '/listen-on/socket[@name=''ajp'']/@port', '8009')) + §[jees.listen.port-offset]§ ]§"/>
-            <property name="jees.listen.port.https"       value="§[ number(melody:getHeritedAttributeValue(§[jees]§, '/listen-on/socket[@name=''https'']/@port', '8443')) + §[jees.listen.port-offset]§ ]§"/>
-            <property name="jees.listen.mgnt.device"      value="§[ melody:getHeritedAttributeValue(§[jees]§, '/listen-on/@management-device', '§[jees.listen.device]§') ]§"/>
+            <property name="jees.listen.port-offset"      value="§[ melody:getAttributeValue(§[jees]§/listen-on/@port-offset, '0') ]§"/>
+            <property name="jees.listen.port.http"        value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='http']/@port, '8080')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.port.ajp"         value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='ajp']/@port, '8009')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.port.https"       value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='https']/@port, '8443')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.mgnt.device"      value="§[ melody:getAttributeValue(§[jees]§/listen-on/@management-device, '§[jees.listen.device]§') ]§"/>
             <property name="jees.listen.mgnt.ip"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.mgnt.device]§')/@ip ]§"/>
             <property name="jees.listen.mgnt.fqdn"        value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.mgnt.device]§')/@fqdn ]§"/>
-            <property name="jees.mgnt.keystore.url"       value="§[ melody:getHeritedAttributeValue(§[jees]§, '/keystore[exists(key[@usage=&quot;management&quot;])]/@path') ]§"/>
-            <property name="jees.mgnt.keystore.pwd"       value="§[ melody:getHeritedAttributeValue(§[jees]§, '/keystore[exists(key[@usage=&quot;management&quot;])]/@password') ]§"/>
-            <property name="jees.mgnt.key.alias"          value="§[ melody:getHeritedAttributeValue(§[jees]§, '/keystore/key[@usage=&quot;management&quot;]/@alias') ]§"/>
-            <property name="jees.mgnt.key.pwd"            value="§[ melody:getHeritedAttributeValue(§[jees]§, '/keystore/key[@usage=&quot;management&quot;]/@password') ]§"/>
-            <property name="jees.mgnt.key.dn"             value="§[ melody:getHeritedAttributeValue(§[jees]§, '/keystore/key[@usage=&quot;management&quot;]/@dname', 'CN=§[jees.listen.mgnt.fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR') ]§"/>
+            <property name="jees.mgnt.keystore.url"       value="§[ §[jees]§/keystore[exists(key[@usage='management'])]/@path ]§"/>
+            <property name="jees.mgnt.keystore.pwd"       value="§[ §[jees]§/keystore[exists(key[@usage='management'])]/@password ]§"/>
+            <property name="jees.mgnt.key.alias"          value="§[ §[jees]§/keystore/key[@usage='management']/@alias ]§"/>
+            <property name="jees.mgnt.key.pwd"            value="§[ §[jees]§/keystore/key[@usage='management']/@password ]§"/>
+            <property name="jees.mgnt.key.dn"             value="§[ melody:getAttributeValue(§[jees]§/keystore/key[@usage='management']/@dname, 'CN=§[jees.listen.mgnt.fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR') ]§"/>
 
-            <property name="jees.vault.enc-dir"           value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/enc-dir/@path', '§[jees.path]§/configuration/vault/secret/') ]§"/>
-            <property name="jees.vault.url"               value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/keystore/@path', '§[jees.path]§/configuration/vault/vault.keystore') ]§"/>
-            <property name="jees.vault.pwd"               value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/keystore/@password', 'changeit') ]§"/>
-            <property name="jees.vault.iteration-count"   value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/secret/@iteration-count', '69') ]§"/>
-            <property name="jees.vault.salt"              value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/secret/@salt', 'supasalt') ]§"/>
+            <property name="jees.vault.enc-dir"           value="§[ melody:getAttributeValue(§[jees]§/vault/enc-dir/@path, '§[jees.path]§/configuration/vault/secret/') ]§"/>
+            <property name="jees.vault.url"               value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@path, '§[jees.path]§/configuration/vault/vault.keystore') ]§"/>
+            <property name="jees.vault.pwd"               value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@password, 'changeit') ]§"/>
+            <property name="jees.vault.iteration-count"   value="§[ melody:getAttributeValue(§[jees]§/vault/secret/@iteration-count, '69') ]§"/>
+            <property name="jees.vault.salt"              value="§[ melody:getAttributeValue(§[jees]§/vault/secret/@salt, 'supasalt') ]§"/>
             <property name="jees.vault.salt"              value="§[ if (string-length('§[jees.vault.salt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jees.vault.salt]§' ]§"/>
             <property name="jees.vault.masked-pwd"        value="§[ jboss:maskPassword('§[jees.vault.salt]§', '§[jees.vault.iteration-count]§', '§[jees.vault.pwd]§') ]§"/>
-            <property name="jees.vault.key.alias"         value="§[ melody:getHeritedAttributeValue(§[jees]§, '/vault/keystore/@alias', 'vault') ]§"/>
+            <property name="jees.vault.key.alias"         value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@alias, 'vault') ]§"/>
             <property name="jees.vault.key.dn"            value="CN=§[jees.listen.mgnt.fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR"/>
 
             <property name="jees.id"                      value="§[jees.owner]§@§[jees.listen.ip]§:+§[jees.listen.port-offset]§"/>
 
-            <property name="jees.disabled"                value="§[ melody:getHeritedAttributeValue(§[jees]§, '/features/@administration-only', 'false') ]§"/>
-            <property name="jees.native"                  value="§[ melody:getHeritedAttributeValue(§[jees]§, '/jboss-web/@uses-native-components', 'false') ]§"/>
+            <property name="jees.disabled"                value="§[ melody:getAttributeValue(§[jees]§/features/@administration-only, 'false') ]§"/>
+            <property name="jees.native"                  value="§[ melody:getAttributeValue(§[jees]§/jboss-web/@uses-native-components, 'false') ]§"/>
 
             <call orders="§[substring-after('§[callback.jees]§','::')]§" sequence-descriptor="§[substring-before('§[callback.jees]§','::')]§"/>
         </foreach>
@@ -205,7 +205,7 @@
         <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
 
         <!-- deploy custom modules -->
-        <foreach    items="melody:getHeritedContent(§[jees]§, '/custom-modules/custom-module')"
+        <foreach    items="§[jees]§/custom-modules/custom-module"
                     item-name="cm"
                     max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
             <property name="cm.name"          value="§[§[cm]§/@name]§"/>
@@ -215,7 +215,7 @@
         </foreach>
 
         <!-- deploy applications -->
-        <foreach    items="melody:getHeritedContent(§[jees]§, '/applications/application')"
+        <foreach    items="§[jees]§/applications/application"
                     item-name="application"
                     max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
             <property name="appli.name"          value="§[§[application]§/@name]§"/>

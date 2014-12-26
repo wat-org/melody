@@ -1,1 +1,0 @@
-../../../../6.0.0/standalone/patches/bin/jboss-cli.sh

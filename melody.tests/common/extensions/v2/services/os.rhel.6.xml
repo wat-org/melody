@@ -8,7 +8,7 @@
             <exec>
                 <![CDATA[
 service §[service.name]§ restart
-usleep 100000
+dd if=/dev/urandom of=/dev/null bs=1M count=1 1>/dev/null 2>&1
 service §[service.name]§ status || {
   res=$?
   echo "Fail to start service '§[service.name]§'. Exiting with error code $res." >&2
@@ -18,7 +18,7 @@ chkconfig §[service.name]§ on
                 ]]>
             </exec>
         </ssh>
-
+        <!-- 'dd bs=1M' is nearly equivalent to a 0.1 second pause, but will be longer if the system heavy loaded -->
         <echo message="+ Service '§[service.name]§' successfully started on machine '§[machine.id]§'."/>
     </order>
 

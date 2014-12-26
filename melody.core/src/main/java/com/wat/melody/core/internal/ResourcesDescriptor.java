@@ -308,10 +308,10 @@ public class ResourcesDescriptor extends FilteredDoc implements
 					d.getDocument().getFirstChild(), true);
 			stopListening();
 			getOriginalDocument().getFirstChild().appendChild(n);
+			mergeHeritedContent();
 			startListening();
 			// Rebuild
 			restoreOriginalDocument();
-			validateHeritAttrs();
 			applyFilters();
 		} catch (IllegalFilterException Ex) {
 			throw new IllegalResourcesFilterException(Ex);

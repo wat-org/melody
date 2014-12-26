@@ -14,7 +14,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,6 +29,7 @@ import com.wat.melody.common.files.exception.IllegalDirectoryException;
 import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.xml.location.Location;
 import com.wat.melody.common.xml.location.LocationFactory;
+import com.wat.melody.common.xpath.XPathExpander;
 
 /**
  * 
@@ -375,6 +378,71 @@ public abstract class DocHelper {
 				e.removeChild(child);
 			}
 		}
+	}
+
+	/**
+	 * @param ctx
+	 * @param xpr
+	 * @param defval
+	 *            can be <tt>null</tt>.
+	 * 
+	 * @return the {@link Attr} target by the given expression (resolved from
+	 *         the given context), or an {link Attr} containing the given
+	 *         default value if the given expression doesn't match anything and
+	 *         if the given default value is not <tt>null</tt>,or <tt>null</tt>
+	 *         if the the given default value if the given expression doesn't
+	 *         match anything and if the given default value is <tt>null</tt>.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 * @throws ClassCastException
+	 *             if the given expression doesn't select an {@link Attr}.
+	 * @throws XPathExpressionException
+	 *             if the given expression is not valid.
+	 */
+	public static Attr getAttribute(Node ctx, String xpr, String defval)
+			throws XPathExpressionException {
+		Attr attr = (Attr) XPathExpander.evaluateAsNode(xpr, ctx);
+		if (attr != null) {
+			return attr;
+		}
+		Document d = null;
+		if (ctx.getNodeType() == Node.DOCUMENT_NODE) {
+			d = (Document) ctx;
+		} else {
+			d = ctx.getOwnerDocument();
+		}
+		attr = d.createAttribute("default");
+		attr.setValue(defval);
+		return attr;
+	}
+
+	/**
+	 * @param ctx
+	 * @param xpr
+	 * @param defval
+	 *            can be <tt>null</tt>.
+	 * 
+	 * @return the value of the {@link Attr} targeted by the given
+	 *         expression(resolved from the given context), or the given default
+	 *         value (potentially <tt>null</tt>) if the given expression doesn't
+	 *         match anything.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given context is <tt>null</tt>.
+	 * @throws NullPointerException
+	 *             if the given expression is <tt>null</tt>.
+	 * @throws ClassCastException
+	 *             if the given expression doesn't select an {@link Attr}.
+	 * @throws XPathExpressionException
+	 *             if the given expression is not valid.
+	 */
+	public static String getAttributeValue(Node ctx, String xpr, String defval)
+			throws XPathExpressionException {
+		Attr attr = getAttribute(ctx, xpr, defval);
+		return attr != null ? attr.getValue() : null;
 	}
 
 }

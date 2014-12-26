@@ -22,10 +22,10 @@ import com.wat.melody.common.network.Address;
 import com.wat.melody.common.network.Addresses;
 import com.wat.melody.common.network.IpRange;
 import com.wat.melody.common.network.exception.IllegalIpRangeException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
+import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -112,8 +112,8 @@ public abstract class FireWallRulesHelper {
 	private static Attr getTcpFireWallRuleElementsSelectorAttr(
 			Element instanceElmt) {
 		try {
-			return FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					"/" + FIREWALL_MGMT_ELEMENT + "/@"
+			return DocHelper.getAttribute(instanceElmt,
+					"./" + FIREWALL_MGMT_ELEMENT + "/@"
 							+ TCP_RULE_ELEMENTS_SELECTOR,
 					DEFAULT_TCP_RULE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
@@ -147,7 +147,7 @@ public abstract class FireWallRulesHelper {
 		String selector = getTcpFireWallRuleElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt, selector);
+			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					getTcpFireWallRuleElementsSelectorAttr(instanceElmt),
@@ -189,8 +189,8 @@ public abstract class FireWallRulesHelper {
 	private static Attr getUdpFireWallRuleElementsSelectorAttr(
 			Element instanceElmt) {
 		try {
-			return FilteredDocHelper.getHeritedAttribute(instanceElmt,
-					"/" + FIREWALL_MGMT_ELEMENT + "/@"
+			return DocHelper.getAttribute(instanceElmt,
+					"./" + FIREWALL_MGMT_ELEMENT + "/@"
 							+ UDP_RULE_ELEMENTS_SELECTOR,
 					DEFAULT_UDP_RULE_ELEMENTS_SELECTOR);
 		} catch (XPathExpressionException bug) {
@@ -224,7 +224,7 @@ public abstract class FireWallRulesHelper {
 		String selector = getUdpFireWallRuleElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt, selector);
+			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					getUdpFireWallRuleElementsSelectorAttr(instanceElmt),
@@ -267,7 +267,7 @@ public abstract class FireWallRulesHelper {
 	private static Attr getIcmpFireWallRuleElementsSelectorAttr(
 			Element instanceElmt) {
 		try {
-			return FilteredDocHelper.getHeritedAttribute(instanceElmt, "/"
+			return DocHelper.getAttribute(instanceElmt, "./"
 					+ FIREWALL_MGMT_ELEMENT + "/@"
 					+ ICMP_RULE_ELEMENTS_SELECTOR,
 					DEFAULT_ICMP_RULE_ELEMENTS_SELECTOR);
@@ -302,7 +302,7 @@ public abstract class FireWallRulesHelper {
 		String selector = getIcmpFireWallRuleElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt, selector);
+			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
 					getIcmpFireWallRuleElementsSelectorAttr(instanceElmt),
@@ -392,7 +392,7 @@ public abstract class FireWallRulesHelper {
 			// first, get the region
 			String region = null;
 			try {
-				region = XPathHelper.getHeritedAttributeValue(e, "/@"
+				region = DocHelper.getAttributeValue(e, "./@"
 						+ InstanceDatasLoader.REGION_ATTR, null);
 			} catch (XPathExpressionException bug) {
 				throw new RuntimeException("Because the XPath Expression "

@@ -8,6 +8,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -16,7 +17,6 @@ import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.systool.SysTool;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
-import com.wat.melody.common.xpath.XPathFunctionHelper;
 
 /**
  * 
@@ -24,127 +24,6 @@ import com.wat.melody.common.xpath.XPathFunctionHelper;
  * 
  */
 public abstract class FilteredDocHelper {
-
-	/**
-	 * @param l
-	 *            is a {@link List} of {@link Element}.
-	 * @param expr
-	 *            is a relative XPath Expression.
-	 * 
-	 * @return a {@link List} of {@link NodeList} which match the given relative
-	 *         XPath Expression, from each given context and all herited
-	 *         parents. Can be an empty list, if the given expression doesn't
-	 *         match anything.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given list is <tt>null</tt>, or if the given XPath
-	 *             Expression is <tt>null</tt>.
-	 * @throws XPathExpressionException
-	 *             if the given XPath Expression is invalid.
-	 */
-	public static List<Element> getHeritedContent(List<Element> l, String expr)
-			throws XPathExpressionException {
-		if (l == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid a " + List.class.getCanonicalName() + "<"
-					+ Element.class.getCanonicalName() + ">.");
-		}
-		List<Element> list = new ArrayList<Element>();
-		for (Element n : l) {
-			if (n == null) {
-				continue;
-			}
-			NodeList res = getHeritedContent(n, expr);
-			if (res == null) {
-				continue;
-			}
-			list.addAll(XPathFunctionHelper.toElementList(res));
-		}
-		return list;
-	}
-
-	/**
-	 * @param n
-	 *            is the context, used for XPath Expression evaluation.
-	 * @param expr
-	 *            is a relative XPath Expression.
-	 * 
-	 * @return a {@link NodeList} which match the given relative XPath
-	 *         Expression, from the given context and all herited parents. Can
-	 *         be an empty list, if the given expression doesn't match anything.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given element is <tt>null</tt>, or if the given XPath
-	 *             Expression is <tt>null</tt>.
-	 * @throws XPathExpressionException
-	 *             if the given XPath Expression is invalid.
-	 */
-	public static NodeList getHeritedContent(Element n, String expr)
-			throws XPathExpressionException {
-		if (expr == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid " + String.class.getCanonicalName() + ".");
-		}
-		String refNodesXpr = DocHelper.getXPathPosition(n);
-		Element ctx = (Element) n.getOwnerDocument().getFirstChild();
-		List<Element> circle = new ArrayList<Element>();
-		circle.add(n);
-		while (true) {
-			try {
-				n = resolvHeritAttr(n, circle);
-			} catch (NodeRelatedException Ex) {
-				throw new RuntimeException("Unexecpted error while resolving "
-						+ "herited parents of the Element ["
-						+ DocHelper.getNodeLocation(n).toFullString() + "]. "
-						+ "Because all herited attributes have already been "
-						+ "validated, such error cannot happened. "
-						+ "Source code has certainly been modified and "
-						+ "a bug have been introduced.", Ex);
-			}
-			if (n == null) {
-				break;
-			}
-			refNodesXpr += " | " + DocHelper.getXPathPosition(n);
-		}
-		return XPathExpander.evaluateAsNodeList("for $n in " + refNodesXpr
-				+ " " + "return $n" + expr, ctx);
-	}
-
-	/**
-	 * @param n
-	 *            is the context, used for XPath Expression evaluation.
-	 * @param expr
-	 *            is a relative XPath Expression, which should query an XML
-	 *            Attribute Node.
-	 * @param defaultValue
-	 *            is a default value. Can be <tt>null</tt>.
-	 * 
-	 * @return The first {@link Attr} which match the given relative XPath
-	 *         Expression, from the given context and all herited parents, or
-	 *         the given default value (which may be <tt>null</tt>), if the
-	 *         given XPath Expression doesn't match anything.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given element is <tt>null</tt>, or if the given XPath
-	 *             Expression is <tt>null</tt>, or if the given expression
-	 *             doesn't match an XML Attribute Node.
-	 * @throws XPathExpressionException
-	 *             if the given XPath Expression is invalid.
-	 */
-	public static Attr getHeritedAttribute(Element n, String expr,
-			String defaultValue) throws XPathExpressionException {
-		NodeList nl = getHeritedContent(n, expr);
-		if (nl == null || nl.getLength() == 0) {
-			Attr attr = n.getOwnerDocument().createAttribute("default");
-			attr.setValue(defaultValue);
-			return attr;
-		}
-		if (nl.item(nl.getLength() - 1).getNodeType() != Node.ATTRIBUTE_NODE) {
-			throw new IllegalArgumentException(expr + ": Not accepted. "
-					+ "Doesn't match an XML Attribute Node.");
-		}
-		return (Attr) nl.item(nl.getLength() - 1);
-	}
 
 	/**
 	 * @param n
@@ -249,6 +128,133 @@ public abstract class FilteredDocHelper {
 			 */
 		}
 		return str.toString();
+	}
+
+	/**
+	 * <p>
+	 * Merge content of {@link #HERIT_ATTR} XML attribute of the the given
+	 * {@link Document}.
+	 * </p>
+	 * 
+	 * @param doc
+	 *            is the {@link Document} to merge.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Document} is <tt>null</tt>.
+	 * @throws NodeRelatedException
+	 *             {@inheritDoc}
+	 */
+	protected static void mergeHeritedContent(FilteredDoc fd)
+			throws NodeRelatedException {
+		Document doc = fd.getDocument();
+		NodeList nl = findNodeWithHeritAttr(doc);
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element n = (Element) nl.item(i);
+			Element parent = resolvHeritAttr(n, null);
+			if (parent == null) {
+				/*
+				 * shouldn't happened since nl contains only element with an
+				 * herited attr
+				 */
+				continue;
+			}
+			// remove herited attr in n
+			n.removeAttribute(FilteredDoc.HERIT_ATTR);
+			// clone the parent (deep clone)
+			Element hpc = (Element) doc.importNode(parent, true);
+			// remove UUID in the cloned parent
+			NodeList uuidsToRemove = null;
+			try {
+				uuidsToRemove = XPathExpander.evaluateAsNodeList(
+						"descendant-or-self::*/@" + DUNIDDoc.DUNID_ATTR, hpc);
+			} catch (XPathExpressionException Ex) {
+				throw new RuntimeException("Unexecpted error while evaluating "
+						+ "an XPath Expression. "
+						+ "Since the XPath expression to evaluate is "
+						+ "hard coded, " + "such error cannot happened. "
+						+ "Source code has certainly been modified and "
+						+ "a bug have been introduced.", Ex);
+			}
+			for (Node uuidToRemove : new NodeCollection(uuidsToRemove)) {
+				Attr attr = (Attr) uuidToRemove;
+				attr.getOwnerElement().removeAttributeNode(attr);
+			}
+			Element nc = n.getOwnerDocument().createElement(n.getNodeName());
+			while (hpc.hasChildNodes()) {
+				nc.appendChild(hpc.getFirstChild());
+			}
+			for (int j = 0; j < hpc.getAttributes().getLength(); j++) {
+				Attr attr = (Attr) hpc.getAttributes().item(j);
+				nc.setAttribute(attr.getName(), attr.getValue());
+			}
+			mergeElement(n, nc, null);
+			n.getParentNode().replaceChild(nc, n);
+		}
+		DUNIDDocHelper.addDUNID(doc.getFirstChild());
+	}
+
+	private static void mergeElement(Element source, Element dest,
+			Element destParent) {
+		if (dest == null) {
+			destParent.appendChild(source);
+			return;
+		}
+
+		// put source attrs into dest (source attr overrides dest attr)
+		NamedNodeMap attrs = source.getAttributes();
+		for (int i = 0; i < attrs.getLength(); i++) {
+			Attr attr = (Attr) attrs.item(i);
+			dest.setAttribute(attr.getName(), attr.getValue());
+		}
+		while (source.hasChildNodes()) {
+			Node n = source.getFirstChild();
+			if (n.getNodeType() != Node.ELEMENT_NODE) {
+				source.removeChild(n);
+				continue;
+			}
+			Element sourcechild = (Element) n;
+			Element destchild = null;
+			if (sourcechild.hasAttribute("herit")) {
+				dest.appendChild(sourcechild);
+				continue;
+			}
+			String heritPolicy = sourcechild.getAttribute("herit-policy");
+			sourcechild.removeAttribute("herit-policy");
+			if (heritPolicy == null || heritPolicy.length() == 0
+					|| heritPolicy.equals("merge")) {
+				destchild = findMatchingChildElement(dest, sourcechild);
+				mergeElement(sourcechild, destchild, dest);
+				if (sourcechild.getParentNode() == source) {
+					source.removeChild(sourcechild);
+				}
+			} else if (heritPolicy.equals("append")) {
+				dest.appendChild(sourcechild);
+			} else if (heritPolicy.equals("insert")) {
+				// TODO : currently equals to append.
+				// should retrieve the insertion position
+				Node refChild = null;
+				dest.insertBefore(sourcechild, refChild);
+			} else if (heritPolicy.equals("replace")) {
+				destchild = findMatchingChildElement(dest, sourcechild);
+				dest.replaceChild(sourcechild, destchild);
+			}
+		}
+	}
+
+	private static Element findMatchingChildElement(Element e, Element eToFind) {
+		// TODO : replace by a more complex search, based on a xpath expr
+		String toFind = eToFind.getNodeName();
+
+		for (int i = 0; i < e.getChildNodes().getLength(); i++) {
+			Node n = e.getChildNodes().item(i);
+			if (n.getNodeType() != Node.ELEMENT_NODE) {
+				continue;
+			}
+			if (n.getNodeName().equals(toFind)) {
+				return (Element) n;
+			}
+		}
+		return null;
 	}
 
 	/**

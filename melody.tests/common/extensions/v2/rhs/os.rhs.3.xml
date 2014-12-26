@@ -282,15 +282,15 @@ exit ${ret}
         </synchronize>
 
         <!-- BUG in RHS 2.1 : some actions must be done manually for the delete volume operation to succeed -->
-        <foreach    items="§[machine_selector]§ [ melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]') ]"
+        <foreach    items="§[machine_selector]§ [ rhs-node[@mother-grid='§[grid.name]§']/volumes/volume[@name='§[vol.name]§'] ]"
                     item-name="srv" >
             <property name="ip"   value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="kp"   value="§[ melody:getInstanceKeyPairName(§[srv]§) ]§" />
 
-            <foreach    items="melody:getHeritedContent(§[srv]§, '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]')/brick"
+            <foreach    items="§[srv]§/rhs-node[@mother-grid='§[grid.name]§']/volumes/volume[@name='§[vol.name]§']/brick"
                         item-name="brick" >
                 <property name="brick.part"        value="§[ §[brick]§/@partition-name ]§" />
-                <property name="part.mount-point"  value="§[ melody:getHeritedContent(§[srv]§, '/partitions/partition[@name=&quot;§[brick.part]§&quot;]')/@mount-point ]§"/>
+                <property name="part.mount-point"  value="§[ §[srv]§/partitions/partition[@name='§[brick.part]§']/@mount-point ]§"/>
 
                 <ssh description="[gluster-metadata-delete:§[grid.name]§:§[vol.name]§]" host="§[ip]§" login="root" keypair-name="§[kp]§" >
                     <exec command="setfattr -x trusted.glusterfs.volume-id §[part.mount-point]§ 2&gt;/dev/null"/>

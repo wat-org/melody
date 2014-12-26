@@ -13,9 +13,8 @@ import com.wat.melody.common.firewall.exception.IllegalAccessException;
 import com.wat.melody.common.firewall.exception.IllegalDirectionsException;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameRefsException;
 import com.wat.melody.common.network.Addresses;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -54,16 +53,16 @@ public abstract class AbstractFireWallRulesLoader {
 	protected NetworkDeviceNameRefs loadNetworkDeviceNameRefs(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ DEVICES_NAME_ATTR, null);
+			String v = DocHelper.getAttributeValue(e,
+					"./@" + DEVICES_NAME_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return NetworkDeviceNameRefs.ALL;
 			}
 			try {
 				return NetworkDeviceNameRefs.parseString(v);
 			} catch (IllegalNetworkDeviceNameRefsException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ DEVICES_NAME_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e,
+						"./@" + DEVICES_NAME_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -76,15 +75,13 @@ public abstract class AbstractFireWallRulesLoader {
 	protected Addresses loadFromIps(Element e, Element instanceElmt)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ FROM_IPS_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + FROM_IPS_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
-			return FireWallRulesHelper.parseAddresses(
-					instanceElmt,
-					FilteredDocHelper.getHeritedAttribute(e, "/@"
-							+ FROM_IPS_ATTR, null), v);
+			return FireWallRulesHelper.parseAddresses(instanceElmt,
+					DocHelper.getAttribute(e, "./@" + FROM_IPS_ATTR, null), v);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -95,14 +92,13 @@ public abstract class AbstractFireWallRulesLoader {
 	protected Addresses loadToIps(Element e, Element instanceElmt)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ TO_IPS_ATTR, null);
+			String v = DocHelper
+					.getAttributeValue(e, "./@" + TO_IPS_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			return FireWallRulesHelper.parseAddresses(instanceElmt,
-					FilteredDocHelper.getHeritedAttribute(e,
-							"/@" + TO_IPS_ATTR, null), v);
+					DocHelper.getAttribute(e, "./@" + TO_IPS_ATTR, null), v);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -112,16 +108,16 @@ public abstract class AbstractFireWallRulesLoader {
 
 	protected Directions loadDirection(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ DIRECTIONS_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + DIRECTIONS_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return Directions.ALL;
 			}
 			try {
 				return Directions.parseString(v);
 			} catch (IllegalDirectionsException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ DIRECTIONS_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e, "./@" + DIRECTIONS_ATTR,
+						null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -133,16 +129,16 @@ public abstract class AbstractFireWallRulesLoader {
 
 	protected Access loadAccess(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ ACCESS_ATTR, null);
+			String v = DocHelper
+					.getAttributeValue(e, "./@" + ACCESS_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return Access.parseString(v);
 			} catch (IllegalAccessException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ ACCESS_ATTR, null);
+				Attr attr = DocHelper
+						.getAttribute(e, "./@" + ACCESS_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {

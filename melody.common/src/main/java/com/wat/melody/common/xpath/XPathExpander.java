@@ -159,7 +159,7 @@ public abstract class XPathExpander {
 	 *            is the evaluation context (can be a {@link Document} or a
 	 *            {@link Node}).
 	 * 
-	 * @return the evaluated expression, as a {@link Node}. Can be an empty
+	 * @return the evaluated expression, as a {@link NodeList}. Can be an empty
 	 *         list, if the expression doesn't match anything.
 	 * 
 	 * @throws IllegalArgumentException

@@ -17,9 +17,8 @@ import com.wat.melody.common.keypair.KeyPairRepositoryPath;
 import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.timeout.GenericTimeout;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -159,7 +158,7 @@ public class InstanceDatasLoader {
 	private GenericTimeout loadCreateTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+			String v = DocHelper.getAttributeValue(e, "./@"
 					+ TIMEOUT_CREATE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -167,7 +166,7 @@ public class InstanceDatasLoader {
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+				Attr attr = DocHelper.getAttribute(e, "./@"
 						+ TIMEOUT_CREATE_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
@@ -181,7 +180,7 @@ public class InstanceDatasLoader {
 	private GenericTimeout loadDeleteTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+			String v = DocHelper.getAttributeValue(e, "./@"
 					+ TIMEOUT_DELETE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -189,7 +188,7 @@ public class InstanceDatasLoader {
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+				Attr attr = DocHelper.getAttribute(e, "./@"
 						+ TIMEOUT_DELETE_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
@@ -203,16 +202,16 @@ public class InstanceDatasLoader {
 	private GenericTimeout loadStopTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ TIMEOUT_STOP_ATTR, null);
+			String v = DocHelper.getAttributeValue(e,
+					"./@" + TIMEOUT_STOP_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ TIMEOUT_STOP_ATTR, null);
+				Attr attr = DocHelper.getAttribute(e,
+						"./@" + TIMEOUT_STOP_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -225,7 +224,7 @@ public class InstanceDatasLoader {
 	private GenericTimeout loadStartTimeout(Element e)
 			throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
+			String v = DocHelper.getAttributeValue(e, "./@"
 					+ TIMEOUT_START_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -233,7 +232,7 @@ public class InstanceDatasLoader {
 			try {
 				return GenericTimeout.parseString(v);
 			} catch (IllegalTimeoutException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
+				Attr attr = DocHelper.getAttribute(e, "./@"
 						+ TIMEOUT_START_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}

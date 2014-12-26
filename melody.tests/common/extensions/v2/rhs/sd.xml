@@ -16,18 +16,18 @@
          caller can define 'machine_match_criteria' to target a subset of machines. -->
     <order name="do-operation-on-rhs-nodes">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhs-node'))"/>
+            <param name="machine_eligible_criteria"   value="exists(rhs-node)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhs-node"/>
         </call>
     </order>
 
     <order name="do-operation-on-rhs-node">
-        <property name="grid.name"      value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhs-node/@mother-grid') ]§"/>
+        <property name="grid.name"      value="§[ §[machine]§/rhs-node/@mother-grid ]§"/>
 
-        <property name="pilot"          value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]') and node()!=§[machine]§ ][1]"/>
+        <property name="pilot"          value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and rhs-node[@mother-grid='§[grid.name]§'] and node()!=§[machine]§ ][1]"/>
         <property name="pilot.cnx.ip"   value="§[ melody:getNetworkActivationHost(§[pilot]§) ]§"/>
         <property name="pilot.cnx.kp"   value="§[ melody:getInstanceKeyPairName  (§[pilot]§) ]§"/>
-        <property name="rhs.version"    value="§[ melody:getHeritedAttributeValue(§[pilot]§, '/rhs-node/@version') ]§"/>
+        <property name="rhs.version"    value="§[ §[pilot]§/rhs-node/@version ]§"/>
 
         <call orders="§[substring-after('§[callback.rhs.peer]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.peer]§','::')]§"/>
     </order>
@@ -38,7 +38,7 @@
     <order name="do-operation-on-rhs-grids">
         <foreach    items="./environment//rhs-grids/rhs-grid[ §[rhs_grid_match_criteria]§ ]"
                     item-name="grid">
-            <property name="grid.name" value="§[ melody:getHeritedAttributeValue(§[grid]§, '/@name') ]§"/>
+            <property name="grid.name" value="§[ §[grid]§/@name ]§"/>
 
             <call orders="§[substring-after('§[callback.rhs.grid]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.grid]§','::')]§"/>
         </foreach>
@@ -54,29 +54,29 @@
     </order>
 
     <order name="do-operation-on-rhs-volumes-on-single-rhs-grid">
-        <foreach    items="melody:getHeritedContent(§[grid]§, '/volumes/volume')"
+        <foreach    items="§[grid]§/volumes/volume"
                     item-name="volume">
-            <property name="vol.name" value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@name') ]§"/>
+            <property name="vol.name" value="§[ §[volume]§/@name ]§"/>
 
             <!-- build the bricks list of the volume -->
             <property name="bricks.list" value="§[
               string-join(
-                for $rhs_node in §[machine_selector]§ [ melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]') ]
-                return for $rhs_brick in melody:getHeritedContent($rhs_node, '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]/volumes/volume[ @name=&quot;§[vol.name]§&quot; ]')/brick
-                       return concat( melody:getNetworkActivationHost($rhs_node),':',melody:getHeritedAttributeValue($rhs_node, concat('/partitions/partition[@name=&quot;',$rhs_brick/@partition-name,'&quot;]/@mount-point')))
+                for $rhs_node in §[machine_selector]§ [ rhs-node [@mother-grid='§[grid.name]§']/volumes/volume[ @name='§[vol.name]§' ] ]
+                return for $rhs_brick in $rhs_node/rhs-node [@mother-grid='§[grid.name]§']/volumes/volume[ @name='§[vol.name]§' ]/brick
+                       return concat( melody:getNetworkActivationHost($rhs_node), ':', $rhs_node/partitions/partition[@name=$rhs_brick/@partition-name]/@mount-point)
               ,' ')
             ]§"/>
 
-            <property name="vol.striped"   value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@striped', '0') ]§"/>
+            <property name="vol.striped"   value="§[ melody:getAttributeValue(§[volume]§/@striped, '0') ]§"/>
             <property name="vol.striped"   value="§[ if (§[vol.striped]§ &lt; 2) then '0' else '§[vol.striped]§' ]§"/>
 
-            <property name="vol.replicated"   value="§[ melody:getHeritedAttributeValue(§[volume]§, '/@replicated', '0') ]§"/>
+            <property name="vol.replicated"   value="§[ melody:getAttributeValue(§[volume]§/@replicated, '0') ]§"/>
             <property name="vol.replicated"   value="§[ if (§[vol.replicated]§ &lt; 2) then '0' else '§[vol.replicated]§' ]§"/>
 
-            <property name="pilot"         value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and melody:getHeritedContent(., '/rhs-node [@mother-grid=&quot;§[grid.name]§&quot;]') ][1]"/>
+            <property name="pilot"         value="§[machine_selector]§ [ §[machine_exists_criteria]§ and §[machine_running_criteria]§ and §[machine_eligible_criteria]§ and §[machine_match_criteria]§ and rhs-node [@mother-grid='§[grid.name]§'] ][1]"/>
             <property name="pilot.cnx.ip"  value="§[ melody:getNetworkActivationHost(§[pilot]§) ]§"/>
             <property name="pilot.cnx.kp"  value="§[ melody:getInstanceKeyPairName  (§[pilot]§) ]§"/>
-            <property name="rhs.version"   value="§[ melody:getHeritedAttributeValue(§[pilot]§, '/rhs-node/@version') ]§"/>
+            <property name="rhs.version"   value="§[ §[pilot]§/rhs-node/@version ]§"/>
 
             <call orders="§[substring-after('§[callback.rhs.volume]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rhs.volume]§','::')]§"/>
         </foreach>

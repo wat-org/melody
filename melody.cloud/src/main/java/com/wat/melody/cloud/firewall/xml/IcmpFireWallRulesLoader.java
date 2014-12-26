@@ -18,9 +18,8 @@ import com.wat.melody.common.firewall.NetworkDeviceNameRefs;
 import com.wat.melody.common.firewall.exception.IllegalIcmpCodesException;
 import com.wat.melody.common.firewall.exception.IllegalIcmpTypesException;
 import com.wat.melody.common.network.Addresses;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -47,16 +46,14 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 
 	protected IcmpTypes loadIcmpTypes(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ TYPES_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + TYPES_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return IcmpTypes.parseString(v);
 			} catch (IllegalIcmpTypesException Ex) {
-				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ TYPES_ATTR, null);
+				Node attr = DocHelper.getAttribute(e, "./@" + TYPES_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -68,16 +65,14 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 
 	protected IcmpCodes loadIcmpCodes(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ CODES_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + CODES_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return IcmpCodes.parseString(v);
 			} catch (IllegalIcmpCodesException Ex) {
-				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ CODES_ATTR, null);
+				Node attr = DocHelper.getAttribute(e, "./@" + CODES_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {

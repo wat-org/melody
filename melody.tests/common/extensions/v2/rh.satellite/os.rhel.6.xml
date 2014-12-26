@@ -4,13 +4,13 @@
 <sequence basedir=".">
 
     <order name="rh-satellite-register-on-single-machine">
-        <property name="hwinfos"     value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@upload-hardware-infos') ]§"/>
+        <property name="hwinfos"     value="§[ §[machine]§/rhn/@upload-hardware-infos ]§"/>
         <property name="hwinfos"     value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§"/>
-        <property name="pkginfos"    value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@upload-packages-infos') ]§"/>
+        <property name="pkginfos"    value="§[ §[machine]§/rhn/@upload-packages-infos ]§"/>
         <property name="pkginfos"    value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§"/>
-        <property name="virtinfos"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@upload-virtualization-infos') ]§"/>
+        <property name="virtinfos"   value="§[ §[machine]§/rhn/@upload-virtualization-infos ]§"/>
         <property name="virtinfos"   value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§"/>
-        <property name="rhnsd"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@start-rhnsd') ]§"/>
+        <property name="rhnsd"       value="§[ §[machine]§/rhn/@start-rhnsd ]§"/>
         <property name="rhnsd"       value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§"/>
 
         <ssh description="[rhn-register:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
@@ -65,7 +65,7 @@ exit ${ret}
         </ssh>
 
         <!-- set the base channel, if any (should be only one) -->
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/rhn/base-channel')"
+        <foreach    items="§[machine]§/rhn/base-channel"
                     item-name="channel">
             <property name="channel_name" value="§[§[channel]§/@name]§"/>
 
@@ -111,7 +111,7 @@ exit $?
         </foreach>
 
         <!-- set each child channel, if any (should be none or many) -->
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/rhn/channel')"
+        <foreach    items="§[machine]§/rhn/channel"
                     item-name="channel"
                     max-par="1">
             <property name="channel_name" value="§[§[channel]§/@name]§"/>

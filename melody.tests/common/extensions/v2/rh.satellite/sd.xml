@@ -32,13 +32,13 @@
 
     <order name="do-operation-on-rhn">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhn'))"/>
+            <param name="machine_eligible_criteria"   value="exists(rhn)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhn-on-single-machine"/>
         </call>
     </order>
 
     <order name="do-operation-on-rhn-on-single-machine">
-        <property name="profile.name"         value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhn/@profile-name') ]§"/>
+        <property name="profile.name"         value="§[ §[machine]§/rhn/@profile-name ]§"/>
 
         <property name="rhn.server.ip"        value="§[./environment/rhn/profile[@name='§[profile.name]§']/serverip/text()]§"/>
         <property name="rhn.user.login"       value="§[./environment/rhn/profile[@name='§[profile.name]§']/login/text()]§"/>
@@ -51,13 +51,13 @@
 
     <order name="do-operation-on-rhsm">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/rhsm'))"/>
+            <param name="machine_eligible_criteria"   value="exists(rhsm)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-rhsm-on-single-machine"/>
         </call>
     </order>
 
     <order name="do-operation-on-rhsm-on-single-machine">
-        <property name="profile.name"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rhsm/@profile-name') ]§"/>
+        <property name="profile.name"            value="§[ §[machine]§/rhsm/@profile-name ]§"/>
 
         <property name="rhsm.server.ip"          value="§[./environment/rhsm/profile[@name='§[profile.name]§']/serverip/text()]§"/>
         <property name="rhsm.user.login"         value="§[./environment/rhsm/profile[@name='§[profile.name]§']/login/text()]§"/>

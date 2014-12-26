@@ -13,7 +13,7 @@
 
     <order name="do-operation-on-epels">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="exists(melody:getHeritedContent(., '/packages/package[ @repo=&quot;epel&quot; ]'))"/>
+            <param name="machine_eligible_criteria"   value="exists(packages/package[ @repo='epel' ])"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-packages-on-single-machine"/>
         </call>
     </order>

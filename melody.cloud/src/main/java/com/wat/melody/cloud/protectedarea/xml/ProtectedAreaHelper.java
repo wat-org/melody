@@ -20,10 +20,8 @@ import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaIdExcept
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.xml.DocHelper;
-import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -84,7 +82,7 @@ public abstract class ProtectedAreaHelper {
 
 	private static Attr getProtectedAreaSelectorAttr(Element elmt) {
 		try {
-			return FilteredDocHelper.getHeritedAttribute(elmt, "/"
+			return DocHelper.getAttribute(elmt, "./"
 					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
 					+ PROTECTED_AREA_SELECTOR, DEFAULT_PROTECTED_AREA_SELECTOR);
 		} catch (XPathExpressionException bug) {
@@ -104,8 +102,8 @@ public abstract class ProtectedAreaHelper {
 				return convertProtectedAreaFromNamesToIds(instanceElmt, names,
 						region);
 			} catch (Exception Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
 				throw new NodeRelatedException(attr,
 						"Failed to get Protected Area Identifiers from Protected "
 								+ "Area Names.", Ex);
@@ -182,7 +180,7 @@ public abstract class ProtectedAreaHelper {
 				Element e = (Element) nl.item(i);
 				String nRegion = null;
 				try {
-					nRegion = XPathHelper.getHeritedAttributeValue(e, "/@"
+					nRegion = DocHelper.getAttributeValue(e, "./@"
 							+ ProtectedAreaDatasLoader.REGION_ATTR, null);
 				} catch (XPathExpressionException bug) {
 					throw new RuntimeException("Because the XPath Expression "

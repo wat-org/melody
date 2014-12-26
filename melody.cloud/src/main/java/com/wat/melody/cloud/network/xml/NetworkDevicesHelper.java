@@ -11,7 +11,6 @@ import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.messages.Msg;
-import com.wat.melody.common.xml.FilteredDocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
@@ -67,8 +66,8 @@ public abstract class NetworkDevicesHelper {
 	public static Element findNetworkManagementElement(Element instanceElmt) {
 		NodeList nl = null;
 		try {
-			nl = FilteredDocHelper.getHeritedContent(instanceElmt,
-					NETWORK_MGMT_ELEMENT_SELECTOR);
+			nl = XPathExpander.evaluateAsNodeList("."
+					+ NETWORK_MGMT_ELEMENT_SELECTOR, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexpected error while evaluating "
 					+ "the herited content of '"
@@ -104,8 +103,8 @@ public abstract class NetworkDevicesHelper {
 	 */
 	public static String getNetworkDeviceElementsSelector(Element mgmtElmt) {
 		try {
-			return mgmtElmt.getAttributeNode(
-					NETWORK_DEVICE_ELEMENTS_SELECTOR).getNodeValue();
+			return mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR)
+					.getNodeValue();
 		} catch (NullPointerException Ex) {
 			return DEFAULT_NETOWRK_DEVICE_ELEMENTS_SELECTOR;
 		}

@@ -64,27 +64,27 @@
          caller can define 'machine_match_criteria' to target a subset of machines. -->
     <order name="do-operation-on-postgresql-servers">
         <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="melody:getHeritedContent(., '[exists(rdb-server)]')"/>
+            <param name="machine_eligible_criteria"   value="exists(rdb-server)"/>
             <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-postgresql-server-on-single-machine"/>
         </call>
     </order>
 
     <order name="do-operation-on-postgresql-server-on-single-machine">
-        <property name="rdbs.path"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@path') ]§"/>
-        <property name="rdbs.name"                 value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@name', 'postgres') ]§"/>
-        <property name="rdbs.version"              value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/@version') ]§"/>
-        <property name="rdbs.owner"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/owner/@login') ]§"/>
-        <property name="rdbs.owner.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@id') ]§"/>
-        <property name="rdbs.owner.pwd"            value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@password') ]§"/>
-        <property name="rdbs.owner.home-dir"       value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@homedir') ]§"/>
-        <property name="rdbs.group"                value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/user[@name=&quot;§[rdbs.owner]§&quot;]/@ref-group-name') ]§"/>
-        <property name="rdbs.group.id"             value="§[ melody:getHeritedAttributeValue(§[machine]§, '/credentials/group[@name=&quot;§[rdbs.group]§&quot;]/@id') ]§"/>
-        <property name="rdbs.listen.device"        value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@device', 'eth0') ]§"/>
-        <property name="rdbs.listen.port-offset"   value="§[ melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/@port-offset', '0') ]§"/>
-        <property name="rdbs.listen.port.tcp"      value="§[ number(melody:getHeritedAttributeValue(§[machine]§, '/rdb-server/listen-on/socket[@name=''tcp'']/@port', '5432')) + §[rdbs.listen.port-offset]§ ]§"/>
+        <property name="rdbs.path"                 value="§[ §[machine]§/rdb-server/@path ]§"/>
+        <property name="rdbs.name"                 value="§[ melody:getAttributeValue(§[machine]§/rdb-server/@name, 'postgres') ]§"/>
+        <property name="rdbs.version"              value="§[ §[machine]§/rdb-server/@version ]§"/>
+        <property name="rdbs.owner"                value="§[ §[machine]§/rdb-server/owner/@login ]§"/>
+        <property name="rdbs.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@id ]§"/>
+        <property name="rdbs.owner.pwd"            value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@password ]§"/>
+        <property name="rdbs.owner.home-dir"       value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@homedir ]§"/>
+        <property name="rdbs.group"                value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@ref-group-name ]§"/>
+        <property name="rdbs.group.id"             value="§[ §[machine]§/credentials/group[@name='§[rdbs.group]§']/@id ]§"/>
+        <property name="rdbs.listen.device"        value="§[ melody:getAttributeValue(§[machine]§/rdb-server/listen-on/@device, 'eth0') ]§"/>
+        <property name="rdbs.listen.port-offset"   value="§[ melody:getAttributeValue(§[machine]§/rdb-server/listen-on/@port-offset, '0') ]§"/>
+        <property name="rdbs.listen.port.tcp"      value="§[ number(melody:getAttributeValue(§[machine]§/rdb-server/listen-on/socket[@name='tcp']/@port, '5432')) + §[rdbs.listen.port-offset]§ ]§"/>
         <property name="rdbs.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@ip ]§"/>
         <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@fqdn ]§"/>
-        <property name="realm"                     value="§[ melody:getHeritedAttributeValue(§[machine]§, '/kerberos-host/@realm') ]§"/>
+        <property name="realm"                     value="§[ §[machine]§/kerberos-host/@realm ]§"/>
 
         <call orders="§[substring-after('§[callback.rdbs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.rdbs]§','::')]§"/>
     </order>
@@ -153,7 +153,7 @@ exit 0
         <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
 
         <!-- customize / application scope -->
-        <foreach    items="melody:getHeritedContent(§[machine]§, '/rdb-server/applications/application')"
+        <foreach    items="§[machine]§/rdb-server/applications/application"
                     item-name="application"
                     max-par="1">
             <property name="appli.name"      value="§[§[application]§/@name]§"/>

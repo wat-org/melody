@@ -18,9 +18,8 @@ import com.wat.melody.common.keypair.KeyPairSize;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairNameException;
 import com.wat.melody.common.keypair.exception.IllegalKeyPairSizeException;
 import com.wat.melody.common.keypair.exception.KeyPairRepositoryPathException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -97,7 +96,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.REGION_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -138,7 +137,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.SITE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -179,7 +178,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.IMAGEID_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -220,7 +219,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.INSTANCETYPE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -228,8 +227,8 @@ public abstract class InstanceDatasHelper {
 			try {
 				return InstanceType.parseString(v);
 			} catch (IllegalInstanceTypeException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.INSTANCETYPE_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.INSTANCETYPE_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -262,7 +261,7 @@ public abstract class InstanceDatasHelper {
 	public static KeyPairRepositoryPath findInstanceKeyPairRepositoryPath(
 			Element instanceElmt) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.KEYPAIR_REPO_ATTR, null);
 			if (instanceElmt == null) {
 				throw new IllegalArgumentException("null: Not accepted. "
@@ -275,8 +274,8 @@ public abstract class InstanceDatasHelper {
 			try {
 				return new KeyPairRepositoryPath(v);
 			} catch (KeyPairRepositoryPathException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.KEYPAIR_REPO_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.KEYPAIR_REPO_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -314,7 +313,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.KEYPAIR_NAME_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -322,8 +321,8 @@ public abstract class InstanceDatasHelper {
 			try {
 				return KeyPairName.parseString(v);
 			} catch (IllegalKeyPairNameException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.KEYPAIR_NAME_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.KEYPAIR_NAME_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -361,7 +360,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.PASSPHRASE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -402,7 +401,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.KEYPAIR_SIZE_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -410,8 +409,8 @@ public abstract class InstanceDatasHelper {
 			try {
 				return KeyPairSize.parseString(v);
 			} catch (IllegalKeyPairSizeException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.KEYPAIR_SIZE_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.KEYPAIR_SIZE_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -449,7 +448,7 @@ public abstract class InstanceDatasHelper {
 					+ ".");
 		}
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(instanceElmt, "/@"
+			String v = DocHelper.getAttributeValue(instanceElmt, "./@"
 					+ InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
@@ -457,8 +456,8 @@ public abstract class InstanceDatasHelper {
 			try {
 				return ProtectedAreaNames.parseString(v);
 			} catch (IllegalProtectedAreaNamesException Ex) {
-				Attr attr = FilteredDocHelper.getHeritedAttribute(instanceElmt,
-						"/@" + InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
+				Attr attr = DocHelper.getAttribute(instanceElmt, "./@"
+						+ InstanceDatasLoader.PROTECTED_AREAS_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {

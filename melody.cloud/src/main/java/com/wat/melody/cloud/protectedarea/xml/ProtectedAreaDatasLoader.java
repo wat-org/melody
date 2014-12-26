@@ -11,9 +11,8 @@ import com.wat.melody.cloud.protectedarea.ProtectedAreaDatasValidator;
 import com.wat.melody.cloud.protectedarea.ProtectedAreaName;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaDatasException;
 import com.wat.melody.cloud.protectedarea.exception.IllegalProtectedAreaNameException;
-import com.wat.melody.common.xml.FilteredDocHelper;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
-import com.wat.melody.xpathextensions.XPathHelper;
 
 /**
  * 
@@ -53,8 +52,8 @@ public class ProtectedAreaDatasLoader {
 
 	private String loadRegion(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ REGION_ATTR, null);
+			String v = DocHelper
+					.getAttributeValue(e, "./@" + REGION_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
@@ -68,16 +67,14 @@ public class ProtectedAreaDatasLoader {
 
 	private ProtectedAreaName loadName(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e,
-					"/@" + NAME_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + NAME_ATTR, null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
 			try {
 				return ProtectedAreaName.parseString(v);
 			} catch (IllegalProtectedAreaNameException Ex) {
-				Node attr = FilteredDocHelper.getHeritedAttribute(e, "/@"
-						+ NAME_ATTR, null);
+				Node attr = DocHelper.getAttribute(e, "./@" + NAME_ATTR, null);
 				throw new NodeRelatedException(attr, Ex);
 			}
 		} catch (XPathExpressionException bug) {
@@ -89,8 +86,8 @@ public class ProtectedAreaDatasLoader {
 
 	private String loadDescription(Element e) throws NodeRelatedException {
 		try {
-			String v = XPathHelper.getHeritedAttributeValue(e, "/@"
-					+ DESCRIPTION_ATTR, null);
+			String v = DocHelper.getAttributeValue(e, "./@" + DESCRIPTION_ATTR,
+					null);
 			if (v == null || v.length() == 0) {
 				return null;
 			}
