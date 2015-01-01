@@ -131,7 +131,7 @@
             <update-firewall target="§[srv]§" />
             <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
             <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' fireWall rules updated§[adm_ip]§." />
+            <echo message="+ virtual machine '§[id]§' fire-wall rules updated§[adm_ip]§." />
         </foreach>
 
         <echo message="-- FireWall rules updated." />

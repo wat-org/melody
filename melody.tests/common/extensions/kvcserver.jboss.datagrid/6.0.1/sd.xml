@@ -370,7 +370,7 @@ echo "Private Key '§[kvcs.mgnt.key.alias]§' successfully generated in Server k
         </set-xml-attributes>
 
         <!-- register administrators -->
-        <foreach    items="melody:getHeritedContent(§[kvcs]§, '/administrators/user')"
+        <foreach    items="§[kvcs]§/administrators/user"
                     item-name="admin">
             <property name="admin.login" value="§[ §[admin]§/@login ]§"/>
             <property name="admin.pass"  value="§[ §[machine]§/credentials/credential[@login='§[admin.login]§']/@password ]§"/>

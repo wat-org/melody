@@ -14,7 +14,7 @@
 
 			<echo message="instance '§[name]§' as IP '§[ip]§'"/>
 
-			<foreach	items="melody:getHeritedContent(§[srv]§, '/packages/package')"
+			<foreach	items="§[srv]§/packages/package"
 						item-name="pkg">
 				<property name="pkgname" value="§[§[pkg]§/@name]§"/>
 				<property name="pkgarch" value="§[§[pkg]§/@arch]§"/>
