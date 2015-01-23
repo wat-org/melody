@@ -36,31 +36,31 @@
 		<dependency>
 			<groupId>org.eclipse.tycho</groupId>
 			<artifactId>org.eclipse.osgi</artifactId>
-			<version>3.9.1.v20130814-1242</version>
+			<version>3.10.0.v20140606-1445</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.9</version>
 		</dependency>
 		<!-- because org.jboss.security.vault.SecurityVaultFactory uses JUL, we 
 			need a bridge from JUL (e.g. java.util.logging) to SLF4J. -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.9</version>
 		</dependency>
 		<!-- because Melody Plug-In for AWS and LibVirt uses jar that uses JCL 
 			(e.g. apache commons logging), we need a bridge from JCL to SLF4J. -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.9</version>
 		</dependency>
 	</dependencies>
 
