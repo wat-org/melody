@@ -29,8 +29,9 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 
 	/**
-	 * The default value of the XML Nested element of an Instance Element, which
-	 * contains the definition of an ICMP FireWall Rule.
+	 * The default value of the XML Nested element of an Instance Element or a
+	 * Protected Area Element, which contains the definition of an ICMP FireWall
+	 * Rule.
 	 */
 	public static final String DEFAULT_ICMP_FIREWALL_RULE_ELEMENT = "icmp";
 
@@ -85,7 +86,8 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	/**
 	 * <p>
 	 * Find the ICMP FireWall Rule {@link Element}s of the given Instance
-	 * {@link Element} and convert it into a {@link FireWallRulesPerDevice}.
+	 * {@link Element} or a Protected Area {@link Element} and convert it into a
+	 * {@link FireWallRulesPerDevice}.
 	 * </p>
 	 * 
 	 * <p>
@@ -103,28 +105,27 @@ public class IcmpFireWallRulesLoader extends AbstractFireWallRulesLoader {
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance or a
+	 *            Protected Area.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Element}'s attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Element instanceElmt)
-			throws NodeRelatedException {
+	public FireWallRulesPerDevice load(Element e) throws NodeRelatedException {
 		List<Element> icmpFireRuleElmts = FireWallRulesHelper
-				.findIcmpFireWallRules(instanceElmt);
+				.findIcmpFireWallRules(e);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element icmpFireRuleElmt : icmpFireRuleElmts) {
 			Directions dirs = loadDirection(icmpFireRuleElmt);
-			Addresses fromAddresses = loadFromIps(icmpFireRuleElmt,
-					instanceElmt);
-			Addresses toAddresses = loadToIps(icmpFireRuleElmt, instanceElmt);
+			Addresses fromAddresses = loadFromIps(icmpFireRuleElmt, e);
+			Addresses toAddresses = loadToIps(icmpFireRuleElmt, e);
 			if (fromAddresses == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);

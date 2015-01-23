@@ -20,15 +20,15 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 public class UdpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 
 	/**
-	 * The default value of the XML Nested element of an Instance Element, which
-	 * contains the definition of an UDP FireWall Rule.
+	 * The default value of the XML Nested element of an Instance Element or a
+	 * Protected Area Element, which contains the definition of an UDP FireWall
+	 * Rule.
 	 */
 	public static final String DEFAULT_UDP_FIREWALL_RULE_ELEMENT = "udp";
 
 	@Override
-	public List<Element> findFwRuleNodes(Element instanceElmt)
-			throws NodeRelatedException {
-		return FireWallRulesHelper.findUdpFireWallRules(instanceElmt);
+	public List<Element> findFwRuleNodes(Element e) throws NodeRelatedException {
+		return FireWallRulesHelper.findUdpFireWallRules(e);
 	}
 
 	@Override

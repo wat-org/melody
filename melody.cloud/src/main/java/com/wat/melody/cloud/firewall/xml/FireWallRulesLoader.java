@@ -22,7 +22,8 @@ public class FireWallRulesLoader {
 	/**
 	 * <p>
 	 * Find the FireWall Rule {@link Element}s of the given Instance
-	 * {@link Element} and convert it into a {@link FireWallRulesPerDevice}.
+	 * {@link Element} or a Protected Area {@link Element} and convert it into a
+	 * {@link FireWallRulesPerDevice}.
 	 * </p>
 	 * 
 	 * <p>
@@ -58,23 +59,23 @@ public class FireWallRulesLoader {
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance or a
+	 *            Protected Area.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Element}'s attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Element instanceElmt)
-			throws NodeRelatedException {
+	public FireWallRulesPerDevice load(Element e) throws NodeRelatedException {
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
-		fwrs.merge(new TcpFireWallRulesLoader().load(instanceElmt));
-		fwrs.merge(new UdpFireWallRulesLoader().load(instanceElmt));
-		fwrs.merge(new IcmpFireWallRulesLoader().load(instanceElmt));
+		fwrs.merge(new TcpFireWallRulesLoader().load(e));
+		fwrs.merge(new UdpFireWallRulesLoader().load(e));
+		fwrs.merge(new IcmpFireWallRulesLoader().load(e));
 		return fwrs;
 	}
 

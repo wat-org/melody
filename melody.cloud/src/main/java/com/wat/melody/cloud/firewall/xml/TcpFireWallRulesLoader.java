@@ -20,15 +20,15 @@ import com.wat.melody.common.xml.exception.NodeRelatedException;
 public class TcpFireWallRulesLoader extends AbstractTcpUdpFireWallRulesLoader {
 
 	/**
-	 * The default value of the XML Nested element of an Instance Element, which
-	 * contains the definition of a TCP FireWall Rule.
+	 * The default value of the XML Nested element of an Instance Element or a
+	 * Protected Area Element, which contains the definition of a TCP FireWall
+	 * Rule.
 	 */
 	public static final String DEFAULT_TCP_FIREWALL_RULE_ELEMENT = "tcp";
 
 	@Override
-	public List<Element> findFwRuleNodes(Element instanceElmt)
-			throws NodeRelatedException {
-		return FireWallRulesHelper.findTcpFireWallRules(instanceElmt);
+	public List<Element> findFwRuleNodes(Element e) throws NodeRelatedException {
+		return FireWallRulesHelper.findTcpFireWallRules(e);
 	}
 
 	@Override

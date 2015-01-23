@@ -58,7 +58,7 @@ public abstract class DiskDevicesHelper {
 	 *         element has no Disk Management Element ;</li>
 	 *         <li>{@link #DEFAULT_DISK_DEVICE_ELEMENTS_SELECTOR}, if the given
 	 *         element has a Disk Management Element which has no Custom Disk
-	 *         Devices Selector is defined in ;</li>
+	 *         Devices Selector defined in ;</li>
 	 *         <li>The Custom Disk Devices Selector defined in the given
 	 *         element's Disk Management Element ;</li>
 	 *         </ul>
@@ -86,7 +86,7 @@ public abstract class DiskDevicesHelper {
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance.
 	 * 
-	 * @return all Disk Device {@link Element}s of the given Instance. Can be an
+	 * @return all Disk Device {@link Element}s of the given element. Can be an
 	 *         empty list.
 	 * 
 	 * @throws IllegalArgumentException
@@ -94,10 +94,10 @@ public abstract class DiskDevicesHelper {
 	 * @throws NodeRelatedException
 	 *             <ul>
 	 *             <li>if the Custom Disk Devices Selector (found in the given
-	 *             Instance's Disk Management Element) is not a valid XPath
+	 *             element's Disk Management Element) is not a valid XPath
 	 *             Expression ;</li>
 	 *             <li>if the Custom Disk Devices Selector (found in the given
-	 *             Instance's Disk Management Element) doesn't select
+	 *             element's Disk Management Element) doesn't select
 	 *             {@link Element}s ;</li>
 	 *             </ul>
 	 */

@@ -90,7 +90,7 @@ public abstract class NetworkActivatorFactoryRelatedToAnInstanceElement {
 							new NodeRelatedException(instanceElmt, Msg.bind(
 									Messages.NetMgmtEx_MISSING, ne)));
 				}
-				// if no Network Activation is defined
+				// if no Network Activation Protocol is defined
 				String attr = NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR;
 				throw new IllegalNetworkActivationDatasException(
 						new NodeRelatedException(mgmtElmt, Msg.bind(

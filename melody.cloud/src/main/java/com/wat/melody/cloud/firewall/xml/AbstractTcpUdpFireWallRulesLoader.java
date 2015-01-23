@@ -82,8 +82,9 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 
 	/**
 	 * <p>
-	 * Find the TCP/UDP FireWall Rule {@link Element}s of the given Instance
-	 * {@link Element} and convert it into a {@link FireWallRulesPerDevice}.
+	 * Find the TCP/UDP FireWall Rule {@link Element}s of the given given
+	 * Instance {@link Element} or a Protected Area {@link Element} and convert
+	 * it into a {@link FireWallRulesPerDevice}.
 	 * </p>
 	 * 
 	 * <p>
@@ -101,26 +102,26 @@ public abstract class AbstractTcpUdpFireWallRulesLoader extends
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance or a
+	 *            Protected Area.
 	 * 
 	 * @return a {@link FireWallRulesPerDevice} object.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance {@link Element} is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             if the conversion failed (ex : the content of a FireWall Rule
 	 *             {@link Element}'s attribute is not valid).
 	 */
-	public FireWallRulesPerDevice load(Element instanceElmt)
-			throws NodeRelatedException {
-		List<Element> fireWallRuleElmts = findFwRuleNodes(instanceElmt);
+	public FireWallRulesPerDevice load(Element e) throws NodeRelatedException {
+		List<Element> fireWallRuleElmts = findFwRuleNodes(e);
 
 		FireWallRulesPerDevice fwrs = new FireWallRulesPerDevice();
 		for (Element fireWallRuleElmt : fireWallRuleElmts) {
 			Directions dirs = loadDirection(fireWallRuleElmt);
-			Addresses fromIps = loadFromIps(fireWallRuleElmt, instanceElmt);
-			Addresses toIps = loadToIps(fireWallRuleElmt, instanceElmt);
+			Addresses fromIps = loadFromIps(fireWallRuleElmt, e);
+			Addresses toIps = loadToIps(fireWallRuleElmt, e);
 			if (fromIps == null && dirs.contains(Direction.IN)) {
 				if (dirs.contains(Direction.OUT)) {
 					dirs.remove(Direction.IN);
