@@ -11,6 +11,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import net.sf.saxon.lib.FeatureKeys;
+import net.sf.saxon.xpath.XPathFactoryImpl;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -35,10 +38,18 @@ public abstract class XPathExpander {
 	 * TODO : XQuery doesn't support 'order by' and 'where'....
 	 */
 
+	private static final XPathFactoryImpl _xpathFactory;
 	static {
 		// Specify we want the 'saxon XPath 2.0 resolver'
 		System.setProperty("javax.xml.transform.TransformerFactory",
 				"net.sf.saxon.TransformerFactoryImpl");
+		// Create an XPath Saxon Factory
+		_xpathFactory = (XPathFactoryImpl) XPathFactory.newInstance();
+		// Set our custom error listener
+		_xpathFactory.getConfiguration().setConfigurationProperty(
+				FeatureKeys.ERROR_LISTENER_CLASS,
+				XPathErrorListener.class.getCanonicalName());
+
 	}
 
 	/**
@@ -61,7 +72,7 @@ public abstract class XPathExpander {
 	 *         the given {@link XPathResolver}.
 	 */
 	public static XPath newXPath(XPathResolver xpathResolver) {
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPath xpath = _xpathFactory.newXPath();
 		if (xpathResolver != null) {
 			xpath.setNamespaceContext(xpathResolver
 					.getXPathNamespaceContextResolver());
@@ -217,8 +228,8 @@ public abstract class XPathExpander {
 	 *            is the evaluation context (can be a {@link Document} or a
 	 *            {@link Node}).
 	 * 
-	 * @return the evaluated expression, as a {@link Node}. Can be an empty
-	 *         list, if the expression doesn't match anything.
+	 * @return the evaluated expression, as a {@link Node}. Can be <tt>null</tt>
+	 *         , if the expression doesn't match anything.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given context is <tt>null</tt>.

@@ -89,8 +89,7 @@ public abstract class Parser {
 		InputStream is = null;
 		try {
 			is = new FileInputStream(file);
-			Document doc = parse(new InputSource(is));
-			trackSource(doc, file.toString());
+			Document doc = parse(new InputSource(is), file.toString());
 			return doc;
 		} finally {
 			if (is != null) {
@@ -130,8 +129,7 @@ public abstract class Parser {
 		StringReader sr = null;
 		try {
 			sr = new StringReader(xml);
-			Document doc = parse(new InputSource(sr));
-			trackSource(doc, "input string");
+			Document doc = parse(new InputSource(sr), "input string");
 			return doc;
 		} finally {
 			if (sr != null) {
@@ -153,19 +151,16 @@ public abstract class Parser {
 	 * @throws SAXException
 	 *             {@inheritDoc}
 	 */
-	private static Document parse(InputSource is) throws IOException,
-			SAXException {
-		MySAXHandler handler = new MySAXHandler();
+	private static Document parse(InputSource is, String source)
+			throws IOException, SAXException {
+		MySAXHandler handler = new MySAXHandler(source);
 		SAXParser parser = handler.getParser();
 		parser.parse(is, handler);
 		return handler.getDocument();
 	}
 
-	private static void trackSource(Document doc, String location) {
-		Node n = doc.getFirstChild();
-		if (n != null) {
-			n.setUserData(SOURCE, location, GenericCloneUserDataHandler);
-		}
+	protected static void trackSource(Element e, String location) {
+		e.setUserData(SOURCE, location, GenericCloneUserDataHandler);
 	}
 
 	protected static void trackLineNumber(Element e, int lineNumber) {
@@ -187,8 +182,9 @@ class MySAXHandler extends DefaultHandler2 {
 	private Stack<Element> _elementStack = new Stack<Element>();
 	private StringBuilder _textBuilder = new StringBuilder();
 	private Locator _locator;
+	private String _source;
 
-	public MySAXHandler() {
+	public MySAXHandler(String source) {
 		SAXParser parser;
 		try {
 			parser = SAXParserFactory.newInstance().newSAXParser();
@@ -208,8 +204,24 @@ class MySAXHandler extends DefaultHandler2 {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
+		setSource(source);
 		setParser(parser);
 		setDocument(DocHelper.newDocument());
+	}
+
+	public String getSource() {
+		return _source;
+	}
+
+	public String setSource(String source) {
+		if (source == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		String previous = getSource();
+		_source = source;
+		return previous;
 	}
 
 	public SAXParser getParser() {
@@ -259,6 +271,7 @@ class MySAXHandler extends DefaultHandler2 {
 		for (int i = 0; i < attributes.getLength(); i++) {
 			el.setAttribute(attributes.getQName(i), attributes.getValue(i));
 		}
+		Parser.trackSource(el, getSource());
 		Parser.trackLineNumber(el, _locator.getLineNumber());
 		Parser.trackColumnNumber(el, _locator.getColumnNumber());
 		_elementStack.push(el);

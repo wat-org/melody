@@ -158,11 +158,11 @@ public abstract class FilteredDocHelper {
 				 */
 				continue;
 			}
-			// remove herited attr in n
+			// remove 'herit' attr in node
 			n.removeAttribute(FilteredDoc.HERIT_ATTR);
-			// clone the parent (deep clone)
+			// clone the heritedparent (deep clone)
 			Element hpc = (Element) doc.importNode(parent, true);
-			// remove UUID in the cloned parent
+			// remove UUID in the heritedparentclone subtree
 			NodeList uuidsToRemove = null;
 			try {
 				uuidsToRemove = XPathExpander.evaluateAsNodeList(
@@ -179,15 +179,24 @@ public abstract class FilteredDocHelper {
 				Attr attr = (Attr) uuidToRemove;
 				attr.getOwnerElement().removeAttributeNode(attr);
 			}
-			Element nc = n.getOwnerDocument().createElement(n.getNodeName());
+			// clone node, so that we keep user data
+			Element nc = (Element) n.cloneNode(false);
+			// remove all attrs in nodeclone
+			while (nc.hasAttributes()) {
+				nc.removeAttributeNode((Attr) nc.getAttributes().item(0));
+			}
+			// move heritedparentclone's child into nodeclone
 			while (hpc.hasChildNodes()) {
 				nc.appendChild(hpc.getFirstChild());
 			}
+			// copy heritedparentclone's attr into nodeclone
 			for (int j = 0; j < hpc.getAttributes().getLength(); j++) {
 				Attr attr = (Attr) hpc.getAttributes().item(j);
 				nc.setAttribute(attr.getName(), attr.getValue());
 			}
+			// merge node into nodeclone
 			mergeElement(n, nc, null);
+			// replace node by nodeclone
 			n.getParentNode().replaceChild(nc, n);
 		}
 		DUNIDDocHelper.addDUNID(doc.getFirstChild());
@@ -223,7 +232,34 @@ public abstract class FilteredDocHelper {
 			if (heritPolicy == null || heritPolicy.length() == 0
 					|| heritPolicy.equals("merge")) {
 				destchild = findMatchingChildElement(dest, sourcechild);
-				mergeElement(sourcechild, destchild, dest);
+				Element scc = destchild;
+				if (destchild != null) {
+					// clone source child, so that we keep user data
+					scc = (Element) sourcechild.cloneNode(false);
+					// remove all sourcechildclone's attr
+					while (scc.hasAttributes()) {
+						scc.removeAttributeNode((Attr) scc.getAttributes()
+								.item(0));
+					}
+					// clone destchild
+					Element dcc = (Element) destchild.cloneNode(true);
+					// move destchildclone's child into the sourcechildclone
+					while (dcc.hasChildNodes()) {
+						scc.appendChild(dcc.getFirstChild());
+					}
+					// copy destchildclone's attr into sourcechildclone
+					for (int j = 0; j < dcc.getAttributes().getLength(); j++) {
+						Attr attr = (Attr) dcc.getAttributes().item(j);
+						scc.setAttribute(attr.getName(), attr.getValue());
+					}
+				}
+				// merge sourcechild into sourcechildclone
+				mergeElement(sourcechild, scc, dest);
+				// replace destchild by sourcechildclone
+				if (destchild != null) {
+					dest.replaceChild(scc, destchild);
+				}
+				// remove sourcechild, so that next loop will act on next child
 				if (sourcechild.getParentNode() == source) {
 					source.removeChild(sourcechild);
 				}

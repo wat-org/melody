@@ -39,19 +39,8 @@ public abstract class LocationAbstract implements Location {
 
 	@Override
 	public String getSource() {
-		Element n = getRelatedElement();
-		String source = null;
-		while (n != null) {
-			source = (String) n.getUserData(Parser.SOURCE);
-			if (source != null) {
-				return source;
-			}
-			if (n.getParentNode().getNodeType() != Node.ELEMENT_NODE) {
-				return null;
-			}
-			n = (Element) n.getParentNode();
-		}
-		return null;
+		Object source = getRelatedElement().getUserData(Parser.SOURCE);
+		return (source == null) ? null : (String) source;
 	}
 
 	@Override

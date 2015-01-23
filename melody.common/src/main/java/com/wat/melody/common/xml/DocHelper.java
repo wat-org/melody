@@ -390,8 +390,8 @@ public abstract class DocHelper {
 	 *         the given context), or an {link Attr} containing the given
 	 *         default value if the given expression doesn't match anything and
 	 *         if the given default value is not <tt>null</tt>,or <tt>null</tt>
-	 *         if the the given default value if the given expression doesn't
-	 *         match anything and if the given default value is <tt>null</tt>.
+	 *         if the given expression doesn't match anything and if the given
+	 *         default value is <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given context is <tt>null</tt>.
@@ -413,6 +413,9 @@ public abstract class DocHelper {
 			d = (Document) ctx;
 		} else {
 			d = ctx.getOwnerDocument();
+		}
+		if (defval == null) {
+			return null;
 		}
 		attr = d.createAttribute("default");
 		attr.setValue(defval);
