@@ -269,6 +269,17 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 
 	public void updateInstanceDiskDevices(DiskDeviceList target)
 			throws OperationException, InterruptedException {
+		if (target == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ DiskDeviceList.class.getCanonicalName() + ".");
+		}
+		if (target.size() == 0) {
+			throw new RuntimeException("Cannot update Virtual Machine '"
+					+ getInstanceId() + "' Disk Device List. "
+					+ "The expected Disk Device List is empty! "
+					+ "There should be at least one disk device in it.");
+		}
 		DiskDeviceList current = getInstanceDiskDevices();
 		try {
 			current.isCompatible(target);
@@ -320,6 +331,18 @@ public abstract class DefaultInstanceController extends BaseInstanceController {
 
 	public void updateInstanceNetworkDevices(NetworkDeviceList target)
 			throws OperationException, InterruptedException {
+		if (target == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ NetworkDeviceList.class.getCanonicalName() + ".");
+		}
+		if (target.size() == 0) {
+			throw new RuntimeException("Cannot update Virtual Machine '"
+					+ getInstanceId() + "' Network Device List. "
+					+ "The expected Network Device List is empty! "
+					+ "There should be at least one network device called "
+					+ "'eth0' in it.");
+		}
 		NetworkDeviceList current = getInstanceNetworkDevices();
 		NetworkDeviceList toAdd = null;
 		NetworkDeviceList toRemove = null;
