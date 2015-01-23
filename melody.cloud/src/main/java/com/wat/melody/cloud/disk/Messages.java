@@ -11,6 +11,7 @@ public class Messages extends NLS {
 
 	public static String DiskDevLoaderEx_MISSING_ATTR;
 	public static String DiskDevLoaderEx_GENERIC_ERROR;
+	public static String DiskDevLoaderEx_EMPTY_DISKDEV_LIST;
 
 	public static String DiskDefEx_EMPTY_DEVICE_LIST;
 	public static String DiskDefEx_UNDEF_ROOT_DEVICE;

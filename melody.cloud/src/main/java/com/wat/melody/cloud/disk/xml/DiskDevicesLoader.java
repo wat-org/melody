@@ -261,9 +261,12 @@ public class DiskDevicesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the conversion failed (ex : invalid device name, multiple
-	 *             declaration with the same device name, invalid timeout
-	 *             value).
+	 *             <ul>
+	 *             <li>if the conversion failed (ex : invalid device name,
+	 *             multiple declaration with the same device name, invalid
+	 *             timeout value) ;</li>
+	 *             <li>if no disk device can be found ;</li>
+	 *             </ul>
 	 */
 	public DiskDeviceList load(Element instanceElmt)
 			throws NodeRelatedException {
@@ -292,6 +295,12 @@ public class DiskDevicesLoader {
 				throw new NodeRelatedException(diskDevElmt,
 						Messages.DiskDevLoaderEx_GENERIC_ERROR, Ex);
 			}
+		}
+		if (dl.size() == 0) {
+			throw new NodeRelatedException(instanceElmt, Msg.bind(
+					Messages.DiskDevLoaderEx_EMPTY_DISKDEV_LIST,
+					DiskDevicesHelper.DISK_DEVICE_ELEMENTS_SELECTOR,
+					DiskDevicesHelper.DISK_MGMT_ELEMENT));
 		}
 		return dl;
 	}
