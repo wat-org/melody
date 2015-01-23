@@ -45,7 +45,6 @@
 				<tcp access="allow" directions="in" from-ips="all" to-ports="80-443"/>
 				<tcp access="allow" directions="in" from-ips="" to-ports="5555"/>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="5556"/>
-				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getNetworkActivationHost(//instance),',')]§" to-ports="1234-"/>
 			</firewall>
 			<network-devices>
 				<interface device-name="eth0"/>
@@ -61,6 +60,7 @@
 			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp herit="./environment/global-fwrules/ssh"/>
+				<tcp access="allow" directions="in" from-ips="sg2" to-ports="1234-"/>
 				<tcp access="allow" directions="in" from-ips="sg3" to-ports="5556"/>
 			</firewall>
 			<network-devices>

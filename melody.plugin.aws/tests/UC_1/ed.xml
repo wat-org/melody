@@ -7,12 +7,12 @@
 
 	<models>
 	
-		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_webs" name="model-WEB" region="eu-west-1">
+		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_webs" name="model-WEB" protected-area-names="sg-web" region="eu-west-1">
 			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp access="allow" directions="in" from-ips="all" to-ports="80-443"/>
 				<tcp herit="./environment/global-fwrules/ssh"/>
-				<tcp access="allow" directions="out" to-ips="§[string-join(melody:getNetworkActivationHost(//DB//instance),',')]§" to-ports="1421"/>
+				<tcp access="allow" directions="out" to-ips="sg-bdd" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
 				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
@@ -21,11 +21,11 @@
 			</disk-devices>
 		</model>
 	
-		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_dbs" name="model-DB" region="eu-west-1">
+		<model image-id="ami-3c5f5748" instance-type="t1.micro" keypair-name="id_rsa_aws_dbs" name="model-DB" protected-area-names="sg-bdd" region="eu-west-1">
 			<network-management activation-host-selector="nat-ip" activation-protocol="ssh"/>
 			<firewall>
 				<tcp herit="./environment/global-fwrules/ssh"/>
-				<tcp access="allow" directions="in" from-ips="§[string-join(melody:getNetworkActivationHost(//WEB//instance),',')]§" to-ports="1421"/>
+				<tcp access="allow" directions="in" from-ips="sg-web" to-ports="1421"/>
 			</firewall>
 			<disk-devices>
 				<disk delete-on-termination="true" device-name="/dev/sda1" root-device="true"/>
@@ -35,14 +35,35 @@
 		</model>
 			
 	</models>
+	
+	<protected-areas>
+	
+		<protected-area name="sg-web" region="eu-west-1">
+			<!-- allow all traffic from itself -->
+			<udp access="allow" directions="in" from-ips="sg-web"/>
+			<tcp access="allow" directions="in" from-ips="sg-web"/>
+			<icmp access="allow" directions="in" from-ips="sg-web"/>
+		</protected-area>
+		<protected-area name="sg-bdd" region="eu-west-1">
+			<!-- allow all traffic from itself -->
+			<udp access="allow" directions="in" from-ips="sg-bdd"/>
+			<tcp access="allow" directions="in" from-ips="sg-bdd"/>
+			<icmp access="allow" directions="in" from-ips="sg-bdd"/>
+			<!-- allow traffic from web servers on BDD port -->
+			<udp access="allow" directions="in" from-ips="sg-web" to-ports="1521"/>
+			<tcp access="allow" directions="in" from-ips="sg-web" to-ports="1521"/>
+			<icmp access="allow" directions="in" from-ips="sg-web" to-ports="1521"/>
+		</protected-area>
+
+	</protected-areas>
 
 	<instances>
 		<WEB>
 			<instance herit="./environment/models/model[@name='model-WEB']" name="web-a01" site="a">
-				<firewall>
+				<firewall herit-policy="append">
 					<tcp access="allow" directions="in" from-ips="all" to-ports="8080,8443"/>
 				</firewall>
-				<disk-devices>
+				<disk-devices herit-policy="append">
 					<disk delete-on-termination="true" device-name="/dev/sdd" size="1 G"/>
 				</disk-devices>
 				<network-devices>

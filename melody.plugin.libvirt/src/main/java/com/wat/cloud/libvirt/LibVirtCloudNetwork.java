@@ -213,8 +213,9 @@ public abstract class LibVirtCloudNetwork {
 			if (ndl.size() == 0) {
 				throw new RuntimeException("Failed to build Domain '"
 						+ d.getName() + "' Network Device List. "
-						+ "No Network Device found."
-						+ "There whould be at least one network device eth0.");
+						+ "No Network Device found. "
+						+ "There should be at least one network device called "
+						+ "'eth0'.");
 			}
 			return ndl;
 		} catch (XPathExpressionException | LibvirtException
