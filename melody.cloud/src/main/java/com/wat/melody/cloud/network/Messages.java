@@ -15,6 +15,7 @@ public class Messages extends NLS {
 	public static String NetworkActivationEx_TOO_MANY_MATCH;
 	public static String NetworkActivationEx_NO_MATCH;
 	public static String NetworkActivationEx_NOT_MATCH_ELMT;
+	public static String NetworkActivationEx_INVALID_NETWORK_ACTIVATION_HOST;
 
 	public static String NetworkActivatorMsg_INTRO;
 	public static String NetworkActivatorMsg_RESUME;
@@ -34,6 +35,7 @@ public class Messages extends NLS {
 
 	public static String NetworkDevLoaderEx_MISSING_ATTR;
 	public static String NetworkDevLoaderEx_GENERIC_ERROR;
+	public static String NetworkDevLoaderEx_EMPTY_NETDEV_LIST;
 
 	public static String NetMgmtEx_MISSING;
 	public static String NetMgmtEx_MISSING_ATTR;

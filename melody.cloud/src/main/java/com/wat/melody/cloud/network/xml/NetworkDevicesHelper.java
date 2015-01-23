@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -11,6 +12,7 @@ import com.wat.melody.cloud.network.Messages;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.XPathFunctionHelper;
@@ -49,64 +51,62 @@ public abstract class NetworkDevicesHelper {
 			+ NetworkDevicesLoader.DEFAULT_NETWORK_DEVICE_ELEMENT;
 
 	/**
-	 * @param instanceElmt
+	 * @param e
 	 *            is an {@link Element} which describes an Instance.
 	 * 
-	 * @return the Network Management Element related to the given Instance,
-	 *         which is :
-	 *         <ul>
-	 *         <li>The last Network Management Element related to the given
-	 *         Instance, if multiple Network Management Elements are found ;</li>
-	 *         <li><tt>null</tt>, if no Network Management Element are found ;</li>
-	 *         </ul>
+	 * @return the Network Management Element of the given element, or
+	 *         <tt>null</tt> if the given element has no Network Management
+	 *         Element defined in.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static Element findNetworkManagementElement(Element instanceElmt) {
-		NodeList nl = null;
+	public static Element findNetworkManagementElement(Element e) {
 		try {
-			nl = XPathExpander.evaluateAsNodeList("."
-					+ NETWORK_MGMT_ELEMENT_SELECTOR, instanceElmt);
+			return (Element) XPathExpander.evaluateAsNode("."
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT_SELECTOR, e);
 		} catch (XPathExpressionException Ex) {
-			throw new RuntimeException("Unexpected error while evaluating "
-					+ "the herited content of '"
-					+ NETWORK_MGMT_ELEMENT_SELECTOR + "'. "
-					+ "Because this XPath Expression is hard coded, "
-					+ "such error cannot happened. "
-					+ "Source code has certainly been modified and a bug have "
-					+ "been introduced.", Ex);
+			throw new RuntimeException("Unexpected error while "
+					+ "retrieving the Network Management Element of "
+					+ "an Instance. "
+					+ "Because this expression is hard-coded, such "
+					+ "error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.");
 		}
-		if (nl.getLength() == 0) {
-			return null;
-		}
-		// Conversion can't fail: the expression can only return Element
-		return (Element) nl.item(nl.getLength() - 1);
 	}
 
 	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return the Network Devices Selector, which is :
 	 *         <ul>
-	 *         <li>the Default Network Devices Selector, if the given Network
-	 *         Management Element is <tt>null</tt> ;</li>
-	 *         <li>the Default Network Devices Selector, if the given Network
-	 *         Management Element is not <tt>null</tt> but has no Custom Network
-	 *         Devices Selector is defined in ;</li>
+	 *         <li>the Default Network Devices Selector, if the given element
+	 *         has no Network Management Element ;</li>
+	 *         <li>the Default Network Devices Selector, if the given element
+	 *         has a Network Management Element which has no Custom Network
+	 *         Devices Selector defined in ;</li>
 	 *         <li>The Custom Network Devices Selector defined in the given
-	 *         Network Management Element ;</li>
+	 *         elment's Network Management Element ;</li>
 	 *         </ul>
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static String getNetworkDeviceElementsSelector(Element mgmtElmt) {
+	public static String getNetworkDeviceElementsSelector(Element e) {
+		return getNetworkDeviceElementsSelectorAttr(e).getValue();
+	}
+
+	private static Attr getNetworkDeviceElementsSelectorAttr(Element e) {
 		try {
-			return mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR)
-					.getNodeValue();
-		} catch (NullPointerException Ex) {
-			return DEFAULT_NETOWRK_DEVICE_ELEMENTS_SELECTOR;
+			return DocHelper.getAttribute(e, "./" + NETWORK_MGMT_ELEMENT + "/@"
+					+ NETWORK_DEVICE_ELEMENTS_SELECTOR,
+					DEFAULT_NETOWRK_DEVICE_ELEMENTS_SELECTOR);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -138,49 +138,13 @@ public abstract class NetworkDevicesHelper {
 	 */
 	public static Element findNetworkDeviceElementByName(Element instanceElmt,
 			String devname) throws NodeRelatedException {
-		Element mgmtElmt = findNetworkManagementElement(instanceElmt);
-		return getNetworkDeviceElementByName(instanceElmt, mgmtElmt, devname);
-	}
-
-	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to the given Instance. Can be <tt>null</tt>,
-	 *            if the given Instance has no Network Management Element.
-	 * @param devname
-	 *            is the name of the Network Device {@link Element} to retrieve.
-	 * 
-	 * @return The Instance's Network Device {@link Element}, whose match the
-	 *         given name, or <tt>null</tt>, it no Network Device
-	 *         {@link Element} match the given name.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>if the given Instance is <tt>null</tt> ;</li>
-	 *             <li>if the given name is <tt>null</tt> ;</li>
-	 *             <li>if the given name is not a valid Network Device Name ;</li>
-	 *             </ul>
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if the Custom Network Devices Selector (found in the
-	 *             given Instance's Network Management Element) is not a valid
-	 *             XPath Expression ;</li>
-	 *             <li>if the Custom Network Devices Selector (found in the
-	 *             given Instance's Network Management Element) doesn't select
-	 *             {@link Element}s ;</li>
-	 *             </ul>
-	 */
-	public static Element getNetworkDeviceElementByName(Element instanceElmt,
-			Element mgmtElmt, String devname) throws NodeRelatedException {
 		// Called by an XPath Function, so devname must be a string
 		try {
 			NetworkDeviceName.parseString(devname);
 		} catch (IllegalNetworkDeviceNameException Ex) {
 			throw new IllegalArgumentException(Ex);
 		}
-		String selector = "." + getNetworkDeviceElementsSelector(mgmtElmt)
+		String selector = "." + getNetworkDeviceElementsSelector(instanceElmt)
 				+ "[@" + NetworkDevicesLoader.DEVICE_NAME_ATTR + "='" + devname
 				+ "']";
 		try {
@@ -189,7 +153,7 @@ public abstract class NetworkDevicesHelper {
 					instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
+					getNetworkDeviceElementsSelectorAttr(instanceElmt),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
@@ -216,42 +180,13 @@ public abstract class NetworkDevicesHelper {
 	 */
 	public static List<Element> findNetworkDeviceElements(Element instanceElmt)
 			throws NodeRelatedException {
-		Element mgmtElmt = findNetworkManagementElement(instanceElmt);
-		return getNetworkDeviceElements(instanceElmt, mgmtElmt);
-	}
-
-	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to the given Instance. Can be <tt>null</tt>,
-	 *            if the given Instance has no Network Management Element.
-	 * 
-	 * @return all Instance's Network Device {@link Element}s. Can be an empty
-	 *         list.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if the Custom Network Devices Selector (found in the
-	 *             given Instance's Network Management Element) is not a valid
-	 *             XPath Expression ;</li>
-	 *             <li>if the Custom Network Devices Selector (found in the
-	 *             given Instance's Network Management Element) doesn't select
-	 *             {@link Element}s ;</li>
-	 *             </ul>
-	 */
-	public static List<Element> getNetworkDeviceElements(Element instanceElmt,
-			Element mgmtElmt) throws NodeRelatedException {
-		String selector = "." + getNetworkDeviceElementsSelector(mgmtElmt);
+		String selector = "." + getNetworkDeviceElementsSelector(instanceElmt);
 		NodeList nl;
 		try {
 			nl = XPathExpander.evaluateAsNodeList(selector, instanceElmt);
 		} catch (XPathExpressionException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
+					getNetworkDeviceElementsSelectorAttr(instanceElmt),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_INVALID_XPATH,
 							selector), Ex);
 		}
@@ -259,7 +194,7 @@ public abstract class NetworkDevicesHelper {
 			return XPathFunctionHelper.toElementList(nl);
 		} catch (IllegalArgumentException Ex) {
 			throw new NodeRelatedException(
-					mgmtElmt.getAttributeNode(NETWORK_DEVICE_ELEMENTS_SELECTOR),
+					getNetworkDeviceElementsSelectorAttr(instanceElmt),
 					Msg.bind(Messages.NetMgmtEx_SELECTOR_NOT_MATCH_ELMT,
 							selector));
 		}

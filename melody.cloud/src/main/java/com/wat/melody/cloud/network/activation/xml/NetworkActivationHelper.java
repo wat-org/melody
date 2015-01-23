@@ -22,6 +22,7 @@ import com.wat.melody.cloud.network.xml.NetworkDevicesHelper;
 import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
 import com.wat.melody.common.bool.Bool;
 import com.wat.melody.common.bool.exception.IllegalBooleanException;
+import com.wat.melody.common.ex.MelodyException;
 import com.wat.melody.common.firewall.NetworkDeviceName;
 import com.wat.melody.common.firewall.exception.IllegalNetworkDeviceNameException;
 import com.wat.melody.common.messages.Msg;
@@ -30,6 +31,7 @@ import com.wat.melody.common.network.Port;
 import com.wat.melody.common.network.exception.IllegalHostException;
 import com.wat.melody.common.network.exception.IllegalPortException;
 import com.wat.melody.common.timeout.exception.IllegalTimeoutException;
+import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.NodeRelatedException;
 import com.wat.melody.common.xpath.XPathExpander;
 
@@ -68,62 +70,40 @@ public abstract class NetworkActivationHelper {
 	public static final String DEFAULT_NETWORK_ACTIVATION_HOST_SELECTOR = "ip";
 
 	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return the Network Activation Device Selector, which is :
 	 *         <ul>
 	 *         <li>The Default Network Activation Device Selector, if the given
-	 *         Network Management Element is <tt>null</tt> ;</li>
+	 *         element's has no Network Management Element ;</li>
 	 *         <li>The Default Network Activation Device Selector, if the given
-	 *         Network Management Element is not <tt>null</tt> but has no Custom
-	 *         Network Activation Device Selector is defined in ;</li>
+	 *         element has a Network Management Element which has has no Custom
+	 *         Network Activation Device Selector defined in ;</li>
 	 *         <li>The Custom Network Activation Device Selector defined in the
-	 *         given Network Management Element ;</li>
+	 *         given element's Network Management Element ;</li>
 	 *         </ul>
 	 */
-	public static String getNetworkActivationDeviceSelector(Element mgmtElmt) {
-		String criteria = null;
-		try {
-			criteria = mgmtElmt.getAttributeNode(
-					NETWORK_ACTIVATION_DEVICE_CRITERIA).getNodeValue();
-		} catch (NullPointerException Ex) {
-			criteria = DEFAULT_NETOWRK_ACTIVATION_DEVICE_CRITERIA;
-		}
-		return NetworkDevicesHelper.getNetworkDeviceElementsSelector(mgmtElmt)
-				+ "[" + criteria + "]";
+	public static String getNetworkActivationDeviceSelector(Element e) {
+		return NetworkDevicesHelper.getNetworkDeviceElementsSelector(e) + "["
+				+ getNetworkActivationDeviceSelectorAttr(e).getValue() + "]";
 	}
 
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes a Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
-	 * 
-	 * @return the Network Activation Host Selector, which is :
-	 *         <ul>
-	 *         <li>The Default Network Activation Host Selector, if the given
-	 *         Network Management Element is <tt>null</tt> ;</li>
-	 *         <li>The Default Network Activation Host Selector, if the given
-	 *         Network Management Element is not <tt>null</tt> but has no Custom
-	 *         Network Activation Host Selector is defined in ;</li>
-	 *         <li>The Custom Network Activation Host Selector defined in the
-	 *         given Network Management Element ;</li>
-	 *         </ul>
-	 */
-	public static String getNetworkActivationHostSelector(Element mgmtElmt) {
+	private static Attr getNetworkActivationDeviceSelectorAttr(Element e) {
 		try {
-			return mgmtElmt.getAttributeNode(NETWORK_ACTIVATION_HOST_SELECTOR)
-					.getNodeValue();
-		} catch (NullPointerException Ex) {
-			return DEFAULT_NETWORK_ACTIVATION_HOST_SELECTOR;
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NETWORK_ACTIVATION_DEVICE_CRITERIA,
+					DEFAULT_NETOWRK_ACTIVATION_DEVICE_CRITERIA);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	/**
-	 * @param instanceElmt
+	 * @param e
 	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return the given Instance's Network Activation Device {@link Element}.
@@ -146,64 +126,53 @@ public abstract class NetworkActivationHelper {
 	 *             select an {@link Element} ;</li>
 	 *             </ul>
 	 */
-	public static Element findNetworkActivationDeviceElement(
-			Element instanceElmt) throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationDeviceElement(instanceElmt, mgmtElmt);
-	}
-
-	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to the given Instance. Can be <tt>null</tt>,
-	 *            if the given Instance has no Network Management Element.
-	 * 
-	 * @return the given Instance's Network Activation Device {@link Element}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if Custom Network Devices Selector (found in the given
-	 *             Instance's Network Management Element) is not a valid XPath
-	 *             Expression ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects no
-	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects
-	 *             multiple {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) doesn't
-	 *             select an {@link Element} ;</li>
-	 *             </ul>
-	 */
-	public static Element getNetworkActivationDeviceElement(
-			Element instanceElmt, Element mgmtElmt) throws NodeRelatedException {
+	public static Element findNetworkActivationDeviceElement(Element e)
+			throws NodeRelatedException {
 		NodeList nl = null;
-		String selector = getNetworkActivationDeviceSelector(mgmtElmt);
+		String selector = getNetworkActivationDeviceSelector(e);
 		try {
-			nl = XPathExpander.evaluateAsNodeList("." + selector, instanceElmt);
+			nl = XPathExpander.evaluateAsNodeList("." + selector, e);
 		} catch (XPathExpressionException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetworkActivationEx_INVALID_XPATH, selector), Ex);
+			throw new NodeRelatedException(
+					NetworkDevicesHelper.findNetworkManagementElement(e),
+					Msg.bind(
+							Messages.NetworkActivationEx_INVALID_XPATH,
+							selector,
+							NetworkDevicesHelper.NETWORK_DEVICE_ELEMENTS_SELECTOR,
+							NETWORK_ACTIVATION_DEVICE_CRITERIA,
+							NetworkDevicesHelper.NETWORK_MGMT_ELEMENT), Ex);
 		}
 		if (nl != null && nl.getLength() > 1) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetworkActivationEx_TOO_MANY_MATCH, selector,
-					nl.getLength()));
+			throw new NodeRelatedException(
+					NetworkDevicesHelper.findNetworkManagementElement(e),
+					Msg.bind(
+							Messages.NetworkActivationEx_TOO_MANY_MATCH,
+							selector,
+							nl.getLength(),
+							NetworkDevicesHelper.NETWORK_DEVICE_ELEMENTS_SELECTOR,
+							NETWORK_ACTIVATION_DEVICE_CRITERIA,
+							NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
 		if (nl == null || nl.getLength() == 0) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetworkActivationEx_NO_MATCH, selector));
+			throw new NodeRelatedException(
+					NetworkDevicesHelper.findNetworkManagementElement(e),
+					Msg.bind(
+							Messages.NetworkActivationEx_NO_MATCH,
+							selector,
+							NetworkDevicesHelper.NETWORK_DEVICE_ELEMENTS_SELECTOR,
+							NETWORK_ACTIVATION_DEVICE_CRITERIA,
+							NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetworkActivationEx_NOT_MATCH_ELMT, selector, nl
-							.item(0).getNodeType()));
+			throw new NodeRelatedException(
+					NetworkDevicesHelper.findNetworkManagementElement(e),
+					Msg.bind(
+							Messages.NetworkActivationEx_NOT_MATCH_ELMT,
+							selector,
+							nl.item(0).getNodeType(),
+							NetworkDevicesHelper.NETWORK_DEVICE_ELEMENTS_SELECTOR,
+							NETWORK_ACTIVATION_DEVICE_CRITERIA,
+							NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
 		return (Element) nl.item(0);
 	}
@@ -241,50 +210,7 @@ public abstract class NetworkActivationHelper {
 	 */
 	public static NetworkDeviceName findNetworkActivationDeviceName(
 			Element instanceElmt) throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationDeviceName(instanceElmt, mgmtElmt);
-	}
-
-	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to the given Instance. Can be <tt>null</tt>,
-	 *            if the given Instance has no Network Management Element.
-	 * 
-	 * @return the name of the given Instance's Network Activation Device.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if Custom Network Devices Selector (found in the given
-	 *             Instance's Network Management Element) is not a valid XPath
-	 *             Expression ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects no
-	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects
-	 *             multiple {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) doesn't
-	 *             select an {@link Element} ;</li>
-	 *             <li>if the given Instance's Network Activation Device Element
-	 *             doesn't have a {@link NetworkDevicesLoader#DEVICE_NAME_ATTR}
-	 *             {@link Attr} ;</li>
-	 *             <li>if the value found in the given Instance's Network
-	 *             Activation Device Element's
-	 *             {@link NetworkDevicesLoader#DEVICE_NAME_ATTR} {@link Attr}
-	 *             cannot be converted to a {@link NetworkDeviceName} ;</li>
-	 *             </ul>
-	 */
-	public static NetworkDeviceName getNetworkActivationDeviceName(
-			Element instanceElmt, Element mgmtElmt) throws NodeRelatedException {
-		Element netElmt = getNetworkActivationDeviceElement(instanceElmt,
-				mgmtElmt);
+		Element netElmt = findNetworkActivationDeviceElement(instanceElmt);
 		String attr = NetworkDevicesLoader.DEVICE_NAME_ATTR;
 		try {
 			return NetworkDeviceName.parseString(netElmt.getAttributeNode(attr)
@@ -379,57 +305,55 @@ public abstract class NetworkActivationHelper {
 	 */
 	public static Host findNetworkActivationHost(Element instanceElmt)
 			throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationHost(instanceElmt, mgmtElmt);
-	}
-
-	/**
-	 * @param instanceElmt
-	 *            is an {@link Element} which describes an Instance.
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to the given Instance. Can be <tt>null</tt>,
-	 *            if the related Instance has no Network Management Element.
-	 * 
-	 * @return the Activation Host defined in the given Instance's Network
-	 *         Activation Device, or <tt>null</tt> if no Activation Host is
-	 *         found.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if Custom Network Devices Selector (found in the given
-	 *             Instance's Network Management Element) is not a valid XPath
-	 *             Expression ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects no
-	 *             {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) selects
-	 *             multiple {@link Element} ;</li>
-	 *             <li>if Custom Network Activation Device Selector (found in
-	 *             the given Instance's Network Management Element) doesn't
-	 *             select an {@link Element} ;</li>
-	 *             <li>if the Activation Host (found in the given Instance's
-	 *             Network Activation Device Element) cannot be converted to an
-	 *             {@link Host} ;</li>
-	 *             </ul>
-	 */
-	public static Host getNetworkActivationHost(Element instanceElmt,
-			Element mgmtElmt) throws NodeRelatedException {
-		Element netElmt = getNetworkActivationDeviceElement(instanceElmt,
-				mgmtElmt);
-		String attr = getNetworkActivationHostSelector(mgmtElmt);
+		Element netElmt = findNetworkActivationDeviceElement(instanceElmt);
+		String attr = findNetworkActivationHostSelector(instanceElmt);
 		try {
 			return Host.parseString(netElmt.getAttributeNode(attr)
 					.getNodeValue());
 		} catch (NullPointerException Ex) {
 			return null;
 		} catch (IllegalHostException Ex) {
-			throw new NodeRelatedException(netElmt, Msg.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
+			throw new NodeRelatedException(
+					NetworkDevicesHelper
+							.findNetworkManagementElement(instanceElmt),
+					Msg.bind(Messages.NetMgmtEx_INVALID_ATTR,
+							NETWORK_ACTIVATION_HOST_SELECTOR),
+					new MelodyException(
+							Msg.bind(
+									Messages.NetworkActivationEx_INVALID_NETWORK_ACTIVATION_HOST,
+									attr), Ex));
+		}
+	}
+
+	/**
+	 * @param e
+	 *            is an {@link Element} which describes an Instance.
+	 * 
+	 * @return the Network Activation Host Selector, which is :
+	 *         <ul>
+	 *         <li>The Default Network Activation Host Selector, if the given
+	 *         element has no Network Management Element ;</li>
+	 *         <li>The Default Network Activation Host Selector, if the given
+	 *         element has a Network Management Element which has no Custom
+	 *         Network Activation Host Selector defined in ;</li>
+	 *         <li>The Custom Network Activation Host Selector defined in the
+	 *         given element's Network Management Element ;</li>
+	 *         </ul>
+	 */
+	public static String findNetworkActivationHostSelector(Element e) {
+		return findNetworkActivationHostSelectorAttr(e).getNodeValue();
+	}
+
+	private static Attr findNetworkActivationHostSelectorAttr(Element e) {
+		try {
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NETWORK_ACTIVATION_HOST_SELECTOR,
+					DEFAULT_NETWORK_ACTIVATION_HOST_SELECTOR);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -446,120 +370,47 @@ public abstract class NetworkActivationHelper {
 	 *             if the given Instance is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
-	 *             <li>if the given Instance has no Network Management Element ;
-	 *             </li>
+	 *             <li>if the given element has no Network Management Element ;</li>
 	 *             <li>if no Activation Port and no Activation Protocol are
-	 *             defined in the given Instance's Network Management Element ;</li>
-	 *             <li>if the Activation Protocol defined in the given
-	 *             Instance's Network Management Element cannot be converted to
-	 *             a {@link NetworkActivationProtocol} ;</li>
-	 *             <li>if the Activation Port defined in the given Instance's
+	 *             defined in the given element's Network Management Element ;</li>
+	 *             <li>if the Activation Protocol defined in the given element's
+	 *             Network Management Element cannot be converted to a
+	 *             {@link NetworkActivationProtocol} ;</li>
+	 *             <li>if the Activation Port defined in the given element's
 	 *             Network Management Element cannot be converted to a
 	 *             {@link Port} ;</li>
 	 *             </ul>
 	 */
 	public static Port findNetworkActivationPort(Element instanceElmt)
 			throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		if (mgmtElmt == null) {
-			throw new NodeRelatedException(instanceElmt, Msg.bind(
-					Messages.NetMgmtEx_MISSING,
-					NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
+		Attr attr = findNetworkActivationPortAttr(instanceElmt);
+		if (attr == null) {
+			// if no Network Activation Port is defined
+			// then try to deduce the default port from the Network
+			// Activation Protocol
+			return getDefaultNetworkActivationPort(instanceElmt);
 		}
-		return getNetworkActivationPort(mgmtElmt);
-	}
-
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance.
-	 * 
-	 * @return the Activation Port defined in the given Network Activation
-	 *         Element. If Activation Port is undefined, a default Activation
-	 *         Port will be used, regarding to the Activation Protocol.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Network Management Element is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if no Activation Port and no Activation Protocol are
-	 *             defined in the given Network Management Element ;</li>
-	 *             <li>if the Activation Protocol defined in the given Network
-	 *             Management Element cannot be converted to a
-	 *             {@link NetworkActivationProtocol} ;</li>
-	 *             <li>if the Activation Port defined in the given Network
-	 *             Management Element cannot be converted to a {@link Port} ;</li>
-	 *             </ul>
-	 */
-	public static Port getNetworkActivationPort(Element mgmtElmt)
-			throws NodeRelatedException {
-		if (mgmtElmt == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Network Management Element.");
-		}
-		String attr = NetworkActivationDatasLoader.ACTIVATION_PORT_ATTR;
 		try {
-			return Port.parseString(mgmtElmt.getAttributeNode(attr)
-					.getNodeValue());
-		} catch (NullPointerException Ex) {
-			return getDefaultNetworkActivationPort(mgmtElmt);
+			return Port.parseString(attr.getNodeValue());
 		} catch (IllegalPortException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
+			throw new NodeRelatedException(
+					NetworkDevicesHelper
+							.findNetworkManagementElement(instanceElmt),
+					Msg.bind(Messages.NetMgmtEx_INVALID_ATTR,
+							NetworkActivationDatasLoader.ACTIVATION_PORT_ATTR),
+					Ex);
 		}
 	}
 
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance.
-	 * 
-	 * @return the default Activation Port, regarding to the Activation Protocol
-	 *         of the given Network Management Element.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Network Management Element is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if no Activation Protocol is defined in the given Network
-	 *             Management Element ;</li>
-	 *             <li>if the Activation Protocol defined in the given
-	 *             Instance's Network Activation Protocol cannot be converted to
-	 *             a {@link NetworkActivationProtocol} ;</li>
-	 *             </ul>
-	 */
-	private static Port getDefaultNetworkActivationPort(Element mgmtElmt)
-			throws NodeRelatedException {
-		if (mgmtElmt == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Network Management Element.");
-		}
-		NetworkActivationProtocol ap = null;
+	private static Attr findNetworkActivationPortAttr(Element e) {
 		try {
-			ap = getNetworkActivationProtocol(mgmtElmt);
-			if (ap == null) {
-				throw new NodeRelatedException(mgmtElmt, Msg.bind(
-						Messages.NetMgmtEx_MISSING_ATTR,
-						NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR));
-			}
-			switch (ap) {
-			case SSH:
-				return SshNetworkActivationDatas.DEFAULT_PORT;
-			case TELNET:
-				return TelnetNetworkActivationDatas.DEFAULT_PORT;
-			case WINRM:
-				return WinRmNetworkActivationDatas.DEFAULT_PORT;
-			default:
-				throw new RuntimeException("Unexpected error while branching "
-						+ "on an unknown Activation Protocol '" + ap + "'. "
-						+ "Source code has certainly been modified and a bug "
-						+ "have been introduced.");
-			}
-		} catch (NodeRelatedException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetMgmtEx_MISSING_ATTR,
-					NetworkActivationDatasLoader.ACTIVATION_PORT_ATTR), Ex);
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NetworkActivationDatasLoader.ACTIVATION_PORT_ATTR, null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -567,57 +418,98 @@ public abstract class NetworkActivationHelper {
 	 * @param instanceElmt
 	 *            is an {@link Element} which describes an Instance.
 	 * 
-	 * @return the Activation Protocol defined in the given Instance's Network
+	 * @return the default Activation Port, regarding to the Activation Protocol
+	 *         of the given element's Network Management Element.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given element is <tt>null</tt>.
+	 * @throws NodeRelatedException
+	 *             <ul>
+	 *             <li>if the given element has no Network Management Element ;</li>
+	 *             <li>if no Activation Protocol is defined in the given
+	 *             element's Network Management Element ;</li>
+	 *             <li>if the Activation Protocol defined in the given element's
+	 *             Network Activation Protocol cannot be converted to a
+	 *             {@link NetworkActivationProtocol} ;</li>
+	 *             </ul>
+	 */
+	private static Port getDefaultNetworkActivationPort(Element instanceElmt)
+			throws NodeRelatedException {
+		NetworkActivationProtocol ap = findNetworkActivationProtocol(instanceElmt);
+		if (ap == null) {
+			// throw a precise error message
+			Element mgmtElmt = NetworkDevicesHelper
+					.findNetworkManagementElement(instanceElmt);
+			if (mgmtElmt == null) {
+				// if no Network Management Element is defined
+				throw new NodeRelatedException(instanceElmt, Msg.bind(
+						Messages.NetMgmtEx_MISSING,
+						NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
+			}
+			// if no Network Activation Protocol is defined
+			throw new NodeRelatedException(mgmtElmt, Msg.bind(
+					Messages.NetMgmtEx_MISSING_ATTR,
+					NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR));
+		}
+		switch (ap) {
+		case SSH:
+			return SshNetworkActivationDatas.DEFAULT_PORT;
+		case TELNET:
+			return TelnetNetworkActivationDatas.DEFAULT_PORT;
+		case WINRM:
+			return WinRmNetworkActivationDatas.DEFAULT_PORT;
+		default:
+			throw new RuntimeException("Unexpected error while branching "
+					+ "on an unknown Activation Protocol '" + ap + "'. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.");
+		}
+	}
+
+	/**
+	 * @param instanceElmt
+	 *            is an {@link Element} which describes an Instance.
+	 * 
+	 * @return the Activation Protocol defined in the given element's Network
 	 *         Management Element, or <tt>null</tt> if no Activation Protocol is
 	 *         found.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given Instance is <tt>null</tt>.
+	 *             if the given element is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the Activation Protocol defined in the given Instance's
+	 *             if the Activation Protocol defined in the given element's
 	 *             Network Management Element cannot be converted to a
 	 *             {@link NetworkActivationProtocol}.
 	 */
 	public static NetworkActivationProtocol findNetworkActivationProtocol(
 			Element instanceElmt) throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		if (mgmtElmt == null) {
+		Attr attr = findNetworkActivationProtocolAttr(instanceElmt);
+		if (attr == null) {
 			return null;
 		}
-		return getNetworkActivationProtocol(mgmtElmt);
+		try {
+			return NetworkActivationProtocol.parseString(attr.getNodeValue());
+		} catch (IllegalNetworkActivationProtocolException Ex) {
+			throw new NodeRelatedException(
+					NetworkDevicesHelper
+							.findNetworkManagementElement(instanceElmt),
+					Msg.bind(
+							Messages.NetMgmtEx_INVALID_ATTR,
+							NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR),
+					Ex);
+		}
 	}
 
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance.
-	 * 
-	 * @return the Activation Protocol defined in the given Network Management
-	 *         Element, or <tt>null</tt> if no Activation Protocol is found.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given Network Management Element is <tt>null</tt>.
-	 * @throws NodeRelatedException
-	 *             if the Activation Protocol defined in the given Network
-	 *             Management Element cannot be converted to a
-	 *             {@link NetworkActivationProtocol}.
-	 */
-	public static NetworkActivationProtocol getNetworkActivationProtocol(
-			Element mgmtElmt) throws NodeRelatedException {
-		if (mgmtElmt == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Network Management Element.");
-		}
-		String attr = NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR;
+	private static Attr findNetworkActivationProtocolAttr(Element e) {
 		try {
-			return NetworkActivationProtocol.parseString(mgmtElmt
-					.getAttributeNode(attr).getNodeValue());
-		} catch (NullPointerException Ex) {
-			return null;
-		} catch (IllegalNetworkActivationProtocolException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NetworkActivationDatasLoader.ACTIVATION_PROTOCOL_ATTR,
+					null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -635,34 +527,29 @@ public abstract class NetworkActivationHelper {
 	 *             if the given Instance is <tt>null</tt>.
 	 */
 	public static boolean isNetworkActivationEnabled(Element instanceElmt) {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationEnabled(mgmtElmt);
-	}
-
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
-	 * 
-	 * @return the Activation Enable defined in the given Network Activation
-	 *         Element. Or <tt>true</tt>, if no Activation Enable is defined in
-	 *         the given Network Management. Or <tt>false</tt> if the given
-	 *         Network Management Element is <tt>null</tt>.
-	 */
-	public static boolean getNetworkActivationEnabled(Element mgmtElmt) {
-		if (mgmtElmt == null) {
-			return false;
+		Attr attr = findNetworkActivationEnabledAttr(instanceElmt);
+		if (attr == null) {
+			Element mgmtElmt = NetworkDevicesHelper
+					.findNetworkManagementElement(instanceElmt);
+			return mgmtElmt == null ? false : true;
 		}
-		String attr = NetworkActivationDatasLoader.ACTIVATION_ENABLED_ATTR;
 		try {
-			return Bool.parseString(mgmtElmt.getAttributeNode(attr)
-					.getNodeValue());
-		} catch (NullPointerException Ex) {
-			return true;
+			return Bool.parseString(attr.getNodeValue());
 		} catch (IllegalBooleanException Ex) {
 			return false;
+		}
+	}
+
+	private static Attr findNetworkActivationEnabledAttr(Element e) {
+		try {
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NetworkActivationDatasLoader.ACTIVATION_ENABLED_ATTR,
+					null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
@@ -679,84 +566,79 @@ public abstract class NetworkActivationHelper {
 	 *             if the given Instance is <tt>null</tt>.
 	 * @throws NodeRelatedException
 	 *             <ul>
-	 *             <li>if the Activation Timeout defined in the given Instance's
+	 *             <li>if the Activation Timeout defined in the given element's
 	 *             Network Management Element cannot be converted to a
-	 *             {@link NetworkActivationTimeout} ;</li>
-	 *             </ul>
+	 *             {@link NetworkActivationTimeout};</li>
+	 *             <li>if the Activation Protocol defined in the given element's
+	 *             Network Management Element cannot be converted to a
+	 *             {@link NetworkActivationProtocol} ;</li>
+	 *             <ul>
 	 */
 	public static NetworkActivationTimeout findNetworkActivationTimeout(
 			Element instanceElmt) throws NodeRelatedException {
-		Element mgmtElmt = NetworkDevicesHelper
-				.findNetworkManagementElement(instanceElmt);
-		return getNetworkActivationTimeout(mgmtElmt);
+		Attr attr = findNetworkActivationTimeoutAttr(instanceElmt);
+		if (attr == null) {
+			// if no Network Activation Timeout is defined
+			// then try to deduce the default port from the Network
+			// Activation Protocol
+			return getDefaultNetworkActivationTimeout(instanceElmt);
+		}
+		try {
+			return NetworkActivationTimeout.parseString(attr.getNodeValue());
+		} catch (IllegalTimeoutException Ex) {
+			throw new NodeRelatedException(
+					NetworkDevicesHelper
+							.findNetworkManagementElement(instanceElmt),
+					Msg.bind(
+							Messages.NetMgmtEx_INVALID_ATTR,
+							NetworkActivationDatasLoader.ACTIVATION_TIMEOUT_ATTR),
+					Ex);
+		}
 	}
 
-	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
-	 * 
-	 * @return the Activation Timeout defined in the given Network Activation
-	 *         Element. If Activation Timeout is undefined, a default Activation
-	 *         Timeout will be used, regarding to the Activation Protocol.
-	 * 
-	 * @throws NodeRelatedException
-	 *             <ul>
-	 *             <li>if the Activation Timeout defined in the given Network
-	 *             Management Element cannot be converted to a
-	 *             {@link NetworkActivationTimeout} ;</li>
-	 *             </ul>
-	 */
-	public static NetworkActivationTimeout getNetworkActivationTimeout(
-			Element mgmtElmt) throws NodeRelatedException {
-		String attr = NetworkActivationDatasLoader.ACTIVATION_TIMEOUT_ATTR;
+	private static Attr findNetworkActivationTimeoutAttr(Element e) {
 		try {
-			return NetworkActivationTimeout.parseString(mgmtElmt
-					.getAttributeNode(attr).getNodeValue());
-		} catch (NullPointerException Ex) {
-			return getDefaultNetworkActivationTimeout(mgmtElmt);
-		} catch (IllegalTimeoutException Ex) {
-			throw new NodeRelatedException(mgmtElmt, Msg.bind(
-					Messages.NetMgmtEx_INVALID_ATTR, attr), Ex);
+			return DocHelper.getAttribute(e, "./"
+					+ NetworkDevicesHelper.NETWORK_MGMT_ELEMENT + "/@"
+					+ NetworkActivationDatasLoader.ACTIVATION_TIMEOUT_ATTR,
+					null);
+		} catch (XPathExpressionException bug) {
+			throw new RuntimeException("Because the XPath Expression "
+					+ "is hard-coded, such error cannot happened. "
+					+ "There must be a bug somewhere.", bug);
 		}
 	}
 
 	/**
-	 * @param mgmtElmt
-	 *            is an {@link Element} which describes the Network Management
-	 *            Element related to an Instance. Can be <tt>null</tt>, if the
-	 *            related Instance has no Network Management Element.
+	 * @param instanceElmt
+	 *            is an {@link Element} which describes an Instance.
 	 * 
 	 * @return the default Activation Timeout, regarding to the Activation
 	 *         Protocol of the given Network Management Element.
+	 * 
+	 * @throws NodeRelatedException
+	 *             if the Activation Protocol defined in the given element's
+	 *             Network Management Element cannot be converted to a
+	 *             {@link NetworkActivationProtocol}.
 	 */
 	private static NetworkActivationTimeout getDefaultNetworkActivationTimeout(
-			Element mgmtElmt) {
-		if (mgmtElmt == null) {
+			Element instanceElmt) throws NodeRelatedException {
+		NetworkActivationProtocol ap = findNetworkActivationProtocol(instanceElmt);
+		if (ap == null) {
 			return NetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
 		}
-		NetworkActivationProtocol ap = null;
-		try {
-			ap = getNetworkActivationProtocol(mgmtElmt);
-			if (ap == null) {
-				return NetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
-			}
-			switch (ap) {
-			case SSH:
-				return SshNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
-			case TELNET:
-				return TelnetNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
-			case WINRM:
-				return WinRmNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
-			default:
-				throw new RuntimeException("Unexpected error while branching "
-						+ "on an unknown management method '" + ap + "'. "
-						+ "Source code has certainly been modified and a bug "
-						+ "have been introduced.");
-			}
-		} catch (NodeRelatedException Ex) {
-			return NetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+		switch (ap) {
+		case SSH:
+			return SshNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+		case TELNET:
+			return TelnetNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+		case WINRM:
+			return WinRmNetworkActivationDatas.DEFAULT_ACTIVATION_TIMEOUT;
+		default:
+			throw new RuntimeException("Unexpected error while branching "
+					+ "on an unknown management method '" + ap + "'. "
+					+ "Source code has certainly been modified and a bug "
+					+ "have been introduced.");
 		}
 	}
 

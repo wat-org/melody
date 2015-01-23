@@ -58,52 +58,50 @@ public abstract class NetworkActivationDatasLoader {
 	}
 
 	protected NetworkActivationProtocol loadNetworkActivationProtocol(
-			Element mgmtElmt) throws IllegalNetworkActivationDatasException {
+			Element instanceElmt) throws IllegalNetworkActivationDatasException {
 		try {
 			return NetworkActivationHelper
-					.getNetworkActivationProtocol(mgmtElmt);
+					.findNetworkActivationProtocol(instanceElmt);
 		} catch (NodeRelatedException Ex) {
 			throw new IllegalNetworkActivationDatasException(Ex);
 		}
 	}
 
-	protected boolean loadNetworkActivationEnabled(Element mgmtElmt) {
-		return NetworkActivationHelper.getNetworkActivationEnabled(mgmtElmt);
+	protected boolean loadNetworkActivationEnabled(Element instanceElmt) {
+		return NetworkActivationHelper.isNetworkActivationEnabled(instanceElmt);
 	}
 
 	protected NetworkActivationTimeout loadNetworkActivationTimeout(
-			Element mgmtElmt) throws IllegalNetworkActivationDatasException {
+			Element instanceElmt) throws IllegalNetworkActivationDatasException {
 		try {
 			return NetworkActivationHelper
-					.getNetworkActivationTimeout(mgmtElmt);
+					.findNetworkActivationTimeout(instanceElmt);
 		} catch (NodeRelatedException Ex) {
 			throw new IllegalNetworkActivationDatasException(Ex);
 		}
 	}
 
 	protected NetworkDeviceName loadNetworkActivationNetDevName(
-			Element instanceNode, Element mgmtElmt)
-			throws IllegalNetworkActivationDatasException {
+			Element instanceNode) throws IllegalNetworkActivationDatasException {
 		try {
-			return NetworkActivationHelper.getNetworkActivationDeviceName(
-					instanceNode, mgmtElmt);
+			return NetworkActivationHelper
+					.findNetworkActivationDeviceName(instanceNode);
 		} catch (NodeRelatedException Ex) {
 			throw new IllegalNetworkActivationDatasException(Ex);
 		}
 	}
 
-	protected Host loadNetworkActivationHost(Element instanceElmt,
-			Element mgmtElmt) throws NetworkActivationHostUndefined,
+	protected Host loadNetworkActivationHost(Element instanceElmt)
+			throws NetworkActivationHostUndefined,
 			IllegalNetworkActivationDatasException {
 		try {
-			Host host = NetworkActivationHelper.getNetworkActivationHost(
-					instanceElmt, mgmtElmt);
+			Host host = NetworkActivationHelper
+					.findNetworkActivationHost(instanceElmt);
 			if (host == null) {
 				Element netElmt = NetworkActivationHelper
-						.getNetworkActivationDeviceElement(instanceElmt,
-								mgmtElmt);
+						.findNetworkActivationDeviceElement(instanceElmt);
 				String attr = NetworkActivationHelper
-						.getNetworkActivationHostSelector(mgmtElmt);
+						.findNetworkActivationHostSelector(instanceElmt);
 				throw new NetworkActivationHostUndefined(
 						new NodeRelatedException(netElmt, Msg.bind(
 								Messages.NetMgmtEx_MISSING_ATTR, attr)));
@@ -114,10 +112,11 @@ public abstract class NetworkActivationDatasLoader {
 		}
 	}
 
-	protected Port loadNetworkActivationPort(Element mgmtElmt)
+	protected Port loadNetworkActivationPort(Element instanceElmt)
 			throws IllegalNetworkActivationDatasException {
 		try {
-			return NetworkActivationHelper.getNetworkActivationPort(mgmtElmt);
+			return NetworkActivationHelper
+					.findNetworkActivationPort(instanceElmt);
 		} catch (NodeRelatedException Ex) {
 			throw new IllegalNetworkActivationDatasException(Ex);
 		}

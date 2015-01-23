@@ -246,9 +246,12 @@ public class NetworkDevicesLoader {
 	 * @throws IllegalArgumentException
 	 *             if the given Instance {@link Element} is <tt>null</tt>.
 	 * @throws NodeRelatedException
-	 *             if the conversion failed (ex : invalid device name, multiple
-	 *             declaration with the same device name, invalid timeout
-	 *             value).
+	 *             <ul>
+	 *             <li>if the conversion failed (ex : invalid device name,
+	 *             multiple declaration with the same device name, invalid
+	 *             timeout value) ;</li>
+	 *             <li>if no network device can be found ;</li>
+	 *             </ul>
 	 */
 	public NetworkDeviceList load(Element instanceElmt)
 			throws NodeRelatedException {
@@ -278,6 +281,12 @@ public class NetworkDevicesLoader {
 				throw new NodeRelatedException(networkDeviceElmt,
 						Messages.NetworkDevLoaderEx_GENERIC_ERROR, Ex);
 			}
+		}
+		if (dl.size() == 0) {
+			throw new NodeRelatedException(instanceElmt, Msg.bind(
+					Messages.NetworkDevLoaderEx_EMPTY_NETDEV_LIST,
+					NetworkDevicesHelper.NETWORK_DEVICE_ELEMENTS_SELECTOR,
+					NetworkDevicesHelper.NETWORK_MGMT_ELEMENT));
 		}
 		return dl;
 	}
