@@ -58,9 +58,9 @@ public abstract class ProtectedAreaHelper {
 	public static final String DEFAULT_PROTECTED_AREA_SELECTOR = ".//protected-areas//protected-area";
 
 	/**
-	 * @param elmt
-	 *            is an {@link Element} which describes an Instance, or a
-	 *            ProtectedArea.
+	 * @param e
+	 *            is an {@link Element} which describes an Instance or a
+	 *            Protected Area.
 	 * 
 	 * @return the Protected Area Selector, which is :
 	 *         <ul>
@@ -68,7 +68,7 @@ public abstract class ProtectedAreaHelper {
 	 *         no Protected Area Management Element ;</li>
 	 *         <li>The Default Protected Area Selector, if the given element has
 	 *         a Protected Area Management Element which has no Custom Protected
-	 *         Area Selector is defined in ;</li>
+	 *         Area Selector defined in ;</li>
 	 *         <li>The Custom Protected Area Selector defined in the given
 	 *         element's Protected Area Management Element ;</li>
 	 *         </ul>
@@ -76,15 +76,15 @@ public abstract class ProtectedAreaHelper {
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Element} is <tt>null</tt>.
 	 */
-	public static String getProtectedAreaSelector(Element elmt) {
-		return getProtectedAreaSelectorAttr(elmt).getValue();
+	public static String getProtectedAreaSelector(Element e) {
+		return getProtectedAreaSelectorAttr(e).getValue();
 	}
 
-	private static Attr getProtectedAreaSelectorAttr(Element elmt) {
+	private static Attr getProtectedAreaSelectorAttr(Element e) {
 		try {
-			return DocHelper.getAttribute(elmt, "./"
-					+ PROTECTED_AREA_MGMT_ELEMENT + "/@"
-					+ PROTECTED_AREA_SELECTOR, DEFAULT_PROTECTED_AREA_SELECTOR);
+			return DocHelper.getAttribute(e, "./" + PROTECTED_AREA_MGMT_ELEMENT
+					+ "/@" + PROTECTED_AREA_SELECTOR,
+					DEFAULT_PROTECTED_AREA_SELECTOR);
 		} catch (XPathExpressionException bug) {
 			throw new RuntimeException("Because the XPath Expression "
 					+ "is hard-coded, such error cannot happened. "
@@ -118,11 +118,12 @@ public abstract class ProtectedAreaHelper {
 	/**
 	 * @param elmt
 	 *            is an {@link Element} which describes an Instance or a
-	 *            protected area, where are defined the given Protected Area
+	 *            Protected Area, where are defined the given Protected Area
 	 *            Names.
 	 * @param names
-	 *            are the Protected Area Names to convert to their Protected
-	 *            Area Identifiers. Can be <tt>null</tt>.
+	 *            are the Protected Area Names to convert into their
+	 *            corresponding Protected Area Identifiers. Can be <tt>null</tt>
+	 *            .
 	 * 
 	 * @return the {@link ProtectedAreaIds}, corresponding to the given
 	 *         {@link ProtectedAreaNames}. Can be an empty set, when the given
