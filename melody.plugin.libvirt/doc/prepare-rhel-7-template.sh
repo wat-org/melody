@@ -12,7 +12,7 @@
 
 subscription-manager register --auto-attach --force --username="${RHSM_USERNAME}" --password="${RHSM_PASSWORD}"
 
-# need to disbale rhn classic
+# need to disable rhn classic
 sed -i -E 's/^enabled\s?=.*$/enabled = 0/g' /etc/yum/pluginconf.d/rhnplugin.conf
 # and to enable rhsm
 sed -i -E 's/^enabled\s?=.*$/enabled = 1/g' /etc/yum/pluginconf.d/subscription-manager.conf

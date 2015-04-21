@@ -6,10 +6,19 @@
 }
 
 rhnreg_ks --activationkey="${ACTIVATIONKEY}"
+
+# need to enable rhn classic
+sed -i -E 's/^enabled\s?=.*$/enabled = 1/g' /etc/yum/pluginconf.d/rhnplugin.conf
+# and to disable rhsm
+sed -i -E 's/^enabled\s?=.*$/enabled = 0/g' /etc/yum/pluginconf.d/subscription-manager.conf
+
 yum update -y
+yum install -y acpid
 
 sed -i -e /^HOSTNAME=/d /etc/sysconfig/network
 sed -i -e /^HWADDR=/d /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i -e /^UUID=/d /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i -e s/^ONBOOT=.*$/ONBOOT=yes/ /etc/sysconfig/network-scripts/ifcfg-eth0
 
 rm -f /etc/sysconfig/rhn/systemid 
 rm -f /etc/udev/rules.d/70-persistent-*

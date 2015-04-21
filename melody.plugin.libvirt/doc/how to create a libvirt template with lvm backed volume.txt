@@ -96,7 +96,7 @@ The new Template's VM will have mac address '52:54:00:01:00:81', ip address '168
   enable lvcd at startup
     chkconfig --add lvcd
     chkconfig lvcd on
-  do your best so that lvcd starts after network abd before ssh 
+  do your best so that lvcd starts after network and before ssh 
   - stop the template's VM
     # virsh destroy RHEL-7-minimal-template
 
