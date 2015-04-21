@@ -19,11 +19,11 @@
         <call orders="do-operation-on-postgresql-servers"/>
     </order>
 
-    <order name="create-database">
+    <order name="create-database-on-rdb-server">
         <call orders="create-database-on-postgresql-server"/>
     </order>
 
-    <order name="create-kerberos-user">
+    <order name="create-kerberos-user-on-rdb-server">
         <call orders="create-kerberos-user-on-postgresql-server"/>
     </order>
 
@@ -71,7 +71,7 @@
 
     <order name="do-operation-on-postgresql-server-on-single-machine">
         <property name="rdbs.path"                 value="§[ §[machine]§/rdb-server/@path ]§"/>
-        <property name="rdbs.name"                 value="§[ melody:getAttributeValue(§[machine]§/rdb-server/@name, 'postgres') ]§"/>
+        <property name="rdbs.provider"             value="§[ melody:getAttributeValue(§[machine]§/rdb-server/@provider, 'postgres') ]§"/>
         <property name="rdbs.version"              value="§[ §[machine]§/rdb-server/@version ]§"/>
         <property name="rdbs.owner"                value="§[ §[machine]§/rdb-server/owner/@login ]§"/>
         <property name="rdbs.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@id ]§"/>
@@ -149,6 +149,18 @@ exit 0
             <param name="service.name" value="postgresql"/>
         </call>
 
+        <!-- create databases -->
+        <foreach    items="§[machine]§/rdb-server/databases/database"
+                    item-name="database"
+                    max-par="1">
+            <property name="base.name"        value="§[§[database]§/@name]§"/>
+            <property name="base.owner"       value="§[§[database]§/@owner]§"/>
+            <property name="base.owner.pwd"   value="§[§[database]§/@owner-pwd]§"/>
+
+	        <call orders="create-database-on-postgresql-server"/>
+            <echo message="+ Database '§[base.name]§' successfully created on Postgresql Server on machine '§[machine.id]§'."/>
+        </foreach>
+
         <!-- customize / machine scope -->
         <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
 
@@ -157,7 +169,6 @@ exit 0
                     item-name="application"
                     max-par="1">
             <property name="appli.name"      value="§[§[application]§/@name]§"/>
-            <property name="appli.base"      value="§[§[application]§/@base]§"/>
 
             <!-- customize application -->
             <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§"/>
@@ -209,12 +220,12 @@ exit 0
          caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
          caller must define 'rdbs.owner', which represents the database owner.
-         caller must define 'appli.base', which represents the database name.
+         caller must define 'base.name', which represents the database name.
          caller must define 'base.owner', which represents the database owner.
          caller must define 'base.owner.pwd', which represents the database owner's password. -->
     <order name="create-database-on-postgresql-server">
         <!-- create database -->
-        <ssh description="[pgsql-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+        <ssh description="[pgsql-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
 roleExists=$(psql -t -U postgres <<EOF
@@ -233,17 +244,17 @@ EOF
 
 
 baseExists=$(psql -t -U postgres <<EOF
-select count(*) from pg_catalog.pg_database where datname='§[appli.base]§';
+select count(*) from pg_catalog.pg_database where datname='§[base.name]§';
 EOF
 )
 
 [ ${baseExists} = 0 ] && {
   psql -U §[rdbs.owner]§ << EOF
-CREATE DATABASE §[appli.base]§ WITH OWNER §[base.owner]§;
+CREATE DATABASE §[base.name]§ WITH OWNER §[base.owner]§;
 EOF
-  echo "database '§[appli.base]§' successfully created."
+  echo "database '§[base.name]§' successfully created."
 } || {
-  echo "database '§[appli.base]§' already exists. Nothing to do."
+  echo "database '§[base.name]§' already exists. Nothing to do."
 }
 
 # create group 'krb5', which will contains all user who can connect using 'gss' auth (see pg_hba.conf)
@@ -261,7 +272,6 @@ EOF
   echo "group 'krb5' already exists. Nothing to do."
 }
 
-
 exit 0
                 ]]>
             </exec>
@@ -272,11 +282,11 @@ exit 0
          caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
          caller must define 'rdbs.owner', which represents the database owner.
-         caller must define 'appli.base', which represents the database name.
+         caller must define 'base.name', which represents the database name.
          caller must define 'user', which represents the user to create.
          caller must define 'realm', which represents the realm of the user to create (unused in postgresql). -->
     <order name="create-kerberos-user-on-postgresql-server">
-        <!-- TODO: grant §[user]§ on §[appli.base]§ -->
+        <!-- TODO: grant §[user]§ on §[base.name]§ -->
         <synchronize scope="GLOBAL" lock-id="pgsql-create-user-§[user]§">
             <ssh description="[pgsql-create-user:§[user]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
                 <exec>
@@ -309,7 +319,6 @@ EOF
 } || {
   echo "user '§[user]§' is already a member of group 'krb5'. Nothing to do."
 }
-
 
 exit 0
                     ]]>

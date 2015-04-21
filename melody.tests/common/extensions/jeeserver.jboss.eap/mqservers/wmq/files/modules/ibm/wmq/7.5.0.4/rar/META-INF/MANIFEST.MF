@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.3
+Created-By: pxi32dev-20121015 (SR15 ) (IBM Corporation)
+Copyright-Notice: Licensed Materials - Property of IBM       5724-H72,
+  5655-R36, 5724-L26, 5655-L82          (c) Copyright IBM Corp. 2008, 
+ 2012 All Rights Reserved.          US Government Users Restricted Rig
+ hts -          Use,duplication or disclosure restricted by GSA ADP Sc
+ hedule Contract          with IBM Corp.
+Sealed: false
+Specification-Title: J2EE Connector Architecture
+Specification-Version: 1.5
+Implementation-Title: WebSphere MQ Resource Adapter
+Implementation-Version: 7.5.0.4-p750-004-140807
+Implementation-Vendor: IBM Corporation
+

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.1" name="ibm.wmq" slot="7.5.0.2">
+	<resources>
+		<resource-root path="rar/." />
+		<resource-root path="rar/com.ibm.mq.commonservices.jar" />
+		<resource-root path="rar/com.ibm.mq.connector.jar" />
+		<resource-root path="rar/com.ibm.mq.headers.jar" />
+		<resource-root path="rar/com.ibm.mq.jar" />
+		<resource-root path="rar/com.ibm.mq.jmqi.jar" />
+		<resource-root path="rar/com.ibm.mq.jmqi.local.jar" />
+		<resource-root path="rar/com.ibm.mq.jmqi.remote.jar" />
+		<resource-root path="rar/com.ibm.mq.jmqi.system.jar" />
+		<resource-root path="rar/com.ibm.mq.jms.admin.jar" />
+		<resource-root path="rar/com.ibm.mq.pcf.jar" />
+		<resource-root path="rar/com.ibm.mqjms.jar" />
+		<resource-root path="rar/com.ibm.msg.client.commonservices.j2se.jar" />
+		<resource-root path="rar/com.ibm.msg.client.commonservices.jar" />
+		<resource-root path="rar/com.ibm.msg.client.jms.internal.jar" />
+		<resource-root path="rar/com.ibm.msg.client.jms.jar" />
+		<resource-root path="rar/com.ibm.msg.client.matchspace.jar" />
+		<resource-root path="rar/com.ibm.msg.client.provider.jar" />
+		<resource-root path="rar/com.ibm.msg.client.ref.jar" />
+		<resource-root path="rar/com.ibm.msg.client.wmq.common.jar" />
+		<resource-root path="rar/com.ibm.msg.client.wmq.factories.jar" />
+		<resource-root path="rar/com.ibm.msg.client.wmq.jar" />
+		<resource-root path="rar/com.ibm.msg.client.wmq.v6.jar" />
+		<resource-root path="rar/dhbcore.jar" />
+		<resource-root path="CL3Export.jar" />
+		<resource-root path="CL3Nonexport.jar" />
+		<resource-root path="connector.jar" />
+		<resource-root path="fscontext.jar" />
+		<resource-root path="jms.jar" />
+		<resource-root path="jndi.jar" />
+		<resource-root path="jta.jar" />
+		<resource-root path="ldap.jar" />
+		<resource-root path="providerutil.jar" />
+		<resource-root path="rmm.jar" />
+	</resources>
+
+	<dependencies>
+		<module name="javax.api" />
+		<module name="javax.resource.api" />
+		<module name="javax.validation.api" />
+		<module name="javax.jms.api" />
+	</dependencies>
+</module>

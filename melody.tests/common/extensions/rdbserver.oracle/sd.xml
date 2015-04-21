@@ -19,11 +19,11 @@
         <call orders="do-operation-on-oracle-servers"/>
     </order>
 
-    <order name="create-database">
+    <order name="create-database-on-rdb-server">
         <call orders="create-database-on-oracle-server"/>
     </order>
 
-    <order name="create-kerberos-user">
+    <order name="create-kerberos-user-on-rdb-server">
         <call orders="create-kerberos-user-on-oracle-server"/>
     </order>
 
@@ -71,7 +71,7 @@
 
     <order name="do-operation-on-oracle-server-on-single-machine">
         <property name="rdbs.path"                 value="§[ §[machine]§/rdb-server/@path ]§"/>
-        <property name="rdbs.name"                 value="§[ melody:getAttributeValue(§[machine]§/rdb-server/@name, 'oracle') ]§"/>
+        <property name="rdbs.provider"             value="§[ melody:getAttributeValue(§[machine]§/rdb-server/@provider, 'oracle') ]§"/>
         <property name="rdbs.version"              value="§[ §[machine]§/rdb-server/@version ]§"/>
         <property name="rdbs.owner"                value="§[ §[machine]§/rdb-server/owner/@login ]§"/>
         <property name="rdbs.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@id ]§"/>
@@ -122,6 +122,18 @@
             <param name="dest.path"   value="§[rdbs.owner.home-dir]§/.krb5/krb5.keytab"/>
         </call>
 
+        <!-- create databases -->
+        <foreach    items="§[machine]§/rdb-server/databases/database"
+                    item-name="database"
+                    max-par="1">
+            <property name="base.name"        value="§[§[database]§/@name]§"/>
+            <property name="base.owner"       value="§[§[database]§/@owner]§"/>
+            <property name="base.owner.pwd"   value="§[§[database]§/@owner-pwd]§"/>
+
+	        <call orders="create-database-on-oracle-server"/>
+            <echo message="+ Database '§[base.name]§' successfully created on Oracle Server on machine '§[machine.id]§'."/>
+        </foreach>
+
         <!-- start -->
         <call orders="start-service-on-single-machine"       sequence-descriptor="../services/sd.xml">
             <param name="service.name" value="dbora"/>
@@ -135,7 +147,6 @@
                     item-name="application"
                     max-par="1">
             <property name="appli.name"      value="§[§[application]§/@name]§"/>
-            <property name="appli.base"      value="§[§[application]§/@base]§"/>
 
             <!-- customize application -->
             <property name="cb.order"        value="§[substring-after('§[callback.application]§','::')]§"/>
@@ -188,7 +199,7 @@
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
          caller must define 'rdbs.owner', which represents the database owner.
          caller must define 'rdbs.owner.pwd', which represents the database owner's password.
-         caller must define 'appli.base', which represents the database name.
+         caller must define 'base.name', which represents the database name.
          caller must define 'base.owner', which represents the database owner.
          caller must define 'base.owner.pwd', which represents the database owner's password. -->
     <order name="create-database-on-oracle-server">
@@ -197,30 +208,30 @@
         <!-- create database
              create a user with all privileges
              create the recovery user (must have all privileges too, in order to be able to commit pending trransactions) -->
-        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
-grep '§[appli.base]§' /etc/oratab 1>/dev/null && {
-  echo "database '§[appli.base]§' already exists. Nothing to do."
+grep '§[base.name]§' /etc/oratab 1>/dev/null && {
+  echo "database '§[base.name]§' already exists. Nothing to do."
 } || {
   dbca -silent \
     -createDatabase \
     -templateName General_Purpose.dbc \
-    -gdbName '§[appli.base]§' \
-    -sid '§[appli.base]§' \
+    -gdbName '§[base.name]§' \
+    -sid '§[base.name]§' \
     -sysPassword '§[rdbs.owner.pwd]§' \
     -systemPassword '§[rdbs.owner.pwd]§' \
     -characterSet AL32UTF8 \
     -databaseType MULTIPURPOSE
   res=$?
   [ $res != 0 ] && {
-    echo "fail to create database '§[appli.base]§'. Exiting with error code $res." >&2
+    echo "fail to create database '§[base.name]§'. Exiting with error code $res." >&2
     exit $res
   }
-  echo "database '§[appli.base]§' successfully created."
+  echo "database '§[base.name]§' successfully created."
 }
 
-. /usr/local/bin/oraenv <<< '§[appli.base]§'
+. /usr/local/bin/oraenv <<< '§[base.name]§'
 
 userExists=$(sqlplus -S / as SYSDBA <<EOF
 set heading off
@@ -287,10 +298,10 @@ exit 0
             </exec>
         </ssh>
         <!-- database will start/stop when dbora start/stop -->
-        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
-sed -rie 's/§[appli.base]§(.*).$/§[appli.base]§\1Y/' /etc/oratab
+sed -rie 's/§[base.name]§(.*).$/§[base.name]§\1Y/' /etc/oratab
                 ]]>
             </exec>
         </ssh>
@@ -299,10 +310,10 @@ sed -rie 's/§[appli.base]§(.*).$/§[appli.base]§\1Y/' /etc/oratab
                - remote_os_authent must be set to FALSE
                Note that database must be restarted to apply configuration changes
         -->
-        <ssh description="[oracle-create-db:§[appli.base]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
-. /usr/local/bin/oraenv <<< '§[appli.base]§'
+. /usr/local/bin/oraenv <<< '§[base.name]§'
 
 paramSet=$(sqlplus -S / as SYSDBA <<EOF
 set heading off
@@ -342,7 +353,7 @@ exit 0
                kadmin.local -q 'addprinc -policy user -pw totopwd toto'
              create the user in the oracle database
              as oracle
-               . /usr/local/bin/oraenv <<< '§[appli.base]§'
+               . /usr/local/bin/oraenv <<< '§[base.name]§'
                sqlplus / as sysdba
                create user "TOTO@CLOUD.LOCAL" identified externally;
                grant all privileges to "TOTO@CLOUD.LOCAL";
@@ -350,8 +361,8 @@ exit 0
              acquire toto credentials and connect to sqlplus with kerberos credentials
              as oracle
                kinit toto
-               . /usr/local/bin/oraenv <<< '§[appli.base]§'
-               sqlplus /@§[rdbs.listen.fqdn]§:§[rdbs.listen.port.tcp]§/§[appli.base]§
+               . /usr/local/bin/oraenv <<< '§[base.name]§'
+               sqlplus /@§[rdbs.listen.fqdn]§:§[rdbs.listen.port.tcp]§/§[base.name]§
              you are connected !
         -->
     </order>
@@ -360,7 +371,7 @@ exit 0
          caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
          caller must define 'rdbs.owner', which represents the database owner.
-         caller must define 'appli.base', which represents the database name.
+         caller must define 'base.name', which represents the database name.
          caller must define 'user', which represents the user to create.
          caller must define 'realm', which represents the realm of the user to create. -->
     <order name="create-kerberos-user-on-oracle-server">
@@ -370,7 +381,7 @@ exit 0
             <ssh description="[oracle-create-user:§[user]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
                 <exec>
                     <![CDATA[
-. /usr/local/bin/oraenv <<< '§[appli.base]§'
+. /usr/local/bin/oraenv <<< '§[base.name]§'
 
 userExists=$(sqlplus -S / as SYSDBA <<EOF
 set heading off

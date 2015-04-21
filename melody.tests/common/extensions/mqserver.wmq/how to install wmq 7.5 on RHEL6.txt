@@ -1,0 +1,206 @@
+-----------------------------------------------------------
+Install WMQ software
+-----------------------------------------------------------
+installer une nouvelle machine RHEL-6
+en tant que template
+qui possede 20G de disque
+
+# 7.5.0.2 binaries
+# copy /Cloud/binaries/webspheremq/mqadv_dev75_linux_x86-64.tar.gz in VM:/tmp
+# 7.5.0.4 patch
+# copy /Cloud/binaries/webspheremq/7.5.0-WS-MQ-LinuxX64-FP0004.tar.gz in VM:/tmp
+cd /tmp
+tar -xvzf /tmp/mqadv_dev75_linux_x86-64.tar.gz
+tar -xvzf /tmp/7.5.0-WS-MQ-LinuxX64-FP0004.tar.gz
+
+# special trick for licensing
+mkdir -p /tmp/mq_license_7.5.0/license/
+touch /tmp/mq_license_7.5.0/license/status.dat
+
+# install
+yum localinstall -y MQSeriesRuntime-7.5.0-2.x86_64.rpm MQSeriesServer-7.5.0-2.x86_64.rpm
+yum localinstall -y ./MQSeriesRuntime-U200491-7.5.0-4.x86_64.rpm ./MQSeriesServer-U200491-7.5.0-4.x86_64.rpm 
+
+# check requirements with "/opt/mqm/bin/mqconfig"
+yum install bc
+
+# change the limits of user mqm in /etc/security/limits.conf 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# webshpere mq specific
+mqm        soft    nofile           10240
+mqm        hard    nofile           10240
+mqm        soft    nproc            4096
+mqm        hard    nproc            4096
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# modify system settings in /etc/sysctl.conf 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# webshpere mq specific
+#kernel.shmmni = 4096
+#kernel.shmall = 2097152
+#kernel.shmmax = 268435456
+kernel.sem = 500 256000 250 1024
+fs.file-max = 524288
+net.ipv4.tcp_keepalive_time=300
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# chose this installation to be the primary installation on the system
+/opt/mqm/bin/setmqinst -i -p /opt/mqm
+
+### setup mqm home
+su - mqm
+cp -v /etc/skel/.b* ~mqm/
+chmod g-w ~mqm/.b*
+mkdir ~mqm/.ssh
+touch ~mqm/.ssh/authorized_keys
+chmod 700 ~mqm/.ssh/
+chmod 600 ~mqm/.ssh/authorized_keys 
+chmod 700 /var/mqm
+
+# modify ~mqm/.bashrc 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# set the websphere primary installation environment
+. setmqenv -s -k
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+### allow ssh with private key on mqm
+# as root
+# install package containing 'audit2allow'
+yum install -y policycoreutils-python
+
+# restore selinux attrs
+restorecon -FRvv /var/mqm/
+
+# edit test.txt and put it inside
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+type=AVC msg=audit(1426169005.215:2710): avc:  denied  { read } for  pid=6247 comm="sshd" name="authorized_keys" dev=dm-0 ino=14967 scontext=unconfined_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:var_t:s0 tclass=file
+type=AVC msg=audit(1426169162.035:2741): avc:  denied  { open } for  pid=6247 comm="sshd" name="authorized_keys" dev=dm-0 ino=14967 scontext=unconfined_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:var_t:s0 tclass=file
+type=AVC msg=audit(1426168573.074:2658): avc:  denied  { getattr } for  pid=6247 comm="sshd" path="/var/mqm/.ssh/authorized_keys" dev=dm-0 ino=14967 scontext=unconfined_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:var_t:s0 tclass=file
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+cat test.txt | audit2allow -a -M authorize-mqmssh
+semodule -i authorize-mqmssh.pp
+# from a remote host, try to connect to your machine as mqm
+ssh -o UserKnownHostsFile=known_hosts -i id_rsa mqm@YOUR_IP
+# it works !!
+
+### deploy the startup script
+# as root
+# copy /Cloud/binaries/webspheremq/msl1.tar.gz in VM:/tmp
+cd /tmp
+tar -xvzf msl1.tar.gz
+
+# install 
+yum localinstall -y MSL1/MSL1-1.0.1-1.noarch.rpm
+
+# use the service name 'wmq' instead of 'ibm.com-WebSphere_MQ'
+cd /etc/conf.d/
+ln -vs ibm.com-WebSphere_MQ wmq.conf
+
+cd /etc/init.d/
+ln -vs ibm.com-WebSphere_MQ wmq
+
+chkconfig ibm.com-WebSphere_MQ off
+chkconfig --del ibm.com-WebSphere_MQ 
+chkconfig --add wmq 
+chkconfig wmq on
+
+
+
+
+
+##########################
+# installation tests
+
+# install samples
+yum localinstall -y MQSeriesSamples-7.5.0-2.x86_64.rpm
+
+# as 'mqm'
+su - mqm
+
+# create & start the queue mamanger
+crtmqm QMA
+strmqm QMA
+
+# define a local queue
+runmqsc QMA <<+++EOF+++
+DEFINE QLOCAL (QUEUE1)
+end
++++EOF+++
+
+# send message in the queue
+cd /opt/mqm/samp/bin
+./amqsput QUEUE1 QMA <<+++EOF+++
+salut les filles
+messages1
+messages2
+
++++EOF+++
+
+# retrieve the message
+./amqsget QUEUE1 QMA
+
+# go back as root
+exit
+
+# remove MQSamples
+yum localinstall -y MQSeriesSamples-7.5.0-2.x86_64.rpm
+
+
+
+
+
+###########################
+# queue manager setup
+
+# create the queue mamanger
+crtmqm §[queue-manager.name.uc]§
+# start the queue mamanger
+strmqm §[queue-manager.name.uc]§
+
+# set the default listener @ip/port and tell him to start/stop when the queue manager start and stop
+# TODO: each queue manager should listen on its own port
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+alter listener(SYSTEM.DEFAULT.LISTENER.TCP) trptype(TCP) ipaddr(§[mqs.listen.ip]§) port(§[mqs.listen.port.tcp]§) control(QMGR)
+display listener(SYSTEM.DEFAULT.LISTENER.TCP) all
+end
++++EOF+++
+
+# disable authentication on
+# TODO : find a better solution to deal with autentication
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+ALTER QMGR CHLAUTH(DISABLED)
+DISPLAY QMGR CHLAUTH
+end
++++EOF+++
+
+
+
+
+###########################
+# channel setup
+
+# create a default channel for unsecured communication
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+define channel(§[channel.name.uc]§) CHLTYPE(SVRCONN) TRPTYPE(TCP)
+display channel(§[channel.name.uc]§) all
+end
++++EOF+++
+
+
+
+
+###########################
+# queue setup
+
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+define qlocal(§[queue.name.uc]§)
+end
++++EOF+++
+
+
+
+
+
+##########################
+# connect to a queue for jboss eap 6

@@ -8,11 +8,11 @@
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
          caller must define 'driver.name', which represents the name of the jdbc dirver.
          caller must define 'driver.version', which represents the version of the jdbc dirver.
-         caller must define 'appli.name', which represents the application which need the jdbc driver.
-         caller must define 'jees.id', which represents the jee-server id.
-         caller must define 'jees.owner', which represents the jee-server owner.
-         caller must define 'jees.path', which represents the jee-server path.
-         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'jees.owner', which represents the jboss eap server owner.
+         caller must define 'jees.path', which represents the jboss eap server path.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
     <order name="deploy-jdbc-driver-on-single-jee-server">
         <!-- upload custom module directory and jar files  -->
         <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
@@ -25,7 +25,7 @@
         </upload>
 
         <!-- JBoss Configuration update -->
-        <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy Postgresql Server JDBC Driver." severity="info"/>
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy Oracle Server JDBC Driver." severity="info"/>
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[exists(*:datasources)]/*:datasources/*:drivers/*:driver[@name='§[driver.name]§']
@@ -37,8 +37,8 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <driver name="§[driver.name]§" module="org.postgresql:§[driver.version]§">
-                    <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
+                <driver name="§[driver.name]§" module="oracle.jdbc:§[driver.version]§">
+                    <xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
                 </driver>
                 ]]>
             </node-content>
@@ -46,19 +46,17 @@
     </order>
 
     <!-- declare a datasource on the given jboss eap server.
-         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server.
-         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
-         caller must define 'driver.name', which represents the name of the jdbc dirver.
          caller must define 'datasource.name', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.fqdn', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.port', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.base', which represents the name of the jdbc dirver.
-         caller must define 'user.name', which represents the name of the jdbc dirver.
-         caller must define 'user.pwd', which represents the name of the jdbc dirver.
-         caller must define 'security-domain.name', which represents the name of the security domain.
-         caller must define 'appli.name', which represents the application which need the jdbc driver.
-         caller must define 'jees.id', which represents the jee-server id.
-         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+         caller must define 'rdbs.fqdn', which represents the fqdn of the rdb-server to connect to.
+         caller must define 'rdbs.port', which represents the port of the rdb-server to connect to.
+         caller must define 'rdbs.base', which represents the base of the rdb-server to connect to.
+         caller must define 'user.name', which represents the name to authenticate with.
+         caller must define 'user.pwd', which represents the password to authenticate with.
+         caller must define 'security-domain.name', which represents the security-domain name to authenticate with.
+         caller must define 'driver.name', which represents the name of the jdbc dirver.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
     <order name="declare-datasource-on-single-jee-server">
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Create hibernate.jdbc.dialect system properties" severity="info"/>
         <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
@@ -84,13 +82,14 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.Oracle10gDialect"/>
                 ]]>
             </node-content>
         </append-xml-elements>
 
         <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <elements-selector>
+                /*:server/*:profile/*:subsystem/*:datasources/*:xa-datasource[@pool-name="§[datasource.name]§"]
                 /*:server/*:profile/*:subsystem/*:datasources/*:datasource[@pool-name="§[datasource.name]§"]
             </elements-selector>
         </remove-xml-elements>
@@ -100,24 +99,28 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <!-- the FQDN of the postgres server must be used in the connection-url, otherwise the KRB/SPN lookup will fail -->
-                <datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true" jta="true">
-                    <connection-url>jdbc:postgresql://§[rdbs.fqdn]§:§[rdbs.port]§/§[rdbs.base]§</connection-url>
-                    <connection-property name="jaasApplicationName">
-                        §[security-domain.name]§
-                    </connection-property>
+                <datasource jta="true" jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true" statistics-enabled="true">
+                    <connection-url>jdbc:oracle:thin:@§[rdbs.fqdn]§:§[rdbs.port]§:§[rdbs.base]§</connection-url>
                     <!--
+                    <security>
+                        <user-name>§[user.name]§</user-name>
+                        <password>§[user.pwd]§</password>
+                    </security>
+                    -->
                     <security>
                         <security-domain>§[security-domain.name]§</security-domain>
                     </security>
-                    -->
+                    <connection-property name="oracle.net.authentication_services">
+                        KERBEROS5
+                    </connection-property>
                     <driver>§[driver.name]§</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <validation>
-                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
-                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
-                        <!--
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
                         <validate-on-match>true</validate-on-match>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter"/>
+                        <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker"/>
+                        <!--
                         <background-validation>true</background-validation>
                         <background-validation-millis>60000</background-validation-millis>
                         -->
@@ -129,19 +132,17 @@
     </order>
 
     <!-- declare an xa datasource on the given jboss eap server.
-         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server.
-         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
-         caller must define 'driver.name', which represents the name of the jdbc dirver.
          caller must define 'datasource.name', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.fqdn', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.port', which represents the name of the jdbc dirver.
-         caller must define 'rdbs.base', which represents the name of the jdbc dirver.
-         caller must define 'user.name', which represents the name of the jdbc dirver.
-         caller must define 'user.pwd', which represents the name of the jdbc dirver.
-         caller must define 'security-domain.name', which represents the name of the security domain.
-         caller must define 'appli.name', which represents the application which need the jdbc driver.
-         caller must define 'jees.id', which represents the jee-server id.
-         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+         caller must define 'rdbs.fqdn', which represents the fqdn of the rdb-server to connect to.
+         caller must define 'rdbs.port', which represents the port of the rdb-server to connect to.
+         caller must define 'rdbs.base', which represents the base of the rdb-server to connect to.
+         caller must define 'user.name', which represents the name to authenticate with.
+         caller must define 'user.pwd', which represents the password to authenticate with.
+         caller must define 'security-domain.name', which represents the security-domain name to authenticate with.
+         caller must define 'driver.name', which represents the name of the jdbc dirver.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
     <order name="declare-xa-datasource-on-single-jee-server">
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Create hibernate.jdbc.dialect system properties" severity="info"/>
         <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
@@ -167,7 +168,7 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+                <property name="hibernate.jdbc.dialect" value="org.hibernate.dialect.Oracle10gDialect"/>
                 ]]>
             </node-content>
         </append-xml-elements>
@@ -184,32 +185,29 @@
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <xa-datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true">
-                    <xa-datasource-property name="ServerName">§[rdbs.fqdn]§</xa-datasource-property>
-                    <xa-datasource-property name="PortNumber">§[rdbs.port]§</xa-datasource-property>
-                    <xa-datasource-property name="DatabaseName">§[rdbs.base]§</xa-datasource-property>
+                <xa-datasource jndi-name="java:jboss/datasource/§[datasource.name]§" pool-name="§[datasource.name]§" enabled="true" use-java-context="true" statistics-enabled="true">
+                    <xa-datasource-property name="URL">jdbc:oracle:thin:@§[rdbs.fqdn]§:§[rdbs.port]§:§[rdbs.base]§</xa-datasource-property>
+                    <xa-datasource-property name="User">§[user.name]§</xa-datasource-property>
+                    <xa-datasource-property name="Password">§[user.pwd]§</xa-datasource-property>
                     <driver>§[driver.name]§</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
-                    <security>
-                        <user-name>§[user.name]§</user-name>
-                        <password>§[user.pwd]§</password>
-                    </security>
                     <recovery>
                         <recover-credential>
-                            <user-name>§[user.name]§</user-name>
-                            <password>§[user.pwd]§</password>
+                            <user-name>recovery</user-name>
+                            <password>password</password>
                         </recover-credential>
                     </recovery>
                     <validation>
-                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
-                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter"/>
+                        <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker"/>
                     </validation>
                 </xa-datasource>
                 ]]>
             </node-content>
         </insert-xml-elements-before>
-        <!-- Postgresql don't requiere any particular setup for xa recovery.
-        We can specify the same user in the xa-datasource's recovery configuration. -->
+        <!-- The rdbserver.oracle extension automatically configures a user for the xa recovery.
+        This user must be used in the xa-datasource's recovery configuration. -->
     </order>
 
 </sequence>

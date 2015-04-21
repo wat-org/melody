@@ -133,11 +133,11 @@ set sqlprompt "_user '@' _connect_identifier > "
 Create a database
 -----------------------------------------------------------
 as oracle:
-# don't use '@' is the password
+# don't use the character '@' in the password
 dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbName eap7 -sid eap7 -sysPassword 'Rf%9cRgf7' -systemPassword 'Rf%9cRgf7' -characterSet AL32UTF8 -databaseType MULTIPURPOSE
 
 as root:
-# enable database creation with dbora
+# enable database startup with dbora
 sed -rie 's/eap7(.*).$/eap7\1Y/' /etc/oratab
 
 

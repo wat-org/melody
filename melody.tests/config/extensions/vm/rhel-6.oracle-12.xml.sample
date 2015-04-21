@@ -4,7 +4,7 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.oracle-12">
-			<rdb-server path="/opt/oracle-12.1.0" version="12.1.0.2.0" name="oracle">
+			<rdb-server path="/opt/oracle-12.1.0" provider="oracle" version="12.1.0.2.0">
 				<owner login="oracle"/>
 				<listen-on device="eth0" port-offset="0">
 					<socket name="tcp" port="1521"/>
