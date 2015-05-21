@@ -36,6 +36,24 @@
             </resources>
         </upload>
 
+        <!-- upload ibm jce provider as an extension of the jvm  -->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="files/ibm-jce-providers/"
+                        match="*.jar"
+                        dest-basedir="/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/ext/">
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- declare ibm jce provider in the java.security file of the jvm  -->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="files/ibm-jce-providers/"
+                        match="java.security"
+                        dest-basedir="/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/security/">
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+        </upload>
+
         <!-- JBoss Configuration update -->
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere Java classes configuration file." severity="info"/>
         <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
@@ -54,28 +72,26 @@
         </insert-xml-elements-before>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <only-if-not-exists>
-                /*:server/*:system-properties[@name='com.ibm.msg.client.config.location']
+                /*:server/*:system-properties/*:property[@name='com.ibm.msg.client.config.location']
             </only-if-not-exists>
             <elements-selector>
                 /*:server/*:system-properties
             </elements-selector>
             <node-content>
                 <![CDATA[
-<!-- configuration of the websphere mq classes for JMS -->
+            <!-- configuration of the websphere mq classes for JMS -->
             <property name="com.ibm.msg.client.config.location" value="file://§[jees.path]§/configuration/§[mq.rar.name]§.jms.config"/>
-<!-- configuration of the websphere mq classes for Java -->
-<!-- not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
+            <!-- configuration of the websphere mq classes for Java -->
+            <!-- not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
             <property name="com.ibm.mq.commonservices" value="file://§[jees.path]§/configuration/§[mq.rar.name]§.java.config"/>
--->                ]]>
+            -->
+            <!-- enable FIPS on the websphere mq classes for JMS -->
+            <property name="com.ibm.jsse2.usefipsprovider" value="true"/>
+                ]]>
             </node-content>
         </append-xml-elements>
 
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere MQ RAR." severity="info"/>
-        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
-            <elements-selector>
-                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]
-            </elements-selector>
-        </remove-xml-elements>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <elements-selector>
                 /*:server/*:profile/*:subsystem[*:connector/@name="remoting-connector"]/following-sibling::*[1]
@@ -93,6 +109,9 @@
             <elements-selector>
                 /*:server/*:profile/*:subsystem/*:resource-adapters
             </elements-selector>
+            <only-if-not-exists>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]
+            </only-if-not-exists>
             <node-content>
                 <![CDATA[
                 <resource-adapter id="§[mq.rar.name]§">
@@ -113,12 +132,13 @@
     </order>
 
     <!-- declare a connection definition into the given mq rar on the given jboss eap server.
-         caller must define 'mq.rar.name', which represents the name of the mq rar.
+         caller must define 'mq.rar.name', which represents the name of the mq rar this connection definition will be linked with.
          caller must define 'connection-definition.name', which represents the name of the connection definition.
          caller must define 'mqs.fqdn', which represents the fqdn of the mq-server to connect to.
          caller must define 'mqs.port', which represents the port of the mq-server to connect to.
          caller must define 'queue-manager.name', which represents the queue-manager of the mq-server to connect to.
          caller must define 'channel.name', which represents the channel name of the mq-server to connect to.
+         caller must define 'channel.secured', which indicates if the channel should be or not.
          caller must define 'user.name', which represents the name to authenticate with.
          caller must define 'user.pwd', which represents the password to authenticate with.
          caller must define 'security-domain.name', which represents the security-domain name to authenticate with.
@@ -166,6 +186,11 @@
                             <config-property name="channel">
                                 §[channel.name.uc]§
                             </config-property>
+                          §[ if ('§[channel.secured]§' = 'true') then '
+                            <config-property name="sslCipherSuite">
+                                SSL_RSA_WITH_AES_128_CBC_SHA256
+                            </config-property>
+                          ' else '' ]§
                             <config-property name="transportType">
                                 CLIENT
                             </config-property>
@@ -189,7 +214,7 @@
     </order>
 
     <!-- declare a queue for websphere mq on the given jboss eap server.
-         caller must define 'mq.rar.name', which represents the name of the mq rar.
+         caller must define 'mq.rar.name', which represents the name of the mq rar this queue will be linked with.
          caller must define 'queue.name', which represents the queue name of the mq-server to connect to.
          caller must define 'appli.name', which represents the application which need to be configured.
          caller must define 'jees.id', which represents the jboss eap server id.

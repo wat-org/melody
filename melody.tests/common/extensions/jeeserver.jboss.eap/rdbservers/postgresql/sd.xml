@@ -105,15 +105,6 @@
                     <connection-property name="jaasApplicationName">
                         §[security-domain.name]§
                     </connection-property>
-                    <!--
-                    <security>
-                        <user-name>§[user.name]§</user-name>
-                        <password>§[user.pwd]§</password>
-                    </security>
-                    <security>
-                        <security-domain>§[security-domain.name]§</security-domain>
-                    </security>
-                    -->
                     <driver>§[driver.name]§</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <validation>
