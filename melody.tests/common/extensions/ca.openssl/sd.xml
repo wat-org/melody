@@ -42,7 +42,7 @@
                         match="openssl.cnf"
                         dest-basedir="§[ca.path]§/tls/"
                         template="y">
-                <posix-permissions scope="files">600</posix-permissions>
+                <posix-permissions scope="files">644</posix-permissions>
             </resources>
         </upload>
 
