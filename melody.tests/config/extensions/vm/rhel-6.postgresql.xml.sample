@@ -13,8 +13,8 @@
 
 			<credentials>
 				<!-- postgresql user and group -->
-				<user homedir="/var/lib/pgsql/" id="26" name="postrges" password="XXXXXXXXX" ref-group-name="postrges"/>
-				<group id="26" name="postrges"/>
+				<user homedir="/var/lib/pgsql/" id="26" name="postrges" password="XXXXXXXXX" ref-group-name="postrges" herit-policy="append"/>
+				<group id="26" name="postrges" herit-policy="append"/>
 			</credentials>
 		</model>
 	</models>

@@ -22,50 +22,53 @@
 				<jboss-web uses-native-components="true"/>
 			</jee-server-model>
 
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0">
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" version="6.0.1">
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" version="6.0.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" version="6.1.0">
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" version="6.1.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" version="6.1.1">
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" version="6.1.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" version="6.2.0">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" version="6.2.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" version="6.2.1">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" version="6.2.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" version="6.2.2">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" version="6.2.2" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" version="6.2.3">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" version="6.2.3" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" version="6.2.4">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" version="6.2.4" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" version="6.3.0">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" version="6.3.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" version="6.3.1">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" version="6.3.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" version="6.3.2">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" version="6.3.2" herit-policy="append">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.4.0" version="6.4.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
 
 			<credentials>
-				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX"/>
-				<credential group="jboss" homedir="/home/jeeusra" id="5101" login="jeeusra" password="XXXXXXXXXX"/>
-				<credential group="jboss" homedir="/home/jeeusrb" id="5102" login="jeeusrb" password="XXXXXXXXXX"/>
-				<credential group="jboss" homedir="/home/jeeusrc" id="5103" login="jeeusrc" password="XXXXXXXXXX"/>
-				<credential group="jboss" homedir="/home/jeeusrd" id="5103" login="jeeusrd" password="XXXXXXXXXX"/>
-				<credential group="jboss" homedir="/home/jeeusre" id="5104" login="jeeusre" password="XXXXXXXXXX"/>
+				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jboss" homedir="/home/jeeusra" id="5101" login="jeeusra" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jboss" homedir="/home/jeeusrb" id="5102" login="jeeusrb" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jboss" homedir="/home/jeeusrc" id="5103" login="jeeusrc" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jboss" homedir="/home/jeeusrd" id="5103" login="jeeusrd" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jboss" homedir="/home/jeeusre" id="5104" login="jeeusre" password="XXXXXXXXXX" herit-policy="append"/>
 			</credentials>
 		</model>
 	</models>

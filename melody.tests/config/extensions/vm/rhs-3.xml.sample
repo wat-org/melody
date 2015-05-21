@@ -8,10 +8,10 @@
 				<!-- base channel for RHS 3.0 -->
 				<base-channel name="rhel-x86_64-server-6"/>
 				<!-- mandatory child channels for RHS 3.0 -->
-				<channel name="rhel-x86_64-server-6-rhs-3"/>
-				<channel name="rhel-x86_64-server-sfs-6"/>
+				<channel name="rhel-x86_64-server-6-rhs-3" herit-policy="append"/>
+				<channel name="rhel-x86_64-server-sfs-6" herit-policy="append"/>
 			</rhn>
-			<services>
+			<services herit-policy="append">
 				<!-- start glusterd -->
 				<service name="glusterd" state="on"/>
 				<service name="nfs" state="on"/>

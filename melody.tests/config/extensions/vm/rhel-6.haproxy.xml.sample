@@ -14,13 +14,13 @@
 
 			<rhn>
 				<!-- mandatory child channel for haproxy -->
-				<channel name="rhel-x86_64-server-lb-6"/>
+				<channel name="rhel-x86_64-server-lb-6" herit-policy="append"/>
 			</rhn>
 
 			<credentials>
 				<!-- haproxy user and group -->
-				<user homedir="/home/haproxy" id="188" name="haproxy" password="XXXXXXXX" ref-group-name="haproxy"/>
-				<group id="188" name="haproxy"/>
+				<user homedir="/home/haproxy" id="188" name="haproxy" password="XXXXXXXX" ref-group-name="haproxy" herit-policy="append"/>
+				<group id="188" name="haproxy" herit-policy="append"/>
 			</credentials>
 		</model>
 	</models>

@@ -11,7 +11,7 @@
 				</listen-on>
 			</rdb-server>
 
-			<packages>
+			<packages herit-policy="append">
 				<!-- for oracle 12-->
 				<package name="cloog-ppl"/>
 				<package name="compat-libcap1"/>
@@ -33,13 +33,13 @@
 			<credentials>
 				<!-- oracle user and group -->
 				<!-- character '@' is forbidden in oracle user's password -->
-				<user homedir="/home/oprofile" id="16" name="oprofile" password="XXXXXXXXXX" ref-group-name="oprofile"/>
-				<user homedir="/home/oracle" id="54321" name="oracle" password="XXXXXXXXXX" ref-group-name="oinstall">
+				<user homedir="/home/oprofile" id="16" name="oprofile" password="XXXXXXXXXX" ref-group-name="oprofile" herit-policy="append"/>
+				<user homedir="/home/oracle" id="54321" name="oracle" password="XXXXXXXXXX" ref-group-name="oinstall" herit-policy="append">
 					<group ref-group-name="dba"/>
 				</user>
-				<group id="16" name="oprofile"/>
-				<group id="54321" name="oinstall"/>
-				<group id="54322" name="dba">
+				<group id="16" name="oprofile" herit-policy="append"/>
+				<group id="54321" name="oinstall" herit-policy="append"/>
+				<group id="54322" name="dba" herit-policy="append">
 					<user ref-user-name="oracle"/>
 				</group>
 			</credentials>

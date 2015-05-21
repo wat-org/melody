@@ -21,35 +21,35 @@
 				</keystore>
 			</kvc-server-model>
 
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" version="6.0.0">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" version="6.0.0" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.1" version="6.0.1">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.1" version="6.0.1" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.1.0" version="6.1.0">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.1.0" version="6.1.0" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.0" version="6.2.0">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.0" version="6.2.0" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.1" version="6.2.1">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.1" version="6.2.1" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" version="6.3.0">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" version="6.3.0" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.1" version="6.3.1">
+			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.1" version="6.3.1" herit-policy="append">
 				<owner login="jdg"/>
 			</jboss-datagrid-engine>
 
 			<credentials>
-				<credential group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX"/>
-				<credential group="jdg" homedir="/home/jdgusra" id="5201" login="jdgusra" password="XXXXXXXXXX"/>
-				<credential group="jdg" homedir="/home/jdgusrb" id="5202" login="jdgusrb" password="XXXXXXXXXX"/>
-				<credential group="jdg" homedir="/home/jdgusrc" id="5203" login="jdgusrc" password="XXXXXXXXXX"/>
-				<credential group="jdg" homedir="/home/jdgusrd" id="5203" login="jdgusrd" password="XXXXXXXXXX"/>
-				<credential group="jdg" homedir="/home/jdgusre" id="5204" login="jdgusre" password="XXXXXXXXXX"/>
+				<credential group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jdg" homedir="/home/jdgusra" id="5201" login="jdgusra" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jdg" homedir="/home/jdgusrb" id="5202" login="jdgusrb" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jdg" homedir="/home/jdgusrc" id="5203" login="jdgusrc" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jdg" homedir="/home/jdgusrd" id="5203" login="jdgusrd" password="XXXXXXXXXX" herit-policy="append"/>
+				<credential group="jdg" homedir="/home/jdgusre" id="5204" login="jdgusre" password="XXXXXXXXXX" herit-policy="append"/>
 			</credentials>
 		</model>
 	</models>
