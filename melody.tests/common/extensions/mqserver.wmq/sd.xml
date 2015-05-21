@@ -115,6 +115,7 @@
             <foreach    items="§[queue-manager]§/channels/channel"
                         item-name="channel">
                 <property name="channel.name" value="§[§[channel]§/@name]§"/>
+                <property name="channel.secured" value="§[§[channel]§/@secured]§"/>
 
                 <call orders="create-channel-on-wmq-server"/>
                 <echo message="+ Channel '§[channel.name]§' successfully created in Queue Manager '§[queue-manager.name]§' on WebSphere MQ Server on machine '§[machine.id]§'."/>
@@ -192,11 +193,12 @@
          caller must define 'queue-manager.name', which represents the queue manager name. -->
     <order name="create-queue-manager-on-wmq-server">
         <property name="queue-manager.name.uc" value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="queue-manager.name.lc" value="§[lower-case('§[queue-manager.name]§')]§"/>
 
         <!-- create and start queue manager
              configure the default listener
-             disable authentication
-             create unsecured and secured channel -->
+             enable FIPS
+             disable authentication -->
         <ssh description="[wmq-create-qm:§[queue-manager.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
@@ -216,13 +218,50 @@ display listener(SYSTEM.DEFAULT.LISTENER.TCP) all
 end
 +++EOF+++
 
-# disable authentication on
+# enable FIPS
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+ALTER QMGR SSLFIPS(YES)
+DISPLAY QMGR SSLFIPS
+end
++++EOF+++
+
+# disable authentication
 # TODO : find a better solution to deal with autentication
 runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
 ALTER QMGR CHLAUTH(DISABLED)
 DISPLAY QMGR CHLAUTH
 end
 +++EOF+++
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- the private-key/certificate creation must be done AFTER the queue-manager creation.
+        (If the directory /var/mqm/qmgrs/§[queue-manager.name.uc]§/ exists before the queue manager creation,
+        the queue manager will be created in '/var/mqm/qmgrs/§[queue-manager.name.uc]§.000'.
+        And we don't want that.)-->
+        <!-- create a private-key/certificate for the queue manager -->
+        <call orders="create-certificate"                    sequence-descriptor="../ca.openssl/sd.xml">
+            <param name="cn"         value="§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§"/>
+            <param name="ou"         value="WMQ"/>
+            <param name="password"   value="12345678"/>
+            <param name="alias"      value="ibmwebspheremq§[queue-manager.name.lc]§"/>
+        </call>
+        <!-- deploy the previously created private-key/certificate in the queue manager ssl directory -->
+        <call orders="deploy-certificate"                    sequence-descriptor="../ca.openssl/sd.xml">
+            <param name="cn"             value="§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§"/>
+            <param name="cnx.user"       value="§[mqs.owner]§"/>
+            <param name="dest.basedir"   value="/var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl"/>
+        </call>
+        <!-- convert it into CMS (required by WMQ) -->
+        <ssh description="[wmq-create-qm:§[queue-manager.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+[ -f "/var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.kdb" ] && exit 0
+runmqakm -keydb -convert -db /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§.p12 -pw 12345678 -type pkcs12 -new_db /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.kdb -new_pw 12345678az@A#Z -strong -stash -fips
+chmod 640 /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.*
 
 exit 0
                 ]]>
@@ -235,7 +274,8 @@ exit 0
          caller must define 'machine.cnx.kp', which represents the key-pair to connect on the mq-server.
          caller must define 'mqs.owner', which represents the mq-server owner.
          caller must define 'queue-manager.name', which represents the queue manager name.
-         caller must define 'channel.name', which represents the channel name. -->
+         caller must define 'channel.name', which represents the channel name.
+         caller must define 'channel.secured', which indicate if the channel should be secured or not. -->
     <order name="create-channel-on-wmq-server">
         <property name="queue-manager.name.uc"   value="§[upper-case('§[queue-manager.name]§')]§"/>
         <property name="channel.name.uc"         value="§[upper-case('§[channel.name]§')]§"/>
@@ -244,8 +284,10 @@ exit 0
         <ssh description="[wmq-create-chan:§[queue-manager.name]§:§[channel.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
+SSL_OPTS=""
+[ "§[channel.secured]§" = "true" ] && SSL_OPTS="SSLCIPH(TLS_RSA_WITH_AES_128_CBC_SHA256) SSLCAUTH(OPTIONAL)"
 runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
-define channel(§[channel.name.uc]§) CHLTYPE(SVRCONN) TRPTYPE(TCP)
+define channel(§[channel.name.uc]§) CHLTYPE(SVRCONN) TRPTYPE(TCP) ${SSL_OPTS}
 display channel(§[channel.name.uc]§) all
 end
 +++EOF+++
