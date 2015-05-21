@@ -378,13 +378,13 @@ echo "Private Key '§[jees.mgnt.key.alias]§' successfully generated in Server k
         <echo message="[eap.conf:§[jees.id]§] Enable management audit log." severity="info"/>
         <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
             <elements-selector>
-                /*:management/*:audit-log/*:handlers/*:file-handler
+                /*:server/*:management/*:audit-log/*:handlers/*:file-handler
             </elements-selector>
             <attribute name="relative-to" value="jboss.server.log.dir"/>
         </set-xml-attributes>
         <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
             <elements-selector>
-                /*:management/*:audit-log/*:logger
+                /*:server/*:management/*:audit-log/*:logger
             </elements-selector>
             <attribute name="log-read-only" value="true"/>
             <attribute name="enabled" value="true"/>
