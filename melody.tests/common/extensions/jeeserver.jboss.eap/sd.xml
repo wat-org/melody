@@ -178,12 +178,19 @@
     <property name="callback.server"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-eap-server.default-callback"/>
 
     <order name="deploy-jboss-eap-server-on-single-machine">
-        <!-- remove previous installation -->
+        <!-- stop the jboss eap server and remove previous installation if it exists in a different version than expected -->
         <ssh description="[stop:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <!-- will not fail if the jboss eap server is not installed -->
-            <exec command="[ -x §[jees.path]§/bin/jboss-eapd.sh ] &amp;&amp; §[jees.path]§/bin/jboss-eapd.sh stop"/>
-            <!-- remove content -->
-            <exec command="rm -rf §[jees.path]§"/>
+            <exec>
+                <![CDATA[
+# jboss eap server control script is executable ? yes -> stop the jboss eap server (doesn't matter if it was not runnning)
+[ -x §[jees.path]§/bin/jboss-eapd.sh ] && §[jees.path]§/bin/jboss-eapd.sh stop
+
+# jboss eap server directory is already in the expected version ? no -> remove everything
+grep §[jees.version]§ §[jees.path]§/patches/version.txt 1>/dev/null 2>&1 || rm -rf §[jees.path]§
+
+exit 0
+                ]]>
+            </exec>
         </ssh>
 
         <!-- prepare server configuration modification -->
