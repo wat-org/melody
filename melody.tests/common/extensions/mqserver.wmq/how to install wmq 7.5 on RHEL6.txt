@@ -81,7 +81,7 @@ type=AVC msg=audit(1426168573.074:2658): avc:  denied  { getattr } for  pid=6247
 cat test.txt | audit2allow -a -M authorize-mqmssh
 semodule -i authorize-mqmssh.pp
 # from a remote host, try to connect to your machine as mqm
-ssh -o UserKnownHostsFile=known_hosts -i id_rsa mqm@YOUR_IP
+ssh -o UserKnownHostsFile=known_hosts -i id_rsa mqm@YOUR_VM_IP
 # it works !!
 
 ### deploy the startup script
@@ -201,6 +201,181 @@ end
 
 
 
-
 ##########################
 # connect to a queue for jboss eap 6
+
+TODO
+
+
+
+
+##########################
+# enable SSL/TLS with a standard cipher
+# see for supported cipher
+# http://129.33.205.81/support/knowledgecenter/SSFKSJ_7.5.0/com.ibm.mq.dev.doc/q032470_.htm?lang=en
+# this page list the CipherSpecs supported by WebSphere MQ and their equivalent CipherSuites
+
+# upload IBM GSKIT and IBM JRE rpm on WMQ server
+sftp
+ put /Cloud/binaries/webspheremq/tmp/MQSeriesGSKit-* /tmp
+ put /Cloud/binaries/webspheremq/tmp/MQSeriesJRE-* /tmp 
+
+#    on WMQ server side
+#    as root
+# stop all QM
+service wmq stop
+# install GSKit
+cd /tmp
+yum localinstall -y MQSeriesJRE-7.5.0-2.x86_64.rpm MQSeriesGSKit-7.5.0-2.x86_64.rpm MQSeriesJRE-U200491-7.5.0-4.x86_64.rpm MQSeriesGSKit-U200491-7.5.0-4.x86_64.rpm
+# start all QM
+service wmq start
+
+#    as mqm
+# create the key repository
+runmqakm -keydb -create -db /var/mqm/qmgrs/MYQM/ssl/key.kdb -pw 12345678az@A#Z -type cms -stash -fips -strong
+chmod 640 /var/mqm/qmgrs/MYQM/ssl/key.*
+
+# create a self-signed certificate
+# the label MUST BE ibmwebspheremq<queue manager name in lowercase>. Otherwise, WMQ server will not present its certificate
+runmqakm -cert -create -db /var/mqm/qmgrs/MYQM/ssl/key.kdb -pw 12345678az@A#Z -label ibmwebspheremqmyqm -dn "CN=$(hostname -f),OU=WMQ,O=WAT,ST=France,C=FR" -size 4096 -expire 1000 -fips -sig_alg SHA1WithRSA
+
+# extract the certificate
+runmqakm -cert -extract -db /var/mqm/qmgrs/MYQM/ssl/key.kdb -pw 12345678az@A#Z -label ibmwebspheremqmyqm -target /tmp/myqm.fips.cert -format ascii -fips
+
+------------------------
+# can also convert an existing PKCS12 pk/cert into a WMQ key repo
+runmqakm -keydb -convert -db /tmp/mqm.pkcs12 -pw 12345678az@A#Z -type pkcs12 -new_db /var/mqm/qmgrs/MYQM/ssl/key.kdb -new_pw 12345678az@A#Z -strong -stash -fips
+------------------------
+
+# enable SSL/TLS on the channel 'CUSTOM.CHN2.SRVCONN'
+runmqsc MYQM
+ alter channel(CUSTOM.CHN2.SRVCONN) CHLTYPE(SVRCONN) TRPTYPE(TCP) SSLCIPH(DES_SHA_EXPORT) SSLCAUTH(OPTIONAL) DESCR('Receiver channel using SSL from C1 to MYQM')
+
+#    on JBoss server side
+#    as root
+# get the WMQserver certificate 'myqm.fips.cert' (previsouly generated on the WMQ server) and put it in a truststore
+keytool -import -keystore /home/jeeusra/eap.inst1/configuration/myqm.jks -storepass 12345678 -file /tmp/myqm.fips.cert -alias myqm -noprompt
+chown jeeusra: /home/jeeusra/eap.inst1/configuration/myqm.jks
+
+# declare the trustore as java system-properties in the jboss instance
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ # the truststore
+ /system-property=javax.net.ssl.trustStore:add(value=/home/jeeusra/eap.inst1/configuration/myqm.jks)
+ # the truststore's password
+ /system-property=javax.net.ssl.trustStorePassword:add(value=12345678)
+ # declare add a 'sslCipherSuite' in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
+ /subsystem=resource-adapters/resource-adapter=wmq-7.5.0.4/connection-definitions=mycf2/config-properties=sslCipherSuite:add(value=SSL_RSA_WITH_DES_CBC_SHA)
+ # optionnaly enable ssl debug
+ /system-property=javax.net.debug:add(value=all)
+
+# restart the jboss instance
+~jeeusra/eap.inst1/bin/jboss-eapd.sh restart
+
+
+
+
+##########################
+# enable IBM Cipher to work with OpenJDK (TLS_RSA_WITH_AES_128_CBC_SHA256 on WMQ => SSL_RSA_WITH_AES_128_CBC_SHA256 on jboss) 
+
+#    on WMQ server side
+#    as mqm
+runmqsc MYQM
+ # assign a IBM Cipher to the channel 'CUSTOM.CHN2.SRVCONN'
+ alter channel(CUSTOM.CHN2.SRVCONN) CHLTYPE(SVRCONN) TRPTYPE(TCP) SSLCIPH(TLS_RSA_WITH_AES_128_CBC_SHA256) SSLCAUTH(OPTIONAL) DESCR('Receiver channel using SSL from C1 to MYQM')
+
+#    on JBoss server side
+#    as root
+# copy these jar (taken in IBM JRE) in OpenJDK (/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/ext/)
+ibmcertpathprovider.jar
+ibmjcefips.jar
+ibmjcefw.jar
+ibmjceprovider.jar
+ibmjsseprovider2.jar
+ibmpkcs.jar
+IBMSecureRandom.jar
+
+------------
+mkdir -p /opt/jvm-ibm
+cd /opt/jvm-ibm/
+tar xvzf /tmp/mq_jre64.tar.gz 
+cp /opt/jvm-ibm/jre/lib/ext/{ibmjcefips,ibmjceprovider,IBMSecureRandom}.jar /usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/ext/
+cp /opt/jvm-ibm/jre/lib/ibm{certpathprovider,jcefw,jsseprovider2,pkcs}.jar /usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/ext/
+------------
+
+# declare IBM security provider in /usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/security/java.security at the end of the security provider list
+security.provider.10=com.ibm.jsse2.IBMJSSEProvider2
+security.provider.11=com.ibm.crypto.provider.IBMJCE
+
+# asign a IBM Cipher in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ /subsystem=resource-adapters/resource-adapter=wmq-7.5.0.4/connection-definitions=mycf2/config-properties=sslCipherSuite:add(value=SSL_RSA_WITH_AES_128_CBC_SHA256)
+
+# restart jboss
+~jeeusra/eap.inst1/bin/jboss-eapd.sh restart
+
+
+
+
+##########################
+# enable FIPS on WMQ server
+#    on WMQ server side
+#    as mqm
+runmqsc MYQM
+ # enable FIPS on the queue manager
+ alter QMGR SSLFIPS(YES)
+
+#    as root
+# restart the queue manager (so that SSLFIPS changes applies)
+service wmq restart
+
+##########################
+# enable FIPS between the JBoss server and the WMQ server
+
+# set a FIPS compatible cipher (TLS_RSA_WITH_AES_128_CBC_SHA256 on WMQ => SSL_RSA_WITH_AES_128_CBC_SHA256 on jboss)
+
+##########################
+# enable FIPS on JBoss server (with IBM JRE)
+
+#    on JBoss server side
+#    as root
+# install an IBM JRE on JBoss server
+# configure the JBoss server to start with this IBM JRE
+
+# enable FIPS for WMQ classes for Java/JMS (because of a bug in WMQ rar/Jboss EAP integration, we can't use 'sslFipsRequired' configuration property of the connection factory/mdb)
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ /system-property=com.ibm.jsse2.usefipsprovider:add(value=true)
+
+# restart the jboss instance
+~jeeusra/eap.inst1/bin/jboss-eapd.sh restart
+
+##########################
+# enable FIPS on JBoss server (with OpenJDK JRE)
+
+#    on JBoss server side
+#    as root
+# add IBM FIPS security provider in /usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/security/java.security at the end of the list
+security.provider.12=com.ibm.crypto.fips.provider.IBMJCEFIPS
+
+# configure the JBoss server to start with this OpenJDK JRE
+
+
+
+
+##########################
+# TODO: enable SSL/TLS 2-way
+
+#    on the jboss side
+#    as jeeusra
+# create e certificate
+keytool -genkey -keystore /home/jeeusra/eap.inst1/configuration/myqm.client.jks -storepass 12345678 -alias myalias -keypass 12345678 -keyalg RSA -keysize 4096
+keytool -export -keystore /home/jeeusra/eap.inst1/configuration/myqm.client.jks -storepass 12345678 -alias myalias -file /tmp/myqm.client.cert
+
+# declare it in jboss
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ /system-property=javax.net.ssl.keyStore:add(value=/home/jeeusra/eap.inst1/configuration/myqm.client.jks)
+ /system-property=javax.net.ssl.keyStorePassword:add(value=12345678)
+
+#     on WMQ server side
+#     as mqm
+# import the jboss cetificate in the key repository
+TODO
