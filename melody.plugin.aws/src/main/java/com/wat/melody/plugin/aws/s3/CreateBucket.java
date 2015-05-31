@@ -8,6 +8,9 @@ import com.wat.cloud.aws.s3.AwsS3Cloud;
 import com.wat.cloud.aws.s3.exception.BucketAlreadyOwnedByYouException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.plugin.aws.s3.common.AbstractBucketOperation;
 import com.wat.melody.plugin.aws.s3.common.Messages;
@@ -19,6 +22,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = CreateBucket.CREATE_BUCKET)
+@Conditions({ @Condition({ @Match(expression = "§[@provider]§", value = "aws") }) })
 public class CreateBucket extends AbstractBucketOperation {
 
 	private static Logger log = LoggerFactory.getLogger(CreateBucket.class);

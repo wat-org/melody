@@ -2,6 +2,9 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.cloud.network.NetworkDeviceList;
 import com.wat.melody.cloud.network.xml.NetworkDevicesLoader;
@@ -16,6 +19,9 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * 
  */
 @Task(name = UpdateNetworkDevices.UPDATE_NETWORK_DEVICES)
+@Conditions({
+		@Condition({ @Match(expression = "§[@provider]§", value = "libvirt") }),
+		@Condition({ @Match(expression = "§[provider.cloud]§", value = "libvirt") }) })
 public class UpdateNetworkDevices extends AbstractOperation {
 
 	/**

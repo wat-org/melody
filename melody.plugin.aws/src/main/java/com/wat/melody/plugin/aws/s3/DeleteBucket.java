@@ -10,6 +10,9 @@ import com.wat.cloud.aws.s3.exception.DeleteKeyException;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
 import com.wat.melody.plugin.aws.s3.common.Messages;
@@ -21,6 +24,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = DeleteBucket.DELETE_BUCKET)
+@Conditions({ @Condition({ @Match(expression = "§[@provider]§", value = "aws") }) })
 public class DeleteBucket extends AbstractOperation {
 
 	private static Logger log = LoggerFactory.getLogger(DeleteBucket.class);

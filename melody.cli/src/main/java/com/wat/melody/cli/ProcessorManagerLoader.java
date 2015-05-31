@@ -84,7 +84,7 @@ public class ProcessorManagerLoader {
 
 	// OPTIONNAL CONFIGURATION DIRECTIVE
 	// can be defined in the global configuration file
-	public static final String TASK_DIRECTIVES = "tasks.directives";
+	public static final String TASKS_DIRECTIVES = "tasks.directives";
 	public static final String PLUGIN_CONF_DIRECTIVES = "plugin.configuration.directives";
 	public static final String XPATH_NAMESPACE_DIRECTIVES = "xpath.namespace.directives";
 	public static final String XPATH_FUNCTION_DIRECTIVES = "xpath.function.directives";
@@ -756,7 +756,7 @@ public class ProcessorManagerLoader {
 			loadResourcesFilters(oProps);
 			loadTargetsFilters(oProps);
 
-			registerAllPlugIns(oProps);
+			registerAllJavaTasks(oProps);
 			loadAllPlugInsConfiguration(oProps);
 		} catch (IllegalFileException | IllegalPropertiesSetException
 				| ConfigurationLoadingException Ex) {
@@ -1203,12 +1203,12 @@ public class ProcessorManagerLoader {
 		}
 	}
 
-	private void registerAllPlugIns(PropertySet oProps)
+	private void registerAllJavaTasks(PropertySet oProps)
 			throws ConfigurationLoadingException {
-		if (!oProps.containsKey(TASK_DIRECTIVES)) {
+		if (!oProps.containsKey(TASKS_DIRECTIVES)) {
 			return;
 		}
-		String tds = oProps.get(TASK_DIRECTIVES);
+		String tds = oProps.get(TASKS_DIRECTIVES);
 		if (tds.trim().length() == 0) {
 			return;
 		}
@@ -1217,33 +1217,34 @@ public class ProcessorManagerLoader {
 			if (pi.length() == 0) {
 				continue;
 			}
-			registerAllPlugInClasses(oProps, pi);
+			registerAllJavaTaskClasses(oProps, pi);
 		}
 	}
 
-	private void registerAllPlugInClasses(PropertySet oProps, String pi)
+	private void registerAllJavaTaskClasses(PropertySet oProps, String pi)
 			throws ConfigurationLoadingException {
 		if (!oProps.containsKey(pi)) {
 			throw new ConfigurationLoadingException(Msg.bind(
-					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, TASK_DIRECTIVES,
+					Messages.ConfEx_MISSING_TASKS_DIRECTIVE, TASKS_DIRECTIVES,
 					pi, oProps.getSourceFile()));
 		}
 		String pics = oProps.get(pi);
 		if (pics.trim().length() == 0) {
-			throw new ConfigurationLoadingException(Msg.bind(
-					Messages.ConfEx_EMPTY_TASKS_DIRECTIVE, pi, TASK_DIRECTIVES));
+			throw new ConfigurationLoadingException(
+					Msg.bind(Messages.ConfEx_EMPTY_TASKS_DIRECTIVE, pi,
+							TASKS_DIRECTIVES));
 		}
 		for (String pic : pics.split(",")) {
 			pic = pic.trim();
 			if (pic.length() == 0) {
 				continue;
 			}
-			registerPlugInClass(oProps, pi, pic);
+			registerJavaTaskClass(oProps, pi, pic);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void registerPlugInClass(PropertySet oProps, String pi, String pic)
+	private void registerJavaTaskClass(PropertySet oProps, String pi, String pic)
 			throws ConfigurationLoadingException {
 		IProcessorManager pm = getProcessorManager();
 		IRegisteredTasks rts = pm.getRegisteredTasks();
@@ -1271,7 +1272,7 @@ public class ProcessorManagerLoader {
 					Messages.ConfEx_IE_TASKS_DIRECTIVE, pi, pic), Ex.getCause());
 		}
 		try {
-			rts.put(c);
+			rts.registerJavaTask(c);
 		} catch (RuntimeException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_RT_TASKS_DIRECTIVE, pi, pic),

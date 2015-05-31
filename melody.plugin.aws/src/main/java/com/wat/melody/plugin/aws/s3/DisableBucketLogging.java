@@ -4,6 +4,9 @@ import com.amazonaws.AmazonClientException;
 import com.wat.cloud.aws.s3.AwsS3Cloud;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
@@ -16,6 +19,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = DisableBucketLogging.DISABLE_BUCKET_LOGGING)
+@Conditions({ @Condition({ @Match(expression = "§[@provider]§", value = "aws") }) })
 public class DisableBucketLogging extends AbstractOperation {
 
 	public static final String DISABLE_BUCKET_LOGGING = "disable-bucket-logging";

@@ -2,6 +2,9 @@ package com.wat.melody.plugin.aws.ec2;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.cloud.disk.DiskDeviceList;
 import com.wat.melody.cloud.disk.xml.DiskDevicesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
@@ -16,6 +19,9 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
  * 
  */
 @Task(name = UpdateDiskDevices.UPDATE_DISK_DEVICES)
+@Conditions({
+		@Condition({ @Match(expression = "§[@provider]§", value = "aws") }),
+		@Condition({ @Match(expression = "§[provider.cloud]§", value = "aws") }) })
 public class UpdateDiskDevices extends AbstractOperation {
 
 	/**

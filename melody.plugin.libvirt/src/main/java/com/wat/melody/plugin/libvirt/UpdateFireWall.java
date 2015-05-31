@@ -2,6 +2,9 @@ package com.wat.melody.plugin.libvirt;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.cloud.firewall.xml.FireWallRulesLoader;
 import com.wat.melody.cloud.instance.exception.OperationException;
 import com.wat.melody.common.firewall.FireWallRulesPerDevice;
@@ -16,6 +19,9 @@ import com.wat.melody.plugin.libvirt.common.exception.LibVirtException;
  * 
  */
 @Task(name = UpdateFireWall.UPDATE_FIREWALL)
+@Conditions({
+		@Condition({ @Match(expression = "§[@provider]§", value = "libvirt") }),
+		@Condition({ @Match(expression = "§[provider.cloud]§", value = "libvirt") }) })
 public class UpdateFireWall extends AbstractOperation {
 
 	/**
@@ -46,7 +52,8 @@ public class UpdateFireWall extends AbstractOperation {
 		Melody.getContext().handleProcessorStateUpdates();
 
 		try {
-			getInstanceController().ensureInstanceFireWallRulesAreUpToDate(getFwRules());
+			getInstanceController().ensureInstanceFireWallRulesAreUpToDate(
+					getFwRules());
 		} catch (OperationException Ex) {
 			throw new LibVirtException(new NodeRelatedException(
 					getTargetElement(), Messages.UpdateFireWallEx_GENERIC_FAIL,

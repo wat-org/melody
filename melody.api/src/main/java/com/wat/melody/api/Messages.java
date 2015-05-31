@@ -8,14 +8,12 @@ public class Messages extends NLS {
 
 	public static String ConfEx_CONF_NOT_REGISTERED;
 
-	public static String TaskRegistrationEx_DUPLICATE;
-
 	public static String TaskFactoryEx_MUST_BE_TOPLEVEL;
 	public static String TaskFactoryEx_CANNOT_BE_TOPLEVEL;
 	public static String TaskFactoryEx_MUST_BE_FIRSTLEVEL;
 	public static String TaskFactoryEx_CANNOT_BE_FIRSTLEVEL;
 	public static String TaskFactoryEx_UNDEF_TASK;
-	public static String TaskFactoryEx_INVALID_ATTR;
+	public static String TaskFactoryMsg_INVALID_ATTR;
 	public static String TaskFactoryEx_MANDATORY_ATTR_NOT_FOUND;
 	public static String TaskFactoryEx_ATTR_DUPLICATE;
 	public static String TaskFactoryEx_ATTR_SPEC_CONFLICT;

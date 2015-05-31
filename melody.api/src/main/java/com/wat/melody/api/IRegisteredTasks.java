@@ -1,5 +1,10 @@
 package com.wat.melody.api;
 
+import org.w3c.dom.Element;
+
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.properties.PropertySet;
+
 /**
  * <p>
  * Maintains the list of registered {@link ITask} {@link Class}.
@@ -12,56 +17,61 @@ public interface IRegisteredTasks {
 
 	/**
 	 * <p>
-	 * Registers the given {@link Class} as an {@link ITask}.
+	 * Register the given Java {@link @Class} as a {@link ITask}.
 	 * </p>
 	 * 
 	 * @param c
-	 *            is the {@link Class} to register.
-	 * 
-	 * @return the previously registered {@link ITask} {@link Class}.
+	 *            is the {@link ITask} {@link Class} to register.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the given {@link Class} is <code>null</code> .
 	 * @throws RuntimeException
-	 *             if the given {@link Class} is not a valid {@link ITask}
+	 *             if the given object is not a valid {@link ITask}
 	 *             {@link Class} (ex : not public, abstract, ...).
 	 */
-	public Class<? extends ITask> put(Class<? extends ITask> c);
+	public void registerJavaTask(Class<? extends ITask> c);
 
 	/**
 	 * <p>
-	 * Get the registered {@link ITask} {@link Class} whose name match the given
-	 * name.
+	 * Register the given Call Shortcut (a sequence descriptor and an order in
+	 * it) as a {@link ITask}.
 	 * </p>
 	 * 
-	 * @param taskName
-	 *            is the name of the {@link ITask} {@link Class} to find.
-	 * 
-	 * @return the {@link ITask} {@link Class} whose name match the given name,
-	 *         or <code>null</code> if no {@link ITask} {@link Class} have been
-	 *         registered with such name.
+	 * @param order
+	 *            is the order to register.
+	 * @param condition
+	 *            is the condition when the given order is eligible.
+	 * @param sequenceDescriptor
+	 *            is the sequence descriptor, which contains the given order.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given name is <code>null</code> .
+	 *             if any of the given values is <code>null</code> .
+	 * @throws RuntimeException
+	 *             if the given object is not a valid {@link ITask}
+	 *             {@link Class} (ex : not public, abstract, ...).
 	 */
-	public Class<? extends ITask> get(String taskName);
+	public void registerCallShortcutTask(OrderName order,
+			ISequenceDescriptor sequenceDescriptor, ICondition condition);
 
 	/**
-	 * <p>
-	 * Test weather a {@link ITask} {@link Class} whose name match the given
-	 * name have been registered.
-	 * </p>
-	 * 
 	 * @param taskName
-	 *            is the name of the {@link ITask} {@link Class} to find.
+	 *            is the name of the {@link ITask} to find.
+	 * @param elmt
+	 *            is the {@link Element} which contains the task in its native
+	 *            format.
+	 * @param ps
+	 *            is the {@link PropertySet} which contains the task context.
 	 * 
-	 * @return <code>true</code> if a {@link ITask} {@link Class} whose name
-	 *         match the given name have been registered, <code>false</code>
-	 *         otherwise.
+	 * @return an {@link ITaskBuilder}, which can create the {@link ITask} which
+	 *         have been registered under the given name, and whose conditions
+	 *         matches the given context, or <code>null</code> if no
+	 *         {@link ITask} have been registered with such name or if the
+	 *         conditions doesn't meet.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the given name is <code>null</code> .
+	 *             if of the given values is <code>null</code> .
 	 */
-	public boolean contains(String taskName);
+	public ITaskBuilder retrieveEligibleTaskBuilder(String taskName,
+			Element elmt, PropertySet ps);
 
 }

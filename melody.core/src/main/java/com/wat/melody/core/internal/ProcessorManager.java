@@ -17,6 +17,7 @@ import com.wat.melody.api.IProcessorManager;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.IShareProperties;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.ITaskBuilder;
 import com.wat.melody.api.ITopLevelTask;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.MelodyThread;
@@ -863,15 +864,15 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 	protected ITask newTask(Element n, PropertySet ps) throws TaskException {
 		boolean pushed = false;
 		try {
-			Class<? extends ITask> c = getTaskFactory().identifyTask(n);
+			ITaskBuilder tb = getTaskFactory().identifyTask(n, ps);
 			// Duplicate the PropertiesSet, so the Task can work with its own
 			// PropertiesSet
 			// Doesn't apply to ITask which implements IShareProperties
-			PropertySet ownPs = ReflectionHelper.implement(c,
+			PropertySet ownPs = ReflectionHelper.implement(tb.getTaskClass(),
 					IShareProperties.class) ? ps : ps.clone();
 			Melody.pushContext(new TaskContext(n, ownPs, this));
 			pushed = true;
-			ITask t = getTaskFactory().newTask(c, n, ps);
+			ITask t = getTaskFactory().newTask(tb, n);
 			fireTaskCreatedEvent(n.getNodeName().toLowerCase(), State.SUCCESS,
 					null);
 			return t;

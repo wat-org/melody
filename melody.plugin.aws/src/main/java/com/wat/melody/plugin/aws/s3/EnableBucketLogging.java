@@ -6,6 +6,9 @@ import com.wat.cloud.aws.s3.BucketName;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Attribute;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.plugin.aws.s3.common.AbstractOperation;
@@ -18,6 +21,7 @@ import com.wat.melody.plugin.aws.s3.common.exception.AwsPlugInS3Exception;
  * 
  */
 @Task(name = EnableBucketLogging.ENABLE_BUCKET_LOGGING)
+@Conditions({ @Condition({ @Match(expression = "§[@provider]§", value = "aws") }) })
 public class EnableBucketLogging extends AbstractOperation {
 
 	public static final String ENABLE_BUCKET_LOGGING = "enable-bucket-logging";

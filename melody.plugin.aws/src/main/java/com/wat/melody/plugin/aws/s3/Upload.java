@@ -6,6 +6,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.wat.cloud.aws.s3.BucketName;
 import com.wat.cloud.aws.s3.transfer.AwsS3UploaderMultiThread;
 import com.wat.melody.api.Melody;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.common.transfer.exception.TransferException;
 import com.wat.melody.common.transfer.resources.ResourcesSpecification;
 import com.wat.melody.plugin.aws.s3.common.Transfer;
@@ -16,6 +19,7 @@ import com.wat.melody.plugin.aws.s3.common.types.LocalResourcesSpecification;
  * @author Guillaume Cornet
  * 
  */
+@Conditions({ @Condition({ @Match(expression = "§[@provider]§", value = "aws.s3") }) })
 public class Upload extends Transfer {
 
 	/**

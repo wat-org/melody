@@ -2,6 +2,9 @@ package com.wat.melody.plugin.aws.ec2.protectedarea;
 
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.annotation.condition.Condition;
+import com.wat.melody.api.annotation.condition.Conditions;
+import com.wat.melody.api.annotation.condition.Match;
 import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.cloud.protectedarea.exception.ProtectedAreaException;
 import com.wat.melody.common.messages.Msg;
@@ -15,6 +18,9 @@ import com.wat.melody.plugin.aws.ec2.common.exception.AwsPlugInEc2Exception;
  * 
  */
 @Task(name = CreateProtectedArea.NEW_PROTECTED_AREA)
+@Conditions({
+		@Condition({ @Match(expression = "§[@provider]§", value = "aws") }),
+		@Condition({ @Match(expression = "§[provider.cloud]§", value = "aws") }) })
 public class CreateProtectedArea extends AbstractProtectedAreaOperation {
 
 	/**

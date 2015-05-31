@@ -48,7 +48,7 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	public static final String DEFAULT_ATTR = "default";
 
 	/**
-	 * The 'description' XML attribute of the 'order' XML element
+	 * The 'description' XML attribute of the 'sequence' XML element
 	 */
 	public static final String DESCRIPTION_ATTR = "description";
 
@@ -83,7 +83,8 @@ public class Sequence implements ITask, ITaskContainer, ITopLevelTask {
 	public void addProperty(Property p) {
 		if (p == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid Property.");
+					+ "Must be a valid " + Property.class.getCanonicalName()
+					+ ".");
 		}
 		// If the property already exists => do not replace it !!
 		if (Melody.getContext().getProperties()

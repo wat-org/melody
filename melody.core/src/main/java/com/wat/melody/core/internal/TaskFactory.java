@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -17,6 +19,7 @@ import org.w3c.dom.Text;
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
+import com.wat.melody.api.ITaskBuilder;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITopLevelTask;
 import com.wat.melody.api.Melody;
@@ -46,6 +49,8 @@ import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
  * 
  */
 public class TaskFactory {
+
+	private static Logger log = LoggerFactory.getLogger(TaskFactory.class);
 
 	private IRegisteredTasks _registeredTasks;
 	private TaskFactoryCache _cache;
@@ -113,14 +118,14 @@ public class TaskFactory {
 
 	/**
 	 * <p>
-	 * Identify the Class which correspond to the given task (in its native
-	 * {@link Element} format).
+	 * Identify the {@link ITaskBuilder} which correspond to the given task (in
+	 * its native {@link Element} format).
 	 * </p>
 	 * 
 	 * @param elmt
 	 *            is a task (in its native {@link Element} format).
 	 * 
-	 * @return the Class which correspond to the given task.
+	 * @return an {@link ITaskBuilder}, which can build the given task.
 	 * 
 	 * @throws TaskFactoryException
 	 *             if the given {@link element} is doesn't represent an
@@ -130,7 +135,7 @@ public class TaskFactory {
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Element} is <tt>null</tt>.
 	 */
-	public Class<? extends ITask> identifyTask(Element elmt)
+	public ITaskBuilder identifyTask(Element elmt, PropertySet ps)
 			throws TaskFactoryException {
 		if (elmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
@@ -138,44 +143,47 @@ public class TaskFactory {
 					+ ").");
 		}
 
-		Class<? extends ITask> c = findTaskClass(elmt);
-		validateTaskHierarchy(c, elmt.getParentNode());
-		return c;
+		ITaskBuilder tb = findTaskClass(elmt, ps);
+		Class<? extends ITask> c = tb.getTaskClass();
+		validateTaskHierarchy(c, elmt.getParentNode(), ps);
+		return tb;
 	}
 
 	/**
 	 * <p>
-	 * Search for the Class which correspond the given task (in its native
-	 * {@link Element} format).
+	 * Search the {@link ITaskBuilder} which corresponds to the given task (in
+	 * its native {@link Element} format).
 	 * </p>
 	 * 
 	 * @param elmt
 	 *            is a task (in its native {@link Element} format).
 	 * 
-	 * @return a {@link Class} object, which can be use to instantiate an
+	 * @return a {@link ITaskBuilder} object, which can be use to instantiate an
 	 *         {@link ITask}.
 	 * 
 	 * @throws TaskFactoryException
 	 *             if the given {@link element} is doesn't represent an
 	 *             {@link ITask}.
 	 */
-	private Class<? extends ITask> findTaskClass(Element elmt)
+	private ITaskBuilder findTaskClass(Element elmt, PropertySet ps)
 			throws TaskFactoryException {
 		String sSimpleName = elmt.getNodeName();
-		if (!getRegisteredTasks().contains(sSimpleName)) {
+		ITaskBuilder t = getRegisteredTasks().retrieveEligibleTaskBuilder(
+				sSimpleName, elmt, ps);
+		if (t == null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
 		}
-		return getRegisteredTasks().get(sSimpleName);
+		return t;
 	}
 
-	private void validateTaskHierarchy(Class<?> c, Node parentNode)
-			throws TaskFactoryException {
+	private void validateTaskHierarchy(Class<?> c, Node parentNode,
+			PropertySet ps) throws TaskFactoryException {
 		// parentNode can be a DOCUMENT_NODE or an ELEMENT_NODE
 		Class<?> p = null;
 		if (parentNode != null && parentNode.getNodeType() == Node.ELEMENT_NODE) {
 			try {
-				p = findTaskClass((Element) parentNode);
+				p = findTaskClass((Element) parentNode, ps).getTaskClass();
 			} catch (TaskFactoryException Ex) {
 				throw new RuntimeException("Unexpected error while searching "
 						+ "the Task Class which match the Element Node ["
@@ -226,9 +234,6 @@ public class TaskFactory {
 	 *            is the class of the {@link ITask} to create.
 	 * @param elmt
 	 *            is the task to create (in its native {@link Element} format).
-	 * @param ps
-	 *            is a {@link PropertySet}, which will be used during
-	 *            attribute's value's expansion.
 	 * 
 	 * @return a new object that implement Task.
 	 * 
@@ -253,43 +258,21 @@ public class TaskFactory {
 	 *             if a the given {@link Class} is <tt>null</tt>.
 	 * @throws IllegalArgumentException
 	 *             if a the given {@link Element} is <tt>null</tt>.
-	 * @throws IllegalArgumentException
-	 *             if a the {@link PropertySet} is <tt>null</tt>.
-	 * 
 	 */
-	public ITask newTask(Class<? extends ITask> c, Element elmt, PropertySet ps)
+	public ITask newTask(ITaskBuilder tb, Element elmt)
 			throws TaskFactoryException {
-		if (c == null) {
+		if (tb == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + ".");
+					+ "Must be a valid "
+					+ ITaskBuilder.class.getCanonicalName() + ".");
 		}
 		if (elmt == null) {
 			throw new IllegalArgumentException("null: Not accepted. "
 					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ ".");
 		}
-		if (ps == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be a valid " + PropertySet.class.getCanonicalName()
-					+ ".");
-		}
 
-		ITask t = null;
-		try {
-			t = c.getConstructor().newInstance();
-		} catch (NoSuchMethodException | InstantiationException
-				| IllegalAccessException | ClassCastException Ex) {
-			throw new RuntimeException("Unexpected error while creating a "
-					+ "Task '" + c.getCanonicalName() + "' by reflection. "
-					+ "Because a public no-argument constructor exists "
-					+ "(see 'registerTasks'), such error cannot happened. "
-					+ "Source code has certainly been modified and a "
-					+ "bug have been introduced.", Ex);
-		} catch (InvocationTargetException Ex) {
-			throw new RuntimeException("Task '" + c.getCanonicalName()
-					+ "' creation fails, generating the error below. ",
-					Ex.getCause());
-		}
+		ITask t = tb.build();
 
 		synchronized (elmt.getOwnerDocument()) {
 			setAllMembers(t, elmt.getAttributes());
@@ -331,9 +314,11 @@ public class TaskFactory {
 				}
 				setMember(base, m, m.getParameterTypes()[0], attr, value);
 			} else {
-				throw new TaskFactoryException(new SimpleNodeRelatedException(
-						attr, Msg.bind(Messages.TaskFactoryEx_INVALID_ATTR,
-								sAttrName)));
+				log.info(new TaskFactoryException(
+						new SimpleNodeRelatedException(attr, Msg
+								.bind(Messages.TaskFactoryMsg_INVALID_ATTR,
+										sAttrName)))
+						.getUserFriendlyStackTrace());
 			}
 		}
 		detectsUndefinedMandatoryAttributes(base.getClass(), attrs);
@@ -425,9 +410,10 @@ public class TaskFactory {
 					|| registerInnerTask(base, n)) {
 				continue;
 			}
-			throw new TaskFactoryException(
+			log.info(new TaskFactoryException(
 					new SimpleNodeRelatedException(n, Msg.bind(
-							Messages.TaskFactoryEx_INVALID_NE, n.getNodeName())));
+							Messages.TaskFactoryEx_INVALID_NE, n.getNodeName())))
+					.getUserFriendlyStackTrace());
 		}
 		detectsUndefinedMandatoryNestedElements(base.getClass(), nestedNodes);
 	}

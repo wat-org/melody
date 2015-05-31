@@ -2,13 +2,22 @@ package com.wat.melody.core.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
+import org.w3c.dom.Element;
+
+import com.wat.melody.api.ICondition;
 import com.wat.melody.api.IRegisteredTasks;
+import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.ITask;
-import com.wat.melody.api.Messages;
+import com.wat.melody.api.ITaskBuilder;
 import com.wat.melody.api.annotation.Task;
-import com.wat.melody.common.messages.Msg;
+import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.properties.PropertySet;
+import com.wat.melody.core.internal.taskbuilder.CallShortcutBuilder;
+import com.wat.melody.core.internal.taskbuilder.JavaTaskBuilder;
 import com.wat.melody.core.nativeplugin.attributes.RemoveAttribute;
 import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
@@ -23,7 +32,7 @@ import com.wat.melody.core.nativeplugin.synchronize.Synchronize;
  * @author Guillaume Cornet
  * 
  */
-public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
+public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 		implements IRegisteredTasks {
 
 	private static final long serialVersionUID = 3001756548734600804L;
@@ -63,46 +72,58 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	 * </p>
 	 */
 	public RegisteredTasks() {
-		put(Sequence.class);
-		put(Order.class);
-		put(Call.class);
-		put(Foreach.class);
-		put(Synchronize.class);
-		put(Property.class);
-		put(SetAttributeValue.class);
-		put(RemoveAttribute.class);
+		registerJavaTask(Sequence.class);
+		registerJavaTask(Order.class);
+		registerJavaTask(Call.class);
+		registerJavaTask(Foreach.class);
+		registerJavaTask(Synchronize.class);
+		registerJavaTask(Property.class);
+		registerJavaTask(SetAttributeValue.class);
+		registerJavaTask(RemoveAttribute.class);
 	}
 
 	@Override
-	public Class<? extends ITask> put(Class<? extends ITask> c) {
-		if (c == null) {
+	public void registerJavaTask(Class<? extends ITask> c) {
+		register(new JavaTaskBuilder(c));
+	}
+
+	@Override
+	public void registerCallShortcutTask(OrderName order,
+			ISequenceDescriptor sequenceDescriptor, ICondition condition) {
+		register(new CallShortcutBuilder(order, sequenceDescriptor, condition));
+	}
+
+	public void register(ITaskBuilder tb) {
+		if (tb == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid " + Class.class.getCanonicalName() + "<"
-					+ ITask.class.getCanonicalName() + ">.");
+					+ "Must be a valid "
+					+ ITaskBuilder.class.getCanonicalName() + ".");
 		}
+		Class<? extends ITask> c = tb.getTaskClass();
 		if (!isValidTask(c)) {
 			throw new RuntimeException("The given Java Class is not a "
 					+ "valid " + ITask.class.getCanonicalName()
 					+ ". This Java Class is either not public, or abstract "
-					+ "or it as no 0-arg constructor. ");
+					+ "or it as no 0-arg constructor.");
 		}
 		String taskName = c.getSimpleName().toLowerCase();
 		Task a = c.getAnnotation(Task.class);
 		if (a != null) {
-			// declare an entry TaskAnnotaionName->canonicalCalssName
+			// declare an entry TaskAnnotaionName->canonicalClassName
 			taskName = a.name().toLowerCase();
 		}
-		// detects duplicate task declaration
-		if (contains(taskName)) {
-			throw new RuntimeException(Msg.bind(
-					Messages.TaskRegistrationEx_DUPLICATE, taskName));
+
+		List<ITaskBuilder> tbs = get(taskName);
+		// initialize the ITaskBuilder List if needed
+		if (tbs == null) {
+			tbs = new ArrayList<ITaskBuilder>();
+			super.put(taskName, tbs);
 		}
-		// declare an entry className|Task.name()->canonicalCalssName
-		return super.put(taskName, c);
+		// add the given ItaskBuilder at the end of the list
+		tbs.add(tb);
 	}
 
-	@Override
-	public Class<? extends ITask> get(String taskName) {
+	public List<ITaskBuilder> get(String taskName) {
 		if (taskName == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
 					+ "Must be a valid " + String.class.getCanonicalName()
@@ -112,12 +133,29 @@ public class RegisteredTasks extends Hashtable<String, Class<? extends ITask>>
 	}
 
 	@Override
-	public boolean contains(String taskName) {
-		if (taskName == null) {
+	public ITaskBuilder retrieveEligibleTaskBuilder(String taskName,
+			Element elmt, PropertySet ps) {
+		if (elmt == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid " + String.class.getCanonicalName()
+					+ "Must be a valid " + Element.class.getCanonicalName()
 					+ " (a Task Name).");
 		}
-		return super.containsKey(taskName.toLowerCase());
+		if (ps == null) {
+			throw new IllegalArgumentException("null: Not Accepted. "
+					+ "Must be a valid " + PropertySet.class.getCanonicalName()
+					+ " (a Task Name).");
+		}
+		List<ITaskBuilder> tbs = get(taskName);
+		if (tbs == null) {
+			return null;
+		}
+		for (ITaskBuilder tb : tbs) {
+			if (tb.isEligible(elmt, ps)) {
+				return tb;
+			}
+		}
+		// should never go here
+		return null;
 	}
+
 }

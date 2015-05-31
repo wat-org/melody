@@ -147,7 +147,8 @@ public class Ref {
 	 *             syntax, doesn't match any order defined in the Sequence
 	 *             Descriptor file, ...).
 	 * @throws IOException
-	 *             if an I/O error occurred while loading the {@link 
+	 *             if an I/O error occurred while loading the Sequence
+	 *             Descriptor.
 	 */
 	@Attribute(name = ORDERS_ATTR)
 	public void setOrders(OrderNameSet orders) throws CallException,
