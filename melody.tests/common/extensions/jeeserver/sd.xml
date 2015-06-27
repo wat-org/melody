@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="jee_server_match_criteria"   value="1=1"/>
+    <property name="jee_engine_match_criteria"   value="1=1"/>
+
+    <!-- deploy each jee-engines.
+         caller must define 'jeee.binaries.path'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_engine_match_criteria' to target a subset of jee-engines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="deploy-jee-engines">
+        <echo message="Deploying JEE Engines ..."/>
+        <do-operation-on-jee-engines>
+            <param name="callback.jeee" value="deploy-jee-engine-on-single-machine"/>
+        </do-operation-on-jee-engines>
+        <echo message="-- JEE Engines successfully deployed."/>
+    </order>
+
+    <!-- deploy each jee-servers.
+         caller must define 'jeee.binaries.path'.
+         caller can define callback 'callback.server' in order to perform extra actions on each jee-servers.
+         caller must define callback 'callback.module' in order to perform module related actions on each jee-servers, if modules are declared on a jee-server.
+         caller must define callback 'callback.application' in order to perform application related actions on each jee-servers, if applications are declared on a jee-server.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="deploy-jee-servers">
+        <call orders="deploy-jee-engines"/>
+        <echo message="Creating JEE Servers ..."/>
+        <do-operation-on-jee-servers>
+            <param name="callback.jees" value="deploy-jee-server-on-single-machine"/>
+        </do-operation-on-jee-servers>
+        <echo message="-- JEE Servers successfully created."/>
+    </order>
+
+    <!-- start each jee-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="start-jee-servers">
+        <echo message="Starting JEE Servers ..."/>
+        <do-operation-on-jee-servers>
+            <param name="callback.jees" value="start-jee-server-on-single-machine"/>
+        </do-operation-on-jee-servers>
+        <echo message="-- JEE Servers successfully started."/>
+    </order>
+
+    <!-- stop each jee-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="stop-jee-servers">
+        <echo message="Stopping JEE Servers ..."/>
+        <do-operation-on-jee-servers>
+            <param name="callback.jees" value="stop-jee-server-on-single-machine"/>
+        </do-operation-on-jee-servers>
+        <echo message="-- JEE Servers successfully stopped."/>
+    </order>
+
+
+    <!-- loop on each machines where a jee-server is declared.
+         caller must define callback 'callback.machine'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-jee-machines">
+        <select-running-machines>
+            <param name="machine_eligible_criteria" value="exists(jee-server)"/>
+        </select-running-machines>
+    </order>
+
+
+    <!-- loop on each jee-engines.
+         caller must define callback 'callback.jeee'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_engine_match_criteria' to target a subset of jee-engines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="do-operation-on-jee-engines">
+        <do-operation-on-jee-machines>
+            <param name="callback.machine" value="do-operation-on-jee-engines-on-single-machine"/>
+        </do-operation-on-jee-machines>
+    </order>
+
+    <order name="do-operation-on-jee-engines-on-single-machine">
+        <foreach    items="§[machine]§/jboss-eap-engine [ @version=§[machine]§/jee-server [ §[jee_server_match_criteria]§ ]/@version and §[jee_engine_match_criteria]§ ] "
+                    item-name="jeee">
+            <property name="jeee.provider"         value="§[ §[jeee]§/@provider ]§"/>
+            <property name="jeee.path"             value="§[ §[jeee]§/@path ]§"/>
+            <property name="jeee.version"          value="§[ §[jeee]§/@version ]§"/>
+            <property name="jeee.owner"            value="§[ §[jeee]§/owner/@login ]§"/>
+            <property name="jeee.owner.pwd"        value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@password ]§"/>
+            <property name="jeee.owner.home-dir"   value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@homedir ]§"/>
+            <property name="jeee.group"            value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@group ]§"/>
+
+            <source order="§[callback.jeee]§" provider="§[jeee.provider]§"/>
+        </foreach>
+    </order>
+
+
+    <!-- loop on each jee-servers.
+         caller must define callback 'callback.jees'.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="do-operation-on-jee-servers">
+        <do-operation-on-jee-machines>
+            <param name="callback.machine" value="do-operation-on-jee-servers-on-single-machine"/>
+        </do-operation-on-jee-machines>
+    </order>
+
+    <order name="do-operation-on-jee-servers-on-single-machine">
+        <foreach    items="§[machine]§/jee-server[ §[jee_server_match_criteria]§ ]"
+                    item-name="jees">
+            <property name="jees.provider"                value="§[ §[jees]§/@provider ]§"/>
+            <property name="jees.path"                    value="§[ §[jees]§/@path ]§"/>
+            <property name="jees.version"                 value="§[ §[jees]§/@version ]§"/>
+            <property name="jees.owner"                   value="§[ §[jees]§/owner/@login ]§"/>
+            <property name="jees.owner.pwd"               value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@password ]§"/>
+            <property name="jees.owner.home-dir"          value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@homedir ]§"/>
+            <property name="jees.profile"                 value="§[ melody:getAttributeValue(§[jees]§/@profile, '') ]§"/>
+            <property name="jees.profile.file"            value="standalone§[if (string-length('§[jees.profile]§')=0) then '' else '-§[jees.profile]§']§.xml"/>
+
+            <property name="jeee.path"                    value="§[ §[machine]§/jboss-eap-engine[@version='§[jees.version]§']/@path ]§"/>
+            <property name="jeee.owner"                   value="§[ §[machine]§/jboss-eap-engine[@version='§[jees.version]§']/owner/@login ]§"/>
+            <property name="jeee.group"                   value="§[ §[machine]§/credentials/credential[@login='§[jeee.owner]§']/@group ]§"/>
+
+            <property name="jees.memory.xms"              value="§[ melody:getAttributeValue(§[jees]§/memory/@xms, '128m') ]§"/>
+            <property name="jees.memory.xmx"              value="§[ melody:getAttributeValue(§[jees]§/memory/@xmx, '512m') ]§"/>
+            <property name="jees.memory.perm-size"        value="§[ melody:getAttributeValue(§[jees]§/memory/@perm-size, '64m')]§"/>
+            <!--  with -XX:MaxPermSize=32m, got an java.lang.OutOfMemoryError: PermGen space -->
+
+            <property name="jees.listen.device"           value="§[ melody:getAttributeValue(§[jees]§/listen-on/@device, 'eth0') ]§"/>
+            <property name="jees.listen.ip"               value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.device]§')/@ip ]§"/>
+            <property name="jees.listen.fqdn"             value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.device]§')/@fqdn ]§"/>
+            <property name="jees.listen.port-offset"      value="§[ melody:getAttributeValue(§[jees]§/listen-on/@port-offset, '0') ]§"/>
+            <property name="jees.listen.port.http"        value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='http']/@port, '8080')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.port.ajp"         value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='ajp']/@port, '8009')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.port.https"       value="§[ number(melody:getAttributeValue(§[jees]§/listen-on/socket[@name='https']/@port, '8443')) + §[jees.listen.port-offset]§ ]§"/>
+            <property name="jees.listen.mgnt.device"      value="§[ melody:getAttributeValue(§[jees]§/listen-on/@management-device, '§[jees.listen.device]§') ]§"/>
+            <property name="jees.listen.mgnt.ip"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.mgnt.device]§')/@ip ]§"/>
+            <property name="jees.listen.mgnt.fqdn"        value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[jees.listen.mgnt.device]§')/@fqdn ]§"/>
+            <property name="jees.mgnt.keystore.url"       value="§[ §[jees]§/keystore[exists(key[@usage='management'])]/@path ]§"/>
+            <property name="jees.mgnt.keystore.pwd"       value="§[ §[jees]§/keystore[exists(key[@usage='management'])]/@password ]§"/>
+            <property name="jees.mgnt.key.alias"          value="§[ §[jees]§/keystore/key[@usage='management']/@alias ]§"/>
+            <property name="jees.mgnt.key.pwd"            value="§[ §[jees]§/keystore/key[@usage='management']/@password ]§"/>
+            <property name="jees.mgnt.key.dn"             value="§[ melody:getAttributeValue(§[jees]§/keystore/key[@usage='management']/@dname, 'CN=§[jees.listen.mgnt.fqdn]§,OU=admin,O=ma gueule,L=Paris,ST=France,C=FR') ]§"/>
+
+            <property name="jees.vault.enc-dir"           value="§[ melody:getAttributeValue(§[jees]§/vault/enc-dir/@path, '§[jees.path]§/configuration/vault/secret/') ]§"/>
+            <property name="jees.vault.url"               value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@path, '§[jees.path]§/configuration/vault/vault.keystore') ]§"/>
+            <property name="jees.vault.pwd"               value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@password, 'changeit') ]§"/>
+            <property name="jees.vault.iteration-count"   value="§[ melody:getAttributeValue(§[jees]§/vault/secret/@iteration-count, '69') ]§"/>
+            <property name="jees.vault.salt"              value="§[ melody:getAttributeValue(§[jees]§/vault/secret/@salt, 'supasalt') ]§"/>
+            <property name="jees.vault.salt"              value="§[ if (string-length('§[jees.vault.salt]§')!=8) then melody:raiseError('Vault salt must be an eight char String!') else '§[jees.vault.salt]§' ]§"/>
+            <property name="jees.vault.masked-pwd"        value="§[ jboss:maskPassword('§[jees.vault.salt]§', '§[jees.vault.iteration-count]§', '§[jees.vault.pwd]§') ]§"/>
+            <property name="jees.vault.key.alias"         value="§[ melody:getAttributeValue(§[jees]§/vault/keystore/@alias, 'vault') ]§"/>
+            <property name="jees.vault.key.dn"            value="CN=§[jees.listen.mgnt.fqdn]§,OU=vault,O=ma gueule,L=Paris,ST=France,C=FR"/>
+
+            <property name="jees.id"                      value="§[jees.owner]§@§[jees.listen.ip]§:+§[jees.listen.port-offset]§"/>
+
+            <property name="jees.disabled"                value="§[ melody:getAttributeValue(§[jees]§/features/@administration-only, 'false') ]§"/>
+            <property name="jees.native"                  value="§[ melody:getAttributeValue(§[jees]§/jboss-web/@uses-native-components, 'false') ]§"/>
+
+            <source order="§[callback.jees]§" provider="§[jees.provider]§"/>
+        </foreach>
+    </order>
+
+</sequence>

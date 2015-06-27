@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <order name="deploy-epel-repo-on-single-machine" >
+        <!-- yum doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[machine.cnx.ip]§.yum">
+            <ssh description="[deploy-epel-repo:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§" >
+                <exec>
+                    <![CDATA[
+rpm -q epel-release && exit 0
+
+yum install -y http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || exit 1
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="++ EPEL repository successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+</sequence>

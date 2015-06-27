@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="sd.xml">
+			<condition>
+				<match expression="§[@provider]§" value="aws"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>

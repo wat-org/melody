@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="pa_selector"          value="./environment//protected-areas/protected-area"/>
+    <property name="pa_eligible_criteria" value="1=1"/>
+    <property name="pa_match_criteria"    value="1=1"/>
+
+    <!-- loop on each protected area.
+         caller must define 'callback.pa'.
+         caller may define 'pa_selector' to indicate the xpath location of the protected areas to select.
+         caller can define 'pa_exists_criteria' to target a subset of protected areas.
+         caller can define 'pa_eligible_criteria' to target a subset of protected areas.
+         caller can define 'pa_match_criteria' to target a subset of protected areas. -->
+    <order name="do-select-protected-areas">
+        <foreach    items="§[pa_selector]§[ §[pa_exists_criteria]§ and §[pa_eligible_criteria]§ and §[pa_match_criteria]§ ]"
+                    item-name="pa">
+            <property name="pa.id"         value="§[ melody:getProtectedAreaId(§[pa]§) ]§"/>
+            <property name="pa.name"       value="§[ melody:getProtectedAreaName(§[pa]§) ]§"/>
+            <property name="pa.region"     value="§[ melody:getProtectedAreaRegion(§[pa]§) ]§"/>
+            <property name="pa.provider"   value="§[ §[pa]§/@provider ]§"/>
+
+            <source order="§[callback.pa]§"/>
+        </foreach>
+    </order>
+
+    <!-- loop on each protected area.
+         caller must define 'callback.pa'.
+         caller can define 'pa_eligible_criteria' to target a subset of protected areas.
+         caller can define 'pa_match_criteria' to target a subset of protected areas. -->
+    <order name="select-protected-areas">
+        <do-select-protected-areas>
+            <param name="pa_exists_criteria" value="1=1"/>
+        </do-select-protected-areas>
+    </order>
+
+    <!-- loop on each live protected area.
+         caller must define 'callback.pa'.
+         caller can define 'pa_eligible_criteria' to target a subset of protected areas.
+         caller can define 'pa_match_criteria' to target a subset of protected areas. -->
+    <order name="select-live-protected-areas">
+        <do-select-protected-areas>
+            <param name="pa_exists_criteria" value="exists(@id)"/>
+        </do-select-protected-areas>
+    </order>
+
+</sequence>

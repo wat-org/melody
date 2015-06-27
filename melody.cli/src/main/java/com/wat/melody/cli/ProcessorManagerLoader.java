@@ -85,6 +85,7 @@ public class ProcessorManagerLoader {
 	// OPTIONNAL CONFIGURATION DIRECTIVE
 	// can be defined in the global configuration file
 	public static final String TASKS_DIRECTIVES = "tasks.directives";
+	public static final String EXTENSIONS_DIRECTIVES = "extensions.directives";
 	public static final String PLUGIN_CONF_DIRECTIVES = "plugin.configuration.directives";
 	public static final String XPATH_NAMESPACE_DIRECTIVES = "xpath.namespace.directives";
 	public static final String XPATH_FUNCTION_DIRECTIVES = "xpath.function.directives";
@@ -583,6 +584,8 @@ public class ProcessorManagerLoader {
 			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().load(val);
+			pm.getRegisteredTasks().registerExtension(
+					new File(val).getParent(), val);
 		} catch (IllegalOrderException Ex) {
 			throw new CommandLineParsingException(Msg.bind(
 					Messages.CmdEx_INVALID_OPTION_VALUE, 'o'), Ex);
@@ -758,6 +761,7 @@ public class ProcessorManagerLoader {
 
 			registerAllJavaTasks(oProps);
 			loadAllPlugInsConfiguration(oProps);
+			registerAllCallShortcutTasks(oProps);
 		} catch (IllegalFileException | IllegalPropertiesSetException
 				| ConfigurationLoadingException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
@@ -1045,6 +1049,8 @@ public class ProcessorManagerLoader {
 			}
 			IProcessorManager pm = getProcessorManager();
 			pm.getSequenceDescriptor().load(val);
+			pm.getRegisteredTasks().registerExtension(
+					new File(val).getParent(), val);
 		} catch (IllegalOrderException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, ORDERS), Ex);
@@ -1508,6 +1514,47 @@ public class ProcessorManagerLoader {
 		} catch (XPathFunctionResolverLoadingException Ex) {
 			throw new ConfigurationLoadingException(Msg.bind(
 					Messages.ConfEx_INVALID_DIRECTIVE, fcd), Ex);
+		}
+	}
+
+	private void registerAllCallShortcutTasks(PropertySet oProps)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(EXTENSIONS_DIRECTIVES)) {
+			return;
+		}
+		String tds = oProps.get(EXTENSIONS_DIRECTIVES);
+		if (tds.trim().length() == 0) {
+			return;
+		}
+		for (String pi : tds.split(",")) {
+			pi = pi.trim();
+			if (pi.length() == 0) {
+				continue;
+			}
+			registerCallShortcutTask(oProps, pi);
+		}
+	}
+
+	private void registerCallShortcutTask(PropertySet oProps, String pi)
+			throws ConfigurationLoadingException {
+		if (!oProps.containsKey(pi)) {
+			throw new ConfigurationLoadingException(Msg.bind(
+					Messages.ConfEx_MISSING_TASKS_DIRECTIVE,
+					EXTENSIONS_DIRECTIVES, pi, oProps.getSourceFile()));
+		}
+		String pics = oProps.get(pi);
+		if (pics.trim().length() == 0) {
+			throw new ConfigurationLoadingException(Msg.bind(
+					Messages.ConfEx_EMPTY_TASKS_DIRECTIVE, pi,
+					EXTENSIONS_DIRECTIVES));
+		}
+		IProcessorManager pm = getProcessorManager();
+		IRegisteredTasks rts = pm.getRegisteredTasks();
+		try {
+			rts.registerExtension(pics, null);
+		} catch (MelodyException | IOException Ex) {
+			throw new ConfigurationLoadingException(Msg.bind(
+					Messages.ConfEx_INVALID_DIRECTIVE, pics), Ex);
 		}
 	}
 

@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -16,6 +18,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import com.wat.melody.api.IDeferedTask;
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
@@ -41,7 +44,9 @@ import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.reflection.ReflectionHelper;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
+import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
+import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
  * 
@@ -170,6 +175,27 @@ public class TaskFactory {
 		String sSimpleName = elmt.getNodeName();
 		ITaskBuilder t = getRegisteredTasks().retrieveEligibleTaskBuilder(
 				sSimpleName, elmt, ps);
+		if (t != null
+				&& ReflectionHelper.implement(t.getTaskClass(),
+						IDeferedTask.class)) {
+			Attr attr = elmt.getAttributeNode("order");
+			if (attr == null) {
+				throw new TaskFactoryException(new SimpleNodeRelatedException(
+						attr, "Attribute 'order' is missing"));
+			}
+			sSimpleName = attr.getValue();
+			try {
+				sSimpleName = XPathExpander.expand(sSimpleName, Melody
+						.getContext().getProcessorManager()
+						.getResourcesDescriptor().evaluateAsNode("/"), ps);
+			} catch (XPathExpressionSyntaxException | XPathExpressionException Ex) {
+				throw new TaskFactoryException(new SimpleNodeRelatedException(
+						attr, Msg.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
+								"order", State.FAILED), Ex));
+			}
+			t = getRegisteredTasks().retrieveEligibleTaskBuilder(sSimpleName,
+					elmt, ps);
+		}
 		if (t == null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));

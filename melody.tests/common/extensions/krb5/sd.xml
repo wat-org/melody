@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-kerberos-domain-controllers">
+        <echo message="Creating Kerberos Domain Controllers ..."/>
+        <do-operation-on-kerberos-domain-controllers>
+            <param name="callback.kdc" value="deploy-kerberos-domain-controller-on-single-machine"/>
+        </do-operation-on-kerberos-domain-controllers>
+        <echo message="-- Kerberos Domain Controllers successfully created."/>
+    </order>
+
+    <order name="do-operation-on-kerberos-domain-controllers">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(kerberos-domain-controller)"/>
+            <param name="callback.machine"            value="do-operation-on-kerberos-domain-controller-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-kerberos-domain-controller-on-single-machine">
+        <property name="kdc.provider"        value="§[ §[machine]§/kerberos-domain-controller/@provider ]§"/>
+        <property name="kdc.realm"           value="§[ §[machine]§/kerberos-domain-controller/@realm ]§"/>
+        <property name="kdc.domain"          value="§[ §[machine]§/kerberos-domain-controller/@domain ]§"/>
+        <property name="kdc.admin.login"     value="§[ §[machine]§/kerberos-domain-controller/@admin-login ]§/admin"/>
+        <property name="kdc.admin.pwd"       value="§[ §[machine]§/kerberos-domain-controller/@admin-pwd ]§"/>
+        <property name="kdc.listen.device"   value="§[ melody:getAttributeValue(§[machine]§/kerberos-domain-controller/listen-on/@device, 'eth0') ]§"/>
+        <property name="kdc.listen.port"     value="§[ melody:getAttributeValue(§[machine]§/kerberos-domain-controller/listen-on/@port, '88') ]§"/>
+        <property name="kdc.listen.ip"       value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <source order="§[callback.kdc]§" provider="§[kdc.provider]§"/>
+    </order>
+
+
+    <order name="deploy-kerberos-hosts">
+        <echo message="Registering machines in Kerberos realm ..."/>
+        <do-operation-on-kerberos-hosts>
+            <param name="callback.khost" value="deploy-kerberos-host-on-single-machine"/>
+        </do-operation-on-kerberos-hosts>
+        <echo message="-- Machines successfully registered in Kerberos realm."/>
+    </order>
+
+    <order name="do-operation-on-kerberos-hosts">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(kerberos-host)"/>
+            <param name="callback.machine"            value="do-operation-on-kerberos-host-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-kerberos-host-on-single-machine">
+        <property name="kdc.realm"            value="§[ §[machine]§/kerberos-host/@realm ]§"/>
+        <property name="kdc"                  value="./environment//instance[exists(kerberos-domain-controller[@realm='§[kdc.realm]§'])]"/>
+        <property name="kdc.provider"         value="§[ §[kdc]§/kerberos-domain-controller/@provider ]§"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.domain"           value="§[ §[kdc]§/kerberos-domain-controller/@domain ]§"/>
+        <property name="kdc.admin.login"      value="§[ §[kdc]§/kerberos-domain-controller/@admin-login ]§/admin"/>
+        <property name="kdc.admin.pwd"        value="§[ §[kdc]§/kerberos-domain-controller/@admin-pwd ]§"/>
+        <property name="kdc.listen.device"    value="§[ melody:getAttributeValue(§[kdc]§/kerberos-domain-controller/listen-on/@device, 'eth0') ]§"/>
+        <property name="kdc.listen.ip"        value="§[ melody:getNetworkDeviceElementByName(§[kdc]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <source order="§[callback.khost]§" provider="§[kdc.provider]§"/>
+    </order>
+
+
+    <!--  must provide a 'realm' (to find the kerberos domain controller) -->
+    <order name="create-kerberos-principal">
+        <property name="kdc"             value="./environment//instance[exists(kerberos-domain-controller[@realm='§[realm]§'])]"/>
+        <property name="krb5.provider"   value="§[ §[kdc]§/kerberos-domain-controller[@realm='§[realm]§']/@provider ]§"/>
+
+        <source order="create-kerberos-principal-on-single-kdc" provider="§[krb5.provider]§"/>
+    </order>
+
+    <!--  must provide a 'realm' (to find the kerberos domain controller) -->
+    <order name="deploy-kerberos-principal-keytab">
+        <property name="kdc"             value="./environment//instance[exists(kerberos-domain-controller[@realm='§[realm]§'])]"/>
+        <property name="krb5.provider"   value="§[ §[kdc]§/kerberos-domain-controller[@realm='§[realm]§']/@provider ]§"/>
+
+        <source order="deploy-kerberos-principal-keytab-on-single-machine" provider="§[krb5.provider]§"/>
+    </order>
+
+</sequence>

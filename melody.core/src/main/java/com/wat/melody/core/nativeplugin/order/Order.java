@@ -21,6 +21,8 @@ import com.wat.melody.api.exception.TaskException;
 import com.wat.melody.common.ex.ConsolidatedException;
 import com.wat.melody.common.messages.Msg;
 import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.order.exception.IllegalOrderNameException;
 import com.wat.melody.common.xml.NodeCollection;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
 import com.wat.melody.core.nativeplugin.order.exception.OrderException;
@@ -119,6 +121,53 @@ public class Order implements ITask, ITaskContainer, IFirstLevelTask {
 					+ "Source code has certainly been modified and "
 					+ "a bug have been introduced.", Ex);
 		}
+	}
+
+	/**
+	 * <p>
+	 * Search for all orders.
+	 * </p>
+	 * 
+	 * @param sd
+	 *            is the {@link ISequenceDescriptor} to search in.
+	 * 
+	 * @return an {@link OrderNameSet}, which contains all found order names.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the given {@link ISequenceDescriptor} is <tt>null</tt>.
+	 * 
+	 * @throws IllegalOrderNameException
+	 *             if one order name found is not valid.
+	 */
+	public static OrderNameSet findAvailableOrderNames(ISequenceDescriptor sd)
+			throws IllegalOrderNameException {
+		if (sd == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be a valid "
+					+ ISequenceDescriptor.class.getCanonicalName() + ".");
+		}
+		NodeList nl = null;
+		try {
+			nl = sd.evaluateAsNodeList("/*/" + ORDER + "/@" + NAME_ATTR);
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException("Unexecpted error while evaluating "
+					+ "an XPath Expression. "
+					+ "Since the given Order cannot contains XPath injection, "
+					+ "such error cannot happened. "
+					+ "Source code has certainly been modified and "
+					+ "a bug have been introduced.", Ex);
+		}
+		OrderNameSet orders = new OrderNameSet();
+		if (nl == null || nl.getLength() == 0) {
+			throw new RuntimeException("'" + sd.getSourceFile()
+					+ "': Not accepted. " + "No order declared in this "
+					+ "sequence desriptor ! Impossible !");
+		}
+		for (int i = 0; i < nl.getLength(); i++) {
+			orders.add(OrderName.parseString(nl.item(i).getNodeValue()));
+		}
+		return orders;
+
 	}
 
 	private OrderName _orderName = null;

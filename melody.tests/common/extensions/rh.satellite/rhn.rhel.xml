@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="register-single-machine">
+        <property name="profile.name"         value="§[ §[machine]§/registration/@profile-name ]§"/>
+
+        <property name="rhn.server.ip"        value="§[./environment/rhn/profile[@name='§[profile.name]§']/serverip/text()]§"/>
+        <property name="rhn.user.login"       value="§[./environment/rhn/profile[@name='§[profile.name]§']/login/text()]§"/>
+        <property name="rhn.user.pwd"         value="§[./environment/rhn/profile[@name='§[profile.name]§']/password/text()]§"/>
+        <property name="rhn.activation-key"   value="§[./environment/rhn/profile[@name='§[profile.name]§']/activationkey/text()]§"/>
+
+        <property name="hwinfos"     value="§[ §[machine]§/rhn/@upload-hardware-infos ]§"/>
+        <property name="hwinfos"     value="§[if ('§[hwinfos]§'!='true') then '--nohardware' else '']§"/>
+        <property name="pkginfos"    value="§[ §[machine]§/rhn/@upload-packages-infos ]§"/>
+        <property name="pkginfos"    value="§[if ('§[pkginfos]§'!='true') then '--nopackages' else '']§"/>
+        <property name="virtinfos"   value="§[ §[machine]§/rhn/@upload-virtualization-infos ]§"/>
+        <property name="virtinfos"   value="§[if ('§[virtinfos]§'!='true') then '--novirtinfo' else '']§"/>
+        <property name="rhnsd"       value="§[ §[machine]§/rhn/@start-rhnsd ]§"/>
+        <property name="rhnsd"       value="§[if ('§[rhnsd]§'!='true') then '--norhnsd' else '']§"/>
+
+        <ssh description="[rhn-register:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+declare almsg="System already registered in RHN"
+declare okmsg="System successfully registered in RHN"
+declare errmsg="Fail to register system in RHN"
+
+declare testcmd="[ -f /etc/sysconfig/rhn/systemid ]"
+declare docmd="rhnreg_ks --activationkey=§[rhn.activation-key]§ --force §[hwinfos]§ §[pkginfos]§ §[virtinfos]§ §[rhnsd]§"
+
+declare retryallowedmsg="(\
+error communicating with server\
+|no address associated with hostname\
+|temporary failure in name resolution\
+|unable to connect to the host and port specified\
+|connection timed out\
+|network is unreachable\
+|name or service not known\
+|could not resolve host\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- set the base channel, if any (should be only one) -->
+        <foreach    items="§[machine]§/rhn/base-channel"
+                    item-name="channel">
+            <property name="channel_name" value="§[§[channel]§/@name]§"/>
+
+            <ssh description="[rhn-register:set-base-channel:§[channel_name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+[ ! -r /etc/sysconfig/rhn/systemid ] && {
+  echo "System is not registered."
+  exit 0
+}
+
+SYSTEM_ID="$(cat /etc/sysconfig/rhn/systemid | grep -E "<value><string>ID-.*</string></value>" | cut -d '>' -f3 | cut -d '<' -f1 | cut -d '-' -f2)"
+python << EOF
+import xmlrpclib
+import sys
+
+client = xmlrpclib.Server("https://§[rhn.server.ip]§/rpc/api", verbose=0)
+key = client.auth.login("§[rhn.user.login]§", "§[rhn.user.pwd]§")
+
+allchans = client.system.listBaseChannels(key, int($SYSTEM_ID));
+for chan in allchans:
+  if chan['LABEL'] == "§[channel_name]§":
+    if chan['CURRENT_BASE'] == 1:
+      print "'§[channel_name]§' is already the base channel."
+      client.auth.logout(key);
+      exit(0)
+    print "Setting '§[channel_name]§' as base channel ..."
+    client.system.setBaseChannel(key, int($SYSTEM_ID), chan['ID']);
+    print "'§[channel_name]§' successfully set as base channel."
+    client.auth.logout(key);
+    exit(0)
+print "'§[channel_name]§' is not available."
+client.auth.logout(key)
+exit(23)
+EOF
+
+exit $?
+                    ]]>
+                </exec>
+            </ssh>
+
+            <echo message="+ Machine '§[machine.id]§' subscribed to RHN Base Channel '§[channel_name]§'."/>
+        </foreach>
+
+        <!-- set each child channel, if any (should be none or many) -->
+        <foreach    items="§[machine]§/rhn/channel"
+                    item-name="channel"
+                    max-par="1">
+            <property name="channel_name" value="§[§[channel]§/@name]§"/>
+
+            <ssh description="[rhn-register:add-channel:§[channel_name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+declare almsg="Child channel '§[channel_name]§' already registered"
+declare okmsg="Child channel '§[channel_name]§' successfully registered"
+declare errmsg="Fail to register child channel '§[channel_name]§'"
+
+declare testcmd="rhn-channel -l | grep §[channel_name]§ 1>/dev/null"
+declare docmd="rhn-channel -a -c §[channel_name]§ -u §[rhn.user.login]§ -p '§[rhn.user.pwd]§'"
+
+declare retryallowedmsg="(\
+error communicating with server\
+|no address associated with hostname\
+|temporary failure in name resolution\
+|unable to connect to the host and port specified\
+|connection timed out\
+|network is unreachable\
+|name or service not known\
+|could not resolve host\
+)"
+
+eval ${testcmd} && {
+  echo "${almsg}. Nothing to do."
+  exit 0
+}
+
+declare retry=3 ret=0 out="$(mktemp --suffix=.out)" err="$(mktemp --suffix=.err)"
+
+while [ ${retry} -ge 0 ]; do
+  eval ${docmd} 1> >(tee "${out}") 2> >(tee "${err}" >&2)
+  [ $? = 0 ] && break
+  cat "${out}" "${err}" | grep -Ei "${retryallowedmsg}" 1>/dev/null || { retry=-1; break; }
+  echo "---> ${errmsg}. ${retry} try left." >&2
+  retry=$((retry-1))
+  [ $retry = -1 ] && break
+  sleep $(((3-retry)*4))
+done
+
+[ ${retry} = -1 ] && {
+  echo "${errmsg}. Exiting with error code 1." >&2
+  ret=1
+} || {
+  echo "${okmsg}."
+}
+
+rm -f "${out}" "${err}"
+exit ${ret}
+                    ]]>
+                </exec>
+            </ssh>
+            <echo message="+ Machine '§[machine.id]§' additionnally register to RHN Channel '§[channel_name]§'."/>
+        </foreach>
+
+        <echo message="+ Machine '§[machine.id]§' successfully registered in RHN Classic."/>
+    </order>
+
+    <order name="unregister-single-machine">
+        <property name="profile.name"         value="§[ §[machine]§/registration/@profile-name ]§"/>
+
+        <property name="rhn.server.ip"        value="§[./environment/rhn/profile[@name='§[profile.name]§']/serverip/text()]§"/>
+        <property name="rhn.user.login"       value="§[./environment/rhn/profile[@name='§[profile.name]§']/login/text()]§"/>
+        <property name="rhn.user.pwd"         value="§[./environment/rhn/profile[@name='§[profile.name]§']/password/text()]§"/>
+
+        <ssh description="[rhn-unregister:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+[ ! -r /etc/sysconfig/rhn/systemid ] && { echo system is not registered; exit 0; }
+SYSTEM_ID="$(cat /etc/sysconfig/rhn/systemid | grep -E "<value><string>ID-.*</string></value>" | cut -d '>' -f3 | cut -d '<' -f1 | cut -d '-' -f2)"
+python << EOF
+import xmlrpclib
+import sys
+
+client = xmlrpclib.Server("https://§[rhn.server.ip]§/rpc/api", verbose=0)
+key = client.auth.login("§[rhn.user.login]§", "§[rhn.user.pwd]§")
+
+# try to delete the system, and, if it not exists, exit cleanly
+try:
+  client.system.deleteSystems(key,int($SYSTEM_ID))
+except xmlrpclib.Fault, e:
+  print "Didn't delete the system because %s" % e
+client.auth.logout(key)
+EOF
+
+res=$?; [ $res = 0 ] || exit $res
+rm -vf /etc/sysconfig/rhn/systemid
+                ]]>
+            </exec>
+        </ssh>
+
+        <echo message="+ Machine '§[machine.id]§' successfully unregistered in RHN Classic."/>
+    </order>
+
+</sequence>

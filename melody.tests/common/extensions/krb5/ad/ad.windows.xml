@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-kerberos-domain-controller-on-single-machine">
+        <echo message="!! NOT IMPLEMENTED YET !! (this should automatically deploy an AD)" severity="ERROR"/>
+    </order>
+
+    <order name="deploy-kerberos-host-on-single-machine">
+        <echo message="!! NOT IMPLEMENTED YET !! (the given windows host should automatically join the AD domain)" severity="ERROR"/>
+    </order>
+
+
+    <order name="create-kerberos-principal-on-single-kdc">
+        <echo message="!! NOT IMPLEMENTED YET !! (should automatically create a user or a service in the AD)" severity="ERROR"/>
+    </order>
+
+    <order name="deploy-kerberos-principal-keytab-on-single-machine">
+        <echo message="!! NOT IMPLEMENTED YET !! (should automatically deploy the keytab on the given windows host)" severity="ERROR"/>
+    </order>
+
+</sequence>

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="deploy-certificate-authorities">
+        <echo message="Creating Certificate Authorities ..."/>
+        <do-operation-on-certificate-authorities>
+            <param name="callback.ca" value="deploy-certificate-authority-on-single-machine"/>
+        </do-operation-on-certificate-authorities>
+        <echo message="-- Certificate Authorities successfully created."/>
+    </order>
+
+    <order name="do-operation-on-certificate-authorities">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(certificate-authority)"/>
+            <param name="callback.machine"            value="do-operation-on-certificate-authority-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-certificate-authority-on-single-machine">
+        <property name="ca.provider"        value="§[ §[machine]§/certificate-authority/@provider ]§"/>
+        <property name="ca.path"            value="§[ §[machine]§/certificate-authority/@path ]§"/>
+        <property name="ca.cn"              value="§[ §[machine]§/certificate-authority/@CN ]§"/>
+        <property name="ca.o"               value="§[ §[machine]§/certificate-authority/@O ]§"/>
+        <property name="ca.pk.pwd"          value="§[ §[machine]§/certificate-authority/@pk-password ]§"/>
+
+        <source order="§[callback.ca]§" provider="§[ca.provider]§"/>
+    </order>
+
+    <order name="create-certificate">
+        <property name="ca"            value="./environment//instance[exists(certificate-authority)]"/>
+        <property name="ca.provider"   value="§[ §[ca]§/certificate-authority/@provider ]§"/>
+
+        <source order="create-certificate-on-single-ca" provider="§[ca.provider]§"/>
+    </order>
+
+    <order name="deploy-certificate">
+        <property name="ca"            value="./environment//instance[exists(certificate-authority)]"/>
+        <property name="ca.provider"   value="§[ §[ca]§/certificate-authority/@provider ]§"/>
+
+        <source order="deploy-certificate-on-single-machine" provider="§[ca.provider]§"/>
+    </order>
+
+    <order name="deploy-ca-certificate">
+        <property name="ca"            value="./environment//instance[exists(certificate-authority)]"/>
+        <property name="ca.provider"   value="§[ §[ca]§/certificate-authority/@provider ]§"/>
+
+        <source order="deploy-ca-certificate-on-single-machine" provider="§[ca.provider]§"/>
+    </order>
+
+</sequence>

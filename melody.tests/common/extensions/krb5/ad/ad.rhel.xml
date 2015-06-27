@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!--
+    <order name="deploy-kerberos-domain-controller-on-single-machine">
+         not possible to deploy an AD on a rhel
+    </order>
+    -->
+
+    <order name="deploy-kerberos-host-on-single-machine">
+        <property name="kdc.admin.login" value="§[ substring-before('§[kdc.admin.login]§','/') ]§"/>
+
+        <!-- install -->
+        <install-package>
+            <param name="package.name" value="krb5-workstation"/>
+        </install-package>
+
+        <!-- 'nfs-utils' is necessary for 'create-kerberos-principal-on-single-kdc' and 'deploy-kerberos-principal-keytab-on-single-machine' (see bellow) -->
+        <install-package>
+            <param name="package.name" value="nfs-utils"/>
+        </install-package>
+
+        <!-- 'msktutil' is necessary for 'create-kerberos-principal' (see bellow) -->
+        <deploy-epel-repo-on-single-machine/>
+
+        <!-- 'msktutil' is necessary for 'create-kerberos-principal-on-single-kdc' and 'deploy-kerberos-principal-keytab-on-single-machine' (see bellow) -->
+        <install-package>
+            <param name="package.name" value="msktutil"/>
+            <param name="package.repo" value="epel"/>
+        </install-package>
+
+        <!-- configure -->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="etc/"
+                        match="{krb5.conf,krb.realms}"
+                        dest-basedir="/etc/"
+                        template="y">
+                <posix-permissions scope="files">644</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- kerberos doesn't support concurrent execution -->
+        <synchronize scope="GLOBAL" lock-id="§[kdc.machine.cnx.ip]§.kerberos">
+            <ssh description="[configure:kerberos-host:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+# Create the principal of the machine and add it into the keytab file
+KTFILE=/etc/krb5.keytab
+
+echo "§[kdc.admin.pwd]§" | kinit §[kdc.admin.login]§
+
+rm -f "${KTFILE}"
+msktutil -c -k "${KTFILE}" --dont-expire-password --server §[kdc.listen.ip]§ || {
+  res=$?
+  echo "Fail to generate keytab for 'host/§[machine.cnx.fqdn]§'. Exiting with error code $res." >&2
+  exit $res
+}
+chmod 600 "${KTFILE}"
+echo "Keytab for 'host/§[machine.cnx.fqdn]§' successfully generated."
+
+kdestroy
+
+
+# Declare the domain as trusted so that firefox can do SSO/Kerberos
+
+[ ! -w ".mozilla/firefox/profiles.ini" ] && exit 0
+
+PROFILE_PATH=".mozilla/firefox/$(grep Path  ".mozilla/firefox/profiles.ini" | cut -d '=' -f 2)/prefs.js"
+
+grep "network.negotiate-auth.delegation-uris" "$PROFILE_PATH" || echo 'user_pref("network.negotiate-auth.delegation-uris", ".§[kdc.domain]§");' >> $PROFILE_PATH
+grep "network.negotiate-auth.trusted-uris" "$PROFILE_PATH" || echo 'user_pref("network.negotiate-auth.trusted-uris", ".§[kdc.domain]§");' >> $PROFILE_PATH
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+
+        <echo message="++ Machine '§[machine.id]§' successfully registered in the Kerberos realm."/>
+    </order>
+
+
+    <property name="password"         value=""/>
+    <property name="genkeytab"        value="false"/>
+    <property name="computer.name"    value=""/>
+    <property name="keytab.basedir"   value="export/keytabs/"/>
+    <order name="create-kerberos-principal-on-single-kdc">
+        <!--  Register the given principal's SPN into the given computer account and generate a keytab for it.
+              The computer account must already exists (msktutil is able to create the account, but when it does, the keytab is not valid... don't know why. Bug in msktutil?).
+              The generated keytab will be located in the NFS shared folder exposed by the AD (allow write; no authentication; allow unmapped unix access).
+                - principal : postgres/ip-192-168-122-2.cloud.local, HTTP/ip-192-168-122-2.cloud.local, ...
+                - password: the password of the given principal (useful if the principal is a user; e.g. policy must be equals to 'users').
+                - realm: CLOUD.LOCAL, ...
+                - policy: only accept 'users' or 'services'
+                - genkeytab: if true, a keytab will be generated in §[keytab.basedir]§/§[principal]§.§[if user, realm in lower case]§.keytab on the KDC
+                - computer.name: a WIN32 computer name: default to '<service name extract from the given principal><ip extract from the given principal, where '.' are removed>': the computer account which will hold the given SPN (useful if the principal is a service; e.g. policy must be equals to 'services').
+                - keytab.basedir: a path: default to 'export/keytabs/': NFS/CIFS shared folder exposed by the AD, where the keytabs are stored.
+        -->
+        <property name="kdc"                  value="./environment//instance[exists(kerberos-domain-controller[@realm='§[realm]§'])]"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.admin.login"      value="§[ §[kdc]§/kerberos-domain-controller/@admin-login ]§"/>
+        <property name="kdc.admin.pwd"        value="§[ §[kdc]§/kerberos-domain-controller/@admin-pwd ]§"/>
+        <property name="kdc.listen.device"    value="§[ melody:getAttributeValue(§[kdc]§/kerberos-domain-controller/listen-on/@device, 'eth0') ]§"/>
+        <property name="kdc.listen.ip"        value="§[ melody:getNetworkDeviceElementByName(§[kdc]§, '§[kdc.listen.device]§')/@ip ]§"/>
+
+        <!-- kerberos doesn't support concurrent execution -->
+        <!-- synchronize will ensure the mount point is stable -->
+        <synchronize scope="GLOBAL" lock-id="§[kdc.machine.cnx.ip]§.kerberos">
+            <ssh description="[kerberos-create-principal:§[principal]§@§[realm]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+POLICY=$( tr '[:upper:]' '[:lower:]' <<< "§[policy]§" )
+PRINCIPAL="§[principal]§"
+KTFILE="/tmp/nfs/${PRINCIPAL//\//-}.keytab"
+
+# if UPN
+[ "${POLICY}" = "users" ] && {
+  # with AD, we don't know yet how to automatically create a user.
+  # so here, we suppose the user already exists in AD we only have to generate its keytab.
+
+  # if we don't have to generate a keytab: exit 0
+  [ "§[genkeytab]§" != "true" ] && {
+    echo -e "Principal '§[principal]§' already created. Nothing to do. Exit."
+  }
+
+  # generate a keytab
+  mkdir -vp /tmp/nfs                                                      || exit 1
+  mountpoint -q /tmp/nfs && umount /tmp/nfs
+  mount -o nolock -t nfs §[kdc.listen.ip]§:/§[keytab.basedir]§ /tmp/nfs   || exit 1
+
+  # if a keytab already exists: exit 0
+  [ -f "${KTFILE}" ] && {
+    umount /tmp/nfs
+    echo -e "Principal '§[principal]§' already created. Nothing to do. Exit."
+    exit 0
+  }
+
+  # use ktutil to generate a keytab
+  ktutil << EOF
+addent -password -p §[principal]§ -k 1 -e RC4-HMAC
+§[password]§
+wkt "${KTFILE}"
+q
+EOF
+
+  chmod 600 "${KTFILE}"
+  echo "Principal '§[principal]§' successfully created."
+
+  umount /tmp/nfs                                                         || exit 1
+
+  exit 0
+}
+
+# if SPN: always generate a keytab
+BASE="CN=Managed Service Accounts"
+SERVICE=$( cut -d / -f1 <<< "§[principal]§" )
+HOST=$( cut -d / -f2 <<< "§[principal]§" )
+IP=$(ping -c1 ${HOST} | head -n 1 | sed -r -e 's/[^(]+\(([^)]+).*/\1/g' | tr -d '.')
+COMPUTER_NAME="${SERVICE}${IP}"
+[ ! -z "§[computer.name]§" ] && COMPUTER_NAME="§[computer.name]§"
+
+mkdir -vp /tmp/nfs                                                      || exit 1
+mountpoint -q /tmp/nfs && umount /tmp/nfs
+mount -o nolock -t nfs §[kdc.listen.ip]§:/§[keytab.basedir]§ /tmp/nfs   || exit 1
+
+[ -f "${KTFILE}" ] && {
+  umount /tmp/nfs
+  echo -e "Principal '§[principal]§' already created. Nothing to do. Exit."
+  exit 0
+}
+
+echo "§[kdc.admin.pwd]§" | kinit §[kdc.admin.login]§
+
+rm -f "${KTFILE}"
+msktutil -u -s "${SERVICE}" --hostname "${HOST}" -k "${KTFILE}" --base "${BASE}" --computer-name "${COMPUTER_NAME}" --dont-expire-password --server §[kdc.listen.ip]§ || {
+  res=$?
+  echo "Fail to create principal '§[principal]§'. Exiting with error code $res." >&2
+  umount /tmp/nfs
+  exit $res
+}
+chmod 600 "${KTFILE}"
+echo "Principal '§[principal]§' successfully created."
+
+kdestroy
+umount /tmp/nfs                                                         || exit 1
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+<!--
+we could use smb instead of nsf, but smb packages download takes much more time (30m) than nfs packages (1M)
+smbclient -U §[kdc.admin.login]§ //§[kdc.listen.ip]§/§[substring-before('§[keytab.basedir]§', '$')]§$ "§[kdc.admin.pwd]§" -c 'put §[keytab.local.temp.file]§ "§[substring-after('§[keytab.basedir]§', '$')]§\${PRINCIPAL//\//-}.keytab"'
+-->
+        </synchronize>
+
+        <echo message="+ Principal '§[principal]§@§[realm]§' successfully created."/>
+    </order>
+
+    <order name="deploy-kerberos-principal-keytab-on-single-machine">
+        <!--  Upload the given principal's keytab to the given remote system.
+              The keytab must be located in the NFS shared folder exposed by the AD (allow read; no authentication; allow unmapped unix access) (see order 'create-kerberos-principal-on-single-kdc' above).
+                - principal : postgres/ip-192-168-122-2.cloud.local, HTTP/ip-192-168-122-2.cloud.local, toto, ...
+                - realm: CLOUD.LOCAL, ...
+                - machine.cnx.ip: the remote system ip, where the keytab will be uploaded
+                - machine.cnx.kp: the keypair to connect on the remote system
+                - cnx.user: the user to connect on the remote system
+                - dest.path: the full filepath where the keytab will be uploaded
+                - keytab.basedir: a path: default to 'export/keytabs/': NFS/CIFS shared folder exposed by the AD, where the keytabs are stored.
+        -->
+        <property name="kdc"                  value="./environment//instance[exists(kerberos-domain-controller[@realm='§[realm]§'])]"/>
+        <property name="kdc.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost( §[kdc]§ ) ]§"/>
+        <property name="kdc.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName( §[kdc]§ ) ]§"/>
+        <property name="kdc.admin.login"      value="§[ §[kdc]§/kerberos-domain-controller/@admin-login ]§"/>
+        <property name="kdc.admin.pwd"        value="§[ §[kdc]§/kerberos-domain-controller/@admin-pwd ]§"/>
+
+        <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs"   value="§[ melody:getWorkingFolder() ]§"/>
+        <!-- download keytab from KDC in a local tmp file -->
+        <!-- because the KDC is an AD, we use the 'cifs' provider to download the keytab -->
+        <download host="§[kdc.machine.cnx.ip]§" login="§[kdc.admin.login]§" password="§[kdc.admin.pwd]§" provider="cifs">
+            <resources  src-basedir="/§[keytab.basedir]§/"
+                        match="§[ replace('§[principal]§', '/' ,'-') ]§.keytab"
+                        dest-basedir="§[workingfolder.abs]§/"
+                        dest-name="§[tmpfile.rel]§"/>
+        </download>
+        <!-- upload local keytab tmp file to target machine -->
+        <upload host="§[machine.cnx.ip]§" login="§[cnx.user]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/"
+                        match="§[tmpfile.rel]§"
+                        dest-name="§[dest.path]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <echo message="+ Keytab for principal '§[principal]§@§[realm]§' successfully deployed on '§[machine.cnx.ip]§:§[dest.path]§'."/>
+    </order>
+
+</sequence>

@@ -4,7 +4,7 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.eap-6">
-			<jee-server-model name="eap-6" path="/home/jeeusra/eap.inst1">
+			<jee-server-model name="eap-6" path="/home/jeeusra/eap.inst1" provider="jboss.eap">
 				<owner login="jeeusra"/>
 				<listen-on device="eth0" management-device="eth0" port-offset="0">
 					<socket name="http" port="8080"/>
@@ -22,43 +22,43 @@
 				<jboss-web uses-native-components="true"/>
 			</jee-server-model>
 
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" version="6.0.0" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" provider="jboss.eap" version="6.0.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" version="6.0.1" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" provider="jboss.eap" version="6.0.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" version="6.1.0" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" provider="jboss.eap" version="6.1.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" version="6.1.1" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" provider="jboss.eap" version="6.1.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" version="6.2.0" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" provider="jboss.eap" version="6.2.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" version="6.2.1" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" provider="jboss.eap" version="6.2.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" version="6.2.2" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" provider="jboss.eap" version="6.2.2" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" version="6.2.3" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" provider="jboss.eap" version="6.2.3" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" version="6.2.4" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" provider="jboss.eap" version="6.2.4" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" version="6.3.0" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" provider="jboss.eap" version="6.3.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" version="6.3.1" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" provider="jboss.eap" version="6.3.1" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" version="6.3.2" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" provider="jboss.eap" version="6.3.2" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.0" version="6.4.0" herit-policy="append">
+			<jboss-eap-engine path="/opt/jboss-eap-6.4.0" provider="jboss.eap" version="6.4.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
 

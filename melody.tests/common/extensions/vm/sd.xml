@@ -1,182 +1,135 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<sequence basedir="." >
+<sequence basedir=".">
 
-    <property name="instance_selector"          value="./environment//instance"/>
-    <property name="instance_exists_criteria"   value="exists(@instance-id)"/>
-    <property name="instance_match_criteria"    value="1=1"/>
+    <order name="create-all-vm">
+        <echo message="Creating virtual machines ..."/>
+        <select-machines>
+            <param name="callback.machine" value="create-single-vm"/>
+        </select-machines>
+        <echo message="-- Virtual machines created."/>
 
-    <order name="create_all_vm" >
-        <echo message="Creating virtual machines ..." />
+        <configure-disk-devices/>
+        <configure-network-devices/>
+        <start-all-vm/>               <!-- some instances may be created and stopped. Starting it -->
+        <configure-firewall/>
 
-        <foreach    items="§[instance_selector]§[ §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <new-machine target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' created§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Virtual machines created." />
-
-        <call orders="update_disk_devices" />
-        <call orders="update_network_devices" />
-        <call orders="update_firewall"/>
-
+        <register-all-vm/>
+        <ensure-packages/>
+        <ensure-services/>
     </order>
 
-    <order name="destroy_all_vm" >
-        <echo message="Destroying virtual machines ..." />
+    <order name="destroy-all-vm">
+        <unregister-all-vm/>
 
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <delete-machine target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <echo message="+ virtual machine '§[id]§' destroyed§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Virtual machines destroyed." />
-
-        <call orders="update_firewall"/>
+        <echo message="Destroying virtual machines ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="destroy-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Virtual machines destroyed."/>
     </order>
 
-    <order name="start_all_vm" >
-        <echo message="Starting virtual machines ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <start-machine target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <echo message="+ virtual machine '§[id]§' started (IP: §[adm_ip]§)." />
-        </foreach>
-
-        <echo message="-- Virtual machines started." />
-
-        <call orders="update_firewall"/>
+    <order name="start-all-vm">
+        <echo message="Starting virtual machines ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="start-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Virtual machines started."/>
     </order>
 
-    <order name="stop_all_vm" >
-        <echo message="Stopping virtual machines ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <stop-machine target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <echo message="+ virtual machine '§[id]§' stopped§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Virtual machines stopped." />
-
-        <call orders="update_firewall"/>
+    <order name="stop-all-vm">
+        <echo message="Stopping virtual machines ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="stop-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Virtual machines stopped."/>
     </order>
 
-    <order name="resize_all_vm" >
-        <echo message="Resing virtual machines ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <resize-machine target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' resized§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Virtual machines resized." />
+    <order name="resize-all-vm">
+        <echo message="Resing virtual machines ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="resize-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Virtual machines resized."/>
     </order>
 
-    <order name="update_disk_devices" >
-        <echo message="Updating disk devices ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <update-disk-devices target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' disk devices updated§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Disk devices updated." />
+    <order name="configure-disk-devices">
+        <echo message="Updating disk devices ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="update-disk-devices-on-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Disk devices updated."/>
     </order>
 
-    <order name="update_network_devices" >
-        <echo message="Updating network devices ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <update-network-devices target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' network devices updated§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- Network devices updated." />
+    <order name="configure-network-devices">
+        <echo message="Updating network devices ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="update-network-devices-on-single-vm"/>
+        </select-live-machines>
+        <echo message="-- Network devices updated."/>
     </order>
 
-    <order name="update_firewall" >
-        <echo message="Updating FireWall rules ..." />
-
-        <foreach    items="§[instance_selector]§[ §[instance_exists_criteria]§ and §[instance_match_criteria]§ ]"
-                    item-name="srv" >
-            <property name="id" value="§[ melody:getInstanceId(§[srv]§) ]§" />
-            <update-firewall target="§[srv]§" provider="§[ §[srv]§/@provider ]§"/>
-            <property name="adm_ip" value="§[ melody:getNetworkActivationHost(§[srv]§) ]§" />
-            <property name="adm_ip" value="§[ if( '§[adm_ip]§' != '' ) then ' (IP: §[adm_ip]§)' else '' ]§" />
-            <echo message="+ virtual machine '§[id]§' fire-wall rules updated§[adm_ip]§." />
-        </foreach>
-
-        <echo message="-- FireWall rules updated." />
+    <order name="configure-firewall">
+        <echo message="Updating FireWall rules ..."/>
+        <select-live-machines>
+            <param name="callback.machine" value="update-firewall-on-single-vm"/>
+        </select-live-machines>
+        <echo message="-- FireWall rules updated."/>
     </order>
 
-    <order name="create_all_protected_areas" >
-        <echo message="Creating Protected Areas ..." />
 
-        <foreach    items="./environment//protected-areas/protected-area"
-                    item-name="pa" >
-            <new-protected-area target="§[pa]§" provider="§[ §[pa]§/@provider ]§"/>
-        </foreach>
-
-        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
-                    item-name="pa" >
-            <property name="pa.name"   value="§[ melody:getProtectedAreaName(§[pa]§) ]§" />
-            <property name="pa.region" value="§[ melody:getProtectedAreaRegion(§[pa]§) ]§" />
-            <property name="pa.id"     value="§[ melody:getProtectedAreaId(§[pa]§) ]§" />
-            <update-protected-area target="§[pa]§" provider="§[ §[pa]§/@provider ]§"/>
-            <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' created (id:'§[pa.id]§')." />
-        </foreach>
-
-        <echo message="-- Protected Areas created." />
+    <order name="create-single-vm">
+        <new-machine target="§[machine]§" provider="§[ §[machine]§/@provider ]§"/>
+        <!-- following values are known only once the machine is created -->
+        <property name="machine.id" value="§[ melody:getInstanceId(§[machine]§) ]§"/>
+        <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' created§[adm_ip]§."/>
     </order>
 
-    <order name="destroy_all_protected_areas" >
-        <echo message="Destroying Protected Areas ..." />
+    <order name="destroy-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <delete-machine target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' destroyed§[adm_ip]§."/>
+    </order>
 
-        <!-- must first remove all rules, in order to be sure the protected
-             area is not declared in another one -->
-        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
-                    item-name="pa" >
-            <reset-protected-area target="§[pa]§" provider="§[ §[pa]§/@provider ]§"/>
-        </foreach>
+    <order name="start-single-vm">
+        <start-machine target="§[machine]§" provider="§[machine.provider]§"/>
+        <!-- following values are known only once the machine is created -->
+        <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' started§[adm_ip]§."/>
+    </order>
 
-        <foreach    items="./environment//protected-areas/protected-area[ exists(@id) ]"
-                    item-name="pa" >
-            <property name="pa.name"   value="§[ melody:getProtectedAreaName(§[pa]§) ]§" />
-            <property name="pa.region" value="§[ melody:getProtectedAreaRegion(§[pa]§) ]§" />
-            <property name="pa.id"     value="§[ melody:getProtectedAreaId(§[pa]§) ]§" />
-            <delete-protected-area target="§[pa]§" provider="§[ §[pa]§/@provider ]§"/>
-            <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' destroyed (id:'§[pa.id]§')." />
-        </foreach>
+    <order name="stop-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <stop-machine target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' stopped§[adm_ip]§."/>
+    </order>
 
-        <echo message="-- Protected Areas destroyed." />
+    <order name="resize-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <resize-machine target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' resized§[adm_ip]§."/>
+    </order>
+
+    <order name="update-disk-devices-on-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <update-disk-devices target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' disk devices updated§[adm_ip]§."/>
+    </order>
+
+    <order name="update-network-devices-on-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <update-network-devices target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' network devices updated§[adm_ip]§."/>
+    </order>
+
+    <order name="update-firewall-on-single-vm">
+        <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
+        <update-firewall target="§[machine]§" provider="§[machine.provider]§"/>
+        <echo message="+ virtual machine '§[machine.id]§' fire-wall rules updated§[adm_ip]§."/>
     </order>
 
 </sequence>

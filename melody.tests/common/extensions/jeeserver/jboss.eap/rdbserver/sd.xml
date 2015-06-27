@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- configure the given jee-server for rdb.
+         caller must define 'machine', which represents the jee-server to configure.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jee-server to configure.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jee-server.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'jees.owner', which represents the jee-server owner.
+         caller must define 'jees.path', which represents the jee-server path.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="configure-rdb-on-single-jee-server">
+        <!-- Specific logger for hibernate -->
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.hibernate.SQL']
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <logger category="org.hibernate.SQL">
+                    <level name="ALL"/>
+                </logger>
+                <logger category="org.hibernate.cache">
+                    <level name="ALL"/>
+                </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+        <!-- Enable jta statistics -->
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:coordinator-environment
+            </elements-selector>
+            <attribute name="enable-statistics" value="true"/>
+        </set-xml-attributes>
+
+        <!-- increase security stuff log level -->
+        <echo message="[eap.conf:§[jees.id]§] Increase log level for kerberos related stuff" severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.jboss.security']
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <logger category="org.jboss.security">
+                    <level name="ALL"/>
+                </logger>
+                <logger category="org.jboss.as.security">
+                    <level name="ALL"/>
+                </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <!-- Specific logger for hibernate -->
+        <!-- Will prevent the following error message to be send to log_handlers:
+                2014-07-03 11:23:35,299 ERROR [org.hibernate.tool.hbm2ddl.SchemaExport] (ServerService Thread Pool - - 56) HHH000389: Unsuccessful: drop sequence hibernate_sequence
+                2014-07-03 11:23:35,300 ERROR [org.hibernate.tool.hbm2ddl.SchemaExport] (ServerService Thread Pool - - 56) Sequence "HIBERNATE_SEQUENCE" not found; SQL statement:
+             Append when connection a datasource's connection url is 'jdbc:h2:mem:...' (e.g. 'in-memory' h2) and hibernate.hbm2ddl.auto=create or create-drop
+         -->
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:logger[@category='org.hibernate.tool.hbm2ddl.SchemaExport']
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:root-logger
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <logger category="org.hibernate.tool.hbm2ddl.SchemaExport">
+                    <level name="FATAL"/>
+                </logger>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <!-- KERBEROS ACCESS TO THE DATABASE : each jboss instance owner has a dedicated keytab.
+             If multiple jboss instance, even on different machines, has the same owner, they will share the same keytab -->
+        <property name="realm"               value="§[ §[machine]§/kerberos-host/@realm ]§"/>
+        <property name="kdc"                 value="./environment//instance[exists(kerberos-domain-controller[@realm='§[realm]§'])]"/>
+        <property name="kdc.provider"        value="§[ §[kdc]§/kerberos-domain-controller/@provider ]§"/>
+        <property name="kdc.listen.device"   value="§[ melody:getAttributeValue(§[kdc]§/kerberos-domain-controller/listen-on/@device, 'eth0') ]§"/>
+        <property name="kdc.listen.ip"       value="§[ melody:getNetworkActivationDeviceElement(§[kdc]§)/@ip ]§"/>
+
+        <echo message="[eap.conf:§[jees.id]§] Create rdb related system properties" severity="info"/>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties
+            </only-if-not-exists>
+            <!--  system properties must be place between extension and vault -->
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <system-properties/>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='java.security.krb5.kdc']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <property name="java.security.krb5.kdc" value="§[kdc.listen.ip]§"/>
+                <property name="java.security.krb5.realm" value="§[realm]§"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- Declare datasources -->
+        <foreach    items="§[application]§/datasources/datasource"
+                    item-name="datasource"
+                    max-par="1">
+            <!-- find the related rdb-server -->
+            <property name="rdbs"                      value="./environment//instance[exists(rdb-server/databases/database[@name=§[datasource]§/@ref-database])]"/>
+            <property name="rdbs.provider"             value="§[ §[rdbs]§/rdb-server/@provider ]§"/>
+            <property name="rdbs.version"              value="§[ §[rdbs]§/rdb-server/@version ]§"/>
+            <property name="rdbs.listen.device"        value="§[ melody:getAttributeValue(§[rdbs]§/rdb-server/listen-on/@device, 'eth0') ]§"/>
+            <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[rdbs]§, '§[rdbs.listen.device]§' )/@fqdn ]§"/>
+            <property name="rdbs.listen.port-offset"   value="§[ melody:getAttributeValue(§[rdbs]§/rdb-server/listen-on/@port-offset, '0') ]§"/>
+            <property name="rdbs.listen.port.tcp"      value="§[ number(§[rdbs]§/rdb-server/listen-on/socket[@name='tcp']/@port) + §[rdbs.listen.port-offset]§ ]§"/>
+            <!-- find the related database -->
+            <property name="base"                      value="§[rdbs]§/rdb-server/databases/database[@name=§[datasource]§/@ref-database]"/>
+            <property name="base.owner"                value="§[ §[base]§/@owner ]§"/>
+            <property name="base.owner.pwd"            value="§[ §[base]§/@owner-pwd ]§"/>
+            <!-- create the security-domain name related to this datasource -->
+            <property name="security-domain.name"      value="krb5-user-for-§[§[datasource]§/@name]§"/>
+
+            <!-- Deploy jdbc driver -->
+            <deploy-jdbc-driver-on-single-jee-server provider="§[rdbs.provider]§">
+                <param name="driver.name"      value="§[rdbs.provider]§-§[rdbs.version]§"/>
+                <param name="driver.version"   value="§[rdbs.version]§"/>
+            </deploy-jdbc-driver-on-single-jee-server>
+                    
+            <!-- Declare datasource in the jee-server -->
+            <declare-datasource-on-single-jee-server provider="§[rdbs.provider]§">
+                <param name="datasource.name"        value="§[§[datasource]§/@name]§"/>
+                <param name="driver.name"            value="§[rdbs.provider]§-§[rdbs.version]§"/>
+                <param name="rdbs.fqdn"              value="§[rdbs.listen.fqdn]§"/>
+                <param name="rdbs.port"              value="§[rdbs.listen.port.tcp]§"/>
+                <param name="rdbs.base"              value="§[ §[datasource]§/@ref-database ]§"/>
+                <param name="user.name"              value="§[base.owner]§"/>
+                <param name="user.pwd"               value="§[base.owner.pwd]§"/>
+                <param name="security-domain.name"   value="§[security-domain.name]§"/>
+            </declare-datasource-on-single-jee-server>
+
+	        <!-- Declare kerberos security-domain in the jee-server so that the jboss instance can connect to the database with kerberos -->
+	        <echo message="[§[appli.name]§.conf:§[jees.id]§] Create '§[security-domain.name]§' security domain" severity="info"/>
+	        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+	            <elements-selector>
+	                /*:server/*:profile/*:subsystem/*:security-domains/*:security-domain[@name='jdbcuser']
+	            </elements-selector>
+	        </remove-xml-elements>
+	        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+	            <elements-selector>
+	                /*:server/*:profile/*:subsystem/*:security-domains
+	            </elements-selector>
+	            <node-content>
+	                <![CDATA[
+	                <security-domain name="§[security-domain.name]§" cache-type="default">
+	                    <authentication>
+	                        <!-- In EAP 6.3.x, a 'code="Kerberos"' is mapped on the new class 'org.jboss.security.negotiation.KerberosLoginModule' instead of the old one 'com.sun.security.auth.module.Krb5LoginModule'.
+	                        So if we want the old behavior, we must specified 'code="com.sun.security.auth.module.Krb5LoginModule"' and 'module="sun.jdk"'.
+	                        If we want the new behavior, we can specified 'code="org.jboss.security.negotiation.KerberosLoginModule"' and 'module="org.jboss.security.negotiation"'.
+	                            <login-module code="com.sun.security.auth.module.Krb5LoginModule" flag="required" module="sun.jdk">
+	                            <login-module code="org.jboss.security.negotiation.KerberosLoginModule" flag="required" module="org.jboss.security.negotiation">
+	                        -->
+	                            <login-module code="org.jboss.security.negotiation.KerberosLoginModule" flag="required" module="org.jboss.security.negotiation">
+	                            <module-option name="principal" value="§[jees.owner]§"/>
+	                            <module-option name="useKeyTab" value="true"/>
+	                            <module-option name="keyTab" value="§[jees.owner.home-dir]§/.krb5/krb5.keytab"/>
+	                            <module-option name="storeKey" value="false"/>
+	                            <module-option name="doNotPrompt" value="true"/>
+	                            <module-option name="debug" value="true"/>
+	                            <module-option name="addGSSCredential" value="true"/>
+	                        </login-module>
+	                    </authentication>
+	                </security-domain>
+	                ]]>
+	            </node-content>
+	        </append-xml-elements>
+
+	        <!-- Create a keytab for the jboss instance owner -->
+	        <create-kerberos-principal>
+	            <param name="principal"   value="§[jees.owner]§"/>
+	            <param name="password"    value="§[jees.owner.pwd]§"/>
+	            <param name="realm"       value="§[realm]§"/>
+	            <param name="policy"      value="users"/>
+                <param name="genkeytab"   value="true"/>
+	        </create-kerberos-principal>
+	        <!-- Deploy keytab in the jboss instance onwer homedir -->
+	        <deploy-kerberos-principal-keytab>
+	            <param name="principal"   value="§[jees.owner]§"/>
+	            <param name="realm"       value="§[realm]§"/>
+	            <param name="cnx.user"    value="§[jees.owner]§"/>
+	            <param name="dest.path"   value="§[jees.owner.home-dir]§/.krb5/krb5.keytab"/>
+	        </deploy-kerberos-principal-keytab>
+
+	        <!-- Declare the jboss instance owner as a kerberos user in the rdb-server -->
+	        <create-database-kerberos-user>
+	            <param name="base.name"        value="§[ §[datasource]§/@ref-database ]§"/>
+	            <param name="user"             value="§[jees.owner]§"/>
+	            <param name="realm"            value="§[realm]§"/>
+	        </create-database-kerberos-user>
+        </foreach>
+
+        <!-- Declare xa-datasources -->
+        <foreach    items="§[application]§/datasources/xa-datasource"
+                    item-name="datasource"
+                    max-par="1">
+            <!-- find the related rdb-server -->
+            <property name="rdbs"                      value="./environment//instance[exists(rdb-server/databases/database[@name=§[datasource]§/@ref-database])]"/>
+            <property name="rdbs.provider"             value="§[ §[rdbs]§/rdb-server/@provider ]§"/>
+            <property name="rdbs.version"              value="§[ §[rdbs]§/rdb-server/@version ]§"/>
+            <property name="rdbs.listen.device"        value="§[ melody:getAttributeValue(§[rdbs]§/rdb-server/listen-on/@device, 'eth0') ]§"/>
+            <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[rdbs]§, '§[rdbs.listen.device]§' )/@fqdn ]§"/>
+            <property name="rdbs.listen.port-offset"   value="§[ melody:getAttributeValue(§[rdbs]§/rdb-server/listen-on/@port-offset, '0') ]§"/>
+            <property name="rdbs.listen.port.tcp"      value="§[ number(§[rdbs]§/rdb-server/listen-on/socket[@name='tcp']/@port) + §[rdbs.listen.port-offset]§ ]§"/>
+            <!-- find the related database -->
+            <property name="base"                      value="§[rdbs]§/rdb-server/databases/database[@name=§[datasource]§/@ref-database]"/>
+            <property name="base.owner"                value="§[ §[base]§/@owner ]§"/>
+            <property name="base.owner.pwd"            value="§[ §[base]§/@owner-pwd ]§"/>
+            <!-- create the security-domain name related to this datasource -->
+            <property name="security-domain.name"      value="krb5-user-for-§[§[datasource]§/@name]§"/>
+
+            <!-- Deploy jdbc driver -->
+            <deploy-jdbc-driver-on-single-jee-server provider="§[rdbs.provider]§">
+                <param name="driver.name"      value="§[rdbs.provider]§-§[rdbs.version]§"/>
+                <param name="driver.version"   value="§[rdbs.version]§"/>
+            </deploy-jdbc-driver-on-single-jee-server>
+                    
+            <!-- Declare xa datasource in the jee-server -->
+            <declare-xa-datasource-on-single-jee-server provider="§[rdbs.provider]§">
+                <param name="datasource.name"        value="§[§[datasource]§/@name]§"/>
+                <param name="driver.name"            value="§[rdbs.provider]§-§[rdbs.version]§"/>
+                <param name="rdbs.fqdn"              value="§[rdbs.listen.fqdn]§"/>
+                <param name="rdbs.port"              value="§[rdbs.listen.port.tcp]§"/>
+                <param name="rdbs.base"              value="§[ §[datasource]§/@ref-database ]§"/>
+                <param name="user.name"              value="§[base.owner]§"/>
+                <param name="user.pwd"               value="§[base.owner.pwd]§"/>
+                <param name="security-domain.name"   value="§[security-domain.name]§"/>
+            </declare-xa-datasource-on-single-jee-server>
+
+	        <!-- Declare kerberos security-domain in the jee-server so that the jboss instance can connect to the database with kerberos -->
+	        <echo message="[§[appli.name]§.conf:§[jees.id]§] Create '§[security-domain.name]§' security domain" severity="info"/>
+	        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+	            <elements-selector>
+	                /*:server/*:profile/*:subsystem/*:security-domains/*:security-domain[@name='jdbcuser']
+	            </elements-selector>
+	        </remove-xml-elements>
+	        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+	            <elements-selector>
+	                /*:server/*:profile/*:subsystem/*:security-domains
+	            </elements-selector>
+	            <node-content>
+	                <![CDATA[
+	                <security-domain name="§[security-domain.name]§" cache-type="default">
+	                    <authentication>
+	                        <!-- In EAP 6.3.x, a 'code="Kerberos"' is mapped on the new class 'org.jboss.security.negotiation.KerberosLoginModule' instead of the old one 'com.sun.security.auth.module.Krb5LoginModule'.
+	                        So if we want the old behavior, we must specified 'code="com.sun.security.auth.module.Krb5LoginModule"' and 'module="sun.jdk"'.
+	                        If we want the new behavior, we can specified 'code="org.jboss.security.negotiation.KerberosLoginModule"' and 'module="org.jboss.security.negotiation"'.
+	                            <login-module code="com.sun.security.auth.module.Krb5LoginModule" flag="required" module="sun.jdk">
+	                            <login-module code="org.jboss.security.negotiation.KerberosLoginModule" flag="required" module="org.jboss.security.negotiation">
+	                        -->
+	                            <login-module code="org.jboss.security.negotiation.KerberosLoginModule" flag="required" module="org.jboss.security.negotiation">
+	                            <module-option name="principal" value="§[jees.owner]§"/>
+	                            <module-option name="useKeyTab" value="true"/>
+	                            <module-option name="keyTab" value="§[jees.owner.home-dir]§/.krb5/krb5.keytab"/>
+	                            <module-option name="storeKey" value="false"/>
+	                            <module-option name="doNotPrompt" value="true"/>
+	                            <module-option name="debug" value="true"/>
+	                            <module-option name="addGSSCredential" value="true"/>
+	                        </login-module>
+	                    </authentication>
+	                </security-domain>
+	                ]]>
+	            </node-content>
+	        </append-xml-elements>
+
+	        <!-- Create a keytab for the jboss instance owner -->
+	        <create-kerberos-principal>
+	            <param name="principal"   value="§[jees.owner]§"/>
+	            <param name="password"    value="§[jees.owner.pwd]§"/>
+	            <param name="realm"       value="§[realm]§"/>
+	            <param name="policy"      value="users"/>
+                <param name="genkeytab"   value="true"/>
+	        </create-kerberos-principal>
+	        <!-- Deploy keytab in the jboss instance onwer homedir -->
+	        <deploy-kerberos-principal-keytab>
+	            <param name="principal"   value="§[jees.owner]§"/>
+	            <param name="realm"       value="§[realm]§"/>
+	            <param name="cnx.user"    value="§[jees.owner]§"/>
+	            <param name="dest.path"   value="§[jees.owner.home-dir]§/.krb5/krb5.keytab"/>
+	        </deploy-kerberos-principal-keytab>
+
+	        <!-- Declare the jboss instance owner as a kerberos user in the rdb-server -->
+	        <create-database-kerberos-user>
+	            <param name="base.name"        value="§[ §[datasource]§/@ref-database ]§"/>
+	            <param name="user"             value="§[jees.owner]§"/>
+	            <param name="realm"            value="§[realm]§"/>
+	        </create-database-kerberos-user>
+        </foreach>
+    </order>
+
+</sequence>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="sd.xml"/>
+	</sequence-descriptors>
+</melody-extension>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="sd.xml"/>
+		<sequence-descriptor path="rhn.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§" value="rhn"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="rhsm.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§" value="rhsm"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="dummy.xml">
+			<condition>
+				<match expression="§[@provider]§" value="dummy"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>

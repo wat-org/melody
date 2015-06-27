@@ -4,9 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.ICondition;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskBuilder;
+import com.wat.melody.api.annotation.Task;
 import com.wat.melody.api.annotation.condition.Condition;
 import com.wat.melody.api.annotation.condition.Conditions;
 import com.wat.melody.api.annotation.condition.Match;
@@ -42,6 +42,18 @@ public class JavaTaskBuilder implements ITaskBuilder {
 		ICondition previous = getCondition();
 		_condition = c;
 		return previous;
+	}
+
+	@Override
+	public String getTaskName() {
+		// the task name is either the simple name of the Java class (low case)
+		String taskName = getTaskClass().getSimpleName().toLowerCase();
+		Task a = getTaskClass().getAnnotation(Task.class);
+		if (a != null) {
+			// either the name defined in the Task annotation (low case too)
+			taskName = a.name().toLowerCase();
+		}
+		return taskName;
 	}
 
 	@Override

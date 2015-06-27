@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.0.0/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.0.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.0.1/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.0.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.1.0/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.1.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.1.1/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.1.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.0/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.2.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.1/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.2.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.2/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.2.2"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.3/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.2.3"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.4/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.2.4"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.0/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.3.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.1/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.3.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.2/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.3.2"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.4.0/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.4.0"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>

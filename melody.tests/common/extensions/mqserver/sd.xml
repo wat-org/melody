@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- deploy each mq-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each mq-servers.
+         caller can define callback 'callback.application' in order to perform application related actions on each mq-servers, if applications are declared on a mq-server.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="deploy-mq-servers">
+        <echo message="Creating MQ Servers ..."/>
+        <do-operation-on-mq-servers>
+            <param name="callback.mqs" value="deploy-mq-server-on-single-machine"/>
+        </do-operation-on-mq-servers>
+        <echo message="-- MQ Servers successfully created."/>
+    </order>
+
+    <!-- start each mq-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="start-mq-servers">
+        <echo message="Starting MQ Servers ..."/>
+        <do-operation-on-mq-servers>
+            <param name="callback.mqs" value="start-mq-server-on-single-machine"/>
+        </do-operation-on-mq-servers>
+        <echo message="-- MQ Servers successfully started."/>
+    </order>
+
+    <!-- stop each mq-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="stop-mq-servers">
+        <echo message="Stopping MQ Servers ..."/>
+        <do-operation-on-mq-servers>
+            <param name="callback.mqs" value="stop-mq-server-on-single-machine"/>
+        </do-operation-on-mq-servers>
+        <echo message="-- MQ Servers successfully stopped."/>
+    </order>
+
+    <!-- loop on each machines where a mq-server is declared.
+         caller must define callback 'callback.mqs'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-mq-servers">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(mq-server)"/>
+            <param name="callback.machine"            value="do-operation-on-mq-server-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-mq-server-on-single-machine">
+        <property name="mqs.provider"             value="§[ §[machine]§/mq-server/@provider ]§"/>
+        <property name="mqs.path"                 value="§[ §[machine]§/mq-server/@path ]§"/>
+        <property name="mqs.version"              value="§[ §[machine]§/mq-server/@version ]§"/>
+        <property name="mqs.owner"                value="§[ §[machine]§/mq-server/owner/@login ]§"/>
+        <property name="mqs.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[mqs.owner]§']/@id ]§"/>
+        <property name="mqs.owner.pwd"            value="§[ §[machine]§/credentials/user[@name='§[mqs.owner]§']/@password ]§"/>
+        <property name="mqs.owner.home-dir"       value="§[ §[machine]§/credentials/user[@name='§[mqs.owner]§']/@homedir ]§"/>
+        <property name="mqs.group"                value="§[ §[machine]§/credentials/user[@name='§[mqs.owner]§']/@ref-group-name ]§"/>
+        <property name="mqs.group.id"             value="§[ §[machine]§/credentials/group[@name='§[mqs.group]§']/@id ]§"/>
+        <property name="mqs.listen.device"        value="§[ melody:getAttributeValue(§[machine]§/mq-server/listen-on/@device, 'eth0') ]§"/>
+        <property name="mqs.listen.port-offset"   value="§[ melody:getAttributeValue(§[machine]§/mq-server/listen-on/@port-offset, '0') ]§"/>
+        <property name="mqs.listen.port.tcp"      value="§[ number(melody:getAttributeValue(§[machine]§/mq-server/listen-on/socket[@name='tcp']/@port, '1414')) + §[mqs.listen.port-offset]§ ]§"/>
+        <property name="mqs.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[mqs.listen.device]§')/@ip ]§"/>
+        <property name="mqs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[mqs.listen.device]§')/@fqdn ]§"/>
+        <property name="realm"                    value="§[ §[machine]§/kerberos-host/@realm ]§"/>
+
+        <source order="§[callback.mqs]§" provider="§[mqs.provider]§"/>
+    </order>
+
+</sequence>

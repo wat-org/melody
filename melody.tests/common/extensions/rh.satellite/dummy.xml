@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="register-single-machine">
+        <echo message="+ Registration failed on machine '§[machine.id]§' (feature not supported yet on §[machine.os.name]§ §[machine.os.version]§)."/>
+    </order>
+
+    <order name="unregister-single-machine">
+        <echo message="+ Unregistration failed on machine '§[machine.id]§' (feature not supported yet on §[machine.os.name]§ §[machine.os.version]§)."/>
+    </order>
+
+</sequence>

@@ -4,7 +4,6 @@ import java.util.LinkedHashSet;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.ICondition;
 import com.wat.melody.common.properties.PropertySet;
 
 /**

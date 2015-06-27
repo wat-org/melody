@@ -4,7 +4,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.ICondition;
 import com.wat.melody.api.Melody;
 import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.xpath.XPathExpander;

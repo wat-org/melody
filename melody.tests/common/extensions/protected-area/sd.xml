@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="create-all-protected-areas">
+        <echo message="Creating Protected Areas ..."/>
+        <select-protected-areas>
+            <param name="callback.pa" value="create-single-protected-area"/>
+        </select-protected-areas>
+        <!-- must create all protected area first, so that it is now possible to
+             build one pa from an other pa here -->
+        <select-live-protected-areas>
+            <param name="callback.pa" value="update-single-protected-area"/>
+        </select-live-protected-areas>
+        <echo message="-- Protected Areas created."/>
+    </order>
+
+    <order name="destroy-all-protected-areas">
+        <echo message="Destroying Protected Areas ..."/>
+        <!-- must first remove all rules, in order to be sure the protected
+             area is not declared in an other protected area -->
+        <select-live-protected-areas>
+            <param name="callback.pa" value="reset-single-protected-area"/>
+        </select-live-protected-areas>
+        <select-live-protected-areas>
+            <param name="callback.pa" value="destroy-single-protected-area"/>
+        </select-live-protected-areas>
+        <echo message="-- Protected Areas destroyed."/>
+    </order>
+
+
+    <order name="create-single-protected-area">
+        <new-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
+    </order>
+
+    <order name="update-single-protected-area">
+        <update-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
+        <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' created (id:'§[pa.id]§')."/>
+    </order>
+
+    <order name="reset-single-protected-area">
+        <reset-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
+    </order>
+
+    <order name="destroy-single-protected-area">
+        <delete-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
+        <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' destroyed (id:'§[pa.id]§')."/>
+    </order>
+
+</sequence>

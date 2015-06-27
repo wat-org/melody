@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.server"        value="customize-rdb-server.default-callback"/>
+    <property name="callback.application"   value="customize-rdb-application.default-callback"/>
+
+    <order name="deploy-rdb-server-on-single-machine">
+        <upload host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <!-- create .krb5 directory -->
+            <resources  src-basedir="files"
+                        match=".krb5"
+                        dest-basedir="§[rdbs.owner.home-dir]§">
+                <posix-permissions scope="directories">700</posix-permissions>
+            </resources>
+            <!-- sqlnet.ora is especially configured to perform kerberos -->
+            <resources  src-basedir="files/network/admin"
+                        match="sqlnet.ora"
+                        dest-basedir="§[rdbs.path]§/network/admin"
+                        template="y">
+                <posix-permissions scope="files">640</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- generate keytab -->
+        <create-kerberos-principal>
+            <param name="principal"   value="oracle/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="policy"      value="services"/>
+            <param name="genkeytab"   value="true"/>
+        </create-kerberos-principal>
+        <deploy-kerberos-principal-keytab>
+            <param name="principal"   value="oracle/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="cnx.user"    value="§[rdbs.owner]§"/>
+            <param name="dest.path"   value="§[rdbs.owner.home-dir]§/.krb5/krb5.keytab"/>
+        </deploy-kerberos-principal-keytab>
+
+        <!-- create databases -->
+        <foreach    items="§[machine]§/rdb-server/databases/database"
+                    item-name="database"
+                    max-par="1">
+            <property name="base.name"        value="§[§[database]§/@name]§"/>
+            <property name="base.owner"       value="§[§[database]§/@owner]§"/>
+            <property name="base.owner.pwd"   value="§[§[database]§/@owner-pwd]§"/>
+
+	        <create-database-on-rdb-server provider="§[rdbs.provider]§"/>
+            <echo message="+ Database '§[base.name]§' successfully created on Oracle Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- start -->
+        <start-service>
+            <param name="service.name" value="dbora"/>
+        </start-service>
+
+        <!-- customize / machine scope -->
+        <source order="§[callback.server]§" provider="§[rdbs.provider]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="§[machine]§/rdb-server/applications/application"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"      value="§[§[application]§/@name]§"/>
+
+            <!-- customize application -->
+            <property name="callback.application"        value="§[
+             if ('§[callback.application]§' = 'customize-web-application.default-callback') then
+               '§[callback.application]§'
+             else
+               '§[callback.application]§.§[appli.name]§'
+            ]§"/>
+
+            <source order="§[callback.application]§" provider="§[rdbs.provider]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully deployed on Oracle Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server to apply configuration changes -->
+        <start-rdb-server-on-single-machine provider="§[rdbs.provider]§"/>
+
+        <echo message="++ Oracle Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-rdb-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-rdb-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-rdb-server-on-single-machine">
+        <start-service>
+            <param name="service.name" value="dbora"/>
+        </start-service>
+
+        <echo message="+ Oracle Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-rdb-server-on-single-machine">
+        <stop-service>
+            <param name="service.name" value="dbora"/>
+        </stop-service>
+
+        <echo message="+ Oracle Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+    <!-- create a database on the given rdb-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
+         caller must define 'rdbs.owner', which represents the database owner.
+         caller must define 'rdbs.owner.pwd', which represents the database owner's password.
+         caller must define 'base.name', which represents the database name.
+         caller must define 'base.owner', which represents the database owner.
+         caller must define 'base.owner.pwd', which represents the database owner's password. -->
+    <order name="create-database-on-rdb-server">
+        <property name="base.owner.uc" value="§[upper-case('§[base.owner]§')]§"/>
+
+        <!-- create database
+             create a user with all privileges
+             create the recovery user (must have all privileges too, in order to be able to commit pending trransactions) -->
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+grep '§[base.name]§' /etc/oratab 1>/dev/null && {
+  echo "database '§[base.name]§' already exists. Nothing to do."
+} || {
+  dbca -silent \
+    -createDatabase \
+    -templateName General_Purpose.dbc \
+    -gdbName '§[base.name]§' \
+    -sid '§[base.name]§' \
+    -sysPassword '§[rdbs.owner.pwd]§' \
+    -systemPassword '§[rdbs.owner.pwd]§' \
+    -characterSet AL32UTF8 \
+    -databaseType MULTIPURPOSE
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create database '§[base.name]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "database '§[base.name]§' successfully created."
+}
+
+. /usr/local/bin/oraenv <<< '§[base.name]§'
+
+userExists=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from all_users where username like '§[base.owner.uc]§';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe user '§[base.owner]§'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${userExists} = 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+create user §[base.owner]§ identified by §[base.owner.pwd]§;
+grant ALL PRIVILEGES to §[base.owner]§;
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create user '§[base.owner]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "user '§[base.owner]§' successfully created."
+} || {
+  echo "user '§[base.owner]§' already exists. Nothing to do."
+}
+
+# xa recovery
+userExists=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from all_users where username like 'RECOVERY';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe user 'recovery'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${userExists} = 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+create user recovery identified by password;
+grant ALL PRIVILEGES to recovery;
+grant SELECT ON sys.dba_pending_transactions TO recovery;
+grant SELECT ON sys.pending_trans$ TO recovery;
+grant SELECT ON sys.dba_2pc_pending TO recovery;
+grant EXECUTE ON sys.dbms_xa TO recovery;
+grant EXECUTE ON sys.dbms_system TO recovery;
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create user 'recovery'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "user 'recovery' successfully created."
+} || {
+  echo "user 'recovery' already exists. Nothing to do."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+        <!-- database will start/stop when dbora start/stop -->
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+sed -rie 's/§[base.name]§(.*).$/§[base.name]§\1Y/' /etc/oratab
+                ]]>
+            </exec>
+        </ssh>
+        <!-- enable kerberos on the database:
+               - os_authent_prefix must be set to an empty string
+               - remote_os_authent must be set to FALSE
+               Note that database must be restarted to apply configuration changes
+        -->
+        <ssh description="[oracle-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+. /usr/local/bin/oraenv <<< '§[base.name]§'
+
+paramSet=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from v\$parameter where name = 'os_authent_prefix' and value not like '';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe parameter 'os_authent_prefix'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${paramSet} != 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+alter system set os_authent_prefix='' scope=spfile;
+alter system set remote_os_authent=FALSE scope=spfile;
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to set paramter 'os_authent_prefix'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "paramter 'os_authent_prefix' successfully setted."
+} || {
+  echo "paramter 'os_authent_prefix' already set. Nothing to do."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+        <!-- From now, you can connect with sqlplus via kerberos.
+             * what you have to do is :
+             create a user principal in the kdc
+             as root
+               kadmin.local -q 'addprinc -policy user -pw totopwd toto'
+             create the user in the oracle database
+             as oracle
+               . /usr/local/bin/oraenv <<< '§[base.name]§'
+               sqlplus / as sysdba
+               create user "TOTO@CLOUD.LOCAL" identified externally;
+               grant all privileges to "TOTO@CLOUD.LOCAL";
+             * test :
+             acquire toto credentials and connect to sqlplus with kerberos credentials
+             as oracle
+               kinit toto
+               . /usr/local/bin/oraenv <<< '§[base.name]§'
+               sqlplus /@§[rdbs.listen.fqdn]§:§[rdbs.listen.port.tcp]§/§[base.name]§
+             you are connected !
+        -->
+    </order>
+
+    <!-- create a user on the given rdb-server.
+         caller must define 'base.name', which represents the database name.
+         caller must define 'user', which represents the user to create.
+         caller must define 'realm', which represents the realm of the user to create. -->
+    <order name="create-kerberos-user-on-rdb-server">
+        <property name="rdbs"                  value="./environment//instance[exists(rdb-server/databases/database[@name='§[base.name]§'])]"/>
+        <property name="rdbs.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost(§[rdbs]§) ]§"/>
+        <property name="rdbs.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName(§[rdbs]§) ]§"/>
+        <property name="rdbs.owner"            value="§[ §[rdbs]§/rdb-server/owner/@login ]§"/>
+    
+        <property name="user.uc" value="§[upper-case('§[user]§')]§"/>
+
+        <synchronize scope="GLOBAL" lock-id="oracle-create-user-§[user]§">
+            <ssh description="[oracle-create-user:§[user]§:§[rdbs.machine.cnx.ip]§]" host="§[rdbs.machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[rdbs.machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+. /usr/local/bin/oraenv <<< '§[base.name]§'
+
+userExists=$(sqlplus -S / as SYSDBA <<EOF
+set heading off
+select count(*) from all_users where username like '§[user.uc]§@§[realm]§';
+EOF
+)
+
+res=$?
+[ $res != 0 ] && {
+  echo "fail to probe user '§[user.uc]§@§[realm]§'. Exiting with error code $res." >&2
+  exit $res
+}
+
+[ ${userExists} = 0 ] && {
+  sqlplus -S / as SYSDBA <<EOF
+create user "§[user.uc]§@§[realm]§" identified externally;
+grant all privileges to "§[user.uc]§@§[realm]§";
+EOF
+  res=$?
+  [ $res != 0 ] && {
+    echo "fail to create user '§[user.uc]§@§[realm]§'. Exiting with error code $res." >&2
+    exit $res
+  }
+  echo "user '§[user.uc]§@§[realm]§' successfully created."
+} || {
+  echo "user '§[user.uc]§@§[realm]§' already exists. Nothing to do."
+}
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+    </order>
+
+</sequence>

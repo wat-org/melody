@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.engine" value="customize-jee-engine.default-callback"/>
+
+    <order name="deploy-jee-engine-on-single-machine">
+        <!-- deploy standard engine -->
+        <deploy-jboss-eap-engine-on-single-machine provider="§[jeee.provider]§" version="§[jeee.version]§"/>
+
+        <!-- customize engine -->
+        <source order="§[callback.engine]§" provider="§[jeee.provider]§" version="§[jeee.version]§"/>
+
+        <echo message="++ JBoss EAP Engine '§[jeee.version]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-jee-engine.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <property name="callback.server" value="customize-jee-server.default-callback"/>
+
+    <order name="deploy-jee-server-on-single-machine">
+        <!-- stop the jboss eap server and remove previous installation if it exists in a different version than expected -->
+        <ssh description="[stop:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+# jboss eap server control script is executable ? yes -> stop the jboss eap server (doesn't matter if it was not runnning)
+[ -x §[jees.path]§/bin/jboss-eapd.sh ] && §[jees.path]§/bin/jboss-eapd.sh stop
+
+# jboss eap server directory is already in the expected version ? no -> remove everything
+grep §[jees.version]§ §[jees.path]§/patches/version.txt 1>/dev/null 2>&1 || rm -rf §[jees.path]§
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- prepare server configuration modification -->
+        <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs"   value="§[ melody:getWorkingFolder() ]§"/>
+        <property name="tmpfile.abs"         value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+        <copy>
+            <resources  src-basedir="./§[jees.version]§/standalone/configuration/"
+                        match="§[jees.profile.file]§"
+                        dest-basedir="§[workingfolder.abs]§/"
+                        dest-name="§[tmpfile.rel]§"
+                        link-option="COPY_LINKS"/>
+        </copy>
+
+        <!-- deploy server and apply standard configuration -->
+        <deploy-jboss-eap-server-on-single-machine provider="§[jees.provider]§" version="§[jees.version]§"/>
+
+        <!-- customize server -->
+        <source order="§[callback.server]§" provider="§[jees.provider]§" version="§[jees.version]§"/>
+
+        <!-- deploy custom modules -->
+        <foreach    items="§[jees]§/custom-modules/custom-module"
+                    item-name="cm"
+                    max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="cm.name" value="§[§[cm]§/@name]§"/>
+
+            <source order="§[callback.module]§.§[cm.name]§" provider="§[jees.provider]§" version="§[jees.version]§"/>/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss EAP Server'§[jees.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- deploy applications -->
+        <foreach    items="§[jees]§/applications/application"
+                    item-name="application"
+                    max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="appli.name" value="§[§[application]§/@name]§"/>
+
+            <source order="§[callback.application]§.§[appli.name]§" provider="§[jees.provider]§" version="§[jees.version]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully deployed for JBoss EAP Server '§[jees.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- upload modified configuration -->
+        <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/"
+                        match="§[tmpfile.rel]§"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[jees.profile.file]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- (re)start server -->
+        <start-jee-server-on-single-machine provider="§[jees.provider]§" version="§[jees.version]§"/>
+
+        <echo message="++ JBoss EAP Server '§[jees.id]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-jee-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-jee-server-on-single-machine">
+        <ssh description="[start:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[jees.path]§/bin/jboss-eapd.sh restart"/>
+        </ssh>
+
+        <echo message="+ JBoss EAP Server '§[jees.id]§' successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-jee-server-on-single-machine">
+        <ssh description="[stop:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[jees.path]§/bin/jboss-eapd.sh stop"/>
+        </ssh>
+
+        <echo message="+ JBoss EAP Server '§[jees.id]§' successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

@@ -11,23 +11,23 @@
 				</listen-on>
 			</rdb-server>
 
-			<packages herit-policy="append">
+			<packages>
 				<!-- for oracle 12-->
-				<package name="cloog-ppl"/>
-				<package name="compat-libcap1"/>
-				<package name="compat-libstdc++-33"/>
-				<package name="cpp"/>
-				<package name="gcc"/>
-				<package name="gcc-c++"/>
-				<package name="ksh"/>
-				<package name="libXxf86dga"/>
-				<package name="libXxf86misc"/>
-				<package name="libaio-devel"/>
-				<package name="libdmx"/>
-				<package name="libstdc++-devel"/>
-				<package name="mpfr"/>
-				<package name="ppl"/>
-				<package name="xorg-x11-utils"/>
+				<package name="cloog-ppl" herit-policy="append"/>
+				<package name="compat-libcap1" herit-policy="append"/>
+				<package name="compat-libstdc++-33" herit-policy="append"/>
+				<package name="cpp" herit-policy="append"/>
+				<package name="gcc" herit-policy="append"/>
+				<package name="gcc-c++" herit-policy="append"/>
+				<package name="ksh" herit-policy="append"/>
+				<package name="libXxf86dga" herit-policy="append"/>
+				<package name="libXxf86misc" herit-policy="append"/>
+				<package name="libaio-devel" herit-policy="append"/>
+				<package name="libdmx" herit-policy="append"/>
+				<package name="libstdc++-devel" herit-policy="append"/>
+				<package name="mpfr" herit-policy="append"/>
+				<package name="ppl" herit-policy="append"/>
+				<package name="xorg-x11-utils" herit-policy="append"/>
 			</packages>
 
 			<credentials>

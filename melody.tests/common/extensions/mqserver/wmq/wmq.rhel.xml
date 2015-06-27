@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.server"        value="customize-mq-server.default-callback"/>
+    <property name="callback.application"   value="customize-mq-application.default-callback"/>
+
+    <order name="deploy-mq-server-on-single-machine">
+        <!-- start -->
+        <start-service>
+            <param name="service.name" value="wmq"/>
+        </start-service>
+
+        <!-- create queue managers -->
+        <foreach    items="§[machine]§/mq-server/queue-managers/queue-manager"
+                    item-name="queue-manager"
+                    max-par="1">
+            <property name="queue-manager.name" value="§[§[queue-manager]§/@name]§"/>
+
+            <create-queue-manager-on-mq-server provider="§[mqs.provider]§"/>
+            <echo message="+ Queue Manager '§[queue-manager.name]§' successfully created on WebSphere MQ Server on machine '§[machine.id]§'."/>
+
+            <!-- create channels -->
+            <foreach    items="§[queue-manager]§/channels/channel"
+                        item-name="channel">
+                <property name="channel.name" value="§[§[channel]§/@name]§"/>
+                <property name="channel.secured" value="§[§[channel]§/@secured]§"/>
+
+                <create-channel-on-mq-server provider="§[mqs.provider]§"/>
+                <echo message="+ Channel '§[channel.name]§' successfully created in Queue Manager '§[queue-manager.name]§' on WebSphere MQ Server on machine '§[machine.id]§'."/>
+            </foreach>
+
+            <!-- create queues -->
+            <foreach    items="§[queue-manager]§/queues/queue"
+                        item-name="queue">
+                <property name="queue.name" value="§[§[queue]§/@name]§"/>
+
+                <create-queue-on-mq-server provider="§[mqs.provider]§"/>
+                <echo message="+ Queue '§[queue.name]§' successfully created in Queue Manager '§[queue-manager.name]§' on WebSphere MQ Server on machine '§[machine.id]§'."/>
+            </foreach>
+        </foreach>
+
+        <!-- customize / machine scope -->
+        <source order="§[callback.server]§" provider="§[mqs.provider]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="§[machine]§/mq-server/applications/application"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"                 value="§[§[application]§/@name]§"/>
+
+            <!-- customize application -->
+            <property name="callback.application"        value="§[
+             if ('§[callback.application]§' = 'customize-web-application.default-callback') then
+               '§[callback.application]§'
+             else
+               '§[callback.application]§.§[appli.name]§'
+            ]§"/>
+
+            <source order="§[callback.application]§" provider="§[mqs.provider]§"/>
+
+            <echo message="+ Application '§[appli.name]§' successfully deployed on WebSphere MQ Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server to apply configuration changes -->
+        <start-mq-server-on-single-machine provider="§[mqs.provider]§"/>
+
+        <echo message="++ WebSphere MQ Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-mq-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-mq-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-mq-server-on-single-machine">
+        <start-service>
+            <param name="service.name" value="wmq"/>
+        </start-service>
+
+        <echo message="+ WebSphere MQ Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-mq-server-on-single-machine">
+        <stop-service>
+            <param name="service.name" value="wmq"/>
+        </stop-service>
+
+        <echo message="+ WebSphere MQ Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+    <!-- create a queue manager on the given mq-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the mq-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the mq-server.
+         caller must define 'mqs.owner', which represents the mq-server owner.
+         caller must define 'queue-manager.name', which represents the queue manager name. -->
+    <order name="create-queue-manager-on-mq-server">
+        <property name="queue-manager.name.uc" value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="queue-manager.name.lc" value="§[lower-case('§[queue-manager.name]§')]§"/>
+
+        <!-- create and start queue manager
+             configure the default listener
+             enable FIPS
+             disable authentication -->
+        <ssh description="[wmq-create-qm:§[queue-manager.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+dspmq -m §[queue-manager.name.uc]§ 1>/dev/null 2>/dev/null && {
+  echo "queue manager '§[queue-manager.name]§' already exists. Nothing to do."
+  exit 0
+}
+# create the queue mamanger
+crtmqm §[queue-manager.name.uc]§
+# start the queue mamanger
+strmqm §[queue-manager.name.uc]§
+
+# set the default listener @ip/port and tell him to start/stop when the queue manager start and stop
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+alter listener(SYSTEM.DEFAULT.LISTENER.TCP) trptype(TCP) ipaddr(§[mqs.listen.ip]§) port(§[mqs.listen.port.tcp]§) control(QMGR)
+display listener(SYSTEM.DEFAULT.LISTENER.TCP) all
+end
++++EOF+++
+
+# enable FIPS
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+ALTER QMGR SSLFIPS(YES)
+DISPLAY QMGR SSLFIPS
+end
++++EOF+++
+
+# disable authentication
+# TODO : find a better solution to deal with autentication
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+ALTER QMGR CHLAUTH(DISABLED)
+DISPLAY QMGR CHLAUTH
+end
++++EOF+++
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- the private-key/certificate creation must be done AFTER the queue-manager creation.
+        (If the directory /var/mqm/qmgrs/§[queue-manager.name.uc]§/ exists before the queue manager creation,
+        the queue manager will be created in '/var/mqm/qmgrs/§[queue-manager.name.uc]§.000'.
+        And we don't want that.)-->
+        <!-- create a private-key/certificate for the queue manager -->
+        <create-certificate>
+            <param name="cn"         value="§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§"/>
+            <param name="ou"         value="WMQ"/>
+            <param name="password"   value="12345678"/>
+            <param name="alias"      value="ibmwebspheremq§[queue-manager.name.lc]§"/>
+        </create-certificate>
+        <!-- deploy the previously created private-key/certificate in the queue manager ssl directory -->
+        <deploy-certificate>
+            <param name="cn"             value="§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§"/>
+            <param name="cnx.user"       value="§[mqs.owner]§"/>
+            <param name="dest.basedir"   value="/var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl"/>
+        </deploy-certificate>
+        <!-- convert it into CMS (required by WMQ) -->
+        <ssh description="[wmq-create-qm:§[queue-manager.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+[ -f "/var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.kdb" ] && exit 0
+runmqakm -keydb -convert -db /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/§[queue-manager.name.lc]§@§[mqs.listen.fqdn]§.p12 -pw 12345678 -type pkcs12 -new_db /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.kdb -new_pw 12345678az@A#Z -strong -stash -fips
+chmod 640 /var/mqm/qmgrs/§[queue-manager.name.uc]§/ssl/key.*
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+    </order>
+
+    <!-- create a channel on the given mq-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the mq-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the mq-server.
+         caller must define 'mqs.owner', which represents the mq-server owner.
+         caller must define 'queue-manager.name', which represents the queue manager name.
+         caller must define 'channel.name', which represents the channel name.
+         caller must define 'channel.secured', which indicate if the channel should be secured or not. -->
+    <order name="create-channel-on-mq-server">
+        <property name="queue-manager.name.uc"   value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="channel.name.uc"         value="§[upper-case('§[channel.name]§')]§"/>
+
+        <!-- create channel -->
+        <ssh description="[wmq-create-chan:§[queue-manager.name]§:§[channel.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+SSL_OPTS=""
+[ "§[channel.secured]§" = "true" ] && SSL_OPTS="SSLCIPH(TLS_RSA_WITH_AES_128_CBC_SHA256) SSLCAUTH(OPTIONAL)"
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+define channel(§[channel.name.uc]§) CHLTYPE(SVRCONN) TRPTYPE(TCP) ${SSL_OPTS}
+display channel(§[channel.name.uc]§) all
+end
++++EOF+++
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+    </order>
+
+    <!-- create a queue on the given mq-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the mq-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the mq-server.
+         caller must define 'mqs.owner', which represents the mq-server owner.
+         caller must define 'queue-manager.name', which represents the queue manager name.
+         caller must define 'queue.name', which represents the queue name. -->
+    <order name="create-queue-on-mq-server">
+        <property name="queue-manager.name.uc"   value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="queue.name.uc"           value="§[upper-case('§[queue.name]§')]§"/>
+
+        <!-- create and start queue manager
+             configure the default listener
+             disable authentication
+             create unsecured and secured channel -->
+        <ssh description="[wmq-create-queue:§[queue-manager.name]§:§[queue.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[mqs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+dspmq -m §[queue-manager.name.uc]§ 1>/dev/null 2>/dev/null || {
+  echo "queue manager '§[queue-manager.name]§' doesn't exists. Can't create queue '§[queue.name]§' on! Exiting ..."
+  exit 1
+}
+
+runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
+define qlocal(§[queue.name.uc]§)
+end
++++EOF+++
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+    </order>
+
+</sequence>

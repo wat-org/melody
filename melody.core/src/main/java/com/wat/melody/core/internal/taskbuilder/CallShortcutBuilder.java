@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import org.w3c.dom.Element;
 
-import com.wat.melody.api.ICondition;
-import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskBuilder;
 import com.wat.melody.api.exception.TaskFactoryException;
@@ -28,12 +26,12 @@ public class CallShortcutBuilder implements ITaskBuilder {
 
 	private OrderName _order;
 	private ICondition _condition;
-	private ISequenceDescriptor _sequenceDescriptor;
+	private String _sequenceDescriptorPath;
 
-	public CallShortcutBuilder(OrderName o, ISequenceDescriptor sd, ICondition c) {
+	public CallShortcutBuilder(OrderName o, String sdp, ICondition c) {
 		setOrder(o);
 		setCondition(c);
-		setSequenceDescriptor(sd);
+		setSequenceDescriptorPath(sdp);
 	}
 
 	private OrderName getOrder() {
@@ -66,19 +64,25 @@ public class CallShortcutBuilder implements ITaskBuilder {
 		return previous;
 	}
 
-	private ISequenceDescriptor getSequenceDescriptor() {
-		return _sequenceDescriptor;
+	private String getSequenceDescriptorPath() {
+		return _sequenceDescriptorPath;
 	}
 
-	private ISequenceDescriptor setSequenceDescriptor(ISequenceDescriptor sd) {
-		if (sd == null) {
+	private String setSequenceDescriptorPath(String sdp) {
+		if (sdp == null) {
 			throw new IllegalArgumentException("null: Not Accepted. "
-					+ "Must be a valid "
-					+ ISequenceDescriptor.class.getCanonicalName() + ".");
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
 		}
-		ISequenceDescriptor previous = getSequenceDescriptor();
-		_sequenceDescriptor = sd;
+		String previous = getSequenceDescriptorPath();
+		_sequenceDescriptorPath = sdp;
 		return previous;
+	}
+
+	@Override
+	public String getTaskName() {
+		// the task name is the order name (low case)
+		return getOrder().toString().toLowerCase();
 	}
 
 	@Override
@@ -98,8 +102,7 @@ public class CallShortcutBuilder implements ITaskBuilder {
 			OrderNameSet ons = new OrderNameSet();
 			ons.add(getOrder());
 			c.setOrders(ons);
-			c.setSequenceDescriptor(new WrapperFile(getSequenceDescriptor()
-					.getSourceFile()));
+			c.setSequenceDescriptor(new WrapperFile(getSequenceDescriptorPath()));
 		} catch (CallException Ex) {
 			throw new TaskFactoryException("shouldn't happened.", Ex);
 		} catch (IOException Ex) {

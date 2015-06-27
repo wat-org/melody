@@ -15,8 +15,8 @@
 			<credentials>
 				<credential login="root" password="XXXXXXXXXXX"/>
 			</credentials>
-			<rhn profile-name="default" start-rhnsd="false" upload-hardware-infos="false" upload-packages-infos="false" upload-virtualization-infos="false"/>
-			<packages>
+			<registration profile-name="default" provider="rhn" start-rhnsd="false" upload-hardware-infos="false" upload-packages-infos="false" upload-virtualization-infos="false"/>
+			<packages provider="yum">
 				<!-- for time synchro -->
 				<package name="ntp"/>
 				<!-- allow ssh and scp -->
@@ -25,7 +25,7 @@
 				<package name="xorg-x11-xauth"/>
 				<package arch="noarch" name="libX11-common"/>
 			</packages>
-			<services>
+			<services provider="initd">
 				<!-- for Melody key pair deployment -->
 				<service name="lvcd" state="on"/>
 				<!-- for time synchro -->

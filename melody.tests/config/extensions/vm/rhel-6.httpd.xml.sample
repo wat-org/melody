@@ -4,7 +4,7 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-6']" name="rhel-6.httpd">
-			<web-server path="/etc/httpd">
+			<web-server path="/etc/httpd" provider="httpd">
 				<owner login="apache"/>
 				<log level="debug"/>
 				<listen-on device="eth0" port-offset="0">

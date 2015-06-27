@@ -1,0 +1,18 @@
+<module xmlns="urn:jboss:module:1.1" name="org.jgroups.probe">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <main-class name="org.jgroups.tests.Probe"/>
+
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="org.jgroups"/>
+        <module name="org.jboss.logmanager" services="import"/>
+        <module name="org.jboss.logging"/>
+        <!-- Insert dependencies here -->
+    </dependencies>
+</module>

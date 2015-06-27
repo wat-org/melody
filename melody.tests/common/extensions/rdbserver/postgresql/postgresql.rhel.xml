@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.server"        value="customize-rdb-server.default-callback"/>
+    <property name="callback.application"   value="customize-rdb-application.default-callback"/>
+
+    <order name="deploy-rdb-server-on-single-machine">
+        <!-- install -->
+        <install-package>
+            <param name="package.name" value="postgresql-server"/>
+        </install-package>
+
+        <!-- configure -->
+        <ssh description="[configure:postgresql-server:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+[ -d "§[rdbs.path]§/base/" ] && {
+  echo "Postgresql Server already initialized. Nothing to do."
+  exit 0
+}
+service postgresql initdb || {
+  res=$?
+  echo "Fail to initialize Postgresql Server. Exiting with error code $res." >&2
+  exit $res
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <upload host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="var/lib/pgsql/data"
+                        match="**"
+                        dest-basedir="§[rdbs.path]§">
+                <posix-permissions scope="files">600</posix-permissions>
+                <include match="postgresql.conf" template="y"/>
+                <include match="pg_hba.conf"     template="y"/>
+                <include match="pg_ident.conf"   template="y"/>
+                <include match=".krb5">
+                    <posix-permissions scope="directories">700</posix-permissions>
+                </include>
+            </resources>
+        </upload>
+
+        <!-- generate keytab -->
+        <create-kerberos-principal>
+            <param name="principal"   value="postgres/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="policy"      value="services"/>
+            <param name="genkeytab"   value="true"/>
+        </create-kerberos-principal>
+        <deploy-kerberos-principal-keytab>
+            <param name="principal"   value="postgres/§[rdbs.listen.fqdn]§"/>
+            <param name="realm"       value="§[realm]§"/>
+            <param name="cnx.user"    value="§[rdbs.owner]§"/>
+            <param name="dest.path"   value="§[rdbs.path]§/.krb5/krb5.keytab"/>
+        </deploy-kerberos-principal-keytab>
+
+        <!-- start -->
+        <start-service>
+            <param name="service.name" value="postgresql"/>
+        </start-service>
+
+        <!-- create databases -->
+        <foreach    items="§[machine]§/rdb-server/databases/database"
+                    item-name="database"
+                    max-par="1">
+            <property name="base.name"        value="§[§[database]§/@name]§"/>
+            <property name="base.owner"       value="§[§[database]§/@owner]§"/>
+            <property name="base.owner.pwd"   value="§[§[database]§/@owner-pwd]§"/>
+
+            <create-database-on-rdb-server provider="§[rdbs.provider]§"/>
+            <echo message="+ Database '§[base.name]§' successfully created on Postgresql Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- customize / machine scope -->
+        <source order="§[callback.server]§" provider="§[rdbs.provider]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="§[machine]§/rdb-server/applications/application"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"      value="§[§[application]§/@name]§"/>
+
+            <!-- customize application -->
+            <property name="callback.application"        value="§[
+             if ('§[callback.application]§' = 'customize-web-application.default-callback') then
+               '§[callback.application]§'
+             else
+               '§[callback.application]§.§[appli.name]§'
+            ]§"/>
+
+            <source order="§[callback.application]§" provider="§[rdbs.provider]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully deployed on Postgresql Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server to apply configuration changes -->
+        <start-rdb-server-on-single-machine provider="§[rdbs.provider]§"/>
+
+        <echo message="++ Postgresql Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-rdb-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-rdb-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-rdb-server-on-single-machine">
+        <start-service>
+            <param name="service.name" value="postgresql"/>
+        </start-service>
+
+        <echo message="+ Postgresql Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-rdb-server-on-single-machine">
+        <stop-service>
+            <param name="service.name" value="postgresql"/>
+        </stop-service>
+
+        <echo message="+ Postgresql Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+    <!-- create a database on the given rdb-server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the rdb-server.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the rbd-server.
+         caller must define 'rdbs.owner', which represents the database owner.
+         caller must define 'base.name', which represents the database name.
+         caller must define 'base.owner', which represents the database owner.
+         caller must define 'base.owner.pwd', which represents the database owner's password. -->
+    <order name="create-database-on-rdb-server">
+        <!-- create database -->
+        <ssh description="[pgsql-create-db:§[base.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+roleExists=$(psql -t -U postgres <<EOF
+select count(*) from pg_catalog.pg_roles where rolname='§[base.owner]§';
+EOF
+)
+
+[ ${roleExists} = 0 ] && {
+  psql -U §[rdbs.owner]§ << EOF
+CREATE USER §[base.owner]§ WITH PASSWORD '§[base.owner.pwd]§';
+EOF
+  echo "role '§[base.owner]§' successfully created."
+} || {
+  echo "role '§[base.owner]§' already exists. Nothing to do."
+}
+
+
+baseExists=$(psql -t -U postgres <<EOF
+select count(*) from pg_catalog.pg_database where datname='§[base.name]§';
+EOF
+)
+
+[ ${baseExists} = 0 ] && {
+  psql -U §[rdbs.owner]§ << EOF
+CREATE DATABASE §[base.name]§ WITH OWNER §[base.owner]§;
+EOF
+  echo "database '§[base.name]§' successfully created."
+} || {
+  echo "database '§[base.name]§' already exists. Nothing to do."
+}
+
+# create group 'krb5', which will contains all user who can connect using 'gss' auth (see pg_hba.conf)
+groupExists=$(psql -t -U postgres <<EOF
+select count(*) from pg_catalog.pg_roles where rolname='krb5';
+EOF
+)
+
+[ ${groupExists} = 0 ] && {
+  psql -U §[rdbs.owner]§ << EOF
+CREATE GROUP krb5;
+EOF
+  echo "group 'krb5' successfully created."
+} || {
+  echo "group 'krb5' already exists. Nothing to do."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+    </order>
+
+    <!-- create a user on the given rdb-server.
+         caller must define 'base.name', which represents the database name.
+         caller must define 'user', which represents the user to create.
+         caller must define 'realm', which represents the realm of the user to create (unused in postgresql). -->
+    <order name="create-kerberos-user-on-rdb-server">
+        <property name="rdbs"                  value="./environment//instance[exists(rdb-server/databases/database[@name='§[base.name]§'])]"/>
+        <property name="rdbs.machine.cnx.ip"   value="§[ melody:getNetworkActivationHost(§[rdbs]§) ]§"/>
+        <property name="rdbs.machine.cnx.kp"   value="§[ melody:getInstanceKeyPairName(§[rdbs]§) ]§"/>
+        <property name="rdbs.owner"            value="§[ §[rdbs]§/rdb-server/owner/@login ]§"/>
+
+        <!-- TODO: grant §[user]§ on §[base.name]§ -->
+        <synchronize scope="GLOBAL" lock-id="pgsql-create-user-§[user]§">
+            <ssh description="[pgsql-create-user:§[user]§:§[rdbs.machine.cnx.ip]§]" host="§[rdbs.machine.cnx.ip]§" login="§[rdbs.owner]§" keypair-name="§[rdbs.machine.cnx.kp]§">
+                <exec>
+                    <![CDATA[
+roleExists=$(psql -t -U postgres <<EOF
+select count(*) from pg_catalog.pg_roles where rolname='§[user]§';
+EOF
+)
+
+[ ${roleExists} = 0 ] && {
+  psql -U §[rdbs.owner]§ << EOF
+CREATE USER §[user]§;
+EOF
+  echo "user '§[user]§' successfully created."
+} || {
+  echo "user '§[user]§' already exists. Nothing to do."
+}
+
+# put user in the group 'krb5', so that he can connect using 'gss' auth (see pg_hba.conf) 
+userInGroup=$(psql -t -U postgres <<EOF
+select count(*) from pg_user join pg_auth_members on (pg_user.usesysid=pg_auth_members.member) join pg_roles on (pg_roles.oid=pg_auth_members.roleid) where pg_user.usename='§[user]§' and rolname='krb5';
+EOF
+)
+
+[ ${userInGroup} = 0 ] && {
+  psql -U §[rdbs.owner]§ << EOF
+GRANT krb5 TO §[user]§;
+EOF
+  echo "user '§[user]§' successfully assigned to group 'krb5'."
+} || {
+  echo "user '§[user]§' is already a member of group 'krb5'. Nothing to do."
+}
+
+exit 0
+                    ]]>
+                </exec>
+            </ssh>
+        </synchronize>
+    </order>
+
+</sequence>

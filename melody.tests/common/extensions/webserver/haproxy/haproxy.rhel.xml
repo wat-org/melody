@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.server"        value="customize-web-server.default-callback"/>
+    <property name="callback.application"   value="customize-web-application.default-callback"/>
+
+    <order name="deploy-web-server-on-single-machine">
+        <!-- install -->
+        <install-package>
+            <param name="package.name" value="haproxy"/>
+        </install-package>
+
+        <!-- configure -->
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="etc/haproxy/"
+                        match="haproxy.cfg"
+                        dest-basedir="§[ws.path]§/"
+                        template="y">
+                <posix-permissions scope="files">640</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- customize / server scope -->
+        <source order="§[callback.server]§" provider="§[ws.provider]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="§[machine]§/web-server/applications/application"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"        value="§[§[application]§/@name]§"/>
+            <property name="appli.worker"      value="§[replace('§[appli.name]§', '[.-]', '_') ]§"/>
+
+            <!-- customize application -->
+            <property name="callback.application"        value="§[
+             if ('§[callback.application]§' = 'customize-web-application.default-callback') then
+               '§[callback.application]§'
+             else
+               '§[callback.application]§.§[appli.name]§'
+            ]§"/>
+
+            <source order="§[callback.application]§" provider="§[ws.provider]§"/>
+
+            <echo message="+ Application '§[appli.name]§' successfully configured on HAProxy Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server -->
+        <start-web-server-on-single-machine provider="§[ws.provider]§"/>
+
+        <echo message="++ HAProxy Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-web-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-web-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-web-server-on-single-machine">
+        <start-service>
+            <param name="service.name" value="haproxy"/>
+        </start-service>
+
+        <echo message="+ HAProxy Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-web-server-on-single-machine">
+        <stop-service>
+            <param name="service.name" value="haproxy"/>
+        </stop-service>
+
+        <echo message="+ HAProxy Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

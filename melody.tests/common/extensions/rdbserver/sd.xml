@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- deploy each rdb-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each rdb-servers.
+         caller can define callback 'callback.application' in order to perform application related actions on each rdb-servers, if applications are declared on a rdb-server.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="deploy-rdb-servers">
+        <echo message="Creating RDB Servers ..."/>
+        <do-operation-on-rdb-servers>
+            <param name="callback.rdbs" value="deploy-rdb-server-on-single-machine"/>
+        </do-operation-on-rdb-servers>
+        <echo message="-- RDB Servers successfully created."/>
+    </order>
+
+    <!-- start each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="start-rdb-servers">
+        <echo message="Starting RDB Servers ..."/>
+        <do-operation-on-rdb-servers>
+            <param name="callback.rdbs" value="start-rdb-server-on-single-machine"/>
+        </do-operation-on-rdb-servers>
+        <echo message="-- RDB Servers successfully started."/>
+    </order>
+
+    <!-- stop each rdb-servers.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="stop-rdb-servers">
+        <echo message="Stopping RDB Servers ..."/>
+        <do-operation-on-rdb-servers>
+            <param name="callback.rdbs" value="stop-rdb-server-on-single-machine"/>
+        </do-operation-on-rdb-servers>
+        <echo message="-- RDB Servers successfully stopped."/>
+    </order>
+
+    <!-- loop on each machines where a rdb-server is declared.
+         caller must define callback 'callback.rdbs'.
+         caller can define 'machine_match_criteria' to target a subset of machines. -->
+    <order name="do-operation-on-rdb-servers">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(rdb-server)"/>
+            <param name="callback.machine"            value="do-operation-on-rdb-server-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-rdb-server-on-single-machine">
+        <property name="rdbs.provider"             value="§[ §[machine]§/rdb-server/@provider ]§"/>
+        <property name="rdbs.path"                 value="§[ §[machine]§/rdb-server/@path ]§"/>
+        <property name="rdbs.version"              value="§[ §[machine]§/rdb-server/@version ]§"/>
+        <property name="rdbs.owner"                value="§[ §[machine]§/rdb-server/owner/@login ]§"/>
+        <property name="rdbs.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@id ]§"/>
+        <property name="rdbs.owner.pwd"            value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@password ]§"/>
+        <property name="rdbs.owner.home-dir"       value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@homedir ]§"/>
+        <property name="rdbs.group"                value="§[ §[machine]§/credentials/user[@name='§[rdbs.owner]§']/@ref-group-name ]§"/>
+        <property name="rdbs.group.id"             value="§[ §[machine]§/credentials/group[@name='§[rdbs.group]§']/@id ]§"/>
+        <property name="rdbs.listen.device"        value="§[ melody:getAttributeValue(§[machine]§/rdb-server/listen-on/@device, 'eth0') ]§"/>
+        <property name="rdbs.listen.port-offset"   value="§[ melody:getAttributeValue(§[machine]§/rdb-server/listen-on/@port-offset, '0') ]§"/>
+        <property name="rdbs.listen.port.tcp"      value="§[ number(melody:getAttributeValue(§[machine]§/rdb-server/listen-on/socket[@name='tcp']/@port, '1521')) + §[rdbs.listen.port-offset]§ ]§"/>
+        <property name="rdbs.listen.ip"            value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@ip ]§"/>
+        <property name="rdbs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[rdbs.listen.device]§')/@fqdn ]§"/>
+        <property name="realm"                     value="§[ §[machine]§/kerberos-host/@realm ]§"/>
+
+        <source order="§[callback.rdbs]§" provider="§[rdbs.provider]§"/>
+    </order>
+
+
+    <!--  must provide a 'base.name' (to find the rdb-server) -->
+    <order name="create-database-kerberos-user">
+        <property name="rdbs"                      value="./environment//instance[exists(rdb-server/databases/database[@name='§[base.name]§'])]"/>
+        <property name="rdbs.provider"             value="§[ §[rdbs]§/rdb-server/@provider ]§"/>
+
+        <source order="create-kerberos-user-on-rdb-server" provider="§[rdbs.provider]§"/>
+    </order>
+
+</sequence>

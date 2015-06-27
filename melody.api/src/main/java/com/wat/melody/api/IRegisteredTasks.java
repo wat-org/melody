@@ -1,9 +1,14 @@
 package com.wat.melody.api;
 
+import java.io.IOException;
+
 import org.w3c.dom.Element;
 
-import com.wat.melody.common.order.OrderName;
+import com.wat.melody.api.exception.IllegalOrderException;
+import com.wat.melody.common.files.exception.IllegalFileException;
+import com.wat.melody.common.order.exception.IllegalOrderNameException;
 import com.wat.melody.common.properties.PropertySet;
+import com.wat.melody.common.xml.exception.IllegalDocException;
 
 /**
  * <p>
@@ -33,25 +38,23 @@ public interface IRegisteredTasks {
 
 	/**
 	 * <p>
-	 * Register the given Call Shortcut (a sequence descriptor and an order in
-	 * it) as a {@link ITask}.
+	 * Register the given extension.
 	 * </p>
 	 * 
-	 * @param order
-	 *            is the order to register.
-	 * @param condition
-	 *            is the condition when the given order is eligible.
-	 * @param sequenceDescriptor
-	 *            is the sequence descriptor, which contains the given order.
+	 * @param extensionPath
+	 *            is the path of the Extension to register.
+	 * @param defaultSequenceDescriptorPath
+	 *            is the path of the Sequence Descriptor to load if the given
+	 *            Extension path does not contains extension's descriptor. Can
+	 *            be <tt>null</tt>.
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if any of the given values is <code>null</code> .
-	 * @throws RuntimeException
-	 *             if the given object is not a valid {@link ITask}
-	 *             {@link Class} (ex : not public, abstract, ...).
+	 *             if the given extension path is <code>null</code> .
 	 */
-	public void registerCallShortcutTask(OrderName order,
-			ISequenceDescriptor sequenceDescriptor, ICondition condition);
+	public void registerExtension(String extensionPath,
+			String defaultSequenceDescriptorPath) throws IllegalDocException,
+			IllegalFileException, IllegalOrderException,
+			IllegalOrderNameException, IOException;
 
 	/**
 	 * @param taskName

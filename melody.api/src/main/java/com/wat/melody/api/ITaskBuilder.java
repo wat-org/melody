@@ -14,6 +14,8 @@ public interface ITaskBuilder {
 
 	public Class<? extends ITask> getTaskClass();
 
+	public String getTaskName();
+
 	public boolean isEligible(Element elmt, PropertySet ps);
 
 	public ITask build() throws TaskFactoryException;

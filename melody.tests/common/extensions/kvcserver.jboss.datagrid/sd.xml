@@ -61,9 +61,9 @@
          caller must define callback 'callback.machine'.
          caller can define 'machine_match_criteria' to target a subset of machines. -->
     <order name="do-operation-on-jboss-datagrid-machines">
-        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
+        <select-running-machines>
             <param name="machine_eligible_criteria"   value="exists(kvc-server)"/>
-        </call>
+        </select-running-machines>
     </order>
 
 
@@ -74,7 +74,7 @@
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
     <order name="do-operation-on-jboss-datagrid-engines">
         <call orders="do-operation-on-jboss-datagrid-machines">
-            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-jboss-datagrid-engines-on-single-machine"/>
+            <param name="callback.machine"            value="do-operation-on-jboss-datagrid-engines-on-single-machine"/>
         </call>
     </order>
 
@@ -115,7 +115,7 @@
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
     <order name="do-operation-on-jboss-datagrid-servers">
         <call orders="do-operation-on-jboss-datagrid-machines">
-            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-jboss-datagrid-servers-on-single-machine"/>
+            <param name="callback.machine"            value="do-operation-on-jboss-datagrid-servers-on-single-machine"/>
         </call>
     </order>
 

@@ -10,50 +10,56 @@
         <call orders="install-packages,remove-packages"/>
     </order>
 
-    <order name="do-operation-on-packages">
-        <call orders="select-running-machines" sequence-descriptor="../machines/sd.xml">
-            <param name="machine_eligible_criteria"   value="exists(packages/package)"/>
-            <param name="callback.machine"            value="§[melody:getSequenceDescriptorPath()]§::do-operation-on-packages-on-single-machine"/>
-        </call>
-    </order>
-
-    <order name="do-operation-on-packages-on-single-machine">
-        <foreach    items="§[machine]§/packages/package[ §[package_state_criteria]§ and §[package_match_criteria]§ ]"
-                    item-name="package">
-            <property name="package.name"   value="§[ §[package]§/@name ]§"/>
-            <property name="package.arch"   value="§[ melody:getAttributeValue(§[package]§/@arch, '§[machine.os.arch]§') ]§"/>
-            <property name="package.repo"   value="§[ §[package]§/@repo ]§"/>
-
-            <call orders="§[substring-after('§[callback.package]§','::')]§" sequence-descriptor="§[substring-before('§[callback.package]§','::')]§"/>
-        </foreach>
-    </order>
-
-
     <order name="install-packages">
         <echo message="Installing packages ..."/>
-        <call orders="do-operation-on-packages">
+        <do-operation-on-packages>
             <param name="package_state_criteria"   value="( @ensure='present' or not(exists(@ensure)) )"/>
-            <param name="callback.package"         value="§[melody:getSequenceDescriptorPath()]§::install-package-on-single-machine"/>
-        </call>
+            <param name="callback.package"         value="install-package-on-single-machine"/>
+        </do-operation-on-packages>
         <echo message="-- Packages successfully installed."/>
-    </order>
-
-    <order name="install-package-on-single-machine">
-        <call orders="install-package-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
     </order>
 
 
     <order name="remove-packages">
         <echo message="Removing packages ..."/>
-        <call orders="do-operation-on-packages">
+        <do-operation-on-packages>
             <param name="package_state_criteria"   value="@ensure='absent'"/>
-            <param name="callback.package"         value="§[melody:getSequenceDescriptorPath()]§::remove-package-on-single-machine"/>
-        </call>
+            <param name="callback.package"         value="remove-package-on-single-machine"/>
+        </do-operation-on-packages>
         <echo message="-- Packages successfully removed."/>
     </order>
 
-    <order name="remove-package-on-single-machine">
-        <call orders="remove-package-on-single-machine" sequence-descriptor="os.§[machine.os.name]§.§[machine.os.version]§.xml"/>
+
+    <order name="do-operation-on-packages">
+        <select-running-machines>
+            <param name="machine_eligible_criteria"   value="exists(packages/package)"/>
+            <param name="callback.machine"            value="do-operation-on-packages-on-single-machine"/>
+        </select-running-machines>
+    </order>
+
+    <order name="do-operation-on-packages-on-single-machine">
+        <foreach    items="§[machine]§/packages/package[ §[package_state_criteria]§ and §[package_match_criteria]§ ]"
+                    item-name="package">
+            <property name="package.provider"   value="§[ §[package]§/parent::*/@provider ]§"/>
+            <property name="package.name"       value="§[ §[package]§/@name ]§"/>
+            <property name="package.arch"       value="§[ melody:getAttributeValue(§[package]§/@arch, '§[machine.os.arch]§') ]§"/>
+            <property name="package.repo"       value="§[ §[package]§/@repo ]§"/>
+
+            <source order="§[callback.package]§" provider="§[package.provider]§"/>
+        </foreach>
+    </order>
+
+
+    <order name="install-package">
+        <property name="package.provider" value="§[ §[machine]§/packages/@provider ]§"/>
+
+        <source order="install-package-on-single-machine" provider="§[package.provider]§"/>
+    </order>
+
+    <order name="remove-package">
+        <property name="package.provider" value="§[ §[machine]§/packages/@provider ]§"/>
+
+        <source order="remove-package-on-single-machine" provider="§[package.provider]§"/>
     </order>
 
 </sequence>

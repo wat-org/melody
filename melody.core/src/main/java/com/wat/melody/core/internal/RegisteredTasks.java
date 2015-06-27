@@ -1,23 +1,41 @@
 package com.wat.melody.core.internal;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.w3c.dom.Element;
+import javax.xml.xpath.XPathExpressionException;
 
-import com.wat.melody.api.ICondition;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ISequenceDescriptor;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskBuilder;
-import com.wat.melody.api.annotation.Task;
+import com.wat.melody.api.exception.IllegalOrderException;
+import com.wat.melody.common.ex.MelodyException;
+import com.wat.melody.common.files.FS;
+import com.wat.melody.common.files.exception.IllegalFileException;
 import com.wat.melody.common.order.OrderName;
+import com.wat.melody.common.order.OrderNameSet;
+import com.wat.melody.common.order.exception.IllegalOrderNameException;
 import com.wat.melody.common.properties.PropertySet;
+import com.wat.melody.common.xml.Doc;
+import com.wat.melody.common.xml.exception.IllegalDocException;
+import com.wat.melody.common.xpath.XPathExpander;
+import com.wat.melody.core.internal.taskbuilder.AllCondition;
+import com.wat.melody.core.internal.taskbuilder.AnyCondition;
 import com.wat.melody.core.internal.taskbuilder.CallShortcutBuilder;
+import com.wat.melody.core.internal.taskbuilder.ICondition;
 import com.wat.melody.core.internal.taskbuilder.JavaTaskBuilder;
+import com.wat.melody.core.internal.taskbuilder.MatchCondition;
+import com.wat.melody.core.internal.taskbuilder.TrueCondition;
 import com.wat.melody.core.nativeplugin.attributes.RemoveAttribute;
 import com.wat.melody.core.nativeplugin.attributes.SetAttributeValue;
 import com.wat.melody.core.nativeplugin.call.Call;
@@ -25,6 +43,7 @@ import com.wat.melody.core.nativeplugin.foreach.Foreach;
 import com.wat.melody.core.nativeplugin.order.Order;
 import com.wat.melody.core.nativeplugin.property.Property;
 import com.wat.melody.core.nativeplugin.sequence.Sequence;
+import com.wat.melody.core.nativeplugin.source.Source;
 import com.wat.melody.core.nativeplugin.synchronize.Synchronize;
 
 /**
@@ -76,6 +95,7 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 		registerJavaTask(Order.class);
 		registerJavaTask(Call.class);
 		registerJavaTask(Foreach.class);
+		registerJavaTask(Source.class);
 		registerJavaTask(Synchronize.class);
 		registerJavaTask(Property.class);
 		registerJavaTask(SetAttributeValue.class);
@@ -88,9 +108,109 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 	}
 
 	@Override
-	public void registerCallShortcutTask(OrderName order,
-			ISequenceDescriptor sequenceDescriptor, ICondition condition) {
-		register(new CallShortcutBuilder(order, sequenceDescriptor, condition));
+	public void registerExtension(String extensionPath,
+			String defaultSequenceDescriptorPath) throws IllegalDocException,
+			IllegalFileException, IllegalOrderException,
+			IllegalOrderNameException, IOException {
+		if (extensionPath == null) {
+			throw new IllegalArgumentException("null: Not Accepted. "
+					+ "Must be a valid " + String.class.getCanonicalName()
+					+ ".");
+		}
+		try {
+			FS.validateFileExists(extensionPath + "/META-INF/melody.xml");
+		} catch (IllegalFileException Ex) {
+			// the extension doesn't contains a descriptor && default sd == null
+			if (defaultSequenceDescriptorPath == null) {
+				return;
+			}
+			// the extension doesn't contains a descriptor: load the default sd
+			ISequenceDescriptor sd = new SequenceDescriptor();
+			sd.load(defaultSequenceDescriptorPath);
+			OrderNameSet orders = Order.findAvailableOrderNames(sd);
+			ICondition c = new TrueCondition();
+			for (OrderName order : orders) {
+				register(new CallShortcutBuilder(order, sd.getSourceFile(), c));
+			}
+
+			return;
+		}
+
+		Doc doc = new Doc();
+		try {
+			doc.load(extensionPath + "/META-INF/melody.xml");
+		} catch (MelodyException ignored) {
+			throw new RuntimeException("cannot happened.");
+		}
+		NodeList nl = null;
+		try {
+			nl = doc.evaluateAsNodeList("/melody-extension/sequence-descriptors/sequence-descriptor");
+		} catch (XPathExpressionException e) {
+			throw new RuntimeException("cannot happened.");
+		}
+		for (int i = 0; i < nl.getLength(); i++) {
+			if (nl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+				continue;
+			}
+			Element e = (Element) nl.item(i);
+			ISequenceDescriptor sd = retrieveSequenceDescriptor(e,
+					extensionPath);
+			OrderNameSet orders = Order.findAvailableOrderNames(sd);
+			ICondition c = retrieveSequenceDescriptorCondition(e);
+			for (OrderName order : orders) {
+				register(new CallShortcutBuilder(order, sd.getSourceFile(), c));
+			}
+		}
+	}
+
+	private static ISequenceDescriptor retrieveSequenceDescriptor(Element e,
+			String extensionPath) throws IllegalDocException,
+			IllegalFileException, IllegalOrderException, IOException {
+		String sdpath = null;
+		try {
+			sdpath = XPathExpander.evaluateAsString("@path", e);
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException("cannot happened.");
+		}
+		ISequenceDescriptor sd = new SequenceDescriptor();
+		sd.load(new File(extensionPath + "/" + sdpath).getAbsolutePath());
+		return sd;
+	}
+
+	private static ICondition retrieveSequenceDescriptorCondition(Element e) {
+		NodeList ocnl = null;
+		try {
+			ocnl = XPathExpander.evaluateAsNodeList("condition", e);
+			if (ocnl == null || ocnl.getLength() == 0) {
+				return new TrueCondition();
+			}
+			AnyCondition anyc = new AnyCondition();
+			for (int i = 0; i < ocnl.getLength(); i++) {
+				if (ocnl.item(i).getNodeType() != Node.ELEMENT_NODE) {
+					continue;
+				}
+				AllCondition allc = new AllCondition();
+				anyc.add(allc);
+				Element oce = (Element) ocnl.item(i);
+				NodeList mcnl = null;
+				mcnl = XPathExpander.evaluateAsNodeList("match", oce);
+				for (int j = 0; j < mcnl.getLength(); j++) {
+					if (mcnl.item(j).getNodeType() != Node.ELEMENT_NODE) {
+						continue;
+					}
+					Element mce = (Element) mcnl.item(j);
+					String expression = XPathExpander.evaluateAsString(
+							"@expression", mce);
+					String value = XPathExpander
+							.evaluateAsString("@value", mce);
+					MatchCondition mc = new MatchCondition(expression, value);
+					allc.add(mc);
+				}
+			}
+			return anyc;
+		} catch (XPathExpressionException Ex) {
+			throw new RuntimeException("cannot happened.");
+		}
 	}
 
 	public void register(ITaskBuilder tb) {
@@ -99,6 +219,7 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 					+ "Must be a valid "
 					+ ITaskBuilder.class.getCanonicalName() + ".");
 		}
+
 		Class<? extends ITask> c = tb.getTaskClass();
 		if (!isValidTask(c)) {
 			throw new RuntimeException("The given Java Class is not a "
@@ -106,13 +227,8 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 					+ ". This Java Class is either not public, or abstract "
 					+ "or it as no 0-arg constructor.");
 		}
-		String taskName = c.getSimpleName().toLowerCase();
-		Task a = c.getAnnotation(Task.class);
-		if (a != null) {
-			// declare an entry TaskAnnotaionName->canonicalClassName
-			taskName = a.name().toLowerCase();
-		}
 
+		String taskName = tb.getTaskName();
 		List<ITaskBuilder> tbs = get(taskName);
 		// initialize the ITaskBuilder List if needed
 		if (tbs == null) {

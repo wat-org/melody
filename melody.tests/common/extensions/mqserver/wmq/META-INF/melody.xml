@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="wmq.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§" value="wmq"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>

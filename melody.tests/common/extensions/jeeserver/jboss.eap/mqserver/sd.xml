@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <!-- configure the given jee-server for mq.
+         caller must define 'machine', which represents the jee-server to configure.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jee-server to configure.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jee-server.
+         caller must define 'application', which represents the application to configure.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'jees.owner', which represents the jee-server owner.
+         caller must define 'jees.path', which represents the jee-server path.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="configure-mq-on-single-jee-server">
+        <!-- Declare connection definitions -->
+        <foreach    items="§[application]§/connection-definitions/connection-definition"
+                    item-name="connection-definition"
+                    max-par="1">
+            <!-- find the related mq-server -->
+            <property name="mqs"                      value="./environment//instance[exists(mq-server/queue-managers/queue-manager[@name=§[connection-definition]§/@ref-queue-manager]/channels/channel[@name=§[connection-definition]§/@ref-channel])]"/>
+            <property name="mqs.provider"             value="§[ §[mqs]§/mq-server/@provider ]§"/>
+            <property name="mqs.version"              value="§[ §[mqs]§/mq-server/@version ]§"/>
+            <property name="mqs.listen.device"        value="§[ melody:getAttributeValue(§[mqs]§/mq-server/listen-on/@device, 'eth0') ]§"/>
+            <property name="mqs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[mqs]§, '§[mqs.listen.device]§' )/@fqdn ]§"/>
+            <property name="mqs.listen.port-offset"   value="§[ §[mqs]§/mq-server/listen-on/@port-offset ]§"/>
+            <property name="mqs.listen.port.tcp"      value="§[ number(§[mqs]§/mq-server/listen-on/socket[@name='tcp']/@port) + §[mqs.listen.port-offset]§ ]§"/>
+
+            <!-- Deploy mq rar -->
+            <deploy-mq-rar-on-single-jee-server provider="§[mqs.provider]§">
+                <param name="mq.rar.name"      value="§[mqs.provider]§-§[mqs.version]§"/>
+                <param name="mq.rar.version"   value="§[mqs.version]§"/>
+            </deploy-mq-rar-on-single-jee-server>
+
+            <!-- Declare connection definition -->
+            <declare-connection-definition-on-single-jee-server provider="§[mqs.provider]§">
+                <param name="mq.rar.name"                  value="§[mqs.provider]§-§[mqs.version]§"/>
+                <param name="connection-definition.name"   value="§[ §[connection-definition]§/@name ]§"/>
+                <param name="mqs.fqdn"                     value="§[mqs.listen.fqdn]§"/>
+                <param name="mqs.port"                     value="§[mqs.listen.port.tcp]§"/>
+                <param name="queue-manager.name"           value="§[ §[connection-definition]§/@ref-queue-manager ]§"/>
+                <param name="channel.name"                 value="§[ §[connection-definition]§/@ref-channel ]§"/>
+                <param name="channel.secured"              value="§[ §[mqs]§/mq-server/queue-managers/queue-manager[@name=§[connection-definition]§/@ref-queue-manager]/channels/channel[@name=§[connection-definition]§/@ref-channel]/@secured ]§"/>
+                <param name="user.name"                    value="mqm"/>
+            </declare-connection-definition-on-single-jee-server>
+        </foreach>
+
+        <!-- Declare MDBs activation specifications -->
+        <foreach    items="§[application]§/mdbs/mdb"
+                    item-name="mdb"
+                    max-par="1">
+            <!-- find the related mq-server -->
+            <property name="mqs"                      value="./environment//instance[exists(mq-server/queue-managers/queue-manager[@name=§[mdb]§/@ref-queue-manager]/channels/channel[@name=§[mdb]§/@ref-channel])]"/>
+            <property name="mqs.provider"             value="§[ §[mqs]§/mq-server/@provider ]§"/>
+            <property name="mqs.version"              value="§[ §[mqs]§/mq-server/@version ]§"/>
+            <property name="mqs.listen.device"        value="§[ melody:getAttributeValue(§[mqs]§/mq-server/listen-on/@device, 'eth0') ]§"/>
+            <property name="mqs.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[mqs]§, '§[mqs.listen.device]§' )/@fqdn ]§"/>
+            <property name="mqs.listen.port-offset"   value="§[ §[mqs]§/mq-server/listen-on/@port-offset ]§"/>
+            <property name="mqs.listen.port.tcp"      value="§[ number(§[mqs]§/mq-server/listen-on/socket[@name='tcp']/@port) + §[mqs.listen.port-offset]§ ]§"/>
+
+            <!-- Deploy mq rar -->
+            <deploy-mq-rar-on-single-jee-server provider="§[mqs.provider]§">
+                <param name="mq.rar.name"      value="§[mqs.provider]§-§[mqs.version]§"/>
+                <param name="mq.rar.version"   value="§[mqs.version]§"/>
+            </deploy-mq-rar-on-single-jee-server>
+
+            <!-- Declare connection definition for the mdb -->
+            <declare-mdb-activation-spec-on-single-jee-server provider="§[mqs.provider]§">
+                <param name="mq.rar.name"                  value="§[mqs.provider]§-§[mqs.version]§"/>
+	            <param name="mdb.name"                     value="§[ §[mdb]§/@name ]§"/>
+                <param name="mqs.fqdn"                     value="§[mqs.listen.fqdn]§"/>
+                <param name="mqs.port"                     value="§[mqs.listen.port.tcp]§"/>
+                <param name="queue-manager.name"           value="§[ §[mdb]§/@ref-queue-manager ]§"/>
+                <param name="channel.name"                 value="§[ §[mdb]§/@ref-channel ]§"/>
+                <param name="channel.secured"              value="§[ §[mqs]§/mq-server/queue-managers/queue-manager[@name=§[mdb]§/@ref-queue-manager]/channels/channel[@name=§[mdb]§/@ref-channel]/@secured ]§"/>
+                <param name="user.name"                    value="mqm"/>
+                <param name="queue.name"                   value="§[ §[mdb]§/@ref-queue ]§"/>
+            </declare-mdb-activation-spec-on-single-jee-server>
+        </foreach>
+
+        <!-- Declare queues -->
+        <foreach    items="§[application]§/queues/queue"
+                    item-name="queue"
+                    max-par="1">
+            <!-- find the related mq-server -->
+            <property name="mqs"                      value="./environment//instance[exists(mq-server/queue-managers/queue-manager[@name=§[queue]§/@ref-queue-manager]/queues/queue[@name=§[queue]§/@ref-queue])]"/>
+            <property name="mqs.provider"             value="§[ §[mqs]§/mq-server/@provider ]§"/>
+            <property name="mqs.version"              value="§[ §[mqs]§/mq-server/@version ]§"/>
+
+            <declare-queue-on-single-jee-server provider="§[mqs.provider]§">
+                <param name="mq.rar.name"   value="§[mqs.provider]§-§[mqs.version]§"/>
+                <param name="queue.name"    value="§[ §[queue]§/@ref-queue ]§"/>
+            </declare-queue-on-single-jee-server>
+        </foreach>
+    </order>
+
+</sequence>
