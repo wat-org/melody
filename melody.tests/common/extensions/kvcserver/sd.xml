@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project>
 
-<sequence basedir="." >
+<sequence basedir=".">
 
     <property name="kvc_server_match_criteria"   value="1=1"/>
     <property name="kvc_engine_match_criteria"   value="1=1"/>
@@ -11,76 +11,78 @@
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_engine_match_criteria' to target a subset of kvc-engines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="deploy-jboss-datagrid-engines">
-        <echo message="Deploying JBoss DataGrid Engines ..."/>
-        <call orders="do-operation-on-jboss-datagrid-engines">
-            <param name="callback.kvce"   value="§[melody:getSequenceDescriptorPath()]§::deploy-jboss-datagrid-engine-on-single-machine"/>
-        </call>
-        <echo message="-- JBoss DataGrid Engines successfully deployed."/>
+    <order name="deploy-kvc-engines">
+        <echo message="Deploying KVC Engines ..."/>
+        <do-operation-on-kvc-engines>
+            <param name="callback.kvce" value="deploy-kvc-engine-on-single-machine"/>
+        </do-operation-on-kvc-engines>
+        <echo message="-- KCV Engines successfully deployed."/>
     </order>
 
     <!-- deploy each kvc-servers.
          caller must define 'kvce.binaries.path'.
          caller can define callback 'callback.server' in order to perform extra actions on each kvc-servers.
-         caller must define callback 'callback.module' in order to perform module related actions on each kvc-servers, if modules are declared on a kcv-server.
+         caller must define callback 'callback.module' in order to perform module related actions on each kvc-servers, if modules are declared on a kvc-server.
+         caller must define callback 'callback.application' in order to perform application related actions on each kvc-servers, if applications are declared on a kvc-server.
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="deploy-jboss-datagrid-servers">
-        <call orders="deploy-jboss-datagrid-engines"/>
-        <echo message="Creating JBoss DataGrid Servers ..."/>
-        <call orders="do-operation-on-jboss-datagrid-servers">
-            <param name="callback.kvcs"   value="§[melody:getSequenceDescriptorPath()]§::deploy-jboss-datagrid-server-on-single-machine"/>
-        </call>
-        <echo message="-- JBoss DataGrid Servers successfully created."/>
+    <order name="deploy-kvc-servers">
+        <call orders="deploy-kvc-engines"/>
+        <echo message="Creating KVC Servers ..."/>
+        <do-operation-on-kvc-servers>
+            <param name="callback.kvcs" value="deploy-kvc-server-on-single-machine"/>
+        </do-operation-on-kvc-servers>
+        <echo message="-- KVC Servers successfully created."/>
     </order>
 
     <!-- start each kvc-servers.
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="start-jboss-datagrid-servers">
-        <echo message="Starting JBoss DataGrid Servers ..."/>
-        <call orders="do-operation-on-jboss-datagrid-servers">
-            <param name="callback.kvcs" value="§[melody:getSequenceDescriptorPath()]§::start-jboss-datagrid-server-on-single-machine"/>
-        </call>
-        <echo message="-- JBoss DataGrid Servers successfully started."/>
+    <order name="start-kvc-servers">
+        <echo message="Starting KVC Servers ..."/>
+        <do-operation-on-kvc-servers>
+            <param name="callback.kvcs" value="start-kvc-server-on-single-machine"/>
+        </do-operation-on-kvc-servers>
+        <echo message="-- KVC Servers successfully started."/>
     </order>
 
     <!-- stop each kvc-servers.
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="stop-jboss-datagrid-servers">
-        <echo message="Stopping JBoss DataGrid Servers ..."/>
-        <call orders="do-operation-on-jboss-datagrid-servers">
-            <param name="callback.kvcs" value="§[melody:getSequenceDescriptorPath()]§::stop-jboss-datagrid-server-on-single-machine"/>
-        </call>
-        <echo message="-- JBoss DataGrid Servers successfully stopped."/>
+    <order name="stop-kvc-servers">
+        <echo message="Stopping KVC Servers ..."/>
+        <do-operation-on-kvc-servers>
+            <param name="callback.kvcs" value="stop-kvc-server-on-single-machine"/>
+        </do-operation-on-kvc-servers>
+        <echo message="-- KVC Servers successfully stopped."/>
     </order>
 
 
     <!-- loop on each machines where a kvc-server is declared.
          caller must define callback 'callback.machine'.
          caller can define 'machine_match_criteria' to target a subset of machines. -->
-    <order name="do-operation-on-jboss-datagrid-machines">
+    <order name="do-operation-on-kvc-machines">
         <select-running-machines>
-            <param name="machine_eligible_criteria"   value="exists(kvc-server)"/>
+            <param name="machine_eligible_criteria" value="exists(kvc-server)"/>
         </select-running-machines>
     </order>
 
 
     <!-- loop on each kvc-engines.
-         caller must define 'callback.kvce'.
+         caller must define callback 'callback.kvce'.
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_engine_match_criteria' to target a subset of kvc-engines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="do-operation-on-jboss-datagrid-engines">
-        <call orders="do-operation-on-jboss-datagrid-machines">
-            <param name="callback.machine"            value="do-operation-on-jboss-datagrid-engines-on-single-machine"/>
-        </call>
+    <order name="do-operation-on-kvc-engines">
+        <do-operation-on-kvc-machines>
+            <param name="callback.machine" value="do-operation-on-kvc-engines-on-single-machine"/>
+        </do-operation-on-kvc-machines>
     </order>
 
-    <order name="do-operation-on-jboss-datagrid-engines-on-single-machine">
-        <foreach    items="§[machine]§/jboss-datagrid-engine [ @version=§[machine]§/kvc-server [ §[kvc_server_match_criteria]§ ]/@version and §[kvc_engine_match_criteria]§ ]"
+    <order name="do-operation-on-kvc-engines-on-single-machine">
+        <foreach    items="§[machine]§/jboss-datagrid-engine [ @version=§[machine]§/kvc-server [ §[kvc_server_match_criteria]§ ]/@version and §[kvc_engine_match_criteria]§ ] "
                     item-name="kvce">
+            <property name="kvce.provider"         value="§[ §[kvce]§/@provider ]§"/>
             <property name="kvce.path"             value="§[ §[kvce]§/@path ]§"/>
             <property name="kvce.version"          value="§[ §[kvce]§/@version ]§"/>
             <property name="kvce.owner"            value="§[ §[kvce]§/owner/@login ]§"/>
@@ -88,24 +90,8 @@
             <property name="kvce.owner.home-dir"   value="§[ §[machine]§/credentials/credential[@login='§[kvce.owner]§']/@homedir ]§"/>
             <property name="kvce.group"            value="§[ §[machine]§/credentials/credential[@login='§[kvce.owner]§']/@group ]§"/>
 
-            <call orders="§[substring-after('§[callback.kvce]§','::')]§" sequence-descriptor="§[substring-before('§[callback.kvce]§','::')]§"/>
+            <source order="§[callback.kvce]§" provider="§[kvce.provider]§"/>
         </foreach>
-    </order>
-
-    <property name="callback.engine"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-datagrid-engine.default-callback"/>
-
-    <order name="deploy-jboss-datagrid-engine-on-single-machine">
-        <!-- deploy standard engine -->
-        <call orders="deploy-jboss-datagrid-engine-on-single-machine" sequence-descriptor="./§[kvce.version]§/sd.xml"/>
-
-        <!-- customize engine -->
-        <call orders="§[substring-after('§[callback.engine]§','::')]§" sequence-descriptor="§[substring-before('§[callback.engine]§','::')]§"/>
-
-        <echo message="++ JBoss DataGrid Enggine '§[kvce.version]§' successfully installed and configured on machine '§[machine.id]§'."/>
-    </order>
-
-    <order name="customize-jboss-datagrid-engine.default-callback">
-        <!-- nothing to do -->
     </order>
 
 
@@ -113,15 +99,16 @@
          caller must define callback 'callback.kvcs'.
          caller can define 'machine_match_criteria' to target a subset of machines.
          caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
-    <order name="do-operation-on-jboss-datagrid-servers">
-        <call orders="do-operation-on-jboss-datagrid-machines">
-            <param name="callback.machine"            value="do-operation-on-jboss-datagrid-servers-on-single-machine"/>
-        </call>
+    <order name="do-operation-on-kvc-servers">
+        <do-operation-on-kvc-machines>
+            <param name="callback.machine" value="do-operation-on-kvc-servers-on-single-machine"/>
+        </do-operation-on-kvc-machines>
     </order>
 
-    <order name="do-operation-on-jboss-datagrid-servers-on-single-machine">
+    <order name="do-operation-on-kvc-servers-on-single-machine">
         <foreach    items="§[machine]§/kvc-server[ §[kvc_server_match_criteria]§ ]"
                     item-name="kvcs">
+            <property name="kvcs.provider"                value="§[ §[kvcs]§/@provider ]§"/>
             <property name="kvcs.path"                    value="§[ §[kvcs]§/@path ]§"/>
             <property name="kvcs.version"                 value="§[ §[kvcs]§/@version ]§"/>
             <property name="kvcs.owner"                   value="§[ §[kvcs]§/owner/@login ]§"/>
@@ -170,85 +157,8 @@
             <property name="kvcs.disabled"                value="§[ melody:getAttributeValue(§[kvcs]§/features/@administration-only, 'false') ]§"/>
             <property name="kvcs.native"                  value="§[ melody:getAttributeValue(§[kvcs]§/jboss-web/@uses-native-components, 'false') ]§"/>
 
-            <call orders="§[substring-after('§[callback.kvcs]§','::')]§" sequence-descriptor="§[substring-before('§[callback.kvcs]§','::')]§"/>
+            <source order="§[callback.kvcs]§" provider="§[kvcs.provider]§"/>
         </foreach>
-    </order>
-
-    <property name="callback.server"       value="§[ melody:getSequenceDescriptorPath() ]§::customize-jboss-datagrid-server.default-callback"/>
-
-    <order name="deploy-jboss-datagrid-server-on-single-machine">
-        <!-- remove previous installation -->
-        <ssh description="[datagrid.remove:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <!-- will not fail if the jboss datagrid server is not installed -->
-            <exec command="[ -x §[kvcs.path]§/bin/jboss-jdgd.sh ] &amp;&amp; §[kvcs.path]§/bin/jboss-jdgd.sh stop"/>
-            <!-- remove content -->
-            <exec command="rm -rf §[kvcs.path]§"/>
-        </ssh>
-
-        <!-- prepare server configuration modification -->
-        <property name="tmpfile.rel"       value="§[ melody:newTmpFile() ]§"/>
-        <property name="workingfolder.abs" value="§[ melody:getWorkingFolder() ]§"/>
-        <property name="tmpfile.abs"       value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
-        <copy>
-            <resources  src-basedir="./§[kvcs.version]§/standalone/configuration/"
-                        match="§[kvcs.profile.file]§"
-                        dest-basedir="§[workingfolder.abs]§/"
-                        dest-name="§[tmpfile.rel]§"
-                        link-option="COPY_LINKS"/>
-        </copy>
-
-        <!-- deploy server and apply standard configuration -->
-        <call orders="deploy-jboss-datagrid-server-on-single-machine" sequence-descriptor="./§[kvcs.version]§/sd.xml"/>
-
-        <!-- customize server -->
-        <call orders="§[substring-after('§[callback.server]§','::')]§" sequence-descriptor="§[substring-before('§[callback.server]§','::')]§"/>
-
-        <!-- deploy custom modules -->
-        <foreach    items="§[kvcs]§/custom-modules/custom-module"
-                    item-name="cm"
-                    max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
-            <property name="cm.name"          value="§[§[cm]§/@name]§"/>
-
-            <call orders="§[substring-after('§[callback.module]§','::')]§.§[cm.name]§" sequence-descriptor="§[substring-before('§[callback.module]§','::')]§"/>
-            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss '§[kvcs.id]§' on machine '§[machine.id]§'."/>
-        </foreach>
-
-        <!-- upload modified configuration -->
-        <upload host="§[machine.cnx.ip]§" login="§[kvcs.owner]§" keypair-name="§[machine.cnx.kp]§">
-            <resources  src-basedir="§[workingfolder.abs]§/"
-                        match="§[tmpfile.rel]§"
-                        dest-basedir="§[kvcs.path]§/configuration/"
-                        dest-name="§[kvcs.profile.file]§">
-                <posix-permissions scope="files">600</posix-permissions>
-            </resources>
-        </upload>
-
-        <!-- start server -->
-        <call orders="start-jboss-datagrid-server-on-single-machine"/>
-
-        <echo message="++ JBoss DataGrid Server '§[kvcs.id]§' successfully installed and configured on machine '§[machine.id]§'."/>
-    </order>
-
-    <order name="customize-jboss-datagrid-server.default-callback">
-        <!-- nothing to do -->
-    </order>
-
-
-    <order name="start-jboss-datagrid-server-on-single-machine">
-        <ssh description="[start:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh restart"/>
-        </ssh>
-
-        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully started on '§[machine.id]§'."/>
-    </order>
-
-
-    <order name="stop-jboss-datagrid-server-on-single-machine">
-        <ssh description="[stop:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh stop"/>
-        </ssh>
-
-        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully stopped on '§[machine.id]§'."/>
     </order>
 
 </sequence>

@@ -459,8 +459,6 @@ public class SshSession implements ISshSession {
 	 * TODO BUG AWS : encrypted uploader doesn't work in region eu-west-1 (and
 	 * certainly some others). Only work in region us-east-1
 	 * 
-	 * TODO : introduce protected-area in demo 'krb5_mixed'
-	 * 
 	 * TODO : add Telnet Service into all WIN SERVER 2008 R2 template
 	 * 
 	 * TODO : activer le verbose gc + rotation de gc.log au demarrage (voir

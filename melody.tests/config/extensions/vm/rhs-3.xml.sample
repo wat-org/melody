@@ -11,10 +11,10 @@
 				<channel name="rhel-x86_64-server-6-rhs-3" herit-policy="append"/>
 				<channel name="rhel-x86_64-server-sfs-6" herit-policy="append"/>
 			</rhn>
-			<services herit-policy="append">
+			<services>
 				<!-- start glusterd -->
-				<service name="glusterd" state="on"/>
-				<service name="nfs" state="on"/>
+				<service name="glusterd" state="on" herit-policy="append"/>
+				<service name="nfs" state="on" herit-policy="append"/>
 			</services>
 		</model>
 	</models>

@@ -26,7 +26,7 @@ chkconfig §[service.name]§ on
         <ssh description="[stop-service:§[service.name]§:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
             <exec>
                 <![CDATA[
-chkconfig §[service.name]§ on
+chkconfig §[service.name]§ off
 service §[service.name]§ stop || {
   res=$?
   echo "Fail to stop service '§[service.name]§'. Exiting with error code $res." >&2

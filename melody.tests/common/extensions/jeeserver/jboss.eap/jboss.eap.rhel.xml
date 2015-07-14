@@ -63,7 +63,7 @@ exit 0
             <property name="cm.name" value="§[§[cm]§/@name]§"/>
 
             <source order="§[callback.module]§.§[cm.name]§" provider="§[jees.provider]§" version="§[jees.version]§"/>/>
-            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss EAP Server'§[jees.id]§' on machine '§[machine.id]§'."/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss EAP Server '§[jees.id]§' on machine '§[machine.id]§'."/>
         </foreach>
 
         <!-- deploy applications -->

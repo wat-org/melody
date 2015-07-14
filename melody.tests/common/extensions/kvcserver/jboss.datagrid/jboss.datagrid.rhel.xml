@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir="." >
+
+    <property name="callback.engine" value="customize-kvc-engine.default-callback"/>
+
+    <order name="deploy-kvc-engine-on-single-machine">
+        <!-- deploy standard engine -->
+        <deploy-jboss-datagrid-engine-on-single-machine provider="§[kvce.provider]§" version="§[kvce.version]§"/>
+
+        <!-- customize engine -->
+        <source order="§[callback.engine]§" provider="§[kvce.provider]§" version="§[kvce.version]§"/>
+
+        <echo message="++ JBoss DataGrid Enggine '§[kvce.version]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-kvc-engine.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <property name="callback.server" value="customize-kvc-server.default-callback"/>
+
+    <order name="deploy-kvc-server-on-single-machine">
+        <!-- stop the jboss datagrid server and remove previous installation if it exists in a different version than expected -->
+        <ssh description="[stop:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+# jboss datagrid server control script is executable ? yes -> stop the jboss eap server (doesn't matter if it was not runnning)
+[ -x §[kvcs.path]§/bin/jboss-jdgd.sh ] && §[kvcs.path]§/bin/jboss-jdgd.sh stop
+
+# jboss datagrid server directory is already in the expected version ? no -> remove everything
+grep §[kvcs.version]§ §[kvcs.path]§/patches/version.txt 1>/dev/null 2>&1 || rm -rf §[kvcs.path]§
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- prepare server configuration modification -->
+        <property name="tmpfile.rel"         value="§[ melody:newTmpFile() ]§"/>
+        <property name="workingfolder.abs"   value="§[ melody:getWorkingFolder() ]§"/>
+        <property name="tmpfile.abs"         value="§[workingfolder.abs]§/§[tmpfile.rel]§"/>
+        <copy>
+            <resources  src-basedir="./§[kvcs.version]§/standalone/configuration/"
+                        match="§[kvcs.profile.file]§"
+                        dest-basedir="§[workingfolder.abs]§/"
+                        dest-name="§[tmpfile.rel]§"
+                        link-option="COPY_LINKS"/>
+        </copy>
+
+        <!-- deploy server and apply standard configuration -->
+        <deploy-jboss-datagrid-server-on-single-machine provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+
+        <!-- customize server -->
+        <source order="§[callback.server]§" provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+
+        <!-- deploy custom modules -->
+        <foreach    items="§[kvcs]§/custom-modules/custom-module"
+                    item-name="cm"
+                    max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="cm.name" value="§[§[cm]§/@name]§"/>
+
+            <source order="§[callback.module]§.§[cm.name]§" provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss DataGrid Server '§[kvcs.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- upload modified configuration -->
+        <upload host="§[machine.cnx.ip]§" login="§[kvcs.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="§[workingfolder.abs]§/"
+                        match="§[tmpfile.rel]§"
+                        dest-basedir="§[kvcs.path]§/configuration/"
+                        dest-name="§[kvcs.profile.file]§">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- (re)start server -->
+        <start-kvc-server-on-single-machine provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+
+        <echo message="++ JBoss DataGrid Server '§[kvcs.id]§' successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-kvc-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-kvc-server-on-single-machine">
+        <ssh description="[start:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh restart"/>
+        </ssh>
+
+        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-kvc-server-on-single-machine">
+        <ssh description="[stop:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="§[kvcs.path]§/bin/jboss-jdgd.sh stop"/>
+        </ssh>
+
+        <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

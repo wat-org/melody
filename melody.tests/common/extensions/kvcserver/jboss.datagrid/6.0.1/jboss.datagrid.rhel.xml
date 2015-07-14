@@ -5,18 +5,18 @@
 
     <order name="deploy-jboss-datagrid-engine-on-single-machine">
         <!-- install rpm -->
-        <call orders="install-package-on-single-machine"      sequence-descriptor="../../packages/sd.xml">
+        <install-package>
             <param name="package.name" value="zip"/>
-        </call>
-        <call orders="install-package-on-single-machine"      sequence-descriptor="../../packages/sd.xml">
+        </install-package>
+        <install-package>
             <param name="package.name" value="unzip"/>
-        </call>
-        <call orders="install-package-on-single-machine"      sequence-descriptor="../../packages/sd.xml">
+        </install-package>
+        <install-package>
             <param name="package.name" value="java-1.6.0-openjdk-devel"/>
-        </call>
-        <call orders="install-package-on-single-machine"      sequence-descriptor="../../packages/sd.xml">
+        </install-package>
+        <install-package>
             <param name="package.name" value="java-1.7.0-openjdk-devel"/>
-        </call>
+        </install-package>
 
         <!-- upload JBoss DataGrid engine archive -->
         <upload host="§[machine.cnx.ip]§" login="§[kvce.owner]§" keypair-name="§[machine.cnx.kp]§">

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.0.0/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.0.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.0.1/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.0.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.1.0/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.1.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.0/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.2.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.2.1/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.2.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.0/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.3.0"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.1/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.3.1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.3.2/jboss.datagrid.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.datagrid"/>
+				<match expression="§[@version]§"        value="6.3.2"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>
