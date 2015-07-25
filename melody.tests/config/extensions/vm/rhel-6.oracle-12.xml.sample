@@ -11,7 +11,7 @@
 				</listen-on>
 			</rdb-server>
 
-			<packages>
+			<packages provider="yum">
 				<!-- for oracle 12-->
 				<package name="cloog-ppl" herit-policy="append"/>
 				<package name="compat-libcap1" herit-policy="append"/>

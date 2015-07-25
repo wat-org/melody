@@ -7,20 +7,30 @@
 2/ create native components archive
   put it into /Cloud/binaries/jboss.eap/jboss-eap-native-<VERSION>-RHEL6-x86_64.zip
 
-3/ inside the extension 'jboss.eap', create the directory <VERSION> and copy the content of the previous version inside
+3/ inside the extension 'jeeserver/jboss.eap', create the directory <VERSION> and copy the content of the previous version inside
   mkdir common/extensions/jboss.eap/<VERSION>
-  cp -prf --preserve=links common/extensions/jboss.eap/<VERSION-1>/* common/extensions/jboss.eap/<VERSION>/
+  cp -prf --preserve=links common/extensions/jeeserver/jboss.eap/<VERSION-1>/* common/extensions/jeeserver/jboss.eap/<VERSION>/
+
+then
+  inside the extension 'jeeserver/jboss.eap', inside the file META-INF/melody.xml, add this inside, next to the other jboss version declaration
+		<sequence-descriptor path="<VERSION>/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="<VERSION>"/>
+			</condition>
+		</sequence-descriptor>
   
-4/ inside the extension 'jboss.eap', inside the new version directory, remove all standalone*.xml and replace them with standalone*.xml of the new version
+4/ inside the extension 'jeeserver/jboss.eap', inside the new version directory, remove all standalone*.xml and replace them with standalone*.xml of the new version
 
 5/ declare the new version in the jboss.eap model
   open config/extensions/vm/rhel-6.eap-6.xml.sample and add this inside, next to the other jboss version declaration
   
-			<jboss-eap-engine path="/opt/jboss-eap-<VERSION>" version="<VERSION>">
+			<jboss-eap-engine path="/opt/jboss-eap-<VERSION>" provider="jboss.eap" version="<VERSION>" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
 
 6/ test the installation of the new version
-eventually update the configuration instructions defined in the new version sequence descriptor common/extensions/jboss.eap/<VERSION>/sd.xml
+eventually update the configuration instructions defined in the new version sequence descriptor common/extensions/jeeserver/boss.eap/<VERSION>/jboss.eap.rhel.xml
 
 7/ once validated, deploy the new version in the jboss.eap VM templates

@@ -61,6 +61,12 @@
 			<jboss-eap-engine path="/opt/jboss-eap-6.4.0" provider="jboss.eap" version="6.4.0" herit-policy="append">
 				<owner login="jboss"/>
 			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.4.1" provider="jboss.eap" version="6.4.1" herit-policy="append">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
+			<jboss-eap-engine path="/opt/jboss-eap-6.4.2" provider="jboss.eap" version="6.4.2" herit-policy="append">
+				<owner login="jboss"/>
+			</jboss-eap-engine>
 
 			<credentials>
 				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX" herit-policy="append"/>
