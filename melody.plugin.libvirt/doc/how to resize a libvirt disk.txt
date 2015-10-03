@@ -79,6 +79,8 @@ to increase the disk size of the libvirt domain :
 		extend the logical volume
 		  lvresize -l+100%FREE /dev/my_vg/my_lv 
 		
-		resize the partition
+		resize the partition, if ext3
 		  resize2fs /dev/my_vg/my_lv
+		or, if xfs
+		  xfs_growfs /dev/my_vg/my_lv
 		  
