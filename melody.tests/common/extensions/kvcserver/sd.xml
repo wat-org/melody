@@ -111,6 +111,7 @@
             <property name="kvcs.provider"                value="§[ §[kvcs]§/@provider ]§"/>
             <property name="kvcs.path"                    value="§[ §[kvcs]§/@path ]§"/>
             <property name="kvcs.version"                 value="§[ §[kvcs]§/@version ]§"/>
+            <property name="kvcs.java"                    value="§[ §[kvcs]§/@java ]§"/>
             <property name="kvcs.owner"                   value="§[ §[kvcs]§/owner/@login ]§"/>
             <property name="kvcs.owner.pwd"               value="§[ §[machine]§/credentials/credential[@login='§[kvcs.owner]§']/@password ]§"/>
             <property name="kvcs.owner.home-dir"          value="§[ §[machine]§/credentials/credential[@login='§[kvcs.owner]§']/@homedir ]§"/>

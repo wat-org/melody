@@ -81,9 +81,14 @@ fi
 [ -z "${SERVICE_NAME}" ]              && SERVICE_NAME="jboss-eap[${SERVER_NAME}]"
 
 ## Compute some variables
+# management addr and port
 MGMT_ADDR="${MGMT_IP}:$((MGMT_NATIVE_PORT+PORT_OFFSET))"
+# deal with admin-only mode
 [ "$2" = "--admin-only" ] && ADMIN_ONLY_FLAG="--admin-only"
 [ "${JBOSS_START_ADMIN_ONLY}" = "true" ] && ADMIN_ONLY_FLAG="--admin-only"
+# compute and add the java extensions path
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djava.ext.dirs=$(dirname $(dirname $(readlink -f $(which ${JAVA}))))/lib/ext:/usr/java/packages/lib/ext:${JBOSS_BASE_DIR}/lib/ext"
+# jboss eap command line
 JBOSS_SCRIPT="LANG=\"${LANG}\" \
               JAVA_HOME=\"${JAVA_HOME}\" \
               JAVA_OPTS=\"${EAP_JAVA_OPTS}\" \

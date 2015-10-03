@@ -1,0 +1,12 @@
+# configuration of the websphere mq classes for JMS
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.msg.client.config.location=file://${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.jms.config"
+
+# configuration of the websphere mq classes for Java
+# not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.mq.commonservices=file://${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.java.config"
+
+# load the ibm jce security provider via the JVM security settings
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djava.security.properties=${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.fips.security"
+
+# enable FIPS on the websphere mq classes for JMS
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.jsse2.usefipsprovider=true"

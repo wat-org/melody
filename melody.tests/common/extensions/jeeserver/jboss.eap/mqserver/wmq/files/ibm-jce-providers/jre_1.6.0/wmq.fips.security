@@ -1,0 +1,4 @@
+# IBM security providers for WMQ connection in FIPS mode
+security.provider.9=com.ibm.jsse2.IBMJSSEProvider2
+security.provider.10=com.ibm.crypto.provider.IBMJCE
+security.provider.11=com.ibm.crypto.fips.provider.IBMJCEFIPS

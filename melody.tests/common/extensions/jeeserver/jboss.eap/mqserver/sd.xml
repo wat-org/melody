@@ -12,6 +12,7 @@
          caller must define 'jees.id', which represents the jee-server id.
          caller must define 'jees.owner', which represents the jee-server owner.
          caller must define 'jees.path', which represents the jee-server path.
+         caller must define 'jees.java', which represents the java version the jboss eap server is using.
          caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
     <order name="configure-mq-on-single-jee-server">
         <!-- Declare connection definitions -->

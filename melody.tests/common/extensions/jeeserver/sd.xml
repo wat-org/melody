@@ -111,6 +111,7 @@
             <property name="jees.provider"                value="§[ §[jees]§/@provider ]§"/>
             <property name="jees.path"                    value="§[ §[jees]§/@path ]§"/>
             <property name="jees.version"                 value="§[ §[jees]§/@version ]§"/>
+            <property name="jees.java"                    value="§[ §[jees]§/@java ]§"/>
             <property name="jees.owner"                   value="§[ §[jees]§/owner/@login ]§"/>
             <property name="jees.owner.pwd"               value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@password ]§"/>
             <property name="jees.owner.home-dir"          value="§[ §[machine]§/credentials/credential[@login='§[jees.owner]§']/@homedir ]§"/>

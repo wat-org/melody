@@ -4,7 +4,7 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.jdg-6">
-			<kvc-server-model name="jdg-6" path="/home/jdgusra/jdg.inst1" provider="jboss.datagrid">
+			<kvc-server-model name="jdg-6" java="jre_1.7.0" path="/home/jdgusra/jdg.inst1" provider="jboss.datagrid">
 				<owner login="jdgusra"/>
 				<listen-on device="eth0" management-device="eth0" port-offset="0">
 					<socket name="http" port="8080"/>

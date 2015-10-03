@@ -12,85 +12,59 @@
          caller must define 'jees.id', which represents the jboss eap server id.
          caller must define 'jees.owner', which represents the jboss eap server owner.
          caller must define 'jees.path', which represents the jboss eap server path.
+         caller must define 'jees.java', which represents the java version the jboss eap server is using.
          caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
     <order name="deploy-mq-rar-on-single-jee-server">
-        <!-- upload custom module directory and jar files  -->
         <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <!-- upload custom module directory and jar files  -->
             <resources  src-basedir="files/modules/"
                         match="**/§[mq.rar.version]§/**"
                         dest-basedir="§[jees.path]§/modules/">
                 <posix-permissions scope="files">600</posix-permissions>
                 <posix-permissions scope="directories">700</posix-permissions>
             </resources>
-        </upload>
-
-        <!-- upload resource adapter configuration file  -->
-        <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <!-- upload resource adapter configuration file for JMS -->
             <resources  src-basedir="files/configuration/"
-                        match="wmqjms.config"
+                        match="wmq.jms.config"
                         dest-basedir="§[jees.path]§/configuration/"
                         dest-name="§[mq.rar.name]§.jms.config"
                         template="y">
                 <posix-permissions scope="files">600</posix-permissions>
-                <posix-permissions scope="directories">700</posix-permissions>
             </resources>
-        </upload>
-
-        <!-- upload ibm jce provider as an extension of the jvm  -->
-        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <resources  src-basedir="files/ibm-jce-providers/"
+            <!-- upload resource adapter configuration file for Java -->
+            <!-- not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
+            <resources  src-basedir="files/configuration/"
+                        match="wmq.java.config"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.java.config"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            -->            
+            <!-- upload ibm jce security providers as java extensions  -->
+            <resources  src-basedir="files/ibm-jce-providers/§[jees.java]§/"
                         match="*.jar"
-                        dest-basedir="/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/ext/">
-                <posix-permissions scope="files">644</posix-permissions>
+                        dest-basedir="§[jees.path]§/lib/ext/">
+                <posix-permissions scope="files">600</posix-permissions>
             </resources>
-        </upload>
-
-        <!-- declare ibm jce provider in the java.security file of the jvm  -->
-        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
-            <resources  src-basedir="files/ibm-jce-providers/"
-                        match="java.security"
-                        dest-basedir="/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre/lib/security/">
-                <posix-permissions scope="files">644</posix-permissions>
+            <!-- declare ibm jce providers as a java security provider -->
+            <resources  src-basedir="files/ibm-jce-providers/§[jees.java]§/"
+                        match="wmq.fips.security"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.fips.security">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            <!-- load the ibm jce security provider via the JVM security settings -->
+            <resources  src-basedir="files/configuration/"
+                        match="wmq.fips.eapd-java-opts"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.eapd-java-opts"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
             </resources>
         </upload>
 
         <!-- JBoss Configuration update -->
-        <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere Java classes configuration file." severity="info"/>
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
-            <only-if-not-exists>
-                /*:server/*:system-properties
-            </only-if-not-exists>
-            <!--  system properties must be place between extension and vault -->
-            <elements-selector>
-                /*:server/*:vault
-            </elements-selector>
-            <node-content>
-                <![CDATA[
-                <system-properties/>
-                ]]>
-            </node-content>
-        </insert-xml-elements-before>
-        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
-            <only-if-not-exists>
-                /*:server/*:system-properties/*:property[@name='com.ibm.msg.client.config.location']
-            </only-if-not-exists>
-            <elements-selector>
-                /*:server/*:system-properties
-            </elements-selector>
-            <node-content>
-                <![CDATA[
-            <!-- configuration of the websphere mq classes for JMS -->
-            <property name="com.ibm.msg.client.config.location" value="file://§[jees.path]§/configuration/§[mq.rar.name]§.jms.config"/>
-            <!-- configuration of the websphere mq classes for Java -->
-            <!-- not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
-            <property name="com.ibm.mq.commonservices" value="file://§[jees.path]§/configuration/§[mq.rar.name]§.java.config"/>
-            -->
-            <!-- enable FIPS on the websphere mq classes for JMS -->
-            <property name="com.ibm.jsse2.usefipsprovider" value="true"/>
-                ]]>
-            </node-content>
-        </append-xml-elements>
-
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere MQ RAR." severity="info"/>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <elements-selector>

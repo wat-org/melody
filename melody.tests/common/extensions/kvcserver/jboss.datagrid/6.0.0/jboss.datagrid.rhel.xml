@@ -30,6 +30,7 @@
         <ssh description="[datagrid.engine.§[kvce.version]§:§[machine.cnx.ip]§:§[kvce.owner]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
             <!-- set the password of the jboss engine owner -->
             <exec command="echo &quot;§[kvce.owner]§:§[kvce.owner.pwd]§&quot; | chpasswd"/>
+            <!-- TODO : chpasswd: cannot lock /etc/passwd; try again later. -->
             <!-- create jboss engine module home -->
             <exec command="umask 0007"/>
             <exec command="mkdir -p /opt/jboss-datagrid-§[kvce.version]§/modules"/>

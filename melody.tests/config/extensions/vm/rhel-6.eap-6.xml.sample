@@ -4,7 +4,7 @@
 
 	<models>
 		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.eap-6">
-			<jee-server-model name="eap-6" path="/home/jeeusra/eap.inst1" provider="jboss.eap">
+			<jee-server-model name="eap-6" java="jre_1.7.0" path="/home/jeeusra/eap.inst1" provider="jboss.eap">
 				<owner login="jeeusra"/>
 				<listen-on device="eth0" management-device="eth0" port-offset="0">
 					<socket name="http" port="8080"/>
