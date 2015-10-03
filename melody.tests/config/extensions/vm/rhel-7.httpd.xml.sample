@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-7']" name="rhel-7.httpd">
+			<web-server path="/etc/httpd" provider="httpd">
+				<owner login="apache"/>
+				<log level="debug"/>
+				<listen-on device="eth0" port-offset="0">
+					<socket name="http" port="80"/>
+				</listen-on>
+			</web-server>
+
+			<credentials>
+				<!-- apache httpd user and group -->
+				<user homedir="/usr/share/httpd" id="48" name="apache" password="XXXXXXXXX" ref-group-name="apache" herit-policy="append"/>
+				<group id="48" name="apache" herit-policy="append"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>

@@ -3,9 +3,17 @@
 
 <melody-extension>
 	<sequence-descriptors>
-		<sequence-descriptor path="httpd.rhel.xml">
+		<sequence-descriptor path="httpd.rhel-6.xml">
 			<condition>
 				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[machine.os.version]§" value="6"/>
+				<match expression="§[@provider]§" value="httpd"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="httpd.rhel-7.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[machine.os.version]§" value="7"/>
 				<match expression="§[@provider]§" value="httpd"/>
 			</condition>
 		</sequence-descriptor>

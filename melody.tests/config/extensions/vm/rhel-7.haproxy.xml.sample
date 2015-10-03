@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<environment>
+
+	<models>
+		<model herit="./environment/models/model[@name='rhel-7']" name="rhel-7.haproxy">
+			<web-server path="/etc/haproxy" provider="haproxy">
+				<owner login="haproxy"/>
+				<log level="debug"/>
+				<listen-on device="eth0" port-offset="0">
+					<socket name="http" mode="http" port="80"/>
+				</listen-on>
+			</web-server>
+
+			<credentials>
+				<!-- haproxy user and group -->
+				<user homedir="/var/lib/haproxy" id="188" name="haproxy" password="XXXXXXXX" ref-group-name="haproxy" herit-policy="append"/>
+				<group id="188" name="haproxy" herit-policy="append"/>
+			</credentials>
+		</model>
+	</models>
+
+</environment>
