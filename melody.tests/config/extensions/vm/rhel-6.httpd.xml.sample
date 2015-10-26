@@ -19,7 +19,7 @@
 
 			<credentials>
 				<!-- apache httpd user and group -->
-				<user homedir="/home/apache" id="48" name="apache" password="XXXXXXXXX" ref-group-name="apache" herit-policy="append"/>
+				<user homedir="/var/www" id="48" name="apache" password="XXXXXXXXX" ref-group-name="apache" herit-policy="append"/>
 				<group id="48" name="apache" herit-policy="append"/>
 			</credentials>
 		</model>

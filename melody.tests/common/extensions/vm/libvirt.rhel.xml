@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="create-single-vm-hook-post">
+        <!-- Register system in RHN -->
+        <register/>
+    </order>
+
+    <order name="destroy-single-vm-hook-pre">
+        <!-- Unregister system in RHN -->
+        <unregister/>
+    </order>
+
+</sequence>

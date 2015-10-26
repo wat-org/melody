@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <order name="create-single-vm-hook-post">
+        <!-- Modify the ~root/.ssh/authorized_keys, allow root pubkey authentication, and restart sshd -->
+        <ssh description="[enable-root-pubkey-acces:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="ec2-user" keypair-name="§[machine.cnx.kp]§" requiretty="true">
+	        <!-- The instruction 'service sshd restart' will stop the sshd service but will not always start it ...
+	        The reason is that the ssh session can be closed before the sshd service handle the start command, so the start command is never issued.
+	        In order to be sure the start command is issued, we add a slight delay after the sshd service restart and before the ssh session end. -->
+            <exec>
+                <![CDATA[
+sudo cp -vrf ~/.ssh/authorized_keys ~root/.ssh/authorized_keys
+sudo chown root: ~root/.ssh/authorized_keys
+sudo sed -i -e 's/^PermitRootLogin/#PermitRootLogin/g' -e 's/^#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sudo service sshd restart
+sleep 2
+                ]]>
+            </exec>
+        </ssh>
+        <echo message="+ public key acces for root successfully enabled on virtual machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="destroy-single-vm-hook-pre">
+        <!-- Nothing to do -->
+    </order>
+
+</sequence>

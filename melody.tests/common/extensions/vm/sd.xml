@@ -8,22 +8,20 @@
         <select-machines>
             <param name="callback.machine" value="create-single-vm"/>
         </select-machines>
+        <select-machines>
+            <param name="callback.machine" value="create-vm-hook-post"/>
+        </select-machines>
         <echo message="-- Virtual machines created."/>
 
-        <configure-disk-devices/>
-        <configure-network-devices/>
-        <start-all-vm/>               <!-- some instances may be created and stopped. Starting it -->
-        <configure-firewall/>
-
-        <register-all-vm/>
         <ensure-packages/>
         <ensure-services/>
     </order>
 
     <order name="destroy-all-vm">
-        <unregister-all-vm/>
-
         <echo message="Destroying virtual machines ..."/>
+        <select-running-machines>
+            <param name="callback.machine" value="destroy-vm-hook-pre"/>
+        </select-running-machines>
         <select-live-machines>
             <param name="callback.machine" value="destroy-single-vm"/>
         </select-live-machines>
@@ -78,17 +76,33 @@
         <echo message="-- FireWall rules updated."/>
     </order>
 
-
     <order name="create-single-vm">
-        <new-machine target="§[machine]§" provider="§[ §[machine]§/@provider ]§"/>
+        <new-machine target="§[machine]§" provider="§[machine.provider]§"/>
         <!-- following values are known only once the machine is created -->
         <property name="machine.id" value="§[ melody:getInstanceId(§[machine]§) ]§"/>
         <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <echo message="+ virtual machine '§[machine.id]§' created§[adm_ip]§."/>
+
+        <!-- Ensure disk and network devices are conform -->
+        <update-disk-devices-on-single-vm/>
+        <update-network-devices-on-single-vm/>
+        <!-- Instance may be created but stopped. Starting it -->
+        <start-single-vm/>
+        <!-- TODO : should be removed -->
+        <update-firewall-on-single-vm/>
+    </order>
+
+    <order name="create-vm-hook-post">
+        <source order="create-single-vm-hook-post" provider="§[machine.provider]§"/>
+    </order>
+
+    <order name="destroy-vm-hook-pre">
+        <source order="destroy-single-vm-hook-pre" provider="§[machine.provider]§"/>
     </order>
 
     <order name="destroy-single-vm">
+        <!-- following values are forgotten after the machine is destroyed -->
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <delete-machine target="§[machine]§" provider="§[machine.provider]§"/>
         <echo message="+ virtual machine '§[machine.id]§' destroyed§[adm_ip]§."/>
@@ -96,13 +110,14 @@
 
     <order name="start-single-vm">
         <start-machine target="§[machine]§" provider="§[machine.provider]§"/>
-        <!-- following values are known only once the machine is created -->
+        <!-- following values are known only once the machine is started -->
         <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <echo message="+ virtual machine '§[machine.id]§' started§[adm_ip]§."/>
     </order>
 
     <order name="stop-single-vm">
+        <!-- following values are forgotten after the machine is stopped -->
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <stop-machine target="§[machine]§" provider="§[machine.provider]§"/>
         <echo message="+ virtual machine '§[machine.id]§' stopped§[adm_ip]§."/>

@@ -16,7 +16,7 @@
         </install-package>
 
         <!-- configure -->
-        <ssh description="[configure:httpdl-server:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+        <ssh description="[configure:httpd-server:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
             <exec command="rm -vf §[ws.path]§/conf.d/proxy_ajp.conf"/>
             <exec command="rm -vf §[ws.path]§/conf.d/welcome.conf"/>
             <exec command="setenforce 0"/>

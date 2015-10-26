@@ -52,6 +52,7 @@
         <property name="ws.path"                 value="§[ §[machine]§/web-server/@path ]§"/>
         <property name="ws.owner"                value="§[ §[machine]§/web-server/owner/@login ]§"/>
         <property name="ws.owner.id"             value="§[ §[machine]§/credentials/user[@name='§[ws.owner]§']/@id ]§"/>
+        <property name="ws.owner.home-dir"       value="§[ §[machine]§/credentials/user[@login='§[ws.owner]§']/@homedir ]§"/>
         <property name="ws.group"                value="§[ §[machine]§/credentials/user[@name='§[ws.owner]§']/@ref-group-name ]§"/>
         <property name="ws.group.id"             value="§[ §[machine]§/credentials/group[@name='§[ws.group]§']/@id ]§"/>
         <property name="ws.listen.device"        value="§[ melody:getAttributeValue(§[machine]§/web-server/listen-on/@device, 'eth0') ]§"/>

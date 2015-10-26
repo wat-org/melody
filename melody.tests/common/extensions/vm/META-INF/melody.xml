@@ -4,5 +4,22 @@
 <melody-extension>
 	<sequence-descriptors>
 		<sequence-descriptor path="sd.xml"/>
+		<sequence-descriptor path="aws.xml">
+			<condition>
+				<match expression="§[@provider]§" value="aws"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="libvirt.rhel.xml">
+			<condition>
+				<match expression="§[@provider]§"         value="libvirt"/>
+				<match expression="§[machine.os.name]§"   value="rhel"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="libvirt.windows.xml">
+			<condition>
+				<match expression="§[@provider]§"         value="libvirt"/>
+				<match expression="§[machine.os.name]§"   value="windows"/>
+			</condition>
+		</sequence-descriptor>
 	</sequence-descriptors>
 </melody-extension>
