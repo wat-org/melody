@@ -19,7 +19,7 @@ sleep 2
                 ]]>
             </exec>
         </ssh>
-        <echo message="+ public key acces for root successfully enabled on virtual machine '§[machine.id]§'."/>
+        <echo message="+ Public key acces for root successfully enabled on virtual machine '§[machine.id]§'."/>
     </order>
 
     <order name="destroy-single-vm-hook-pre">

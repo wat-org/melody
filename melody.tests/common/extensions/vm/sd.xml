@@ -82,7 +82,7 @@
         <property name="machine.id" value="§[ melody:getInstanceId(§[machine]§) ]§"/>
         <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' created§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' created§[adm_ip]§."/>
 
         <!-- Ensure disk and network devices are conform -->
         <update-disk-devices-on-single-vm/>
@@ -105,7 +105,7 @@
         <!-- following values are forgotten after the machine is destroyed -->
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <delete-machine target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' destroyed§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' destroyed§[adm_ip]§."/>
     </order>
 
     <order name="start-single-vm">
@@ -113,38 +113,38 @@
         <!-- following values are known only once the machine is started -->
         <property name="machine.cnx.ip" value="§[ melody:getNetworkActivationHost(§[machine]§) ]§"/>
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' started§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' started§[adm_ip]§."/>
     </order>
 
     <order name="stop-single-vm">
         <!-- following values are forgotten after the machine is stopped -->
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <stop-machine target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' stopped§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' stopped§[adm_ip]§."/>
     </order>
 
     <order name="resize-single-vm">
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <resize-machine target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' resized§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' resized§[adm_ip]§."/>
     </order>
 
     <order name="update-disk-devices-on-single-vm">
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <update-disk-devices target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' disk devices updated§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' disk devices updated§[adm_ip]§."/>
     </order>
 
     <order name="update-network-devices-on-single-vm">
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <update-network-devices target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' network devices updated§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' network devices updated§[adm_ip]§."/>
     </order>
 
     <order name="update-firewall-on-single-vm">
         <property name="adm_ip" value="§[ if( '§[machine.cnx.ip]§' != '' ) then ' (IP: §[machine.cnx.ip]§)' else '' ]§"/>
         <update-firewall target="§[machine]§" provider="§[machine.provider]§"/>
-        <echo message="+ virtual machine '§[machine.id]§' fire-wall rules updated§[adm_ip]§."/>
+        <echo message="+ Virtual machine '§[machine.id]§' fire-wall rules updated§[adm_ip]§."/>
     </order>
 
 </sequence>

@@ -36,7 +36,7 @@
 
     <order name="update-single-protected-area">
         <update-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
-        <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' created (id:'§[pa.id]§')."/>
+        <echo message="+ Protected area '§[pa.name]§' located in region '§[pa.region]§' created (id:'§[pa.id]§')."/>
     </order>
 
     <order name="reset-single-protected-area">
@@ -45,7 +45,7 @@
 
     <order name="destroy-single-protected-area">
         <delete-protected-area target="§[pa]§" provider="§[pa.provider]§"/>
-        <echo message="+ protected area '§[pa.name]§' located in region '§[pa.region]§' destroyed (id:'§[pa.id]§')."/>
+        <echo message="+ Protected area '§[pa.name]§' located in region '§[pa.region]§' destroyed (id:'§[pa.id]§')."/>
     </order>
 
 </sequence>
