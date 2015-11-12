@@ -1,0 +1,411 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="nssdb.pwd" value="Rf%9cRgf12#AZs@s434"/>
+
+    <!-- deploy the websphere mq rar on the given jboss eap server.
+         caller must define 'machine.cnx.ip', which represents the administration ip of the jboss eap server to configure.
+         caller must define 'machine.cnx.kp', which represents the key-pair to connect on the jboss eap server.
+         caller must define 'mq.rar.name', which represents the name of the mq rar to deploy.
+         caller must define 'mq.rar.version', which represents the version of the mq rar.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'jees.owner', which represents the jboss eap server owner.
+         caller must define 'jees.path', which represents the jboss eap server path.
+         caller must define 'jees.java', which represents the java version the jboss eap server is using.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
+    <order name="deploy-mq-rar-on-single-jee-server">
+        <upload host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <!-- upload custom module directory and jar files  -->
+            <resources  src-basedir="files/modules/"
+                        match="**/§[mq.rar.version]§/**"
+                        dest-basedir="§[jees.path]§/modules/">
+                <posix-permissions scope="files">600</posix-permissions>
+                <posix-permissions scope="directories">700</posix-permissions>
+            </resources>
+            <!-- upload resource adapter configuration file for JMS -->
+            <resources  src-basedir="files/configuration/"
+                        match="wmq.jms.config"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.jms.config"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            <!-- upload resource adapter configuration file for Java -->
+            <!-- not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
+            <resources  src-basedir="files/configuration/"
+                        match="wmq.java.config"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.java.config"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            -->            
+            <!-- declare NSS security provider -->
+            <resources  src-basedir="files/fips-with-nss-in-openjdk/configuration/§[jees.java]§/"
+                        match="wmq.fips.security"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.fips.security"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            <resources  src-basedir="files/fips-with-nss-in-openjdk/configuration/"
+                        match="nss_pkcs11_fips.cfg"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+            <!-- load NSS security provider -->
+            <resources  src-basedir="files/fips-with-nss-in-openjdk/configuration/"
+                        match="wmq.eapd-java-opts"
+                        dest-basedir="§[jees.path]§/configuration/"
+                        dest-name="§[mq.rar.name]§.eapd-java-opts"
+                        template="y">
+                <posix-permissions scope="files">600</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- create the nss database
+             enable fips on the nss database
+             import the jboss eap server private key + certificate into the nss database
+             disable authentication -->
+        <ssh description="[create-nssdb:§[jees.id]§]" host="§[machine.cnx.ip]§" login="§[jees.owner]§" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+umask 0077
+
+# create the nss database
+[ -d "§[jees.path]§/nssdb" ] && {
+  echo "nssdb '§[jees.path]§/nssdb' already exists."
+} || {
+  mkdir -p "§[jees.path]§/nssdb"
+  chmod 700 "§[jees.path]§/nssdb"
+  modutil -create -dbdir "§[jees.path]§/nssdb" << +++EOF+++
+ 
++++EOF+++
+  echo "nssdb '§[jees.path]§/nssdb' created."
+}
+
+# enable FIPS mode on the nss database
+modutil -list "NSS Internal FIPS PKCS #11 Module" -dbdir "§[jees.path]§/nssdb/" 1>/dev/null 2>&1 && {
+  echo "nssdb '§[jees.path]§/nssdb' already in fips mode."
+} || {
+  modutil -fips true -dbdir "§[jees.path]§/nssdb" << +++EOF+++
+ 
++++EOF+++
+
+  # Set the password on the fips token
+  echo "§[nssdb.pwd]§" > "§[jees.path]§/configuration/nss_pkcs11_fips.pwd"
+  modutil -changepw "NSS FIPS 140-2 Certificate DB" -dbdir "§[jees.path]§/nssdb" -pwfile "§[jees.path]§/configuration/nss_pkcs11_fips.pwd" -newpwfile "§[jees.path]§/configuration/nss_pkcs11_fips.pwd" << +++EOF+++
+ 
++++EOF+++
+  echo "nssdb '§[jees.path]§/nssdb' fips mode activated."
+}
+
+# insert the PKCS12 server private-key + certificate in the nss database
+certutil -d "§[jees.path]§/nssdb" -L -n server 1>/dev/null 2>&1 && {
+  echo "jboss eap server private key + certificate already imported into the nssdb '§[jees.path]§/nssdb'."
+} || {
+  pk12util -d "§[jees.path]§/nssdb" -i "§[jees.path]§/configuration/§[jees.listen.fqdn]§.p12" -W "12345678" -K "§[nssdb.pwd]§"
+  echo "jboss eap server private key + certificate successfully imported into the nssdb '§[jees.path]§/nssdb'."
+}
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- because of FIPS mode, all keystore must use provider SunPKCS11-nss-fips -->
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] http management console must use PKCS11." severity="info"/>
+        <set-xml-attributes file="§[tmpfile.abs]§" grep="[eap.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:management/*:security-realms/*:security-realm[@name='HttpsManagementRealm']/*:server-identities/*:ssl/*:keystore
+            </elements-selector>
+            <attribute name="provider"            value="PKCS11"/>
+            <attribute name="path"                value="NONE"/>
+            <attribute name="keystore-password"   value="§[nssdb.pwd]§"/>
+            <attribute name="key-password"        value="§[nssdb.pwd]§"/>
+            <attribute name="alias"               value="server"/>
+        </set-xml-attributes>        
+
+        <!-- declare the keystore and the trustore via system-properties (required by ibm wmq rar) -->
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] declare the keystore and the trustore via system-properties." severity="info"/>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties
+            </only-if-not-exists>
+            <!--  system properties must be place between extension and vault -->
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <system-properties/>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <!-- the keystore is JKS (don't find how to use a PKCS11 truststore) -->
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='javax.net.ssl.trustStore']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                    <property name="javax.net.ssl.trustStore" value="§[jees.path]§/configuration/§[ ./environment//instance/certificate-authority/@CN ]§.truststore"/>
+                    <property name="javax.net.ssl.trustStoreType" value="JKS"/>
+                    <property name="javax.net.ssl.trustStorePassword" value="12345678"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- the keystore is PKCS11 (required by provider SunPKCS11-nss-fips) -->
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='javax.net.ssl.keyStore']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                    <property name="javax.net.ssl.keyStore" value="NONE"/>
+                    <property name="javax.net.ssl.keyStoreType" value="PKCS11"/>
+                    <property name="javax.net.ssl.keyStorePassword" value="§[nssdb.pwd]§"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- JBoss Configuration update -->
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere MQ RAR." severity="info"/>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem[*:connector/@name="remoting-connector"]/following-sibling::*[1]
+            </elements-selector>
+            <only-if-not-exists>
+                /*:server/*:profile/*:subsystem/*:resource-adapters
+            </only-if-not-exists>
+            <node-content>
+                <![CDATA[
+            <resource-adapters/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters
+            </elements-selector>
+            <only-if-not-exists>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]
+            </only-if-not-exists>
+            <node-content>
+                <![CDATA[
+                <resource-adapter id="§[mq.rar.name]§">
+                    <module slot="§[mq.rar.version]§" id="ibm.wmq"/>
+                    <transaction-support>XATransaction</transaction-support>
+                    <!-- default value is 300000ms (e.g. 5m). we don't want to wait so long time to reconnect MDBs -->
+                    <config-property name="reconnectionRetryInterval">
+                        30000
+                    </config-property>
+                    <!-- 1200 retry each 30s (see reconnectionRetryInterval) = 10 hours to restart WMQ Queue Manager -->
+                    <config-property name="reconnectionRetryCount">
+                        1200
+                    </config-property>
+                </resource-adapter>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+    </order>
+
+    <!-- declare a connection definition into the given mq rar on the given jboss eap server.
+         caller must define 'mq.rar.name', which represents the name of the mq rar this connection definition will be linked with.
+         caller must define 'connection-definition.name', which represents the name of the connection definition.
+         caller must define 'mqs.fqdn', which represents the fqdn of the mq-server to connect to.
+         caller must define 'mqs.port', which represents the port of the mq-server to connect to.
+         caller must define 'queue-manager.name', which represents the queue-manager of the mq-server to connect to.
+         caller must define 'channel.name', which represents the channel name of the mq-server to connect to.
+         caller must define 'channel.secured', which indicates if the channel should be or not.
+         caller must define 'user.name', which represents the name to authenticate with.
+         caller must define 'user.pwd', which represents the password to authenticate with.
+         caller must define 'security-domain.name', which represents the security-domain name to authenticate with.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
+    <order name="declare-connection-definition-on-single-jee-server">
+        <property name="queue-manager.name.uc"   value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="channel.name.uc"         value="§[upper-case('§[channel.name]§')]§"/>
+
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Declare Connection Definition '§[connection-definition.name]§'." severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:connection-definitions/*:connection-definition[@pool-name="§[connection-definition.name]§"]
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]
+            </elements-selector>
+            <only-if-not-exists>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:connection-definitions
+            </only-if-not-exists>
+            <node-content>
+                <![CDATA[
+                    <connection-definitions/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:connection-definitions
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                        <connection-definition class-name="com.ibm.mq.connector.outbound.ManagedQueueConnectionFactoryImpl" jndi-name="java:jboss/jms/§[connection-definition.name]§" enabled="true" use-java-context="true" pool-name="§[connection-definition.name]§">
+                            <config-property name="hostName">
+                                §[mqs.fqdn]§
+                            </config-property>
+                            <config-property name="port">
+                                §[mqs.port]§
+                            </config-property>
+                            <config-property name="queueManager">
+                                §[queue-manager.name.uc]§
+                            </config-property>
+                            <config-property name="channel">
+                                §[channel.name.uc]§
+                            </config-property>
+                          §[ if ('§[channel.secured]§' = 'true') then '
+                            <config-property name="sslCipherSuite">
+                                SSL_RSA_WITH_3DES_EDE_CBC_SHA
+                            </config-property>
+                          ' else '' ]§
+                            <config-property name="transportType">
+                                CLIENT
+                            </config-property>
+                            <config-property name="username">
+                                §[user.name]§
+                            </config-property>
+                            <xa-pool>
+                                <min-pool-size>5</min-pool-size>
+                                <prefill>true</prefill>
+                            </xa-pool>
+                            <recovery>
+                                <recover-credential>
+                                    <user-name>§[user.name]§</user-name>
+                                    <password>toto</password>
+                                </recover-credential>
+                            </recovery>
+                        </connection-definition>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+    </order>
+
+    <!-- declare a mq connection definition for an mdb, using the given mq provider, into the given mq rar on the given jee-server.
+         caller must define 'mq.rar.name', which represents the name of the mq rar this connection definition will be linked with.
+         caller must define 'mdb.name', which represents the mdb name to connect to the mq-server.
+         caller must define 'mqs.fqdn', which represents the fqdn of the mq-server to connect to.
+         caller must define 'mqs.port', which represents the port of the mq-server to connect to.
+         caller must define 'queue-manager.name', which represents the queue-manager of the mq-server to connect to.
+         caller must define 'channel.name', which represents the channel name of the mq-server to connect to.
+         caller must define 'channel.secured', which indicates if the channel should be or not.
+         caller must define 'user.name', which represents the name to authenticate with.
+         caller must define 'user.pwd', which represents the password to authenticate with.
+         caller must define 'security-domain.name', which represents the security-domain name to authenticate with.
+         caller must define 'queue.name', which represents the queue name of the mq-server to connect to.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jee-server id.
+         caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
+    <order name="declare-mdb-activation-spec-on-single-jee-server">
+        <property name="queue-manager.name.uc"   value="§[upper-case('§[queue-manager.name]§')]§"/>
+        <property name="channel.name.uc"         value="§[upper-case('§[channel.name]§')]§"/>
+
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Declare MDB '§[mdb.name]§'." severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:spec-descriptor-property-replacement
+            </elements-selector>
+        </remove-xml-elements>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:jboss-descriptor-property-replacement
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+            <spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='wmq.§[mdb.name]§.rar']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                    <property name="wmq.§[mdb.name]§.rar" value="§[mq.rar.name]§"/>
+                    <property name="wmq.§[mdb.name]§.hostName" value="§[mqs.listen.fqdn]§"/>
+                    <property name="wmq.§[mdb.name]§.port" value="§[mqs.listen.port.tcp]§"/>
+                    <property name="wmq.§[mdb.name]§.queueManager" value="§[queue-manager.name.uc]§"/>
+                    <property name="wmq.§[mdb.name]§.channel" value="§[channel.name.uc]§"/>
+                  §[ if ('§[channel.secured]§' = 'true') then '
+                    <property name="wmq.§[mdb.name]§.sslCipherSuite" value="SSL_RSA_WITH_3DES_EDE_CBC_SHA"/>
+                  ' else '' ]§
+                    <property name="wmq.§[mdb.name]§.transportType" value="CLIENT"/>
+                    <property name="wmq.§[mdb.name]§.userName" value="§[user.name]§"/>
+                    <property name="wmq.§[mdb.name]§.queue" value="§[queue.name]§"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+    </order>
+
+    <!-- declare a queue for websphere mq on the given jboss eap server.
+         caller must define 'mq.rar.name', which represents the name of the mq rar this queue will be linked with.
+         caller must define 'queue.name', which represents the queue name of the mq-server to connect to.
+         caller must define 'appli.name', which represents the application which need to be configured.
+         caller must define 'jees.id', which represents the jboss eap server id.
+         caller must define 'tmpfile.abs', which represents the jboss eap server configuration file. -->
+    <order name="declare-queue-on-single-jee-server">
+        <property name="queue.name.uc"           value="§[upper-case('§[queue.name]§')]§"/>
+
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] Declare Queue '§[queue.name]§'." severity="info"/>
+        <remove-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:admin-objects/*:admin-object[@pool-name="§[queue.name]§"]
+            </elements-selector>
+        </remove-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]
+            </elements-selector>
+            <only-if-not-exists>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:admin-objects
+            </only-if-not-exists>
+            <node-content>
+                <![CDATA[
+                    <admin-objects/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <elements-selector>
+                /*:server/*:profile/*:subsystem/*:resource-adapters/*:resource-adapter[@id="§[mq.rar.name]§"]/*:admin-objects
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                        <admin-object class-name="com.ibm.mq.connector.outbound.MQQueueProxy" jndi-name="java:jboss/jms/wmq/queue/§[queue.name]§" use-java-context="true" pool-name="§[queue.name]§">
+                            <config-property name="baseQueueName">§[queue.name.uc]§</config-property>
+                        </admin-object>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+    </order>
+
+</sequence>

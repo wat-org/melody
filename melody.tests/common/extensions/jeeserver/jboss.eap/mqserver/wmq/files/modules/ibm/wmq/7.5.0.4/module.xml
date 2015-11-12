@@ -7,7 +7,11 @@
 		<resource-root path="rar/com.ibm.mq.connector.jar" />
 		<resource-root path="rar/com.ibm.mq.headers.jar" />
 		<resource-root path="rar/com.ibm.mq.jar" />
+		<!-- modified ibm jmqi : supports openjdk in FIPS mode -->
+		<resource-root path="rar/com.ibm.mq.jmqi-hacked.jar" />
+		<!-- original ibm jmqi : does not support openjdk in FIPS mode
 		<resource-root path="rar/com.ibm.mq.jmqi.jar" />
+		-->
 		<resource-root path="rar/com.ibm.mq.jmqi.local.jar" />
 		<resource-root path="rar/com.ibm.mq.jmqi.remote.jar" />
 		<resource-root path="rar/com.ibm.mq.jmqi.system.jar" />
@@ -26,6 +30,7 @@
 		<resource-root path="rar/com.ibm.msg.client.wmq.jar" />
 		<resource-root path="rar/com.ibm.msg.client.wmq.v6.jar" />
 		<resource-root path="rar/dhbcore.jar" />
+		<resource-root path="aspectjrt-1.8.4.jar" />
 		<resource-root path="CL3Export.jar" />
 		<resource-root path="CL3Nonexport.jar" />
 		<resource-root path="connector.jar" />

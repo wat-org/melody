@@ -1,0 +1,19 @@
+# configuration of the websphere mq classes for JMS
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.msg.client.config.location=file://${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.jms.config"
+
+# configuration of the websphere mq classes for Java
+# not working. looks like we cannot configure websphere mq classes for java in the websphere mq resource adapter
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.mq.commonservices=file://${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.java.config"
+
+# load the ibm jce security provider via the JVM security settings
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djava.security.properties=${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.fips.security"
+
+# declare a JKS truststore containing the CA cert
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStore=§[jees.path]§/configuration/§[ ./environment//instance/certificate-authority/@CN ]§.truststore"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStoreType=JKS"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=12345678"
+
+# enable PKCS11 keystore when using NSS FIPS mode in openjdk
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStore=NONE"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStoreType=PKCS11"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStorePassword=§[nssdb.pwd]§"

@@ -41,28 +41,77 @@
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
             -->            
-            <!-- upload ibm jce security providers as java extensions  -->
-            <resources  src-basedir="files/ibm-jce-providers/§[jees.java]§/"
+            <!-- upload ibm jce security providers -->
+            <resources  src-basedir="files/fips-with-ibm-security-provider-in-openjdk/lib/ext/§[jees.java]§/"
                         match="*.jar"
                         dest-basedir="§[jees.path]§/lib/ext/">
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
-            <!-- declare ibm jce providers as a java security provider -->
-            <resources  src-basedir="files/ibm-jce-providers/§[jees.java]§/"
+            <!-- declare ibm jce security providers -->
+            <resources  src-basedir="files/fips-with-ibm-security-provider-in-openjdk/configuration/§[jees.java]§/"
                         match="wmq.fips.security"
                         dest-basedir="§[jees.path]§/configuration/"
                         dest-name="§[mq.rar.name]§.fips.security">
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
-            <!-- load the ibm jce security provider via the JVM security settings -->
-            <resources  src-basedir="files/configuration/"
-                        match="wmq.fips.eapd-java-opts"
+            <!-- load the ibm jce security providers -->
+            <resources  src-basedir="files/fips-with-ibm-security-provider-in-openjdk/configuration/"
+                        match="wmq.eapd-java-opts"
                         dest-basedir="§[jees.path]§/configuration/"
                         dest-name="§[mq.rar.name]§.eapd-java-opts"
                         template="y">
                 <posix-permissions scope="files">600</posix-permissions>
             </resources>
         </upload>
+
+        <!-- declare the keystore and the trustore via system-properties (required by ibm wmq rar) -->
+        <echo message="[§[appli.name]§.conf:§[jees.id]§] declare the keystore and the trustore via system-properties." severity="info"/>
+        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties
+            </only-if-not-exists>
+            <!--  system properties must be place between extension and vault -->
+            <elements-selector>
+                /*:server/*:vault
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                <system-properties/>
+                ]]>
+            </node-content>
+        </insert-xml-elements-before>
+
+        <!-- the keystore is JKS (don't find how to use a PKCS11 truststore) -->
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='javax.net.ssl.trustStore']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                    <property name="javax.net.ssl.trustStore" value="§[jees.path]§/configuration/§[ ./environment//instance/certificate-authority/@CN ]§.truststore"/>
+                    <property name="javax.net.ssl.trustStoreType" value="JKS"/>
+                    <property name="javax.net.ssl.trustStorePassword" value="12345678"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
+
+        <!-- activate FIPS mode with ibm jce security providers  -->
+        <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
+            <only-if-not-exists>
+                /*:server/*:system-properties/*:property[@name='com.ibm.jsse2.usefipsprovider']
+            </only-if-not-exists>
+            <elements-selector>
+                /*:server/*:system-properties
+            </elements-selector>
+            <node-content>
+                <![CDATA[
+                    <property name="com.ibm.jsse2.usefipsprovider" value="true"/>
+                ]]>
+            </node-content>
+        </append-xml-elements>
 
         <!-- JBoss Configuration update -->
         <echo message="[§[appli.name]§.conf:§[jees.id]§] Deploy WebSphere MQ RAR." severity="info"/>
@@ -163,7 +212,7 @@
                             </config-property>
                           §[ if ('§[channel.secured]§' = 'true') then '
                             <config-property name="sslCipherSuite">
-                                SSL_RSA_WITH_AES_128_CBC_SHA256
+                                SSL_RSA_WITH_3DES_EDE_CBC_SHA
                             </config-property>
                           ' else '' ]§
                             <config-property name="transportType">
@@ -224,24 +273,9 @@
             </node-content>
         </insert-xml-elements-before>
 
-        <insert-xml-elements-before file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
-            <only-if-not-exists>
-                /*:server/*:system-properties
-            </only-if-not-exists>
-            <!--  system properties must be place between extension and vault -->
-            <elements-selector>
-                /*:server/*:vault
-            </elements-selector>
-            <node-content>
-                <![CDATA[
-                <system-properties/>
-                ]]>
-            </node-content>
-        </insert-xml-elements-before>
-
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <only-if-not-exists>
-                /*:server/*:system-properties[@name='wmq.§[mdb.name]§.rar']
+                /*:server/*:system-properties/*:property[@name='wmq.§[mdb.name]§.rar']
             </only-if-not-exists>
             <elements-selector>
                 /*:server/*:system-properties
@@ -254,7 +288,7 @@
                     <property name="wmq.§[mdb.name]§.queueManager" value="§[queue-manager.name.uc]§"/>
                     <property name="wmq.§[mdb.name]§.channel" value="§[channel.name.uc]§"/>
                   §[ if ('§[channel.secured]§' = 'true') then '
-                    <property name="wmq.§[mdb.name]§.sslCipherSuite" value="SSL_RSA_WITH_AES_128_CBC_SHA256"/>
+                    <property name="wmq.§[mdb.name]§.sslCipherSuite" value="SSL_RSA_WITH_3DES_EDE_CBC_SHA"/>
                   ' else '' ]§
                     <property name="wmq.§[mdb.name]§.transportType" value="CLIENT"/>
                     <property name="wmq.§[mdb.name]§.userName" value="§[user.name]§"/>

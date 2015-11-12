@@ -1,0 +1,50 @@
+RHEL6 :
+ * OK : openjdk 1.7.0.75 work with IBM JCE FIPS providers 1.7.0.75
+
+ * KO : openjdk 1.7.0.75 work with IBM JCE FIPS providers 1.7.0.85
+ ne pete pas d'exception mais n'arrive pas a envoyer le message...
+
+ * KO : openjdk 1.7.0.85 not work with IBM JCE FIPS providers 1.7.0.75
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+	at com.ibm.crypto.fips.provider.SHA.init(Unknown Source)
+
+ * KO : openjdk 1.7.0.85 not work with IBM JCE FIPS providers 1.7.0.85
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+	at com.ibm.crypto.fips.provider.HASHDRBG.engineNextBytes(Unknown Source)
+
+ * KO : openjdk 1.7.0.91 not work with IBM JCE FIPS providers 1.7.0.75
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+        at com.ibm.crypto.fips.provider.SHA.init(Unknown Source)
+
+ * KO : openjdk 1.7.0.91 not work with IBM JCE FIPS providers 1.7.0.85
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+        at com.ibm.crypto.fips.provider.HASHDRBG.engineNextBytes(Unknown Source)
+
+RHEL7 :
+ * OK : openjdk 1.7.0.75 work with IBM JCE FIPS providers 1.7.0.75
+ ne pete pas d'exception mais n'arrive pas a envoyer le message...
+
+ * KO : openjdk 1.7.0.85 not work with IBM JCE FIPS providers 1.7.0.75
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+	at com.ibm.crypto.fips.provider.SHA.init(Unknown Source)
+
+ * KO : openjdk 1.7.0.85 not work with IBM JCE FIPS providers 1.7.0.85
+ Caused by: com.ibm.crypto.fips.provider.FIPSRuntimeException
+	at com.ibm.crypto.fips.provider.HASHDRBG.engineNextBytes(Unknown Source)
+
+ * OK : openjdk 1.7.0.91 not work with IBM JCE FIPS providers 1.7.0.75
+
+ * KO : openjdk 1.7.0.91 not work with IBM JCE FIPS providers 1.7.0.85
+ ne pete pas d'exception mais n'arrive pas a envoyer le message...
+
+
+
+# piste pour la suite :
+http://www-01.ibm.com/support/knowledgecenter/SSYKE2_5.0.0/com.ibm.java.security.component.doc.50/secguides/JCEFIPSDocs/api/com/ibm/crypto/fips/provider/SHA.html
+cette page nous apprend que com.ibm.crypto.fips.provider.SHA.init pete une FIPSRuntimeException quand SelfTest.isFipsRunnable retourne false
+
+http://www-01.ibm.com/support/knowledgecenter/SSYKE2_5.0.0/com.ibm.java.security.component.doc.50/secguides/JCEFIPSDocs/api/com/ibm/crypto/fips/provider/SelfTest.html
+cette page nous apprend que com.ibm.crypto.fips.provider.SelfTest.isFipsRunnable retourne false quand "the cryptographic module is FIPS 140-2 not runable, the self test has completed with failures"
+et SelfTest contient la super methode getSelfTestFailure().
+=> avec un peu d'AspectJ, on pourrait appeler getSelfTestFailure() quand SHA.init() pete une FIPSRuntimeException
+peut etre que cette methode contiendra plus d'info !

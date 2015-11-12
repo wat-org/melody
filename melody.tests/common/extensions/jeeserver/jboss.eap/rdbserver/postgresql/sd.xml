@@ -75,7 +75,7 @@
         </insert-xml-elements-before>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <only-if-not-exists>
-                /*:server/*:system-properties[@name='hibernate.jdbc.dialect']
+                /*:server/*:system-properties/*:property[@name='hibernate.jdbc.dialect']
             </only-if-not-exists>
             <elements-selector>
                 /*:server/*:system-properties
@@ -152,7 +152,7 @@
         </insert-xml-elements-before>
         <append-xml-elements file="§[tmpfile.abs]§" grep="[§[appli.name]§.conf:§[jees.id]§]">
             <only-if-not-exists>
-                /*:server/*:system-properties[@name='hibernate.jdbc.dialect']
+                /*:server/*:system-properties/*:property[@name='hibernate.jdbc.dialect']
             </only-if-not-exists>
             <elements-selector>
                 /*:server/*:system-properties

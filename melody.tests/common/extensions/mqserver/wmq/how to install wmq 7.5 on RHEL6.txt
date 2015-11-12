@@ -1,9 +1,7 @@
 -----------------------------------------------------------
 Install WMQ software
 -----------------------------------------------------------
-installer une nouvelle machine RHEL-6
-en tant que template
-qui possede 20G de disque
+require a RHEL-6 with 20G disk
 
 # 7.5.0.2 binaries
 # copy /Cloud/binaries/webspheremq/mqadv_dev75_linux_x86-64.tar.gz in VM:/tmp
@@ -118,7 +116,7 @@ yum localinstall -y MQSeriesSamples-7.5.0-2.x86_64.rpm
 # as 'mqm'
 su - mqm
 
-# create & start the queue mamanger
+# create & start the queue manager
 crtmqm QMA
 strmqm QMA
 
@@ -153,9 +151,9 @@ yum localinstall -y MQSeriesSamples-7.5.0-2.x86_64.rpm
 ###########################
 # queue manager setup
 
-# create the queue mamanger
+# create the queue manager
 crtmqm §[queue-manager.name.uc]§
-# start the queue mamanger
+# start the queue manager
 strmqm §[queue-manager.name.uc]§
 
 # set the default listener @ip/port and tell him to start/stop when the queue manager start and stop
@@ -167,7 +165,7 @@ end
 +++EOF+++
 
 # disable authentication on
-# TODO : find a better solution to deal with autentication
+# TODO : find a better solution to deal with authentication
 runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
 ALTER QMGR CHLAUTH(DISABLED)
 DISPLAY QMGR CHLAUTH
@@ -210,10 +208,11 @@ TODO
 
 
 ##########################
-# enable SSL/TLS with a standard cipher
-# see for supported cipher
-# http://129.33.205.81/support/knowledgecenter/SSFKSJ_7.5.0/com.ibm.mq.dev.doc/q032470_.htm?lang=en
-# this page list the CipherSpecs supported by WebSphere MQ and their equivalent CipherSuites
+# enable SSL/TLS with a standard cipher (DES_SHA_EXPORT on WMQ => SSL_RSA_WITH_DES_CBC_SHA on jboss)
+# /!\ require SSLv3 to be enable on the jvm side (in JAVA_HOME/lib/security/java.security, the directive 'jdk.tls.disabledAlgorithms' must not contains 'SSLv3')
+#  for supported cipher, see
+#  http://129.33.205.81/support/knowledgecenter/SSFKSJ_7.5.0/com.ibm.mq.dev.doc/q032470_.htm?lang=en
+#  this page list the CipherSpecs supported by WebSphere MQ and their equivalent CipherSuites
 
 # upload IBM GSKIT and IBM JRE rpm on WMQ server
 sftp
@@ -253,7 +252,7 @@ runmqsc MYQM
 
 #    on JBoss server side
 #    as root
-# get the WMQserver certificate 'myqm.fips.cert' (previsouly generated on the WMQ server) and put it in a truststore
+# get the WMQserver certificate 'myqm.fips.cert' (previously generated on the WMQ server) and put it in a truststore
 keytool -import -keystore /home/jeeusra/eap.inst1/configuration/myqm.jks -storepass 12345678 -file /tmp/myqm.fips.cert -alias myqm -noprompt
 chown jeeusra: /home/jeeusra/eap.inst1/configuration/myqm.jks
 
@@ -265,7 +264,7 @@ chown jeeusra: /home/jeeusra/eap.inst1/configuration/myqm.jks
  /system-property=javax.net.ssl.trustStorePassword:add(value=12345678)
  # declare add a 'sslCipherSuite' in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
  /subsystem=resource-adapters/resource-adapter=wmq-7.5.0.4/connection-definitions=mycf2/config-properties=sslCipherSuite:add(value=SSL_RSA_WITH_DES_CBC_SHA)
- # optionnaly enable ssl debug
+ # optionally enable ssl debug
  /system-property=javax.net.debug:add(value=all)
 
 # restart the jboss instance
@@ -306,7 +305,7 @@ cp /opt/jvm-ibm/jre/lib/ibm{certpathprovider,jcefw,jsseprovider2,pkcs}.jar /usr/
 security.provider.10=com.ibm.jsse2.IBMJSSEProvider2
 security.provider.11=com.ibm.crypto.provider.IBMJCE
 
-# asign a IBM Cipher in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
+# assign a IBM Cipher in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
 ~jeeusra/eap.inst1/bin/jboss-cli.sh
  /subsystem=resource-adapters/resource-adapter=wmq-7.5.0.4/connection-definitions=mycf2/config-properties=sslCipherSuite:add(value=SSL_RSA_WITH_AES_128_CBC_SHA256)
 
@@ -377,5 +376,5 @@ keytool -export -keystore /home/jeeusra/eap.inst1/configuration/myqm.client.jks 
 
 #     on WMQ server side
 #     as mqm
-# import the jboss cetificate in the key repository
+# import the jboss certificate in the key repository
 TODO

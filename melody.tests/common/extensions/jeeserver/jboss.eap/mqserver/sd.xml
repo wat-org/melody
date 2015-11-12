@@ -15,6 +15,25 @@
          caller must define 'jees.java', which represents the java version the jboss eap server is using.
          caller must define 'tmpfile.abs', which represents the jee-server configuration file. -->
     <order name="configure-mq-on-single-jee-server">
+        <!-- create a certificate for the jboss eap server -->
+        <create-certificate>
+            <param name="cn"         value="§[jees.listen.fqdn]§"/>
+            <param name="ou"         value="JBOSS-EAP"/>
+            <param name="password"   value="12345678"/>
+            <param name="alias"      value="server"/>
+        </create-certificate>
+        <deploy-certificate>
+            <param name="cn"               value="§[jees.listen.fqdn]§"/>
+            <param name="cnx.user"         value="§[jees.owner]§"/>
+            <param name="dest.basedir"     value="§[jees.path]§/configuration"/>
+        </deploy-certificate>
+        <!-- deploy a truststore containing the CA certificate -->
+        <deploy-ca-certificate>
+            <param name="cnx.user"       value="§[jees.owner]§"/>
+            <param name="dest.basedir"   value="§[jees.path]§/configuration/"/>
+            <param name="jks.password"   value="12345678"/>
+        </deploy-ca-certificate>
+
         <!-- Declare connection definitions -->
         <foreach    items="§[application]§/connection-definitions/connection-definition"
                     item-name="connection-definition"

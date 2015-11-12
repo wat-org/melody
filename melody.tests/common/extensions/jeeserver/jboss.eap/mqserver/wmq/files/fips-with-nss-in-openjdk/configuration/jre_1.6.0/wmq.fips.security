@@ -1,0 +1,3 @@
+# Enable FIPS mode with NSS
+security.provider.3=com.sun.net.ssl.internal.ssl.Provider SunPKCS11-nss-fips
+security.provider.9=sun.security.pkcs11.SunPKCS11 §[jees.path]§/configuration/nss_pkcs11_fips.cfg

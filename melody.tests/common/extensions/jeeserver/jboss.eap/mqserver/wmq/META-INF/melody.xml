@@ -3,10 +3,19 @@
 
 <melody-extension>
 	<sequence-descriptors>
-		<sequence-descriptor path="sd.xml">
+		<sequence-descriptor path="ibm-fips.xml">
 			<condition>
 				<match expression="§[machine.os.name]§"   value="rhel"/>
 				<match expression="§[jees.provider]§"     value="jboss.eap"/>
+				<match expression="§[jees.java]§"         value="jre_1.6.0"/>
+				<match expression="§[@provider]§"         value="wmq"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="nss-fips.xml">
+			<condition>
+				<match expression="§[machine.os.name]§"   value="rhel"/>
+				<match expression="§[jees.provider]§"     value="jboss.eap"/>
+				<match expression="§[jees.java]§"         value="jre_1.7.0"/>
 				<match expression="§[@provider]§"         value="wmq"/>
 			</condition>
 		</sequence-descriptor>

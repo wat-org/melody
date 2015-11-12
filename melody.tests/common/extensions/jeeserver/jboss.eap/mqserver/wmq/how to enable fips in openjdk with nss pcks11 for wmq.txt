@@ -1,0 +1,138 @@
+# create the NSS database
+#    on JBoss server side
+#    as the §[jees.owner]§
+mkdir -p §[jees.path]§/nssdb
+modutil -create -dbdir §[jees.path]§/nssdb << +EOF+
+ 
++EOF+
+
+# Enable FIPS mode for the NSS library
+modutil -fips true -dbdir §[jees.path]§/nssdb << +EOF+
+ 
++EOF+
+
+# Change the password on the FIPS token
+echo §[superpass]§ > §[jees.path]§/configuration/nss_pkcs11_fips.pwd
+modutil -changepw "NSS FIPS 140-2 Certificate DB" -dbdir §[jees.path]§/nssdb -pwfile §[jees.path]§/configuration/nss_pkcs11_fips.pwd -newpwfile §[jees.path]§/configuration/nss_pkcs11_fips.pwd << +EOF+
+ 
++EOF+
+
+# Create the NSS configuration file §[jees.path]§/configuration/nss_pkcs11_fips.cfg and put this inside
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+name = nss-fips
+nssLibraryDirectory=/usr/lib64
+nssSecmodDirectory=§[jees.path]§/nssdb
+nssModule = fips
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Declare SunPKCS11 provider in the jvm
+# create the file §[jees.path]§/configuration/§[mq.rar.name]§.fips.security and put this inside
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+security.provider.4=com.sun.net.ssl.internal.ssl.Provider SunPKCS11-nss-fips
+security.provider.10=sun.security.pkcs11.SunPKCS11 §[jees.path]§/configuration/nss_pkcs11_fips.cfg
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Load the SunPKCS11 provider in the jvm
+# create the file §[jees.path]§/configuration/§[mq.rar.name]§.eapd-java-opts and put this inside
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djava.security.properties=${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.fips.security"
+
+
+
+
+
+##########################
+# the ssl server-identities of the HttpsManagementRealm must do PKCS11
+
+# extract the server private-key in a PKCS12 keystore
+keytool -importkeystore -srckeystore §[jees.path]§/configuration/server.ks -destkeystore §[jees.path]§/configuration/server.p12 -srcstoretype JKS -deststoretype PKCS12 -srcstorepass QSDFGHJKL -deststorepass "12345678" -alias server -srckeypass LKJHGFDSQ -destkeypass "12345678"
+
+# insert the PKCS12 server private-key in the NSS database
+pk12util -d §[jees.path]§/nssdb -i §[jees.path]§/configuration/server.p12 -W "12345678" -K "§[superpass]§"
+
+# tell jboss's HttpsManagementRealm to do PKCS11
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ /core-service=management/security-realm=HttpsManagementRealm/server-identity=ssl:write-attribute(name=keystore-provider,value=PKCS11)
+ /core-service=management/security-realm=HttpsManagementRealm/server-identity=ssl:write-attribute(name=keystore-path,value=NONE)
+ /core-service=management/security-realm=HttpsManagementRealm/server-identity=ssl:write-attribute(name=keystore-password,value=§[superpass]§)
+ /core-service=management/security-realm=HttpsManagementRealm/server-identity=ssl:write-attribute(name=alias,value=server)
+ /core-service=management/security-realm=HttpsManagementRealm/server-identity=ssl:undefine-attribute(name=key-password)
+
+# restart jboss
+§[jees.path]§/bin/jboss-eapd.sh restart
+
+# test the jboss admin
+openssl s_client -host 192.168.122.5 -port 9443
+=> should display the server certificate
+
+
+
+
+
+
+
+##########################
+# for WMQ RAR to use PKCS11 
+# TLS_RSA_WITH_3DES_EDE_CBC_SHA on WMQ => SSL_RSA_WITH_3DES_EDE_CBC_SHA on jboss
+
+# enable FIPS on WMQ server
+#    on WMQ server side
+#    as mqm
+runmqsc MYQM
+ # enable FIPS on the queue manager
+ alter QMGR SSLFIPS(YES)
+ # declare a FIPS compatible cipher spec on the channel CUSTOM.CHN2.SRVCONN
+ alter channel(CUSTOM.CHN2.SRVCONN) CHLTYPE(SVRCONN) TRPTYPE(TCP) SSLCIPH(TLS_RSA_WITH_3DES_EDE_CBC_SHA) SSLCAUTH(OPTIONAL) DESCR('Receiver channel using SSL from C1 to MYQM')
+
+#    as root
+# restart the queue manager (so that SSLFIPS changes applies)
+service wmq restart
+
+#    on JBoss server side
+#    as root
+
+# Declare keystore via system properties (required by ibm wmq rar) / must be a PCKS11 (required by FIPS mode)
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStore=NONE"
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStoreType=PKCS11"
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.keyStorePassword=§[superpass]§"
+# Declare truststore via system properties (required by ibm wmq rar) / must be a JKS (don't know how to deal with a PKCS11 truststore)
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStore=${JBOSS_BASE_DIR}/configuration/CA.truststore"
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStoreType=JKS"
+EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=12345678"
+
+# declare a FIPS compatible cipher suite in the connection definition which is using the channel 'CUSTOM.CHN2.SRVCONN'
+~jeeusra/eap.inst1/bin/jboss-cli.sh
+ /subsystem=resource-adapters/resource-adapter=wmq-7.5.0.4/connection-definitions=mycf2/config-properties=sslCipherSuite:add(value=SSL_RSA_WITH_3DES_EDE_CBC_SHA)
+
+# restart the jboss instance
+~jeeusra/eap.inst1/bin/jboss-eapd.sh restart
+
+
+et pouf ca marche pas...
+Caused by: java.lang.IllegalArgumentException: Only TLS 1.0 or later allowed in FIPS mode
+	at sun.security.ssl.ProtocolVersion.valueOf(ProtocolVersion.java:176) [jsse.jar:1.7.0_75]
+	at sun.security.ssl.ProtocolList.convert(ProtocolList.java:84) [jsse.jar:1.7.0_75]
+	at sun.security.ssl.ProtocolList.<init>(ProtocolList.java:52) [jsse.jar:1.7.0_75]
+	at sun.security.ssl.SSLSocketImpl.setEnabledProtocols(SSLSocketImpl.java:2414) [jsse.jar:1.7.0_75]
+	at com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.makeSocketSecure(RemoteTCPConnection.java:1929)
+	at com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.connnectUsingLocalAddress(RemoteTCPConnection.java:820)
+	... 23 more
+
+Apres investigation, il s'avere que c'est a cause du code IBM, qui a choisi SSLv3 au lieu de TLSv1.
+Parce qu'SSLv3 n'est pas accepté en mode FIPS, l'exception pete.
+L'analyse du code IBM montre que le protocol SSLv3 est determiner automatiquement a partir du CipherSpec.
+L'analyse montre encore que dans notre cas (alors qu'on a definit la CipherSuite SSL_RSA_WITH_3DES_EDE_CBC_SHA dans le parametrage de la connection
+factory), le CipherSpec vaut TRIPLE_DES_SHA_US.
+Comment cette valeur a-t-elle ete calculee au runtime ?
+
+Explications :
+Le code IBM contient une table de transalation CipherSuite -> CipherSpec. Cette table de translation retourne des valeurs differentes 
+en fonction du parametre 'sslFipsRequired' de la connection factory.
+Dans notre cas (ou sslCipherSuite => SSL_RSA_WITH_3DES_EDE_CBC_SHA et sslFipsRequired => false), la table de translation renvoi TRIPLE_DES_SHA_US au
+lieu de TLS_RSA_WITH_3DES_EDE_CBC_SHA.
+Et c'est parce qu'on bosse avec TRIPLE_DES_SHA_US qu'on a le protocol SSLv3 et qu'on se prends l'exception.
+Si on arrivait a faire en sorte que la table de translation renvoi TLS_RSA_WITH_3DES_EDE_CBC_SHA, alors on n'aurait le protocol TLSv1 et on n'aurait
+plus l'exception et ca fonctionnerait !
+
+Comment faire ?
+En aspectJ.
+Suffit de changer au runtime la contruction de la table de translation.

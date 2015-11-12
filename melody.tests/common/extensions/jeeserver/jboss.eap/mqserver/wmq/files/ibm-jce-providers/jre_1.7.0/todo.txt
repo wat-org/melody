@@ -1,1 +1,0 @@
-IBM JCE providers works with openjdk 1.7.0.75 but not with openjdk 1.7.0.85

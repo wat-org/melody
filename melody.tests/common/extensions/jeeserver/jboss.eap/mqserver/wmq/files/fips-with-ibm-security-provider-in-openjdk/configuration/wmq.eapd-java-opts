@@ -8,5 +8,10 @@ EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.msg.client.config.location=file://${JB
 # load the ibm jce security provider via the JVM security settings
 EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djava.security.properties=${JBOSS_BASE_DIR}/configuration/§[mq.rar.name]§.fips.security"
 
+# declare a JKS truststore containing the CA cert
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStore=§[jees.path]§/configuration/§[ ./environment//instance/certificate-authority/@CN ]§.truststore"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStoreType=JKS"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=12345678"
+
 # enable FIPS on the websphere mq classes for JMS
-EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.jsse2.usefipsprovider=true"
+#EAP_JAVA_OPTS="${EAP_JAVA_OPTS} -Dcom.ibm.jsse2.usefipsprovider=true"

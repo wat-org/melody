@@ -194,7 +194,7 @@ exit 0
             <exec>
                 <![CDATA[
 SSL_OPTS=""
-[ "§[channel.secured]§" = "true" ] && SSL_OPTS="SSLCIPH(TLS_RSA_WITH_AES_128_CBC_SHA256) SSLCAUTH(OPTIONAL)"
+[ "§[channel.secured]§" = "true" ] && SSL_OPTS="SSLCIPH(TLS_RSA_WITH_3DES_EDE_CBC_SHA) SSLCAUTH(OPTIONAL)"
 runmqsc §[queue-manager.name.uc]§ <<+++EOF+++
 define channel(§[channel.name.uc]§) CHLTYPE(SVRCONN) TRPTYPE(TCP) ${SSL_OPTS}
 display channel(§[channel.name.uc]§) all
