@@ -12,7 +12,7 @@
     <order name="deploy-web-servers">
         <echo message="Creating Web Servers ..."/>
         <do-operation-on-web-servers>
-            <param name="callback.ws" value="deploy-web-server-on-single-machine"/>
+            <param name="callback.ws" value="deploy-web-server"/>
         </do-operation-on-web-servers>
         <echo message="-- Web Servers successfully created."/>
     </order>
@@ -22,7 +22,7 @@
     <order name="start-web-servers">
         <echo message="Starting Web Servers ..."/>
         <do-operation-on-web-servers>
-            <param name="callback.ws" value="start-web-server-on-single-machine"/>
+            <param name="callback.ws" value="start-web-server"/>
         </do-operation-on-web-servers>
         <echo message="-- Web Servers successfully started."/>
     </order>
@@ -32,7 +32,7 @@
     <order name="stop-web-servers">
         <echo message="Stopping Web Servers ..."/>
         <do-operation-on-web-servers>
-            <param name="callback.ws" value="stop-web-server-on-single-machine"/>
+            <param name="callback.ws" value="stop-web-server"/>
         </do-operation-on-web-servers>
         <echo message="-- Web Servers successfully stopped."/>
     </order>
@@ -62,7 +62,20 @@
         <property name="ws.listen.fqdn"          value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[ws.listen.device]§')/@fqdn ]§"/>
         <property name="ws.log.level"            value="§[ melody:getAttributeValue(§[machine]§/web-server/log/@level, 'warn') ]§"/>
 
-        <source order="§[callback.ws]§" provider="§[ws.provider]§"/>
+        <source order="§[callback.ws]§"/>
+    </order>
+
+
+    <order name="deploy-web-server">
+        <source order="deploy-web-server-on-single-machine" provider="§[ws.provider]§"/>
+    </order>
+
+    <order name="start-web-server">
+        <source order="start-web-server-on-single-machine" provider="§[ws.provider]§"/>
+    </order>
+
+    <order name="stop-web-server">
+        <source order="stop-web-server-on-single-machine" provider="§[ws.provider]§"/>
     </order>
 
 </sequence>

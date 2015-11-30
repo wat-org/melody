@@ -225,7 +225,7 @@ exit 0
         <!-- download priv-key and certificates from CA in a local tmp file -->
         <download host="§[ca.machine.cnx.ip]§" login="root" keypair-name="§[ca.machine.cnx.kp]§">
             <resources  src-basedir="/root/"
-                        match="§[cn]§.*"
+                        match="§[cn]§.{key,jks,cert,p12}"
                         dest-basedir="§[workingfolder.abs]§/§[tmpfile.rel]§/"/>
         </download>
         <!-- upload local tmp files to target machine -->

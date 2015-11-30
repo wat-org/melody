@@ -104,6 +104,11 @@ public class JavaTaskBuilder implements ITaskBuilder {
 	}
 
 	@Override
+	public void markEligibleElements(Element elmt, PropertySet ps) {
+		getCondition().markEligibleElements(elmt, ps);
+	}
+
+	@Override
 	public ITask build() {
 		ITask t = null;
 		Class<? extends ITask> c = getTaskClass();

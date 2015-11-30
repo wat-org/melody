@@ -28,7 +28,11 @@
         <property name="kdc.listen.port"     value="§[ melody:getAttributeValue(§[machine]§/kerberos-domain-controller/listen-on/@port, '88') ]§"/>
         <property name="kdc.listen.ip"       value="§[ melody:getNetworkDeviceElementByName(§[machine]§, '§[kdc.listen.device]§')/@ip ]§"/>
 
-        <source order="§[callback.kdc]§" provider="§[kdc.provider]§"/>
+        <source order="§[callback.kdc]§"/>
+    </order>
+
+    <order name="deploy-kerberos-domain-controller">
+        <source order="deploy-kerberos-domain-controller-on-single-machine" provider="§[kdc.provider]§"/>
     </order>
 
 

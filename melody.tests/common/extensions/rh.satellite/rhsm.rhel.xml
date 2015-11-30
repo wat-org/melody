@@ -16,7 +16,7 @@ declare almsg="System already registered in RHSM"
 declare okmsg="System successfully registered in RHSM"
 declare errmsg="Fail to register system in RHSM"
 
-declare testcmd="subscription-manager identity 1>/dev/null"
+declare testcmd="subscription-manager identity 1>/dev/null 2>&1"
 declare docmd="subscription-manager register --auto-attach --force --username=§[rhsm.user.login]§ --password='§[rhsm.user.pwd]§'"
 
 declare retryallowedmsg="(\
@@ -71,7 +71,7 @@ declare almsg="System already unregistered in RHSM"
 declare okmsg="System successfully unregistered in RHSM"
 declare errmsg="Fail to unregister system in RHSM"
 
-declare testcmd="subscription-manager identity 1>/dev/null"
+declare testcmd="subscription-manager identity 1>/dev/null 2>&1"
 declare docmd="subscription-manager unregister"
 
 declare retryallowedmsg="(\

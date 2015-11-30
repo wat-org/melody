@@ -6,7 +6,7 @@
     <order name="deploy-certificate-authorities">
         <echo message="Creating Certificate Authorities ..."/>
         <do-operation-on-certificate-authorities>
-            <param name="callback.ca" value="deploy-certificate-authority-on-single-machine"/>
+            <param name="callback.ca" value="deploy-certificate-authority"/>
         </do-operation-on-certificate-authorities>
         <echo message="-- Certificate Authorities successfully created."/>
     </order>
@@ -25,8 +25,13 @@
         <property name="ca.o"               value="§[ §[machine]§/certificate-authority/@O ]§"/>
         <property name="ca.pk.pwd"          value="§[ §[machine]§/certificate-authority/@pk-password ]§"/>
 
-        <source order="§[callback.ca]§" provider="§[ca.provider]§"/>
+        <source order="§[callback.ca]§"/>
     </order>
+
+    <order name="deploy-certificate-authority">
+        <source order="deploy-certificate-authority-on-single-machine" provider="§[ca.provider]§"/>
+    </order>
+
 
     <order name="create-certificate">
         <property name="ca"            value="./environment//instance[exists(certificate-authority)]"/>

@@ -96,6 +96,11 @@ public class CallShortcutBuilder implements ITaskBuilder {
 	}
 
 	@Override
+	public void markEligibleElements(Element elmt, PropertySet ps) {
+		getCondition().markEligibleElements(elmt, ps);
+	}
+
+	@Override
 	public ITask build() throws TaskFactoryException {
 		Call c = new Call();
 		try {

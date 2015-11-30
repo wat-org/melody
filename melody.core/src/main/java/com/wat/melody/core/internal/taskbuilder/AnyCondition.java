@@ -33,4 +33,11 @@ public class AnyCondition extends LinkedHashSet<ICondition> implements
 		return false;
 	}
 
+	@Override
+	public void markEligibleElements(Element elmt, PropertySet ps) {
+		for (ICondition c : this) {
+			c.markEligibleElements(elmt, ps);
+		}
+	}
+
 }

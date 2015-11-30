@@ -10,7 +10,7 @@
         <deploy-jboss-datagrid-engine-on-single-machine provider="§[kvce.provider]§" version="§[kvce.version]§"/>
 
         <!-- customize engine -->
-        <source order="§[callback.engine]§" provider="§[kvce.provider]§" version="§[kvce.version]§"/>
+        <source order="§[callback.engine]§" provider="§[kvce.provider]§"/>
 
         <echo message="++ JBoss DataGrid Enggine '§[kvce.version]§' successfully installed and configured on machine '§[machine.id]§'."/>
     </order>
@@ -54,7 +54,7 @@ exit 0
         <deploy-jboss-datagrid-server-on-single-machine provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
 
         <!-- customize server -->
-        <source order="§[callback.server]§" provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+        <source order="§[callback.server]§" provider="§[kvcs.provider]§"/>
 
         <!-- deploy custom modules -->
         <foreach    items="§[kvcs]§/custom-modules/custom-module"
@@ -62,7 +62,7 @@ exit 0
                     max-par="1"> <!-- the deployment can modify the standalone*.xml, which can't be modified concurrently -->
             <property name="cm.name" value="§[§[cm]§/@name]§"/>
 
-            <source order="§[callback.module]§.§[cm.name]§" provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+            <source order="§[callback.module]§.§[cm.name]§" provider="§[kvcs.provider]§"/>
             <echo message="+ Custom Module '§[cm.name]§' successfully deployed for JBoss DataGrid Server '§[kvcs.id]§' on machine '§[machine.id]§'."/>
         </foreach>
 
@@ -77,7 +77,7 @@ exit 0
         </upload>
 
         <!-- (re)start server -->
-        <start-kvc-server-on-single-machine provider="§[kvcs.provider]§" version="§[kvcs.version]§"/>
+        <start-kvc-server-on-single-machine provider="§[kvcs.provider]§"/>
 
         <echo message="++ JBoss DataGrid Server '§[kvcs.id]§' successfully installed and configured on machine '§[machine.id]§'."/>
     </order>

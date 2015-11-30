@@ -16,4 +16,9 @@ public class TrueCondition implements ICondition {
 		return true;
 	}
 
+	@Override
+	public void markEligibleElements(Element elmt, PropertySet ps) {
+		// nothing to do
+	}
+
 }

@@ -18,7 +18,9 @@
 						item-name="nested_node">
 				<property name="nested_node_name" value="§[node-name(§[nested_node]§)]§"/>
 				<property name="nested_node_text" value="§[§[nested_node]§/text()]§"/>
+				<!-- will raise a WARN message : 'The attribute axis starting at an attribute node will never select anything' -->
 				<property name="nested_error"     value="§[§[nested_node]§/@tata[@titi='chouette']]§"/>
+
 				<echo message="§[nested_node_name]§ : §[nested_node_text]§"/>
 			</foreach>
 			

@@ -30,7 +30,7 @@
         <call orders="deploy-kvc-engines"/>
         <echo message="Creating KVC Servers ..."/>
         <do-operation-on-kvc-servers>
-            <param name="callback.kvcs" value="deploy-kvc-server-on-single-machine"/>
+            <param name="callback.kvcs" value="deploy-kvc-server"/>
         </do-operation-on-kvc-servers>
         <echo message="-- KVC Servers successfully created."/>
     </order>
@@ -41,7 +41,7 @@
     <order name="start-kvc-servers">
         <echo message="Starting KVC Servers ..."/>
         <do-operation-on-kvc-servers>
-            <param name="callback.kvcs" value="start-kvc-server-on-single-machine"/>
+            <param name="callback.kvcs" value="start-kvc-server"/>
         </do-operation-on-kvc-servers>
         <echo message="-- KVC Servers successfully started."/>
     </order>
@@ -52,7 +52,7 @@
     <order name="stop-kvc-servers">
         <echo message="Stopping KVC Servers ..."/>
         <do-operation-on-kvc-servers>
-            <param name="callback.kvcs" value="stop-kvc-server-on-single-machine"/>
+            <param name="callback.kvcs" value="stop-kvc-server"/>
         </do-operation-on-kvc-servers>
         <echo message="-- KVC Servers successfully stopped."/>
     </order>
@@ -158,8 +158,21 @@
             <property name="kvcs.disabled"                value="§[ melody:getAttributeValue(§[kvcs]§/features/@administration-only, 'false') ]§"/>
             <property name="kvcs.native"                  value="§[ melody:getAttributeValue(§[kvcs]§/jboss-web/@uses-native-components, 'false') ]§"/>
 
-            <source order="§[callback.kvcs]§" provider="§[kvcs.provider]§"/>
+            <source order="§[callback.kvcs]§"/>
         </foreach>
+    </order>
+
+
+    <order name="deploy-kvc-server">
+        <source order="deploy-kvc-server-on-single-machine" provider="§[kvcs.provider]§"/>
+    </order>
+
+    <order name="start-kvc-server">
+        <source order="start-kvc-server-on-single-machine" provider="§[kvcs.provider]§"/>
+    </order>
+
+    <order name="stop-kvc-server">
+        <source order="stop-kvc-server-on-single-machine" provider="§[kvcs.provider]§"/>
     </order>
 
 </sequence>

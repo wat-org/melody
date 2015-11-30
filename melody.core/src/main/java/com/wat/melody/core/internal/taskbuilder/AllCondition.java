@@ -11,8 +11,8 @@ import com.wat.melody.common.properties.PropertySet;
  * @author Guillaume Cornet
  * 
  */
-public class AllCondition extends LinkedHashSet<ICondition> implements
-		ICondition {
+public class AllCondition extends LinkedHashSet<ICondition>
+		implements ICondition {
 
 	private static final long serialVersionUID = -4798809865423798432L;
 
@@ -31,6 +31,13 @@ public class AllCondition extends LinkedHashSet<ICondition> implements
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public void markEligibleElements(Element elmt, PropertySet ps) {
+		for (ICondition c : this) {
+			c.markEligibleElements(elmt, ps);
+		}
 	}
 
 }

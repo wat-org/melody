@@ -30,7 +30,7 @@
         <call orders="deploy-jee-engines"/>
         <echo message="Creating JEE Servers ..."/>
         <do-operation-on-jee-servers>
-            <param name="callback.jees" value="deploy-jee-server-on-single-machine"/>
+            <param name="callback.jees" value="deploy-jee-server"/>
         </do-operation-on-jee-servers>
         <echo message="-- JEE Servers successfully created."/>
     </order>
@@ -41,7 +41,7 @@
     <order name="start-jee-servers">
         <echo message="Starting JEE Servers ..."/>
         <do-operation-on-jee-servers>
-            <param name="callback.jees" value="start-jee-server-on-single-machine"/>
+            <param name="callback.jees" value="start-jee-server"/>
         </do-operation-on-jee-servers>
         <echo message="-- JEE Servers successfully started."/>
     </order>
@@ -52,7 +52,7 @@
     <order name="stop-jee-servers">
         <echo message="Stopping JEE Servers ..."/>
         <do-operation-on-jee-servers>
-            <param name="callback.jees" value="stop-jee-server-on-single-machine"/>
+            <param name="callback.jees" value="stop-jee-server"/>
         </do-operation-on-jee-servers>
         <echo message="-- JEE Servers successfully stopped."/>
     </order>
@@ -158,8 +158,21 @@
             <property name="jees.disabled"                value="§[ melody:getAttributeValue(§[jees]§/features/@administration-only, 'false') ]§"/>
             <property name="jees.native"                  value="§[ melody:getAttributeValue(§[jees]§/jboss-web/@uses-native-components, 'false') ]§"/>
 
-            <source order="§[callback.jees]§" provider="§[jees.provider]§"/>
+            <source order="§[callback.jees]§"/>
         </foreach>
+    </order>
+
+
+    <order name="deploy-jee-server">
+        <source order="deploy-jee-server-on-single-machine" provider="§[jees.provider]§"/>
+    </order>
+
+    <order name="start-jee-server">
+        <source order="start-jee-server-on-single-machine" provider="§[jees.provider]§"/>
+    </order>
+
+    <order name="stop-jee-server">
+        <source order="stop-jee-server-on-single-machine" provider="§[jees.provider]§"/>
     </order>
 
 </sequence>

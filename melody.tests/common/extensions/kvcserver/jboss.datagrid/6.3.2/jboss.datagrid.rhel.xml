@@ -198,8 +198,11 @@ echo "Secret Key '§[kvcs.vault.key.alias]§' successfully generated in Vault ke
                     </server-identities>
                     <authentication>
                         <local default-user="$local"/>
-                        <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                        <properties path="https-mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                     </authentication>
+                    <authorization>
+                        <properties path="https-mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                    </authorization>
                 </security-realm>
                 ]]>
             </node-content>
@@ -379,7 +382,8 @@ echo "Private Key '§[kvcs.mgnt.key.alias]§' successfully generated in Server k
                  Don't know why. So we're doing a global synchronization on the jboss instance -->
             <synchronize scope="GLOBAL" lock-id="jdg.add.user.§[kvcs.owner]§.§[kvcs.listen.ip]§.§[kvcs.listen.port-offset]§">
                 <ssh description="[datagrid.reg-adm:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="§[kvcs.owner]§" keypair-name="§[machine.cnx.kp]§" requiretty="y">
-                    <exec command="§[kvcs.path]§/bin/jboss-add-user.sh §[admin.login]§ §[admin.pass]§"/>
+                    <exec command="§[kvcs.path]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§"/>
+                    <exec command="§[kvcs.path]§/bin/jboss-add-user.sh --user §[admin.login]§ --password §[admin.pass]§ --user-properties https-mgmt-users.properties --realm HttpsManagementRealm"/>
                 </ssh>
             </synchronize>
         </foreach>

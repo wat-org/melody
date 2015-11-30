@@ -181,7 +181,7 @@ public class TaskFactory {
 			Attr attr = elmt.getAttributeNode("order");
 			if (attr == null) {
 				throw new TaskFactoryException(new SimpleNodeRelatedException(
-						attr, "Attribute 'order' is missing"));
+						elmt, "Attribute 'order' is missing"));
 			}
 			sSimpleName = attr.getValue();
 			try {
@@ -195,11 +195,20 @@ public class TaskFactory {
 			}
 			t = getRegisteredTasks().retrieveEligibleTaskBuilder(sSimpleName,
 					elmt, ps);
+			// some attributes are only useful for 'conditional behavior'.
+			// here, the attribute 'order' has to be marked as 'already visited'
+			if (t != null){
+				attr.setUserData("eligible", "true", null);
+			}
 		}
 		if (t == null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
 		}
+		// some attributes are only useful for 'conditional behavior'.
+		// here, all attributes used to find the task are marked as 'already visited'
+		t.markEligibleElements(elmt, ps);
+		
 		return t;
 	}
 
@@ -340,11 +349,15 @@ public class TaskFactory {
 				}
 				setMember(base, m, m.getParameterTypes()[0], attr, value);
 			} else {
-				log.info(new TaskFactoryException(
-						new SimpleNodeRelatedException(attr, Msg
-								.bind(Messages.TaskFactoryMsg_INVALID_ATTR,
-										sAttrName)))
-						.getUserFriendlyStackTrace());
+				// some attributes are only useful for 'conditional behavior'.
+				// we have detected them previously.
+				// we don't want such attribute to be consider as invalid
+				if (attr.getUserData("eligible") == null){
+					throw new TaskFactoryException(
+							new SimpleNodeRelatedException(attr, Msg
+									.bind(Messages.TaskFactoryMsg_INVALID_ATTR,
+											sAttrName)));
+					}
 			}
 		}
 		detectsUndefinedMandatoryAttributes(base.getClass(), attrs);

@@ -13,4 +13,6 @@ public interface ICondition {
 
 	public boolean isEligible(Element elmt, PropertySet ps);
 
+	public void markEligibleElements(Element elmt, PropertySet ps);
+
 }
