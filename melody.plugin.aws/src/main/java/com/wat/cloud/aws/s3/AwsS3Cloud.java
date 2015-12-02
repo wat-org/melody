@@ -76,20 +76,31 @@ public abstract class AwsS3Cloud {
 					+ " (an Aws S3 Bucket Name).");
 		}
 
-		try {
-			if (bucketRegion == null || bucketRegion.equals("us-east-1")) {
-				s3.createBucket(bucketName);
-			} else {
-				s3.createBucket(bucketName, bucketRegion);
-			}
-		} catch (AmazonServiceException Ex) {
-			if (Ex.getErrorCode() == null) {
-				throw Ex;
-			} else if (Ex.getErrorCode().indexOf("BucketAlreadyOwnedByYou") != -1) {
-				// Means that the given bucket already exists and is yours
-				throw new BucketAlreadyOwnedByYouException(Ex);
-			} else {
-				throw Ex;
+		boolean created = false;
+		int nbtry = 3;
+		while (!created){
+			try {
+				if (bucketRegion == null || bucketRegion.equals("us-east-1")) {
+					s3.createBucket(bucketName);
+				} else {
+					s3.createBucket(bucketName, bucketRegion);
+				}
+				created = true;
+			} catch (AmazonServiceException Ex) {
+				if (Ex.getErrorCode() == null) {
+					throw Ex;
+				} else if (Ex.getErrorCode().indexOf("BucketAlreadyOwnedByYou") != -1) {
+					// Means that the given bucket already exists and is yours
+					throw new BucketAlreadyOwnedByYouException(Ex);
+				} else if (Ex.getErrorCode().indexOf("OperationAborted") != -1) {
+					// Means that another operation is in progress on this bucket
+					// Retrying
+					if (--nbtry < 0) {
+						throw Ex;
+					}
+				} else {
+					throw Ex;
+				}
 			}
 		}
 	}
