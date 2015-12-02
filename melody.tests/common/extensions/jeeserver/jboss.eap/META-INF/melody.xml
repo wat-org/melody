@@ -114,5 +114,19 @@
 				<match expression="§[@version]§"        value="6.4.2"/>
 			</condition>
 		</sequence-descriptor>
+		<sequence-descriptor path="6.4.3/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.4.3"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="6.4.4/jboss.eap.rhel.xml">
+			<condition>
+				<match expression="§[machine.os.name]§" value="rhel"/>
+				<match expression="§[@provider]§"       value="jboss.eap"/>
+				<match expression="§[@version]§"        value="6.4.4"/>
+			</condition>
+		</sequence-descriptor>
 	</sequence-descriptors>
 </melody-extension>

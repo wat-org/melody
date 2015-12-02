@@ -8,7 +8,7 @@
   put it into /Cloud/binaries/jboss.eap/jboss-eap-native-<VERSION>-RHEL6-x86_64.zip
 
 3/ inside the extension 'jeeserver/jboss.eap', create the directory <VERSION> and copy the content of the previous version inside
-  mkdir common/extensions/jboss.eap/<VERSION>
+  mkdir common/extensions/jeeserver/jboss.eap/<VERSION>
   cp -prf --preserve=links common/extensions/jeeserver/jboss.eap/<VERSION-1>/* common/extensions/jeeserver/jboss.eap/<VERSION>/
 
 then
@@ -31,6 +31,8 @@ then
 			</jboss-eap-engine>
 
 6/ test the installation of the new version
+  open bases/eap/ed.xml and add declare a jboss eap server based on the version <VERSION>
+
 eventually update the configuration instructions defined in the new version sequence descriptor common/extensions/jeeserver/boss.eap/<VERSION>/jboss.eap.rhel.xml
 
 7/ once validated, deploy the new version in the jboss.eap VM templates
