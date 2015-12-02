@@ -57,6 +57,20 @@
         <echo message="-- JEE Servers successfully stopped."/>
     </order>
 
+    <!-- undeploy each jee-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each jee-servers.
+         caller must define callback 'callback.module' in order to perform module related actions on each jee-servers, if modules are declared on a jee-server.
+         caller must define callback 'callback.application' in order to perform application related actions on each jee-servers, if applications are declared on a jee-server.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'jee_server_match_criteria' to target a subset of jee-servers. -->
+    <order name="undeploy-jee-servers">
+        <echo message="Removing JEE Servers ..."/>
+        <do-operation-on-jee-servers>
+            <param name="callback.jees" value="undeploy-jee-server"/>
+        </do-operation-on-jee-servers>
+        <echo message="-- JEE Servers successfully removed"/>
+    </order>
+
 
     <!-- loop on each machines where a jee-server is declared.
          caller must define callback 'callback.machine'.
@@ -173,6 +187,10 @@
 
     <order name="stop-jee-server">
         <source order="stop-jee-server-on-single-machine" provider="§[jees.provider]§"/>
+    </order>
+
+    <order name="undeploy-jee-server">
+        <source order="undeploy-jee-server-on-single-machine" provider="§[jees.provider]§"/>
     </order>
 
 </sequence>

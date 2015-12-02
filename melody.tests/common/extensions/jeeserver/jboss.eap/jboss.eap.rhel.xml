@@ -114,4 +114,46 @@ exit 0
         <echo message="+ JBoss EAP Server '§[jees.id]§' successfully stopped on '§[machine.id]§'."/>
     </order>
 
+    <order name="undeploy-jee-server-on-single-machine">
+        <!-- stop the jboss eap server and remove previous installation -->
+        <ssh description="[stop:jboss-eap-server:§[jees.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+# jboss eap server control script is executable ? yes -> stop the jboss eap server (doesn't matter if it was not runnning)
+[ -x §[jees.path]§/bin/jboss-eapd.sh ] && §[jees.path]§/bin/jboss-eapd.sh stop
+
+# jboss eap server directory
+rm -rf §[jees.path]§
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- undeploy server -->
+        <source order="§[callback.server]§" provider="§[jees.provider]§"/>
+
+        <!-- undeploy custom modules -->
+        <foreach    items="§[jees]§/custom-modules/custom-module"
+                    item-name="cm"
+                    max-par="1"> <!-- the undeployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="cm.name" value="§[§[cm]§/@name]§"/>
+
+            <source order="§[callback.module]§.§[cm.name]§" provider="§[jees.provider]§"/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully undeployed for JBoss EAP Server '§[jees.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- undeploy applications -->
+        <foreach    items="§[jees]§/applications/application"
+                    item-name="application"
+                    max-par="1"> <!-- the undeployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="appli.name" value="§[§[application]§/@name]§"/>
+
+            <source order="§[callback.application]§.§[appli.name]§" provider="§[jees.provider]§"/>
+            <echo message="+ Application '§[appli.name]§' successfully undeployed for JBoss EAP Server '§[jees.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <echo message="++ JBoss EAP Server '§[jees.id]§' successfully removed on machine '§[machine.id]§'."/>
+    </order>
+
 </sequence>
