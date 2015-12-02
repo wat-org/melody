@@ -57,6 +57,20 @@
         <echo message="-- KVC Servers successfully stopped."/>
     </order>
 
+    <!-- undeploy each kvc-servers.
+         caller can define callback 'callback.server' in order to perform extra actions on each kvc-servers.
+         caller must define callback 'callback.module' in order to perform module related actions on each kvc-servers, if modules are declared on a kvc-server.
+         caller must define callback 'callback.application' in order to perform application related actions on each kvc-servers, if applications are declared on a kvc-server.
+         caller can define 'machine_match_criteria' to target a subset of machines.
+         caller can define 'kvc_server_match_criteria' to target a subset of kvc-servers. -->
+    <order name="undeploy-kvc-servers">
+        <echo message="Removing KVC Servers ..."/>
+        <do-operation-on-kvc-servers>
+            <param name="callback.kvcs" value="undeploy-kvc-server"/>
+        </do-operation-on-kvc-servers>
+        <echo message="-- KVC Servers successfully removed"/>
+    </order>
+
 
     <!-- loop on each machines where a kvc-server is declared.
          caller must define callback 'callback.machine'.
@@ -173,6 +187,9 @@
 
     <order name="stop-kvc-server">
         <source order="stop-kvc-server-on-single-machine" provider="§[kvcs.provider]§"/>
+    </order>
+    <order name="undeploy-kvc-server">
+        <source order="undeploy-kvc-server-on-single-machine" provider="§[kvcs.provider]§"/>
     </order>
 
 </sequence>

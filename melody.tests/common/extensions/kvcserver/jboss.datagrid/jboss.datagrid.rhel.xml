@@ -104,4 +104,36 @@ exit 0
         <echo message="+ JBoss DataGrid Server '§[kvcs.id]§' successfully stopped on '§[machine.id]§'."/>
     </order>
 
+    <order name="undeploy-kvc-server-on-single-machine">
+        <!-- stop the jboss datagrid server and remove previous installation -->
+        <ssh description="[stop:jboss-datagrid-server:§[kvcs.id]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec>
+                <![CDATA[
+# jboss datagrid server control script is executable ? yes -> stop the jboss eap server (doesn't matter if it was not runnning)
+[ -x §[kvcs.path]§/bin/jboss-jdgd.sh ] && §[kvcs.path]§/bin/jboss-jdgd.sh stop
+
+# jboss datagrid server directory
+rm -rf §[kvcs.path]§
+
+exit 0
+                ]]>
+            </exec>
+        </ssh>
+
+        <!-- undeploy server -->
+        <source order="§[callback.server]§" provider="§[kvcs.provider]§"/>
+
+        <!-- undeploy custom modules -->
+        <foreach    items="§[kvcs]§/custom-modules/custom-module"
+                    item-name="cm"
+                    max-par="1"> <!-- the undeployment can modify the standalone*.xml, which can't be modified concurrently -->
+            <property name="cm.name" value="§[§[cm]§/@name]§"/>
+
+            <source order="§[callback.module]§.§[cm.name]§" provider="§[kvcs.provider]§"/>
+            <echo message="+ Custom Module '§[cm.name]§' successfully undeployed for JBoss DataGrid Server '§[kvcs.id]§' on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <echo message="++ JBoss DataGrid Server '§[kvcs.id]§' successfully removed on machine '§[machine.id]§'."/>
+    </order>
+
 </sequence>
