@@ -325,7 +325,7 @@ echo "Private Key '§[jees.mgnt.key.alias]§' successfully generated in Server k
             </elements-selector>
             <node-content>
                 <![CDATA[
-                <access-log pattern="%h %u %t &quot;%r&quot; &quot;%q&quot; %s %b %D %p %{User-Agent}i %I %{JSESSIONID}c" resolve-hosts="false" prefix="access.log" rotate="false">
+                <access-log pattern="%h %u %t &quot;%r&quot; %s %b %D %p &quot;%{Referer}i&quot; &quot;%{User-Agent}i&quot; %I %{JSESSIONID}c" resolve-hosts="false" prefix="access.log" rotate="false">
                     <directory path="." relative-to="jboss.server.log.dir"/>
                 </access-log>
                 ]]>
