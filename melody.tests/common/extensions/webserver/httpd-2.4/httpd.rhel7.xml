@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+    <property name="callback.server"        value="customize-web-server.default-callback"/>
+    <property name="callback.application"   value="customize-web-application.default-callback"/>
+
+    <order name="deploy-web-server-on-single-machine">
+        <!-- install -->
+        <install-package>
+            <param name="package.name" value="httpd"/>
+        </install-package>
+
+        <!-- configure -->
+        <ssh description="[configure:httpd-server:§[machine.cnx.ip]§]" host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <exec command="rm -vf §[ws.path]§/conf.d/welcome.conf"/>
+            <exec command="setenforce 0"/>
+        </ssh>
+
+        <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+            <resources  src-basedir="etc/httpd/"
+                        match="**"
+                        dest-basedir="§[ws.path]§/">
+                <posix-permissions scope="files">640</posix-permissions>
+                <include match="conf/httpd.conf"         template="y"/>
+                <include match="conf.d/0-log.conf"       template="y"/>
+                <!-- each application will customize this file. we don't need it now -->
+                <exclude match="conf.d/2-generic-application.conf"/>
+            </resources>
+            <resources  src-basedir="var/www/"
+                        match="**"
+                        dest-basedir="/var/www/">
+                <posix-group scope="all">§[ws.owner.id]§</posix-group>
+                <posix-user scope="all">§[ws.group.id]§</posix-user>
+                <posix-permissions scope="directories">750</posix-permissions>
+            </resources>
+        </upload>
+
+        <!-- customize / server scope -->
+        <source order="§[callback.server]§" provider="§[ws.provider]§"/>
+
+        <!-- customize / application scope -->
+        <foreach    items="§[machine]§/web-server/applications/application"
+                    item-name="application"
+                    max-par="1">
+            <property name="appli.name"        value="§[§[application]§/@name]§"/>
+            <property name="appli.worker"      value="§[replace('§[appli.name]§', '[.-]', '_') ]§"/>
+
+            <!-- deploy standard application configuration -->
+            <upload host="§[machine.cnx.ip]§" login="root" keypair-name="§[machine.cnx.kp]§">
+                <resources  src-basedir="etc/httpd/"
+                            match="conf.d/2-generic-application.conf"
+                            dest-basedir="§[ws.path]§/"
+                            dest-name="conf.d/2-§[appli.name]§.conf"
+                            template="y">
+                    <posix-permissions scope="files">640</posix-permissions>
+                </resources>
+            </upload>
+
+            <!-- customize application -->
+            <property name="callback.application"        value="§[
+             if ('§[callback.application]§' = 'customize-web-application.default-callback') then
+               '§[callback.application]§'
+             else
+               '§[callback.application]§.§[appli.name]§'
+            ]§"/>
+
+            <source order="§[callback.application]§" provider="§[ws.provider]§"/>
+
+            <echo message="+ Application '§[appli.name]§' successfully deployed on Apache Httpd Server on machine '§[machine.id]§'."/>
+        </foreach>
+
+        <!-- (re)start server -->
+        <start-web-server-on-single-machine provider="§[ws.provider]§"/>
+
+        <echo message="++ Apache Httpd Server successfully installed and configured on machine '§[machine.id]§'."/>
+    </order>
+
+    <order name="customize-web-server.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+    <order name="customize-web-application.default-callback">
+        <!-- nothing to do -->
+    </order>
+
+
+    <order name="start-web-server-on-single-machine">
+        <start-service>
+            <param name="service.name" value="httpd"/>
+        </start-service>
+
+        <echo message="+ Apache Httpd Server successfully started on '§[machine.id]§'."/>
+    </order>
+
+
+    <order name="stop-web-server-on-single-machine">
+        <stop-service>
+            <param name="service.name" value="httpd"/>
+        </stop-service>
+
+        <echo message="+ Apache Httpd Server successfully stopped on '§[machine.id]§'."/>
+    </order>
+
+</sequence>

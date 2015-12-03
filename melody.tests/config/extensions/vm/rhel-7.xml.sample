@@ -3,7 +3,7 @@
 <environment>
 
 	<models>
-		<model instance-type="t1.micro" keypair-name="id_rsa" name="rhel-7">
+		<model instance-type="t1.micro" keypair-name="id_rsa" name="rhel-7" provider="libvirt" region="qemu:///system">
 			<network-management activation-protocol="ssh" activation-timeout="240000"/>
 			<os name="rhel" version="7" arch="x86_64"/>
 			<firewall>

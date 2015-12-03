@@ -6,7 +6,7 @@
     <order name="deploy-kerberos-domain-controllers">
         <echo message="Creating Kerberos Domain Controllers ..."/>
         <do-operation-on-kerberos-domain-controllers>
-            <param name="callback.kdc" value="deploy-kerberos-domain-controller-on-single-machine"/>
+            <param name="callback.kdc" value="deploy-kerberos-domain-controller"/>
         </do-operation-on-kerberos-domain-controllers>
         <echo message="-- Kerberos Domain Controllers successfully created."/>
     </order>
