@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<melody-extension>
+	<sequence-descriptors>
+		<sequence-descriptor path="sd.xml"/>
+		<sequence-descriptor path="sd.cond1.xml">
+			<condition>
+				<match expression="§[@provider]§"       value="cond1"/>
+			</condition>
+		</sequence-descriptor>
+		<sequence-descriptor path="sd.cond2.xml">
+			<condition>
+				<match expression="§[@provider]§"       value="cond2"/>
+			</condition>
+		</sequence-descriptor>
+	</sequence-descriptors>
+</melody-extension>

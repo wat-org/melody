@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence default="do" basedir=".">
+
+	<order name="do">
+		<echo message="in do"/>
+		<source order="do2" provider="cond1"/>
+		<do2 provider="cond2"/>
+	</order>
+
+	<order name="do4">
+		<echo message="in do2"/>
+		<source order="do3">
+			<param name="key1" value="val1"/>
+		</source>
+	</order>
+
+	<order name="do3">
+		<echo message="in do3 - §[key1]§"/>
+	</order>
+
+</sequence>

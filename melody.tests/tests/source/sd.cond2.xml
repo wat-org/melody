@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<sequence basedir=".">
+
+	<order name="do2">
+		<echo message="in do2 - cond2"/>
+		<source order="do3">
+			<param name="key1" value="val1"/>
+		</source>
+	</order>
+
+</sequence>
