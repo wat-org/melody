@@ -7,8 +7,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -18,13 +16,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import com.wat.melody.api.IDeferedTask;
 import com.wat.melody.api.IFirstLevelTask;
 import com.wat.melody.api.IRegisteredTasks;
 import com.wat.melody.api.ITask;
 import com.wat.melody.api.ITaskBuilder;
 import com.wat.melody.api.ITaskContainer;
 import com.wat.melody.api.ITopLevelTask;
+import com.wat.melody.api.IUnexpectedAttributes;
 import com.wat.melody.api.Melody;
 import com.wat.melody.api.Messages;
 import com.wat.melody.api.annotation.Attribute;
@@ -44,9 +42,7 @@ import com.wat.melody.common.properties.PropertySet;
 import com.wat.melody.common.reflection.ReflectionHelper;
 import com.wat.melody.common.xml.DocHelper;
 import com.wat.melody.common.xml.exception.SimpleNodeRelatedException;
-import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.common.xpath.exception.ExpressionSyntaxException;
-import com.wat.melody.common.xpath.exception.XPathExpressionSyntaxException;
 
 /**
  * 
@@ -175,32 +171,6 @@ public class TaskFactory {
 		String sSimpleName = elmt.getNodeName();
 		ITaskBuilder t = getRegisteredTasks().retrieveEligibleTaskBuilder(
 				sSimpleName, elmt, ps);
-		if (t != null
-				&& ReflectionHelper.implement(t.getTaskClass(),
-						IDeferedTask.class)) {
-			Attr attr = elmt.getAttributeNode("order");
-			if (attr == null) {
-				throw new TaskFactoryException(new SimpleNodeRelatedException(
-						elmt, "Attribute 'order' is missing"));
-			}
-			sSimpleName = attr.getValue();
-			try {
-				sSimpleName = XPathExpander.expand(sSimpleName, Melody
-						.getContext().getProcessorManager()
-						.getResourcesDescriptor().evaluateAsNode("/"), ps);
-			} catch (XPathExpressionSyntaxException | XPathExpressionException Ex) {
-				throw new TaskFactoryException(new SimpleNodeRelatedException(
-						attr, Msg.bind(Messages.TaskFactoryEx_EXPAND_ATTR,
-								"order", State.FAILED), Ex));
-			}
-			t = getRegisteredTasks().retrieveEligibleTaskBuilder(sSimpleName,
-					elmt, ps);
-			// some attributes are only useful for 'conditional behavior'.
-			// here, the attribute 'order' has to be marked as 'already visited'
-			if (t != null){
-				attr.setUserData("eligible", "true", null);
-			}
-		}
 		if (t == null) {
 			throw new TaskFactoryException(Msg.bind(
 					Messages.TaskFactoryEx_UNDEF_TASK, sSimpleName));
@@ -349,10 +319,13 @@ public class TaskFactory {
 				}
 				setMember(base, m, m.getParameterTypes()[0], attr, value);
 			} else {
-				// some attributes are only useful for 'conditional behavior'.
-				// we have detected them previously.
-				// we don't want such attribute to be consider as invalid
-				if (attr.getUserData("eligible") == null){
+				// when some attributes are only useful for 'conditional behavior'.
+				// we have detected them previously. we 
+				// don't want such attribute to be consider as invalid.
+				// or when this specific task can have unexpected attributes.
+				if (attr.getUserData("eligible") == null &&
+						!ReflectionHelper.implement(base.getClass(),
+								IUnexpectedAttributes.class)){
 					throw new TaskFactoryException(
 							new SimpleNodeRelatedException(attr, Msg
 									.bind(Messages.TaskFactoryMsg_INVALID_ATTR,

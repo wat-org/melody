@@ -125,6 +125,14 @@ public interface IProcessorManager {
 	public void startProcessing(ThreadGroup ptg, int index)
 			throws ProcessorManagerConfigurationException;
 
+	/**
+	 * <p>
+	 * Validate this object is correctly configured and start the processing in
+	 * the current thread.
+	 * </p>
+	 */
+	public void startProcessingSync() throws ProcessorManagerConfigurationException;
+
 	public boolean isRunning();
 
 	/**

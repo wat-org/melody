@@ -31,7 +31,7 @@ import com.wat.melody.common.xml.exception.IllegalDocException;
 import com.wat.melody.common.xpath.XPathExpander;
 import com.wat.melody.core.internal.taskbuilder.AllCondition;
 import com.wat.melody.core.internal.taskbuilder.AnyCondition;
-import com.wat.melody.core.internal.taskbuilder.CallShortcutBuilder;
+import com.wat.melody.core.internal.taskbuilder.SourceShortcutBuilder;
 import com.wat.melody.core.internal.taskbuilder.ICondition;
 import com.wat.melody.core.internal.taskbuilder.JavaTaskBuilder;
 import com.wat.melody.core.internal.taskbuilder.MatchCondition;
@@ -130,7 +130,7 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 			OrderNameSet orders = Order.findAvailableOrderNames(sd);
 			ICondition c = new TrueCondition();
 			for (OrderName order : orders) {
-				register(new CallShortcutBuilder(order, sd.getSourceFile(), c));
+				register(new SourceShortcutBuilder(order, sd.getSourceFile(), c));
 			}
 
 			return;
@@ -158,7 +158,7 @@ public class RegisteredTasks extends Hashtable<String, List<ITaskBuilder>>
 			OrderNameSet orders = Order.findAvailableOrderNames(sd);
 			ICondition c = retrieveSequenceDescriptorCondition(e);
 			for (OrderName order : orders) {
-				register(new CallShortcutBuilder(order, sd.getSourceFile(), c));
+				register(new SourceShortcutBuilder(order, sd.getSourceFile(), c));
 			}
 		}
 	}

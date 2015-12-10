@@ -29,7 +29,7 @@ public class JavaTaskBuilder implements ITaskBuilder {
 		setTaskClass(t);
 	}
 
-	private ICondition getCondition() {
+	public ICondition getCondition() {
 		return _condition;
 	}
 

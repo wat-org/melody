@@ -616,6 +616,17 @@ public final class ProcessorManager implements IProcessorManager, Runnable {
 		// Start the dedicated thread (call the method run - see Thread)
 		getThread().start();
 	}
+	
+	@Override
+	public void startProcessingSync()
+			throws ProcessorManagerConfigurationException {
+		// Perform cross controls on GlobalConfiguration instance
+		validateConfigurationDirectives();
+		// Fire the event
+		fireRequestProcessorToStartEvent();
+		run();
+	}
+
 
 	@Override
 	public synchronized void stopProcessing() {
