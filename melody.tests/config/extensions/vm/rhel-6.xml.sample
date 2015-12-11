@@ -3,20 +3,24 @@
 <environment>
 
 	<models>
-		<model instance-type="t1.micro" keypair-name="id_rsa" name="rhel-6" provider="libvirt" region="qemu:///system">
-			<network-management activation-protocol="ssh"/>
+		<model name="rhel-6" instance-type="t1.micro" keypair-name="id_rsa" provider="libvirt" region="qemu:///system">
+			<network-management name="my-network-management" activation-protocol="ssh"/>
 			<os name="rhel" version="6" arch="x86_64"/>
-			<firewall>
-				<tcp access="allow" directions="in" from-ips="all" name="ssh-tcp" to-ports="22"/>
+			<firewall name="my-firewall-rules">
+				<tcp name="ssh-tcp" access="allow" directions="in" from-ips="all" to-ports="22"/>
 			</firewall>
-			<disk-devices>
-				<disk delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
+			<disk-devices name="my-disk-devices">
+				<disk name="first" delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
 			</disk-devices>
-			<credentials>
-				<credential login="root" password="XXXXXXXXXXX"/>
+			<credentials name="my-credentials">
+				<!-- old style -->
+				<credential name="root" login="root" password="XXXXXXXXXXX"/>
+				<!-- new style -->
+				<user name="root" homedir="/root/" id="0" password="XXXXXXXXXXX" ref-group-name="root"/>
+				<group name="root" id="0"/>
 			</credentials>
-			<registration profile-name="default" provider="rhn" start-rhnsd="false" upload-hardware-infos="false" upload-packages-infos="false" upload-virtualization-infos="false"/>
-			<packages provider="yum">
+			<registration name="my-registration-datas" profile-name="default" provider="rhn" start-rhnsd="false" upload-hardware-infos="false" upload-packages-infos="false" upload-virtualization-infos="false"/>
+			<packages name="my-packages" provider="yum">
 				<!-- for time synchro -->
 				<package name="ntp"/>
 				<!-- allow ssh and scp -->
@@ -25,7 +29,7 @@
 				<package name="xorg-x11-xauth"/>
 				<package arch="noarch" name="libX11-common"/>
 			</packages>
-			<services provider="initd">
+			<services name="my-services" provider="initd">
 				<!-- for Melody key pair deployment -->
 				<service name="lvcd" state="on"/>
 				<!-- for time synchro -->

@@ -26,9 +26,7 @@ then
 5/ declare the new version in the jboss.eap model
   open config/extensions/vm/rhel-6.eap-6.xml.sample and add this inside, next to the other jboss version declaration
   
-			<jboss-eap-engine path="/opt/jboss-eap-<VERSION>" provider="jboss.eap" version="<VERSION>" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
+			<jboss-eap-engine name="jboss-eap-<VERSION>" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-<VERSION>" version="<VERSION>"/>			
 
 6/ test the installation of the new version
   open bases/eap/ed.xml and add declare a jboss eap server based on the version <VERSION>

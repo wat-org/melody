@@ -3,7 +3,7 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.wks">
+		<model name="rhel-6.wks" herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small">
 		</model>
 	</models>
 

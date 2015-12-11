@@ -3,17 +3,20 @@
 <environment>
 
 	<models>
-		<model instance-type="m1.small" keypair-name="id_rsa" name="winsrv-2008-r2">
-			<network-management activation-enabled="false" activation-protocol="winrm"/>
+		<model name="winsrv-2008-r2" instance-type="m1.small" keypair-name="id_rsa" provider="libvirt" region="qemu:///system">
+			<network-management name="my-network-management" activation-enabled="false" activation-protocol="winrm"/>
 			<os name="windows" version="server-2008" arch="x86_64"/>
-			<firewall>
-				<tcp access="allow" directions="in" from-ips="all" name="rdp" to-ports="389"/>
+			<firewall name="my-firewall-rules">
+				<tcp name="rdp-tcp" access="allow" directions="in" from-ips="all" to-ports="389"/>
 			</firewall>
-			<disk-devices>
-				<disk delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
+			<disk-devices name="my-disk-devices">
+				<disk name="first" delete-on-termination="true" device-name="/dev/vda" root-device="true"/>
 			</disk-devices>
-			<credentials>
-				<credential login="Administrator" password="XXXXXXXXXX"/>
+			<credentials name="my-credentials">
+				<!-- old style -->
+				<credential login="Administrator" password="XXXXXXXXXXX"/>
+				<!-- new style -->
+				<user name="Administrator" password="XXXXXXXXXXX"/>
 			</credentials>
 		</model>
 	</models>

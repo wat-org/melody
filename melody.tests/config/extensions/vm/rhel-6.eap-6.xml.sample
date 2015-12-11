@@ -3,84 +3,62 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.eap-6">
-			<jee-server-model name="eap-6" java="jre_1.7.0" path="/home/jeeusra/eap.inst1" provider="jboss.eap">
-				<owner login="jeeusra"/>
-				<listen-on device="eth0" management-device="eth0" port-offset="0">
+		<model name="rhel-6.eap-6" herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small">
+			<jee-server-model name="my-jeeserver" java="jre_1.7.0" path="/home/jeeusra/eap.inst1" provider="jboss.eap">
+				<owner name="my-owner" login="jeeusra"/>
+				<listen-on name="my-listen" device="eth0" management-device="eth0" port-offset="0">
 					<socket name="http" port="8080"/>
 					<socket name="ajp" port="8009"/>
 					<socket name="https" port="8443"/>
 				</listen-on>
-				<memory perm-size="64m" xms="64m" xmx="128m"/>
-				<administrators>
-					<user login="jboss"/>
-					<user login="jeeusra"/>
+				<memory name="my-memory" perm-size="64m" xms="64m" xmx="128m"/>
+				<administrators name="my-administrators">
+					<user name="jboss" login="jboss"/>
+					<user name="jeeusra" login="jeeusra"/>
 				</administrators>
-				<keystore password="XXXXXXXXXXXX" path="server.ks">
-					<key alias="server" password="YYYYYYYYYYY" usage="management"/>
+				<keystore name="my-keystore" password="XXXXXXXXXX" path="server.ks">
+					<key alias="server" password="YYYYYYYYYY" usage="management"/>
 				</keystore>
-				<jboss-web uses-native-components="true"/>
+				<jboss-web name="my-jboss-web" uses-native-components="true"/>
 			</jee-server-model>
 
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.0" provider="jboss.eap" version="6.0.0" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.0.1" provider="jboss.eap" version="6.0.1" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.0" provider="jboss.eap" version="6.1.0" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.1.1" provider="jboss.eap" version="6.1.1" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.0" provider="jboss.eap" version="6.2.0" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.1" provider="jboss.eap" version="6.2.1" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.2" provider="jboss.eap" version="6.2.2" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.3" provider="jboss.eap" version="6.2.3" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.2.4" provider="jboss.eap" version="6.2.4" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.0" provider="jboss.eap" version="6.3.0" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.1" provider="jboss.eap" version="6.3.1" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.3.2" provider="jboss.eap" version="6.3.2" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.0" provider="jboss.eap" version="6.4.0" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.1" provider="jboss.eap" version="6.4.1" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.2" provider="jboss.eap" version="6.4.2" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.3" provider="jboss.eap" version="6.4.3" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
-			<jboss-eap-engine path="/opt/jboss-eap-6.4.4" provider="jboss.eap" version="6.4.4" herit-policy="append">
-				<owner login="jboss"/>
-			</jboss-eap-engine>
+			<jboss-eap-engine-model name="my-jboss-eap-engine" provider="jboss.eap">
+				<owner name="my-owner" login="jboss"/>
+			</jboss-eap-engine-model>			
+			<jboss-eap-engine name="jboss-eap-6.0.0" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.0.0" version="6.0.0"/>			
+			<jboss-eap-engine name="jboss-eap-6.0.1" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.0.1" version="6.0.1"/>			
+			<jboss-eap-engine name="jboss-eap-6.1.0" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.1.0" version="6.1.0"/>			
+			<jboss-eap-engine name="jboss-eap-6.1.1" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.1.1" version="6.1.1"/>			
+			<jboss-eap-engine name="jboss-eap-6.2.0" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.2.0" version="6.2.0"/>			
+			<jboss-eap-engine name="jboss-eap-6.2.1" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.2.1" version="6.2.1"/>			
+			<jboss-eap-engine name="jboss-eap-6.2.2" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.2.2" version="6.2.2"/>			
+			<jboss-eap-engine name="jboss-eap-6.2.3" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.2.3" version="6.2.3"/>			
+			<jboss-eap-engine name="jboss-eap-6.2.4" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.2.4" version="6.2.4"/>			
+			<jboss-eap-engine name="jboss-eap-6.3.0" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.3.0" version="6.3.0"/>			
+			<jboss-eap-engine name="jboss-eap-6.3.1" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.3.1" version="6.3.1"/>			
+			<jboss-eap-engine name="jboss-eap-6.3.2" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.3.2" version="6.3.2"/>			
+			<jboss-eap-engine name="jboss-eap-6.4.0" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.4.0" version="6.4.0"/>			
+			<jboss-eap-engine name="jboss-eap-6.4.1" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.4.1" version="6.4.1"/>			
+			<jboss-eap-engine name="jboss-eap-6.4.2" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.4.2" version="6.4.2"/>			
+			<jboss-eap-engine name="jboss-eap-6.4.3" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.4.3" version="6.4.3"/>			
+			<jboss-eap-engine name="jboss-eap-6.4.4" herit="./environment/models/model[@name='rhel-6.eap-6']/jboss-eap-engine-model[@name='my-jboss-eap-engine']" path="/opt/jboss-eap-6.4.4" version="6.4.4"/>			
 
-			<credentials>
-				<credential group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jboss" homedir="/home/jeeusra" id="5101" login="jeeusra" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jboss" homedir="/home/jeeusrb" id="5102" login="jeeusrb" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jboss" homedir="/home/jeeusrc" id="5103" login="jeeusrc" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jboss" homedir="/home/jeeusrd" id="5103" login="jeeusrd" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jboss" homedir="/home/jeeusre" id="5104" login="jeeusre" password="XXXXXXXXXX" herit-policy="append"/>
+			<credentials name="my-credentials">
+				<!-- old style -->
+				<credential name="jboss" group="jboss" homedir="/home/jboss" id="5000" login="jboss" password="XXXXXXXXXX"/>
+				<credential name="jeeusra" group="jboss" homedir="/home/jeeusra" id="5101" login="jeeusra" password="XXXXXXXXXX"/>
+				<credential name="jeeusrb" group="jboss" homedir="/home/jeeusrb" id="5102" login="jeeusrb" password="XXXXXXXXXX"/>
+				<credential name="jeeusrc" group="jboss" homedir="/home/jeeusrc" id="5103" login="jeeusrc" password="XXXXXXXXXX"/>
+				<credential name="jeeusrd" group="jboss" homedir="/home/jeeusrd" id="5103" login="jeeusrd" password="XXXXXXXXXX"/>
+				<credential name="jeeusre" group="jboss" homedir="/home/jeeusre" id="5104" login="jeeusre" password="XXXXXXXXXX"/>
+				<!-- new style -->
+				<user name="jboss" homedir="/home/jboss" id="5000" password="XXXXXXXXXX" ref-group-name="jboss"/>
+				<user name="jeeusra" homedir="/home/jeeusra" id="5101" password="XXXXXXXXXX" ref-group-name="jboss"/>
+				<user name="jeeusrb" homedir="/home/jeeusrb" id="5102" password="XXXXXXXXXX" ref-group-name="jboss"/>
+				<user name="jeeusrc" homedir="/home/jeeusrc" id="5103" password="XXXXXXXXXX" ref-group-name="jboss"/>
+				<user name="jeeusrd" homedir="/home/jeeusrd" id="5103" password="XXXXXXXXXX" ref-group-name="jboss"/>
+				<user name="jeeusre" homedir="/home/jeeusre" id="5104" password="XXXXXXXXXXf" ref-group-name="jboss"/>
+				<group name="jboss" id="5000"/>
 			</credentials>
 		</model>
 	</models>

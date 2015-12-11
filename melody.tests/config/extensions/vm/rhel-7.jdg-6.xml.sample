@@ -3,53 +3,52 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.jdg-6">
-			<kvc-server-model name="jdg-6" java="jre_1.7.0" path="/home/jdgusra/jdg.inst1" provider="jboss.datagrid">
-				<owner login="jdgusra"/>
-				<listen-on device="eth0" management-device="eth0" port-offset="0">
+		<model name="rhel-7.jdg-6" herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small">
+			<kvc-server-model name="my-kvcserver" java="jre_1.7.0" path="/home/jdgusra/jdg.inst1" provider="jboss.datagrid">
+				<owner name="my-owner" login="jdgusra"/>
+				<listen-on name="my-listen" device="eth0" management-device="eth0" port-offset="0">
 					<socket name="http" port="8080"/>
 					<socket name="https" port="8443"/>
 					<socket name="hotrod" port="11222"/>
 				</listen-on>
-				<memory perm-size="64m" xms="64m" xmx="128m"/>
-				<administrators>
-					<user login="jdg"/>
-					<user login="jdgusra"/>
+				<memory name="my-memory" perm-size="64m" xms="64m" xmx="128m"/>
+				<administrators name="my-administrators">
+					<user name="jdg" login="jdg"/>
+					<user name="jdgusra" login="jdgusra"/>
 				</administrators>
-				<keystore password="XXXXXXXXXXXX" path="server.ks">
-					<key alias="server" password="YYYYYYYYYYY" usage="management"/>
+				<keystore name="my-keystore" password="XXXXXXXXXX" path="server.ks">
+					<key alias="server" password="YYYYYYYYYY" usage="management"/>
 				</keystore>
 			</kvc-server-model>
 
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.0" provider="jboss.datagrid" version="6.0.0" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.0.1" provider="jboss.datagrid" version="6.0.1" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.1.0" provider="jboss.datagrid" version="6.1.0" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.0" provider="jboss.datagrid" version="6.2.0" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.2.1" provider="jboss.datagrid" version="6.2.1" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.0" provider="jboss.datagrid" version="6.3.0" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
-			<jboss-datagrid-engine path="/opt/jboss-datagrid-6.3.1" provider="jboss.datagrid" version="6.3.1" herit-policy="append">
-				<owner login="jdg"/>
-			</jboss-datagrid-engine>
+			<jboss-datagrid-engine-model name="my-jboss-datagrid-engine" provider="jboss.datagrid">
+				<owner name="my-owner" login="jdg"/>
+			</jboss-datagrid-engine-model>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.0.0" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.0.0" version="6.0.0"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.0.1" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.0.1" version="6.0.1"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.1.0" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.1.0" version="6.1.0"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.2.0" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.2.0" version="6.2.0"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.2.1" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.2.1" version="6.2.1"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.3.0" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.3.0" version="6.3.0"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.3.1" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.3.1" version="6.3.1"/>			
+			<jboss-datagrid-engine name="jboss-datagrid-6.3.2" herit="./environment/models/model[@name='rhel-7.jdg-6']/jboss-datagrid-engine-model[@name='my-jboss-datagrid-engine']" path="/opt/jboss-datagrid-6.3.2" version="6.3.2"/>			
 
-			<credentials>
-				<credential group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jdg" homedir="/home/jdgusra" id="5201" login="jdgusra" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jdg" homedir="/home/jdgusrb" id="5202" login="jdgusrb" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jdg" homedir="/home/jdgusrc" id="5203" login="jdgusrc" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jdg" homedir="/home/jdgusrd" id="5203" login="jdgusrd" password="XXXXXXXXXX" herit-policy="append"/>
-				<credential group="jdg" homedir="/home/jdgusre" id="5204" login="jdgusre" password="XXXXXXXXXX" herit-policy="append"/>
+			<credentials name="my-credentials">
+				<!-- old style -->
+				<credential name="jdg" group="jdg" homedir="/home/jdg" id="5001" login="jdg" password="XXXXXXXXXX"/>
+				<credential name="jdgusra" group="jdg" homedir="/home/jdgusra" id="5201" login="jdgusra" password="XXXXXXXXXX"/>
+				<credential name="jdgusrb" group="jdg" homedir="/home/jdgusrb" id="5202" login="jdgusrb" password="XXXXXXXXXX"/>
+				<credential name="jdgusrc" group="jdg" homedir="/home/jdgusrc" id="5203" login="jdgusrc" password="XXXXXXXXXX"/>
+				<credential name="jdgusrd" group="jdg" homedir="/home/jdgusrd" id="5203" login="jdgusrd" password="XXXXXXXXXX"/>
+				<credential name="jdgusre" group="jdg" homedir="/home/jdgusre" id="5204" login="jdgusre" password="XXXXXXXXXX"/>
+				<!-- new style -->
+				<user name="jdg" homedir="/home/jdg" id="5001" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<user name="jdgusra" homedir="/home/jdgusra" id="5201" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<user name="jdgusrb" homedir="/home/jdgusrb" id="5202" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<user name="jdgusrc" homedir="/home/jdgusrc" id="5203" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<user name="jdgusrd" homedir="/home/jdgusrd" id="5203" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<user name="jdgusre" homedir="/home/jdgusre" id="5204" password="XXXXXXXXXX" ref-group-name="jdg"/>
+				<group name="jdg" id="5001"/>
 			</credentials>
 		</model>
 	</models>

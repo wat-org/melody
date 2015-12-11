@@ -3,18 +3,18 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" instance-type="t1.micro" name="rhs-2">
+		<model name="rhs-2" herit="./environment/models/model[@name='rhel-6']" instance-type="t1.micro">
 			<rhn>
 				<!-- base channel for RHS 2.1-->
 				<base-channel name="rhel-x86_64-server-6.4.z"/>
 				<!-- mandatory child channels for RHS 2.1 -->
-				<channel name="rhel-x86_64-server-6-rhs-2.1" herit-policy="append"/>
-				<channel name="rhel-x86_64-server-sfs-6.4.z" herit-policy="append"/>
+				<channel name="rhel-x86_64-server-6-rhs-2.1"/>
+				<channel name="rhel-x86_64-server-sfs-6.4.z"/>
 			</rhn>
-			<services provider="initd">
+			<services name="my-services" provider="initd">
 				<!-- start glusterd -->
-				<service name="glusterd" state="on" herit-policy="append"/>
-				<service name="nfs" state="on" herit-policy="append"/>
+				<service name="glusterd" state="on"/>
+				<service name="nfs" state="on"/>
 			</services>
 		</model>
 	</models>

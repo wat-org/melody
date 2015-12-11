@@ -3,43 +3,43 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small" name="rhel-6.oracle-12">
-			<rdb-server path="/opt/oracle-12.1.0" provider="oracle" version="12.1.0.2.0">
-				<owner login="oracle"/>
-				<listen-on device="eth0" port-offset="0">
+		<model name="rhel-6.oracle-12" herit="./environment/models/model[@name='rhel-6']" instance-type="m1.small">
+			<rdb-server name="my-rdbserver" path="/opt/oracle-12.1.0" provider="oracle" version="12.1.0.2.0">
+				<owner name="my-owner" login="oracle"/>
+				<listen-on name="my-listen" device="eth0" port-offset="0">
 					<socket name="tcp" port="1521"/>
 				</listen-on>
 			</rdb-server>
 
-			<packages provider="yum">
+			<packages name="my-packages" provider="yum">
 				<!-- for oracle 12-->
-				<package name="cloog-ppl" herit-policy="append"/>
-				<package name="compat-libcap1" herit-policy="append"/>
-				<package name="compat-libstdc++-33" herit-policy="append"/>
-				<package name="cpp" herit-policy="append"/>
-				<package name="gcc" herit-policy="append"/>
-				<package name="gcc-c++" herit-policy="append"/>
-				<package name="ksh" herit-policy="append"/>
-				<package name="libXxf86dga" herit-policy="append"/>
-				<package name="libXxf86misc" herit-policy="append"/>
-				<package name="libaio-devel" herit-policy="append"/>
-				<package name="libdmx" herit-policy="append"/>
-				<package name="libstdc++-devel" herit-policy="append"/>
-				<package name="mpfr" herit-policy="append"/>
-				<package name="ppl" herit-policy="append"/>
-				<package name="xorg-x11-utils" herit-policy="append"/>
+				<package name="cloog-ppl"/>
+				<package name="compat-libcap1"/>
+				<package name="compat-libstdc++-33"/>
+				<package name="cpp"/>
+				<package name="gcc"/>
+				<package name="gcc-c++"/>
+				<package name="ksh"/>
+				<package name="libXxf86dga"/>
+				<package name="libXxf86misc"/>
+				<package name="libaio-devel"/>
+				<package name="libdmx"/>
+				<package name="libstdc++-devel"/>
+				<package name="mpfr"/>
+				<package name="ppl"/>
+				<package name="xorg-x11-utils"/>
 			</packages>
 
-			<credentials>
+			<credentials name="my-credentials">
 				<!-- oracle user and group -->
 				<!-- character '@' is forbidden in oracle user's password -->
-				<user homedir="/home/oprofile" id="16" name="oprofile" password="XXXXXXXXXX" ref-group-name="oprofile" herit-policy="append"/>
-				<user homedir="/home/oracle" id="54321" name="oracle" password="XXXXXXXXXX" ref-group-name="oinstall" herit-policy="append">
+				<user name="oprofile" homedir="/home/oprofile" id="16" password="XXXXXXXX" ref-group-name="oprofile"/>
+				<user name="oracle" homedir="/home/oracle" id="54321" password="XXXXXXXX" ref-group-name="oinstall">
 					<group ref-group-name="dba"/>
 				</user>
-				<group id="16" name="oprofile" herit-policy="append"/>
-				<group id="54321" name="oinstall" herit-policy="append"/>
-				<group id="54322" name="dba" herit-policy="append">
+				<group name="oprofile" id="16"/>
+				<group name="oinstall" id="54321"/>
+				<group name="dba" id="54322">
 					<user ref-user-name="oracle"/>
 				</group>
 			</credentials>

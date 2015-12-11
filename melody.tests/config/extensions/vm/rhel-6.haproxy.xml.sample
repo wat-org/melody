@@ -3,24 +3,24 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-6']" name="rhel-6.haproxy">
-			<web-server path="/etc/haproxy" provider="haproxy">
-				<owner login="haproxy"/>
-				<log level="debug"/>
-				<listen-on device="eth0" port-offset="0">
+		<model name="rhel-6.haproxy" herit="./environment/models/model[@name='rhel-6']">
+			<web-server name="my-webserver" path="/etc/haproxy" provider="haproxy">
+				<owner name="my-owner" login="haproxy"/>
+				<log name="my-log" level="debug"/>
+				<listen-on name="my-listen" device="eth0" port-offset="0">
 					<socket name="http" mode="http" port="80"/>
 				</listen-on>
 			</web-server>
 
 			<rhn>
 				<!-- mandatory child channel for haproxy -->
-				<channel name="rhel-x86_64-server-lb-6" herit-policy="append"/>
+				<channel name="rhel-x86_64-server-lb-6"/>
 			</rhn>
 
-			<credentials>
+			<credentials name="my-credentials">
 				<!-- haproxy user and group -->
-				<user homedir="/home/haproxy" id="188" name="haproxy" password="XXXXXXXX" ref-group-name="haproxy" herit-policy="append"/>
-				<group id="188" name="haproxy" herit-policy="append"/>
+				<user name="haproxy" homedir="/home/haproxy" id="188" password="XXXXXXXX" ref-group-name="haproxy"/>
+				<group name="haproxy" id="188"/>
 			</credentials>
 		</model>
 	</models>

@@ -3,9 +3,13 @@
 <environment>
 
 	<models>
-		<model herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small" name="rhel-7.wks">
-			<credentials>
-				<credential login="administrator" password="XXXXXXXXXXX"/>
+		<model name="rhel-7.wks" herit="./environment/models/model[@name='rhel-7']" instance-type="m1.small">
+			<credentials name="my-credentials">
+				<!-- old style -->
+				<credential login="administrator" password="Rf%9cRgf7"/>
+				<!-- new style -->
+				<user name="administrator" homedir="/home/administrator/" id="12345" password="XXXXXXXX" ref-group-name="admin"/>
+				<group name="admin" id="12345"/>
 			</credentials>
 		</model>
 	</models>
