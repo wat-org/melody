@@ -71,7 +71,8 @@ public class Source implements ITask, IUnexpectedAttributes {
 		if (csb.getSequenceDescriptorPath()
 				.equals(Melody.getContext().getProcessorManager()
 						.getSequenceDescriptor().getSourceFile())) {
-			// launch the order
+			// if the order to execute is declared in the same sequence
+			// descriptor, the order is proceed directly
 			Element elmt = Order.findOrder(getOrderName(), Melody.getContext()
 					.getProcessorManager().getSequenceDescriptor());
 			try {
@@ -80,6 +81,8 @@ public class Source implements ITask, IUnexpectedAttributes {
 				throw new SourceException(Ex);
 			}
 		} else {
+			// if the order to execute is declared in another sequence
+			// descriptor, a sub-processor manager is required
 			IProcessorManager pm = Melody.getContext()
 					.createSubProcessorManager();
 			try {
