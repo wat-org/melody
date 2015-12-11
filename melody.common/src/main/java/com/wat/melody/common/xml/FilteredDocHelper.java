@@ -8,7 +8,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -28,10 +27,6 @@ public abstract class FilteredDocHelper {
 	/**
 	 * @param n
 	 *            is an {@link Element}. Can be <tt>null</tt>.
-	 * @param circle
-	 *            is the list of all already visited herited {@link Element}s.
-	 *            It is used to detect circular references. If <tt>null</tt>,
-	 *            circular references will not be detected.
 	 * 
 	 * @return the herited parent of the given {@link Element}, or <tt>null</tt>
 	 *         if the given {@link Element} was <tt>null</tt>, or if the given
@@ -44,7 +39,8 @@ public abstract class FilteredDocHelper {
 	 *             Expression ;</li>
 	 *             <li>if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
-	 *             {@link Element} match no herited parent {@link Element} ;</li>
+	 *             {@link Element} match no herited parent {@link Element} ;
+	 *             </li>
 	 *             <li>if, once resolved, the content of the
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
 	 *             {@link Element} match multiple herited parent {@link Element}
@@ -53,12 +49,9 @@ public abstract class FilteredDocHelper {
 	 *             {@link FilteredDoc#HERIT_ATTR} XML Attribute of the given
 	 *             {@link Element} match a {@link Node} which is not an
 	 *             {@link Element} ;</li>
-	 *             <li>if, once resolved, the herited parent {@link Element}
-	 *             have already been visited (e.g. a circular reference hae been
-	 *             detected) ;</li>
 	 *             </ul>
 	 */
-	protected static Element resolvHeritAttr(Element n, List<Element> circle)
+	protected static Element resolvHeritAttr(Element n)
 			throws NodeRelatedException {
 		if (n == null) {
 			return null;
@@ -73,11 +66,11 @@ public abstract class FilteredDocHelper {
 		}
 		NodeList nl = null;
 		try {
-			nl = XPathExpander.evaluateAsNodeList(xpath, n.getOwnerDocument()
-					.getFirstChild());
+			nl = XPathExpander.evaluateAsNodeList(xpath,
+					n.getOwnerDocument().getFirstChild());
 		} catch (XPathExpressionException Ex) {
-			throw new NodeRelatedException(herit, Msg.bind(
-					Messages.HeritAttrEx_INVALID_XPATH, xpath), Ex);
+			throw new NodeRelatedException(herit,
+					Msg.bind(Messages.HeritAttrEx_INVALID_XPATH, xpath), Ex);
 		}
 		if (nl.getLength() > 1) {
 			ConsolidatedException causes = new ConsolidatedException();
@@ -85,35 +78,28 @@ public abstract class FilteredDocHelper {
 				causes.addCause(new NodeRelatedException(node,
 						Messages.HeritAttrEx_MATCH));
 			}
-			throw new NodeRelatedException(herit, Msg.bind(
-					Messages.HeritAttrEx_MATCH_RESUME, xpath), causes);
+			throw new NodeRelatedException(herit,
+					Msg.bind(Messages.HeritAttrEx_MATCH_RESUME, xpath), causes);
 		} else if (nl.getLength() == 0) {
-			throw new NodeRelatedException(herit, Msg.bind(
-					Messages.HeritAttrEx_NO_MATCH, xpath));
+			throw new NodeRelatedException(herit,
+					Msg.bind(Messages.HeritAttrEx_NO_MATCH, xpath));
 		}
 		if (nl.item(0).getNodeType() != Node.ELEMENT_NODE) {
-			throw new NodeRelatedException(herit, Msg.bind(
-					Messages.HeritAttrEx_DONT_MATCH_ELEMENT, xpath,
-					DocHelper.parseNodeType(nl.item(0))));
+			throw new NodeRelatedException(herit,
+					Msg.bind(Messages.HeritAttrEx_DONT_MATCH_ELEMENT, xpath,
+							DocHelper.parseNodeType(nl.item(0))));
 		}
 		Element parent = (Element) nl.item(0);
 
-		if (circle != null) {
-			if (circle.contains(parent)) {
-				throw new NodeRelatedException(herit, Msg.bind(
-						Messages.HeritAttrEx_CIRCULAR_REF,
-						printCircularReferences(circle)));
-			}
-			circle.add(parent);
-		}
 		return parent;
 	}
 
-	private static String printCircularReferences(List<Element> circularRefStack) {
+	private static String printCircularReferences(
+			List<Element> circularRefStack) {
 		StringBuilder str = new StringBuilder("");
 		try {
 			for (Element n : circularRefStack) {
-				Element h = resolvHeritAttr(n, null);
+				Element h = resolvHeritAttr(n);
 				str.append(SysTool.NEW_LINE);
 				str.append("  XML Element [");
 				str.append(DocHelper.getNodeLocation(n).toFullString());
@@ -147,26 +133,42 @@ public abstract class FilteredDocHelper {
 	protected static void mergeHeritedContent(FilteredDoc fd)
 			throws NodeRelatedException {
 		Document doc = fd.getDocument();
-		NodeList nl = findNodeWithHeritAttr(doc);
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element n = (Element) nl.item(i);
-			Element parent = resolvHeritAttr(n, null);
-			if (parent == null) {
-				/*
-				 * shouldn't happened since nl contains only element with an
-				 * herited attr
-				 */
-				continue;
+		NodeList nl = null;
+
+		while ((nl = findNodeWithHeritAttr(doc)).getLength() > 0) {
+			// h(erited)
+			Element h = (Element) nl.item(0);
+			// p(arent)
+			Element p = resolvHeritAttr(h);
+
+			// remove 'herit' attr in h
+			h.removeAttribute(FilteredDoc.HERIT_ATTR);
+
+			// clone (e.g we keep user data) h into t(arget)
+			Element t = (Element) h.cloneNode(false);
+
+			// replace h by t
+			h.getParentNode().replaceChild(t, h);
+			
+			// copy all p's attributes into t, but not override existing
+			for (int i = 0; i < p.getAttributes().getLength(); i++) {
+				Attr attr = (Attr) p.getAttributes().item(i);
+				if (!t.hasAttribute(attr.getName())) {
+					t.setAttribute(attr.getName(), attr.getValue());
+				}
 			}
-			// remove 'herit' attr in node
-			n.removeAttribute(FilteredDoc.HERIT_ATTR);
-			// clone the heritedparent (deep clone)
-			Element hpc = (Element) doc.importNode(parent, true);
-			// remove UUID in the heritedparentclone subtree
+
+			// copy all p's elements into t
+			for (int i = 0; i < p.getChildNodes().getLength(); i++) {
+				Node n = (Node) p.getChildNodes().item(i);
+				t.appendChild(n.cloneNode(true));
+			}
+
+			// remove all UUID in t's subtree
 			NodeList uuidsToRemove = null;
 			try {
 				uuidsToRemove = XPathExpander.evaluateAsNodeList(
-						"descendant-or-self::*/@" + DUNIDDoc.DUNID_ATTR, hpc);
+						"descendant-or-self::*/@" + DUNIDDoc.DUNID_ATTR, t);
 			} catch (XPathExpressionException Ex) {
 				throw new RuntimeException("Unexecpted error while evaluating "
 						+ "an XPath Expression. "
@@ -179,119 +181,216 @@ public abstract class FilteredDocHelper {
 				Attr attr = (Attr) uuidToRemove;
 				attr.getOwnerElement().removeAttributeNode(attr);
 			}
-			// clone node, so that we keep user data
-			Element nc = (Element) n.cloneNode(false);
-			// remove all attrs in nodeclone
-			while (nc.hasAttributes()) {
-				nc.removeAttributeNode((Attr) nc.getAttributes().item(0));
-			}
-			// move heritedparentclone's child into nodeclone
-			while (hpc.hasChildNodes()) {
-				nc.appendChild(hpc.getFirstChild());
-			}
-			// copy heritedparentclone's attr into nodeclone
-			for (int j = 0; j < hpc.getAttributes().getLength(); j++) {
-				Attr attr = (Attr) hpc.getAttributes().item(j);
-				nc.setAttribute(attr.getName(), attr.getValue());
-			}
-			// merge node into nodeclone
-			mergeElement(n, nc, null);
-			// replace node by nodeclone
-			n.getParentNode().replaceChild(nc, n);
+
+			// merge h in t
+			mergeElement(h, t);
+			// add UUID
+			DUNIDDocHelper.addDUNID(t);
 		}
-		DUNIDDocHelper.addDUNID(doc.getFirstChild());
 	}
 
-	private static void mergeElement(Element source, Element dest,
-			Element destParent) {
-		if (dest == null) {
-			destParent.appendChild(source);
-			return;
-		}
-
-		// put source attrs into dest (source attr overrides dest attr)
-		NamedNodeMap attrs = source.getAttributes();
-		for (int i = 0; i < attrs.getLength(); i++) {
-			Attr attr = (Attr) attrs.item(i);
+	private static void mergeElement(Element source, Element dest) {
+		// copy all source's attributes into dest, overrinding existing ones
+		for (int i = 0; i < source.getAttributes().getLength(); i++) {
+			Attr attr = (Attr) source.getAttributes().item(i);
 			dest.setAttribute(attr.getName(), attr.getValue());
 		}
-		while (source.hasChildNodes()) {
+		
+		while ( source.hasChildNodes() ) {
 			Node n = source.getFirstChild();
 			if (n.getNodeType() != Node.ELEMENT_NODE) {
-				source.removeChild(n);
+				// move the node in the dest
+				dest.appendChild(n);
 				continue;
 			}
-			Element sourcechild = (Element) n;
-			Element destchild = null;
-			if (sourcechild.hasAttribute("herit")) {
-				dest.appendChild(sourcechild);
-				continue;
+			Element e = (Element)n;
+			// identify target
+			String elmtName = e.getAttribute("name");
+			String elmtType = e.getNodeName();
+			// target defined
+			if (elmtName != null && elmtName.length() > 0) {
+				Node target = null;
+				// get target
+				try {
+					target = XPathExpander.evaluateAsNode(
+							elmtType+"[@name='"+elmtName+"']", dest);
+				} catch (XPathExpressionException Ex) {
+					throw new RuntimeException("Unexecpted error while evaluating "
+							+ "an XPath Expression. "
+							+ "Since the XPath expression to evaluate is "
+							+ "hard coded, " + "such error cannot happened. "
+							+ "Source code has certainly been modified and "
+							+ "a bug have been introduced.", Ex);
+				}
+				// target exists
+				if (target != null) {
+					String heritPolicy = e.getAttribute("herit-policy");
+					e.removeAttribute("herit-policy");
+					if (heritPolicy != null && heritPolicy.equals("replace")) {
+						// replace target by a copy
+						dest.replaceChild(e, target);
+					} else {
+						// merge target and a copy
+						mergeElement(e, (Element)target);
+						source.removeChild(e);
+					}
+					continue;
+				}				
 			}
-			String heritPolicy = sourcechild.getAttribute("herit-policy");
-			sourcechild.removeAttribute("herit-policy");
-			if (heritPolicy == null || heritPolicy.length() == 0
-					|| heritPolicy.equals("merge")) {
-				destchild = findMatchingChildElement(dest, sourcechild);
-				Element scc = destchild;
-				if (destchild != null) {
-					// clone source child, so that we keep user data
-					scc = (Element) sourcechild.cloneNode(false);
-					// remove all sourcechildclone's attr
-					while (scc.hasAttributes()) {
-						scc.removeAttributeNode((Attr) scc.getAttributes()
-								.item(0));
-					}
-					// clone destchild
-					Element dcc = (Element) destchild.cloneNode(true);
-					// move destchildclone's child into the sourcechildclone
-					while (dcc.hasChildNodes()) {
-						scc.appendChild(dcc.getFirstChild());
-					}
-					// copy destchildclone's attr into sourcechildclone
-					for (int j = 0; j < dcc.getAttributes().getLength(); j++) {
-						Attr attr = (Attr) dcc.getAttributes().item(j);
-						scc.setAttribute(attr.getName(), attr.getValue());
-					}
-				}
-				// merge sourcechild into sourcechildclone
-				mergeElement(sourcechild, scc, dest);
-				// replace destchild by sourcechildclone
-				if (destchild != null) {
-					dest.replaceChild(scc, destchild);
-				}
-				// remove sourcechild, so that next loop will act on next child
-				if (sourcechild.getParentNode() == source) {
-					source.removeChild(sourcechild);
-				}
-			} else if (heritPolicy.equals("append")) {
-				dest.appendChild(sourcechild);
-			} else if (heritPolicy.equals("insert")) {
-				// TODO : currently equals to append.
-				// should retrieve the insertion position
-				Node refChild = null;
-				dest.insertBefore(sourcechild, refChild);
-			} else if (heritPolicy.equals("replace")) {
-				destchild = findMatchingChildElement(dest, sourcechild);
-				dest.replaceChild(sourcechild, destchild);
-			}
+			// move the node in the dest
+			dest.appendChild(e);
 		}
 	}
 
-	private static Element findMatchingChildElement(Element e, Element eToFind) {
-		// TODO : replace by a more complex search, based on a xpath expr
-		String toFind = eToFind.getNodeName();
+	// protected static void mergeHeritedContent(FilteredDoc fd)
+	// throws NodeRelatedException {
+	// Document doc = fd.getDocument();
+	// NodeList nl = findNodeWithHeritAttr(doc);
+	// for (int i = 0; i < nl.getLength(); i++) {
+	// Element n = (Element) nl.item(i);
+	// Element parent = resolvHeritAttr(n);
+	// if (parent == null) {
+	// /*
+	// * shouldn't happened since nl contains only element with an
+	// * herited attr
+	// */
+	// continue;
+	// }
+	// // remove 'herit' attr in node
+	// n.removeAttribute(FilteredDoc.HERIT_ATTR);
+	// // clone the heritedparent (deep clone)
+	// Element hpc = (Element) doc.importNode(parent, true);
+	// // remove UUID in the heritedparentclone subtree
+	// NodeList uuidsToRemove = null;
+	// try {
+	// uuidsToRemove = XPathExpander.evaluateAsNodeList(
+	// "descendant-or-self::*/@" + DUNIDDoc.DUNID_ATTR, hpc);
+	// } catch (XPathExpressionException Ex) {
+	// throw new RuntimeException("Unexecpted error while evaluating "
+	// + "an XPath Expression. "
+	// + "Since the XPath expression to evaluate is "
+	// + "hard coded, " + "such error cannot happened. "
+	// + "Source code has certainly been modified and "
+	// + "a bug have been introduced.", Ex);
+	// }
+	// for (Node uuidToRemove : new NodeCollection(uuidsToRemove)) {
+	// Attr attr = (Attr) uuidToRemove;
+	// attr.getOwnerElement().removeAttributeNode(attr);
+	// }
+	// // clone node, so that we keep user data
+	// Element nc = (Element) n.cloneNode(false);
+	// // remove all attrs in nodeclone
+	// while (nc.hasAttributes()) {
+	// nc.removeAttributeNode((Attr) nc.getAttributes().item(0));
+	// }
+	// // move heritedparentclone's child into nodeclone
+	// while (hpc.hasChildNodes()) {
+	// nc.appendChild(hpc.getFirstChild());
+	// }
+	// // copy heritedparentclone's attr into nodeclone
+	// for (int j = 0; j < hpc.getAttributes().getLength(); j++) {
+	// Attr attr = (Attr) hpc.getAttributes().item(j);
+	// nc.setAttribute(attr.getName(), attr.getValue());
+	// }
+	// // merge node into nodeclone
+	// mergeElement(n, nc, null);
+	// // replace node by nodeclone
+	// n.getParentNode().replaceChild(nc, n);
+	// }
+	// DUNIDDocHelper.addDUNID(doc.getFirstChild());
+	// }
+	//
+	// private static void mergeElement(Element source, Element dest,
+	// Element destParent) {
+	// if (dest == null) {
+	// destParent.appendChild(source);
+	// return;
+	// }
+	//
+	// // put source attrs into dest (source attr overrides dest attr)
+	// NamedNodeMap attrs = source.getAttributes();
+	// for (int i = 0; i < attrs.getLength(); i++) {
+	// Attr attr = (Attr) attrs.item(i);
+	// dest.setAttribute(attr.getName(), attr.getValue());
+	// }
+	// while (source.hasChildNodes()) {
+	// Node n = source.getFirstChild();
+	// if (n.getNodeType() != Node.ELEMENT_NODE) {
+	// source.removeChild(n);
+	// continue;
+	// }
+	// Element sourcechild = (Element) n;
+	// Element destchild = null;
+	// if (sourcechild.hasAttribute("herit")) {
+	// dest.appendChild(sourcechild);
+	// continue;
+	// }
+	// String heritPolicy = sourcechild.getAttribute("herit-policy");
+	// sourcechild.removeAttribute("herit-policy");
+	// if (heritPolicy == null || heritPolicy.length() == 0
+	// || heritPolicy.equals("merge")) {
+	// destchild = findMatchingChildElement(dest, sourcechild);
+	// Element scc = destchild;
+	// if (destchild != null) {
+	// // clone source child, so that we keep user data
+	// scc = (Element) sourcechild.cloneNode(false);
+	// // remove all sourcechildclone's attr
+	// while (scc.hasAttributes()) {
+	// scc.removeAttributeNode(
+	// (Attr) scc.getAttributes().item(0));
+	// }
+	// // clone destchild
+	// Element dcc = (Element) destchild.cloneNode(true);
+	// // move destchildclone's child into the sourcechildclone
+	// while (dcc.hasChildNodes()) {
+	// scc.appendChild(dcc.getFirstChild());
+	// }
+	// // copy destchildclone's attr into sourcechildclone
+	// for (int j = 0; j < dcc.getAttributes().getLength(); j++) {
+	// Attr attr = (Attr) dcc.getAttributes().item(j);
+	// scc.setAttribute(attr.getName(), attr.getValue());
+	// }
+	// }
+	// // merge sourcechild into sourcechildclone
+	// mergeElement(sourcechild, scc, dest);
+	// // replace destchild by sourcechildclone
+	// if (destchild != null) {
+	// dest.replaceChild(scc, destchild);
+	// }
+	// // remove sourcechild, so that next loop will act on next child
+	// if (sourcechild.getParentNode() == source) {
+	// source.removeChild(sourcechild);
+	// }
+	// } else if (heritPolicy.equals("append")) {
+	// dest.appendChild(sourcechild);
+	// } else if (heritPolicy.equals("insert")) {
+	// // TODO : currently equals to append.
+	// // should retrieve the insertion position
+	// Node refChild = null;
+	// dest.insertBefore(sourcechild, refChild);
+	// } else if (heritPolicy.equals("replace")) {
+	// destchild = findMatchingChildElement(dest, sourcechild);
+	// dest.replaceChild(sourcechild, destchild);
+	// }
+	// }
+	// }
 
-		for (int i = 0; i < e.getChildNodes().getLength(); i++) {
-			Node n = e.getChildNodes().item(i);
-			if (n.getNodeType() != Node.ELEMENT_NODE) {
-				continue;
-			}
-			if (n.getNodeName().equals(toFind)) {
-				return (Element) n;
-			}
-		}
-		return null;
-	}
+//	private static Element findMatchingChildElement(Element e,
+//			Element eToFind) {
+//		// TODO : replace by a more complex search, based on a xpath expr
+//		String toFind = eToFind.getNodeName();
+//
+//		for (int i = 0; i < e.getChildNodes().getLength(); i++) {
+//			Node n = e.getChildNodes().item(i);
+//			if (n.getNodeType() != Node.ELEMENT_NODE) {
+//				continue;
+//			}
+//			if (n.getNodeName().equals(toFind)) {
+//				return (Element) n;
+//			}
+//		}
+//		return null;
+//	}
 
 	/**
 	 * <p>
@@ -332,8 +431,8 @@ public abstract class FilteredDocHelper {
 	 */
 	public static NodeList findNodeWithHeritAttr(Document doc) {
 		try {
-			return XPathExpander.evaluateAsNodeList("//*[ exists(@"
-					+ FilteredDoc.HERIT_ATTR + ") ]", doc);
+			return XPathExpander.evaluateAsNodeList(
+					"//*[ exists(@" + FilteredDoc.HERIT_ATTR + ") ]", doc);
 		} catch (XPathExpressionException Ex) {
 			throw new RuntimeException("Unexecpted error while evaluating "
 					+ "an XPath Expression. "
@@ -368,18 +467,35 @@ public abstract class FilteredDocHelper {
 	 *            is the {@link Element} to validate. Can be <tt>null</tt>.
 	 * @param circle
 	 *            is the list of all already visited herited {@link Element}s.
-	 *            It is used to detect circular references. If <tt>null</tt>,
-	 *            circular references will not be detected.
+	 *            It is used to detect circular references. Can't be
+	 *            <tt>null</tt>.
 	 * 
 	 * @throws NodeRelatedException
 	 *             {@inheritDoc}
+	 * 			<li>if, once resolved, the herited parent {@link Element}
+	 *             have already been visited (e.g. a circular reference hae been
+	 *             detected) ;</li>
 	 */
 	private static void validateHeritAttr(Element n, List<Element> circle)
 			throws NodeRelatedException {
-		Element parent = resolvHeritAttr(n, circle);
+		if (circle == null) {
+			throw new IllegalArgumentException("null: Not accepted. "
+					+ "Must be valid " + List.class.getCanonicalName() + "<"
+					+ Element.class.getCanonicalName() + ">" + ".");
+		}
+
+		Element parent = resolvHeritAttr(n);
 		if (parent == null) {
 			return;
 		}
+
+		if (circle.contains(parent)) {
+			throw new NodeRelatedException(n,
+					Msg.bind(Messages.HeritAttrEx_CIRCULAR_REF,
+							printCircularReferences(circle)));
+		}
+		circle.add(parent);
+
 		validateHeritAttr(parent, circle);
 	}
 
@@ -416,13 +532,14 @@ public abstract class FilteredDocHelper {
 	protected static Element insertElement(Document dest, Element toImport,
 			boolean importChilds) {
 		if (toImport == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid " + Element.class.getCanonicalName() + ".");
+			throw new IllegalArgumentException(
+					"null: Not accepted. " + "Must be valid "
+							+ Element.class.getCanonicalName() + ".");
 		}
 		if (dest == null) {
-			throw new IllegalArgumentException("null: Not accepted. "
-					+ "Must be valid " + Document.class.getCanonicalName()
-					+ ".");
+			throw new IllegalArgumentException(
+					"null: Not accepted. " + "Must be valid "
+							+ Document.class.getCanonicalName() + ".");
 		}
 
 		Node imported = DUNIDDocHelper.getElement(dest,
@@ -517,7 +634,7 @@ public abstract class FilteredDocHelper {
 	private static void insertHeritedParents(Document dest, Element toClone) {
 		Element parent = null;
 		try {
-			parent = resolvHeritAttr(toClone, null);
+			parent = resolvHeritAttr(toClone);
 		} catch (NodeRelatedException Ex) {
 			throw new RuntimeException("Unexecpted error while resolving "
 					+ "herited parents of the Element ["
