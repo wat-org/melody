@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><environment>
 <models>
 	<model name="my_model">
-		<packages>
+		<packages name="my-packages" attr1="value1">
 			<package arch="x386" name="pck1"/>
 			<package arch="x386" name="pck2"/>
 			<package arch="x386" name="pck3"/>
@@ -14,6 +14,9 @@
 		<FRONTS>
 		
 			<instance IP_priv="123.123.123.123" herit="./environment/models/model[@name='my_model']" name="dev-web1">
+				<packages name="my-packages" attr2="value2">
+					<package arch="x686" name="pck3"/>
+				</packages>		
 				<region>eu-west-1</region>
 				<image-id>ami-59d0e22d</image-id>
 				<instance-type>t1.micro</instance-type>
